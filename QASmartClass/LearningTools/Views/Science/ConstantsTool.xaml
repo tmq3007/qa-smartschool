@@ -1,0 +1,146 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Science.ConstantsTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="#F5F5FA">
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0" CornerRadius="0" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#AD1457" Offset="0"/>
+                    <GradientStop Color="#C62828" Offset="0.5"/>
+                    <GradientStop Color="#E65100" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel>
+                <TextBlock Text="🚀 Hằng Số Vật Lý &amp; Toán Học" FontSize="22" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="30+ hằng số quan trọng • 5 nhóm phân loại • Click để copy giá trị • Tìm kiếm nhanh" 
+                           FontSize="13" Foreground="#F8BBD0" Margin="0,4,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#FCE4EC">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#C8E6C9"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#2E7D32"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}"
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4">
+
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🚀" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextLookup" Text="Bảng tra cứu" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🎯" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#F8BBD0"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 0: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#C8E6C9" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#C8E6C9" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+<Border Background="#FCE4EC" CornerRadius="6" Padding="12" Margin="0,0,0,12" BorderBrush="#F8BBD0" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="💡 CÁC HẰNG SỐ KHOA HỌC THƯỜNG GẶP" FontWeight="Bold" Foreground="#AD1457" FontSize="14" Margin="0,0,0,6"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#424242" LineHeight="18">
+                                    Hằng số vật lý và toán học là các giá trị số không đổi trong vũ trụ, làm cơ sở cho hầu hết các công thức tính toán khoa học, thiên văn, lượng tử và địa chất.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="🎯 Cách sử dụng công cụ:" FontSize="15" FontWeight="Bold" Foreground="#AD1457" Margin="0,4,0,8"/>
+                        <TextBlock Text="1. Tìm kiếm nhanh: Gõ từ khóa tìm kiếm (Ví dụ: Planck, hấp dẫn, pi...) để lọc ngay lập tức." FontSize="13.5" Foreground="#424242" Margin="4,2"/>
+                        <TextBlock Text="2. Lọc theo nhóm: Click vào các thẻ danh mục (Vật lý, Hóa học, Thiên văn, Toán học...) để thu hẹp phạm vi tìm kiếm." FontSize="13.5" Foreground="#424242" Margin="4,2"/>
+                        <TextBlock Text="3. Sao chép nhanh: Click chuột trực tiếp vào thẻ hằng số để tự động sao chép giá trị số chuẩn khoa học vào bộ nhớ tạm (Clipboard)." FontSize="13.5" Foreground="#424242" Margin="4,2"/>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: BẢNG TRA CỨU -->
+                <ScrollViewer x:Name="viewLookup" VerticalScrollBarVisibility="Auto" Padding="12" Visibility="Collapsed">
+                    <StackPanel Margin="8">
+                        <!-- ═══ TÌM KIẾM ═══ -->
+                        <Border Background="White" CornerRadius="10" Padding="12,8" Margin="0,0,0,12" BorderBrush="#E3E8EE" BorderThickness="1">
+                            <DockPanel>
+                                <TextBlock Text="🔍" FontSize="15" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBox x:Name="txtSearch" FontSize="15" Background="Transparent" BorderThickness="0" TextChanged="Search_Changed" ToolTip="Tìm hằng số..."/>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- ═══ CATEGORY TABS ═══ -->
+                        <WrapPanel x:Name="categoryPanel" Margin="0,0,0,12"/>
+
+                        <!-- ═══ CONSTANTS GRID ═══ -->
+                        <WrapPanel x:Name="constantsPanel"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 2: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

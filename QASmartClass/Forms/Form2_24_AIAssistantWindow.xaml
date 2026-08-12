@@ -1,0 +1,12 @@
+<Window x:Class="QASmartTouch.Forms.Form2_24_AIAssistantWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Trợ lý ảo AI - Hỗ trợ giảng dạy" 
+        Width="1000" Height="700"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F6FA"
+        FontFamily="Segoe UI">
+    <Grid>
+        <Frame Source="../Classroom/Views/AIAssistantPage.xaml" NavigationFailed="Frame_NavigationFailed"/>
+    </Grid>
+</Window>

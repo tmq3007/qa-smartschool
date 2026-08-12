@@ -1,0 +1,508 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch06",
+    "chapterName": "Vectơ & Tọa Độ Trong Mặt Phẳng",
+    "grade": 10,
+    "totalSections": 4,
+    "totalConcepts": 14,
+    "totalProblems": 19,
+    "toolMapping": [
+      "VectorTool",
+      "CoordinateTool"
+    ],
+    "thptWeight": "10%",
+    "estimatedHours": 18
+  },
+  "sections": [
+    {
+      "sectionId": "vec_01",
+      "sectionName": "Vectơ & Các phép toán",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "vec_001",
+          "name": "Vectơ",
+          "definition": "Đoạn thẳng có hướng AB⃗, xác định bởi điểm đầu A và điểm cuối B",
+          "properties": [
+            "Vectơ-không 0⃗: cùng điểm đầu và cuối",
+            "Hai vectơ bằng nhau: cùng hướng, cùng độ dài",
+            "Vectơ đối: cùng độ dài, ngược hướng"
+          ]
+        },
+        {
+          "id": "vec_002",
+          "name": "Tổng & Hiệu vectơ",
+          "formula": "AB⃗ + BC⃗ = AC⃗ (quy tắc ba điểm)",
+          "properties": [
+            "Quy tắc hình bình hành: AB⃗ + AD⃗ = AC⃗",
+            "AB⃗ - AC⃗ = CB⃗",
+            "Tính giao hoán: a⃗+b⃗ = b⃗+a⃗"
+          ]
+        },
+        {
+          "id": "vec_003",
+          "name": "Tích vectơ với số",
+          "formula": "k·a⃗ = (ka₁; ka₂)",
+          "properties": [
+            "k>0: cùng hướng",
+            "k<0: ngược hướng",
+            "|k·a⃗| = |k|·|a⃗|"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "vec_prob_001",
+          "difficulty": "Easy",
+          "question": "Cho hình bình hành ABCD. AB⃗ + AD⃗ bằng:",
+          "options": [
+            "A) AC⃗",
+            "B) BD⃗",
+            "C) BC⃗",
+            "D) DC⃗"
+          ],
+          "correctAnswer": "A",
+          "solution": "Quy tắc hình bình hành: AB⃗ + AD⃗ = AC⃗ (đường chéo)",
+          "points": 10
+        },
+        {
+          "problemId": "vec_prob_002",
+          "difficulty": "Easy",
+          "question": "Cho G là trọng tâm △ABC. Khi đó GA⃗ + GB⃗ + GC⃗ =",
+          "options": [
+            "A) 0⃗",
+            "B) AB⃗",
+            "C) BC⃗",
+            "D) AC⃗"
+          ],
+          "correctAnswer": "A",
+          "solution": "Tính chất trọng tâm: GA⃗+GB⃗+GC⃗ = 0⃗",
+          "points": 10
+        },
+        {
+          "problemId": "vec_prob_003",
+          "difficulty": "Medium",
+          "question": "Cho M là trung điểm AB. Với mọi O: OM⃗ =",
+          "options": [
+            "A) (OA⃗+OB⃗)/2",
+            "B) OA⃗+OB⃗",
+            "C) (OA⃗-OB⃗)/2",
+            "D) OA⃗-OB⃗"
+          ],
+          "correctAnswer": "A",
+          "solution": "M trung điểm AB: OM⃗ = (OA⃗+OB⃗)/2",
+          "points": 15
+        },
+        {
+          "problemId": "vec_prob_004",
+          "difficulty": "Hard",
+          "question": "Cho △ABC, I trên BC sao cho IB⃗ = 2IC⃗. Phân tích AI⃗ theo AB⃗ và AC⃗:",
+          "options": [
+            "A) AI⃗ = (1/3)AB⃗ + (2/3)AC⃗",
+            "B) AI⃗ = (2/3)AB⃗ + (1/3)AC⃗",
+            "C) AI⃗ = AB⃗ + 2AC⃗",
+            "D) AI⃗ = (1/2)AB⃗ + (1/2)AC⃗"
+          ],
+          "correctAnswer": "A",
+          "solution": "IB⃗=2IC⃗ → I chia BC theo tỉ số 2:1 tính từ B. AI⃗ = AB⃗ + BI⃗ = AB⃗ + (2/3)BC⃗ = AB⃗ + (2/3)(AC⃗-AB⃗) = (1/3)AB⃗ + (2/3)AC⃗",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "vec_02",
+      "sectionName": "Tích vô hướng",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "vec_004",
+          "name": "Tích vô hướng",
+          "formula": "a⃗·b⃗ = |a⃗|·|b⃗|·cos(a⃗,b⃗)",
+          "properties": [
+            "a⃗·b⃗ = a₁b₁ + a₂b₂ (trong hệ tọa độ)",
+            "a⃗⊥b⃗ ⇔ a⃗·b⃗ = 0",
+            "a⃗·a⃗ = |a⃗|²"
+          ]
+        },
+        {
+          "id": "vec_005",
+          "name": "Góc giữa hai vectơ",
+          "formula": "cos(a⃗,b⃗) = (a₁b₁+a₂b₂) / (|a⃗|·|b⃗|)",
+          "properties": [
+            "0° ≤ (a⃗,b⃗) ≤ 180°",
+            "Vuông góc: cos = 0",
+            "Cùng hướng: cos = 1"
+          ]
+        },
+        {
+          "id": "vec_006",
+          "name": "Hình chiếu",
+          "formula": "Hình chiếu a⃗ lên b⃗ = (a⃗·b⃗)/|b⃗|"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "vec_prob_005",
+          "difficulty": "Easy",
+          "question": "a⃗=(3;4), b⃗=(1;-2). Tích vô hướng a⃗·b⃗ =",
+          "options": [
+            "A) -5",
+            "B) 5",
+            "C) 11",
+            "D) -11"
+          ],
+          "correctAnswer": "A",
+          "solution": "a⃗·b⃗ = 3·1 + 4·(-2) = 3-8 = -5",
+          "points": 10
+        },
+        {
+          "problemId": "vec_prob_006",
+          "difficulty": "Medium",
+          "question": "Góc giữa a⃗=(1;√3) và b⃗=(√3;1) bằng:",
+          "options": [
+            "A) 30°",
+            "B) 45°",
+            "C) 60°",
+            "D) 90°"
+          ],
+          "correctAnswer": "A",
+          "solution": "a⃗·b⃗=√3+√3=2√3. |a⃗|=2, |b⃗|=2. cos=2√3/4=√3/2 → α=30°",
+          "points": 15
+        },
+        {
+          "problemId": "vec_prob_007",
+          "difficulty": "Medium",
+          "question": "a⃗=(m;2) ⊥ b⃗=(4;-6). Giá trị m là:",
+          "options": [
+            "A) 3",
+            "B) -3",
+            "C) 6",
+            "D) -6"
+          ],
+          "correctAnswer": "A",
+          "solution": "a⃗⊥b⃗ ⇔ 4m+2(-6)=0 → 4m=12 → m=3",
+          "points": 15
+        },
+        {
+          "problemId": "vec_prob_008",
+          "difficulty": "Hard",
+          "question": "Cho △ABC với AB=5, AC=8, Â=60°. AB⃗·AC⃗ =",
+          "options": [
+            "A) 20",
+            "B) 40",
+            "C) 10",
+            "D) 20√3"
+          ],
+          "correctAnswer": "A",
+          "solution": "AB⃗·AC⃗ = AB·AC·cosA = 5·8·cos60° = 40·(1/2) = 20",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "vec_03",
+      "sectionName": "Hệ tọa độ trong mặt phẳng",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "vec_007",
+          "name": "Tọa độ điểm & Vectơ",
+          "formula": "M(x;y), AB⃗ = (xB-xA; yB-yA)",
+          "properties": [
+            "Trung điểm I: I = ((xA+xB)/2; (yA+yB)/2)",
+            "Trọng tâm G: G = ((xA+xB+xC)/3; (yA+yB+yC)/3)"
+          ]
+        },
+        {
+          "id": "vec_008",
+          "name": "Khoảng cách",
+          "formula": "AB = √[(xB-xA)²+(yB-yA)²]"
+        },
+        {
+          "id": "vec_009",
+          "name": "Phương trình đường thẳng",
+          "formulas": [
+            "Tổng quát: ax+by+c=0",
+            "Tham số: x=x₀+at, y=y₀+bt",
+            "Chính tắc: (x-x₀)/a = (y-y₀)/b"
+          ],
+          "properties": [
+            "VTPT n⃗=(a;b) ⊥ đường thẳng",
+            "VTCP u⃗=(-b;a) // đường thẳng"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "vec_prob_009",
+          "difficulty": "Easy",
+          "question": "Cho A(1;3), B(5;7). Trung điểm M của AB có tọa độ:",
+          "options": [
+            "A) (3;5)",
+            "B) (2;5)",
+            "C) (3;4)",
+            "D) (6;10)"
+          ],
+          "correctAnswer": "A",
+          "solution": "M = ((1+5)/2; (3+7)/2) = (3; 5)",
+          "points": 10
+        },
+        {
+          "problemId": "vec_prob_010",
+          "difficulty": "Easy",
+          "question": "Khoảng cách giữa A(1;2) và B(4;6) là:",
+          "options": [
+            "A) 5",
+            "B) 7",
+            "C) √25",
+            "D) 4"
+          ],
+          "correctAnswer": "A",
+          "solution": "AB = √[(4-1)²+(6-2)²] = √[9+16] = √25 = 5",
+          "points": 10
+        },
+        {
+          "problemId": "vec_prob_011",
+          "difficulty": "Medium",
+          "question": "PT đường thẳng qua A(2;-1) có VTPT n⃗=(3;4) là:",
+          "options": [
+            "A) 3x+4y-2=0",
+            "B) 3x+4y+2=0",
+            "C) 4x+3y-2=0",
+            "D) 3x-4y+2=0"
+          ],
+          "correctAnswer": "A",
+          "solution": "3(x-2)+4(y+1)=0 → 3x-6+4y+4=0 → 3x+4y-2=0",
+          "points": 15
+        },
+        {
+          "problemId": "vec_prob_012",
+          "difficulty": "Medium",
+          "question": "Khoảng cách từ M(1;2) đến đường thẳng 3x-4y+5=0 là:",
+          "options": [
+            "A) 0",
+            "B) 2/5",
+            "C) 1",
+            "D) 5"
+          ],
+          "correctAnswer": "A",
+          "solution": "d = |3·1-4·2+5|/√(9+16) = |3-8+5|/5 = 0/5 = 0 (M thuộc d)",
+          "points": 15
+        },
+        {
+          "problemId": "vec_prob_013",
+          "difficulty": "Hard",
+          "question": "Tìm m để 2 đường thẳng d₁: x+2y-3=0 và d₂: mx-y+1=0 vuông góc:",
+          "options": [
+            "A) 2",
+            "B) -2",
+            "C) 1/2",
+            "D) -1/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "d₁⊥d₂ ⇔ n⃗₁·n⃗₂=0: (1)(m)+(2)(-1)=0 → m=2",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "vec_04",
+      "sectionName": "Đường conic: Elip, Hyperbol, Parabol",
+      "order": 4,
+      "concepts": [
+        {
+          "id": "vec_010",
+          "name": "Đường Elip",
+          "formula": "x²/a²+y²/b²=1 (a>b>0)",
+          "properties": [
+            "c²=a²-b²",
+            "Tiêu điểm F₁(-c;0), F₂(c;0)",
+            "Tâm sai e=c/a < 1",
+            "Đỉnh: (±a;0), (0;±b)"
+          ]
+        },
+        {
+          "id": "vec_011",
+          "name": "Đường Hyperbol",
+          "formula": "x²/a²-y²/b²=1",
+          "properties": [
+            "c²=a²+b²",
+            "Tiêu điểm F₁(-c;0), F₂(c;0)",
+            "Tâm sai e=c/a > 1",
+            "Tiệm cận: y=±(b/a)x"
+          ]
+        },
+        {
+          "id": "vec_012",
+          "name": "Đường Parabol",
+          "formula": "y²=2px (p>0)",
+          "properties": [
+            "Tiêu điểm F(p/2;0)",
+            "Đường chuẩn: x=-p/2",
+            "Đỉnh: O(0;0)"
+          ]
+        },
+        {
+          "id": "vec_013",
+          "name": "Phương trình tiếp tuyến",
+          "formulas": [
+            "Elip tại M(x₀;y₀): x₀x/a²+y₀y/b²=1",
+            "Hyperbol tại M: x₀x/a²-y₀y/b²=1"
+          ]
+        },
+        {
+          "id": "vec_014",
+          "name": "Đường tròn (ôn lại)",
+          "formula": "(x-a)²+(y-b)²=R²",
+          "properties": [
+            "Tâm I(a;b), bán kính R",
+            "x²+y²-2ax-2by+c=0: I(a;b), R=√(a²+b²-c)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "vec_prob_014",
+          "difficulty": "Easy",
+          "question": "Elip x²/16+y²/9=1 có bán trục lớn a =",
+          "options": [
+            "A) 4",
+            "B) 16",
+            "C) 3",
+            "D) 9"
+          ],
+          "correctAnswer": "A",
+          "solution": "a²=16 → a=4",
+          "points": 10
+        },
+        {
+          "problemId": "vec_prob_015",
+          "difficulty": "Easy",
+          "question": "Tiêu cự của Elip x²/25+y²/9=1 bằng:",
+          "options": [
+            "A) 8",
+            "B) 4",
+            "C) 16",
+            "D) √34"
+          ],
+          "correctAnswer": "A",
+          "solution": "c²=a²-b²=25-9=16→c=4. 2c=8",
+          "points": 10
+        },
+        {
+          "problemId": "vec_prob_016",
+          "difficulty": "Medium",
+          "question": "Hyperbol x²/9-y²/16=1 có tiệm cận:",
+          "options": [
+            "A) y=±(4/3)x",
+            "B) y=±(3/4)x",
+            "C) y=±(16/9)x",
+            "D) y=±x"
+          ],
+          "correctAnswer": "A",
+          "solution": "b/a = 4/3. Tiệm cận: y=±(4/3)x",
+          "points": 15
+        },
+        {
+          "problemId": "vec_prob_017",
+          "difficulty": "Medium",
+          "question": "Parabol y²=8x có tiêu điểm:",
+          "options": [
+            "A) F(2;0)",
+            "B) F(4;0)",
+            "C) F(0;2)",
+            "D) F(8;0)"
+          ],
+          "correctAnswer": "A",
+          "solution": "2p=8 → p=4. F(p/2;0) = F(2;0)",
+          "points": 15
+        },
+        {
+          "problemId": "vec_prob_018",
+          "difficulty": "Hard",
+          "question": "Tìm m để Elip x²/(m-1)+y²/(5-m)=1 tồn tại:",
+          "options": [
+            "A) 1<m<3, m≠3",
+            "B) m>1",
+            "C) m<5",
+            "D) 1<m<5"
+          ],
+          "correctAnswer": "A",
+          "solution": "Cần: m-1>0, 5-m>0, m-1≠5-m. Vậy 1<m<5, m≠3. Vì cần a>b>0: xét thêm m-1>5-m→m>3",
+          "points": 20
+        },
+        {
+          "problemId": "vec_prob_019",
+          "difficulty": "Hard",
+          "question": "Số giao điểm của Elip x²/4+y²/1=1 và đường thẳng x+y=2:",
+          "options": [
+            "A) 2",
+            "B) 1",
+            "C) 0",
+            "D) 3"
+          ],
+          "correctAnswer": "A",
+          "solution": "x=2-y → (2-y)²/4+y²=1 → 4-4y+y²+4y²=4 → 5y²-4y=0 → y(5y-4)=0 → y=0,4/5. Hai giao điểm",
+          "points": 20
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm c²=a²+b² cho Elip",
+      "correction": "Elip: c²=a²-b². Hyperbol: c²=a²+b²"
+    },
+    {
+      "mistake": "Quên kiểm tra a>b khi viết PT Elip",
+      "correction": "Luôn xác định a² là mẫu LỚN hơn"
+    },
+    {
+      "mistake": "Nhầm VTPT và VTCP",
+      "correction": "ax+by+c=0: VTPT n⃗=(a;b), VTCP u⃗=(-b;a)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "vec_quiz_01",
+      "title": "Kiểm tra: Vectơ & Tọa độ",
+      "timeLimit": 900,
+      "questions": [
+        {
+          "ref": "vec_prob_001"
+        },
+        {
+          "ref": "vec_prob_005"
+        },
+        {
+          "ref": "vec_prob_009"
+        },
+        {
+          "ref": "vec_prob_011"
+        },
+        {
+          "ref": "vec_prob_014"
+        },
+        {
+          "ref": "vec_prob_016"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

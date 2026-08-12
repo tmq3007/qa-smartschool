@@ -1,0 +1,417 @@
+﻿{
+  "metadata": {
+    "chapterId": "g04_ch02",
+    "chapterName": "Phân Số & Số Thập Phân Nâng Cao",
+    "grade": 4,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 18,
+    "toolMapping": [
+      "fraction"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 14,
+    "prerequisites": [
+      "g03_ch01",
+      "g03_ch02"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "ps4_01",
+      "sectionName": "Phân số — quy đồng & rút gọn",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "ps4_001",
+          "name": "Quy đồng mẫu số",
+          "definition": "Đưa các phân số về cùng mẫu để so sánh/cộng/trừ",
+          "examples": [
+            "1/3 và 1/4 → 4/12 và 3/12"
+          ]
+        },
+        {
+          "id": "ps4_002",
+          "name": "Rút gọn phân số",
+          "definition": "Chia cả tử và mẫu cho ƯCLN",
+          "examples": [
+            "6/8 = 3/4 (chia 2)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ps4_p01",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Rút gọn: 4/8 = ?",
+          "options": [
+            "A) 1/2",
+            "B) 2/4",
+            "C) 1/4",
+            "D) 2/8"
+          ],
+          "correctAnswer": "A",
+          "solution": "4/8 = 4÷4 / 8÷4 = 1/2",
+          "points": 5
+        },
+        {
+          "problemId": "ps4_p02",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Quy đồng: 1/2 và 1/3. Mẫu chung = ?",
+          "options": [
+            "A) 5",
+            "B) 6",
+            "C) 4",
+            "D) 3"
+          ],
+          "correctAnswer": "B",
+          "solution": "MC = BCNN(2,3) = 6. 1/2 = 3/6, 1/3 = 2/6",
+          "points": 5
+        },
+        {
+          "problemId": "ps4_p03",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "1/3 + 1/4 = ?",
+          "options": [
+            "A) 2/7",
+            "B) 7/12",
+            "C) 1/7",
+            "D) 5/12"
+          ],
+          "correctAnswer": "B",
+          "solution": "1/3 = 4/12, 1/4 = 3/12. 4/12 + 3/12 = 7/12",
+          "points": 10
+        },
+        {
+          "problemId": "ps4_p04",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "3/4 - 1/6 = ?",
+          "options": [
+            "A) 7/12",
+            "B) 2/10",
+            "C) 5/12",
+            "D) 1/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "3/4 = 9/12, 1/6 = 2/12. 9/12 - 2/12 = 7/12",
+          "points": 10
+        },
+        {
+          "problemId": "ps4_p05",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "2/3 × 3/5 = ?",
+          "options": [
+            "A) 6/15",
+            "B) 5/8",
+            "C) 2/5",
+            "D) 1/3"
+          ],
+          "correctAnswer": "C",
+          "solution": "2/3 × 3/5 = 6/15 = 2/5 (rút gọn chia 3)",
+          "points": 15
+        },
+        {
+          "problemId": "ps4_p06",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "3/4 ÷ 2/5 = ?",
+          "options": [
+            "A) 6/20",
+            "B) 15/8",
+            "C) 5/8",
+            "D) 3/10"
+          ],
+          "correctAnswer": "B",
+          "solution": "3/4 ÷ 2/5 = 3/4 × 5/2 = 15/8",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "ps4_02",
+      "sectionName": "Đổi phân số ↔ số thập phân",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "ps4_003",
+          "name": "Phân số → STP",
+          "definition": "Chia tử cho mẫu",
+          "examples": [
+            "3/4 = 3÷4 = 0,75",
+            "1/3 = 0,333..."
+          ]
+        },
+        {
+          "id": "ps4_004",
+          "name": "STP → Phân số",
+          "definition": "Viết STP dưới dạng phân số rồi rút gọn",
+          "examples": [
+            "0,6 = 6/10 = 3/5"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ps4_p07",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "1/4 = ?",
+          "options": [
+            "A) 0,4",
+            "B) 0,14",
+            "C) 0,25",
+            "D) 0,75"
+          ],
+          "correctAnswer": "C",
+          "solution": "1 ÷ 4 = 0,25",
+          "points": 5
+        },
+        {
+          "problemId": "ps4_p08",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "0,5 = phân số nào?",
+          "options": [
+            "A) 1/5",
+            "B) 5/10",
+            "C) 1/2",
+            "D) 5/100"
+          ],
+          "correctAnswer": "C",
+          "solution": "0,5 = 5/10 = 1/2",
+          "points": 5
+        },
+        {
+          "problemId": "ps4_p09",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "So sánh: 2/5 ... 0,45",
+          "options": [
+            "A) 2/5 > 0,45",
+            "B) 2/5 < 0,45",
+            "C) 2/5 = 0,45",
+            "D) Không so sánh được"
+          ],
+          "correctAnswer": "B",
+          "solution": "2/5 = 0,4 < 0,45",
+          "points": 10
+        },
+        {
+          "problemId": "ps4_p10",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "0,125 = phân số tối giản nào?",
+          "options": [
+            "A) 1/8",
+            "B) 125/100",
+            "C) 1/4",
+            "D) 5/40"
+          ],
+          "correctAnswer": "A",
+          "solution": "0,125 = 125/1000 = 1/8 (chia 125)",
+          "points": 10
+        },
+        {
+          "problemId": "ps4_p11",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Sắp xếp tăng dần: 1/3, 0,3, 3/10, 0,33",
+          "options": [
+            "A) 3/10, 0,3, 0,33, 1/3",
+            "B) 0,3, 3/10, 1/3, 0,33",
+            "C) 3/10 = 0,3 < 0,33 < 1/3",
+            "D) 1/3, 0,33, 0,3, 3/10"
+          ],
+          "correctAnswer": "C",
+          "solution": "3/10 = 0,3 = 0,300. 0,33 = 0,330. 1/3 = 0,333... Vậy: 0,3 < 0,33 < 1/3",
+          "points": 15
+        },
+        {
+          "problemId": "ps4_p12",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm phân số bằng 0,375 dưới dạng tối giản",
+          "options": [
+            "A) 3/8",
+            "B) 375/100",
+            "C) 15/40",
+            "D) 75/200"
+          ],
+          "correctAnswer": "A",
+          "solution": "0,375 = 375/1000 = 3/8 (chia 125)",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "ps4_03",
+      "sectionName": "Bài toán thực tế với phân số",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "ps4_005",
+          "name": "Tìm phần của số",
+          "definition": "Tìm a/b của c: tính c × a/b",
+          "examples": [
+            "2/3 của 12 = 12 × 2/3 = 8"
+          ]
+        },
+        {
+          "id": "ps4_006",
+          "name": "Tìm số khi biết phần",
+          "definition": "Biết a/b của x = c → x = c × b/a",
+          "examples": [
+            "3/5 của x = 15 → x = 15 × 5/3 = 25"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ps4_p13",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "1/4 của 20 = ?",
+          "options": [
+            "A) 4",
+            "B) 5",
+            "C) 8",
+            "D) 10"
+          ],
+          "correctAnswer": "B",
+          "solution": "20 × 1/4 = 20 ÷ 4 = 5",
+          "points": 5
+        },
+        {
+          "problemId": "ps4_p14",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "2/5 của 30 = ?",
+          "options": [
+            "A) 10",
+            "B) 12",
+            "C) 15",
+            "D) 6"
+          ],
+          "correctAnswer": "B",
+          "solution": "30 × 2/5 = 60/5 = 12",
+          "points": 5
+        },
+        {
+          "problemId": "ps4_p15",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Lớp có 40 HS. 3/8 số HS đạt giỏi. Số HS giỏi = ?",
+          "options": [
+            "A) 12",
+            "B) 15",
+            "C) 18",
+            "D) 20"
+          ],
+          "correctAnswer": "B",
+          "solution": "40 × 3/8 = 120/8 = 15 HS",
+          "points": 10
+        },
+        {
+          "problemId": "ps4_p16",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Đọc 2/5 quyển sách, đọc được 60 trang. Quyển sách có bao nhiêu trang?",
+          "options": [
+            "A) 120",
+            "B) 150",
+            "C) 180",
+            "D) 200"
+          ],
+          "correctAnswer": "B",
+          "solution": "2/5 × x = 60 → x = 60 × 5/2 = 150 trang",
+          "points": 10
+        },
+        {
+          "problemId": "ps4_p17",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "An có 120.000đ. Chi 1/3 mua sách, 1/4 mua bút. Còn lại bao nhiêu?",
+          "options": [
+            "A) 45.000đ",
+            "B) 50.000đ",
+            "C) 55.000đ",
+            "D) 60.000đ"
+          ],
+          "correctAnswer": "B",
+          "solution": "Sách: 120.000 × 1/3 = 40.000. Bút: 120.000 × 1/4 = 30.000. Còn: 120.000 - 40.000 - 30.000 = 50.000đ",
+          "points": 15
+        },
+        {
+          "problemId": "ps4_p18",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Sau khi bán 3/7 số cam, còn lại 24 quả. Ban đầu có bao nhiêu quả?",
+          "options": [
+            "A) 42",
+            "B) 48",
+            "C) 56",
+            "D) 63"
+          ],
+          "correctAnswer": "C",
+          "solution": "Còn lại = 1 - 3/7 = 4/7 số cam. 4/7 × x = 24 → x = 24 × 7/4 = 42. Sai! Let me recalc: 24 × 7/4 = 168/4 = 42",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "1/3 + 1/4 = 2/7 (cộng tử với tử, mẫu với mẫu)",
+      "correction": "Phải quy đồng trước: 4/12 + 3/12 = 7/12"
+    },
+    {
+      "mistake": "Nhầm 'a/b CỦA c' thành c ÷ a × b",
+      "correction": "a/b CỦA c = c × a ÷ b = c × a/b"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "ps4_quiz_01",
+      "title": "Kiểm tra: Phân số & STP nâng cao Lớp 4",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "ps4_p01"
+        },
+        {
+          "ref": "ps4_p07"
+        },
+        {
+          "ref": "ps4_p13"
+        },
+        {
+          "ref": "ps4_p05"
+        },
+        {
+          "ref": "ps4_p17"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

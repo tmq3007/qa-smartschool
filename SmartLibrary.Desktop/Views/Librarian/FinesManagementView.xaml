@@ -1,0 +1,166 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Librarian.FinesManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Loaded="UserControl_Loaded" KeyDown="UserControl_KeyDown" Focusable="True">
+    <Grid Background="{DynamicResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="💰 Quản lý phí hao mòn tài liệu" ActionButtonText=""/>
+
+        <Grid Grid.Row="1" Margin="24">
+            <Border Style="{StaticResource CardBorder}" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                        <TextBlock Text="📋 Danh sách độc giả có phí hao mòn tài liệu quá hạn hoặc làm hỏng/thất lạc sách" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Thực hiện thu phí trực tiếp từ học sinh rồi nhấn nút 'Thu phí nhanh' để hoàn tất đóng phí và tự động mở khóa thẻ mượn." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Lọc tìm kiếm -->
+                    <Grid Grid.Row="1" Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="300"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="🔍 Lọc danh sách:" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <Grid Grid.Column="1">
+                            <TextBox x:Name="TxtSearch" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Height="34" VerticalContentAlignment="Center" Padding="10,4" FontSize="13" ToolTip="Nhấn Ctrl+F để tìm kiếm nhanh (Giới hạn 100 ký tự)" MaxLength="100"/>
+                            <TextBlock Text="🔍 Tìm theo tên học sinh, mã số, tựa sách, lý do..." 
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" IsHitTestVisible="False"
+                                       VerticalAlignment="Center" Margin="12,0,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=TxtSearch}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                        
+                        <Button Grid.Column="3" Content="🔄 Tải lại danh sách" Command="{Binding LoadFinesCommand}" Style="{StaticResource SecondaryButton}" Height="34" Padding="16,0"/>
+                    </Grid>
+
+                    <Grid Grid.Row="2">
+                        <DataGrid ItemsSource="{Binding Fines}" AutoGenerateColumns="False" IsReadOnly="True"
+                                  VirtualizingStackPanel.IsVirtualizing="True"
+                                  VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                  ScrollViewer.CanContentScroll="True">
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                    <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick"/>
+                                </Style>
+                            </DataGrid.RowStyle>
+                            <DataGrid.Style>
+                                <Style TargetType="DataGrid" BasedOn="{StaticResource ModernDataGrid}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Fines.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.Style>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Mã học sinh" Binding="{Binding StudentSsoId}" Width="110">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Họ và tên" Binding="{Binding StudentName}" Width="1.5*"/>
+                                <DataGridTextColumn Header="Cuốn sách liên quan" Binding="{Binding BookTitle}" Width="2*">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                            <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Số phí tích lũy" Binding="{Binding FormattedAmount}" Width="130" MinWidth="130">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource DangerTextBrush}"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Lý do phát sinh" Binding="{Binding Reason}" Width="2*">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                            <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Ngày phát sinh" Binding="{Binding FormattedDate}" Width="130" MinWidth="130">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTemplateColumn Header="Thao tác" Width="130">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="💵 Thu phí nhanh" 
+                                                    Command="{Binding DataContext.PayFineCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource PrimaryButton}" FontSize="11" Padding="8,4" Height="26" Cursor="Hand"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Empty State Card -->
+                        <Border Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="400" Margin="24">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Fines.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🌟" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                <TextBlock Text="Tuyệt vời! Không có phí hao mòn tài liệu quá hạn. 🌟" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource SuccessTextBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                <TextBlock Text="Độc giả học sinh của trường rất có trách nhiệm giữ gìn và trả sách đúng hạn. Hãy tiếp tục phát huy nhé!" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Footer showing total fines -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,12,0,0">
+                        <TextBlock Text="Tổng số phí hao mòn tài liệu cần thu hồi: " Foreground="{DynamicResource TextSecondaryBrush}" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding TotalFinesAmount, StringFormat='{}{0:N0} VNĐ'}" Foreground="{DynamicResource DangerTextBrush}" FontSize="15" FontWeight="Bold"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

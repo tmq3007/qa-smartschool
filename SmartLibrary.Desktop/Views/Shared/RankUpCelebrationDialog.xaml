@@ -1,0 +1,44 @@
+<Window x:Class="SmartLibrary.Desktop.Views.Shared.RankUpCelebrationDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Chúc mừng thăng cấp" Width="400" Height="280"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        ResizeMode="NoResize" WindowStyle="None"
+        AllowsTransparency="True" Background="Transparent">
+    <Border CornerRadius="16" Padding="28" BorderBrush="#F59E0B" BorderThickness="2">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#1E1B4B" Offset="0"/>
+                <GradientStop Color="#311042" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        <Border.Effect>
+            <DropShadowEffect Color="#F59E0B" Opacity="0.3" BlurRadius="20" ShadowDepth="0"/>
+        </Border.Effect>
+        <Grid>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="🎉 🏆 ✨" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                <TextBlock Text="THĂNG CẤP ĐỘC GIẢ!" Foreground="#F59E0B" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="Chúc mừng bạn đã đạt cấp độ mới nhờ tinh thần đọc sách tích cực!" Foreground="#E2E8F0" FontSize="13" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                
+                <Border Background="#2E1B4B" CornerRadius="8" Padding="12,8" BorderThickness="1" BorderBrush="#4338CA" Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtOldLevel" Text="Độc giả Đồng" Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text=" ➡️ " Foreground="#F59E0B" FontSize="16" FontWeight="Bold" Margin="8,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtNewLevel" Text="Độc giả Bạc" Foreground="{DynamicResource StateSuccess}" FontSize="15" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                
+                <Button Content="Tuyệt vời! 📖" Click="Close_Click" Width="140" Height="36" Background="{DynamicResource StateSuccess}" Foreground="White" FontWeight="Bold" Cursor="Hand" BorderThickness="0">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

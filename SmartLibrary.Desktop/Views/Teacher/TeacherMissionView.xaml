@@ -1,0 +1,245 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Teacher.TeacherMissionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             
+             KeyDown="UserControl_KeyDown" Focusable="True">
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="📋 Giao nhiệm vụ và theo dõi học tập" ActionButtonText=""/>
+
+        <TabControl Grid.Row="1" Margin="24" Background="Transparent" BorderThickness="0">
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="HeaderTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <ContentPresenter Content="{TemplateBinding Content}"/>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="Padding" Value="16,8"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border x:Name="Border" BorderThickness="0,0,0,2" BorderBrush="Transparent" SnapsToDevicePixels="True">
+                                    <ContentPresenter x:Name="ContentSite"
+                                                      ContentSource="Header"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.Resources>
+
+            <!-- TAB 1: Giao nhiệm vụ mới -->
+            <TabItem Header="➕ Giao nhiệm vụ đọc sách">
+                <Grid Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="24" Background="{DynamicResource CardBrush}">
+                        <StackPanel>
+                            <TextBlock Text="Thông tin nhiệm vụ học tập" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Lớp học giao bài" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                                    <ComboBox ItemsSource="{Binding AvailableClasses}" SelectedItem="{Binding SelectedClass}" Style="{StaticResource ModernComboBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Chọn sách đọc chỉ định" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                                    <ComboBox ItemsSource="{Binding Books}" SelectedItem="{Binding SelectedBook}" DisplayMemberPath="DisplayText" Style="{StaticResource ModernComboBox}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Tiêu đề nhiệm vụ" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding MissionTitle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="Hướng dẫn chi tiết cho học sinh" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding Instructions}" Style="{StaticResource ModernInputStyle}" Height="120" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="Hạn nộp/Hạn làm Quiz đọc hiểu" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                            <DatePicker SelectedDate="{Binding Deadline}" Margin="0,0,0,24" Height="36">
+                                <DatePicker.Resources>
+                                    <Style TargetType="DatePickerTextBox">
+                                        <Setter Property="Background" Value="{DynamicResource CardBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                    </Style>
+                                </DatePicker.Resources>
+                            </DatePicker>
+
+                             <Button Content="Gửi Nhiệm Vụ Cho Cả Lớp" Command="{Binding AssignMissionCommand}" Style="{StaticResource SuccessButton}" Height="40" Cursor="Hand"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Cột gợi ý -->
+                    <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="20" Background="{DynamicResource CardBrush}">
+                        <StackPanel>
+                             <TextBlock Text="💡 Hướng dẫn phương pháp" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource SuccessTextBrush}" Margin="0,0,0,12"/>
+                            <TextBlock Text="Nhiệm vụ tự học đọc sách liên thông sẽ giao đến tài khoản học tập cá nhân của tất cả học sinh thuộc lớp được chọn." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            <TextBlock Text="Hệ thống tự động liên kết với bộ Quiz trắc nghiệm đọc hiểu của cuốn sách đã chọn. Học sinh hoàn thành Quiz đạt điểm đỗ sẽ tự động được đánh dấu là hoàn thành nhiệm vụ." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            <TextBlock Text="Giáo viên có thể theo dõi tỷ lệ làm bài, điểm thi thử của học sinh để ghi nhận điểm tự học vào sổ điểm lớp học." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 2: Tiến trình lớp học -->
+            <TabItem Header="📈 Báo cáo tiến trình làm bài">
+                <Grid Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Danh sách nhiệm vụ đã giao -->
+                    <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="16" Background="{DynamicResource CardBrush}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Text="Mục nhiệm vụ đã giao" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                            
+                            <ListBox Grid.Row="1" ItemsSource="{Binding AssignedMissions}" SelectedItem="{Binding SelectedMission}" Background="Transparent" BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,10">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" FontWeight="Bold"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                     <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="3" Padding="4,1">
+                                                         <TextBlock Text="{Binding ClassId}" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                                     </Border>
+                                                     <TextBlock Text="Sách: " Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="8,0,0,0"/>
+                                                     <TextBlock Text="{Binding BookTitle}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" FontWeight="SemiBold"/>
+                                                 </StackPanel>
+                                                 <TextBlock Text="{Binding FormattedDeadline, StringFormat='{}Hạn: {0}'}" Foreground="{DynamicResource DangerTextBrush}" FontSize="10" Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </Border>
+
+                    <!-- Chi tiết tiến độ của lớp học -->
+                    <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="16" Background="{DynamicResource CardBrush}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                                <TextBlock Text="Bảng theo dõi tiến độ của lớp" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="Xem chi tiết điểm Quiz đọc hiểu và ngày hoàn thành của từng học sinh" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <!-- Lọc học sinh giao nhiệm vụ -->
+                            <Grid Grid.Row="1" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="🔍 Tìm học sinh:" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"/>
+                                <TextBox x:Name="TxtStudentSearch" Grid.Column="1" Text="{Binding StudentSearchKeyword, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Height="30" FontSize="12" VerticalContentAlignment="Center" ToolTip="Nhấn Ctrl+F để tìm kiếm nhanh"/>
+                            </Grid>
+
+                            <DataGrid Grid.Row="2" Style="{StaticResource ModernDataGrid}" ItemsSource="{Binding StudentProgresses}" AutoGenerateColumns="False" IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã SSO" Binding="{Binding StudentSsoId}" Width="80">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Header="Học sinh" Binding="{Binding StudentName}" Width="1.5*"/>
+                                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding StatusText}" Width="1.2*">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsCompleted}" Value="False">
+                                                        <Setter Property="Foreground" Value="{DynamicResource DangerTextBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Header="Điểm trắc nghiệm" Binding="{Binding QuizScoreText}" Width="110">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsQuizPassed}" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsQuizPassed}" Value="False">
+                                                        <Setter Property="Foreground" Value="{DynamicResource DangerTextBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Header="Ngày hoàn thành" Binding="{Binding FormattedCompletedAt}" Width="130">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

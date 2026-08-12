@@ -1,0 +1,353 @@
+<Page x:Class="QASmartClass.Classroom.Views.TimerPage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Đồng hồ" Background="#FAFAFA">
+
+    <Grid Margin="24,16">
+
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="⏱️ Đồng hồ &amp; Bấm giờ" FontSize="18" FontWeight="Bold" Foreground="#212121" Margin="0,0,0,20"/>
+
+        <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0" Margin="0,10,0,0">
+
+            <TabControl.Resources>
+
+                <Style TargetType="TabItem">
+
+                    <Setter Property="Template">
+
+                        <Setter.Value>
+
+                            <ControlTemplate TargetType="TabItem">
+
+                                <Border x:Name="Border" Padding="20,12" Margin="0,0,8,0" CornerRadius="8,8,0,0" Background="#E0E0E0" Cursor="Hand">
+
+                                    <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsSelected" Value="True">
+
+                                        <Setter TargetName="Border" Property="Background" Value="White"/>
+
+                                        <Setter Property="Foreground" Value="#1565C0"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Setter.Value>
+
+                    </Setter>
+
+                    <Setter Property="FontSize" Value="14"/>
+
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+
+                    <Setter Property="Foreground" Value="#757575"/>
+
+                </Style>
+
+            </TabControl.Resources>
+
+
+
+            <TabItem Header="⏳ Đếm ngược">
+
+                <!-- ═══ COUNTDOWN TIMER ═══ -->
+
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E0E0E0" BorderThickness="1" Padding="40,30">
+
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                        <!-- Circle display -->
+
+                        <Border Width="240" Height="240" CornerRadius="120" HorizontalAlignment="Center" Margin="0,0,0,24">
+
+                            <Border.Background>
+
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+
+                                    <GradientStop Color="#1976D2" Offset="0"/>
+
+                                    <GradientStop Color="#0D47A1" Offset="1"/>
+
+                                </LinearGradientBrush>
+
+                            </Border.Background>
+
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                                <TextBlock x:Name="txtCountdown" Text="{Binding CountdownDisplay}" FontSize="56" FontWeight="Bold" HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontFamily" Value="Consolas"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsTimeUp}" Value="True">
+                                                    <Setter Property="Foreground" Value="#EF5350"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <TextBlock Text="phút : giây" FontSize="14" Foreground="#90CAF9" HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <!-- Preset buttons -->
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,24">
+
+                            <Border Background="#E3F2FD" CornerRadius="6" Padding="16,8" Margin="0,0,8,0" Cursor="Hand" Tag="60">
+
+                                <Border.InputBindings><MouseBinding Gesture="LeftClick" Command="{Binding SetTimerCommand}" CommandParameter="60"/></Border.InputBindings>
+
+                                <TextBlock Text="1p" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0"/>
+
+                            </Border>
+
+                            <Border Background="#E3F2FD" CornerRadius="6" Padding="16,8" Margin="0,0,8,0" Cursor="Hand" Tag="300">
+
+                                <Border.InputBindings><MouseBinding Gesture="LeftClick" Command="{Binding SetTimerCommand}" CommandParameter="300"/></Border.InputBindings>
+
+                                <TextBlock Text="5p" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0"/>
+
+                            </Border>
+
+                            <Border Background="#E3F2FD" CornerRadius="6" Padding="16,8" Margin="0,0,8,0" Cursor="Hand" Tag="600">
+
+                                <Border.InputBindings><MouseBinding Gesture="LeftClick" Command="{Binding SetTimerCommand}" CommandParameter="600"/></Border.InputBindings>
+
+                                <TextBlock Text="10p" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0"/>
+
+                            </Border>
+
+                            <Border Background="#E3F2FD" CornerRadius="6" Padding="16,8" Margin="0,0,8,0" Cursor="Hand" Tag="900">
+
+                                <Border.InputBindings><MouseBinding Gesture="LeftClick" Command="{Binding SetTimerCommand}" CommandParameter="900"/></Border.InputBindings>
+
+                                <TextBlock Text="15p" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0"/>
+
+                            </Border>
+
+                            <Border Background="#E3F2FD" CornerRadius="6" Padding="16,8" Cursor="Hand" Tag="1800">
+
+                                <Border.InputBindings><MouseBinding Gesture="LeftClick" Command="{Binding SetTimerCommand}" CommandParameter="1800"/></Border.InputBindings>
+
+                                <TextBlock Text="30p" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0"/>
+
+                            </Border>
+
+                        </StackPanel>
+
+                        <!-- Control buttons -->
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                            <Button x:Name="btnStartTimer" Content="{Binding StartTimerButtonText}" Command="{Binding StartTimerCommand}" Padding="20,12" FontSize="14" FontWeight="SemiBold" Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="0,0,12,0">
+
+                                <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#388E3C"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                            </Button>
+
+                            <Button Content="⏹️ Đặt lại" Command="{Binding ResetTimerCommand}" Padding="16,12" FontSize="14" Background="#FFEBEE" Foreground="#C62828" BorderThickness="0" Cursor="Hand">
+
+                                <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFCDD2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                            </Button>
+
+                        </StackPanel>
+
+                        <Border CornerRadius="8" Padding="12,8" Margin="0,20,0,0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#E0E0E0"/>
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsSessionActive}" Value="True"/>
+                                                <Condition Binding="{Binding IsTimeUp}" Value="False"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background" Value="#FFF3E0"/>
+                                        </MultiDataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsSessionActive}" Value="True"/>
+                                                <Condition Binding="{Binding IsTimeUp}" Value="True"/>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background" Value="#FFEBEE"/>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock FontSize="12" HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="⚠️ Chế độ ngoại tuyến - Chỉ hiển thị trên máy giáo viên/máy chiếu"/>
+                                        <Setter Property="Foreground" Value="#616161"/>
+                                        <Setter Property="FontWeight" Value="Normal"/>
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsSessionActive}" Value="True"/>
+                                                    <Condition Binding="{Binding IsTimeUp}" Value="False"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Text" Value="📺 Đang hiển thị trên màn hình HS"/>
+                                                <Setter Property="Foreground" Value="#E65100"/>
+                                                <Setter Property="FontWeight" Value="Normal"/>
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsSessionActive}" Value="True"/>
+                                                    <Condition Binding="{Binding IsTimeUp}" Value="True"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Text" Value="🚨 HẾT GIỜ! Học sinh dừng bút làm bài"/>
+                                                <Setter Property="Foreground" Value="#C62828"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+
+                    </StackPanel>
+
+                </Border>
+
+            </TabItem>
+
+
+
+            <TabItem Header="⏱️ Bấm giờ">
+
+                <!-- ═══ STOPWATCH ═══ -->
+
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E0E0E0" BorderThickness="1" Padding="40,30">
+
+                    <Grid>
+
+                        <Grid.RowDefinitions>
+
+                            <RowDefinition Height="Auto"/>
+
+                            <RowDefinition Height="*"/>
+
+                        </Grid.RowDefinitions>
+
+
+
+                        <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0">
+
+                            <!-- Circle display -->
+
+                            <Border Width="240" Height="240" CornerRadius="120" HorizontalAlignment="Center" Margin="0,0,0,24">
+
+                                <Border.Background>
+
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+
+                                        <GradientStop Color="#FF9800" Offset="0"/>
+
+                                        <GradientStop Color="#E65100" Offset="1"/>
+
+                                    </LinearGradientBrush>
+
+                                </Border.Background>
+
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                                    <TextBlock x:Name="txtStopwatch" Text="{Binding StopwatchDisplay}" FontSize="48" FontWeight="Bold" FontFamily="Consolas" Foreground="White" HorizontalAlignment="Center"/>
+
+                                    <TextBlock Text="phút : giây . ms" FontSize="14" Foreground="#FFCC80" HorizontalAlignment="Center"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+                            <!-- Control buttons -->
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,24">
+
+                                <Button x:Name="btnStartStopwatch" Content="{Binding StartStopwatchButtonText}" Command="{Binding StartStopwatchCommand}" Padding="20,12" FontSize="14" FontWeight="SemiBold" Background="#FF9800" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="0,0,12,0">
+
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#E65100"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                                </Button>
+
+                                <Button Content="🏁 Ghi" Command="{Binding LapStopwatchCommand}" Padding="16,12" FontSize="14" Background="#FFF3E0" Foreground="#E65100" BorderThickness="0" Cursor="Hand" Margin="0,0,12,0">
+
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFE0B2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                                </Button>
+
+                                <Button Content="⏹️ Đặt lại" Command="{Binding StopStopwatchCommand}" Padding="16,12" FontSize="14" Background="#FFEBEE" Foreground="#C62828" BorderThickness="0" Cursor="Hand">
+
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFCDD2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </StackPanel>
+
+                        </StackPanel>
+
+
+
+                        <!-- Lap history -->
+
+                        <Border Grid.Row="1" Background="#FAFAFA" CornerRadius="8" Padding="16" Margin="0,16,0,0" MinHeight="150" BorderThickness="1" BorderBrush="#EEEEEE">
+
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                                <ItemsControl ItemsSource="{Binding Laps}">
+
+                                    <ItemsControl.ItemTemplate>
+
+                                        <DataTemplate>
+
+                                            <TextBlock Text="{Binding}" FontSize="12" Foreground="#212121" Margin="0,2,0,0"/>
+
+                                        </DataTemplate>
+
+                                    </ItemsControl.ItemTemplate>
+
+                                </ItemsControl>
+
+                            </ScrollViewer>
+
+                        </Border>
+
+                    </Grid>
+
+                </Border>
+
+            </TabItem>
+
+            <TabItem Header="🎲 Chọn ngẫu nhiên">
+
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                    <Frame Source="RandomPickerPage.xaml" NavigationUIVisibility="Hidden"/>
+
+                </Border>
+
+            </TabItem>
+
+        </TabControl>
+
+    </Grid>
+
+</Page>
+

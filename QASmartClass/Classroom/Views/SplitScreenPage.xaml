@@ -1,0 +1,238 @@
+﻿<Page x:Class="QASmartClass.Classroom.Views.SplitScreenPage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Chia màn hình" Background="#FAFAFA">
+
+    <Grid x:Name="rootGrid" Margin="20,14">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <DockPanel x:Name="headerRow" Grid.Row="0" Margin="0,0,0,12">
+
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+
+                <Button x:Name="btnFullscreen" Content="🖥️ Toàn màn hình" Padding="12,7" FontSize="12" Background="#2E7D32" Foreground="White"
+
+                        BorderThickness="0" Cursor="Hand" Click="Fullscreen_Click" ToolTip="Mở chia màn hình toàn màn hình để trình chiếu" Margin="0,0,8,0">
+
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#1B5E20"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                </Button>
+
+                <Button x:Name="btnApply" Content="✅ Áp dụng bố cục" Padding="12,7" FontSize="12" Background="#1976D2" Foreground="White"
+
+                        BorderThickness="0" Cursor="Hand" Click="ApplyToScreen_Click" ToolTip="Áp dụng bố cục chia màn hình ra màn hình thật">
+
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                </Button>
+
+            </StackPanel>
+
+            <StackPanel>
+
+                <TextBlock Text="🔲 Chia màn hình" FontSize="18" FontWeight="Bold" Foreground="#212121"/>
+
+                <TextBlock Text="Phân chia không gian làm việc theo bố cục phù hợp — gán nội dung cho từng vùng" FontSize="12" Foreground="#757575" Margin="0,2,0,0"/>
+
+            </StackPanel>
+
+        </DockPanel>
+
+
+
+        <!-- Layout Presets -->
+
+        <StackPanel x:Name="layoutRow" Grid.Row="1" Margin="0,0,0,8">
+
+            <TextBlock Text="📐 Chọn bố cục" FontSize="13" FontWeight="SemiBold" Foreground="#424242" Margin="0,0,0,8"/>
+
+            <StackPanel Orientation="Horizontal">
+
+                <Border x:Name="b1" Width="80" Height="56" CornerRadius="8" BorderBrush="#1976D2" BorderThickness="2"
+
+                        Margin="0,0,10,0" Cursor="Hand" MouseLeftButtonDown="Layout_Click" Tag="1">
+
+                    <Border.Background><SolidColorBrush Color="#E3F2FD"/></Border.Background>
+
+                    <Grid Margin="6">
+
+                        <Rectangle Fill="#1976D2" RadiusX="3" RadiusY="3" Opacity="0.4"/>
+
+                        <TextBlock Text="1" FontSize="18" FontWeight="Bold" Foreground="#1976D2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    </Grid>
+
+                </Border>
+
+                <Border x:Name="b2" Width="80" Height="56" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1"
+
+                        Margin="0,0,10,0" Cursor="Hand" MouseLeftButtonDown="Layout_Click" Tag="2">
+
+                    <Grid Margin="6" Background="White">
+
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+
+                        <Rectangle Grid.Column="0" Fill="#1976D2" Margin="0,0,1,0" RadiusX="2" RadiusY="2" Opacity="0.4"/>
+
+                        <Rectangle Grid.Column="1" Fill="#1976D2" Margin="1,0,0,0" RadiusX="2" RadiusY="2" Opacity="0.4"/>
+
+                    </Grid>
+
+                </Border>
+
+                <Border x:Name="b3" Width="80" Height="56" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1"
+
+                        Margin="0,0,10,0" Cursor="Hand" MouseLeftButtonDown="Layout_Click" Tag="3">
+
+                    <Grid Margin="6" Background="White">
+
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+
+                        <Rectangle Grid.Column="0" Fill="#1976D2" Margin="0,0,1,0" RadiusX="2" RadiusY="2" Opacity="0.4"/>
+
+                        <Grid Grid.Column="1" Margin="1,0,0,0">
+
+                            <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+
+                            <Rectangle Grid.Row="0" Fill="#1976D2" Margin="0,0,0,1" RadiusX="2" RadiusY="2" Opacity="0.4"/>
+
+                            <Rectangle Grid.Row="1" Fill="#1976D2" Margin="0,1,0,0" RadiusX="2" RadiusY="2" Opacity="0.4"/>
+
+                        </Grid>
+
+                    </Grid>
+
+                </Border>
+
+                <Border x:Name="b4" Width="80" Height="56" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1"
+
+                        Margin="0,0,10,0" Cursor="Hand" MouseLeftButtonDown="Layout_Click" Tag="4">
+
+                    <Grid Margin="6" Background="White">
+
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+
+                        <Rectangle Grid.Column="0" Grid.Row="0" Fill="#1976D2" Margin="0,0,1,1" RadiusX="2" RadiusY="2" Opacity="0.4"/>
+
+                        <Rectangle Grid.Column="1" Grid.Row="0" Fill="#1976D2" Margin="1,0,0,1" RadiusX="2" RadiusY="2" Opacity="0.4"/>
+
+                        <Rectangle Grid.Column="0" Grid.Row="1" Fill="#1976D2" Margin="0,1,1,0" RadiusX="2" RadiusY="2" Opacity="0.4"/>
+
+                        <Rectangle Grid.Column="1" Grid.Row="1" Fill="#1976D2" Margin="1,1,0,0" RadiusX="2" RadiusY="2" Opacity="0.4"/>
+
+                    </Grid>
+
+                </Border>
+
+                <Border x:Name="bPip" Width="80" Height="56" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1"
+
+                        Cursor="Hand" MouseLeftButtonDown="Layout_Click" Tag="pip">
+
+                    <Grid Margin="6" Background="White">
+
+                        <Rectangle Fill="#1976D2" RadiusX="2" RadiusY="2" Opacity="0.3"/>
+
+                        <Border Width="28" Height="18" CornerRadius="3" Background="#1976D2"
+
+                                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,2,2" Opacity="0.9"/>
+
+                    </Grid>
+
+                </Border>
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+
+                <TextBlock Text="1 màn hình" FontSize="10" Foreground="#9E9E9E" Width="90" TextAlignment="Center"/>
+
+                <TextBlock Text="Đôi (1:1)" FontSize="10" Foreground="#9E9E9E" Width="90" TextAlignment="Center"/>
+
+                <TextBlock Text="1 + 2 phụ" FontSize="10" Foreground="#9E9E9E" Width="90" TextAlignment="Center"/>
+
+                <TextBlock Text="Bộ tư (2×2)" FontSize="10" Foreground="#9E9E9E" Width="90" TextAlignment="Center"/>
+
+                <TextBlock Text="Hình trong hình" FontSize="10" Foreground="#9E9E9E" Width="90" TextAlignment="Center"/>
+
+            </StackPanel>
+
+        </StackPanel>
+
+
+
+        <!-- Suggestion bar -->
+
+        <Border x:Name="suggestionRow" Grid.Row="2" Background="#E8F5E9" CornerRadius="8" Padding="12,8" Margin="0,0,0,8" BorderBrush="#A5D6A7" BorderThickness="1">
+
+            <DockPanel>
+
+                <TextBlock DockPanel.Dock="Left" Text="💡" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                <TextBlock x:Name="txtSuggestion" FontSize="11" Foreground="#2E7D32" TextWrapping="Wrap" VerticalAlignment="Center"
+
+                           Text="Click vào từng vùng bên dưới để gán nội dung (Bảng vẽ, Thư viện, Camera, Quiz, Web...). Giáo viên có thể chia đôi màn hình để vừa trình chiếu bài giảng vừa điểm danh hoặc quiz."/>
+
+            </DockPanel>
+
+        </Border>
+
+
+
+        <!-- Preview -->
+
+        <Border x:Name="previewBorder" Grid.Row="3" Background="#0D1B2A" CornerRadius="12">
+
+            <Grid x:Name="previewArea" Margin="16">
+
+                <!-- Filled dynamically from code-behind -->
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- Bottom info -->
+
+        <Border x:Name="bottomRow" Grid.Row="4" Margin="0,8,0,0" Background="#F5F5F5" CornerRadius="8" Padding="12,6">
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                <TextBlock Text="🖱️ Click vùng = Gán nội dung" FontSize="10" Foreground="#757575" Margin="0,0,20,0"/>
+
+                <TextBlock Text="↔️ Kéo vạch = Thay đổi kích thước" FontSize="10" Foreground="#757575" Margin="0,0,20,0"/>
+
+                <TextBlock Text="📐 Chọn bố cục = Thay đổi layout" FontSize="10" Foreground="#757575" Margin="0,0,20,0"/>
+
+                <TextBlock Text="🖥️ Toàn MH = Trình chiếu" FontSize="10" Foreground="#757575"/>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</Page>
+

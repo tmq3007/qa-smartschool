@@ -1,0 +1,383 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Thinking.CaroTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="{DynamicResource Gray100}">
+
+    <!-- QC_4.2_LAYOUT_GRID Constraint: Root grid MUST stretch horizontally without MaxWidth -->
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch" TextElement.FontFamily="Segoe UI, Arial Unicode MS, sans-serif">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER BANNER (Dark Theme Banner) -->
+        <Border Grid.Row="0" CornerRadius="0" Padding="16,12" BorderBrush="#1E293B" BorderThickness="0,0,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#0F172A" Offset="0"/>
+                    <GradientStop Color="#1E293B" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#10B981" CornerRadius="6" Padding="14,8" Margin="0,0,8,0" Cursor="Hand"
+                            MouseLeftButtonDown="NewGame_Click" ToolTip="Bắt đầu ván mới (New Game)">
+                        <TextBlock Text="➕ Ván mới" FontSize="14" Foreground="White" FontWeight="Bold"/>
+                    </Border>
+                    <Border Background="#3B82F6" CornerRadius="6" Padding="14,8" Margin="0,0,8,0" Cursor="Hand"
+                            MouseLeftButtonDown="Hint_Click" ToolTip="Gợi ý nước đi (Hint)">
+                        <TextBlock Text="💡 Gợi ý" FontSize="14" Foreground="White" FontWeight="Bold"/>
+                    </Border>
+                    <Border Background="#FF9800" CornerRadius="6" Padding="14,8" Margin="0,0,8,0" Cursor="Hand"
+                            MouseLeftButtonDown="CreateTournament_Click" ToolTip="Tạo Giải đấu Lớp/Trường">
+                        <TextBlock Text="🏆 Tạo Giải đấu" FontSize="14" Foreground="White" FontWeight="Bold"/>
+                    </Border>
+                    <Border x:Name="btnHeaderUndo" Background="#334155" CornerRadius="6" Padding="14,8" Margin="0,0,8,0" Cursor="Hand"
+                            MouseLeftButtonDown="Undo_Click" ToolTip="Hoàn tác (Undo)">
+                        <TextBlock Text="↩️ Hoàn tác" FontSize="14" Foreground="#94A3B8" FontWeight="Bold"/>
+                    </Border>
+                    <Border x:Name="btnHeaderResign" Background="#EF4444" CornerRadius="6" Padding="14,8" Cursor="Hand"
+                            MouseLeftButtonDown="Resign_Click" ToolTip="Đầu hàng (Resign)">
+                        <TextBlock Text="🏳️ Đầu hàng" FontSize="14" Foreground="White" FontWeight="Bold"/>
+                    </Border>
+                </StackPanel>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⚪⚫ Cờ Caro &amp; Gomoku Chiến Thuật Học Đường" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                        <Border Background="#10B981" CornerRadius="4" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="CARO ENGINE v4.2" FontSize="10" Foreground="White" FontWeight="Bold"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="Tự động tính 5 nước đi trước, Luật Caro Việt Nam &amp; Gomoku Quốc tế, Đấu AI Minimax Alpha-Beta, Giải đấu Trường học" FontSize="13" Foreground="#94A3B8" Margin="0,3,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- MAIN MASTER-DETAIL CONTENT -->
+        <Grid Grid.Row="1" Background="#0F172A">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU (5 TABS) -->
+            <Grid Grid.Column="0" Background="#1E293B">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#334155"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#10B981"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{DynamicResource SidebarListBoxItemStyle}">
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Luật chơi" FontSize="14" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚪" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPlay" Text="Bàn Cờ Caro Pro" FontSize="14" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⭐" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextAnalysis" Text="Phân Tích &amp; AI Evaluator" FontSize="14" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🏆" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextTournament" Text="Giải Đấu Trường Học" FontSize="14" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#334155"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+
+                <!-- VIEW 1: HƯỚNG DẪN & LUẬT CHƠI (MaxWidth="1400") -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="#1E293B" Margin="12" MaxWidth="1400">
+                        <Border Background="#0F172A" CornerRadius="12" Padding="24,20" Margin="0,0,0,16" BorderBrush="#334155" BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <Border Background="#10B981" CornerRadius="6" Padding="8,4" Margin="0,0,8,0">
+                                            <TextBlock Text="👨‍🏫 DÀNH CHO GIÁO VIÊN" Foreground="White" FontSize="12" FontWeight="Bold"/>
+                                        </Border>
+                                        <TextBlock Text="Phương pháp Giảng dạy Cờ Caro" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="• Mục tiêu Sư phạm:" FontWeight="Bold" Foreground="#10B981" Margin="0,4,0,2"/>
+                                    <TextBlock Text="Phát triển khả năng nhận diện mẫu hình, tính toán chiến thuật tấn công - phòng ngự liên hoàn và rèn luyện phản xạ tư duy nhanh." TextWrapping="Wrap" Foreground="#94A3B8" Margin="0,0,0,8"/>
+
+                                    <TextBlock Text="• Quy trình 3 bước hướng dẫn cờ Caro:" FontWeight="Bold" Foreground="#10B981" Margin="0,4,0,2"/>
+                                    <TextBlock Text="1. Giới thiệu khái niệm 5 quân cờ liên tiếp theo hàng ngang, hàng dọc và đường chéo." TextWrapping="Wrap" Foreground="#94A3B8"/>
+                                    <TextBlock Text="2. Phân biệt Luật Caro Việt Nam (Chặn 2 đầu không tính thắng) và Luật Gomoku Quốc tế." TextWrapping="Wrap" Foreground="#94A3B8"/>
+                                    <TextBlock Text="3. Hướng dẫn chiến thuật 'Tạo thế 3-4 mở' (Open 3 &amp; Four-in-a-Row attack)." TextWrapping="Wrap" Foreground="#94A3B8"/>
+                                </StackPanel>
+
+                                <Rectangle Grid.Column="1" Width="1" Fill="#334155" Margin="12,0"/>
+
+                                <!-- Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <Border Background="#3B82F6" CornerRadius="6" Padding="8,4" Margin="0,0,8,0">
+                                            <TextBlock Text="🎓 DÀNH CHO HỌC SINH" Foreground="White" FontSize="12" FontWeight="Bold"/>
+                                        </Border>
+                                        <TextBlock Text="Mẹo &amp; Chiến Thuật Thắng Cờ Caro" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <UniformGrid Columns="2" Margin="0,4,0,8">
+                                        <Border Background="#334155" CornerRadius="8" Padding="10" Margin="4">
+                                            <StackPanel>
+                                                <TextBlock Text="🎯 Nước cờ 3 mở (Open 3)" FontWeight="Bold" Foreground="#10B981"/>
+                                                <TextBlock Text="Tạo chuỗi 3 quân không bị chặn đầu nào buộc đối thủ phải chặn ngay lập tức. (Áp dụng cho ❌⭕)" FontSize="11" TextWrapping="Wrap" Foreground="#94A3B8"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Background="#334155" CornerRadius="8" Padding="10" Margin="4">
+                                            <StackPanel>
+                                                <TextBlock Text="⭕ Nước cờ 4 mở (Four in a row)" FontWeight="Bold" Foreground="#10B981"/>
+                                                <TextBlock Text="Chuỗi 4 quân cờ chỉ còn 1 ô để về đích 5 quân thắng cuộc!" FontSize="11" TextWrapping="Wrap" Foreground="#94A3B8"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Background="#334155" CornerRadius="8" Padding="10" Margin="4">
+                                            <StackPanel>
+                                                <TextBlock Text="⚡ Thế cờ Chiếu đôi (Double Fork)" FontWeight="Bold" Foreground="#10B981"/>
+                                                <TextBlock Text="Đồng thời tạo 2 đường 3 mở hoặc 4 mở khiến đối thủ không thể cản phá cả 2!" FontSize="11" TextWrapping="Wrap" Foreground="#94A3B8"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Background="#334155" CornerRadius="8" Padding="10" Margin="4">
+                                            <StackPanel>
+                                                <TextBlock Text="🛡️ Chặn chủ động (Proactive Defense)" FontWeight="Bold" Foreground="#10B981"/>
+                                                <TextBlock Text="Chặn ngay khi đối thủ tạo thành chuỗi 2-3 quân cờ liên tiếp." FontSize="11" TextWrapping="Wrap" Foreground="#94A3B8"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 2: BÀN CỜ CARO PRO 15x15 (CHÍNH) -->
+                <Grid x:Name="viewPlay" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- BÀN CỜ CARO 15x15 BÊN TRÁI -->
+                    <Border Grid.Column="0" Background="#1E293B" CornerRadius="12" Padding="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.4" Color="Black"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <!-- THÔNG TIN NGƯỜI CHƠI TOP & BOTTOM -->
+                            <Border x:Name="borderPlayerO" Background="#0F172A" CornerRadius="8" Padding="10,8" Margin="0,0,0,10" BorderBrush="#334155" BorderThickness="1">
+                                <DockPanel>
+                                    <Border DockPanel.Dock="Right" Background="#334155" CornerRadius="6" Padding="10,4" VerticalAlignment="Center">
+                                        <TextBlock x:Name="txtTimerO" Text="05:00" FontSize="18" FontWeight="Bold" Foreground="White" FontFamily="Consolas"/>
+                                    </Border>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Background="#EF4444" CornerRadius="18" Width="36" Height="36" Margin="0,0,10,0">
+                                            <TextBlock Text="⭕" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+                                        </Border>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock x:Name="txtPlayerOName" Text="Người chơi O (Đỏ)" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock x:Name="txtPlayerORating" Text="Chờ..." FontSize="12" Foreground="#94A3B8"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+
+                            <!-- BÀN CỜ 15x15 GRID CHUẨN -->
+                            <Border BorderBrush="#334155" BorderThickness="2" CornerRadius="6" Background="#E2E8F0">
+                                <Grid x:Name="gridCaroBoard" Width="510" Height="510">
+                                    <!-- Generated dynamically in C# -->
+                                </Grid>
+                            </Border>
+
+                            <Border x:Name="borderPlayerX" Background="#0F172A" CornerRadius="8" Padding="10,8" Margin="0,10,0,0" BorderBrush="#10B981" BorderThickness="2">
+                                <DockPanel>
+                                    <Border DockPanel.Dock="Right" Background="#334155" CornerRadius="6" Padding="10,4" VerticalAlignment="Center">
+                                        <TextBlock x:Name="txtTimerX" Text="05:00" FontSize="18" FontWeight="Bold" Foreground="White" FontFamily="Consolas"/>
+                                    </Border>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Background="#2563EB" CornerRadius="18" Width="36" Height="36" Margin="0,0,10,0">
+                                            <TextBlock Text="❌" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+                                        </Border>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock x:Name="txtPlayerXName" Text="Người chơi X (Xanh)" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock x:Name="txtPlayerXRating" Text="▶️ Lượt đi" FontSize="12" Foreground="#10B981" FontWeight="Bold"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- CỘT ĐIỀU KHIỂN & LỊCH SỬ NƯỚC ĐI BÊN PHẢI -->
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- CARD 1: CẤU HÌNH & CHẾ ĐỘ -->
+                        <Border Grid.Row="0" Background="#1E293B" CornerRadius="12" Padding="16" Margin="0,0,0,12" BorderBrush="#334155" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🎮 Chế Độ Chơi &amp; Luật Cờ Caro" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+                                
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Chế độ:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#94A3B8" Margin="0,0,10,0"/>
+                                    <ComboBox x:Name="cboGameMode" Grid.Column="1" SelectionChanged="CboGameMode_SelectionChanged" Padding="8,4">
+                                        <ComboBoxItem Content="🧑‍🤝‍🧑 2 Người chơi (Pass &amp; Play)" IsSelected="True"/>
+                                        <ComboBoxItem Content="🤖 Đấu với Máy AI Bot (Minimax)"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Luật cờ:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#94A3B8" Margin="0,0,10,0"/>
+                                    <ComboBox x:Name="cboCaroRule" Grid.Column="1" SelectionChanged="CboCaroRule_SelectionChanged" Padding="8,4">
+                                        <ComboBoxItem Content="🇻🇳 Luật Việt Nam (Chặn 2 đầu không thắng)" IsSelected="True"/>
+                                        <ComboBoxItem Content="🌍 Luật Gomoku Quốc Tế (5 quân liên tiếp)"/>
+                                    </ComboBox>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- CARD 2: TRẠNG THÁI TRẬN ĐẤU -->
+                        <Border Grid.Row="1" Background="#1E293B" CornerRadius="12" Padding="16" Margin="0,0,0,12" BorderBrush="#334155" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock x:Name="txtTurnIndicator" Text="Lượt đi: X (Quân Xanh đi trước)" FontSize="15" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock x:Name="txtStatusMessage" Text="Bắt đầu trận đấu. Chọn ô cờ để đi!" FontSize="12" Foreground="#94A3B8" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- CARD 3: MOVES HISTORY LOG -->
+                        <Border Grid.Row="2" Background="#1E293B" CornerRadius="12" Padding="16" BorderBrush="#334155" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                                    <TextBlock Text="📜 Nhật Ký Nước Đi Caro" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock x:Name="txtMoveCount" Text="0 nước" FontSize="12" Foreground="#10B981" HorizontalAlignment="Right"/>
+                                </DockPanel>
+                                <ListBox x:Name="lstMoveHistory" Grid.Row="1" BorderThickness="1" BorderBrush="#334155" Background="#0F172A" Foreground="White" FontFamily="Consolas" FontSize="13"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- CARD 4: THAO TÁC NHANH -->
+                        <UniformGrid Grid.Row="3" Columns="2" Margin="0,12,0,0">
+                            <Button Content="➕ Ván Mới" Click="NewGame_Click" Padding="10" Margin="0,0,4,0" Background="#10B981" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                            <Button Content="↩️ Hoàn Tác (Undo)" Click="Undo_Click" Padding="10" Margin="4,0,0,0" Background="#334155" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                        </UniformGrid>
+                    </Grid>
+                </Grid>
+
+                <!-- VIEW 3: PHÂN TÍCH & AI EVALUATOR (TAB 3 - MaxWidth="1400") -->
+                <ScrollViewer x:Name="viewAnalysis" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel Background="#1E293B" Margin="12" MaxWidth="1400">
+                        <Border Background="#0F172A" CornerRadius="12" Padding="24,20" Margin="0,0,0,16" BorderBrush="#10B981" BorderThickness="2">
+                            <StackPanel>
+                                <TextBlock Text="⭐ PHÂN TÍCH THẾ CỜ CARO &amp; AI EVALUATOR" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock Text="Tự động tính toán xác suất thắng &amp; phát hiện các nước cờ 3 mở, 4 mở thời gian thực" FontSize="13" Foreground="#94A3B8" Margin="0,4,0,16"/>
+
+                                <Border Background="#1E293B" CornerRadius="8" Padding="16">
+                                    <StackPanel>
+                                        <TextBlock Text="💡 ĐÁNH GIÁ THẾ CỜ TỪ AI ENGINE:" FontWeight="Bold" Foreground="#10B981" Margin="0,0,0,8"/>
+                                        <TextBlock x:Name="txtAnalysisAdvice" Text="• Chưa có dữ liệu nước đi. Hãy di chuyển quân trên bàn cờ để AI phân tích!" TextWrapping="Wrap" Foreground="White"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 4: GIẢI ĐẤU TRƯỜNG HỌC (TAB 4 - MaxWidth="1400") -->
+                <ScrollViewer x:Name="viewTournament" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel Background="#1E293B" Margin="12" MaxWidth="1400">
+                        <Border Background="#0F172A" CornerRadius="12" Padding="24,20" Margin="0,0,0,16" BorderBrush="#10B981" BorderThickness="2">
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="➕ Tạo Giải Đấu Mới" Click="CreateTournament_Click" Padding="14,8" Background="#10B981" Foreground="White" FontWeight="Bold" FontSize="14"/>
+                                <StackPanel>
+                                    <TextBlock Text="🏆 HỆ THỐNG QUẢN LÝ GIẢI ĐẤU CỜ CARO TRƯỜNG HỌC" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock Text="Tổ chức Giải Cờ Caro Lớp học, Giải Vô địch Toàn trường và Giao lưu Thầy &amp; Trò" FontSize="13" Foreground="#94A3B8" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+
+                        <Border Background="#0F172A" CornerRadius="12" Padding="20" BorderBrush="#334155" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="📊 BẢNG XẾP HẠNG GIẢI CỜ CARO HỌC SINH" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                                <ListBox x:Name="lstTournamentRankings" Height="160" Background="#1E293B" Foreground="White" BorderBrush="#334155" FontSize="12"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 5: ỨNG DỤNG THỰC TẾ (TAB 5 - MaxWidth="1400") -->
+                <ScrollViewer x:Name="viewPractical" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel Background="#1E293B" Margin="12" MaxWidth="1400">
+                        <Border Background="#0F172A" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#334155" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🌍 ỨNG DỤNG TƯ DUY CỜ CARO TRONG HỌC TẬP &amp; CUỘC SỐNG" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,16"/>
+
+                                <UniformGrid Columns="2">
+                                    <Border Background="#334155" CornerRadius="10" Padding="16" Margin="6">
+                                        <StackPanel>
+                                            <TextBlock Text="🔍 1. Kỹ Năng Nhận Diện Mẫu Hình (Pattern Recognition)" FontSize="15" FontWeight="Bold" Foreground="#10B981" Margin="0,0,0,6"/>
+                                            <TextBlock Text="Cờ Caro rèn luyện đôi mắt phát hiện nhanh các chuỗi hình học, ứng dụng trực tiếp trong giải toán quy luật và lập trình Tin học." TextWrapping="Wrap" Foreground="#94A3B8"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#334155" CornerRadius="10" Padding="16" Margin="6">
+                                        <StackPanel>
+                                            <TextBlock Text="⚡ 2. Phản Xạ Tư Duy &amp; Phòng Ngự Chủ Động" FontSize="15" FontWeight="Bold" Foreground="#10B981" Margin="0,0,0,6"/>
+                                            <TextBlock Text="Chặn ngay khi đối thủ vừa tạo chuỗi 2-3 quân giúp học sinh hình thành thói quen dự đoán và ngăn ngừa rủi ro từ sớm." TextWrapping="Wrap" Foreground="#94A3B8"/>
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

@@ -1,0 +1,75 @@
+﻿<Page x:Class="QASmartClass.StudentClient.Views.StudentSocialView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800"
+             Title="Student Social Wall"
+             Background="{StaticResource LightBrush}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+            <StackPanel>
+                <TextBlock Text="Cộng đồng Học sinh (Social Wall)" FontSize="22" FontWeight="Bold" Margin="0,0,0,5" Foreground="{StaticResource PrimaryBrush}"/>
+                <TextBlock Text="Chia sẻ học tập, hỏi đáp và kết nối với bạn bè (Có AI kiểm duyệt nội dung)." Foreground="{StaticResource MutedBrush}" Margin="0,0,0,15"/>
+                
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBox x:Name="TxtPostContent" Grid.Column="0" Height="60" TextWrapping="Wrap" AcceptsReturn="True" 
+                             Padding="10" Background="{StaticResource LightBrush}" BorderThickness="0" 
+                             ToolTip="Bạn đang nghĩ gì về bài học hôm nay?"/>
+                             
+                    <Button Grid.Column="1" Content="Đăng bài" Background="{StaticResource PrimaryBrush}" Foreground="White" 
+                            FontWeight="Bold" Padding="15,0" Margin="10,0,0,0" Cursor="Hand" Click="BtnPost_Click"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Feed -->
+        <ListView x:Name="LvFeed" Grid.Row="1" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,10" BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <!-- Author info -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <Border Width="40" Height="40" CornerRadius="20" Background="{StaticResource BorderLightBrush}" Margin="0,0,10,0">
+                                    <TextBlock Text="👤" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding AuthorName}" FontWeight="Bold" FontSize="14"/>
+                                    <TextBlock Text="{Binding CreatedAt, StringFormat='dd/MM/yyyy HH:mm'}" Foreground="{StaticResource MutedBrush}" FontSize="12"/>
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <!-- Content -->
+                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap" Margin="0,0,0,15" FontSize="14"/>
+                            
+                            <!-- Actions -->
+                            <Border BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="0,1,0,0" Padding="0,10,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="{Binding Likes, StringFormat='👍 Thích ({0})'}" 
+                                            Background="Transparent" BorderThickness="0" Foreground="{StaticResource MutedBrush}" Cursor="Hand"
+                                            Tag="{Binding Id}" Click="BtnLike_Click"/>
+                                    
+                                    <Button Content="💬 Bình luận" Margin="15,0,0,0"
+                                            Background="Transparent" BorderThickness="0" Foreground="{StaticResource MutedBrush}" Cursor="Hand"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>

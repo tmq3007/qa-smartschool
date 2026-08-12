@@ -1,0 +1,730 @@
+{
+  "metadata": {
+    "examId": "thpt_mock_01",
+    "title": "Đề Thi Thử THPT Quốc Gia - Môn Toán - Đề 01",
+    "totalQuestions": 50,
+    "timeLimit": 90,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.2,
+    "difficulty": {
+      "easy": 20,
+      "medium": 20,
+      "hard": 10
+    },
+    "topicDistribution": {
+      "dao_ham": 7,
+      "tich_phan": 5,
+      "mu_logarit": 5,
+      "so_phuc": 5,
+      "hinh_hoc_kg": 6,
+      "to_hop_xs": 5,
+      "luong_giac": 4,
+      "ham_so": 5,
+      "day_so": 3,
+      "menh_de_tap_hop": 3,
+      "phuong_trinh": 2
+    }
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "menh_de",
+      "difficulty": "Easy",
+      "question": "Phủ định của mệnh đề 'Mọi số nguyên tố đều là số lẻ' là:",
+      "options": [
+        "A) Mọi số nguyên tố đều là số chẵn",
+        "B) Có ít nhất một số nguyên tố là số chẵn",
+        "C) Không có số nguyên tố nào là số lẻ",
+        "D) Mọi số lẻ đều là số nguyên tố"
+      ],
+      "answer": "B",
+      "solution": "Phủ định ∀ → ∃ không. Đáp án: Tồn tại số nguyên tố là số chẵn (ví dụ: 2)"
+    },
+    {
+      "id": 2,
+      "topic": "tap_hop",
+      "difficulty": "Easy",
+      "question": "Cho A = (-1; 3], B = [0; 5). Tìm A ∩ B.",
+      "options": [
+        "A) [0; 3]",
+        "B) (0; 3)",
+        "C) [0; 3)",
+        "D) (-1; 5)"
+      ],
+      "answer": "A",
+      "solution": "A ∩ B = [max(-1,0); min(3,5)] = [0; 3]"
+    },
+    {
+      "id": 3,
+      "topic": "menh_de",
+      "difficulty": "Easy",
+      "question": "Cho A = {1,2,3,4,5}. Số tập con có 2 phần tử là:",
+      "options": [
+        "A) 5",
+        "B) 10",
+        "C) 20",
+        "D) 25"
+      ],
+      "answer": "B",
+      "solution": "C(5,2) = 10"
+    },
+    {
+      "id": 4,
+      "topic": "ham_so",
+      "difficulty": "Easy",
+      "question": "Hàm số y = x³ - 3x có bao nhiêu cực trị?",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) 2",
+        "D) 3"
+      ],
+      "answer": "C",
+      "solution": "y' = 3x² - 3 = 0 → x = ±1. y' đổi dấu qua cả 2 nghiệm → 2 cực trị"
+    },
+    {
+      "id": 5,
+      "topic": "ham_so",
+      "difficulty": "Easy",
+      "question": "Đồ thị hàm số y = x⁴ - 2x² có bao nhiêu điểm cực tiểu?",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) 2",
+        "D) 3"
+      ],
+      "answer": "C",
+      "solution": "y' = 4x³ - 4x = 4x(x²-1) = 0 → x=0, ±1. BBT → x=±1 cực tiểu"
+    },
+    {
+      "id": 6,
+      "topic": "ham_so",
+      "difficulty": "Medium",
+      "question": "Tìm giá trị lớn nhất của y = x³ - 3x + 2 trên [-2; 2].",
+      "options": [
+        "A) 2",
+        "B) 4",
+        "C) 0",
+        "D) 6"
+      ],
+      "answer": "B",
+      "solution": "y'=3x²-3=0→x=±1. y(-2)=0, y(-1)=4, y(1)=0, y(2)=4. Max=4"
+    },
+    {
+      "id": 7,
+      "topic": "ham_so",
+      "difficulty": "Medium",
+      "question": "Tiếp tuyến của đồ thị y = x² - 4x + 3 tại điểm có hoành độ x=1 là:",
+      "options": [
+        "A) y = -2x+2",
+        "B) y = 2x-2",
+        "C) y = -2x",
+        "D) y = -2x+1"
+      ],
+      "answer": "A",
+      "solution": "y(1)=0, y'=2x-4, y'(1)=-2. TT: y = -2(x-1)+0 = -2x+2"
+    },
+    {
+      "id": 8,
+      "topic": "ham_so",
+      "difficulty": "Hard",
+      "question": "Số đường tiệm cận của đồ thị y = (x²-1)/(x²-4) là:",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 4"
+      ],
+      "answer": "C",
+      "solution": "TCĐ: x=2, x=-2. TCN: y=1. Tổng: 3"
+    },
+    {
+      "id": 9,
+      "topic": "luong_giac",
+      "difficulty": "Easy",
+      "question": "Giá trị của sin(5π/6) bằng:",
+      "options": [
+        "A) 1/2",
+        "B) -1/2",
+        "C) √3/2",
+        "D) -√3/2"
+      ],
+      "answer": "A",
+      "solution": "sin(5π/6) = sin(π - π/6) = sin(π/6) = 1/2"
+    },
+    {
+      "id": 10,
+      "topic": "luong_giac",
+      "difficulty": "Medium",
+      "question": "Phương trình sin2x = 1 có nghiệm tổng quát là:",
+      "options": [
+        "A) x = π/4 + kπ",
+        "B) x = π/2 + k2π",
+        "C) x = π/4 + k2π",
+        "D) x = kπ"
+      ],
+      "answer": "A",
+      "solution": "sin2x=1 → 2x=π/2+k2π → x=π/4+kπ"
+    },
+    {
+      "id": 11,
+      "topic": "luong_giac",
+      "difficulty": "Medium",
+      "question": "Số nghiệm của cos2x = cosx trên [0; 2π) là:",
+      "options": [
+        "A) 2",
+        "B) 3",
+        "C) 4",
+        "D) 5"
+      ],
+      "answer": "B",
+      "solution": "2x = ±x + k2π. TH1: x=k2π → x=0. TH2: 3x=k2π → x=0, 2π/3, 4π/3. Tổng 4 nghiệm: 0, 2π/3, 4π/3 (x=0 trùng). Kiểm tra: cos2x-cosx=0 → 2cos²x-cosx-1=0 → cosx=1 hoặc cosx=-1/2. cosx=1→x=0; cosx=-1/2→x=2π/3,4π/3. Vậy 3... Sửa: đếm kỹ TH2: 3x=k2π → x=2kπ/3 trong [0;2π): x=0,2π/3,4π/3. Cộng TH1: x=0. Tổng: 3 nghiệm phân biệt"
+    },
+    {
+      "id": 12,
+      "topic": "luong_giac",
+      "difficulty": "Hard",
+      "question": "Giá trị lớn nhất của y = 3sinx + 4cosx là:",
+      "options": [
+        "A) 5",
+        "B) 7",
+        "C) √7",
+        "D) 4"
+      ],
+      "answer": "A",
+      "solution": "y_max = √(3²+4²) = √25 = 5"
+    },
+    {
+      "id": 13,
+      "topic": "dao_ham",
+      "difficulty": "Easy",
+      "question": "Đạo hàm của f(x) = x³ - 2x + 1 là:",
+      "options": [
+        "A) 3x² - 2",
+        "B) 3x² + 1",
+        "C) x² - 2",
+        "D) 3x - 2"
+      ],
+      "answer": "A",
+      "solution": "f'(x) = 3x² - 2"
+    },
+    {
+      "id": 14,
+      "topic": "dao_ham",
+      "difficulty": "Easy",
+      "question": "Đạo hàm của y = sin(2x) là:",
+      "options": [
+        "A) cos(2x)",
+        "B) 2cos(2x)",
+        "C) -2cos(2x)",
+        "D) 2sin(2x)"
+      ],
+      "answer": "B",
+      "solution": "(sin(2x))' = cos(2x)·2 = 2cos(2x)"
+    },
+    {
+      "id": 15,
+      "topic": "dao_ham",
+      "difficulty": "Medium",
+      "question": "Đạo hàm của y = e^(x²) là:",
+      "options": [
+        "A) e^(x²)",
+        "B) 2xe^(x²)",
+        "C) x²e^(x²)",
+        "D) 2e^(x²)"
+      ],
+      "answer": "B",
+      "solution": "y' = e^(x²)·(x²)' = 2x·e^(x²)"
+    },
+    {
+      "id": 16,
+      "topic": "dao_ham",
+      "difficulty": "Medium",
+      "question": "Hàm số y = x³ - 3x² + 4 đồng biến trên khoảng:",
+      "options": [
+        "A) (-∞;0) và (2;+∞)",
+        "B) (0;2)",
+        "C) (-∞;2)",
+        "D) (2;+∞)"
+      ],
+      "answer": "A",
+      "solution": "y'=3x²-6x=3x(x-2)≥0 khi x≤0 hoặc x≥2"
+    },
+    {
+      "id": 17,
+      "topic": "dao_ham",
+      "difficulty": "Medium",
+      "question": "Giá trị nhỏ nhất của y = x + 4/x trên (0;+∞) là:",
+      "options": [
+        "A) 2",
+        "B) 4",
+        "C) 5",
+        "D) 8"
+      ],
+      "answer": "B",
+      "solution": "y'=1-4/x²=0→x=2. y(2)=2+2=4. y''>0→cực tiểu=min"
+    },
+    {
+      "id": 18,
+      "topic": "dao_ham",
+      "difficulty": "Hard",
+      "question": "Cho f(x) = x³ + ax² + bx + c có cực đại tại x=-1 và cực tiểu tại x=3. Tính a+b.",
+      "options": [
+        "A) -12",
+        "B) -6",
+        "C) 6",
+        "D) 12"
+      ],
+      "answer": "A",
+      "solution": "f'(x)=3x²+2ax+b. f'(-1)=0: 3-2a+b=0. f'(3)=0: 27+6a+b=0. Trừ: 24+8a=0→a=-3, b=-9. a+b=-12"
+    },
+    {
+      "id": 19,
+      "topic": "dao_ham",
+      "difficulty": "Hard",
+      "question": "Số giao điểm của đồ thị y = x³ - 3x + 1 với trục Ox là:",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 0"
+      ],
+      "answer": "C",
+      "solution": "y(-2)=-1, y(-1)=3, y(1)=-1, y(2)=3. Đổi dấu 3 lần → 3 nghiệm"
+    },
+    {
+      "id": 20,
+      "topic": "mu_log",
+      "difficulty": "Easy",
+      "question": "Giá trị của log₂(8) bằng:",
+      "options": [
+        "A) 2",
+        "B) 3",
+        "C) 4",
+        "D) 8"
+      ],
+      "answer": "B",
+      "solution": "2³ = 8 → log₂(8) = 3"
+    },
+    {
+      "id": 21,
+      "topic": "mu_log",
+      "difficulty": "Easy",
+      "question": "Đạo hàm của y = e^(3x) là:",
+      "options": [
+        "A) e^(3x)",
+        "B) 3e^(3x)",
+        "C) 3xe^(3x)",
+        "D) e^(3x)/3"
+      ],
+      "answer": "B",
+      "solution": "(e^(3x))' = 3·e^(3x)"
+    },
+    {
+      "id": 22,
+      "topic": "mu_log",
+      "difficulty": "Medium",
+      "question": "Giải phương trình 2^x = 16:",
+      "options": [
+        "A) x=2",
+        "B) x=3",
+        "C) x=4",
+        "D) x=8"
+      ],
+      "answer": "C",
+      "solution": "2^x = 2⁴ → x = 4"
+    },
+    {
+      "id": 23,
+      "topic": "mu_log",
+      "difficulty": "Medium",
+      "question": "log₃(x-1) = 2. Tìm x.",
+      "options": [
+        "A) 8",
+        "B) 9",
+        "C) 10",
+        "D) 7"
+      ],
+      "answer": "C",
+      "solution": "x-1 = 3² = 9 → x = 10"
+    },
+    {
+      "id": 24,
+      "topic": "mu_log",
+      "difficulty": "Hard",
+      "question": "Giải bất phương trình log₂(x²-3x+2) > 0:",
+      "options": [
+        "A) x<0 hoặc x>3",
+        "B) x<1 hoặc x>3",
+        "C) 0<x<1 hoặc x>3",
+        "D) x>3"
+      ],
+      "answer": "A",
+      "solution": "ĐK: x²-3x+2>0 → x<1 hoặc x>2. log₂(x²-3x+2)>0 → x²-3x+2>1 → x²-3x+1>0 → x<(3-√5)/2 hoặc x>(3+√5)/2. Kết hợp ĐK"
+    },
+    {
+      "id": 25,
+      "topic": "tich_phan",
+      "difficulty": "Easy",
+      "question": "∫₀¹ 2x dx bằng:",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) 2",
+        "D) 1/2"
+      ],
+      "answer": "B",
+      "solution": "[x²]₀¹ = 1 - 0 = 1"
+    },
+    {
+      "id": 26,
+      "topic": "tich_phan",
+      "difficulty": "Easy",
+      "question": "∫ (3x² + 1) dx bằng:",
+      "options": [
+        "A) x³+x+C",
+        "B) 6x+C",
+        "C) x³+C",
+        "D) 3x³+x+C"
+      ],
+      "answer": "A",
+      "solution": "∫3x²dx + ∫1dx = x³ + x + C"
+    },
+    {
+      "id": 27,
+      "topic": "tich_phan",
+      "difficulty": "Medium",
+      "question": "∫₀^(π/2) cosx dx bằng:",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) -1",
+        "D) π/2"
+      ],
+      "answer": "B",
+      "solution": "[sinx]₀^(π/2) = sin(π/2) - sin(0) = 1"
+    },
+    {
+      "id": 28,
+      "topic": "tich_phan",
+      "difficulty": "Medium",
+      "question": "Diện tích hình phẳng giới hạn bởi y=x² và y=x là:",
+      "options": [
+        "A) 1/3",
+        "B) 1/6",
+        "C) 1/2",
+        "D) 1"
+      ],
+      "answer": "B",
+      "solution": "x²=x → x=0,1. S=∫₀¹(x-x²)dx = [x²/2-x³/3]₀¹ = 1/2-1/3 = 1/6"
+    },
+    {
+      "id": 29,
+      "topic": "tich_phan",
+      "difficulty": "Hard",
+      "question": "∫₀¹ xe^x dx bằng:",
+      "options": [
+        "A) 1",
+        "B) e-1",
+        "C) e",
+        "D) 2e-1"
+      ],
+      "answer": "A",
+      "solution": "Tích phân từng phần: u=x, dv=e^x dx. = [xe^x]₀¹ - ∫₀¹e^x dx = e - (e-1) = 1"
+    },
+    {
+      "id": 30,
+      "topic": "so_phuc",
+      "difficulty": "Easy",
+      "question": "Mô-đun của z = 3 - 4i bằng:",
+      "options": [
+        "A) 7",
+        "B) 5",
+        "C) 1",
+        "D) 25"
+      ],
+      "answer": "B",
+      "solution": "|z| = √(9+16) = 5"
+    },
+    {
+      "id": 31,
+      "topic": "so_phuc",
+      "difficulty": "Easy",
+      "question": "Phần ảo của z = (1+2i)(3-i) là:",
+      "options": [
+        "A) 5",
+        "B) -5",
+        "C) 7",
+        "D) -1"
+      ],
+      "answer": "A",
+      "solution": "z = 3-i+6i-2i² = 3+5i+2 = 5+5i. Phần ảo = 5"
+    },
+    {
+      "id": 32,
+      "topic": "so_phuc",
+      "difficulty": "Medium",
+      "question": "Nghiệm phức của z² + 4 = 0 là:",
+      "options": [
+        "A) ±2",
+        "B) ±2i",
+        "C) ±4i",
+        "D) 2±i"
+      ],
+      "answer": "B",
+      "solution": "z² = -4 → z = ±2i"
+    },
+    {
+      "id": 33,
+      "topic": "so_phuc",
+      "difficulty": "Medium",
+      "question": "Cho z = (2+i)/(1-i). Phần thực của z là:",
+      "options": [
+        "A) 1/2",
+        "B) 3/2",
+        "C) 1",
+        "D) 2"
+      ],
+      "answer": "A",
+      "solution": "z = (2+i)(1+i)/((1-i)(1+i)) = (2+2i+i+i²)/2 = (1+3i)/2. Re(z)=1/2"
+    },
+    {
+      "id": 34,
+      "topic": "so_phuc",
+      "difficulty": "Hard",
+      "question": "Tập hợp điểm biểu diễn z thỏa |z-1| = |z-i| là:",
+      "options": [
+        "A) Đường tròn",
+        "B) Đường thẳng y=x",
+        "C) Đường thẳng y=-x",
+        "D) Điểm"
+      ],
+      "answer": "B",
+      "solution": "Gọi z=x+yi. |z-1|=|z-i| → (x-1)²+y²=x²+(y-1)². Khai triển: -2x+1=-2y+1 → y=x"
+    },
+    {
+      "id": 35,
+      "topic": "to_hop_xs",
+      "difficulty": "Easy",
+      "question": "C(6,2) bằng:",
+      "options": [
+        "A) 12",
+        "B) 15",
+        "C) 30",
+        "D) 36"
+      ],
+      "answer": "B",
+      "solution": "C(6,2) = 6!/(2!·4!) = 30/2 = 15"
+    },
+    {
+      "id": 36,
+      "topic": "to_hop_xs",
+      "difficulty": "Easy",
+      "question": "Gieo xúc xắc 1 lần. XS ra mặt chia hết cho 3 là:",
+      "options": [
+        "A) 1/6",
+        "B) 1/3",
+        "C) 1/2",
+        "D) 2/3"
+      ],
+      "answer": "B",
+      "solution": "Mặt chia hết 3: {3,6} → 2/6 = 1/3"
+    },
+    {
+      "id": 37,
+      "topic": "to_hop_xs",
+      "difficulty": "Medium",
+      "question": "Từ 5 nam, 3 nữ, chọn 3 người có ít nhất 1 nữ. Số cách là:",
+      "options": [
+        "A) 46",
+        "B) 45",
+        "C) 56",
+        "D) 36"
+      ],
+      "answer": "A",
+      "solution": "Tổng - không có nữ = C(8,3) - C(5,3) = 56 - 10 = 46"
+    },
+    {
+      "id": 38,
+      "topic": "to_hop_xs",
+      "difficulty": "Hard",
+      "question": "Hệ số x³ trong (1+x)⁷ là:",
+      "options": [
+        "A) 21",
+        "B) 35",
+        "C) 42",
+        "D) 7"
+      ],
+      "answer": "B",
+      "solution": "C(7,3) = 7!/(3!·4!) = 35"
+    },
+    {
+      "id": 39,
+      "topic": "to_hop_xs",
+      "difficulty": "Hard",
+      "question": "Ném đồng xu 4 lần. XS được đúng 2 sấp là:",
+      "options": [
+        "A) 1/4",
+        "B) 3/8",
+        "C) 1/2",
+        "D) 5/8"
+      ],
+      "answer": "B",
+      "solution": "P = C(4,2)·(1/2)⁴ = 6/16 = 3/8"
+    },
+    {
+      "id": 40,
+      "topic": "hinh_hoc_kg",
+      "difficulty": "Easy",
+      "question": "Khoảng cách từ A(1,2,3) đến gốc O là:",
+      "options": [
+        "A) √14",
+        "B) 6",
+        "C) √6",
+        "D) 14"
+      ],
+      "answer": "A",
+      "solution": "OA = √(1+4+9) = √14"
+    },
+    {
+      "id": 41,
+      "topic": "hinh_hoc_kg",
+      "difficulty": "Easy",
+      "question": "Vectơ pháp tuyến của mp: 2x - y + 3z - 5 = 0 là:",
+      "options": [
+        "A) (2,-1,3)",
+        "B) (2,1,3)",
+        "C) (-2,1,-3)",
+        "D) (2,-1,-5)"
+      ],
+      "answer": "A",
+      "solution": "VTPT n⃗ = (a,b,c) = (2,-1,3)"
+    },
+    {
+      "id": 42,
+      "topic": "hinh_hoc_kg",
+      "difficulty": "Medium",
+      "question": "Khoảng cách từ M(1,0,-1) đến mp: x + 2y - 2z + 4 = 0 là:",
+      "options": [
+        "A) 1",
+        "B) 7/3",
+        "C) 3",
+        "D) 5/3"
+      ],
+      "answer": "B",
+      "solution": "d = |1+0+2+4|/√(1+4+4) = 7/3"
+    },
+    {
+      "id": 43,
+      "topic": "hinh_hoc_kg",
+      "difficulty": "Medium",
+      "question": "PT mặt cầu tâm I(1,-1,2), R=3 là:",
+      "options": [
+        "A) (x-1)²+(y+1)²+(z-2)²=9",
+        "B) (x+1)²+(y-1)²+(z+2)²=9",
+        "C) (x-1)²+(y+1)²+(z-2)²=3",
+        "D) x²+y²+z²=9"
+      ],
+      "answer": "A",
+      "solution": "(x-1)²+(y-(-1))²+(z-2)² = 3² = 9"
+    },
+    {
+      "id": 44,
+      "topic": "hinh_hoc_kg",
+      "difficulty": "Hard",
+      "question": "Góc giữa 2 mp: x+y-1=0 và x+z+2=0 là:",
+      "options": [
+        "A) 30°",
+        "B) 45°",
+        "C) 60°",
+        "D) 90°"
+      ],
+      "answer": "C",
+      "solution": "Vectơ pháp tuyến của 2 mặt phẳng lần lượt là n1 = (1, 1, 0) và n2 = (1, 0, 1). Ta có: cosφ = |n1·n2| / (||n1||·||n2||) = |1·1 + 1·0 + 0·1| / (√2·√2) = 1/2. Suy ra φ = 60°."
+    },
+    {
+      "id": 45,
+      "topic": "hinh_hoc_kg",
+      "difficulty": "Hard",
+      "question": "Thể tích tứ diện OABC với A(1,0,0), B(0,2,0), C(0,0,3) là:",
+      "options": [
+        "A) 1",
+        "B) 6",
+        "C) 3",
+        "D) 2"
+      ],
+      "answer": "A",
+      "solution": "V = |OA⃗·(OB⃗×OC⃗)|/6. OB×OC=(6,0,0). OA·(6,0,0)=6. V=6/6=1"
+    },
+    {
+      "id": 46,
+      "topic": "hinh_hoc_kg",
+      "difficulty": "Hard",
+      "question": "PT đường thẳng qua A(1,2,3) có VTCP u⃗=(2,1,-1) dạng chính tắc là:",
+      "options": [
+        "A) (x-1)/2=(y-2)/1=(z-3)/(-1)",
+        "B) x/2=y/1=z/(-1)",
+        "C) (x+1)/2=(y+2)/1=(z+3)/(-1)",
+        "D) 2(x-1)=(y-2)=-(z-3)"
+      ],
+      "answer": "A",
+      "solution": "(x-x₀)/a = (y-y₀)/b = (z-z₀)/c"
+    },
+    {
+      "id": 47,
+      "topic": "day_so",
+      "difficulty": "Easy",
+      "question": "Cấp số cộng có u₁=3, d=2. Tìm u₁₀.",
+      "options": [
+        "A) 20",
+        "B) 21",
+        "C) 23",
+        "D) 19"
+      ],
+      "answer": "B",
+      "solution": "u₁₀ = u₁ + 9d = 3 + 18 = 21"
+    },
+    {
+      "id": 48,
+      "topic": "day_so",
+      "difficulty": "Medium",
+      "question": "Tổng 10 số hạng đầu của CSC có u₁=1, d=3 là:",
+      "options": [
+        "A) 145",
+        "B) 135",
+        "C) 150",
+        "D) 155"
+      ],
+      "answer": "A",
+      "solution": "S₁₀ = 10/2·(2·1+9·3) = 5·29 = 145"
+    },
+    {
+      "id": 49,
+      "topic": "day_so",
+      "difficulty": "Hard",
+      "question": "CSN có u₁=2, q=3. Tìm S₅.",
+      "options": [
+        "A) 242",
+        "B) 244",
+        "C) 486",
+        "D) 240"
+      ],
+      "answer": "A",
+      "solution": "S₅ = 2·(3⁵-1)/(3-1) = 2·242/2 = 242"
+    },
+    {
+      "id": 50,
+      "topic": "phuong_trinh",
+      "difficulty": "Medium",
+      "question": "Số nghiệm của hệ x+y=5, xy=6 là:",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) 2",
+        "D) 3"
+      ],
+      "answer": "C",
+      "solution": "x,y là nghiệm t²-5t+6=0 → t=2,3. Hai nghiệm: (2,3) và (3,2)"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+<Page x:Class="QASmartClass.ParentPortal.Views.ParentTuitionPage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Học phí" Background="#F0F2F5" FontFamily="Segoe UI">
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <TextBlock Text="💳 Thông tin Học phí" FontSize="24" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,20"/>
+
+
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- DataGrid Border on the left -->
+            <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="20" Margin="0,0,16,0">
+                <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+                <DataGrid x:Name="DgTuition" AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="1" BorderBrush="#E2E8F0" Background="White" HeadersVisibility="Column" RowHeight="40">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Kỳ học" Binding="{Binding ClassName}" Width="100"/>
+                        <DataGridTextColumn Header="Số tiền (VND)" Binding="{Binding Amount, StringFormat=N0}" Width="130"/>
+                        <DataGridTextColumn Header="Hạn nộp" Binding="{Binding DueDate, StringFormat=dd/MM/yyyy}" Width="110"/>
+                        <DataGridTextColumn Header="Ngày nộp" Binding="{Binding PaidDate, StringFormat=dd/MM/yyyy}" Width="110"/>
+                        <DataGridTextColumn Header="Phương thức" Binding="{Binding PaymentMethod}" Width="110"/>
+                        <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- Instructions panel on the right -->
+            <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="20">
+                <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="💳 HƯỚNG DẪN THANH TOÁN" FontSize="15" FontWeight="Bold" Foreground="#1E3A5F" Margin="0,0,0,15"/>
+
+                        <Border Background="#F0F9FF" CornerRadius="8" Padding="12" Margin="0,0,0,15" BorderBrush="#BAE6FD" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="Thông tin tài khoản nhà trường:" FontWeight="Bold" FontSize="13" Foreground="#0369A1" Margin="0,0,0,6"/>
+                                <TextBlock Text="• Ngân hàng: BIDV - CN Hà Tây" FontSize="12" Foreground="#334155" Margin="0,2"/>
+                                <TextBlock Text="• Số tài khoản: 2201-000-6789-999" FontSize="12" Foreground="#334155" Margin="0,2" FontWeight="SemiBold"/>
+                                <TextBlock Text="• Chủ tài khoản: TRƯỜNG THPT QA SMART SCHOOL" FontSize="11" Foreground="#334155" Margin="0,2" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#F8FAFC" CornerRadius="8" Padding="12" Margin="0,0,0,15" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="Cú pháp chuyển khoản:" FontWeight="Bold" FontSize="13" Foreground="#475569" Margin="0,0,0,4"/>
+                                <TextBlock Text="HP [Mã học sinh] [Họ tên học sinh] [Lớp]" FontSize="12" Foreground="#0F172A" FontWeight="Bold" TextWrapping="Wrap"/>
+                                <TextBlock Text="Ví dụ: HP HS001 Nguyen Van An 10A3" FontSize="11" Foreground="#64748B" FontStyle="Italic" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Mockup QR Code -->
+                        <TextBlock Text="Quét mã VietQR nhanh:" FontSize="13" FontWeight="Bold" Foreground="#1E3A5F" Margin="0,5,0,6"/>
+                        <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10" Background="White" HorizontalAlignment="Center">
+                            <StackPanel>
+                                <Border Width="120" Height="120" Background="#F1F5F9" CornerRadius="4" HorizontalAlignment="Center">
+                                    <Grid>
+                                        <TextBlock Text="[ VietQR ]" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Border BorderBrush="#1E3A5F" BorderThickness="3" Width="18" Height="18" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="6"/>
+                                        <Border BorderBrush="#1E3A5F" BorderThickness="3" Width="18" Height="18" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="6"/>
+                                        <Border BorderBrush="#1E3A5F" BorderThickness="3" Width="18" Height="18" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="6"/>
+                                    </Grid>
+                                </Border>
+                                <TextBlock Text="Tự động điền số tiền &amp; cú pháp" FontSize="10" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+    </Grid>
+
+</Page>
+
+
+

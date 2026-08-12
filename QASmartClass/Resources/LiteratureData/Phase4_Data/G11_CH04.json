@@ -1,0 +1,109 @@
+﻿{
+    "metadata": {
+        "chapterId": "g11_ch04",
+        "chapterName": "Bài 4: Kịch",
+        "grade": 11,
+        "totalProblems": 2,
+        "totalSections": 2
+    },
+    "sections": [
+        {
+            "sectionId": "s_g11_ch3_0",
+            "sectionName": "Vĩnh biệt Cửu Trùng Đài",
+            "concepts": [
+                {
+                    "name": "Giới Thiệu Tác Phẩm",
+                    "theorem": "Tác phẩm 'Vĩnh biệt Cửu Trùng Đài' là một phần quan trọng trong chương trình học, mang những nét nghệ thuật đặc trưng và giá trị nhân văn sâu sắc.",
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\nguyen_khoa_diem.png"
+                    ]
+                },
+                {
+                    "name": "Nội Dung Chính",
+                    "definition": "Tác phẩm phản ánh góc nhìn tinh tế của tác giả về con người, thiên nhiên và xã hội. Qua 'Vĩnh biệt Cửu Trùng Đài', người đọc được bồi dưỡng tình yêu quê hương, gia đình và tinh thần vươn lên.",
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\xuan_dieu.png"
+                    ]
+                },
+                {
+                    "name": "Giá Trị Nghệ Thuật & Bài Học",
+                    "examples": [
+                        "**Đặc sắc nghệ thuật**: Ngôn từ sống động, cấu trúc chặt chẽ, giàu sức gợi hình.",
+                        "**Bài học**: Rút ra những triết lý nhân sinh quan quý báu để hoàn thiện bản thân."
+                    ],
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\rung_xa_nu.png"
+                    ]
+                }
+            ],
+            "problems": [
+                {
+                    "id": "p_random",
+                    "question": "Đâu là giá trị lớn nhất trong bài học 'Vĩnh biệt Cửu Trùng Đài'?",
+                    "difficulty": "Medium",
+                    "options": [
+                        "Khám phá các quy luật tự nhiên, toán học.",
+                        "Giá trị nhân văn, nuôi dưỡng tình cảm và đạo đức tốt đẹp.",
+                        "Hướng dẫn thực hành các kỹ năng thực dụng.",
+                        "Tìm hiểu về không gian và vũ trụ."
+                    ],
+                    "answer": "Giá trị nhân văn, nuôi dưỡng tình cảm và đạo đức tốt đẹp.",
+                    "hints": [
+                        "Chú ý mục đích chính của môn Ngữ Văn."
+                    ],
+                    "explanation": "Môn Ngữ Văn luôn hướng tới việc bồi dưỡng tâm hồn và nhân cách con người."
+                }
+            ],
+            "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-11-1/1/1/4/"
+        },
+        {
+            "sectionId": "s_g11_ch3_1",
+            "sectionName": "Tình yêu và thù hận",
+            "concepts": [
+                {
+                    "name": "Giới Thiệu Tác Phẩm",
+                    "theorem": "Tác phẩm 'Tình yêu và thù hận' là một phần quan trọng trong chương trình học, mang những nét nghệ thuật đặc trưng và giá trị nhân văn sâu sắc.",
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\quang_dung.png"
+                    ]
+                },
+                {
+                    "name": "Nội Dung Chính",
+                    "definition": "Tác phẩm phản ánh góc nhìn tinh tế của tác giả về con người, thiên nhiên và xã hội. Qua 'Tình yêu và thù hận', người đọc được bồi dưỡng tình yêu quê hương, gia đình và tinh thần vươn lên.",
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\quang_dung.png"
+                    ]
+                },
+                {
+                    "name": "Giá Trị Nghệ Thuật & Bài Học",
+                    "examples": [
+                        "**Đặc sắc nghệ thuật**: Ngôn từ sống động, cấu trúc chặt chẽ, giàu sức gợi hình.",
+                        "**Bài học**: Rút ra những triết lý nhân sinh quan quý báu để hoàn thiện bản thân."
+                    ],
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\chinh_huu.png"
+                    ]
+                }
+            ],
+            "problems": [
+                {
+                    "id": "p_random",
+                    "question": "Đâu là giá trị lớn nhất trong bài học 'Tình yêu và thù hận'?",
+                    "difficulty": "Medium",
+                    "options": [
+                        "Khám phá các quy luật tự nhiên, toán học.",
+                        "Giá trị nhân văn, nuôi dưỡng tình cảm và đạo đức tốt đẹp.",
+                        "Hướng dẫn thực hành các kỹ năng thực dụng.",
+                        "Tìm hiểu về không gian và vũ trụ."
+                    ],
+                    "answer": "Giá trị nhân văn, nuôi dưỡng tình cảm và đạo đức tốt đẹp.",
+                    "hints": [
+                        "Chú ý mục đích chính của môn Ngữ Văn."
+                    ],
+                    "explanation": "Môn Ngữ Văn luôn hướng tới việc bồi dưỡng tâm hồn và nhân cách con người."
+                }
+            ],
+            "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-11-1/1/1/4/"
+        }
+    ]
+}

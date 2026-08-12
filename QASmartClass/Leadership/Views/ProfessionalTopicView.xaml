@@ -1,0 +1,196 @@
+﻿<Page x:Class="QASmartClass.Leadership.Views.ProfessionalTopicView"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Chuyên đề Chuyên môn giảng dạy" Background="#F8FAFC" FontFamily="Segoe UI">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <DockPanel Margin="0,0,0,14">
+
+            <TextBlock Text="📚 Quản Lý Chuyên Đề Tổ Chuyên Môn" FontSize="22" FontWeight="Bold" Foreground="#0F172A"/>
+
+            <Button x:Name="BtnAddTopic" Content="＋ Tạo chuyên đề" Click="BtnAddTopic_Click"
+
+                    DockPanel.Dock="Right" HorizontalAlignment="Right"
+
+                    FontSize="13" Padding="12,6" Background="#7C3AED" Foreground="White" BorderThickness="0"/>
+
+        </DockPanel>
+
+
+
+        <!-- Stats panel -->
+
+        <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="16" Margin="0,0,0,14"
+
+                BorderBrush="#E2E8F0" BorderThickness="1">
+
+            <StackPanel Orientation="Horizontal">
+
+                <Border Background="#EDE9FE" CornerRadius="6" Padding="14,8" Margin="0,0,12,0">
+
+                    <StackPanel>
+
+                        <TextBlock x:Name="TxtTotalTopics" Text="0" FontSize="22" FontWeight="Bold" Foreground="#7C3AED" HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="Tổng chuyên đề" FontSize="11" Foreground="#6D28D9"/>
+
+                    </StackPanel>
+
+                </Border>
+
+                <Border Background="#DBEAFE" CornerRadius="6" Padding="14,8" Margin="0,0,12,0">
+
+                    <StackPanel>
+
+                        <TextBlock x:Name="TxtCompleted" Text="0" FontSize="22" FontWeight="Bold" Foreground="#3B82F6" HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="Đã trình bày" FontSize="11" Foreground="#2563EB"/>
+
+                    </StackPanel>
+
+                </Border>
+
+                <Border Background="#FEF3C7" CornerRadius="6" Padding="14,8" Margin="0,0,12,0">
+
+                    <StackPanel>
+
+                        <TextBlock x:Name="TxtPlanned" Text="0" FontSize="22" FontWeight="Bold" Foreground="#CA8A04" HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="Đang lên kế hoạch" FontSize="11" Foreground="#A16207"/>
+
+                    </StackPanel>
+
+                </Border>
+
+                <Border Background="#DCFCE7" CornerRadius="6" Padding="14,8">
+
+                    <StackPanel>
+
+                        <TextBlock x:Name="TxtAvgRating" Text="0.0 ⭐" FontSize="22" FontWeight="Bold" Foreground="#16A34A" HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="Điểm TB" FontSize="11" Foreground="#15803D"/>
+
+                    </StackPanel>
+
+                </Border>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- Topic list -->
+
+        <ListView Grid.Row="2" x:Name="LvTopics" BorderThickness="0" Background="Transparent">
+
+            <ListView.ItemTemplate>
+
+                <DataTemplate>
+
+                    <Border Background="White" CornerRadius="10" Padding="16" Margin="0,0,0,10"
+
+                            BorderBrush="#E2E8F0" BorderThickness="1">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="60"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Timeline dot -->
+
+                            <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center">
+
+                                <Ellipse Width="14" Height="14" Fill="{Binding DotColor}" HorizontalAlignment="Center"/>
+
+                                <Border Width="2" Height="40" Background="#E2E8F0" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+
+                            </StackPanel>
+
+                            <!-- Content -->
+
+                            <StackPanel Grid.Column="1" Margin="8,0,0,0">
+
+                                <TextBlock Text="{Binding TopicTitle}" FontSize="15" FontWeight="SemiBold" Foreground="#1E293B" TextWrapping="Wrap"/>
+
+                                <TextBlock Text="{Binding PresenterInfo}" FontSize="12" Foreground="#64748B" Margin="0,3,0,0"/>
+
+                                <TextBlock Text="{Binding Description}" FontSize="12" Foreground="#94A3B8" Margin="0,2,0,0"
+
+                                           TextTrimming="CharacterEllipsis" MaxHeight="20"/>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+
+                                    <TextBlock Text="{Binding StarsText}" FontSize="14" Foreground="#F59E0B" Margin="0,0,8,0"/>
+
+                                    <TextBlock Text="{Binding RatingInfo}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                            <!-- Status + Rate -->
+
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+
+                                <Border Background="{Binding StatusBg}" CornerRadius="4" Padding="10,4" Margin="0,0,0,6">
+
+                                    <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{Binding StatusFg}" FontWeight="SemiBold"/>
+
+                                </Border>
+
+                                <Button Content="⭐ Đánh giá" Tag="{Binding Id}" Click="BtnRate_Click"
+
+                                        FontSize="11" Padding="8,4" Background="#FEF3C7" Foreground="#92400E"
+
+                                        BorderThickness="0" HorizontalAlignment="Stretch"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+                    </Border>
+
+                </DataTemplate>
+
+            </ListView.ItemTemplate>
+
+        </ListView>
+
+    </Grid>
+
+
+    </ScrollViewer>
+</Page>
+
+
+

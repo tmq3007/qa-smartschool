@@ -1,0 +1,344 @@
+{
+  "metadata": {
+    "chapterId": "g12_ch06",
+    "chapterName": "Hình Học Không Gian (Phương pháp tọa độ)",
+    "grade": 12,
+    "totalSections": 4,
+    "totalConcepts": 16,
+    "totalProblems": 9,
+    "toolMapping": [
+      "SolidGeometryTool",
+      "VectorTool",
+      "CoordinateTool"
+    ],
+    "thptWeight": "12%",
+    "estimatedHours": 25,
+    "prerequisites": [
+      "geo_10_01",
+      "geo_10_02",
+      "geo_10_03",
+      "geo_11_02",
+      "geo_11_04"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "calc_12_06_01",
+      "sectionName": "Hệ tọa độ Oxyz & Vectơ trong không gian",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "hh_001",
+          "name": "Tọa độ điểm trong không gian",
+          "definition": "Điểm M(x, y, z) trong hệ tọa độ Oxyz",
+          "formulas": [
+            {
+              "name": "Trung điểm I của AB",
+              "formula": "I = ((xA+xB)/2, (yA+yB)/2, (zA+zB)/2)"
+            },
+            {
+              "name": "Khoảng cách AB",
+              "formula": "AB = √[(xB-xA)² + (yB-yA)² + (zB-zA)²]"
+            },
+            {
+              "name": "Trọng tâm G tam giác",
+              "formula": "G = ((xA+xB+xC)/3, (yA+yB+yC)/3, (zA+zB+zC)/3)"
+            }
+          ]
+        },
+        {
+          "id": "hh_002",
+          "name": "Vectơ trong không gian",
+          "formulas": [
+            {
+              "name": "Vectơ AB",
+              "formula": "AB⃗ = (xB-xA, yB-yA, zB-zA)"
+            },
+            {
+              "name": "Tích vô hướng",
+              "formula": "a⃗·b⃗ = x₁x₂ + y₁y₂ + z₁z₂"
+            },
+            {
+              "name": "Tích có hướng",
+              "formula": "a⃗×b⃗ = (y₁z₂-y₂z₁, z₁x₂-z₂x₁, x₁y₂-x₂y₁)"
+            },
+            {
+              "name": "Độ dài vectơ",
+              "formula": "|a⃗| = √(x² + y² + z²)"
+            },
+            {
+              "name": "Góc 2 vectơ",
+              "formula": "cos(a⃗,b⃗) = (a⃗·b⃗)/(|a⃗|·|b⃗|)"
+            }
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh_prob_001",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Cho A(1,2,3), B(3,4,5). Tìm tọa độ trung điểm I của AB.",
+          "options": [
+            "A) I(2, 3, 4)",
+            "B) I(4, 6, 8)",
+            "C) I(1, 1, 1)",
+            "D) I(2, 2, 2)"
+          ],
+          "correctAnswer": "A",
+          "solution": "I = ((1+3)/2, (2+4)/2, (3+5)/2) = (2, 3, 4)",
+          "points": 10
+        },
+        {
+          "problemId": "hh_prob_002",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Cho a⃗ = (1, 2, -1), b⃗ = (3, -1, 2). Tính a⃗ × b⃗.",
+          "options": [
+            "A) (3, -5, -7)",
+            "B) (5, -3, -7)",
+            "C) (3, 5, 7)",
+            "D) (-3, 5, 7)"
+          ],
+          "correctAnswer": "A",
+          "solution": "a⃗×b⃗ = (2·2-(-1)·(-1), (-1)·3-1·2, 1·(-1)-2·3)\n= (4-1, -3-2, -1-6) = (3, -5, -7)",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_06_02",
+      "sectionName": "Phương trình mặt phẳng",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "hh_003",
+          "name": "Phương trình tổng quát mặt phẳng",
+          "formula": "ax + by + cz + d = 0",
+          "details": "n⃗ = (a, b, c) là vectơ pháp tuyến của mặt phẳng"
+        },
+        {
+          "id": "hh_004",
+          "name": "Khoảng cách từ điểm đến mặt phẳng",
+          "formula": "d(M, α) = |axM + byM + czM + d| / √(a² + b² + c²)"
+        },
+        {
+          "id": "hh_005",
+          "name": "Góc giữa hai mặt phẳng",
+          "formula": "cos φ = |a₁a₂ + b₁b₂ + c₁c₂| / (√(a₁²+b₁²+c₁²) · √(a₂²+b₂²+c₂²))"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh_prob_003",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Viết PT mặt phẳng qua A(1,2,3) có VTPT n⃗ = (2,-1,3)",
+          "options": [
+            "A) 2x - y + 3z - 9 = 0",
+            "B) 2x + y + 3z - 9 = 0",
+            "C) 2x - y + 3z + 9 = 0",
+            "D) x - 2y + 3z - 9 = 0"
+          ],
+          "correctAnswer": "A",
+          "solution": "2(x-1) - 1(y-2) + 3(z-3) = 0\n2x - y + 3z - 9 = 0",
+          "points": 10
+        },
+        {
+          "problemId": "hh_prob_004",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính khoảng cách từ M(1, -1, 2) đến mặt phẳng 2x - 2y + z - 6 = 0",
+          "options": [
+            "A) 0",
+            "B) 1/3",
+            "C) 2/3",
+            "D) 1"
+          ],
+          "correctAnswer": "A",
+          "solution": "d = |2·1 - 2·(-1) + 1·2 - 6| / √(4+4+1)\n= |2+2+2-6| / 3 = 0/3 = 0\nVậy M nằm trên mặt phẳng",
+          "points": 15
+        },
+        {
+          "problemId": "hh_prob_005",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Viết PT mặt phẳng qua 3 điểm A(1,0,0), B(0,2,0), C(0,0,3)",
+          "options": [
+            "A) 6x + 3y + 2z - 6 = 0",
+            "B) x + 2y + 3z - 6 = 0",
+            "C) 3x + 6y + 2z - 6 = 0",
+            "D) 6x + 3y + 2z + 6 = 0"
+          ],
+          "correctAnswer": "A",
+          "solution": "AB⃗ = (-1,2,0), AC⃗ = (-1,0,3)\nn⃗ = AB⃗ × AC⃗ = (6,3,2)\nPT: 6(x-1) + 3y + 2z = 0\n6x + 3y + 2z - 6 = 0\nHay: x/1 + y/2 + z/3 = 1",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_06_03",
+      "sectionName": "Phương trình đường thẳng trong không gian",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "hh_006",
+          "name": "PT tham số đường thẳng",
+          "formula": "x = x₀ + at, y = y₀ + bt, z = z₀ + ct",
+          "details": "Qua M₀(x₀,y₀,z₀), VTCP u⃗ = (a,b,c)"
+        },
+        {
+          "id": "hh_007",
+          "name": "PT chính tắc",
+          "formula": "(x-x₀)/a = (y-y₀)/b = (z-z₀)/c"
+        },
+        {
+          "id": "hh_008",
+          "name": "Khoảng cách từ điểm đến đường thẳng",
+          "formula": "d(M, Δ) = |MM₀⃗ × u⃗| / |u⃗|"
+        },
+        {
+          "id": "hh_009",
+          "name": "Góc giữa đường thẳng và mặt phẳng",
+          "formula": "sin φ = |a·a₁ + b·b₁ + c·c₁| / (|u⃗|·|n⃗|)"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh_prob_006",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Viết PT tham số đường thẳng qua A(1,2,-1) có VTCP u⃗ = (2,3,1)",
+          "options": [
+            "A) x=1+2t, y=2+3t, z=-1+t",
+            "B) x=2+t, y=3+2t, z=1-t",
+            "C) x=1+2t, y=2-3t, z=-1+t",
+            "D) x=1+t, y=2+t, z=-1+t"
+          ],
+          "correctAnswer": "A",
+          "solution": "x = 1 + 2t, y = 2 + 3t, z = -1 + t",
+          "points": 10
+        },
+        {
+          "problemId": "hh_prob_007",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tính khoảng cách giữa 2 đường thẳng chéo nhau:\nd₁: (x-1)/2 = (y+1)/1 = z/3\nd₂: (x-2)/1 = y/(-1) = (z-1)/2",
+          "options": [
+            "A) 1/√35",
+            "B) √35",
+            "C) 1/√7",
+            "D) √7/5"
+          ],
+          "correctAnswer": "A",
+          "solution": "M₁(1,-1,0), u₁⃗=(2,1,3)\nM₂(2,0,1), u₂⃗=(1,-1,2)\nM₁M₂⃗ = (1,1,1)\nu₁⃗ × u₂⃗ = (1·2-3·(-1), 3·1-2·2, 2·(-1)-1·1) = (5,-1,-3)\nd = |M₁M₂⃗ · (u₁⃗×u₂⃗)| / |u₁⃗×u₂⃗|\n= |5-1-3| / √(25+1+9) = 1/√35",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_06_04",
+      "sectionName": "Mặt cầu",
+      "order": 4,
+      "concepts": [
+        {
+          "id": "hh_010",
+          "name": "Phương trình mặt cầu",
+          "formula": "(x-a)² + (y-b)² + (z-c)² = R²",
+          "details": "Tâm I(a,b,c), bán kính R",
+          "generalForm": "x² + y² + z² - 2ax - 2by - 2cz + d = 0, R = √(a²+b²+c²-d)"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh_prob_008",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Viết PT mặt cầu tâm I(1,-2,3) bán kính R = 4",
+          "options": [
+            "A) (x-1)² + (y+2)² + (z-3)² = 16",
+            "B) (x+1)² + (y-2)² + (z+3)² = 16",
+            "C) (x-1)² + (y+2)² + (z-3)² = 4",
+            "D) (x-1)² + (y-2)² + (z-3)² = 16"
+          ],
+          "correctAnswer": "A",
+          "solution": "(x-1)² + (y+2)² + (z-3)² = 16",
+          "points": 10
+        },
+        {
+          "problemId": "hh_prob_009",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm tâm và bán kính mặt cầu: x² + y² + z² - 2x + 4y - 6z - 2 = 0",
+          "options": [
+            "A) Tâm I(1,-2,3), R=4",
+            "B) Tâm I(-1,2,-3), R=4",
+            "C) Tâm I(1,-2,3), R=16",
+            "D) Tâm I(2,-4,6), R=4"
+          ],
+          "correctAnswer": "A",
+          "solution": "Viết lại: (x-1)² + (y+2)² + (z-3)² = 1+4+9+2 = 16\nTâm I(1,-2,3), R = 4",
+          "points": 20
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm VTPT và VTCP",
+      "correction": "VTPT n⃗ vuông góc mp. VTCP u⃗ nằm trên đường thẳng"
+    },
+    {
+      "mistake": "Quên trị tuyệt đối khi tính khoảng cách",
+      "correction": "Công thức khoảng cách luôn có trị tuyệt đối ở tử"
+    },
+    {
+      "mistake": "Nhầm công thức góc đt-mp (sin) với góc mp-mp (cos)",
+      "correction": "Góc đt-mp dùng sin, góc mp-mp dùng cos"
+    },
+    {
+      "mistake": "Tính tích có hướng sai thứ tự",
+      "correction": "a⃗×b⃗ ≠ b⃗×a⃗ (đổi dấu)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "hh_quiz_01",
+      "title": "Kiểm tra: HHKG phương pháp tọa độ",
+      "timeLimit": 900,
+      "questions": [
+        {
+          "ref": "hh_prob_001"
+        },
+        {
+          "ref": "hh_prob_003"
+        },
+        {
+          "ref": "hh_prob_004"
+        },
+        {
+          "ref": "hh_prob_006"
+        },
+        {
+          "ref": "hh_prob_008"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

@@ -1,0 +1,310 @@
+﻿<Page x:Class="QASmartClass.Classroom.Views.TimetablePage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Background="#F5F5F5">
+
+
+
+    <Grid Margin="24,16">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- ═══ HEADER ═══ -->
+
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="24,16" Margin="0,0,0,12"
+
+                BorderBrush="#E0E0E0" BorderThickness="1">
+
+            <DockPanel>
+
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+
+                    <Button Content="◀ Tuần trước" FontSize="12" Padding="12,8" Background="#F5F5F5"
+
+                            Foreground="#555" BorderThickness="1" BorderBrush="#DDD" Cursor="Hand"
+
+                            Click="PrevWeek_Click" Margin="0,0,4,0">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6"
+
+                                        Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#E0E0E0"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                    <Button Content="📅 Tuần này" FontSize="12" Padding="12,8" Background="#E3F2FD"
+
+                            Foreground="#1565C0" BorderThickness="0" Cursor="Hand" Click="ThisWeek_Click" Margin="0,0,4,0">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#BBDEFB"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                    <Button Content="Tuần sau ▶" FontSize="12" Padding="12,8" Background="#F5F5F5"
+
+                            Foreground="#555" BorderThickness="1" BorderBrush="#DDD" Cursor="Hand" Click="NextWeek_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6"
+
+                                        Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#E0E0E0"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <Border Width="1" Background="#E0E0E0" Margin="12,4" Height="28"/>
+
+
+
+                    <!-- ═══ IMPORT / EXPORT (Giai đoạn 3) ═══ -->
+
+                    <Button Content="📥 Import" FontSize="12" Padding="12,8" Background="#E8F5E9"
+
+                            Foreground="#2E7D32" BorderThickness="0" Cursor="Hand" Click="ImportTimetable_Click" Margin="0,0,4,0" ToolTip="Nhập TKB từ Excel">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#C8E6C9"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                    <Button Content="📤 Export" FontSize="12" Padding="12,8" Background="#FFF3E0"
+
+                            Foreground="#E65100" BorderThickness="0" Cursor="Hand" Click="ExportTimetable_Click" Margin="0,0,4,0" ToolTip="Xuất TKB ra Excel">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#FFE0B2"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <Border Width="1" Background="#E0E0E0" Margin="12,4" Height="28"/>
+
+
+
+                    <!-- ═══ SIMULATION TIME PICKER ═══ -->
+
+                    <Border Background="#FFF8E1" CornerRadius="8" Padding="8,4" Margin="0,0,4,0"
+
+                            BorderBrush="#FFE082" BorderThickness="1" VerticalAlignment="Center">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <TextBlock Text="🕐" FontSize="13" VerticalAlignment="Center" Margin="0,0,4,0"/>
+
+                            <ComboBox x:Name="cboSimHour" Width="48" FontSize="11" Padding="2" VerticalAlignment="Center"
+
+                                      SelectionChanged="SimTime_Changed" ToolTip="Giờ"/>
+
+                            <TextBlock Text=":" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" Margin="2,0"/>
+
+                            <ComboBox x:Name="cboSimMinute" Width="48" FontSize="11" Padding="2" VerticalAlignment="Center"
+
+                                      SelectionChanged="SimTime_Changed" ToolTip="Phút"/>
+
+                            <Button x:Name="btnSimToggle" Content="▶ Test" FontSize="10" Padding="6,4" Margin="4,0,0,0"
+
+                                    Background="#FF9800" Foreground="White" BorderThickness="0" Cursor="Hand"
+
+                                    Click="SimToggle_Click" VerticalAlignment="Center" ToolTip="Bật/tắt chế độ mô phỏng giờ">
+
+                                <Button.Template>
+
+                                    <ControlTemplate TargetType="Button">
+
+                                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+
+                                        </Border>
+
+                                        <ControlTemplate.Triggers>
+
+                                            <Trigger Property="IsMouseOver" Value="True">
+
+                                                <Setter TargetName="bd" Property="Background" Value="#F57C00"/>
+
+                                            </Trigger>
+
+                                        </ControlTemplate.Triggers>
+
+                                    </ControlTemplate>
+
+                                </Button.Template>
+
+                            </Button>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </StackPanel>
+
+
+
+                <StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+
+                        <TextBlock Text="📅 Thời Khóa Biểu" FontSize="20" FontWeight="Bold" Foreground="#212121" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                        <ComboBox x:Name="cboTimetableMode" Width="180" FontSize="13" FontWeight="SemiBold" Padding="8,4" VerticalAlignment="Center" SelectionChanged="TimetableMode_Changed">
+
+                            <ComboBoxItem Content="🏫 Của Lớp học" Tag="Class" IsSelected="True"/>
+
+                            <ComboBoxItem Content="👨‍🏫 Của Giáo viên" Tag="Teacher"/>
+
+                        </ComboBox>
+
+                    </StackPanel>
+
+                    <TextBlock x:Name="txtClassInfo" Text="🏫 Lớp ..." FontSize="13" Foreground="#1976D2" FontWeight="SemiBold" Margin="0,0,0,2"/>
+
+                    <TextBlock x:Name="txtWeekRange" Text="" FontSize="13" Foreground="#757575" Margin="0,2,0,0"/>
+
+                    <TextBlock x:Name="txtCurrentPeriod" Text="" FontSize="13" Margin="0,3,0,0"/>
+
+                </StackPanel>
+
+            </DockPanel>
+
+        </Border>
+
+
+
+        <!-- ═══ TIMETABLE GRID ═══ -->
+
+        <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="0"
+
+                BorderBrush="#E0E0E0" BorderThickness="1" ClipToBounds="True">
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+
+                <Grid x:Name="timetableGrid" Margin="0"/>
+
+            </ScrollViewer>
+
+        </Border>
+
+    </Grid>
+
+</Page>
+

@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "chapterId": "g07_ch01",
+    "chapterName": "Bài 1: Thơ trữ tình trung đại",
+    "grade": 7,
+    "totalProblems": 9,
+    "totalSections": 3,
+    "estimatedHours": 3
+  },
+  "sections": [
+    {
+      "sectionId": "s_g7_ch0_0",
+      "sectionName": "Qua Đèo Ngang — Bà Huyện Thanh Quan",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-7-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g7_Qua_Đèo_Ngang.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả",
+          "theorem": "Bà Huyện Thanh Quan (đầu thế kỷ XIX) — nữ thi sĩ tài hoa hiếm có của văn học trung đại Việt Nam. Thơ bà mang âm điệu trầm buồn, hoài cổ.",
+          "imageUrls": ["Resources/LiteratureData/Images/ba_huyen_thanh_quan.png"]
+        },
+        {
+          "name": "Bài thơ",
+          "definition": "Bước tới Đèo Ngang, bóng xế tà,\nCỏ cây chen đá, lá chen hoa.\nLom khom dưới núi, tiều vài chú,\nLác đác bên sông, chợ mấy nhà.\nNhớ nước đau lòng, con quốc quốc,\nThương nhà mỏi miệng, cái gia gia.\nDừng chân đứng lại, trời non nước,\nMột mảnh tình riêng, ta với ta."
+        },
+        {
+          "name": "Phân tích nghệ thuật",
+          "examples": [
+            "**'Lom khom', 'lác đác'**: Đảo ngữ + từ láy — gợi cảnh vắng vẻ, nhỏ bé của con người giữa núi rừng.",
+            "**'Quốc quốc', 'gia gia'**: Tiếng chim được nhân hóa thành lời kêu — quốc = đất nước, gia = nhà — nỗi nhớ nước thương nhà.",
+            "**'Ta với ta' (Bà Huyện)**: Chỉ một người — ta (chủ thể) đối diện với ta (bóng mình) — nỗi cô đơn tuyệt đối.",
+            "**Khác 'ta với ta' (Nguyễn Khuyến)**: Nguyễn Khuyến 'ta với ta' = hai người bạn thân — ý nghĩa ngược nhau."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Biện pháp đảo ngữ trong 'Lom khom dưới núi tiều vài chú / Lác đác bên sông chợ mấy nhà' có tác dụng gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Đưa từ láy lên đầu câu để nhấn mạnh sự vắng vẻ, nhỏ bé — cảnh người thưa thớt giữa không gian rộng lớn",
+            "Tạo vần điệu hài hòa cho bài thơ Đường luật",
+            "Diễn tả sự bận rộn, nhộn nhịp của cảnh Đèo Ngang buổi chiều",
+            "Theo quy tắc của thể thơ thất ngôn bát cú Đường luật"
+          ],
+          "answer": "Đưa từ láy lên đầu câu để nhấn mạnh sự vắng vẻ, nhỏ bé — cảnh người thưa thớt giữa không gian rộng lớn",
+          "hints": ["Nếu viết bình thường: 'Vài chú tiều lom khom dưới núi' — cảm giác khác gì?"],
+          "explanation": "Đảo ngữ đưa 'lom khom', 'lác đác' lên trước — ấn tượng đầu tiên là sự vắng lặng, thưa thớt. Tiếp theo mới thấy 'tiều vài chú', 'chợ mấy nhà' — rất ít người, rất ít nhà. Kỹ thuật này làm nổi bật cảm giác cô đơn của nữ thi sĩ giữa Đèo Ngang hoang vắng buổi chiều tà."
+        },
+        {
+          "id": "p2",
+          "question": "Tiếng 'quốc quốc, gia gia' của chim trong bài thơ được tác giả hiểu theo nghĩa gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Nhân hóa tiếng chim thành lời kêu nhớ nước (quốc) thương nhà (gia) — nỗi lòng của chính tác giả gửi vào tiếng chim",
+            "Mô tả tiếng kêu của hai loài chim thực tế sống ở vùng Đèo Ngang",
+            "Dùng điển tích Trung Hoa về hai vị vua Nghiêu và Thuấn",
+            "Tả âm thanh tự nhiên để làm sống động bức tranh thiên nhiên"
+          ],
+          "answer": "Nhân hóa tiếng chim thành lời kêu nhớ nước (quốc) thương nhà (gia) — nỗi lòng của chính tác giả gửi vào tiếng chim",
+          "hints": ["'Quốc' nghĩa là gì? 'Gia' nghĩa là gì? Tác giả đang ở đâu và đi đâu?"],
+          "explanation": "Bà Huyện Thanh Quan vào Huế nhận chức — xa nhà, xa Hà Nội. Tiếng chim 'quốc quốc, gia gia' được bà nghe như lời kêu 'đất nước ơi, nhà ơi'. Đây là phép nhân hóa + đồng âm: tiếng chim thực + ý nghĩa tượng trưng = nỗi nhớ nước thương nhà của người xa xứ."
+        },
+        {
+          "id": "p3",
+          "question": "Câu kết 'Một mảnh tình riêng, ta với ta' — 'ta với ta' ở đây có ý nghĩa gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Chỉ một mình tác giả — ta (bản ngã) đứng đối diện với ta (bóng cô đơn) giữa trời non nước mênh mông",
+            "Giống 'ta với ta' trong 'Bạn đến chơi nhà' — hai người bạn thân thiết bên nhau",
+            "Tác giả tự an ủi bản thân rằng chỉ cần có chính mình là đủ",
+            "Triết lý nhà Phật về sự vô ngã và hòa tan vào vũ trụ"
+          ],
+          "answer": "Chỉ một mình tác giả — ta (bản ngã) đứng đối diện với ta (bóng cô đơn) giữa trời non nước mênh mông",
+          "hints": ["So sánh: Nguyễn Khuyến 'ta với ta' có mấy người? Bà Huyện Thanh Quan có mấy người?"],
+          "explanation": "'Ta với ta' của Bà Huyện Thanh Quan = 1 người; 'ta với ta' của Nguyễn Khuyến (Bạn đến chơi nhà) = 2 người. Đây là điểm đối lập thú vị: cùng một cụm từ, ý nghĩa trái ngược. Bà Huyện dùng để diễn tả nỗi cô đơn tột cùng — chỉ còn mình ta với mảnh tình riêng giữa trời đất mênh mông."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g7_ch0_1",
+      "sectionName": "Bạn Đến Chơi Nhà — Nguyễn Khuyến",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-7-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g7_Bạn_đến_chơi_nhà.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả",
+          "theorem": "Nguyễn Khuyến (1835–1909) — nhà thơ lớn cuối thời Hán học, nổi tiếng với thơ Nôm mộc mạc, thâm thúy. Ba bài thơ thu nổi tiếng và 'Bạn đến chơi nhà' là đỉnh cao.",
+          "imageUrls": ["Resources/LiteratureData/Images/nguyen_khuyen.png"]
+        },
+        {
+          "name": "Bài thơ",
+          "definition": "Đã bấy lâu nay bác tới nhà\nTrẻ thời đi vắng, chợ thời xa\nAo sâu nước cả, khôn chài cá\nVườn rộng rào thưa, khó đuổi gà\nCải chửa ra cây, cà mới nụ\nBầu vừa rụng rốn, mướp đương hoa\nĐầu trò tiếp khách trầu không có\nBác đến chơi đây, ta với ta!"
+        },
+        {
+          "name": "Phân tích",
+          "examples": [
+            "**6 câu liệt kê 'không có'**: Không cá, không gà, không cải, không cà, không bầu, không mướp, không trầu — liệt kê dài để nhấn mạnh: thực ra không thiếu tình cảm.",
+            "**'Ta với ta'**: Hai người bạn thân ngồi bên nhau — tình bạn tri kỷ không cần vật chất.",
+            "**Giọng hài hước**: Liệt kê thiếu thốn nhưng giọng vui vẻ — ông không ngại ngùng mà bày tỏ thẳng thắn.",
+            "**Câu kết bất ngờ**: 7 câu than nghèo → câu 8 đột ngột 'ta với ta' — chốt lại tất cả: tình bạn là đủ rồi."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Tại sao Nguyễn Khuyến liệt kê đến 6 thứ 'không có' (cá, gà, cải, cà, bầu, mướp, trầu) trước khi kết 'ta với ta'?",
+          "difficulty": "Medium",
+          "options": [
+            "Tạo độ trễ nghệ thuật — kéo dài sự thiếu thốn để câu kết 'ta với ta' trở nên bất ngờ và có trọng lượng hơn",
+            "Miêu tả chân thực cảnh nghèo của nhà thơ để người đọc thông cảm",
+            "Theo cấu trúc bắt buộc của thể thơ thất ngôn bát cú Đường luật",
+            "Thể hiện sự ngại ngùng và xấu hổ của chủ nhà khi không có gì đãi bạn"
+          ],
+          "answer": "Tạo độ trễ nghệ thuật — kéo dài sự thiếu thốn để câu kết 'ta với ta' trở nên bất ngờ và có trọng lượng hơn",
+          "hints": ["Nếu viết thẳng 'nhà tôi nghèo, nhưng ta với ta' thì bài thơ có hay như vậy không?"],
+          "explanation": "Nguyễn Khuyến chơi 'trò tác giả' thú vị: liệt kê 6 câu than vãn thiếu thốn (rất chi tiết, hài hước) để người đọc tưởng bài thơ về cảnh nghèo. Câu 8 bất ngờ lật ngược: 'Bác đến chơi đây, ta với ta!' — tất cả thiếu thốn không quan trọng, có nhau là đủ. Kỹ thuật bất ngờ cuối bài là nghệ thuật cao nhất của thơ Đường."
+        },
+        {
+          "id": "p2",
+          "question": "Bài thơ 'Bạn đến chơi nhà' thể hiện quan niệm gì về tình bạn?",
+          "difficulty": "Easy",
+          "options": [
+            "Tình bạn tri kỷ không cần vật chất — có nhau là đủ, tinh thần quý hơn mâm cao cỗ đầy",
+            "Phê phán xã hội coi trọng vật chất hơn tình cảm",
+            "Khuyên bạn bè nên thông cảm cho hoàn cảnh khó khăn của nhau",
+            "Ca ngợi phong tục thăm viếng lẫn nhau trong văn hóa Việt Nam"
+          ],
+          "answer": "Tình bạn tri kỷ không cần vật chất — có nhau là đủ, tinh thần quý hơn mâm cao cỗ đầy",
+          "hints": ["'Ta với ta' — điều gì được Nguyễn Khuyến coi là đủ?"],
+          "explanation": "Nguyễn Khuyến viết bài thơ như một lời biện minh dí dỏm: không có thức ăn đãi bạn, nhưng có điều quý hơn — sự hiện diện của bạn tri kỷ. 'Ta với ta' = tôi và bác ngồi bên nhau = hạnh phúc thật sự. Đây là triết lý sống giản dị mà sâu sắc của người trí thức xưa: tình bạn không đo bằng vật chất."
+        },
+        {
+          "id": "p3",
+          "question": "So sánh 'ta với ta' trong 'Bạn đến chơi nhà' và 'Qua Đèo Ngang' — ý nghĩa khác nhau như thế nào?",
+          "difficulty": "Hard",
+          "options": [
+            "Nguyễn Khuyến: ta với ta = 2 người bạn thân → ấm áp; Bà Huyện: ta với ta = 1 người cô đơn → lạnh lẽo",
+            "Cả hai đều diễn tả cô đơn nhưng mức độ khác nhau",
+            "Nguyễn Khuyến dùng 'ta' chỉ người nghèo; Bà Huyện dùng 'ta' chỉ phụ nữ",
+            "Hai câu thơ có nghĩa giống nhau nhưng hoàn cảnh sáng tác khác nhau"
+          ],
+          "answer": "Nguyễn Khuyến: ta với ta = 2 người bạn thân → ấm áp; Bà Huyện: ta với ta = 1 người cô đơn → lạnh lẽo",
+          "hints": ["Trong 'Bạn đến chơi nhà' có mấy người? Trong 'Qua Đèo Ngang' có mấy người?"],
+          "explanation": "Đây là bài tập so sánh cổ điển của môn Ngữ Văn 7: cùng 3 chữ 'ta với ta' nhưng nghĩa hoàn toàn trái ngược. Nguyễn Khuyến: ta (chủ nhà) + ta (khách bạn) = 2 người → tình bạn ấm áp. Bà Huyện Thanh Quan: ta (tôi) + ta (bóng cô đơn của chính mình) = 1 người → cô đơn tuyệt đối."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g7_ch0_2",
+      "sectionName": "Tiếng Gà Trưa — Xuân Quỳnh",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-7-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g7_Tiếng_gà_trưa.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả",
+          "theorem": "Xuân Quỳnh (1942–1988) — nữ thi sĩ nổi tiếng nhất thế hệ chống Mỹ. 'Tiếng gà trưa' (1968) gợi ký ức tuổi thơ và tình bà cháu qua âm thanh quen thuộc của quê hương.",
+          "imageUrls": ["Resources/LiteratureData/Images/xuan_quynh.png"]
+        },
+        {
+          "name": "Đoạn 1 — Tiếng gà gợi nhớ",
+          "definition": "Trên đường hành quân xa\nDừng chân bên xóm nhỏ\nTiếng gà ai nhảy ổ:\nCục...cục tác cục ta\nNghe xao động nắng trưa\nNghe bàn chân đỡ mỏi\nNghe gọi về tuổi thơ."
+        },
+        {
+          "name": "Hình ảnh bà",
+          "definition": "Tay bà khum soi trứng\nDành từng quả chắt chiu\nCho con gà mái ấp\nCuối năm bán gà đi\nCháu được quần áo mới."
+        },
+        {
+          "name": "Phân tích",
+          "examples": [
+            "**Điệp từ 'nghe'**: 'Nghe xao động... nghe bàn chân... nghe gọi' — âm thanh gà gợi ra 3 tầng cảm xúc: vật lý → thể chất → tâm hồn.",
+            "**Bà soi trứng**: Chi tiết nhỏ nhưng đầy yêu thương — bàn tay già nua, cẩn thận từng quả trứng để cháu có quần áo mới Tết.",
+            "**Tình bà cháu**: Không có lời nói yêu thương hoa mỹ — chỉ hành động giản dị nhưng đong đầy tình cảm.",
+            "**Ý nghĩa chiến đấu**: Cuối bài — người lính chiến đấu vì bà, vì tiếng gà, vì ký ức tuổi thơ — tình yêu Tổ quốc bắt đầu từ những điều bình dị nhất."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Điệp từ 'nghe' trong 'Nghe xao động nắng trưa / Nghe bàn chân đỡ mỏi / Nghe gọi về tuổi thơ' diễn đạt điều gì?",
+          "difficulty": "Easy",
+          "options": [
+            "Tiếng gà tác động đến cả 3 tầng: thiên nhiên, thể chất và tâm hồn — âm thanh quen thuộc có sức mạnh gọi về ký ức",
+            "Người lính nghe rõ tiếng gà vì đường hành quân yên tĩnh",
+            "Điệp từ tạo nhịp điệu bài thơ theo thể thơ 5 chữ",
+            "Xuân Quỳnh nhấn mạnh khả năng nghe nhạy bén của người lính"
+          ],
+          "answer": "Tiếng gà tác động đến cả 3 tầng: thiên nhiên, thể chất và tâm hồn — âm thanh quen thuộc có sức mạnh gọi về ký ức",
+          "hints": ["Ba câu 'nghe' — mỗi câu tả một điều khác nhau: nắng, bàn chân, tuổi thơ — thuộc lĩnh vực nào?"],
+          "explanation": "Điệp từ 'nghe' tạo ra ba tầng tiếp nhận: nghe làm 'xao động nắng trưa' (cảm giác thiên nhiên) → 'bàn chân đỡ mỏi' (thể chất) → 'gọi về tuổi thơ' (tâm hồn). Xuân Quỳnh muốn nói: âm thanh quen thuộc của quê hương có sức mạnh phi thường — chữa lành cả thể chất và tâm hồn người lính xa nhà."
+        },
+        {
+          "id": "p2",
+          "question": "Chi tiết 'tay bà khum soi trứng / dành từng quả chắt chiu' thể hiện tình yêu thương của bà như thế nào?",
+          "difficulty": "Easy",
+          "options": [
+            "Tình yêu thể hiện qua hành động cụ thể, thầm lặng — không lời nói hoa mỹ nhưng từng cử chỉ đều đầy ắp yêu thương",
+            "Bà nghèo khổ phải chắt chiu từng quả trứng để bán lấy tiền",
+            "Bà dạy cháu cách nuôi gà theo kinh nghiệm dân gian",
+            "Chi tiết thực tế miêu tả cuộc sống nông thôn Việt Nam thập niên 60"
+          ],
+          "answer": "Tình yêu thể hiện qua hành động cụ thể, thầm lặng — không lời nói hoa mỹ nhưng từng cử chỉ đều đầy ắp yêu thương",
+          "hints": ["Bà soi từng quả trứng để làm gì? Mục đích cuối cùng là gì cho cháu?"],
+          "explanation": "Xuân Quỳnh không viết 'bà yêu cháu lắm' mà tả hành động: tay bà khum (cẩn thận), soi từng quả (tỉ mỉ), chắt chiu (tiết kiệm) để cuối năm có tiền mua quần áo mới cho cháu. Tình yêu của bà không bằng lời mà bằng từng cử chỉ nhỏ nhặt, hằng ngày — đó là tình yêu chân thật và sâu sắc nhất."
+        },
+        {
+          "id": "p3",
+          "question": "Bài thơ kết nối tiếng gà trưa với ý nghĩa chiến đấu — mối liên hệ đó là gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Người lính chiến đấu vì những điều bình dị thân yêu (bà, tiếng gà, ký ức tuổi thơ) — tình yêu Tổ quốc bắt đầu từ tình yêu quê hương nhỏ bé",
+            "Tiếng gà là ký hiệu ngầm báo hiệu giờ xuất quân trong quân đội",
+            "Người lính chiến đấu để bảo vệ cả những con gà của nhân dân",
+            "Xuân Quỳnh muốn nói chiến tranh tàn phá cả cuộc sống bình dị của nông thôn"
+          ],
+          "answer": "Người lính chiến đấu vì những điều bình dị thân yêu (bà, tiếng gà, ký ức tuổi thơ) — tình yêu Tổ quốc bắt đầu từ tình yêu quê hương nhỏ bé",
+          "hints": ["Cuối bài, người lính nói mình chiến đấu vì điều gì?"],
+          "explanation": "Xuân Quỳnh xây dựng chuỗi logic: tiếng gà → nhớ bà → nhớ quê hương → sức mạnh chiến đấu. Tình yêu Tổ quốc không phải khái niệm trừu tượng mà bắt nguồn từ những điều rất cụ thể: tiếng gà quen thuộc, bàn tay bà, ổ trứng hồng. Đây là cách Xuân Quỳnh chứng minh: yêu nước bắt đầu từ yêu những điều nhỏ bé nhất của quê hương."
+        }
+      ]
+    }
+  ]
+}

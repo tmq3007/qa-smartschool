@@ -1,0 +1,150 @@
+{
+  "metadata": {
+    "chapterId": "g09_ch04",
+    "chapterName": "Bài 4: Văn xuôi trung đại Việt Nam",
+    "grade": 9,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 4,
+    "thptWeight": "Trọng điểm thi vào 10 — Phân tích nhân vật và giá trị hiện thực"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g9_ch3_0",
+      "sectionName": "Chuyện người con gái Nam Xương — Nguyễn Dữ",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Chuyện_người_con_gái_Nam_Xương.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Nguyễn Dữ (thế kỷ XVI). Trích từ 'Truyền kỳ mạn lục' — thiên cổ kỳ bút. Tác phẩm phản ánh bi kịch của người phụ nữ trong xã hội phong kiến và giá trị nhân đạo sâu sắc.",
+          "imageUrls": ["Resources/LiteratureData/Images/nguyen_du.png"]
+        },
+        {
+          "name": "Vẻ đẹp của Vũ Nương",
+          "definition": "Vũ Thị Thiết, người con gái quê ở Nam Xương, tính đã thùy mị, nết na, lại thêm tư dung tốt đẹp... Khi chồng đi lính: 'Thiếp chẳng dám mong đeo ấn phong hầu, mặc áo gấm trở về quê cũ, chỉ xin ngày về mang theo được hai chữ bình yên'."
+        },
+        {
+          "name": "Bi kịch oan khuất",
+          "definition": "Bé Đản chỉ bóng trên vách: 'Đêm nào cũng có một người đàn ông đến...'. Trương Sinh đa nghi, ghen tuông đánh đuổi vợ. Vũ Nương than: 'Nay đã bình rơi trâm gãy, mây tạnh mưa tan, sen rũ trong ao, liễu tàn trước gió...' rồi gieo mình xuống sông Hoàng Giang."
+        },
+        {
+          "name": "Phân tích giá trị",
+          "examples": [
+            "**Nguyên nhân bi kịch**: Trực tiếp là lời nói ngây thơ của bé Đản và tính ghen tuông, gia trưởng của Trương Sinh. Gián tiếp là chiến tranh phong kiến (chia cắt vợ chồng) và chế độ nam quyền.",
+            "**Chi tiết cái bóng**: Nút thắt và mở của câu chuyện. Cái bóng là tình yêu thương của người mẹ, nhưng lại trở thành bằng chứng kết tội oan nghiệt.",
+            "**Kết thúc kỳ ảo**: Vũ Nương không trở về trần gian. Âm vang bi kịch còn mãi, tố cáo xã hội phong kiến không có chốn dung thân cho người phụ nữ đức hạnh."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Chi tiết 'cái bóng' trên vách trong 'Chuyện người con gái Nam Xương' có vai trò nghệ thuật gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Là chi tiết thắt nút tạo ra sự hiểu lầm và cũng là chi tiết mở nút giải oan cho Vũ Nương",
+            "Chỉ là một trò chơi giải trí của Vũ Nương để dỗ con",
+            "Thể hiện tín ngưỡng thờ cúng tổ tiên của người Việt",
+            "Là yếu tố kỳ ảo do ma quỷ tạo ra để hại Vũ Nương"
+          ],
+          "answer": "Là chi tiết thắt nút tạo ra sự hiểu lầm và cũng là chi tiết mở nút giải oan cho Vũ Nương",
+          "hints": ["Vì cái bóng mà Trương Sinh nghi ngờ. Sau đó, cũng nhờ cái gì mà Trương Sinh hiểu ra vợ bị oan?"],
+          "explanation": "Chi tiết cái bóng là sáng tạo nghệ thuật độc đáo. Nó vừa thắt nút (Bé Đản nhận bóng làm cha → Trương Sinh ghen), vừa mở nút (Một đêm bé Đản lại chỉ bóng Trương Sinh trên vách → Trương Sinh tỉnh ngộ). Cái bóng hư ảo lại quyết định sinh mệnh một con người có thực."
+        },
+        {
+          "id": "p2",
+          "question": "Nguyên nhân sâu xa nào dẫn đến bi kịch của Vũ Nương?",
+          "difficulty": "Hard",
+          "options": [
+            "Chế độ nam quyền phong kiến bất công và chiến tranh phi nghĩa",
+            "Do tính cách yếu đuối, không biết tự bảo vệ mình của Vũ Nương",
+            "Do người mẹ chồng không thương xót con dâu",
+            "Do bé Đản cố tình nói dối để chia rẽ cha mẹ"
+          ],
+          "answer": "Chế độ nam quyền phong kiến bất công và chiến tranh phi nghĩa",
+          "hints": ["Trương Sinh có quyền đánh đuổi vợ mà không cần nghe giải thích là do chế độ nào dung túng?"],
+          "explanation": "Tính ghen tuông của Trương Sinh chỉ là nguyên nhân trực tiếp. Nguyên nhân sâu xa là chiến tranh phong kiến làm vợ chồng xa cách, và đặc biệt là chế độ nam quyền (trọng nam khinh nữ) cho phép người chồng uy quyền tuyệt đối, tước đoạt quyền tự biện hộ của phụ nữ."
+        },
+        {
+          "id": "p3",
+          "question": "Kết thúc tác phẩm, Vũ Nương chỉ hiện về trên bến sông rồi biến mất chứ không trở lại trần gian. Điều này mang ý nghĩa gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Khẳng định bi kịch không thể cứu vãn: xã hội phong kiến không có chỗ dung thân cho người phụ nữ đức hạnh",
+            "Vũ Nương đã quen với cuộc sống sung sướng dưới Thủy cung nên không muốn về",
+            "Vũ Nương vẫn còn hận Trương Sinh nên quyết không tha thứ",
+            "Thể hiện sự trừng phạt vĩnh viễn dành cho Trương Sinh"
+          ],
+          "answer": "Khẳng định bi kịch không thể cứu vãn: xã hội phong kiến không có chỗ dung thân cho người phụ nữ đức hạnh",
+          "hints": ["Vũ Nương nói 'thiếp chẳng thể trở về nhân gian được nữa'. Trần gian có còn là nơi an toàn cho nàng?"],
+          "explanation": "Mặc dù có yếu tố kỳ ảo (kết thúc có hậu theo kiểu cổ tích), nhưng Nguyễn Dữ vẫn giữ tính bi kịch hiện thực: 'Chẳng thể trở về nhân gian'. Chiếc bóng oan nghiệt đã tan, nhưng vết thương lòng không thể hàn gắn, thực tại phũ phàng không thể dung nạp cái đẹp."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g9_ch3_1",
+      "sectionName": "Hoàng Lê nhất thống chí (Hồi 14) — Ngô gia văn phái",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Hoàng_Lê_nhất_thống_chí.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Ngô gia văn phái. Tác phẩm viết bằng chữ Hán, ghi chép lại sự kiện lịch sử (thể chí). Hồi 14 tái hiện hình ảnh anh hùng Quang Trung đại phá quân Thanh (1789) và sự thảm bại của quân tướng nhà Thanh cùng vua tôi Lê Chiêu Thống."
+        },
+        {
+          "name": "Hình tượng Quang Trung - Nguyễn Huệ",
+          "definition": "Hành động mạnh mẽ, quyết đoán: Nghe tin giặc đến, không hề nao núng, định thân chinh cầm quân đi ngay. Lên ngôi Hoàng đế (tháng 11) để chính vị hiệu. \nTrí tuệ sáng suốt, nhạy bén: Xét đoán tướng sĩ (tha tội Sở, Lân), vạch kế hoạch đánh giặc, tiên đoán chính xác thời gian chiến thắng ('mùng 7 năm mới').\nTài dụng binh như thần: Hành quân thần tốc, tổ chức chiến đấu khoa học, linh hoạt."
+        },
+        {
+          "name": "Sự thảm bại của kẻ thù",
+          "definition": "Tôn Sĩ Nghị: Kiêu căng, tự mãn, chủ quan khinh địch. Khi quân Tây Sơn đánh vào, 'sợ mất mật, ngựa không kịp đóng yên, người không kịp mặc giáp, dẫn bọn lính kỵ mã của mình chuồn trước qua cầu phao'.\nVua Lê Chiêu Thống: Bán nước cầu vinh, chạy trốn thảm hại, nhục nhã."
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Đặc điểm nổi bật nhất trong tính cách và hành động của vua Quang Trung qua Hồi 14 là gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Mạnh mẽ, quyết đoán, trí tuệ sáng suốt, nhìn xa trông rộng và có tài dụng binh như thần",
+            "Thận trọng, do dự trước thế giặc mạnh, phải dựa hoàn toàn vào các mưu sĩ",
+            "Độc đoán, tàn bạo, chỉ biết dùng sức mạnh quân sự để áp đảo kẻ thù",
+            "Mưu mô, xảo quyệt, lợi dụng thời cơ để chiếm đoạt ngôi vua"
+          ],
+          "answer": "Mạnh mẽ, quyết đoán, trí tuệ sáng suốt, nhìn xa trông rộng và có tài dụng binh như thần",
+          "hints": ["Nhớ lại cách ông xử lý khi nghe tin giặc, cách ông an ủi tướng sĩ và lời hẹn mùng 7 Tết."],
+          "explanation": "Quang Trung hiện lên như một vị anh hùng cái thế. Ông hành động thần tốc, vạch định chiến lược rõ ràng, vừa hiểu thấu tâm lý quân sĩ, vừa tiên đoán chính xác kết cục chiến tranh."
+        },
+        {
+          "id": "p2",
+          "question": "Thái độ của các tác giả Ngô gia văn phái (vốn là cựu thần nhà Lê) đối với vua Quang Trung trong đoạn trích này như thế nào?",
+          "difficulty": "Hard",
+          "options": [
+            "Tôn trọng sự thật lịch sử, phản ánh khách quan và ca ngợi vẻ đẹp hào hùng của vị anh hùng dân tộc",
+            "Xuyên tạc sự thật, bôi nhọ hình ảnh Quang Trung để bảo vệ danh dự nhà Lê",
+            "Thờ ơ, lạnh nhạt, chỉ ghi chép sự kiện mà không bộc lộ cảm xúc",
+            "Miễn cưỡng ghi chép vì bị ép buộc, dùng nhiều lời lẽ châm biếm"
+          ],
+          "answer": "Tôn trọng sự thật lịch sử, phản ánh khách quan và ca ngợi vẻ đẹp hào hùng của vị anh hùng dân tộc",
+          "hints": ["Mặc dù trung thành với nhà Lê, nhưng ngòi bút của họ khi viết về Quang Trung đánh giặc Thanh có mang tính ca ngợi không?"],
+          "explanation": "Điều đáng quý nhất của Ngô gia văn phái là lương tâm của người cầm bút. Dù đứng trên lập trường phong kiến bảo thủ (trung quân với nhà Lê), họ vẫn không thể phủ nhận sự thật lịch sử chói lọi và tự hào dân tộc, từ đó khắc họa cực kỳ thành công, oai phong bức chân dung anh hùng Nguyễn Huệ."
+        },
+        {
+          "id": "p3",
+          "question": "Hình ảnh vua Lê Chiêu Thống chạy trốn bộc lộ rõ nhất bản chất gì?",
+          "difficulty": "Easy",
+          "options": [
+            "Sự hèn nhát, nhục nhã của kẻ bán nước cầu vinh, rước voi giày mả tổ",
+            "Sự thông minh, biết bảo toàn lực lượng để chờ thời cơ phục thù",
+            "Lòng trung thành tuyệt đối với mẫu quốc (nhà Thanh)",
+            "Nỗi bất hạnh của một vị vua mất nước đáng được cảm thông"
+          ],
+          "answer": "Sự hèn nhát, nhục nhã của kẻ bán nước cầu vinh, rước voi giày mả tổ",
+          "hints": ["Chạy theo quân Thanh, nhịn đói, khóc lóc... là hình ảnh của kẻ anh hùng hay kẻ bán nước?"],
+          "explanation": "Hình ảnh Lê Chiêu Thống là bức tranh biếm họa về sự tận cùng của hèn hạ. Kẻ cõng rắn cắn gà nhà cuối cùng phải chịu cảnh hoảng loạn, cướp thuyền mà chạy, chịu nhục nhã muôn đời."
+        }
+      ]
+    }
+  ]
+}

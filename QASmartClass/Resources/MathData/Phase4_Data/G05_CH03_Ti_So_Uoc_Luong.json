@@ -1,0 +1,302 @@
+﻿{
+  "metadata": {
+    "chapterId": "g05_ch03",
+    "chapterName": "Tỉ Số & Ước Lượng",
+    "grade": 5,
+    "totalSections": 2,
+    "totalConcepts": 4,
+    "totalProblems": 12,
+    "toolMapping": [
+      "basic_math"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 10,
+    "prerequisites": [
+      "g05_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "tl5_01",
+      "sectionName": "Tỉ số & Tỉ lệ",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "tl5_001",
+          "name": "Tỉ số",
+          "definition": "So sánh 2 đại lượng bằng phép chia. a:b = a/b",
+          "examples": [
+            "3 nam : 5 nữ = tỉ số 3/5",
+            "Bản đồ 1:100.000 → 1 cm = 1 km"
+          ]
+        },
+        {
+          "id": "tl5_002",
+          "name": "Tỉ lệ bản đồ",
+          "definition": "1:n nghĩa là 1 đơn vị trên bản đồ = n đơn vị thực tế",
+          "examples": [
+            "Tỉ lệ 1:50.000 → 2 cm trên bản đồ = 2 × 50.000 = 100.000 cm = 1 km"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tl5_p01",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Lớp 15 nam, 20 nữ. Tỉ số nam/nữ = ?",
+          "options": [
+            "A) 15/20 = 3/4",
+            "B) 20/15",
+            "C) 15/35",
+            "D) 20/35"
+          ],
+          "correctAnswer": "A",
+          "solution": "Tỉ số nam/nữ = 15/20 = 3/4",
+          "points": 5
+        },
+        {
+          "problemId": "tl5_p02",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Bản đồ tỉ lệ 1:200.000. Đoạn AB trên bản đồ = 3 cm. Thực tế = ? km",
+          "options": [
+            "A) 3 km",
+            "B) 6 km",
+            "C) 60 km",
+            "D) 600 km"
+          ],
+          "correctAnswer": "B",
+          "solution": "3 × 200.000 = 600.000 cm = 6 km",
+          "points": 10
+        },
+        {
+          "problemId": "tl5_p03",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Chia 60 viên kẹo theo tỉ lệ 2:3 cho An và Bình. An được mấy viên?",
+          "options": [
+            "A) 20",
+            "B) 24",
+            "C) 30",
+            "D) 36"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tổng phần = 2+3 = 5. An = 60 × 2/5 = 24 viên",
+          "points": 10
+        },
+        {
+          "problemId": "tl5_p04",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Trộn nước cam:nước theo tỉ lệ 1:4. Cần 3 lít nước cam thì cần bao nhiêu lít nước?",
+          "options": [
+            "A) 9 lít",
+            "B) 12 lít",
+            "C) 15 lít",
+            "D) 4 lít"
+          ],
+          "correctAnswer": "B",
+          "solution": "1 phần cam = 3 lít → 1 phần = 3 lít. 4 phần nước = 4 × 3 = 12 lít",
+          "points": 15
+        },
+        {
+          "problemId": "tl5_p05",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "A:B:C = 2:3:5. Tổng = 200. C = ?",
+          "options": [
+            "A) 80",
+            "B) 100",
+            "C) 60",
+            "D) 40"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tổng phần = 10. C = 200 × 5/10 = 100",
+          "points": 15
+        },
+        {
+          "problemId": "tl5_p06",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Tỉ lệ 1:100. 5 cm trên giấy = ? cm thực tế",
+          "options": [
+            "A) 100 cm",
+            "B) 500 cm",
+            "C) 50 cm",
+            "D) 5000 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "5 × 100 = 500 cm = 5 m",
+          "points": 5
+        }
+      ]
+    },
+    {
+      "sectionId": "tl5_02",
+      "sectionName": "Ước lượng & Làm tròn",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "tl5_003",
+          "name": "Làm tròn số",
+          "definition": "Nếu chữ số sau vị trí làm tròn ≥ 5 → tăng 1, < 5 → giữ nguyên",
+          "examples": [
+            "3,47 ≈ 3,5 (làm tròn 1 chữ số TP)",
+            "1.648 ≈ 1.700 (làm tròn hàng trăm)"
+          ]
+        },
+        {
+          "id": "tl5_004",
+          "name": "Ước lượng kết quả",
+          "definition": "Dùng số tròn để tính nhanh gần đúng",
+          "examples": [
+            "49 × 21 ≈ 50 × 20 = 1000 (chính xác: 1029)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tl5_p07",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Làm tròn 3,74 đến hàng đơn vị = ?",
+          "options": [
+            "A) 3",
+            "B) 3,7",
+            "C) 4",
+            "D) 3,8"
+          ],
+          "correctAnswer": "C",
+          "solution": "Chữ số sau hàng đơn vị là 7 ≥ 5 → tăng 1: 3 → 4",
+          "points": 5
+        },
+        {
+          "problemId": "tl5_p08",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Ước lượng: 198 × 52 ≈ ?",
+          "options": [
+            "A) 8.000",
+            "B) 10.000",
+            "C) 12.000",
+            "D) 15.000"
+          ],
+          "correctAnswer": "B",
+          "solution": "198 ≈ 200, 52 ≈ 50. 200 × 50 = 10.000 (chính xác: 10.296)",
+          "points": 10
+        },
+        {
+          "problemId": "tl5_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Làm tròn 4.567 đến hàng trăm = ?",
+          "options": [
+            "A) 4.500",
+            "B) 4.600",
+            "C) 4.570",
+            "D) 5.000"
+          ],
+          "correctAnswer": "B",
+          "solution": "Hàng chục = 6 ≥ 5 → hàng trăm tăng 1: 4.600",
+          "points": 10
+        },
+        {
+          "problemId": "tl5_p10",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Ước lượng: 3,14 × 7² ≈ ?",
+          "options": [
+            "A) 140",
+            "B) 150",
+            "C) 155",
+            "D) 160"
+          ],
+          "correctAnswer": "C",
+          "solution": "3,14 ≈ 3. 7² = 49 ≈ 50. 3 × 50 = 150. Chính xác: 153,86 ≈ 155",
+          "points": 15
+        },
+        {
+          "problemId": "tl5_p11",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Sai số khi làm tròn 2,345 thành 2,35 = ?",
+          "options": [
+            "A) 0,05",
+            "B) 0,005",
+            "C) 0,5",
+            "D) 0,0005"
+          ],
+          "correctAnswer": "B",
+          "solution": "2,35 - 2,345 = 0,005",
+          "points": 15
+        },
+        {
+          "problemId": "tl5_p12",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Làm tròn 8,45 đến 1 chữ số thập phân = ?",
+          "options": [
+            "A) 8,4",
+            "B) 8,5",
+            "C) 8,0",
+            "D) 9,0"
+          ],
+          "correctAnswer": "B",
+          "solution": "Chữ số sau vị trí = 5 ≥ 5 → tăng 1: 8,5",
+          "points": 5
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm tỉ lệ: 1:100 → 1 cm = 100 km",
+      "correction": "1:100 → 1 cm = 100 CM. 1 cm = 1 m, KHÔNG phải 1 km"
+    },
+    {
+      "mistake": "Chia tỉ lệ sai: 60 chia 2:3 → An=30, Bình=30",
+      "correction": "Phải chia theo tỉ lệ: An = 60×2/5=24, Bình = 60×3/5=36"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "tl5_quiz_01",
+      "title": "Kiểm tra: Tỉ số & Ước lượng Lớp 5",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "tl5_p01"
+        },
+        {
+          "ref": "tl5_p07"
+        },
+        {
+          "ref": "tl5_p03"
+        },
+        {
+          "ref": "tl5_p10"
+        },
+        {
+          "ref": "tl5_p05"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

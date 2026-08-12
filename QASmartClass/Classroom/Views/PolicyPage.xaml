@@ -1,0 +1,783 @@
+<Page x:Class="QASmartClass.Classroom.Views.PolicyPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Chính sách" Background="#F0F2F5"
+      FontFamily="Segoe UI, Helvetica, Arial, sans-serif">
+    <Grid Margin="20,12" MaxWidth="1400" HorizontalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0" CornerRadius="14" Padding="20,14" Margin="0,0,0,12">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#1A2332" Offset="0"/>
+                    <GradientStop Color="#2C3E50" Offset="0.6"/>
+                    <GradientStop Color="#34495E" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnHelp" Content="💡 Hướng dẫn" Padding="12,6" Margin="0,0,8,0"
+                            Background="#34495E" Foreground="White" BorderBrush="White" BorderThickness="1"
+                            Cursor="Hand" Click="btnHelp_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="b" Property="Background" Value="#1A2332"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Border x:Name="badgeOnline" Background="#4CAF50" CornerRadius="8" Padding="10,5" Margin="0,0,6,0">
+                        <TextBlock x:Name="txtOnlineCount" Text="0 Học sinh online" FontSize="12" Foreground="White" FontWeight="SemiBold"/>
+                    </Border>
+                    <Border x:Name="badgePolicyActive" Background="#FF9800" CornerRadius="8" Padding="10,5" Visibility="Collapsed">
+                        <TextBlock Text="⚠ Chính sách đang hoạt động" FontSize="12" Foreground="White" FontWeight="SemiBold"/>
+                    </Border>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="🔒 Bảo mật &amp; Quyền hạn Lớp học" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Thiết lập môi trường an toàn, kiểm soát truy cập mạng và các thiết bị của học sinh" FontSize="13" Foreground="#CFD8DC" Margin="0,3,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ═══ BODY ═══ -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="gridMainContent">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="1*" MinWidth="340"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ═══ LEFT — Policy Settings ═══ -->
+                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+
+                    <!-- 📋 Mẫu thiết lập nhanh (Presets) -->
+                    <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12"
+                            BorderBrush="#E3E8EE" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,14">
+                                <Border Background="#E8F5E9" CornerRadius="8" Padding="8,5" Margin="0,0,10,0">
+                                    <TextBlock Text="⚡" FontSize="18"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Mẫu thiết lập nhanh (Presets)" FontSize="16" FontWeight="Bold" Foreground="#2E7D32"/>
+                                    <TextBlock Text="Chọn kịch bản chính sách có sẵn để cấu hình nhanh lớp học" FontSize="12" Foreground="#757575"/>
+                                </StackPanel>
+                            </DockPanel>
+                             <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0" x:Name="cboPresets" Padding="10,8" FontSize="14" Cursor="Hand"
+                                          SelectionChanged="cboPresets_SelectionChanged">
+                                    <ComboBoxItem Content="Mặc định (Mở khóa)"/>
+                                    <ComboBoxItem Content="Thi cử nghiêm ngặt"/>
+                                    <ComboBoxItem Content="Thực hành Tin học"/>
+                                </ComboBox>
+                                <Button Grid.Column="1" x:Name="btnSavePreset" Content="💾 Lưu mẫu" Margin="8,0,0,0" Padding="10,8" 
+                                        Background="#1976D2" Foreground="White" Cursor="Hand" Click="btnSavePreset_Click"
+                                        ToolTip="Lưu trạng thái CheckBox hiện tại thành mẫu tùy chỉnh mới">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                <Button Grid.Column="2" x:Name="btnExportPreset" Content="📤 Xuất mẫu" Margin="6,0,0,0" Padding="10,8" 
+                                        Background="#2E7D32" Foreground="White" Cursor="Hand" Click="btnExportPreset_Click"
+                                        ToolTip="Xuất mẫu thiết lập được chọn ra file JSON">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                <Button Grid.Column="3" x:Name="btnImportPreset" Content="📥 Nhập mẫu" Margin="6,0,0,0" Padding="10,8" 
+                                        Background="#FF8F00" Foreground="White" Cursor="Hand" Click="btnImportPreset_Click"
+                                        ToolTip="Nhập mẫu thiết lập từ file JSON">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 🌐 Mạng & Internet -->
+                    <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12"
+                            BorderBrush="#E3E8EE" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,14">
+                                <Border Background="#E3F2FD" CornerRadius="8" Padding="8,5" Margin="0,0,10,0">
+                                    <TextBlock Text="🌐" FontSize="18"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Quản lý Internet &amp; Kết nối" FontSize="16" FontWeight="Bold" Foreground="#1565C0"/>
+                                    <TextBlock Text="Kiểm soát quyền truy cập trang web và mạng của máy học sinh" FontSize="12" Foreground="#757575"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <CheckBox x:Name="chkBlockInternet" Margin="0,0,0,10" Cursor="Hand" Checked="chkBlockInternet_Checked" Unchecked="chkBlockInternet_Unchecked"
+                                      ToolTip="Tạm thời ngắt toàn bộ truy cập Internet của học sinh, nhưng giữ kết nối mạng LAN với máy giáo viên">
+                                <TextBlock Text="Tạm dừng kết nối Internet của học sinh" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                            <CheckBox x:Name="chkEduOnly" Margin="0,0,0,4" Cursor="Hand" Checked="chkEduOnly_Checked" Unchecked="chkEduOnly_Unchecked"
+                                      ToolTip="Chỉ cho phép học sinh truy cập các website học tập có đuôi tên miền .edu.vn">
+                                <TextBlock Text="Chỉ cho phép truy cập các trang giáo dục (.edu.vn)" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                            <!-- Cảnh báo sư phạm -->
+                            <TextBlock Text="* Lưu ý: Tùy chọn này sẽ chặn các website quốc tế như Canva, Scratch, Google Drive." 
+                                       FontSize="11" Foreground="#757575" FontStyle="Italic" Margin="28,0,0,10" TextWrapping="Wrap"/>
+                            
+                            <CheckBox x:Name="chkBlockSocial" Margin="0,0,0,10" Cursor="Hand"
+                                      ToolTip="Chặn truy cập vào các mạng xã hội phổ biến: Facebook, YouTube, TikTok, Instagram...">
+                                <TextBlock Text="Giới hạn truy cập mạng xã hội (Facebook, YouTube, TikTok...)" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                            <CheckBox x:Name="chkBlockGames" Cursor="Hand"
+                                      ToolTip="Ngăn chặn học sinh truy cập vào các cổng trò chơi, game online trong giờ học">
+                                <TextBlock Text="Hạn chế truy cập các trang game online" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 🖥️ Màn hình & Hệ thống -->
+                    <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12"
+                            BorderBrush="#E3E8EE" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,14">
+                                <Border Background="#F3E5F5" CornerRadius="8" Padding="8,5" Margin="0,0,10,0">
+                                    <TextBlock Text="🖥️" FontSize="18"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Màn hình &amp; Môi trường Học tập" FontSize="16" FontWeight="Bold" Foreground="#7B1FA2"/>
+                                    <TextBlock Text="Quản lý hiển thị màn hình, khóa desktop và âm thanh máy học sinh" FontSize="12" Foreground="#757575"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <CheckBox x:Name="chkLockDesktop" Margin="0,0,0,10" Cursor="Hand"
+                                      ToolTip="Khóa màn hình làm việc của học sinh khi giáo viên cần cả lớp tập trung nghe giảng bài">
+                                <TextBlock Text="Khóa màn hình desktop học sinh khi không thực hành" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                            <CheckBox x:Name="chkShowTeacherScreen" Margin="0,0,0,10" Cursor="Hand"
+                                      ToolTip="Trình chiếu trực tiếp màn hình giáo viên lên màn hình máy học sinh để dễ theo dõi bài">
+                                <TextBlock Text="Truyền phát màn hình Giáo viên đến tất cả máy học sinh" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                            <CheckBox x:Name="chkQuietMode" Margin="0,0,0,10" Cursor="Hand"
+                                      ToolTip="Tắt âm thanh từ loa ngoài và tai nghe trên máy học sinh để tránh làm ồn lớp học">
+                                <TextBlock Text="Chế độ tập trung âm thanh (tắt âm thanh máy học sinh)" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                            <CheckBox x:Name="chkDisableTaskbar" Cursor="Hand"
+                                      ToolTip="Ẩn thanh Taskbar bên dưới máy học sinh, ngăn mở các phần mềm khác">
+                                <TextBlock Text="Tự động ẩn thanh Taskbar trên hệ điều hành máy học sinh" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ⚙️ Ứng dụng & Thiết bị -->
+                    <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12"
+                            BorderBrush="#E3E8EE" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,14">
+                                <Border Background="#FFF3E0" CornerRadius="8" Padding="8,5" Margin="0,0,10,0">
+                                    <TextBlock Text="⚙️" FontSize="18"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Ứng dụng &amp; Thiết bị Ngoại vi" FontSize="16" FontWeight="Bold" Foreground="#E65100"/>
+                                    <TextBlock Text="Hạn chế sao chép USB, cài đặt phần mềm và in ấn tài liệu trái phép" FontSize="12" Foreground="#757575"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <CheckBox x:Name="chkBlockUsb" Margin="0,0,0,10" Cursor="Hand"
+                                      ToolTip="Ngăn chặn đọc/ghi và lây lan virus qua các cổng USB, ổ đĩa di động">
+                                <TextBlock Text="Chặn kết nối USB và ổ đĩa gắn ngoài" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                            <CheckBox x:Name="chkBlockApps" Margin="0,0,0,10" Cursor="Hand"
+                                      ToolTip="Không cho phép học sinh tải và cài đặt các phần mềm hoặc tệp exe mới">
+                                <TextBlock Text="Ngăn chặn học sinh cài đặt phần mềm mới" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                            
+                            <!-- Checkbox danh sách trắng kèm nút Cấu hình -->
+                            <DockPanel Margin="0,0,0,10">
+                                <CheckBox x:Name="chkWhitelistOnly" VerticalAlignment="Center" Cursor="Hand"
+                                          ToolTip="Chỉ cho phép chạy các phần mềm học tập trong danh sách trắng (Whitelist)">
+                                    <TextBlock Text="Chỉ cho phép chạy các ứng dụng trong danh sách cho phép" FontSize="14" Foreground="#333"/>
+                                </CheckBox>
+                                <Button x:Name="btnConfigAppWhitelist" Content="⚙️ Cấu hình" Background="Transparent" Foreground="#1976D2" 
+                                        BorderThickness="0" Margin="10,0,0,0" Cursor="Hand" FontSize="12" Click="btnConfigAppWhitelist_Click" 
+                                        VerticalAlignment="Center"/>
+                            </DockPanel>
+                            
+                            <CheckBox x:Name="chkBlockPrint" Cursor="Hand"
+                                      ToolTip="Chặn gửi lệnh in đến máy in từ máy tính của học sinh">
+                                <TextBlock Text="Tạm dừng quyền in tài liệu từ máy học sinh" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 🛡️ Bảo mật thoát lớp -->
+                    <Border Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12"
+                            BorderBrush="#E3E8EE" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,14">
+                                <Border Background="#FFEBEE" CornerRadius="8" Padding="8,5" Margin="0,0,10,0">
+                                    <TextBlock Text="🛡️" FontSize="18"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Duy trì Kết nối Lớp học (Teacher-Exit PIN)" FontSize="16" FontWeight="Bold" Foreground="#C62828"/>
+                                    <TextBlock Text="Yêu cầu mã PIN giáo viên để học sinh có thể đóng hoặc thoát khỏi phần mềm" FontSize="12" Foreground="#757575"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <CheckBox x:Name="chkRequireExitPin" Margin="0,0,0,10" Cursor="Hand" Checked="chkRequireExitPin_Checked" Unchecked="chkRequireExitPin_Unchecked"
+                                      ToolTip="Bật tính năng yêu cầu mật khẩu PIN của giáo viên trước khi tắt ứng dụng trên máy học sinh">
+                                <TextBlock Text="Bật bảo vệ mã PIN khi học sinh đóng ứng dụng thoát lớp" FontSize="14" Foreground="#333"/>
+                            </CheckBox>
+                            <Grid x:Name="gridExitPin" Margin="24,0,0,0" Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Nhập mã PIN:" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="#555"/>
+                                <TextBox Grid.Column="1" x:Name="txtExitPin" MaxLength="6" Padding="8,5" FontSize="14"
+                                         PreviewTextInput="txtExitPin_PreviewTextInput"
+                                         DataObject.Pasting="txtExitPin_Pasting"
+                                         ToolTip="Mã xác thực gồm 4 đến 6 chữ số"
+                                         HorizontalContentAlignment="Center" FontWeight="Bold"/>
+                                <Button Grid.Column="2" x:Name="btnRandomPin" Content="🎲 Ngẫu nhiên" Margin="8,0,0,0" Padding="8,5" 
+                                        Background="#F0F2F5" Foreground="#1976D2" Cursor="Hand" Click="btnRandomPin_Click" 
+                                        ToolTip="Tự động sinh mã PIN ngẫu nhiên 6 chữ số an toàn"/>
+                                <TextBlock Grid.Column="3" Text="(Từ 4 - 6 số)" FontSize="12" Foreground="#9E9E9E" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            </Grid>
+                            
+                            <!-- Cấu hình thời gian khóa Idle trang Giáo viên -->
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0" HorizontalAlignment="Left">
+                                <TextBlock Text="🔒 Tự động khóa trang Giáo viên sau:" FontSize="13" Foreground="#555555" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <ComboBox x:Name="cboIdleDuration" Width="100" Padding="5" SelectedIndex="2" SelectionChanged="cboIdleDuration_SelectionChanged" ToolTip="Thời gian không hoạt động trước khi tự động khóa trang">
+                                    <ComboBoxItem Content="2 phút" Tag="120"/>
+                                    <ComboBoxItem Content="3 phút" Tag="180"/>
+                                    <ComboBoxItem Content="5 phút" Tag="300"/>
+                                    <ComboBoxItem Content="10 phút" Tag="600"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Apply / Reset -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <Button Content="✅ Áp dụng chính sách" Padding="24,14" FontSize="14" FontWeight="SemiBold"
+                                Background="#1976D2" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Margin="0,0,10,0" Click="ApplyPolicy_Click"
+                                ToolTip="Lưu và truyền lệnh kích hoạt các chính sách đã chọn đến toàn bộ máy học sinh">
+                            <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                        </Button>
+                        <Button Content="🔓 Đặt lại mặc định" Padding="24,14" FontSize="14"
+                                Background="White" Foreground="#424242" BorderThickness="0" Cursor="Hand"
+                                Click="ResetPolicy_Click"
+                                ToolTip="Gỡ bỏ toàn bộ chính sách và đưa thiết lập lớp học về trạng thái mặc định ban đầu">
+                            <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}" BorderBrush="#E0E0E0" BorderThickness="1"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#F5F5F5"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ═══ RIGHT — Quick Actions + Status ═══ -->
+                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+
+                    <!-- Status Card -->
+                    <Border CornerRadius="12" Padding="16,14" Margin="0,0,0,12">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#E8F5E9" Offset="0"/>
+                                <GradientStop Color="#F1F8E9" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <StackPanel>
+                            <TextBlock Text="📊 Trạng thái áp dụng" FontSize="15" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,8"/>
+                            <TextBlock x:Name="txtPolicyStatus" Text="⏳ Chưa áp dụng chính sách nào" FontSize="13" Foreground="#33691E" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="txtPolicyTime" Text="" FontSize="11" Foreground="#616161" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ⚡ Quick Actions -->
+                    <Border Background="White" CornerRadius="12" Padding="16,14" Margin="0,0,0,12"
+                            BorderBrush="#E3E8EE" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.05"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <TextBlock Text="⚡ Thao tác tức thì" FontSize="15" FontWeight="Bold" Foreground="#333" Margin="0,0,0,12"/>
+
+                            <!-- Lock Screen -->
+                            <Button Padding="12,10" Margin="0,0,0,6" Cursor="Hand" Click="LockAll_Click"
+                                    HorizontalContentAlignment="Left" ToolTip="Khóa màn hình lập tức để thu hút sự tập trung của học sinh">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" Background="#FFEBEE" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                            <DockPanel>
+                                                <TextBlock Text="🔒" FontSize="18" DockPanel.Dock="Left" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Khóa màn hình tất cả" FontSize="14" FontWeight="SemiBold" Foreground="#C62828"/>
+                                                    <TextBlock Text="Học sinh tạm thời không thể thao tác" FontSize="11" Foreground="#7F1D1D"/>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFCDD2"/></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <!-- Unlock Screen -->
+                            <Button Padding="12,10" Margin="0,0,0,6" Cursor="Hand" Click="UnlockAll_Click"
+                                    HorizontalContentAlignment="Left" ToolTip="Mở khóa màn hình trả lại quyền tự do thao tác cho học sinh">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" Background="#E8F5E9" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                            <DockPanel>
+                                                <TextBlock Text="🔓" FontSize="18" DockPanel.Dock="Left" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Mở khóa màn hình" FontSize="14" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                                                    <TextBlock Text="Trả lại quyền thao tác bình thường cho học sinh" FontSize="11" Foreground="#14532D"/>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#C8E6C9"/></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <!-- Lock Keyboard -->
+                            <Button Padding="12,10" Margin="0,0,0,6" Cursor="Hand" Click="LockKeyboard_Click"
+                                    HorizontalContentAlignment="Left" ToolTip="Khóa chuột và bàn phím học sinh (chỉ cho xem màn hình)">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" Background="#FFF3E0" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                            <DockPanel>
+                                                <TextBlock Text="⌨️" FontSize="18" DockPanel.Dock="Left" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Khóa bàn phím + chuột" FontSize="14" FontWeight="SemiBold" Foreground="#E65100"/>
+                                                    <TextBlock Text="Học sinh chỉ có thể quan sát, không nhập liệu" FontSize="11" Foreground="#7C2D12"/>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFE0B2"/></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <!-- Unlock Keyboard -->
+                            <Button Padding="12,10" Margin="0,0,0,6" Cursor="Hand" Click="UnlockKeyboard_Click"
+                                    HorizontalContentAlignment="Left" ToolTip="Mở khóa lại bàn phím và chuột để học sinh gõ/thao tác">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" Background="#E3F2FD" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                            <DockPanel>
+                                                <TextBlock Text="⌨️" FontSize="18" DockPanel.Dock="Left" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Mở bàn phím + chuột" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0"/>
+                                                    <TextBlock Text="Trả lại quyền nhập liệu cho học sinh" FontSize="11" Foreground="#1E3A8A"/>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#BBDEFB"/></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <!-- Quiet Mode -->
+                            <Button Padding="12,10" Margin="0,0,0,6" Cursor="Hand" Click="QuietMode_Click"
+                                    HorizontalContentAlignment="Left" ToolTip="Bật/Tắt âm thanh toàn bộ máy học sinh">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" Background="#F3E5F5" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                            <DockPanel>
+                                                <TextBlock Text="🔇" FontSize="18" DockPanel.Dock="Left" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Bật/Tắt chế độ im lặng" FontSize="14" FontWeight="SemiBold" Foreground="#7B1FA2"/>
+                                                    <TextBlock Text="Tắt toàn bộ thiết bị phát âm thanh máy học sinh" FontSize="11" Foreground="#581C87"/>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#E1BEE7"/></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <!-- Silence (Black Screen) -->
+                            <Button Padding="12,10" Cursor="Hand" Click="SilenceAll_Click"
+                                    HorizontalContentAlignment="Left" ToolTip="Chuyển màn hình học sinh thành màu đen để tập trung tối đa vào giáo viên">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" Background="#263238" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                            <DockPanel>
+                                                <TextBlock Text="🖤" FontSize="18" DockPanel.Dock="Left" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="Bật/Tắt màn hình đen" FontSize="14" FontWeight="SemiBold" Foreground="White"/>
+                                                    <TextBlock Text="Tắt hiển thị màn hình học sinh — Tập trung lên bảng" FontSize="11" Foreground="#ECEFF1"/>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#37474F"/></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 📋 Nhật ký thao tác gần đây -->
+                    <Border Background="White" CornerRadius="12" Padding="16,14" Margin="0,0,0,12"
+                            BorderBrush="#E3E8EE" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.05"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <TextBlock Text="📋 Nhật ký hoạt động gần đây" FontSize="14" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
+                            <StackPanel x:Name="recentLogPanel">
+                                <TextBlock Text="Chưa có thao tác nào trong phiên này" FontSize="12" Foreground="#9E9E9E" FontStyle="Italic"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 🖥️ Giám sát máy học sinh (ACK) -->
+                    <Border Background="White" CornerRadius="12" Padding="16,14" Margin="0,0,0,12"
+                            BorderBrush="#E3E8EE" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.05"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,10">
+                                <Button x:Name="btnRefreshConnection" Content="🔄 Làm mới" DockPanel.Dock="Right" Padding="8,4"
+                                        Background="#37474F" Foreground="White" BorderThickness="0" Cursor="Hand" Click="btnRefreshConnection_Click"
+                                        ToolTip="Kiểm tra lại trạng thái kết nối mạng của toàn bộ máy trạm học sinh">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#B0BEC5"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="b" Property="Background" Value="#263238"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                <TextBlock Text="🖥️ Giám sát máy học sinh (ACK)" FontSize="14" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center"/>
+                            </DockPanel>
+
+                            <!-- Thanh tiến trình tỷ lệ (Ratio Progress Bar) -->
+                            <StackPanel Margin="0,0,0,12">
+                                <Border Height="8" Background="#ECEFF1" CornerRadius="4" ClipToBounds="True" Margin="0,0,0,6">
+                                    <ProgressBar x:Name="pbPolicyRatio" Maximum="100" Value="0" Minimum="0" Height="8" BorderThickness="0" Background="Transparent" Foreground="#4CAF50"/>
+                                </Border>
+                                <TextBlock x:Name="txtRatioLabel" Text="Đã áp dụng: 0/0 máy trạm (0%)" FontSize="11" Foreground="#555" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <ItemsControl x:Name="lstStudentStatus">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="8" Padding="10,6" Margin="0,0,0,6" BorderThickness="1">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                                    <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="SUCCESS">
+                                                            <Setter Property="Background" Value="#E8F5E9"/>
+                                                            <Setter Property="BorderBrush" Value="#C8E6C9"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="PENDING">
+                                                            <Setter Property="Background" Value="#FFF9C4"/>
+                                                            <Setter Property="BorderBrush" Value="#FFF59D"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="FAILED">
+                                                            <Setter Property="Background" Value="#FFEBEE"/>
+                                                            <Setter Property="BorderBrush" Value="#FFCDD2"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <DockPanel>
+                                                <!-- Icon trạng thái màu sắc -->
+                                                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="14">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="🟡"/>
+                                                            <Setter Property="Foreground" Value="Orange"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="SUCCESS">
+                                                                    <Setter Property="Text" Value="🟢"/>
+                                                                    <Setter Property="Foreground" Value="Green"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="FAILED">
+                                                                    <Setter Property="Text" Value="🔴"/>
+                                                                    <Setter Property="Foreground" Value="Red"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                
+                                                <TextBlock Text="{Binding PCName}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" DockPanel.Dock="Left" Foreground="#333"/>
+                                                
+                                                <!-- Chi tiết trạng thái hoặc lỗi -->
+                                                <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="Gray" HorizontalAlignment="Right" VerticalAlignment="Center" TextAlignment="Right"/>
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- ═══ HELP OVERLAY ═══ -->
+        <Grid x:Name="gridHelpOverlay" Grid.Row="0" Grid.RowSpan="2" Background="#80000000" Visibility="Collapsed" Panel.ZIndex="1000">
+            <Border Background="White" CornerRadius="16" Width="520" Height="450" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="24">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.2"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <DockPanel Grid.Row="0" Margin="0,0,0,16">
+                        <TextBlock Text="💡 Hướng dẫn Quản lý Bảo mật Lớp học" FontSize="18" FontWeight="Bold" Foreground="#1A2332"/>
+                        <Button Content="✕" DockPanel.Dock="Right" Background="Transparent" BorderThickness="0" FontSize="20" Foreground="#888" Cursor="Hand" Click="CloseHelp_Click" Width="30" Height="30"/>
+                    </DockPanel>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,0,10,0">
+                            <TextBlock Text="Chào mừng bạn đến với mục Quản lý Bảo mật. Thực hiện theo các bước sau để thiết lập lớp học an toàn:" FontSize="13" Foreground="#555" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                            
+                            <Border Background="#F5F7FA" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="Bước 1: Thiết lập Chính sách (Bên trái)" FontSize="14" FontWeight="Bold" Foreground="#1565C0"/>
+                                    <TextBlock Text="• Tích chọn các quyền hạn bạn muốn áp dụng cho học sinh (Ví dụ: Chặn Internet, Khóa Desktop, Chặn USB)." FontSize="13" Foreground="#333" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    <TextBlock Text="• Nếu muốn học sinh không tự ý thoát ứng dụng, hãy bật chính sách 'Student Exit PIN' và nhập mã PIN gồm 4-6 chữ số." FontSize="13" Foreground="#333" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="#F5F7FA" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="Bước 2: Áp dụng Chính sách" FontSize="14" FontWeight="Bold" Foreground="#2E7D32"/>
+                                    <TextBlock Text="• Sau khi tích chọn xong các mục cần thiết, nhấn nút 'Áp dụng chính sách' ở góc dưới bên trái." FontSize="13" Foreground="#333" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    <TextBlock Text="• Chính sách sẽ có hiệu lực ngay lập tức đối với tất cả máy học sinh đang trực tuyến." FontSize="13" Foreground="#333" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="#F5F7FA" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="Bước 3: Sử dụng Thao tác nhanh (Bên phải)" FontSize="14" FontWeight="Bold" Foreground="#E65100"/>
+                                    <TextBlock Text="• Sử dụng các nút bấm nhanh như: Khóa/Mở khóa toàn bộ màn hình, Khóa bàn phím hoặc Bật màn hình đen để điều phối sự tập trung tức thì mà không cần tích chọn chính sách." FontSize="13" Foreground="#333" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <Button Grid.Row="2" Content="Đã hiểu" Background="#1A2332" Foreground="White" Padding="15,8" HorizontalAlignment="Right" Click="CloseHelp_Click" Width="100" Margin="0,16,0,0" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══ POPUP CẤU HÌNH WHITELIST ỨNG DỤNG ═══ -->
+        <Grid x:Name="gridWhitelistPopup" Grid.Row="0" Grid.RowSpan="2" Background="#80000000" Visibility="Collapsed" Panel.ZIndex="1001">
+            <Border Background="White" CornerRadius="16" Width="450" Height="400" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="24">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.2"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Text="⚙️ Cấu hình Whitelist Ứng dụng" FontSize="16" FontWeight="Bold" Foreground="#1A2332" Margin="0,0,0,16"/>
+                    
+                    <ListBox Grid.Row="1" x:Name="lstWhitelistApps" Margin="0,0,0,12" FontSize="13" SelectionMode="Single"
+                             ToolTip="Danh sách tiến trình ứng dụng được phép chạy">
+                        <!-- Nạp động từ code-behind -->
+                    </ListBox>
+
+                    <!-- Gợi ý ứng dụng -->
+                    <StackPanel Grid.Row="2" Margin="0,0,0,12">
+                        <TextBlock Text="💡 Gợi ý nhanh (Click để thêm):" FontSize="11" Foreground="#757575" Margin="0,0,0,6" FontWeight="SemiBold"/>
+                        <WrapPanel>
+                            <Button Content="Scratch" Margin="0,0,6,6" Padding="8,4" Background="#E8F5E9" Foreground="#2E7D32" Click="SuggestApp_Click" Tag="scratch.exe" Cursor="Hand">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border CornerRadius="4" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Content="PowerPoint" Margin="0,0,6,6" Padding="8,4" Background="#E8F5E9" Foreground="#2E7D32" Click="SuggestApp_Click" Tag="powerpoint.exe" Cursor="Hand">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border CornerRadius="4" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Content="Excel" Margin="0,0,6,6" Padding="8,4" Background="#E8F5E9" Foreground="#2E7D32" Click="SuggestApp_Click" Tag="excel.exe" Cursor="Hand">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border CornerRadius="4" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Content="Word" Margin="0,0,6,6" Padding="8,4" Background="#E8F5E9" Foreground="#2E7D32" Click="SuggestApp_Click" Tag="winword.exe" Cursor="Hand">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border CornerRadius="4" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Content="Trình duyệt Google" Margin="0,0,6,6" Padding="8,4" Background="#FFF3E0" Foreground="#E65100" Click="SuggestApp_Click" Tag="chrome.exe" Cursor="Hand" ToolTip="Nhắc nhở: Cần kết hợp chặn mạng xã hội/game vì trình duyệt mở quyền kết nối Web">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border CornerRadius="4" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+                    
+                    <Grid Grid.Row="3" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" x:Name="txtNewApp" Padding="8,5" FontSize="13" ToolTip="Nhập tên tiến trình, ví dụ: powerpoint.exe" KeyDown="txtNewApp_KeyDown"/>
+                        <Button Grid.Column="1" Content="➕ Thêm" Margin="8,0,0,0" Padding="12,5" Background="#2E7D32" Foreground="White" Click="btnAddApp_Click" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                    
+                    <DockPanel Grid.Row="4">
+                        <Button Content="Xóa ứng dụng chọn" Background="#C62828" Foreground="White" Padding="12,8" Click="btnDeleteApp_Click" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
+                            <Button Content="Hủy" Margin="0,0,8,0" Padding="15,8" Background="#F5F5F5" Foreground="#333" Click="CloseWhitelist_Click" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}" BorderBrush="#CCCCCC" BorderThickness="1">
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                            <Button Content="Lưu lại" Padding="15,8" Background="#1976D2" Foreground="White" Click="SaveWhitelist_Click" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </DockPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══ OVERLAY KHÓA MÀN HÌNH IDLE GIÁO VIÊN ═══ -->
+        <Grid x:Name="gridIdleLock" Grid.Row="0" Grid.RowSpan="2" Background="#F0F2F5" Visibility="Collapsed" Panel.ZIndex="2000">
+            <Border Background="White" CornerRadius="16" Width="400" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="30" BorderBrush="#E3E8EE" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.1"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,16">
+                        <TextBlock Text="🔒 Thiết lập đã bị khóa" FontSize="18" FontWeight="Bold" Foreground="#C62828" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="txtIdleDurationDesc" Text="Không phát hiện thao tác của giáo viên trong 5 phút." FontSize="12" Foreground="#757575" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                        <TextBlock Text="Nhập mã PIN để mở khóa trang:" FontSize="13" Foreground="#555" Margin="0,0,0,8" HorizontalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" x:Name="pnlOtpInputs">
+                            <TextBox x:Name="txtPinDigit1" MaxLength="1" Width="40" Height="45" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="3" KeyUp="OtpTextBox_KeyUp" PreviewKeyDown="OtpTextBox_PreviewKeyDown" ToolTip="Chữ số thứ 1" FontWeight="Bold" Background="#F8F9FA"/>
+                            <TextBox x:Name="txtPinDigit2" MaxLength="1" Width="40" Height="45" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="3" KeyUp="OtpTextBox_KeyUp" PreviewKeyDown="OtpTextBox_PreviewKeyDown" ToolTip="Chữ số thứ 2" FontWeight="Bold" Background="#F8F9FA"/>
+                            <TextBox x:Name="txtPinDigit3" MaxLength="1" Width="40" Height="45" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="3" KeyUp="OtpTextBox_KeyUp" PreviewKeyDown="OtpTextBox_PreviewKeyDown" ToolTip="Chữ số thứ 3" FontWeight="Bold" Background="#F8F9FA"/>
+                            <TextBox x:Name="txtPinDigit4" MaxLength="1" Width="40" Height="45" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="3" KeyUp="OtpTextBox_KeyUp" PreviewKeyDown="OtpTextBox_PreviewKeyDown" ToolTip="Chữ số thứ 4" FontWeight="Bold" Background="#F8F9FA"/>
+                            <TextBox x:Name="txtPinDigit5" MaxLength="1" Width="40" Height="45" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="3" KeyUp="OtpTextBox_KeyUp" PreviewKeyDown="OtpTextBox_PreviewKeyDown" ToolTip="Chữ số thứ 5" FontWeight="Bold" Background="#F8F9FA"/>
+                            <TextBox x:Name="txtPinDigit6" MaxLength="1" Width="40" Height="45" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="3" KeyUp="OtpTextBox_KeyUp" PreviewKeyDown="OtpTextBox_PreviewKeyDown" ToolTip="Chữ số thứ 6" FontWeight="Bold" Background="#F8F9FA"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <Button Grid.Row="2" Content="🔓 Mở khóa thiết lập" Padding="15,10" Background="#1976D2" Foreground="White" Click="btnIdleUnlock_Click" Cursor="Hand" Width="200" Margin="0,16,0,0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

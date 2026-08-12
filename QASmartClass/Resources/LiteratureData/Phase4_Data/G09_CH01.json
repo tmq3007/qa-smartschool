@@ -1,0 +1,236 @@
+{
+  "metadata": {
+    "chapterId": "g09_ch01",
+    "chapterName": "Bài 1: Thơ hiện đại",
+    "grade": 9,
+    "totalProblems": 9,
+    "totalSections": 3,
+    "estimatedHours": 3,
+    "thptWeight": "Trọng tâm thi vào lớp 10"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g9_ch0_0",
+      "sectionName": "Đồng Chí — Chính Hữu",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Đồng_Chí.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh",
+          "theorem": "Chính Hữu (1926–2007). Bài thơ viết đầu năm 1948, sau chiến dịch Việt Bắc Thu Đông 1947. Tác giả là người lính nên cảm xúc rất chân thực.",
+          "imageUrls": [
+            "Resources/LiteratureData/Images/chinh_huu.png"
+          ]
+        },
+        {
+          "name": "Đoạn 1 — Cơ sở của tình đồng chí",
+          "definition": "Quê hương anh nước mặn đồng chua\nLàng tôi nghèo đất cày lên sỏi đá.\nAnh với tôi đôi người xa lạ\nTự phương trời chẳng hẹn quen nhau,\nSúng bên súng, đầu sát bên đầu,\nĐêm rét chung chăn thành đôi tri kỷ.\n\nĐồng chí!"
+        },
+        {
+          "name": "Đoạn 3 — Biểu tượng Đầu súng trăng treo",
+          "definition": "Đêm nay rừng hoang sương muối\nĐứng cạnh bên nhau chờ giặc tới\nĐầu súng trăng treo."
+        },
+        {
+          "name": "Phân tích nghệ thuật",
+          "examples": [
+            "**'Đồng chí!'**: Dòng thơ chỉ có 2 từ — dấu chấm than — như một tiếng nổ vỡ òa cảm xúc, kết nối hai đoạn thơ.",
+            "**'Súng bên súng, đầu sát bên đầu'**: Điệp cấu trúc gợi sự đồng hành, song song trong cùng nhiệm vụ và lý tưởng.",
+            "**'Đầu súng trăng treo'**: Hình ảnh đặc sắc nhất — súng (hiện thực chiến tranh) + trăng (lãng mạn, hòa bình) — biểu tượng vừa chiến đấu vừa mơ mộng của người lính."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Dòng thơ 'Đồng chí!' chỉ có hai chữ có tác dụng nghệ thuật như thế nào trong bài thơ?",
+          "difficulty": "Medium",
+          "options": [
+            "Là bản lề kết nối hai đoạn thơ, vừa là lời định nghĩa vừa là tiếng gọi thiêng liêng về tình đồng đội",
+            "Là câu kết luận tóm tắt nội dung toàn bài",
+            "Tạo nhịp ngắt đột ngột để người đọc dừng lại suy nghĩ",
+            "Nhấn mạnh cấp bậc quân sự trong kháng chiến"
+          ],
+          "answer": "Là bản lề kết nối hai đoạn thơ, vừa là lời định nghĩa vừa là tiếng gọi thiêng liêng về tình đồng đội",
+          "hints": ["Dòng thơ này đứng ở vị trí nào trong bố cục bài thơ?"],
+          "explanation": "Dòng thơ độc lập 'Đồng chí!' kết thúc phần lý giải cơ sở tình đồng chí (khổ 1) và mở ra phần biểu hiện tình đồng chí (khổ 2-3). Dấu chấm than tạo âm hưởng vang lên như một tiếng nổ cảm xúc — định nghĩa súc tích nhất về tình bạn chiến đấu."
+        },
+        {
+          "id": "p2",
+          "question": "Hình ảnh 'Đầu súng trăng treo' mang ý nghĩa biểu tượng như thế nào?",
+          "difficulty": "Hard",
+          "options": [
+            "Kết hợp hiện thực chiến tranh (súng) và lãng mạn (trăng) — biểu tượng vừa chiến đấu vừa khao khát hòa bình",
+            "Miêu tả cảnh đêm rừng có trăng sáng thực tế",
+            "Thể hiện sự cô đơn của người lính trong đêm gác",
+            "Hình ảnh thiên nhiên làm dịu bớt không khí chiến tranh"
+          ],
+          "answer": "Kết hợp hiện thực chiến tranh (súng) và lãng mạn (trăng) — biểu tượng vừa chiến đấu vừa khao khát hòa bình",
+          "hints": ["Súng tượng trưng cho điều gì? Trăng tượng trưng cho điều gì?"],
+          "explanation": "Chính Hữu tạo ra hình ảnh thơ cô đọng nhất của bài: súng (vũ khí, chiến tranh, hiện thực) treo trên nền trăng (hòa bình, lãng mạn, ước mơ). Hai hình ảnh đối lập cùng tồn tại trong một khoảnh khắc — đó chính là tâm hồn người lính cách mạng: chiến đấu nhưng không đánh mất mộng mơ."
+        },
+        {
+          "id": "p3",
+          "question": "Cơ sở hình thành tình đồng chí trong bài thơ của Chính Hữu là gì?",
+          "difficulty": "Easy",
+          "options": [
+            "Cùng xuất thân nghèo khó, cùng lý tưởng chiến đấu và cùng chung gian khổ",
+            "Cùng đơn vị quân sự và cùng vũ khí chiến đấu",
+            "Tình cảm bạn bè thân thiết từ thời thơ ấu",
+            "Cùng quê hương và gia đình"
+          ],
+          "answer": "Cùng xuất thân nghèo khó, cùng lý tưởng chiến đấu và cùng chung gian khổ",
+          "hints": ["Đọc 6 câu thơ đầu — hai người lính có điểm gì chung?"],
+          "explanation": "Ba cơ sở: (1) Cùng hoàn cảnh xuất thân ('nước mặn đồng chua', 'đất cày lên sỏi đá' — đều nghèo khó). (2) Cùng lý tưởng ('súng bên súng'). (3) Cùng chia sẻ gian khổ ('đêm rét chung chăn'). Ba yếu tố đó đã biến hai người xa lạ thành 'đôi tri kỷ'."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g9_ch0_1",
+      "sectionName": "Bài Thơ Về Tiểu Đội Xe Không Kính — Phạm Tiến Duật",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Bài_Thơ_Về_Tiểu_Đội_Xe_Không_Kính.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả",
+          "theorem": "Phạm Tiến Duật (1941–2007) — nhà thơ trẻ thời chống Mỹ, được mệnh danh 'con chim lửa của Trường Sơn'. Bài thơ viết năm 1969.",
+          "imageUrls": [
+            "Resources/LiteratureData/Images/pham_tien_duat.png"
+          ]
+        },
+        {
+          "name": "Khổ 1–2 — Hình ảnh những chiếc xe không kính",
+          "definition": "Không có kính không phải vì xe không có kính\nBom giật bom rung kính vỡ đi rồi\nUng dung buồng lái ta ngồi,\nNhìn đất, nhìn trời, nhìn thẳng.\n\nNhìn thấy gió vào xoa mắt đắng\nNhìn thấy con đường chạy thẳng vào tim\nThấy sao trời và đột ngột cánh chim\nNhư sa như ùa vào buồng lái."
+        },
+        {
+          "name": "Phân tích",
+          "examples": [
+            "**Giọng điệu tếu táo, ngang tàng**: 'Không có kính không phải vì...' — câu thơ giải thích rất dân dã, đời thường.",
+            "**'Ung dung buồng lái ta ngồi'**: Tư thế hiên ngang bất chấp gian nguy.",
+            "**'Nhìn đất, nhìn trời, nhìn thẳng'**: Điệp từ 'nhìn' tạo nhịp dứt khoát — người lính không sợ hãi, nhìn thẳng vào thực tại.",
+            "**Nghệ thuật liệt kê**: 'Gió vào xoa mắt đắng', 'con đường chạy thẳng vào tim' — thiên nhiên ùa vào buồng lái trần trụi."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Câu thơ mở đầu 'Không có kính không phải vì xe không có kính' có giọng điệu đặc biệt như thế nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Giọng điệu giải thích tự nhiên, dân dã — như lời nói thường ngày, không hề tô vẽ",
+            "Giọng điệu bi thương, xúc động trước chiếc xe hỏng hóc",
+            "Giọng điệu hào hùng, kêu gọi chiến đấu",
+            "Giọng điệu trữ tình, lãng mạn về thiên nhiên Trường Sơn"
+          ],
+          "answer": "Giọng điệu giải thích tự nhiên, dân dã — như lời nói thường ngày, không hề tô vẽ",
+          "hints": ["Câu thơ này có giống một câu trong bài hát hùng tráng không?"],
+          "explanation": "Phạm Tiến Duật đưa vào thơ ngôn ngữ đời thường ('không phải vì...') — đây là đổi mới táo bạo của thơ thời chống Mỹ. Hiện thực gian khổ (xe bị bom phá) được nói bằng giọng bình thản, thậm chí tếu táo, thể hiện tính cách ngang tàng của người lính Trường Sơn."
+        },
+        {
+          "id": "p2",
+          "question": "Hình ảnh những chiếc xe không kính tiêu biểu cho điều gì trong bài thơ?",
+          "difficulty": "Medium",
+          "options": [
+            "Hiện thực khắc nghiệt của chiến tranh và ý chí kiên cường của người lính lái xe",
+            "Sự thiếu thốn về vật chất của quân đội trong thời chiến",
+            "Vẻ đẹp độc đáo của những chiếc xe quân sự",
+            "Tài năng sáng tạo của người lính trong việc cải tiến phương tiện"
+          ],
+          "answer": "Hiện thực khắc nghiệt của chiến tranh và ý chí kiên cường của người lính lái xe",
+          "hints": ["Chiếc xe không kính = điều kiện thiếu thốn → người lính phản ứng thế nào?"],
+          "explanation": "Xe không kính = hiện thực trần trụi của bom đạn. Nhưng người lính 'ung dung' ngồi và 'nhìn thẳng' = không chịu khuất phục. Tứ thơ độc đáo: từ hình ảnh chiếc xe bất thường, Phạm Tiến Duật làm nổi bật phẩm chất phi thường của người lính."
+        },
+        {
+          "id": "p3",
+          "question": "Nét đặc sắc trong nghệ thuật của bài thơ này so với thơ kháng chiến chống Pháp là gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Ngôn ngữ thơ gần với văn xuôi, giọng điệu tếu táo ngang tàng — phong cách trẻ trung của thế hệ chống Mỹ",
+            "Hình ảnh thơ mang tính lãng mạn và bay bổng hơn",
+            "Âm điệu thơ trầm hùng, bi tráng hơn thơ chống Pháp",
+            "Ngôn ngữ cổ điển, sang trọng như ca dao và tục ngữ"
+          ],
+          "answer": "Ngôn ngữ thơ gần với văn xuôi, giọng điệu tếu táo ngang tàng — phong cách trẻ trung của thế hệ chống Mỹ",
+          "hints": ["So sánh giọng điệu 'Tây Tiến' (Quang Dũng) với bài thơ này."],
+          "explanation": "Thơ chống Pháp (Tây Tiến, Đồng Chí) thiên về lãng mạn bi tráng. Thơ chống Mỹ (Phạm Tiến Duật) độc đáo ở chỗ đưa ngôn ngữ đời thường, văn xuôi vào thơ. Giọng tếu táo che đậy sự kiên cường — đây là nét riêng của thế hệ thanh niên xuống đường năm 1969."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g9_ch0_2",
+      "sectionName": "Ánh Trăng — Nguyễn Duy",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Ánh_Trăng.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh",
+          "theorem": "Nguyễn Duy (sinh 1948) — nhà thơ trữ tình. 'Ánh trăng' viết năm 1978 tại TP. Hồ Chí Minh — khi đất nước đã thống nhất, người lính trở về cuộc sống đô thị.",
+          "imageUrls": [
+            "Resources/LiteratureData/Images/nguyen_duy.png"
+          ]
+        },
+        {
+          "name": "Khổ 1–2 — Vầng trăng nghĩa tình",
+          "definition": "Hồi nhỏ sống với đồng\nvới sông rồi với bể\nhồi chiến tranh ở rừng\nvầng trăng thành tri kỷ\n\nTrần trụi với thiên nhiên\nhồn nhiên như cây cỏ\nngỡ không bao giờ quên\ncái vầng trăng tình nghĩa."
+        },
+        {
+          "name": "Khổ 4–6 — Bước ngoặt và sự thức tỉnh",
+          "definition": "Từ hồi về thành phố\nquen ánh điện cửa gương\nvầng trăng đi qua ngõ\nnhư người dưng qua đường.\n\nThình lình đèn điện tắt\nphòng buyn-đinh tối om\nvội bật tung cửa sổ\nđột ngột vầng trăng tròn.\n\nNgửa mặt lên nhìn mặt\ncó cái gì rưng rưng\nnhư là đồng là bể\nnhư là sông là rừng.\n\nTrăng cứ tròn vành vạnh\nkể chi người vô tình\nánh trăng im phăng phắc\nđủ cho ta giật mình."
+        },
+        {
+          "name": "Chủ đề & Bài học",
+          "examples": [
+            "**Vầng trăng**: Biểu tượng cho quá khứ, thiên nhiên, đồng đội — những điều tốt đẹp đã qua.",
+            "**'Như người dưng qua đường'**: Sự thay đổi tệ bạc của con người khi quên đi quá khứ.",
+            "**'Ánh trăng im phăng phắc / Đủ cho ta giật mình'**: Không cần lời trách — sự im lặng của trăng (của quá khứ, đồng đội hi sinh) đủ để người từng sống qua chiến tranh tự giật mình thức tỉnh.",
+            "**Triết lý**: 'Uống nước nhớ nguồn' — đừng quên quá khứ và ân tình khi cuộc sống thay đổi."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hình ảnh vầng trăng trong bài thơ 'Ánh trăng' tượng trưng cho điều gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Quá khứ gian khổ nhưng tươi đẹp, tình nghĩa với đồng đội và thiên nhiên thời chiến tranh",
+            "Ánh sáng của thành phố hiện đại sau khi đất nước thống nhất",
+            "Vẻ đẹp lãng mạn của thiên nhiên trong thơ trữ tình",
+            "Người yêu của người lính ở quê nhà"
+          ],
+          "answer": "Quá khứ gian khổ nhưng tươi đẹp, tình nghĩa với đồng đội và thiên nhiên thời chiến tranh",
+          "hints": ["Vầng trăng xuất hiện trong hoàn cảnh nào của người lính?"],
+          "explanation": "Vầng trăng là 'tri kỷ' thời chiến tranh — đã chia sẻ gian khổ với người lính ở rừng, ở đồng, ở bể. Khi về thành phố 'quen ánh điện cửa gương', người lính quên đi vầng trăng — biểu tượng cho sự quên lãng quá khứ và những người đã hi sinh."
+        },
+        {
+          "id": "p2",
+          "question": "Câu thơ 'Ánh trăng im phăng phắc / Đủ cho ta giật mình' chứa đựng thông điệp gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Sự im lặng của quá khứ (đồng đội, kỷ niệm) đủ sức đánh thức lương tâm người vô tình",
+            "Trăng không thể nói nên chỉ im lặng khi con người quay lưng",
+            "Người lính giật mình vì tiếng động đột ngột trong đêm",
+            "Ánh trăng quá sáng khiến người ta không ngủ được"
+          ],
+          "answer": "Sự im lặng của quá khứ (đồng đội, kỷ niệm) đủ sức đánh thức lương tâm người vô tình",
+          "hints": ["Tại sao im lặng lại có sức mạnh hơn lời trách móc?"],
+          "explanation": "Trăng không trách — sự im lặng đó còn nặng nề hơn bất kỳ lời buộc tội nào. Nguyễn Duy gợi lên cảm giác người lính tự nhận ra lỗi lầm của mình (đã quên quá khứ) trước sự vô tư bao dung của trăng — của những đồng đội đã hi sinh không đòi hỏi gì."
+        },
+        {
+          "id": "p3",
+          "question": "Bài thơ 'Ánh trăng' đặt ra vấn đề đạo đức gì có ý nghĩa với cuộc sống hôm nay?",
+          "difficulty": "Hard",
+          "options": [
+            "Phải biết 'uống nước nhớ nguồn' — không quên quá khứ và những người đã giúp đỡ mình",
+            "Cần sống hòa hợp với thiên nhiên, bảo vệ môi trường",
+            "Phải trân trọng cuộc sống hòa bình sau chiến tranh",
+            "Cần dũng cảm đối mặt với khó khăn trong cuộc sống"
+          ],
+          "answer": "Phải biết 'uống nước nhớ nguồn' — không quên quá khứ và những người đã giúp đỡ mình",
+          "hints": ["Điều người lính 'giật mình' nhận ra là gì?"],
+          "explanation": "'Ánh trăng' không chỉ là bài thơ về người lính — nó là lời nhắc nhở cho tất cả mọi người: khi cuộc sống thay đổi, khi ta có điều kiện tốt hơn, đừng quay lưng lại với quá khứ, với những người đã cùng ta trải qua gian khổ. Đây là giá trị đạo đức muôn thuở của truyền thống 'Uống nước nhớ nguồn'."
+        }
+      ]
+    }
+  ]
+}

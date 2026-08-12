@@ -1,0 +1,1368 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using QASmartClass.Data;
+using QASmartClass.Shared;
+using QASmartTouch.Services;
+using Serilog;
+
+namespace QASmartClass.Classroom.Views
+{
+    public partial class SettingsPage : Page
+    {
+        private bool _isLoading = true; // prevent saves during initial load
+        private static readonly string SettingsFilePath = QASmartClass.Services.AppPaths.ClassroomSettingsFile;
+
+        public SettingsPage()
+        {
+            InitializeComponent();
+            Loaded += (_, _) =>
+            {
+                LoadSettings();
+                _isLoading = false;
+            };
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  LOAD ALL SETTINGS
+        // ═══════════════════════════════════════════════════════
+
+        private void LoadSettings()
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+
+                // ── Load saved settings from JSON file ──
+                var saved = LoadSettingsFile();
+
+                // Theme
+                SetThemeHighlight(saved.Theme);
+
+                // Language
+                cboLanguage.SelectedIndex = saved.Language == "en" ? 1 : 0;
+                QASmartClass.Shared.LanguageManager.SetLanguage(saved.Language);
+
+                // Font size
+                switch (saved.FontSize)
+                {
+                    case 12: fontSmall.IsChecked = true; break;
+                    case 16: fontLarge.IsChecked = true; break;
+                    default: fontMedium.IsChecked = true; break;
+                }
+
+                // Network
+                txtTcpPort.Text = saved.TcpPort.ToString();
+                chkAutoReconnect.IsChecked = saved.AutoReconnect;
+                txtMaxStudents.Text = saved.MaxStudents.ToString();
+
+                // Network status
+                var net = app.NetworkService;
+                if (net != null && !string.IsNullOrEmpty(net.ServerIP))
+                {
+                    txtNetStatus.Text = net.IsBroadcasting
+                        ? "🟢 Trang thai: Dang hoat dong"
+                        : "🟡 Trang thai: San sang";
+                    txtNetIp.Text = $"IP: {net.ServerIP} | Port: {saved.TcpPort}";
+                }
+                else
+                {
+                    txtNetStatus.Text = "🔴 Trang thai: Chua khoi dong";
+                    txtNetIp.Text = "IP: —";
+                }
+
+                // ── Storage ──
+                RefreshStorageInfo();
+
+                // ── DB stats ──
+                txtCountLessons.Text = db.Lessons.Count().ToString();
+                txtCountStudents.Text = db.Students.Count().ToString();
+                txtCountQuizzes.Text = db.Quizzes.Count().ToString();
+                txtCountEvents.Text = db.EventLogs.Count().ToString();
+
+                // ── User Role ──
+                LoadRoleCards();
+
+                // ── Teacher profile ──
+                var teacher = db.TeacherProfiles.FirstOrDefault();
+                if (teacher != null)
+                {
+                    txtTeacherName.Text = teacher.FullName;
+                    txtTeacherSubject.Text = teacher.Subject;
+                    txtTeacherSchool.Text = teacher.School;
+
+                    // Match title combo
+                    string[] titles = { "GV", "ThS", "TS", "PGS", "GS" };
+                    int idx = Array.IndexOf(titles, teacher.Title);
+                    cboTeacherTitle.SelectedIndex = idx >= 0 ? idx : 0;
+                }
+
+                // ── API Key ──
+                LoadApiKey();
+
+                // ── Grade Type Master ──
+                LoadGradeTypes();
+
+                // ── School / Roster Config ──
+                LoadRosterRows();
+
+                Log.Information("Settings loaded successfully");
+            }
+            catch (Exception ex) { Log.Warning("LoadSettings error: {Err}", ex.Message); }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  STORAGE INFO (real calculations)
+        // ═══════════════════════════════════════════════════════
+
+        private void RefreshStorageInfo()
+        {
+            try
+            {
+                var dbPath = QASmartClass.Services.AppPaths.DatabaseFile;
+
+                // DB size
+                long dbSize = 0;
+                if (File.Exists(dbPath)) dbSize = new FileInfo(dbPath).Length;
+                txtDbSize.Text = FormatBytes(dbSize);
+                double dbBarRatio = Math.Min((double)dbSize / (50 * 1024 * 1024), 1.0); // max 50MB scale
+                barDb.Width = Math.Max(dbBarRatio * 500, 4);
+
+                // Cache/logs size
+                long cacheSize = 0;
+                var logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+                if (Directory.Exists(logDir))
+                {
+                    foreach (var f in Directory.GetFiles(logDir, "*", SearchOption.AllDirectories))
+                    {
+                        try { cacheSize += new FileInfo(f).Length; } catch { }
+                    }
+                }
+                txtCacheSize.Text = FormatBytes(cacheSize);
+                double cacheBarRatio = Math.Min((double)cacheSize / (50 * 1024 * 1024), 1.0);
+                barCache.Width = Math.Max(cacheBarRatio * 500, 4);
+            }
+            catch (Exception ex) { Log.Warning("RefreshStorageInfo error: {Err}", ex.Message); }
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes < 1024) return $"{bytes} B";
+            if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+            if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024):F1} MB";
+            return $"{bytes / (1024.0 * 1024 * 1024):F2} GB";
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  THEME SELECTION
+        // ═══════════════════════════════════════════════════════
+
+        private void Theme_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border border && border.Tag is string theme)
+            {
+                SetThemeHighlight(theme);
+                SaveCurrentSettings();
+                Log.Information("Theme changed to: {Theme}", theme);
+            }
+        }
+
+        private void SetThemeHighlight(string theme)
+        {
+            // Reset all borders
+            themeLight.BorderThickness = new Thickness(0);
+            themeDark.BorderThickness = new Thickness(0);
+            themeNature.BorderThickness = new Thickness(0);
+
+            themeLight.BorderBrush = Brushes.Transparent;
+            themeDark.BorderBrush = Brushes.Transparent;
+            themeNature.BorderBrush = Brushes.Transparent;
+
+            // Highlight selected
+            Border selected = theme switch
+            {
+                "Dark" => themeDark,
+                "Nature" => themeNature,
+                _ => themeLight
+            };
+            selected.BorderThickness = new Thickness(2);
+            selected.BorderBrush = new SolidColorBrush(Color.FromRgb(25, 118, 210));
+        }
+
+        private string GetSelectedTheme()
+        {
+            if (themeDark.BorderThickness.Left > 0) return "Dark";
+            if (themeNature.BorderThickness.Left > 0) return "Nature";
+            return "Light";
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  LANGUAGE & FONT SIZE
+        // ═══════════════════════════════════════════════════════
+
+        private void Language_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoading) return;
+            var lang = (cboLanguage.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "vi";
+            QASmartClass.Shared.LanguageManager.SetLanguage(lang);
+            SaveCurrentSettings();
+            Log.Information("Language changed to: {Lang}", lang);
+        }
+
+        private void FontSize_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_isLoading) return;
+            if (sender is RadioButton rb && rb.Tag is string sizeStr && int.TryParse(sizeStr, out int size))
+            {
+                // Apply font size to application
+                Application.Current.Resources["GlobalFontSize"] = (double)size;
+                SaveCurrentSettings();
+                Log.Information("Font size changed to: {Size}px", size);
+            }
+        }
+
+        private int GetSelectedFontSize()
+        {
+            if (fontSmall?.IsChecked == true) return 12;
+            if (fontLarge?.IsChecked == true) return 16;
+            return 14;
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  SIDEBAR MENU NAVIGATION
+        // ═══════════════════════════════════════════════════════
+
+        private void Menu_Click(object sender, MouseButtonEventArgs e)
+        {
+            foreach (var el in new[] { menuRole, menuGeneral, menuNetwork, menuStorage, menuAccount, menuAbout, menuApi, menuGrade, menuSchool })
+            {
+                el.Background = Brushes.Transparent;
+                if (el.Child is TextBlock tb)
+                {
+                    tb.Foreground = new SolidColorBrush(Color.FromRgb(66, 66, 66));
+                    tb.FontWeight = FontWeights.Normal;
+                }
+            }
+
+            if (sender is Border border)
+            {
+                border.Background = new SolidColorBrush(Color.FromRgb(227, 242, 253));
+                // Handle both TextBlock child and StackPanel child
+                if (border.Child is StackPanel sp && sp.Children.Count > 1 && sp.Children[1] is TextBlock stb)
+                {
+                    stb.Foreground = new SolidColorBrush(Color.FromRgb(21, 101, 192));
+                    stb.FontWeight = FontWeights.SemiBold;
+                }
+                else if (border.Child is TextBlock tb)
+                {
+                    tb.Foreground = new SolidColorBrush(Color.FromRgb(21, 101, 192));
+                    tb.FontWeight = FontWeights.SemiBold;
+                }
+
+                var tag = border.Tag?.ToString();
+                ScrollToSection(tag);
+            }
+        }
+
+        private void ScrollToSection(string? section)
+        {
+            FrameworkElement? target = section switch
+            {
+                "role"    => sectionRole,
+                "general" => sectionGeneral,
+                "network" => sectionNetwork,
+                "storage" => sectionStorage,
+                "account" => sectionAccount,
+                "about"   => sectionAbout,
+                "api"     => sectionApi,
+                "grade"   => sectionGrade,
+                "school"  => sectionSchool,
+                _ => null
+            };
+
+            if (target != null)
+            {
+                target.BringIntoView();
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  USER ROLE SELECTION
+        // ═══════════════════════════════════════════════════════
+
+        private void LoadRoleCards()
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var roleService = app.UserRoleService;
+                var currentRole = roleService.CurrentRole;
+                var currentInfo = UserRoleService.GetRoleInfo(currentRole);
+
+                // Update current role badge
+                txtCurrentRoleIcon.Text = currentInfo.Icon;
+                txtCurrentRoleName.Text = currentInfo.Name;
+                txtCurrentRoleDesc.Text = currentInfo.Description;
+
+                // Generate role cards
+                roleCardsPanel.Children.Clear();
+                foreach (var info in UserRoleInfo.All)
+                {
+                    var isSelected = info.Role == currentRole;
+                    var card = CreateRoleCard(info, isSelected);
+                    roleCardsPanel.Children.Add(card);
+                }
+
+                Log.Information("Role cards loaded. Current: {Role}", currentRole);
+            }
+            catch (Exception ex) { Log.Warning("LoadRoleCards error: {Err}", ex.Message); }
+        }
+
+        private Border CreateRoleCard(UserRoleInfo info, bool isSelected)
+        {
+            var roleColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(info.Color);
+            var lightBg = System.Windows.Media.Color.FromArgb(25, roleColor.R, roleColor.G, roleColor.B);
+
+            var card = new Border
+            {
+                Width = 180,
+                MinHeight = 95,
+                CornerRadius = new CornerRadius(12),
+                Margin = new Thickness(0, 0, 10, 10),
+                Padding = new Thickness(14, 12, 14, 12),
+                Cursor = info.IsAvailable ? Cursors.Hand : Cursors.Arrow,
+                BorderThickness = new Thickness(isSelected ? 2.5 : 1),
+                BorderBrush = isSelected
+                    ? new SolidColorBrush(roleColor)
+                    : new SolidColorBrush(Color.FromRgb(222, 226, 230)),
+                Background = isSelected
+                    ? new SolidColorBrush(lightBg)
+                    : new SolidColorBrush(Colors.White),
+                Tag = info.Role,
+                Opacity = info.IsAvailable ? 1.0 : 0.55
+            };
+
+            var sp = new StackPanel();
+
+            // Icon + Name row
+            var headerRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
+            headerRow.Children.Add(new TextBlock
+            {
+                Text = info.Icon,
+                FontSize = 20,
+                Margin = new Thickness(0, 0, 8, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            var nameBlock = new TextBlock
+            {
+                Text = info.Name,
+                FontSize = 12,
+                FontWeight = isSelected ? FontWeights.Bold : FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(roleColor),
+                VerticalAlignment = VerticalAlignment.Center,
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 120
+            };
+            headerRow.Children.Add(nameBlock);
+            sp.Children.Add(headerRow);
+
+            // Description
+            sp.Children.Add(new TextBlock
+            {
+                Text = info.Description,
+                FontSize = 10,
+                Foreground = new SolidColorBrush(Color.FromRgb(134, 142, 150)),
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 160
+            });
+
+            // Status badge
+            if (!info.IsAvailable)
+            {
+                var badge = new Border
+                {
+                    CornerRadius = new CornerRadius(6),
+                    Background = new SolidColorBrush(Color.FromRgb(255, 243, 224)),
+                    Padding = new Thickness(8, 3, 8, 3),
+                    Margin = new Thickness(0, 6, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Left
+                };
+                badge.Child = new TextBlock
+                {
+                    Text = "⏳ Sắp ra mắt",
+                    FontSize = 10,
+                    Foreground = new SolidColorBrush(Color.FromRgb(230, 81, 0))
+                };
+                sp.Children.Add(badge);
+            }
+            else if (isSelected)
+            {
+                var badge = new Border
+                {
+                    CornerRadius = new CornerRadius(6),
+                    Background = new SolidColorBrush(Color.FromRgb(232, 245, 233)),
+                    Padding = new Thickness(8, 3, 8, 3),
+                    Margin = new Thickness(0, 6, 0, 0),
+                    HorizontalAlignment = HorizontalAlignment.Left
+                };
+                badge.Child = new TextBlock
+                {
+                    Text = "✅ Đang sử dụng",
+                    FontSize = 10,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(46, 125, 50))
+                };
+                sp.Children.Add(badge);
+            }
+
+            card.Child = sp;
+
+            // Click handler
+            if (info.IsAvailable)
+            {
+                card.MouseLeftButtonDown += RoleCard_Click;
+            }
+
+            return card;
+        }
+
+        private void RoleCard_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not Border card || card.Tag is not UserRole selectedRole)
+                return;
+
+            var app = (QASmartTouch.App)Application.Current;
+            var currentRole = app.UserRoleService.CurrentRole;
+
+            if (selectedRole == currentRole)
+                return; // Already selected
+
+            var info = UserRoleService.GetRoleInfo(selectedRole);
+
+            var result = MessageBox.Show(
+                $"Chuyển vai trò sang: {info.Icon} {info.Name}?\n\n" +
+                $"{info.Description}\n\n" +
+                $"Modules: {string.Join(", ", info.AvailableModules)}\n\n" +
+                "⚠️ Ứng dụng sẽ khởi động lại để áp dụng.",
+                "Thay đổi vai trò sử dụng",
+                MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                app.UserRoleService.SaveRole(selectedRole);
+                Log.Information("User role changed to: {Role}", selectedRole);
+
+                // Restart app
+                var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+                if (!string.IsNullOrEmpty(exePath))
+                {
+                    System.Diagnostics.Process.Start(exePath);
+                    Application.Current.Shutdown();
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  STORAGE ACTIONS
+        // ═══════════════════════════════════════════════════════
+
+        private void ClearCache_Click(object sender, RoutedEventArgs e)
+        {
+            var logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+            int deleted = 0;
+            long freed = 0;
+            if (Directory.Exists(logDir))
+            {
+                foreach (var f in Directory.GetFiles(logDir, "*.log"))
+                {
+                    try
+                    {
+                        freed += new FileInfo(f).Length;
+                        File.Delete(f);
+                        deleted++;
+                    }
+                    catch { }
+                }
+            }
+            MessageBox.Show($"Da xoa {deleted} file ({FormatBytes(freed)})!\nThu muc logs da duoc don sach.",
+                "Xoa Cache", MessageBoxButton.OK, MessageBoxImage.Information);
+            RefreshStorageInfo();
+            Log.Information("Cache cleared: {Count} files, {Size} freed", deleted, FormatBytes(freed));
+        }
+
+        private void OpenDbFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var folder = QASmartClass.Services.AppPaths.RootDir;
+            Directory.CreateDirectory(folder);
+            System.Diagnostics.Process.Start("explorer.exe", folder);
+        }
+
+        private void ResetDb_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Ban chac chan muon XOA TOAN BO du lieu?\n\nThao tac nay khong the hoan tac!",
+                "Xac nhan Reset", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                var dbPath = QASmartClass.Services.AppPaths.DatabaseFile;
+                try
+                {
+                    if (File.Exists(dbPath)) File.Delete(dbPath);
+                    MessageBox.Show("Da xoa CSDL. Khoi dong lai ung dung de tao moi.",
+                        "Reset thanh cong", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Log.Warning("Database reset by user");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Loi: {ex.Message}", "Khong the xoa", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  TEACHER ACCOUNT SAVE
+        // ═══════════════════════════════════════════════════════
+
+        private void SaveAccount_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+                var teacher = db.TeacherProfiles.FirstOrDefault();
+
+                if (teacher == null)
+                {
+                    teacher = new TeacherProfile();
+                    db.TeacherProfiles.Add(teacher);
+                }
+
+                teacher.FullName = txtTeacherName.Text.Trim();
+                teacher.Subject = txtTeacherSubject.Text.Trim();
+                teacher.School = txtTeacherSchool.Text.Trim();
+                var titleText = (cboTeacherTitle.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "GV";
+                teacher.Title = titleText.Contains(" — ") ? titleText.Split(" — ")[0] : titleText;
+                teacher.UpdatedAt = DateTime.Now;
+
+                db.SaveChanges();
+
+                MessageBox.Show("Da luu thong tin giao vien!",
+                    "Luu", MessageBoxButton.OK, MessageBoxImage.Information);
+                Log.Information("Teacher profile saved: {Name} ({Title})", teacher.FullName, teacher.Title);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Loi: {ex.Message}", "Loi", MessageBoxButton.OK, MessageBoxImage.Error);
+                Log.Warning("SaveAccount error: {Err}", ex.Message);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  CHANGE PASSWORD
+        // ═══════════════════════════════════════════════════════
+
+        private void ChangePassword_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+                var teacher = db.TeacherProfiles.FirstOrDefault();
+                string currentPwd = teacher?.TeacherPassword ?? "admin";
+
+                // Validate current password
+                if (txtCurrentPassword.Password != currentPwd)
+                {
+                    txtPasswordMsg.Text = "Mat khau hien tai khong dung!";
+                    txtPasswordMsg.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+                    return;
+                }
+
+                // Validate new password
+                if (string.IsNullOrWhiteSpace(txtNewPassword.Password))
+                {
+                    txtPasswordMsg.Text = "Mat khau moi khong duoc de trong!";
+                    txtPasswordMsg.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+                    return;
+                }
+
+                if (txtNewPassword.Password.Length < 4)
+                {
+                    txtPasswordMsg.Text = "Mat khau moi phai co it nhat 4 ky tu!";
+                    txtPasswordMsg.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+                    return;
+                }
+
+                // Validate confirm
+                if (txtNewPassword.Password != txtConfirmPassword.Password)
+                {
+                    txtPasswordMsg.Text = "Xac nhan mat khau khong khop!";
+                    txtPasswordMsg.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+                    return;
+                }
+
+                // Save
+                if (teacher == null)
+                {
+                    teacher = new TeacherProfile();
+                    db.TeacherProfiles.Add(teacher);
+                }
+                teacher.TeacherPassword = txtNewPassword.Password;
+                teacher.UpdatedAt = DateTime.Now;
+                db.SaveChanges();
+
+                // Clear fields
+                txtCurrentPassword.Password = "";
+                txtNewPassword.Password = "";
+                txtConfirmPassword.Password = "";
+                txtPasswordMsg.Text = "Doi mat khau thanh cong!";
+                txtPasswordMsg.Foreground = new SolidColorBrush(Color.FromRgb(46, 125, 50));
+
+                Log.Information("Teacher password changed successfully");
+            }
+            catch (Exception ex)
+            {
+                txtPasswordMsg.Text = $"Loi: {ex.Message}";
+                txtPasswordMsg.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+                Log.Warning("ChangePassword error: {Err}", ex.Message);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  STUDENT CLIENT
+        // ═══════════════════════════════════════════════════════
+
+        private void OpenStudentClient_Click(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                app.ShowStudentClient();
+                Log.Information("Student client opened from Settings");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Loi: {ex.Message}", "Loi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Log.Warning("Open student client error: {Err}", ex.Message);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  SETTINGS FILE PERSISTENCE (JSON)
+        // ═══════════════════════════════════════════════════════
+
+        private void SaveCurrentSettings()
+        {
+            try
+            {
+                var settings = new ClassroomSettings
+                {
+                    Theme = GetSelectedTheme(),
+                    Language = (cboLanguage.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "vi",
+                    FontSize = GetSelectedFontSize(),
+                    TcpPort = int.TryParse(txtTcpPort.Text, out int p) ? p : 29877,
+                    AutoReconnect = chkAutoReconnect.IsChecked == true,
+                    MaxStudents = int.TryParse(txtMaxStudents.Text, out int m) ? m : 35,
+                    SavedAt = DateTime.Now
+                };
+
+                Directory.CreateDirectory(Path.GetDirectoryName(SettingsFilePath)!);
+                var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(SettingsFilePath, json);
+                Log.Information("Settings saved to {Path}", SettingsFilePath);
+            }
+            catch (Exception ex) { Log.Warning("SaveSettings error: {Err}", ex.Message); }
+        }
+
+        private static ClassroomSettings LoadSettingsFile()
+        {
+            try
+            {
+                if (File.Exists(SettingsFilePath))
+                {
+                    var json = File.ReadAllText(SettingsFilePath);
+                    return JsonSerializer.Deserialize<ClassroomSettings>(json) ?? new ClassroomSettings();
+                }
+            }
+            catch (Exception ex) { Log.Warning("LoadSettingsFile error: {Err}", ex.Message); }
+            return new ClassroomSettings();
+        }
+        // ═══════════════════════════════════════════════════════
+        //  API KEY MANAGEMENT
+        // ═══════════════════════════════════════════════════════
+
+        private bool _apiKeyVisible = false;
+        private TextBox? _apiKeyTextBox = null;
+
+        private void LoadApiKey()
+        {
+            try
+            {
+                string apiKey = QASmartTouch.Properties.Settings.Default.GoogleCloudVisionApiKey ?? "";
+                txtApiKey.Password = apiKey;
+
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                {
+                    txtApiStatus.Text = "✅ API key đã được cấu hình";
+                    txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(46, 125, 50));
+                    apiStatusBadge.Background = new SolidColorBrush(Color.FromRgb(232, 245, 233));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("LoadApiKey error: {Err}", ex.Message);
+            }
+        }
+
+        private void SaveApiKey_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string apiKey = _apiKeyVisible && _apiKeyTextBox != null
+                    ? _apiKeyTextBox.Text.Trim()
+                    : txtApiKey.Password.Trim();
+
+                QASmartTouch.Properties.Settings.Default.GoogleCloudVisionApiKey = apiKey;
+                QASmartTouch.Properties.Settings.Default.Save();
+
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                {
+                    txtApiStatus.Text = "✅ API key đã lưu thành công";
+                    txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(46, 125, 50));
+                    apiStatusBadge.Background = new SolidColorBrush(Color.FromRgb(232, 245, 233));
+                }
+                else
+                {
+                    txtApiStatus.Text = "⚠️ API key trống";
+                    txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(245, 124, 0));
+                    apiStatusBadge.Background = new SolidColorBrush(Color.FromRgb(255, 243, 224));
+                }
+
+                MessageBox.Show(
+                    "Đã lưu API key thành công!\n\nKhởi động lại ứng dụng để áp dụng thay đổi.",
+                    "Lưu API Key", MessageBoxButton.OK, MessageBoxImage.Information);
+                Log.Information("API key saved (length: {Len})", apiKey.Length);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi lưu API key: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                Log.Warning("SaveApiKey error: {Err}", ex.Message);
+            }
+        }
+
+        private void ToggleApiKeyVisibility_Click(object sender, RoutedEventArgs e)
+        {
+            _apiKeyVisible = !_apiKeyVisible;
+
+            if (_apiKeyVisible)
+            {
+                // Show as plain text - replace PasswordBox with TextBox
+                var parent = txtApiKey.Parent as Grid;
+                if (parent != null)
+                {
+                    int idx = parent.Children.IndexOf(txtApiKey);
+                    _apiKeyTextBox = new TextBox
+                    {
+                        Text = txtApiKey.Password,
+                        Style = (Style)FindResource("RoundedTextBox"),
+                        Margin = new Thickness(0, 0, 10, 0)
+                    };
+                    Grid.SetColumn(_apiKeyTextBox, 0);
+                    txtApiKey.Visibility = Visibility.Collapsed;
+                    parent.Children.Insert(idx + 1, _apiKeyTextBox);
+                }
+            }
+            else
+            {
+                // Hide - remove TextBox, show PasswordBox
+                if (_apiKeyTextBox != null)
+                {
+                    txtApiKey.Password = _apiKeyTextBox.Text;
+                    var parent = _apiKeyTextBox.Parent as Grid;
+                    parent?.Children.Remove(_apiKeyTextBox);
+                    _apiKeyTextBox = null;
+                    txtApiKey.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
+        private async void TestApiConnection_Click(object sender, RoutedEventArgs e)
+        {
+            string apiKey = _apiKeyVisible && _apiKeyTextBox != null
+                ? _apiKeyTextBox.Text.Trim()
+                : txtApiKey.Password.Trim();
+
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                txtApiStatus.Text = "⚠️ Vui lòng nhập API key trước";
+                txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(245, 124, 0));
+                apiStatusBadge.Background = new SolidColorBrush(Color.FromRgb(255, 243, 224));
+                return;
+            }
+
+            txtApiStatus.Text = "🔄 Đang kiểm tra...";
+            txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(25, 118, 210));
+            apiStatusBadge.Background = new SolidColorBrush(Color.FromRgb(227, 242, 253));
+
+            try
+            {
+                var testService = new HandwritingRecognitionService(apiKey);
+                if (!testService.IsInitialized)
+                {
+                    txtApiStatus.Text = "❌ Không thể khởi tạo service";
+                    txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+                    apiStatusBadge.Background = new SolidColorBrush(Color.FromRgb(255, 235, 238));
+                    return;
+                }
+
+                bool connected = await testService.TestConnectionAsync();
+                if (connected)
+                {
+                    txtApiStatus.Text = "✅ Kết nối thành công! API hoạt động bình thường";
+                    txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(46, 125, 50));
+                    apiStatusBadge.Background = new SolidColorBrush(Color.FromRgb(232, 245, 233));
+                }
+                else
+                {
+                    txtApiStatus.Text = "❌ Kết nối thất bại. Kiểm tra API key và bật Cloud Vision API";
+                    txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+                    apiStatusBadge.Background = new SolidColorBrush(Color.FromRgb(255, 235, 238));
+                }
+            }
+            catch (Exception ex)
+            {
+                txtApiStatus.Text = $"❌ Lỗi: {ex.Message}";
+                txtApiStatus.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+                apiStatusBadge.Background = new SolidColorBrush(Color.FromRgb(255, 235, 238));
+                Log.Warning("TestApiConnection error: {Err}", ex.Message);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  GRADE TYPE MASTER MANAGEMENT
+        // ═══════════════════════════════════════════════════════
+
+        private void LoadGradeTypes()
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+                var types = db.GradeTypeMasters
+                    .OrderBy(g => g.SortOrder)
+                    .ToList();
+
+                gradeTypeRowsPanel.Children.Clear();
+                int idx = 1;
+                foreach (var gt in types)
+                {
+                    gradeTypeRowsPanel.Children.Add(CreateGradeTypeRow(gt, idx++));
+                }
+
+                UpdateFormulaPreview(types);
+            }
+            catch (Exception ex) { Log.Warning("LoadGradeTypes error: {Err}", ex.Message); }
+        }
+
+        private Border CreateGradeTypeRow(GradeTypeMaster gt, int index)
+        {
+            var row = new Border
+            {
+                Padding = new Thickness(0, 6, 0, 6),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Tag = gt.Id
+            };
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(36) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(70) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(70) });
+
+            // # index
+            var tbIdx = new TextBlock
+            {
+                Text = index.ToString(),
+                FontSize = 12, Foreground = new SolidColorBrush(Color.FromRgb(134, 142, 150)),
+                VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0)
+            };
+            Grid.SetColumn(tbIdx, 0);
+            grid.Children.Add(tbIdx);
+
+            // Display name (editable)
+            var txtName = new TextBox
+            {
+                Text = gt.DisplayName, FontSize = 12, Padding = new Thickness(6, 4, 6, 4),
+                BorderThickness = new Thickness(1), BorderBrush = new SolidColorBrush(Color.FromRgb(222, 226, 230)),
+                Background = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
+                Tag = $"name_{gt.Id}"
+            };
+            Grid.SetColumn(txtName, 1);
+            grid.Children.Add(txtName);
+
+            // Short name
+            var txtShort = new TextBox
+            {
+                Text = gt.ShortName, FontSize = 12, Padding = new Thickness(6, 4, 6, 4),
+                BorderThickness = new Thickness(1), BorderBrush = new SolidColorBrush(Color.FromRgb(222, 226, 230)),
+                Background = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
+                TextAlignment = TextAlignment.Center, Tag = $"short_{gt.Id}", Margin = new Thickness(4, 0, 4, 0)
+            };
+            Grid.SetColumn(txtShort, 2);
+            grid.Children.Add(txtShort);
+
+            // Weight (ComboBox)
+            var cboWeight = new ComboBox
+            {
+                FontSize = 12, Padding = new Thickness(4, 2, 4, 2),
+                SelectedIndex = Math.Max(0, gt.Weight - 1), Tag = $"weight_{gt.Id}"
+            };
+            cboWeight.Items.Add(new ComboBoxItem { Content = "1", Tag = 1 });
+            cboWeight.Items.Add(new ComboBoxItem { Content = "2", Tag = 2 });
+            cboWeight.Items.Add(new ComboBoxItem { Content = "3", Tag = 3 });
+            cboWeight.Items.Add(new ComboBoxItem { Content = "4", Tag = 4 });
+            cboWeight.Items.Add(new ComboBoxItem { Content = "5", Tag = 5 });
+            Grid.SetColumn(cboWeight, 3);
+            grid.Children.Add(cboWeight);
+
+            // MaxAttempts (ComboBox)
+            var cboAttempts = new ComboBox
+            {
+                FontSize = 12, Padding = new Thickness(4, 2, 4, 2),
+                SelectedIndex = Math.Max(0, gt.MaxAttempts - 1), Tag = $"attempts_{gt.Id}",
+                Margin = new Thickness(4, 0, 4, 0)
+            };
+            cboAttempts.Items.Add(new ComboBoxItem { Content = "1 lần", Tag = 1 });
+            cboAttempts.Items.Add(new ComboBoxItem { Content = "2 lần", Tag = 2 });
+            cboAttempts.Items.Add(new ComboBoxItem { Content = "3 lần", Tag = 3 });
+            cboAttempts.Items.Add(new ComboBoxItem { Content = "4 lần", Tag = 4 });
+            Grid.SetColumn(cboAttempts, 4);
+            grid.Children.Add(cboAttempts);
+
+            // Status badge
+            var statusBadge = new Border
+            {
+                CornerRadius = new CornerRadius(6),
+                Padding = new Thickness(8, 3, 8, 3),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Center,
+                Background = gt.IsActive
+                    ? new SolidColorBrush(Color.FromRgb(232, 245, 233))
+                    : new SolidColorBrush(Color.FromRgb(255, 235, 238))
+            };
+            statusBadge.Child = new TextBlock
+            {
+                Text = gt.IsActive ? "✅ Bật" : "❌ Tắt",
+                FontSize = 10, FontWeight = FontWeights.SemiBold,
+                Foreground = gt.IsActive
+                    ? new SolidColorBrush(Color.FromRgb(46, 125, 50))
+                    : new SolidColorBrush(Color.FromRgb(198, 40, 40))
+            };
+            Grid.SetColumn(statusBadge, 5);
+            grid.Children.Add(statusBadge);
+
+            // Action buttons
+            var actionPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var btnSave = new Button
+            {
+                Content = "💾", FontSize = 14, Width = 28, Height = 28,
+                Background = Brushes.Transparent, BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand, ToolTip = "Lưu", Tag = gt.Id,
+                Padding = new Thickness(0)
+            };
+            btnSave.Click += SaveGradeType_Click;
+            actionPanel.Children.Add(btnSave);
+
+            var btnDel = new Button
+            {
+                Content = "🗑️", FontSize = 14, Width = 28, Height = 28,
+                Background = Brushes.Transparent, BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand, ToolTip = "Xóa", Tag = gt.Id,
+                Padding = new Thickness(0)
+            };
+            btnDel.Click += DeleteGradeType_Click;
+            actionPanel.Children.Add(btnDel);
+
+            Grid.SetColumn(actionPanel, 6);
+            grid.Children.Add(actionPanel);
+
+            row.Child = grid;
+            return row;
+        }
+
+        private void AddGradeType_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+
+                int nextOrder = db.GradeTypeMasters.Any()
+                    ? db.GradeTypeMasters.Max(g => g.SortOrder) + 1 : 1;
+                string code = $"Custom{nextOrder}";
+
+                db.GradeTypeMasters.Add(new GradeTypeMaster
+                {
+                    Code = code,
+                    DisplayName = "Loại điểm mới",
+                    ShortName = "?",
+                    Weight = 1,
+                    MaxAttempts = 1,
+                    SortOrder = nextOrder,
+                    IsActive = true
+                });
+                db.SaveChanges();
+                LoadGradeTypes();
+                Log.Information("Added new GradeTypeMaster: {Code}", code);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SaveGradeType_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not int id) return;
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+                var gt = db.GradeTypeMasters.FirstOrDefault(g => g.Id == id);
+                if (gt == null) return;
+
+                // Find the parent row and read values
+                foreach (Border rowBorder in gradeTypeRowsPanel.Children)
+                {
+                    if (rowBorder.Tag is int rowId && rowId == id && rowBorder.Child is Grid grid)
+                    {
+                        foreach (UIElement child in grid.Children)
+                        {
+                            if (child is TextBox tb)
+                            {
+                                var tag = tb.Tag?.ToString() ?? "";
+                                if (tag == $"name_{id}") gt.DisplayName = tb.Text.Trim();
+                                if (tag == $"short_{id}") gt.ShortName = tb.Text.Trim();
+                            }
+                            if (child is ComboBox cbo)
+                            {
+                                var tag = cbo.Tag?.ToString() ?? "";
+                                var selItem = cbo.SelectedItem as ComboBoxItem;
+                                if (selItem?.Tag is int val)
+                                {
+                                    if (tag == $"weight_{id}") gt.Weight = val;
+                                    if (tag == $"attempts_{id}") gt.MaxAttempts = val;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                db.SaveChanges();
+                LoadGradeTypes();
+                Log.Information("Saved GradeTypeMaster #{Id}: {Name} (W={W}, A={A})",
+                    gt.Id, gt.DisplayName, gt.Weight, gt.MaxAttempts);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void DeleteGradeType_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not int id) return;
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+                var gt = db.GradeTypeMasters.FirstOrDefault(g => g.Id == id);
+                if (gt == null) return;
+
+                // Check if grades exist
+                bool hasGrades = db.StudentGrades.Any(sg => sg.GradeTypeId == id);
+                if (hasGrades)
+                {
+                    var res = MessageBox.Show(
+                        $"Loại điểm \"{gt.DisplayName}\" đã có dữ liệu điểm.\n" +
+                        "Bạn có muốn vô hiệu hóa (ẩn) thay vì xóa?",
+                        "Không thể xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (res == MessageBoxResult.Yes)
+                    {
+                        gt.IsActive = false;
+                        db.SaveChanges();
+                        LoadGradeTypes();
+                        Log.Information("Deactivated GradeTypeMaster #{Id}", id);
+                    }
+                    return;
+                }
+
+                var confirm = MessageBox.Show(
+                    $"Xóa loại điểm \"{gt.DisplayName}\"?",
+                    "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (confirm == MessageBoxResult.Yes)
+                {
+                    db.GradeTypeMasters.Remove(gt);
+                    db.SaveChanges();
+                    LoadGradeTypes();
+                    Log.Information("Deleted GradeTypeMaster #{Id}: {Name}", id, gt.DisplayName);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void UpdateFormulaPreview(System.Collections.Generic.List<GradeTypeMaster> types)
+        {
+            if (types == null || types.Count == 0)
+            {
+                txtFormulaPreview.Text = "(Chưa có loại điểm nào)";
+                return;
+            }
+
+            var activeTypes = types.Where(t => t.IsActive).ToList();
+            if (activeTypes.Count == 0)
+            {
+                txtFormulaPreview.Text = "(Không có loại điểm hoạt động)";
+                return;
+            }
+
+            // Build formula string: TB = (M×1 + 15p×1 + 1T×2 + HK×3) / (1+1+2+3)
+            var numerator = string.Join(" + ", activeTypes.Select(t =>
+            {
+                if (t.MaxAttempts > 1)
+                    return string.Join(" + ", Enumerable.Range(1, t.MaxAttempts)
+                        .Select(a => $"{t.ShortName}{a}×{t.Weight}"));
+                return $"{t.ShortName}×{t.Weight}";
+            }));
+
+            int totalWeight = activeTypes.Sum(t => t.Weight * t.MaxAttempts);
+            txtFormulaPreview.Text = $"TB = ({numerator}) / {totalWeight}";
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  SCHOOL CONFIG — ROSTER MANAGEMENT
+        // ═══════════════════════════════════════════════════════
+
+        private void LoadRosterRows()
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+                var rosters = db.ClassRosters.Where(r => r.IsActive).OrderBy(r => r.GradeLevel).ThenBy(r => r.ClassName).ToList();
+
+                rosterRowsPanel.Children.Clear();
+                int idx = 1;
+                foreach (var r in rosters)
+                    rosterRowsPanel.Children.Add(CreateRosterRow(r, idx++));
+
+                txtRosterSummary.Text = $"🏫 {rosters.Count} lớp • Khối: {string.Join(", ", rosters.Select(r => r.GradeLevel).Distinct().OrderBy(x => x))}";
+            }
+            catch (Exception ex) { Log.Warning("LoadRosterRows error: {Err}", ex.Message); }
+        }
+
+        private Border CreateRosterRow(ClassRoster roster, int index)
+        {
+            var row = new Border
+            {
+                Padding = new Thickness(0, 6, 0, 6),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(233, 236, 239)),
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Tag = roster.Id
+            };
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(36) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(70) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });
+
+            // Col 0: Index
+            var tbIdx = new TextBlock { Text = index.ToString(), FontSize = 12, Foreground = new SolidColorBrush(Color.FromRgb(134, 142, 150)), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0) };
+            Grid.SetColumn(tbIdx, 0);
+            grid.Children.Add(tbIdx);
+
+            // Col 1: Grade Level
+            var cboLevel = new ComboBox { FontSize = 12, Padding = new Thickness(4, 2, 4, 2), Tag = $"level_{roster.Id}" };
+            foreach (var lv in new[] { "6", "7", "8", "9", "10", "11", "12" })
+            {
+                var item = new ComboBoxItem { Content = lv, Tag = lv };
+                if (lv == roster.GradeLevel) item.IsSelected = true;
+                cboLevel.Items.Add(item);
+            }
+            Grid.SetColumn(cboLevel, 1);
+            grid.Children.Add(cboLevel);
+
+            // Col 2: Class Name
+            var txtName = new TextBox { Text = roster.ClassName, FontSize = 12, Padding = new Thickness(6, 4, 6, 4), BorderThickness = new Thickness(1), BorderBrush = new SolidColorBrush(Color.FromRgb(222, 226, 230)), Background = new SolidColorBrush(Color.FromRgb(248, 249, 250)), Tag = $"name_{roster.Id}", Margin = new Thickness(4, 0, 4, 0) };
+            Grid.SetColumn(txtName, 2);
+            grid.Children.Add(txtName);
+
+            // Col 3: Subject
+            var txtSubject = new TextBox { Text = roster.Subject, FontSize = 12, Padding = new Thickness(6, 4, 6, 4), BorderThickness = new Thickness(1), BorderBrush = new SolidColorBrush(Color.FromRgb(222, 226, 230)), Background = new SolidColorBrush(Color.FromRgb(248, 249, 250)), Tag = $"subj_{roster.Id}", Margin = new Thickness(0, 0, 4, 0) };
+            Grid.SetColumn(txtSubject, 3);
+            grid.Children.Add(txtSubject);
+
+            // Col 4: Teacher Name
+            var txtTeacher = new TextBox { Text = roster.TeacherName, FontSize = 12, Padding = new Thickness(6, 4, 6, 4), BorderThickness = new Thickness(1), BorderBrush = new SolidColorBrush(Color.FromRgb(222, 226, 230)), Background = new SolidColorBrush(Color.FromRgb(248, 249, 250)), Tag = $"teacher_{roster.Id}", Margin = new Thickness(0, 0, 4, 0) };
+            Grid.SetColumn(txtTeacher, 4);
+            grid.Children.Add(txtTeacher);
+
+            // Col 5: Student Count (read-only)
+            var tbCount = new TextBlock { Text = roster.StudentCount.ToString(), FontSize = 12, Foreground = new SolidColorBrush(Color.FromRgb(25, 118, 210)), FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+            Grid.SetColumn(tbCount, 5);
+            grid.Children.Add(tbCount);
+
+            // Col 6: Delete
+            var btnDel = new Button { Content = "🗑️", FontSize = 14, Width = 28, Height = 28, Background = Brushes.Transparent, BorderThickness = new Thickness(0), Cursor = Cursors.Hand, ToolTip = "Xóa lớp", Tag = roster.Id, Padding = new Thickness(0) };
+            btnDel.Click += DeleteRoster_Click;
+            Grid.SetColumn(btnDel, 6);
+            grid.Children.Add(btnDel);
+
+            row.Child = grid;
+            return row;
+        }
+
+        private void AddRoster_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+                string year = txtSchoolYear.Text.Trim();
+                string semester = (cboDefaultSemester.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "HK2";
+
+                db.ClassRosters.Add(new ClassRoster
+                {
+                    ClassName = "Lớp mới",
+                    GradeLevel = "10",
+                    SchoolYear = year,
+                    Semester = semester,
+                    Subject = "",
+                    IsActive = true
+                });
+                db.SaveChanges();
+                LoadRosterRows();
+                Log.Information("Added new ClassRoster");
+            }
+            catch (Exception ex) { MessageBox.Show($"Lỗi: {ex.Message}"); }
+        }
+
+        private void SaveSchoolConfig_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+                string year = txtSchoolYear.Text.Trim();
+                string semester = (cboDefaultSemester.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "HK2";
+                int saved = 0;
+
+                foreach (Border rowBorder in rosterRowsPanel.Children)
+                {
+                    if (rowBorder.Tag is not int id || rowBorder.Child is not Grid grid) continue;
+                    var roster = db.ClassRosters.FirstOrDefault(r => r.Id == id);
+                    if (roster == null) continue;
+
+                    foreach (UIElement child in grid.Children)
+                    {
+                        if (child is TextBox tb)
+                        {
+                            var tag = tb.Tag?.ToString() ?? "";
+                            if (tag == $"name_{id}") roster.ClassName = tb.Text.Trim();
+                            if (tag == $"subj_{id}") roster.Subject = tb.Text.Trim();
+                            if (tag == $"teacher_{id}") roster.TeacherName = tb.Text.Trim();
+                        }
+                        if (child is ComboBox cbo && cbo.Tag?.ToString() == $"level_{id}")
+                        {
+                            var sel = cbo.SelectedItem as ComboBoxItem;
+                            if (sel?.Tag is string lv) roster.GradeLevel = lv;
+                        }
+                    }
+                    roster.SchoolYear = year;
+                    roster.Semester = semester;
+                    saved++;
+                }
+
+                db.SaveChanges();
+                LoadRosterRows();
+                MessageBox.Show($"✅ Đã lưu {saved} lớp!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                Log.Information("SaveSchoolConfig: {Count} rosters", saved);
+            }
+            catch (Exception ex) { MessageBox.Show($"Lỗi: {ex.Message}"); }
+        }
+
+        private void DeleteRoster_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not int id) return;
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+                var roster = db.ClassRosters.FirstOrDefault(r => r.Id == id);
+                if (roster == null) return;
+
+                bool hasStudents = db.ClassRosterStudents.Any(rs => rs.RosterId == id);
+                bool hasGrades = db.StudentGrades.Any(sg => sg.RosterId == id);
+
+                if (hasStudents || hasGrades)
+                {
+                    var res = MessageBox.Show($"Lớp \"{roster.ClassName}\" có {(hasGrades ? "điểm" : "học sinh")}.\nVô hiệu hóa (ẩn) thay vì xóa?", "Không thể xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (res == MessageBoxResult.Yes)
+                    {
+                        roster.IsActive = false;
+                        db.SaveChanges();
+                        LoadRosterRows();
+                    }
+                    return;
+                }
+
+                var confirm = MessageBox.Show($"Xóa lớp \"{roster.ClassName}\"?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (confirm == MessageBoxResult.Yes)
+                {
+                    db.ClassRosters.Remove(roster);
+                    db.SaveChanges();
+                    LoadRosterRows();
+                }
+            }
+            catch (Exception ex) { MessageBox.Show($"Lỗi: {ex.Message}"); }
+        }
+    }
+
+    /// <summary>Persistent app settings (saved as JSON)</summary>
+    public class ClassroomSettings
+    {
+        public string Theme { get; set; } = "Light";
+        public string Language { get; set; } = "vi";
+        public int FontSize { get; set; } = 14;
+        public int TcpPort { get; set; } = 29877;
+        public bool AutoReconnect { get; set; } = true;
+        public int MaxStudents { get; set; } = 35;
+        public DateTime SavedAt { get; set; } = DateTime.Now;
+    }
+}
+

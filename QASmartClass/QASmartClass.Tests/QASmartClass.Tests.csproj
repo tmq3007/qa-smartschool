@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QASmartClass.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="V41QuizUpgradeTests.cs" />
+    <Compile Include="..\Tests\TestDbFactory.cs" />
+    <Compile Include="V90StemToolsUpgradeTests.cs" />
+    <Compile Include="V91SystemUpgradeTests.cs" />
+    <Compile Include="V73StudentIdentityTests.cs" />
+    <Compile Include="V54OfflineSyncAndTicketTests.cs" />
+    <Compile Include="V45FocusTimerTests.cs" />
+    <Compile Include="NetworkDiagnosticsTests.cs" />
+    <Compile Include="OverlayTimeoutTests.cs" />
+    <Compile Include="DatabaseRecoveryTests.cs" />
+    <Compile Include="LicenseVerificationTests.cs" />
+    <Compile Include="V7UpgradeTests.cs" />
+  </ItemGroup>
+
+</Project>

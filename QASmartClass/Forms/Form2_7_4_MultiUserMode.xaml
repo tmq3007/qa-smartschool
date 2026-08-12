@@ -1,0 +1,556 @@
+<Window x:Class="QASmartTouch.Forms.Form2_7_4_MultiUserMode"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Chế độ Đa người dùng"
+
+        Width="500"
+
+        Height="600"
+
+        WindowStartupLocation="CenterOwner"
+
+        ResizeMode="NoResize"
+
+        Background="#F5F6FA"
+
+        FontFamily="Segoe UI, Inter, Arial, sans-serif">
+
+
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="60"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="70"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <Border Grid.Row="0" Background="White" BorderBrush="#E1E8ED" BorderThickness="0,0,0,1">
+
+            <Grid>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
+
+                    <!-- Icon -->
+
+                    <Viewbox Width="28" Height="28" Margin="0,0,12,0">
+
+                        <Canvas Width="24" Height="24">
+
+                            <Path Fill="#2E86DE" 
+
+                                  Data="M16,13C15.71,13 15.38,13 15.03,13.05C16.19,13.89 17,15 17,16.5V19H23V16.5C23,14.17 18.33,13 16,13M8,13C5.67,13 1,14.17 1,16.5V19H15V16.5C15,14.17 10.33,13 8,13M8,11A3,3 0 0,0 11,8A3,3 0 0,0 8,5A3,3 0 0,0 5,8A3,3 0 0,0 8,11M16,11A3,3 0 0,0 19,8A3,3 0 0,0 16,5A3,3 0 0,0 13,8A3,3 0 0,0 16,11Z"/>
+
+                        </Canvas>
+
+                    </Viewbox>
+
+                    <TextBlock Text="Chế độ Đa người dùng"
+
+                              FontSize="18"
+
+                              FontWeight="SemiBold"
+
+                              Foreground="#2F3542"
+
+                              VerticalAlignment="Center"/>
+
+                </StackPanel>
+
+
+
+                <!-- Close Button -->
+
+                <Button x:Name="btnClose"
+
+                       Width="40" Height="40"
+
+                       HorizontalAlignment="Right"
+
+                       Margin="0,0,10,0"
+
+                       Background="Transparent"
+
+                       BorderThickness="0"
+
+                       Cursor="Hand"
+
+                       Click="btnClose_Click">
+
+                    <Viewbox Width="20" Height="20">
+
+                        <Canvas Width="24" Height="24">
+
+                            <Path Fill="#747D8C" 
+
+                                  Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+
+                        </Canvas>
+
+                    </Viewbox>
+
+                </Button>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- Content -->
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+
+            <StackPanel Margin="20">
+
+                
+
+                <!-- Enable Multi-User Mode -->
+
+                <Border Background="White" 
+
+                       CornerRadius="8" 
+
+                       Padding="20"
+
+                       Margin="0,0,0,15">
+
+                    <StackPanel>
+
+                        <CheckBox x:Name="chkEnableMultiUser"
+
+                                 Content="Bật chế độ 2 học sinh"
+
+                                 FontSize="14"
+
+                                 FontWeight="SemiBold"
+
+                                 Foreground="#2F3542"
+
+                                 Checked="chkEnableMultiUser_Checked"
+
+                                 Unchecked="chkEnableMultiUser_Unchecked"/>
+
+                        
+
+                        <TextBlock Text="Cho phép 2 học sinh cùng làm bài trên bảng"
+
+                                  FontSize="12"
+
+                                  Foreground="#747D8C"
+
+                                  Margin="25,5,0,0"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- Split Mode Selection -->
+
+                <Border x:Name="panelSplitMode"
+
+                       Background="White" 
+
+                       CornerRadius="8" 
+
+                       Padding="20"
+
+                       Margin="0,0,0,15"
+
+                       IsEnabled="False">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Chia bảng:"
+
+                                  FontSize="14"
+
+                                  FontWeight="SemiBold"
+
+                                  Foreground="#2F3542"
+
+                                  Margin="0,0,0,10"/>
+
+                        
+
+                        <RadioButton x:Name="rbVertical"
+
+                                    Content="Dọc (Trái/Phải)"
+
+                                    FontSize="13"
+
+                                    Foreground="#2F3542"
+
+                                    Margin="0,0,0,8"
+
+                                    IsChecked="True"/>
+
+                        
+
+                        <RadioButton x:Name="rbHorizontal"
+
+                                    Content="Ngang (Trên/Dưới)"
+
+                                    FontSize="13"
+
+                                    Foreground="#2F3542"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- Advanced Options -->
+
+                <Border x:Name="panelAdvancedOptions"
+
+                       Background="White" 
+
+                       CornerRadius="8" 
+
+                       Padding="20"
+
+                       Margin="0,0,0,15"
+
+                       IsEnabled="False">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Tùy chọn nâng cao:"
+
+                                  FontSize="14"
+
+                                  FontWeight="SemiBold"
+
+                                  Foreground="#2F3542"
+
+                                  Margin="0,0,0,10"/>
+
+                        
+
+                        <CheckBox x:Name="chkZoneIsolation"
+
+                                 Content="Cách ly vùng vẽ (chỉ vẽ trong vùng riêng)"
+
+                                 FontSize="12"
+
+                                 Foreground="#2F3542"
+
+                                 Margin="0,0,0,8"
+
+                                 IsChecked="False"/>
+
+                        
+
+                        <CheckBox x:Name="chkShowSplitLine"
+
+                                 Content="Hiển thị đường chia"
+
+                                 FontSize="12"
+
+                                 Foreground="#2F3542"
+
+                                 IsChecked="True"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- Student 1 Settings -->
+
+                <Border x:Name="panelStudent1"
+
+                       Background="White" 
+
+                       CornerRadius="8" 
+
+                       Padding="20"
+
+                       Margin="0,0,0,15"
+
+                       IsEnabled="False">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Học sinh 1:"
+
+                                  FontSize="14"
+
+                                  FontWeight="SemiBold"
+
+                                  Foreground="#2F3542"
+
+                                  Margin="0,0,0,10"/>
+
+                        
+
+                        <TextBlock Text="Tên:"
+
+                                  FontSize="12"
+
+                                  Foreground="#747D8C"
+
+                                  Margin="0,0,0,5"/>
+
+                        <TextBox x:Name="txtStudent1Name"
+
+                                Text="Học sinh A"
+
+                                FontSize="13"
+
+                                Padding="10"
+
+                                BorderBrush="#DFE4EA"
+
+                                BorderThickness="1"
+
+                                Margin="0,0,0,10"/>
+
+                        
+
+                        <TextBlock Text="Màu bút:"
+
+                                  FontSize="12"
+
+                                  Foreground="#747D8C"
+
+                                  Margin="0,0,0,5"/>
+
+                        <ComboBox x:Name="cmbStudent1Color"
+
+                                 FontSize="13"
+
+                                 Padding="10"
+
+                                 BorderBrush="#DFE4EA"
+
+                                 SelectedIndex="0">
+
+                            <ComboBoxItem Content="🔵 Xanh dương"/>
+
+                            <ComboBoxItem Content="🟢 Xanh lá"/>
+
+                            <ComboBoxItem Content="🟣 Tím"/>
+
+                            <ComboBoxItem Content="🟡 Vàng"/>
+
+                        </ComboBox>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- Student 2 Settings -->
+
+                <Border x:Name="panelStudent2"
+
+                       Background="White" 
+
+                       CornerRadius="8" 
+
+                       Padding="20"
+
+                       IsEnabled="False">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Học sinh 2:"
+
+                                  FontSize="14"
+
+                                  FontWeight="SemiBold"
+
+                                  Foreground="#2F3542"
+
+                                  Margin="0,0,0,10"/>
+
+                        
+
+                        <TextBlock Text="Tên:"
+
+                                  FontSize="12"
+
+                                  Foreground="#747D8C"
+
+                                  Margin="0,0,0,5"/>
+
+                        <TextBox x:Name="txtStudent2Name"
+
+                                Text="Học sinh B"
+
+                                FontSize="13"
+
+                                Padding="10"
+
+                                BorderBrush="#DFE4EA"
+
+                                BorderThickness="1"
+
+                                Margin="0,0,0,10"/>
+
+                        
+
+                        <TextBlock Text="Màu bút:"
+
+                                  FontSize="12"
+
+                                  Foreground="#747D8C"
+
+                                  Margin="0,0,0,5"/>
+
+                        <ComboBox x:Name="cmbStudent2Color"
+
+                                 FontSize="13"
+
+                                 Padding="10"
+
+                                 BorderBrush="#DFE4EA"
+
+                                 SelectedIndex="0">
+
+                            <ComboBoxItem Content="🔴 Đỏ"/>
+
+                            <ComboBoxItem Content="🟠 Cam"/>
+
+                            <ComboBoxItem Content="🟤 Nâu"/>
+
+                            <ComboBoxItem Content="⚫ Đen"/>
+
+                        </ComboBox>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+
+
+        <!-- Footer Buttons -->
+
+        <Border Grid.Row="2" Background="White" BorderBrush="#E1E8ED" BorderThickness="0,1,0,0">
+
+            <StackPanel Orientation="Horizontal" 
+
+                       HorizontalAlignment="Right" 
+
+                       VerticalAlignment="Center"
+
+                       Margin="20,0">
+
+                
+
+                <Button x:Name="btnCancel"
+
+                       Content="Hủy"
+
+                       Width="100" Height="40"
+
+                       FontSize="13"
+
+                       Background="#F1F2F6"
+
+                       Foreground="#2F3542"
+
+                       BorderThickness="0"
+
+                       Cursor="Hand"
+
+                       Margin="0,0,10,0"
+
+                       Click="btnCancel_Click">
+
+                    <Button.Template>
+
+                        <ControlTemplate TargetType="Button">
+
+                            <Border Background="{TemplateBinding Background}" 
+
+                                   CornerRadius="6"
+
+                                   Padding="20,10">
+
+                                <ContentPresenter HorizontalAlignment="Center" 
+
+                                                VerticalAlignment="Center"/>
+
+                            </Border>
+
+                        </ControlTemplate>
+
+                    </Button.Template>
+
+                </Button>
+
+
+
+                <Button x:Name="btnApply"
+
+                       Content="Áp dụng"
+
+                       Width="100" Height="40"
+
+                       FontSize="13"
+
+                       Background="#2E86DE"
+
+                       Foreground="White"
+
+                       BorderThickness="0"
+
+                       Cursor="Hand"
+
+                       Click="btnApply_Click">
+
+                    <Button.Template>
+
+                        <ControlTemplate TargetType="Button">
+
+                            <Border Background="{TemplateBinding Background}" 
+
+                                   CornerRadius="6"
+
+                                   Padding="20,10">
+
+                                <ContentPresenter HorizontalAlignment="Center" 
+
+                                                VerticalAlignment="Center"/>
+
+                            </Border>
+
+                        </ControlTemplate>
+
+                    </Button.Template>
+
+                </Button>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</Window>
+

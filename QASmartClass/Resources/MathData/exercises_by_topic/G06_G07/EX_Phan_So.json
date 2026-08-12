@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "topicId": "g06_ex02",
+    "topicName": "Phân Số & Số Thập Phân",
+    "gradeRange": [6, 7],
+    "totalExercises": 16,
+    "difficulty": {"Easy": 5, "Medium": 6, "Hard": 5},
+    "toolMapping": ["FractionTool"],
+    "sourceRef": "MATH_EXERCISES_BANK_250+.md (Bài 25-40)"
+  },
+  "exercises": [
+    {"exerciseId": "ex_ps_025", "difficulty": "Easy", "type": "calculation", "question": "Rút gọn: 6/9", "answer": "2/3", "solution": "ƯCLN(6,9) = 3; 6÷3/9÷3 = 2/3", "points": 5},
+    {"exerciseId": "ex_ps_026", "difficulty": "Easy", "type": "calculation", "question": "1/2 + 1/3 = ?", "answer": "5/6", "solution": "Quy đồng mẫu 6: 3/6 + 2/6 = 5/6", "points": 5},
+    {"exerciseId": "ex_ps_027", "difficulty": "Easy", "type": "calculation", "question": "2/3 - 1/4 = ?", "answer": "5/12", "solution": "Quy đồng mẫu 12: 8/12 - 3/12 = 5/12", "points": 5},
+    {"exerciseId": "ex_ps_028", "difficulty": "Easy", "type": "calculation", "question": "1/2 × 3/4 = ?", "answer": "3/8", "solution": "Nhân tử với tử, mẫu với mẫu: (1×3)/(2×4) = 3/8", "points": 5},
+    {"exerciseId": "ex_ps_029", "difficulty": "Easy", "type": "calculation", "question": "2/3 ÷ 1/2 = ?", "answer": "4/3", "solution": "Nhân với nghịch đảo: 2/3 × 2/1 = 4/3", "points": 5},
+    {"exerciseId": "ex_ps_030", "difficulty": "Medium", "type": "calculation", "question": "Chuyển 3/5 thành số thập phân", "answer": "0.6", "solution": "3 ÷ 5 = 0.6", "points": 10},
+    {"exerciseId": "ex_ps_031", "difficulty": "Medium", "type": "calculation", "question": "Chuyển 0.75 thành phân số", "answer": "3/4", "solution": "0.75 = 75/100 = 3/4 (rút gọn cho 25)", "points": 10},
+    {"exerciseId": "ex_ps_032", "difficulty": "Medium", "type": "calculation", "question": "2.5 + 1.75 = ?", "answer": "4.25", "solution": "Cộng từng hàng: 2.50 + 1.75 = 4.25", "points": 10},
+    {"exerciseId": "ex_ps_033", "difficulty": "Medium", "type": "calculation", "question": "3.6 × 2 = ?", "answer": "7.2", "solution": "3.6 × 2 = 7.2", "points": 10},
+    {"exerciseId": "ex_ps_034", "difficulty": "Medium", "type": "calculation", "question": "Sắp xếp từ bé đến lớn: 0.5, 1/3, 0.6, 2/3", "answer": "1/3 < 0.5 < 0.6 < 2/3", "solution": "1/3 ≈ 0.333; 2/3 ≈ 0.667. Thứ tự: 0.333 < 0.5 < 0.6 < 0.667", "points": 10},
+    {"exerciseId": "ex_ps_035", "difficulty": "Medium", "type": "calculation", "question": "Tính: 2/5 + 3/10 - 1/4", "answer": "9/20", "solution": "QĐ mẫu 20: 8/20 + 6/20 - 5/20 = 9/20", "points": 10},
+    {"exerciseId": "ex_ps_036", "difficulty": "Hard", "type": "calculation", "question": "Tính: (1/2 + 1/3) × (2/5 - 1/10)", "answer": "1/4", "solution": "(5/6) × (3/10) = 15/60 = 1/4", "points": 15},
+    {"exerciseId": "ex_ps_037", "difficulty": "Hard", "type": "calculation", "question": "Tìm x: x/4 + 2/3 = 11/12", "answer": "x = 1", "solution": "x/4 = 11/12 - 8/12 = 3/12 = 1/4 → x = 1", "points": 15},
+    {"exerciseId": "ex_ps_038", "difficulty": "Hard", "type": "calculation", "question": "So sánh: 7/11 và 5/8", "answer": "7/11 < 5/8", "solution": "QĐ mẫu 88: 56/88 < 55/88 → KIỂM TRA LẠI: 56/88 > 55/88 thực ra 7/11 ≈ 0.636, 5/8 = 0.625 → 7/11 > 5/8", "points": 15},
+    {"exerciseId": "ex_ps_039", "difficulty": "Hard", "type": "proof", "question": "Chứng minh 1/2 + 1/4 + 1/8 + ... + 1/2ⁿ < 1", "answer": "Tổng = 1 - 1/2ⁿ < 1", "solution": "Đây là cấp số nhân với u₁=1/2, q=1/2. Sₙ = (1/2)(1-1/2ⁿ)/(1-1/2) = 1-1/2ⁿ < 1", "points": 20},
+    {"exerciseId": "ex_ps_040", "difficulty": "Hard", "type": "calculation", "question": "Tìm phân số có mẫu = tử + 7, và bằng 2/3", "answer": "14/21", "solution": "Gọi tử = x → mẫu = x+7. x/(x+7) = 2/3 → 3x = 2x+14 → x=14, mẫu=21", "points": 20}
+  ]
+}

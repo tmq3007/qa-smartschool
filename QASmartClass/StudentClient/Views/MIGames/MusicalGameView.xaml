@@ -1,0 +1,96 @@
+﻿<UserControl x:Class="QASmartClass.StudentClient.Views.MIGames.MusicalGameView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="White" Focusable="True">
+    <Border CornerRadius="12" Padding="20" BorderBrush="#E2E8F0" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.1"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Game Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="🎵 Musical Rhythm Hero" FontSize="20" FontWeight="Bold" Foreground="#4F46E5"/>
+                    <TextBlock Text="Nhấn phím [A, S, D, F] khi nốt rơi đến vạch!" FontSize="12" Foreground="#64748B" Margin="0,2,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#EEF2FF" CornerRadius="8" Padding="10,5" Margin="0,0,10,0">
+                        <TextBlock x:Name="TxtScore" Text="Score: 0" FontSize="14" FontWeight="Bold" Foreground="#4F46E5"/>
+                    </Border>
+                    <Border x:Name="BorderCombo" Background="#FEF3C7" CornerRadius="8" Padding="10,5" Visibility="Collapsed">
+                        <TextBlock x:Name="TxtCombo" Text="Combo x0" FontSize="14" FontWeight="Bold" Foreground="#D97706"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- Rhythm Track Canvas -->
+            <Border x:Name="GameBorder" Grid.Row="1" Background="#1E1E2F" CornerRadius="12" BorderBrush="#374151" BorderThickness="1" ClipToBounds="True" Height="300" Width="400" HorizontalAlignment="Center">
+                <Border.RenderTransform>
+                    <TranslateTransform x:Name="GameBorderTransform" X="0" Y="0"/>
+                </Border.RenderTransform>
+                <Grid>
+                    <!-- Background Lanes -->
+                    <UniformGrid Columns="4" Opacity="0.1">
+                        <Border BorderBrush="#6B7280" BorderThickness="0,0,1,0"/>
+                        <Border BorderBrush="#6B7280" BorderThickness="0,0,1,0"/>
+                        <Border BorderBrush="#6B7280" BorderThickness="0,0,1,0"/>
+                        <Border/>
+                    </UniformGrid>
+
+                    <!-- Game Play Canvas -->
+                    <Canvas x:Name="PlayCanvas" Background="Transparent"/>
+
+                    <!-- Judgment Line & Key Labels (y=240) -->
+                    <Line X1="0" Y1="240" X2="400" Y2="240" Stroke="#EF4444" StrokeThickness="2" StrokeDashArray="4 4" VerticalAlignment="Top"/>
+                    
+                    <!-- Target Zones (Circles at y=240 for A, S, D, F) -->
+                    <Canvas VerticalAlignment="Top">
+                        <!-- Lane 0 (A) -->
+                        <Ellipse Width="30" Height="30" Stroke="#4F46E5" StrokeThickness="2" Canvas.Left="35" Canvas.Top="225" Opacity="0.5"/>
+                        <TextBlock Text="A" Foreground="White" FontSize="12" FontWeight="Bold" Canvas.Left="46" Canvas.Top="231" Opacity="0.7"/>
+
+                        <!-- Lane 1 (S) -->
+                        <Ellipse Width="30" Height="30" Stroke="#10B981" StrokeThickness="2" Canvas.Left="135" Canvas.Top="225" Opacity="0.5"/>
+                        <TextBlock Text="S" Foreground="White" FontSize="12" FontWeight="Bold" Canvas.Left="146" Canvas.Top="231" Opacity="0.7"/>
+
+                        <!-- Lane 2 (D) -->
+                        <Ellipse Width="30" Height="30" Stroke="#F59E0B" StrokeThickness="2" Canvas.Left="235" Canvas.Top="225" Opacity="0.5"/>
+                        <TextBlock Text="D" Foreground="White" FontSize="12" FontWeight="Bold" Canvas.Left="246" Canvas.Top="231" Opacity="0.7"/>
+
+                        <!-- Lane 3 (F) -->
+                        <Ellipse Width="30" Height="30" Stroke="#EC4899" StrokeThickness="2" Canvas.Left="335" Canvas.Top="225" Opacity="0.5"/>
+                        <TextBlock Text="F" Foreground="White" FontSize="12" FontWeight="Bold" Canvas.Left="346" Canvas.Top="231" Opacity="0.7"/>
+                    </Canvas>
+
+                    <!-- Feedback Display -->
+                    <TextBlock x:Name="TxtFeedback" Text="" Foreground="#10B981" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,50" Visibility="Collapsed"/>
+
+                    <!-- Red Flash Overlay -->
+                    <Border x:Name="RedFlashBorder" Background="#FF0000" Opacity="0" CornerRadius="12" IsHitTestVisible="False"/>
+                </Grid>
+            </Border>
+
+            <!-- Bottom Controls -->
+            <Grid Grid.Row="2" Margin="0,15,0,0">
+                <TextBlock Text="Nhấn phím bất kỳ hoặc A/S/D/F trên bàn phím" FontSize="12" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                <Button x:Name="BtnStart" Content="Bắt đầu chơi" Width="120" Height="35" HorizontalAlignment="Right" Click="BtnStart_Click" Background="#4F46E5" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

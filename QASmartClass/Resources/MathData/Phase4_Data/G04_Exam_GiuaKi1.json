@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g04_giuaki1",
+    "title": "Đề thi Giữa Kì 1 Toán Lớp 4",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 4,
+    "examType": "GiuaKi1"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tính chu vi hình chữ nhật có chiều dài 8cm, chiều rộng 5cm:",
+      "options": [
+        "A) 13cm",
+        "B) 26cm",
+        "C) 40cm",
+        "D) 30cm"
+      ],
+      "answer": "B",
+      "solution": "C = (8+5) × 2 = 13 × 2 = 26cm"
+    },
+    {
+      "id": 2,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Sắp xếp tăng dần: 1/3, 0,3, 3/10, 0,33",
+      "options": [
+        "A) 3/10, 0,3, 0,33, 1/3",
+        "B) 0,3, 3/10, 1/3, 0,33",
+        "C) 3/10 = 0,3 < 0,33 < 1/3",
+        "D) 1/3, 0,33, 0,3, 3/10"
+      ],
+      "answer": "C",
+      "solution": "3/10 = 0,3 = 0,300. 0,33 = 0,330. 1/3 = 0,333... Vậy: 0,3 < 0,33 < 1/3"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "3/4 - 1/6 = ?",
+      "options": [
+        "A) 7/12",
+        "B) 2/10",
+        "C) 5/12",
+        "D) 1/2"
+      ],
+      "answer": "A",
+      "solution": "3/4 = 9/12, 1/6 = 2/12. 9/12 - 2/12 = 7/12"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Đọc 2/5 quyển sách, đọc được 60 trang. Quyển sách có bao nhiêu trang?",
+      "options": [
+        "A) 120",
+        "B) 150",
+        "C) 180",
+        "D) 200"
+      ],
+      "answer": "B",
+      "solution": "2/5 × x = 60 → x = 60 × 5/2 = 150 trang"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Biểu đồ: T2=12, T3=8, T4=15, T5=10, T6=5. Trung bình mỗi ngày = ?",
+      "options": [
+        "A) 8",
+        "B) 10",
+        "C) 12",
+        "D) 15"
+      ],
+      "answer": "B",
+      "solution": "TB = (12+8+15+10+5)/5 = 50/5 = 10"
+    },
+    {
+      "id": 6,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1/4 = ?",
+      "options": [
+        "A) 0,4",
+        "B) 0,14",
+        "C) 0,25",
+        "D) 0,75"
+      ],
+      "answer": "C",
+      "solution": "1 ÷ 4 = 0,25"
+    },
+    {
+      "id": 7,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "2/5 của 30 = ?",
+      "options": [
+        "A) 10",
+        "B) 12",
+        "C) 15",
+        "D) 6"
+      ],
+      "answer": "B",
+      "solution": "30 × 2/5 = 60/5 = 12"
+    },
+    {
+      "id": 8,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "1/3 + 1/4 = ?",
+      "options": [
+        "A) 2/7",
+        "B) 7/12",
+        "C) 1/7",
+        "D) 5/12"
+      ],
+      "answer": "B",
+      "solution": "1/3 = 4/12, 1/4 = 3/12. 4/12 + 3/12 = 7/12"
+    },
+    {
+      "id": 9,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Doanh thu: Q1=20%, Q2=30%, Q3=35%, Q4=?%. Tổng DT = 200 tỷ. Q4 = ? tỷ",
+      "options": [
+        "A) 20 tỷ",
+        "B) 25 tỷ",
+        "C) 30 tỷ",
+        "D) 35 tỷ"
+      ],
+      "answer": "C",
+      "solution": "Q4 = 100-20-30-35 = 15%. 15% × 200 = 30 tỷ"
+    },
+    {
+      "id": 10,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Biểu đồ tròn: phần A chiếm 1/4. A = bao nhiêu %?",
+      "options": [
+        "A) 20%",
+        "B) 25%",
+        "C) 30%",
+        "D) 50%"
+      ],
+      "answer": "B",
+      "solution": "1/4 = 25%"
+    },
+    {
+      "id": 11,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "0,125 = phân số tối giản nào?",
+      "options": [
+        "A) 1/8",
+        "B) 125/100",
+        "C) 1/4",
+        "D) 5/40"
+      ],
+      "answer": "A",
+      "solution": "0,125 = 125/1000 = 1/8 (chia 125)"
+    },
+    {
+      "id": 12,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "An có 120.000đ. Chi 1/3 mua sách, 1/4 mua bút. Còn lại bao nhiêu?",
+      "options": [
+        "A) 45.000đ",
+        "B) 50.000đ",
+        "C) 55.000đ",
+        "D) 60.000đ"
+      ],
+      "answer": "B",
+      "solution": "Sách: 120.000 × 1/3 = 40.000. Bút: 120.000 × 1/4 = 30.000. Còn: 120.000 - 40.000 - 30.000 = 50.000đ"
+    },
+    {
+      "id": 13,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Một tam giác có 2 góc là 60° và 80°. Góc thứ 3 là:",
+      "options": [
+        "A) 40°",
+        "B) 50°",
+        "C) 60°",
+        "D) 30°"
+      ],
+      "answer": "A",
+      "solution": "Tổng 3 góc = 180°. Góc 3 = 180° - 60° - 80° = 40°"
+    },
+    {
+      "id": 14,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Điểm 4 bài kiểm tra: 7, 8, 6, 9. Điểm trung bình = ?",
+      "options": [
+        "A) 7",
+        "B) 7,5",
+        "C) 8",
+        "D) 8,5"
+      ],
+      "answer": "B",
+      "solution": "TBC = (7+8+6+9)/4 = 30/4 = 7,5"
+    },
+    {
+      "id": 15,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm phân số bằng 0,375 dưới dạng tối giản",
+      "options": [
+        "A) 3/8",
+        "B) 375/100",
+        "C) 15/40",
+        "D) 75/200"
+      ],
+      "answer": "A",
+      "solution": "0,375 = 375/1000 = 3/8 (chia 125)"
+    },
+    {
+      "id": 16,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Biểu đồ tròn 360°. Phần A = 90°. A chiếm bao nhiêu %?",
+      "options": [
+        "A) 20%",
+        "B) 25%",
+        "C) 30%",
+        "D) 40%"
+      ],
+      "answer": "B",
+      "solution": "90/360 = 1/4 = 25%"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "0,5 = phân số nào?",
+      "options": [
+        "A) 1/5",
+        "B) 5/10",
+        "C) 1/2",
+        "D) 5/100"
+      ],
+      "answer": "C",
+      "solution": "0,5 = 5/10 = 1/2"
+    },
+    {
+      "id": 18,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "1/4 của 20 = ?",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 8",
+        "D) 10"
+      ],
+      "answer": "B",
+      "solution": "20 × 1/4 = 20 ÷ 4 = 5"
+    },
+    {
+      "id": 19,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tính diện tích hình tròn có bán kính 5cm (lấy π ≈ 3,14):",
+      "options": [
+        "A) 31,4cm²",
+        "B) 78,5cm²",
+        "C) 15,7cm²",
+        "D) 25cm²"
+      ],
+      "answer": "B",
+      "solution": "S = 3,14 × 5² = 3,14 × 25 = 78,5cm²"
+    },
+    {
+      "id": 20,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Biểu đồ cột hiển thị: Lớp 4A=35 HS, 4B=38 HS, 4C=32 HS. Tổng HS khối 4 = ?",
+      "options": [
+        "A) 100",
+        "B) 105",
+        "C) 110",
+        "D) 95"
+      ],
+      "answer": "B",
+      "solution": "35 + 38 + 32 = 105 HS"
+    }
+  ]
+}

@@ -1,0 +1,425 @@
+{
+  "metadata": {
+    "chapterId": "g02_ch02",
+    "chapterName": "Bảng Nhân Chia (2-5)",
+    "grade": 2,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 18,
+    "toolMapping": [
+      "MultiplicationTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 14,
+    "prerequisites": [
+      "g01_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "nc2_01",
+      "sectionName": "Bảng nhân 2 và 3",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "nc2_001",
+          "name": "Bảng nhân 2",
+          "definition": "2×1=2, 2×2=4, 2×3=6, ..., 2×10=20. Mỗi kết quả là số chẵn",
+          "examples": [
+            "2 × 4 = 8",
+            "2 × 7 = 14"
+          ]
+        },
+        {
+          "id": "nc2_002",
+          "name": "Bảng nhân 3",
+          "definition": "3×1=3, 3×2=6, 3×3=9, ..., 3×10=30",
+          "examples": [
+            "3 × 5 = 15",
+            "3 × 8 = 24"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "nc2_p01",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "2 × 6 = ?",
+          "options": [
+            "A) 10",
+            "B) 12",
+            "C) 14",
+            "D) 8"
+          ],
+          "correctAnswer": "B",
+          "solution": "2 × 6 = 12. Hoặc: 6 + 6 = 12",
+          "points": 5
+        },
+        {
+          "problemId": "nc2_p02",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "3 × 4 = ?",
+          "options": [
+            "A) 7",
+            "B) 9",
+            "C) 12",
+            "D) 15"
+          ],
+          "correctAnswer": "C",
+          "solution": "3 × 4 = 12. Hoặc: 4 + 4 + 4 = 12",
+          "points": 5
+        },
+        {
+          "problemId": "nc2_p03",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Có 3 đĩa, mỗi đĩa 6 quả táo. Tổng cộng bao nhiêu quả?",
+          "options": [
+            "A) 9",
+            "B) 15",
+            "C) 18",
+            "D) 21"
+          ],
+          "correctAnswer": "C",
+          "solution": "3 × 6 = 18 quả táo",
+          "points": 10
+        },
+        {
+          "problemId": "nc2_p04",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "2 × ? = 16. Số cần điền là?",
+          "options": [
+            "A) 6",
+            "B) 7",
+            "C) 8",
+            "D) 9"
+          ],
+          "correctAnswer": "C",
+          "solution": "2 × 8 = 16. Hoặc: 16 ÷ 2 = 8",
+          "points": 10
+        },
+        {
+          "problemId": "nc2_p05",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "3 × 7 + 2 × 5 = ?",
+          "options": [
+            "A) 31",
+            "B) 28",
+            "C) 25",
+            "D) 35"
+          ],
+          "correctAnswer": "A",
+          "solution": "3 × 7 = 21. 2 × 5 = 10. 21 + 10 = 31",
+          "points": 15
+        },
+        {
+          "problemId": "nc2_p06",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Số nào vừa thuộc bảng nhân 2 vừa thuộc bảng nhân 3?",
+          "options": [
+            "A) 8",
+            "B) 9",
+            "C) 10",
+            "D) 6"
+          ],
+          "correctAnswer": "D",
+          "solution": "6 = 2 × 3 = 3 × 2. Vậy 6 thuộc cả hai bảng nhân",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "nc2_02",
+      "sectionName": "Bảng nhân 4 và 5",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "nc2_003",
+          "name": "Bảng nhân 4",
+          "definition": "4×1=4, 4×2=8, 4×3=12, ..., 4×10=40",
+          "examples": [
+            "4 × 6 = 24",
+            "4 × 9 = 36"
+          ]
+        },
+        {
+          "id": "nc2_004",
+          "name": "Bảng nhân 5",
+          "definition": "5×1=5, 5×2=10, 5×3=15, ..., 5×10=50. Tận cùng 0 hoặc 5",
+          "examples": [
+            "5 × 7 = 35",
+            "5 × 8 = 40"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "nc2_p07",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "4 × 5 = ?",
+          "options": [
+            "A) 9",
+            "B) 15",
+            "C) 20",
+            "D) 25"
+          ],
+          "correctAnswer": "C",
+          "solution": "4 × 5 = 20",
+          "points": 5
+        },
+        {
+          "problemId": "nc2_p08",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "5 × 9 = ?",
+          "options": [
+            "A) 40",
+            "B) 45",
+            "C) 50",
+            "D) 35"
+          ],
+          "correctAnswer": "B",
+          "solution": "5 × 9 = 45. Mẹo: 5 × 9 = 50 - 5 = 45",
+          "points": 5
+        },
+        {
+          "problemId": "nc2_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Mỗi tuần có 5 ngày học. 4 tuần có bao nhiêu ngày học?",
+          "options": [
+            "A) 9",
+            "B) 15",
+            "C) 20",
+            "D) 25"
+          ],
+          "correctAnswer": "C",
+          "solution": "4 × 5 = 20 ngày học",
+          "points": 10
+        },
+        {
+          "problemId": "nc2_p10",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "5 × ? = 35. Số cần điền là?",
+          "options": [
+            "A) 5",
+            "B) 6",
+            "C) 7",
+            "D) 8"
+          ],
+          "correctAnswer": "C",
+          "solution": "5 × 7 = 35. Hoặc: 35 ÷ 5 = 7",
+          "points": 10
+        },
+        {
+          "problemId": "nc2_p11",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "4 × 8 - 5 × 3 = ?",
+          "options": [
+            "A) 15",
+            "B) 17",
+            "C) 19",
+            "D) 12"
+          ],
+          "correctAnswer": "B",
+          "solution": "4 × 8 = 32. 5 × 3 = 15. 32 - 15 = 17",
+          "points": 15
+        },
+        {
+          "problemId": "nc2_p12",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tìm x: 4 × x = 5 × 8",
+          "options": [
+            "A) 8",
+            "B) 10",
+            "C) 12",
+            "D) 9"
+          ],
+          "correctAnswer": "B",
+          "solution": "5 × 8 = 40. 4 × x = 40. x = 40 ÷ 4 = 10",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "nc2_03",
+      "sectionName": "Phép chia tương ứng",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "nc2_005",
+          "name": "Chia là ngược của nhân",
+          "definition": "Nếu a × b = c thì c ÷ a = b",
+          "examples": [
+            "3 × 4 = 12 → 12 ÷ 3 = 4",
+            "5 × 6 = 30 → 30 ÷ 5 = 6"
+          ]
+        },
+        {
+          "id": "nc2_006",
+          "name": "Chia có dư",
+          "definition": "Khi không chia hết, phần thừa gọi là SỐ DƯ",
+          "examples": [
+            "13 ÷ 4 = 3 dư 1 (vì 4 × 3 = 12, 13 - 12 = 1)",
+            "17 ÷ 5 = 3 dư 2"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "nc2_p13",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "18 ÷ 3 = ?",
+          "options": [
+            "A) 5",
+            "B) 6",
+            "C) 7",
+            "D) 9"
+          ],
+          "correctAnswer": "B",
+          "solution": "18 ÷ 3 = 6. Vì 3 × 6 = 18",
+          "points": 5
+        },
+        {
+          "problemId": "nc2_p14",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "20 ÷ 4 = ?",
+          "options": [
+            "A) 4",
+            "B) 5",
+            "C) 6",
+            "D) 8"
+          ],
+          "correctAnswer": "B",
+          "solution": "20 ÷ 4 = 5. Vì 4 × 5 = 20",
+          "points": 5
+        },
+        {
+          "problemId": "nc2_p15",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Chia đều 15 viên kẹo cho 4 bạn. Mỗi bạn được mấy viên? Dư mấy viên?",
+          "options": [
+            "A) 3 viên, dư 3",
+            "B) 4 viên, dư 1",
+            "C) 3 viên, dư 2",
+            "D) 5 viên, dư 0"
+          ],
+          "correctAnswer": "A",
+          "solution": "15 ÷ 4 = 3 dư 3. Vì 4 × 3 = 12, 15 - 12 = 3",
+          "points": 10
+        },
+        {
+          "problemId": "nc2_p16",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Chia 25 bông hoa thành các bó, mỗi bó 5 bông. Được bao nhiêu bó?",
+          "options": [
+            "A) 4",
+            "B) 5",
+            "C) 6",
+            "D) 3"
+          ],
+          "correctAnswer": "B",
+          "solution": "25 ÷ 5 = 5 bó",
+          "points": 10
+        },
+        {
+          "problemId": "nc2_p17",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "23 ÷ 5 = ? dư ?",
+          "options": [
+            "A) 4 dư 3",
+            "B) 5 dư 0",
+            "C) 4 dư 2",
+            "D) 3 dư 8"
+          ],
+          "correctAnswer": "A",
+          "solution": "23 ÷ 5: 5 × 4 = 20, 23 - 20 = 3. Kết quả: 4 dư 3",
+          "points": 15
+        },
+        {
+          "problemId": "nc2_p18",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Số nào chia cho 3 dư 1 và chia cho 5 dư 2? (Trong các số 7, 12, 17, 22)",
+          "options": [
+            "A) 7",
+            "B) 12",
+            "C) 17",
+            "D) 22"
+          ],
+          "correctAnswer": "D",
+          "solution": "22 ÷ 3 = 7 dư 1 ✓. 22 ÷ 5 = 4 dư 2 ✓",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm 3 × 4 = 7 (cộng thay vì nhân)",
+      "correction": "Nhân = cộng lặp lại. 3 × 4 = 4 + 4 + 4 = 12"
+    },
+    {
+      "mistake": "Quên số dư khi chia có dư",
+      "correction": "Luôn kiểm tra: thương × số chia + số dư = số bị chia"
+    },
+    {
+      "mistake": "Nhầm 4 × 7 với 7 × 4",
+      "correction": "Kết quả bằng nhau (tính chất giao hoán) nhưng ý nghĩa khác"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "nc2_quiz_01",
+      "title": "Kiểm tra: Bảng nhân chia 2-5",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "nc2_p01"
+        },
+        {
+          "ref": "nc2_p07"
+        },
+        {
+          "ref": "nc2_p13"
+        },
+        {
+          "ref": "nc2_p05"
+        },
+        {
+          "ref": "nc2_p17"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

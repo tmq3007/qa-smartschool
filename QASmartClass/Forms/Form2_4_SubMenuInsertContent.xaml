@@ -1,0 +1,1440 @@
+<Window x:Class="QASmartTouch.Forms.Form2_4_SubMenuInsertContent"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="4. Chèn nội dung" 
+
+        Width="750" Height="550"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        ResizeMode="NoResize"
+
+        Topmost="True"
+
+        ShowInTaskbar="False">
+
+
+
+    <Window.Resources>
+
+        <!-- Sidebar Button Style -->
+
+        <Style x:Key="SidebarButtonStyle" TargetType="RadioButton">
+
+            <Setter Property="Height" Value="50"/>
+
+            <Setter Property="Margin" Value="0,0,0,5"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="RadioButton">
+
+                        <Border x:Name="border"
+
+                                Background="Transparent"
+
+                                BorderBrush="Transparent"
+
+                                BorderThickness="0,0,3,0"
+
+                                Padding="15,0">
+
+                            <TextBlock Text="{TemplateBinding Content}"
+
+                                      FontSize="13"
+
+                                      FontWeight="SemiBold"
+
+                                      Foreground="#57606F"
+
+                                      VerticalAlignment="Center"
+
+                                      TextWrapping="Wrap"
+
+                                      TextTrimming="CharacterEllipsis"
+
+                                      MaxWidth="240"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter TargetName="border" Property="Background" Value="#F8F9FA"/>
+
+                            </Trigger>
+
+                            <Trigger Property="IsChecked" Value="True">
+
+                                <Setter TargetName="border" Property="Background" Value="#E3F2FD"/>
+
+                                <Setter TargetName="border" Property="BorderBrush" Value="#2E86DE"/>
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+
+
+        <!-- Content Button Style -->
+
+        <Style x:Key="ContentButtonStyle" TargetType="Button">
+
+            <Setter Property="Height" Value="60"/>
+
+            <Setter Property="Margin" Value="0,0,0,10"/>
+
+            <Setter Property="Background" Value="White"/>
+
+            <Setter Property="BorderThickness" Value="1"/>
+
+            <Setter Property="BorderBrush" Value="#E1E8ED"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="border"
+
+                                Background="{TemplateBinding Background}"
+
+                                BorderBrush="{TemplateBinding BorderBrush}"
+
+                                BorderThickness="{TemplateBinding BorderThickness}"
+
+                                CornerRadius="8"
+
+                                Padding="15,10">
+
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter TargetName="border" Property="Background" Value="#F8F9FA"/>
+
+                                <Setter TargetName="border" Property="BorderBrush" Value="#2196F3"/>
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Border Background="White" 
+
+            CornerRadius="15" 
+
+            BorderBrush="#E1E8ED" 
+
+            BorderThickness="1">
+
+        <Border.Effect>
+
+            <DropShadowEffect Color="#CCCCCC" 
+
+                            Direction="270" 
+
+                            ShadowDepth="3" 
+
+                            BlurRadius="15" 
+
+                            Opacity="0.3"/>
+
+        </Border.Effect>
+
+
+
+        <Grid>
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="50"/>  <!-- Header fixed height -->
+
+                <RowDefinition Height="1"/>   <!-- Separator line -->
+
+                <RowDefinition Height="*"/>   <!-- Content -->
+
+            </Grid.RowDefinitions>
+
+
+
+            <!-- HEADER -->
+
+            <Grid Grid.Row="0" Margin="15,0">
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+
+                    <Path Fill="#2E86DE" 
+
+                          Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+
+                          Width="18" Height="18"
+
+                          VerticalAlignment="Center"
+
+                          Margin="0,0,8,0"/>
+
+                    <TextBlock Text="4. Chèn nội dung" 
+
+                              FontSize="16" 
+
+                              FontWeight="Bold" 
+
+                              Foreground="#2F3542"
+
+                              VerticalAlignment="Center"/>
+
+                </StackPanel>
+
+                <Button x:Name="btnClose" 
+
+                       Style="{StaticResource CloseButton}"
+
+                       Click="btnClose_Click"/>
+
+            </Grid>
+
+
+
+            <!-- SEPARATOR -->
+
+            <Border Grid.Row="1" Background="#E1E8ED"/>
+
+
+
+            <!-- MAIN CONTENT -->
+
+            <Grid Grid.Row="2">
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="260"/> <!-- Sidebar (Tăng lên 260 để tránh cắt chữ) -->
+
+                    <ColumnDefinition Width="*"/>   <!-- Content -->
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <!-- SIDEBAR -->
+
+                <Border Grid.Column="0" 
+
+                        Background="#FAFBFC"
+
+                        BorderBrush="#E1E8ED"
+
+                        BorderThickness="0,0,1,0"
+
+                        Padding="0,15,0,15">
+
+                    <StackPanel>
+
+                        <RadioButton x:Name="rbCategory1" 
+
+                                    Content="4.1 Công cụ vẽ"
+
+                                    Style="{StaticResource SidebarButtonStyle}"
+
+                                    IsChecked="True"
+
+                                    Checked="Category_Changed"/>
+
+                        <RadioButton x:Name="rbCategory2" 
+
+                                    Content="4.2 Nội dung cơ bản"
+
+                                    Style="{StaticResource SidebarButtonStyle}"
+
+                                    Checked="Category_Changed"/>
+
+                        <RadioButton x:Name="rbCategory3" 
+
+                                    Content="4.3 Biểu đồ &amp; Đồ thị"
+
+                                    Style="{StaticResource SidebarButtonStyle}"
+
+                                    Checked="Category_Changed"/>
+
+                        <RadioButton x:Name="rbCategory4" 
+
+                                    Content="4.4 Môn học chuyên biệt"
+
+                                    Style="{StaticResource SidebarButtonStyle}"
+
+                                    Checked="Category_Changed"/>
+
+                        <RadioButton x:Name="rbCategory5" 
+
+                                    Content="4.5 Công nghệ &amp; Tương tác"
+
+                                    Style="{StaticResource SidebarButtonStyle}"
+
+                                    Checked="Category_Changed"/>
+
+                        <RadioButton x:Name="rbCategory6" 
+
+                                    Content="4.6 AI &amp; Trợ lý"
+
+                                    Style="{StaticResource SidebarButtonStyle}"
+
+                                    Checked="Category_Changed"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- CONTENT AREA -->
+
+                <ScrollViewer Grid.Column="1" 
+
+                             VerticalScrollBarVisibility="Auto"
+
+                             Padding="20">
+
+                    
+
+                    <!-- Grid wrapper to hold all category panels -->
+
+                    <Grid>
+
+                    
+
+                    <!-- 4.1 CÔNG CỤ VẼ -->
+
+                    <StackPanel x:Name="pnlCategory1" Visibility="Visible">
+
+                        <TextBlock Text="4.1 Công cụ vẽ" 
+
+                                  FontSize="16" 
+
+                                  FontWeight="Bold" 
+
+                                  Foreground="#2F3542"
+
+                                  Margin="0,0,0,15"/>
+
+                        
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertRuler_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#FF9800" 
+
+                                     Data="M1,10H5V8H1V10M9,10H13V8H9V10M17,10H21V8H17V10M1,6H5V4H1V6M9,6H13V4H9V6M17,6H21V4H17V6M1,2H5V0H1V2M9,2H13V0H9V2M17,2H21V0H17V2Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Thước kẻ" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Thước đo chiều dài" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertCompass_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#E91E63" 
+
+                                     Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Compa" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Vẽ hình tròn" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertTriangle_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#4CAF50" 
+
+                                     Data="M1,21H23L12,2M12,6L19.53,19H4.47"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Eke (Thước tam giác)" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Thước đo góc 45°/90°" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertProtractor_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#9C27B0" 
+
+                                     Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M11,6V12L15.5,14.5L16.5,12.7L13,10.9V6H11Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Thước đo độ" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Đo góc 0-180°" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertKeyboard_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#607D8B" 
+
+                                     Data="M19,10H17V8H19M19,13H17V11H19M16,10H14V8H16M16,13H14V11H16M16,17H8V15H16M7,10H5V8H7M7,13H5V11H7M8,11H10V13H8M8,8H10V10H8M11,11H13V13H11M11,8H13V10H11M20,5H4C2.89,5 2,5.89 2,7V17A2,2 0 0,0 4,19H20A2,2 0 0,0 22,17V7C22,5.89 21.1,5 20,5Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Bàn phím ảo" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Bàn phím Windows" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+                    </StackPanel>
+
+
+
+                    <!-- 4.2 NỘI DUNG CƠ BẢN -->
+
+                    <StackPanel x:Name="pnlCategory2" Visibility="Collapsed">
+
+                        <TextBlock Text="4.2 Nội dung cơ bản" 
+
+                                  FontSize="16" 
+
+                                  FontWeight="Bold" 
+
+                                  Foreground="#2F3542"
+
+                                  Margin="0,0,0,15"/>
+
+                        
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertTextBox_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#2E86DE" 
+
+                                     Data="M18.5,4L19.66,8.35L18.7,8.61C18.25,7.74 17.79,6.87 17.26,6.43C16.73,6 16.11,6 15.5,6H13V16.5C13,17 13,17.5 13.33,17.75C13.67,18 14.33,18 15,18V19H9V18C9.67,18 10.33,18 10.67,17.75C11,17.5 11,17 11,16.5V6H8.5C7.89,6 7.27,6 6.74,6.43C6.21,6.87 5.75,7.74 5.3,8.61L4.34,8.35L5.5,4H18.5Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Hộp văn bản" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Rich text với templates" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertTable_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#9C27B0" 
+
+                                     Data="M3,3H21V21H3V3M5,5V9H11V5H5M13,5V9H19V5H13M5,11V15H11V11H5M13,11V15H19V11H13M5,17V19H11V17H5M13,17V19H19V17H13Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Bảng" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Tạo và chỉnh sửa bảng" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertImageFile_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#FF5722" 
+
+                                     Data="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Hình ảnh" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Từ file máy tính" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertImageCamera_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#00BCD4" 
+
+                                     Data="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Camera" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Chụp ảnh trực tiếp" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertVideo_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#F44336" 
+
+                                     Data="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Video" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="MP4, AVI, WMV, MOV" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertImageLibrary_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#673AB7" 
+
+                                     Data="M22,16V4A2,2 0 0,0 20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16M11,12L13.03,14.71L16,11L20,16H8M2,6V20A2,2 0 0,0 4,22H18V20H4V6"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Thư viện ảnh" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Ảnh có sẵn" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+                    </StackPanel>
+
+
+
+                    <!-- 4.3 BIỂU ĐỒ &amp; ĐỒ THỊ -->
+
+                    <StackPanel x:Name="pnlCategory3" Visibility="Collapsed">
+
+                        <TextBlock Text="4.3 Biểu đồ &amp; Đồ thị" 
+
+                                  FontSize="16" 
+
+                                  FontWeight="Bold" 
+
+                                  Foreground="#2F3542"
+
+                                  Margin="0,0,0,15"/>
+
+                        
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnChartBar_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#2196F3" 
+
+                                     Data="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Biểu đồ cột" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Bar Chart" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnChartLine_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#4CAF50" 
+
+                                     Data="M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Biểu đồ đường" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Line Chart" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnChartPie_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#FF9800" 
+
+                                     Data="M11,2V22C5.9,21.5 2,17.2 2,12C2,6.8 5.9,2.5 11,2M13,2V11H22C21.5,6.2 17.8,2.5 13,2M13,13V22C17.7,21.5 21.5,17.8 22,13H13Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Biểu đồ tròn" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Pie Chart" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnChartArea_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#9C27B0" 
+
+                                     Data="M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Biểu đồ vùng" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Area/Radar Chart" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnChartScatter_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#FF5722" 
+
+                                     Data="M2,2H4V20H22V22H2V2M8,14A2,2 0 1,1 6,12A2,2 0 0,1 8,14M14,8A2,2 0 1,1 12,6A2,2 0 0,1 14,8M18,16A2,2 0 1,1 16,14A2,2 0 0,1 18,16M12,14A2,2 0 1,1 10,12A2,2 0 0,1 12,14M16,10A2,2 0 1,1 14,8A2,2 0 0,1 16,10Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Biểu đồ phân tán" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Scatter Chart" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnMathGraph_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#00BCD4" 
+
+                                     Data="M2,2V22H22V20H4V2H2M7,10H9V19H7V10M11,5H13V19H11V5M15,13H17V19H15V13M19,9H21V19H19V9Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Đồ thị hàm số 2D" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="y = f(x)" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnMath3DGraph_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#E91E63" 
+
+                                     Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Đồ thị 3D" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="z = f(x,y)" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnGraph3D_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#E91E63" 
+
+                                     Data="M12,2A10,10 0 0,1 22,12M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Đồ thị 3D tương tác" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Desmos 3D" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+                    </StackPanel>
+
+
+
+                    <!-- 4.4 MÔN HỌC CHUYÊN BIỆT -->
+
+                    <StackPanel x:Name="pnlCategory4" Visibility="Collapsed">
+
+                        <TextBlock Text="4.4 Môn học chuyên biệt" 
+
+                                  FontSize="16" 
+
+                                  FontWeight="Bold" 
+
+                                  Foreground="#2F3542"
+
+                                  Margin="0,0,0,15"/>
+
+
+
+                        <!-- ── CÁC TÍNH NĂNG ĐÃ CÓ ── -->
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnChemPeriodicTable_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#E91E63" 
+
+                                     Data="M3,3H21V21H3V3M5,5V19H19V5H5M7,7H9V9H7V7M11,7H13V9H11V7M15,7H17V9H15V7M7,11H9V13H7V11M11,11H13V13H11V11M15,11H17V13H15V11M7,15H9V17H7V15M11,15H13V17H11V15M15,15H17V17H15V15Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Bảng tuần hoàn" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="118 nguyên tố hóa học" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertBook_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#795548" 
+
+                                     Data="M18,2H12V9L9.5,7.5L7,9V2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V4A2,2 0 0,0 18,2Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Sách giáo khoa" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="SGK các lớp" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- ── SEPARATOR: SẮP RA MẮT ── -->
+
+                        <Border Margin="0,15,0,12" Padding="10,6" 
+
+                                Background="#FFF8E1" CornerRadius="6"
+
+                                BorderBrush="#FFD54F" BorderThickness="1">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#F59E0B"
+
+                                      Data="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"
+
+                                      Width="14" Height="14" Margin="0,0,8,0"
+
+                                      VerticalAlignment="Center"/>
+
+                                <TextBlock Text="Đang phát triển — Sắp ra mắt"
+
+                                           FontSize="11" FontWeight="SemiBold"
+
+                                           Foreground="#92400E"
+
+                                           VerticalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- ── CÁC TÍNH NĂNG CHƯA PHÁT TRIỂN (mờ, disabled) ── -->
+
+                        <StackPanel Opacity="0.42" IsEnabled="False">
+
+
+
+                            <Button Style="{StaticResource ContentButtonStyle}" Click="btnChemFormula_Click">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Path Fill="#00BCD4" 
+
+                                         Data="M7,2V4H8V18A4,4 0 0,0 12,22A4,4 0 0,0 16,18V4H17V2H7M11,16C10.4,16 10,15.6 10,15C10,14.4 10.4,14 11,14C11.6,14 12,14.4 12,15C12,15.6 11.6,16 11,16M13,12C12.4,12 12,11.6 12,11C12,10.4 12.4,10 13,10C13.6,10 14,10.4 14,11C14,11.6 13.6,12 13,12M14,7H10V4H14V7Z"
+
+                                         Width="24" Height="24"
+
+                                         Margin="0,0,12,0"/>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Công thức Hóa học" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                        <TextBlock Text="Ký hiệu, chỉ số, phương trình" FontSize="11" Foreground="#57606F"/>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+                            </Button>
+
+
+
+                            <Button Style="{StaticResource ContentButtonStyle}" Click="btnMathEquation_Click">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Path Fill="#2196F3" 
+
+                                         Data="M7,2H17A2,2 0 0,1 19,4V20A2,2 0 0,1 17,22H7A2,2 0 0,1 5,20V4A2,2 0 0,1 7,2M7,4V8H17V4H7M7,10V12H9V14H7V16H17V14H15V12H17V10H7M11,10H13V14H11V10Z"
+
+                                         Width="24" Height="24"
+
+                                         Margin="0,0,12,0"/>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Công thức Toán" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                        <TextBlock Text="LaTeX, phân số, căn, mũ" FontSize="11" Foreground="#57606F"/>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+                            </Button>
+
+
+
+                            <Button Style="{StaticResource ContentButtonStyle}" Click="btnMathGeometry_Click">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Path Fill="#4CAF50" 
+
+                                         Data="M12,2L1,21H23M12,6L19.53,19H4.47M11,10V14H13V10M11,16V18H13V16"
+
+                                         Width="24" Height="24"
+
+                                         Margin="0,0,12,0"/>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Hình học" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                        <TextBlock Text="Hình 2D, 3D, góc, đoạn thẳng" FontSize="11" Foreground="#57606F"/>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+                            </Button>
+
+
+
+                            <Button Style="{StaticResource ContentButtonStyle}" Click="btnPhysicsCircuit_Click">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Path Fill="#FF9800" 
+
+                                         Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,6H13V9H16V11H13V14H11V11H8V9H11V6Z"
+
+                                         Width="24" Height="24"
+
+                                         Margin="0,0,12,0"/>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Mạch điện" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                        <TextBlock Text="Điện trở, tụ, cuộn cảm" FontSize="11" Foreground="#57606F"/>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+                            </Button>
+
+
+
+                            <Button Style="{StaticResource ContentButtonStyle}" Click="btnPhysicsVector_Click">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Path Fill="#9C27B0" 
+
+                                         Data="M13,9V15L18,12M2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12Z"
+
+                                         Width="24" Height="24"
+
+                                         Margin="0,0,12,0"/>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Vector lực" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                        <TextBlock Text="Mũi tên có hướng, độ lớn" FontSize="11" Foreground="#57606F"/>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+                            </Button>
+
+
+
+                        </StackPanel>
+
+                    </StackPanel>
+
+
+
+                    <!-- 4.5 CÔNG NGHỆ &amp; TƯƠNG TÁC -->
+
+                    <StackPanel x:Name="pnlCategory5" Visibility="Collapsed">
+
+                        <TextBlock Text="4.5 Công nghệ &amp; Tương tác" 
+
+                                  FontSize="16" 
+
+                                  FontWeight="Bold" 
+
+                                  Foreground="#2F3542"
+
+                                  Margin="0,0,0,15"/>
+
+                        
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsert3DModel_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#00BCD4" 
+
+                                     Data="M12,2L2,7V17L12,22L22,17V7M12,4.18L19.82,8L12,11.82L4.18,8M4,9.5L11,13.28V20.72L4,17M13,13.28L20,9.5V17L13,20.72"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Mô hình 3D" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="OBJ, STL files" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnPhETBrowseAll_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#4CAF50" 
+
+                                     Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,6H13V9H16V11H13V14H11V11H8V9H11V6Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Mô phỏng PhET" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Toán, Lý, Hóa, Sinh" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnGoogleMapsCustom_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#4285F4" 
+
+                                     Data="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Google Maps" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Bản đồ, vị trí, Street View" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnOpenYouTube_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#FF0000" 
+
+                                     Data="M10,15L15.19,12L10,9V15M21.56,7.17C21.69,7.64 21.78,8.27 21.84,9.07C21.91,9.87 21.94,10.56 21.94,11.16L22,12C22,14.19 21.84,15.8 21.56,16.83C21.31,17.73 20.73,18.31 19.83,18.56C19.36,18.69 18.5,18.78 17.18,18.84C15.88,18.91 14.69,18.94 13.59,18.94L12,19C7.81,19 5.2,18.84 4.17,18.56C3.27,18.31 2.69,17.73 2.44,16.83C2.31,16.36 2.22,15.73 2.16,14.93C2.09,14.13 2.06,13.44 2.06,12.84L2,12C2,9.81 2.16,8.2 2.44,7.17C2.69,6.27 3.27,5.69 4.17,5.44C4.64,5.31 5.5,5.22 6.82,5.16C8.12,5.09 9.31,5.06 10.41,5.06L12,5C16.19,5 18.8,5.16 19.83,5.44C20.73,5.69 21.31,6.27 21.56,7.17Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="YouTube" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Video giáo dục" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnWikipedia_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#000000" 
+
+                                     Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,6H13V9H16V11H13V14H11V11H8V9H11V6Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Wikipedia" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Bách khoa toàn thư" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnGoogleSearch_Click">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <Path Fill="#4285F4" 
+
+                                     Data="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,12,0"/>
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Google Search" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                    <TextBlock Text="Tìm kiếm web" FontSize="11" Foreground="#57606F"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Button>
+
+                    </StackPanel>
+
+
+
+                    <!-- 4.6 AI &amp; TRỢ LÝ -->
+
+                    <StackPanel x:Name="pnlCategory6" Visibility="Collapsed">
+
+                        <TextBlock Text="4.6 Trợ lý ảo &amp; AI" 
+
+                                  FontSize="16" 
+
+                                  FontWeight="Bold" 
+
+                                  Foreground="#2F3542"
+
+                                  Margin="0,0,0,15"/>
+
+                        <UniformGrid Columns="2" Margin="0,0,0,10">
+
+                            <Button Style="{StaticResource ContentButtonStyle}" Click="btnAIGenerate_Click" Margin="0,0,10,10">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Path Fill="#9C27B0" 
+
+                                         Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,6H13V9H16V11H13V14H11V11H8V9H11V6Z"
+
+                                         Width="24" Height="24"
+
+                                         Margin="0,0,12,0"/>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Tạo câu hỏi AI" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                        <TextBlock Text="Tạo câu hỏi trắc nghiệm từ tài liệu" FontSize="11" Foreground="#57606F"/>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+                            </Button>
+
+                            <Button Style="{StaticResource ContentButtonStyle}" Click="btnAIChatbot_Click" Margin="0,0,10,10">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Path Fill="#00BCD4" 
+
+                                         Data="M12,3C6.5,3 2,6.58 2,11C2.05,13.15 3.06,15.17 4.75,16.5C4.75,17.1 4.33,18.67 2,21C4.37,20.89 6.64,20 8.47,18.5C9.61,18.83 10.81,19 12,19C17.5,19 22,15.42 22,11C22,6.58 17.5,3 12,3M12,17C7.58,17 4,14.31 4,11C4,7.69 7.58,5 12,5C16.42,5 20,7.69 20,11C20,14.31 16.42,17 12,17Z"
+
+                                         Width="24" Height="24"
+
+                                         Margin="0,0,12,0"/>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Trợ lý ảo AI" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                        <TextBlock Text="Soạn giáo án, giải thích thuật ngữ" FontSize="11" Foreground="#57606F"/>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+                            </Button>
+
+                            <Button Style="{StaticResource ContentButtonStyle}" Click="btnChatGPT_Click" Margin="0,0,10,10">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Path Fill="#10A37F" 
+
+                                         Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,6H13V9H16V11H13V14H11V11H8V9H11V6Z"
+
+                                         Width="24" Height="24"
+
+                                         Margin="0,0,12,0"/>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="ChatGPT" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                        <TextBlock Text="Hỏi đáp và trò chuyện trực tuyến" FontSize="11" Foreground="#57606F"/>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+                            </Button>
+
+                            <Button Style="{StaticResource ContentButtonStyle}" Click="btnBingTranslator_Click" Margin="0,0,10,10">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Path Fill="#0078D4" 
+
+                                         Data="M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z"
+
+                                         Width="24" Height="24"
+
+                                         Margin="0,0,12,0"/>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Trình dịch Bing" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+
+                                        <TextBlock Text="Dịch thuật đa ngôn ngữ" FontSize="11" Foreground="#57606F"/>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+                            </Button>
+
+                        </UniformGrid>
+
+                    </StackPanel>
+
+
+
+                    </Grid> <!-- End Grid wrapper -->
+
+                </ScrollViewer>
+
+            </Grid>
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

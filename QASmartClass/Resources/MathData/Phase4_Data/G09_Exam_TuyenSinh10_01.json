@@ -1,0 +1,84 @@
+﻿{
+  "metadata": {
+    "examId": "g09_tuyensinh10_01",
+    "title": "Đề thi Tuyển Sinh vào Lớp 10 - Đề số 01",
+    "totalQuestions": 5,
+    "timeLimit": 120,
+    "totalPoints": 10,
+    "pointsPerQuestion": 2,
+    "grade": 9,
+    "examType": "TuyenSinh10"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Giải: 3x+2y=12, x+2y=8",
+      "options": [
+        "A) x=2, y=3",
+        "B) x=4, y=2",
+        "C) x=2, y=4",
+        "D) x=3, y=1.5"
+      ],
+      "answer": "A",
+      "solution": "Trừ: (3x+2y)-(x+2y)=12-8 → 2x=4 → x=2. y=(12-6)/2=3"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tổng 2 số = 20, hiệu = 6. Hai số = ?",
+      "options": [
+        "A) 13, 7",
+        "B) 14, 6",
+        "C) 12, 8",
+        "D) 15, 5"
+      ],
+      "answer": "A",
+      "solution": "x+y=20, x-y=6. x=(20+6)/2=13. y=20-13=7"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính sin75° = sin(45°+30°):",
+      "options": [
+        "A) (√6+√2)/4",
+        "B) (√3+1)/2",
+        "C) √3/2",
+        "D) (√6-√2)/4"
+      ],
+      "answer": "A",
+      "solution": "sin45°cos30° + cos45°sin30° = (√2/2)(√3/2) + (√2/2)(1/2) = (√6+√2)/4"
+    },
+    {
+      "id": 4,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "sin 30° = ?",
+      "options": [
+        "A) 1/2",
+        "B) √3/2",
+        "C) √2/2",
+        "D) 1"
+      ],
+      "answer": "A",
+      "solution": "sin 30° = 1/2 (giá trị đặc biệt)"
+    },
+    {
+      "id": 5,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "2 đường tròn có tâm trùng nhau gọi là?",
+      "options": [
+        "A) Đồng tâm",
+        "B) Tiếp xúc",
+        "C) Cắt nhau",
+        "D) Trùng nhau"
+      ],
+      "answer": "A",
+      "solution": "Chung tâm, khác bán kính → đồng tâm"
+    }
+  ]
+}

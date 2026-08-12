@@ -1,0 +1,3265 @@
+[
+    {
+        "AtomicNumber":  89,
+        "Symbol":  "Ac",
+        "Name":  "Actinium",
+        "NameEn":  "Actinium",
+        "AtomicMass":  "227",
+        "Category":  "Kim loại actinide",
+        "Period":  7,
+        "Group":  3,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 6d¹ 7s²",
+        "Description":  "Kim loại mềm, bạc sáng, rất phóng xạ, khó quan sát trong tự nhiên.",
+        "NaturalStateInfo":  "Rất hiếm, tìm thấy trong quặng uranium và thorium",
+        "Etymology":  "\u0027Actinium\u0027 – từ Hy Lạp \u0027aktinos\u0027 nghĩa là \u0027tia\u0027",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc sáng",
+        "Abundance":  "Rất hiếm",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               18,
+                               9,
+                               2
+                           ],
+        "OrbitalDiagram":  "6d: ↑, 7s: ↑↓",
+        "GroundState":  "6d¹7s²",
+        "Valence":  "3",
+        "OxidationStates":  "+3",
+        "ElectronBehaviorDescription":  "Dễ mất 3 electron để tạo ion Ac³⁺, hóa học giống lanthanum.",
+        "MeltingPoint":  1050,
+        "BoilingPoint":  3200,
+        "Density":  10.07,
+        "Electronegativity":  "1.1",
+        "IonizationEnergy":  499,
+        "AtomicRadius":  215,
+        "CovalentRadius":  195,
+        "ElectronAffinity":  35,
+        "ThermalConductivity":  12,
+        "SpecificHeat":  27,
+        "CrystalStructure":  "Face-centered cubic (FCC)",
+        "Magnetism":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Cực kỳ phóng xạ",
+                                              "Description":  "Ac-227: nửa đời 21,77 năm."
+                                          },
+                                          {
+                                              "Icon":  "🌡️",
+                                              "Title":  "Kim loại mềm",
+                                              "Description":  "Xỉn nhanh khi tiếp xúc không khí."
+                                          },
+                                          {
+                                              "Icon":  "💡",
+                                              "Title":  "Tương tự lanthanum",
+                                              "Description":  "Trong nhóm lanthanide."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Kim loại actinide, phản ứng với oxy và halogen.",
+                                   "Hóa trị +3 ổn định, hóa học tương tự lanthanum."
+                               ],
+        "TypicalReactions":  "Ac + O₂ → Ac₂O₃; Ac + 3HCl → AcCl₃ + 3/2H₂",
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Symbol":  "La",
+                                                 "Name":  "Lanthanum",
+                                                 "Value":  1.10
+                                             },
+                                             {
+                                                 "Symbol":  "Ac",
+                                                 "Name":  "Actinium",
+                                                 "Value":  1.1
+                                             }
+                                         ],
+        "Isotopes":  [
+                         {
+                             "Name":  "Actinium-227",
+                             "Symbol":  "²²⁷Ac",
+                             "MassNumber":  227,
+                             "IsStable":  false,
+                             "HalfLife":  "21,77 năm",
+                             "Description":  "Phát beta và alpha"
+                         },
+                         {
+                             "Name":  "Actinium-225",
+                             "Symbol":  "²²⁵Ac",
+                             "MassNumber":  225,
+                             "IsStable":  false,
+                             "HalfLife":  "10 ngày",
+                             "Description":  "Dùng trong y học"
+                         }
+                     ],
+        "SafetyHazards":  "☢️ Phóng xạ alpha và beta, có thể gây ung thư xương và tổn thương mô mềm.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Y học",
+                                           "Icon":  "🏥",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🏥",
+                                                                    "Name":  "Ac-225 điều trị ung thư",
+                                                                    "Description":  "Xạ trị alpha."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Nghiên cứu",
+                                           "Icon":  "🔬",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Name":  "Actinide và phân rã hạt nhân",
+                                                                    "Description":  "Nghiên cứu chuỗi phân rã uranium."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.001,
+                                "AnnualProductionUnit":  "kg",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Phòng thí nghiệm",
+                                                         "Percentage":  100
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Rất đắt"
+                            },
+        "DiscoveryYear":  1899,
+        "Discoverer":  "Friedrich Oskar Giesel",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Phát hiện trong quặng uranium.",
+                                  "Description":  "Phát hiện trong quặng uranium.",
+                                  "Year":  "1899"
+                              },
+                              {
+                                  "Title":  "Là nguyên tố đầu tiên trong họ actinide.",
+                                  "Description":  "Là nguyên tố đầu tiên trong họ actinide.",
+                                  "Year":  "Không rõ"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "La",
+                                      "Ac"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Hóa học",
+                                        "Values":  {
+                                                       "La":  "+3",
+                                                       "Ac":  "+3"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Actinium là actinide đầu tiên, hóa học +3 ổn định, tương tự lanthanum."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Họ actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Ac",
+                                                              "Name":  "Actinium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Th",
+                                                              "Name":  "Thorium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Pa",
+                                                              "Name":  "Protactinium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "U",
+                                                              "Name":  "Uranium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Lanthanum",
+                                    "Description":  "Ac phóng xạ mạnh, hóa học tương tự La."
+                                }
+                            ],
+        "HexColor":  "#70ABFA",
+        "CategoryColor":  "#70ABFA",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ThermalConductivityUnit":  "W/mK",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "SpecificHeatUnit":  "J/molK",
+        "SpecificHeatComparisonPrefix":  "~",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  90,
+        "Symbol":  "Th",
+        "Name":  "Thorium",
+        "NameEn":  "Thorium",
+        "AtomicMass":  "232.0377",
+        "Category":  "Kim loại actinide",
+        "Period":  7,
+        "Group":  3,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 6d² 7s²",
+        "Description":  "Kim loại mềm, bạc sáng, phóng xạ, thường tìm thấy trong quặng monazit.",
+        "NaturalStateInfo":  "Có trong quặng thorium",
+        "Etymology":  "\u0027Thorium\u0027 – tên vị thần Thor trong thần thoại Bắc Âu",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc sáng",
+        "Abundance":  "0.0007% trong vỏ Trái Đất",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               18,
+                               10,
+                               2
+                           ],
+        "OrbitalDiagram":  "6d: ↑↑, 7s: ↑↓",
+        "GroundState":  "6d²7s²",
+        "Valence":  "4",
+        "OxidationStates":  "+4, +3",
+        "ElectronBehaviorDescription":  "Thường mất 4 electron để tạo ion Th⁴⁺, hóa học tương tự cerium.",
+        "MeltingPoint":  1750,
+        "BoilingPoint":  4788,
+        "Density":  11.72,
+        "Electronegativity":  "1.3",
+        "IonizationEnergy":  587,
+        "AtomicRadius":  180,
+        "CovalentRadius":  179,
+        "ElectronAffinity":  112,
+        "ThermalConductivity":  54,
+        "SpecificHeat":  26.23,
+        "CrystalStructure":  "Face-centered cubic (FCC)",
+        "Magnetism":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ alpha yếu",
+                                              "Description":  "Nửa đời dài ~14,05 tỷ năm cho Th-232."
+                                          },
+                                          {
+                                              "Icon":  "🌡️",
+                                              "Title":  "Kim loại mềm",
+                                              "Description":  "Dễ gia công, có thể cắt bằng dao."
+                                          },
+                                          {
+                                              "Icon":  "💡",
+                                              "Title":  "Kháng ăn mòn tốt",
+                                              "Description":  "Ở dạng kim loại tinh khiết."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Kim loại actinide, phản ứng chậm với nước và oxy.",
+                                   "Hóa trị +4 ổn định, tạo ThO₂ bền.",
+                                   "Nguồn năng lượng hạt nhân tiềm năng."
+                               ],
+        "TypicalReactions":  "Th + O₂ → ThO₂; Th + 2HCl → ThCl₄ + H₂",
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Symbol":  "Ac",
+                                                 "Name":  "Actinium",
+                                                 "Value":  1.1
+                                             },
+                                             {
+                                                 "Symbol":  "Th",
+                                                 "Name":  "Thorium",
+                                                 "Value":  1.3
+                                             },
+                                             {
+                                                 "Symbol":  "Pa",
+                                                 "Name":  "Protactinium",
+                                                 "Value":  1.5
+                                             }
+                                         ],
+        "Isotopes":  [
+                         {
+                             "Name":  "Thorium-232",
+                             "Symbol":  "²³²Th",
+                             "MassNumber":  232,
+                             "IsStable":  false,
+                             "HalfLife":  "14,05 tỷ năm",
+                             "Description":  "Nguồn năng lượng hạt nhân"
+                         },
+                         {
+                             "Name":  "Thorium-230",
+                             "Symbol":  "²³⁰Th",
+                             "MassNumber":  230,
+                             "IsStable":  false,
+                             "HalfLife":  "75.000 năm",
+                             "Description":  "Sản phẩm phân rã uranium"
+                         }
+                     ],
+        "SafetyHazards":  "☢️ Phóng xạ alpha, nguy hiểm nếu hít phải bụi hoặc nuốt phải.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Năng lượng hạt nhân",
+                                           "Icon":  "⚛️",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "⚛️",
+                                                                    "Name":  "Lò phản ứng thorium",
+                                                                    "Description":  "Th-232 dùng trong lò hạt nhân."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Vật liệu công nghiệp",
+                                           "Icon":  "⚙️",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "⚙️",
+                                                                    "Name":  "Thoriated tungsten",
+                                                                    "Description":  "Điện cực hàn TIG."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  3000,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Ấn Độ",
+                                                         "Percentage":  45
+                                                     },
+                                                     {
+                                                         "Country":  "Brazil",
+                                                         "Percentage":  20
+                                                     },
+                                                     {
+                                                         "Country":  "Úc",
+                                                         "Percentage":  15
+                                                     }
+                                                 ],
+                                "MarketPrice":  "$100-200/kg"
+                            },
+        "DiscoveryYear":  1828,
+        "Discoverer":  "Jöns Jakob Berzelius",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Phát hiện trong quặng thorite (ThO₂).",
+                                  "Description":  "Phát hiện trong quặng thorite (ThO₂).",
+                                  "Year":  "1828"
+                              },
+                              {
+                                  "Title":  "Hiện nay quan tâm nhiều đến năng lượng hạt nhân từ",
+                                  "Description":  "Hiện nay quan tâm nhiều đến năng lượng hạt nhân từ thorium.",
+                                  "Year":  "Không rõ"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Ac",
+                                      "Th",
+                                      "Pa",
+                                      "U"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Hóa trị",
+                                        "Values":  {
+                                                       "Ac":  "+3",
+                                                       "Th":  "+4",
+                                                       "Pa":  "+5",
+                                                       "U":  "+6"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Thorium là actinide thứ hai, hóa trị +4 ổn định, nguồn năng lượng hạt nhân tiềm năng."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Họ actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Ac",
+                                                              "Name":  "Actinium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Th",
+                                                              "Name":  "Thorium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Pa",
+                                                              "Name":  "Protactinium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "U",
+                                                              "Name":  "Uranium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Np",
+                                                              "Name":  "Neptunium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Cerium",
+                                    "Description":  "Th tương tự Ce về hóa học, đều có trạng thái +4 ổn định."
+                                }
+                            ],
+        "HexColor":  "#00BAFF",
+        "CategoryColor":  "#00BAFF",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ThermalConductivityUnit":  "W/mK",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "SpecificHeatUnit":  "J/molK",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  91,
+        "Symbol":  "Pa",
+        "Name":  "Protactinium",
+        "NameEn":  "Protactinium",
+        "AtomicMass":  "231.03588",
+        "Category":  "Kim loại actinide",
+        "Period":  7,
+        "Group":  3,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f² 6d¹ 7s²",
+        "Description":  "Kim loại hiếm, màu bạc, phóng xạ mạnh, rất hiếm trong tự nhiên.",
+        "NaturalStateInfo":  "Có trong quặng uranium và thorium",
+        "Etymology":  "\u0027Protactinium\u0027 nghĩa là \u0027trước actinium\u0027 vì nó phân rã thành actinium",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc xám",
+        "Abundance":  "~0,2 mg/tấn đá",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               20,
+                               9,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: ↑↑, 6d: ↑, 7s: ↑↓",
+        "GroundState":  "5f²6d¹7s²",
+        "Valence":  "5, 4",
+        "OxidationStates":  "+5, +4",
+        "ElectronBehaviorDescription":  "Pa thường mất 5 electron để tạo ion Pa⁵⁺, hóa học tương tự tantalum.",
+        "MeltingPoint":  1572,
+        "BoilingPoint":  4800,
+        "Density":  15.37,
+        "Electronegativity":  "1.5",
+        "IonizationEnergy":  568,
+        "AtomicRadius":  170,
+        "CovalentRadius":  163,
+        "ElectronAffinity":  53,
+        "ThermalConductivity":  47,
+        "SpecificHeat":  27,
+        "CrystalStructure":  "Tetragonal",
+        "Magnetism":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ mạnh",
+                                              "Description":  "Chủ yếu phát alpha."
+                                          },
+                                          {
+                                              "Icon":  "🌡️",
+                                              "Title":  "Kim loại cứng",
+                                              "Description":  "Màu bạc-xám."
+                                          },
+                                          {
+                                              "Icon":  "💡",
+                                              "Title":  "Rất hiếm",
+                                              "Description":  "Khó chiết xuất và xử lý."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Hóa trị +5 ổn định, tạo Pa₂O₅ bền.",
+                                   "Hóa học giống tantalum và niobium."
+                               ],
+        "TypicalReactions":  "Pa + O₂ → Pa₂O₅; Pa + HCl → PaCl₅ + H₂",
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Symbol":  "Th",
+                                                 "Name":  "Thorium",
+                                                 "Value":  1.3
+                                             },
+                                             {
+                                                 "Symbol":  "Pa",
+                                                 "Name":  "Protactinium",
+                                                 "Value":  1.5
+                                             },
+                                             {
+                                                 "Symbol":  "U",
+                                                 "Name":  "Uranium",
+                                                 "Value":  1.38
+                                             }
+                                         ],
+        "Isotopes":  [
+                         {
+                             "Name":  "Protactinium-231",
+                             "Symbol":  "²³¹Pa",
+                             "MassNumber":  231,
+                             "IsStable":  false,
+                             "HalfLife":  "32.760 năm",
+                             "Description":  "Phổ biến nhất"
+                         },
+                         {
+                             "Name":  "Protactinium-234",
+                             "Symbol":  "²³⁴Pa",
+                             "MassNumber":  234,
+                             "IsStable":  false,
+                             "HalfLife":  "1,17 phút",
+                             "Description":  "Sản phẩm phân rã U-238"
+                         }
+                     ],
+        "SafetyHazards":  "☢️ Phóng xạ alpha nguy hiểm, bụi Pa có thể gây tổn thương xương và gan.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Nghiên cứu khoa học",
+                                           "Icon":  "🔬",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Name":  "Actinide và phân rã hạt nhân",
+                                                                    "Description":  "Nghiên cứu nguồn neutron."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.001,
+                                "AnnualProductionUnit":  "kg",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Phòng thí nghiệm",
+                                                         "Percentage":  100
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Cực đắt"
+                            },
+        "DiscoveryYear":  1913,
+        "Discoverer":  "Kasimir Fajans và Oswald Helmuth Göhring",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Phát hiện trong quặng uranium.",
+                                  "Description":  "Phát hiện trong quặng uranium.",
+                                  "Year":  "1913"
+                              },
+                              {
+                                  "Title":  "Sau đó đổi tên thành protactinium.",
+                                  "Description":  "Sau đó đổi tên thành protactinium.",
+                                  "Year":  "Không rõ"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Th",
+                                      "Pa",
+                                      "U"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Hóa trị",
+                                        "Values":  {
+                                                       "Th":  "+4",
+                                                       "Pa":  "+5",
+                                                       "U":  "+6"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Protactinium là actinide thứ 3, hóa trị +5 ổn định."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Họ actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Th",
+                                                              "Name":  "Thorium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Pa",
+                                                              "Name":  "Protactinium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "U",
+                                                              "Name":  "Uranium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Np",
+                                                              "Name":  "Neptunium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Tantalum",
+                                    "Description":  "Pa tương tự Ta về hóa học, nhưng phóng xạ và hiếm hơn."
+                                }
+                            ],
+        "HexColor":  "#00A1FF",
+        "CategoryColor":  "#00A1FF",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ThermalConductivityUnit":  "W/mK",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "SpecificHeatUnit":  "J/molK",
+        "SpecificHeatComparisonPrefix":  "~",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  92,
+        "Symbol":  "U",
+        "Name":  "Uranium",
+        "NameEn":  "Uranium",
+        "AtomicMass":  "238.02891",
+        "Category":  "Kim loại actinide",
+        "Period":  7,
+        "Group":  3,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f³ 6d¹ 7s²",
+        "Description":  "Kim loại cứng, màu bạc xám, phóng xạ mạnh, phổ biến hơn protactinium.",
+        "NaturalStateInfo":  "Có trong quặng uranium như uraninite, carnotite",
+        "Etymology":  "Được đặt theo hành tinh Uranus",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc xám",
+        "Abundance":  "~2,7 ppm trong vỏ Trái Đất",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               21,
+                               9,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: ↑↑↑, 6d: ↑, 7s: ↑↓",
+        "GroundState":  "5f³6d¹7s²",
+        "Valence":  "3, 4, 5, 6",
+        "OxidationStates":  "+3, +4, +5, +6",
+        "ElectronBehaviorDescription":  "Uranium dễ mất 6 electron để tạo ion U⁶⁺, tạo hợp chất uranyl (UO₂²⁺).",
+        "MeltingPoint":  1132,
+        "BoilingPoint":  4131,
+        "Density":  18.95,
+        "Electronegativity":  "1.38",
+        "IonizationEnergy":  597.6,
+        "AtomicRadius":  175,
+        "CovalentRadius":  170,
+        "ElectronAffinity":  51,
+        "ThermalConductivity":  27,
+        "SpecificHeat":  27.66,
+        "CrystalStructure":  "Orthorhombic",
+        "Magnetism":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ alpha, beta và gamma",
+                                              "Description":  "U-238: nửa đời 4,468 tỷ năm."
+                                          },
+                                          {
+                                              "Icon":  "🌡️",
+                                              "Title":  "Kim loại cứng",
+                                              "Description":  "Màu bạc-xám."
+                                          },
+                                          {
+                                              "Icon":  "💡",
+                                              "Title":  "Dễ ăn mòn",
+                                              "Description":  "Trong không khí ẩm, tạo lớp oxit."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Hóa trị +6 phổ biến nhất, tạo ion uranyl (UO₂²⁺).",
+                                   "Hóa học tương tự neptunium và plutonium.",
+                                   "Nhiên liệu hạt nhân chính."
+                               ],
+        "TypicalReactions":  "U + O₂ → UO₂; U + HNO₃ → UO₂(NO₃)₂; UO₂ + F⁻ → UF₆ (làm giàu uranium)",
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Symbol":  "Pa",
+                                                 "Name":  "Protactinium",
+                                                 "Value":  1.5
+                                             },
+                                             {
+                                                 "Symbol":  "U",
+                                                 "Name":  "Uranium",
+                                                 "Value":  1.38
+                                             },
+                                             {
+                                                 "Symbol":  "Np",
+                                                 "Name":  "Neptunium",
+                                                 "Value":  1.36
+                                             }
+                                         ],
+        "Isotopes":  [
+                         {
+                             "Name":  "Uranium-238",
+                             "Symbol":  "²³⁸U",
+                             "MassNumber":  238,
+                             "IsStable":  false,
+                             "HalfLife":  "4,468 tỷ năm",
+                             "Abundance":  99.3,
+                             "Description":  "Phổ biến nhất"
+                         },
+                         {
+                             "Name":  "Uranium-235",
+                             "Symbol":  "²³⁵U",
+                             "MassNumber":  235,
+                             "IsStable":  false,
+                             "HalfLife":  "703,8 triệu năm",
+                             "Abundance":  0.7,
+                             "Description":  "Nhiên liệu hạt nhân"
+                         },
+                         {
+                             "Name":  "Uranium-234",
+                             "Symbol":  "²³⁴U",
+                             "MassNumber":  234,
+                             "IsStable":  false,
+                             "HalfLife":  "245.500 năm",
+                             "Description":  "Sản phẩm phân rã U-238"
+                         }
+                     ],
+        "SafetyHazards":  "☢️ Phóng xạ alpha nguy hiểm, kim loại và muối uranium độc về hóa học, gây tổn thương thận.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Năng lượng hạt nhân",
+                                           "Icon":  "⚛️",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "⚛️",
+                                                                    "Name":  "Nhiên liệu lò phản ứng",
+                                                                    "Description":  "U-235 là nhiên liệu chính."
+                                                                },
+                                                                {
+                                                                    "Icon":  "💣",
+                                                                    "Name":  "Vũ khí hạt nhân",
+                                                                    "Description":  "U-235 dùng trong bom hạt nhân."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Ứng dụng quân sự",
+                                           "Icon":  "🎖️",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🎖️",
+                                                                    "Name":  "Uranium nghèo",
+                                                                    "Description":  "Giáp chống đạn, đạn xuyên giáp."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  60000,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Kazakhstan",
+                                                         "Percentage":  40
+                                                     },
+                                                     {
+                                                         "Country":  "Canada",
+                                                         "Percentage":  15
+                                                     },
+                                                     {
+                                                         "Country":  "Úc",
+                                                         "Percentage":  10
+                                                     }
+                                                 ],
+                                "MarketPrice":  "$40-50/kg (uranium oxide)"
+                            },
+        "DiscoveryYear":  1789,
+        "Discoverer":  "Martin Heinrich Klaproth",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Phát hiện trong quặng uranium ở Bohemia.",
+                                  "Description":  "Phát hiện trong quặng uranium ở Bohemia.",
+                                  "Year":  "1789"
+                              },
+                              {
+                                  "Title":  "Trở thành nguyên liệu chủ lực trong năng lượng và vũ khí hạt nhân.",
+                                  "Description":  "Trở thành nguyên liệu chủ lực trong năng lượng và vũ khí hạt nhân.",
+                                  "Year":  "Thế kỷ 20"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Pa",
+                                      "U",
+                                      "Np",
+                                      "Pu"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Hóa trị",
+                                        "Values":  {
+                                                       "Pa":  "+5",
+                                                       "U":  "+6",
+                                                       "Np":  "+6",
+                                                       "Pu":  "+6"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Uranium là actinide nặng, hóa trị +6 phổ biến nhất, là tiền chất chính để sản xuất Np, Pu."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Họ actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Th",
+                                                              "Name":  "Thorium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Pa",
+                                                              "Name":  "Protactinium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "U",
+                                                              "Name":  "Uranium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Np",
+                                                              "Name":  "Neptunium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Pu",
+                                                              "Name":  "Plutonium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Thorium",
+                                    "Description":  "U phóng xạ mạnh hơn Th, hóa trị +6 ổn định, dùng làm nhiên liệu hạt nhân."
+                                }
+                            ],
+        "HexColor":  "#008FFF",
+        "CategoryColor":  "#008FFF",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ThermalConductivityUnit":  "W/mK",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "SpecificHeatUnit":  "J/molK",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  93,
+        "Symbol":  "Np",
+        "Name":  "Neptunium",
+        "NameEn":  "Neptunium",
+        "AtomicMass":  "237",
+        "Category":  "Kim loại actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f⁴ 6d¹ 7s²",
+        "Description":  "Neptunium là kim loại phóng xạ, màu bạc sáng và mềm, thuộc dãy actinide. Nó tồn tại chủ yếu dưới dạng Np-237 trong các mẫu nhân tạo, được sản xuất từ uranium-238 trong lò phản ứng hạt nhân. Neptunium được nghiên cứu để làm nhiên liệu hạt nhân, chất đánh dấu phóng xạ, và nghiên cứu hóa học actinide.",
+        "NaturalStateInfo":  "Neptunium không tồn tại nhiều trong tự nhiên, chỉ xuất hiện với lượng rất nhỏ trong quặng uranium do sự phân rã của U-238. Trong môi trường nhân tạo, Np có thể được tách từ nhiên liệu hạt nhân đã sử dụng. Kim loại Np dễ bị oxy hóa, tạo oxit màu nâu đỏ hoặc tím.",
+        "Etymology":  "Tên \u0027Neptunium\u0027 được đặt vào năm 1940 bởi Edwin McMillan và Philip H. Abelson, theo tên hành tinh Neptun, tiếp nối Uranium (tên hành tinh Uranus).",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc sáng",
+        "Abundance":  null,
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               22,
+                               9,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: ↑↑↑↑ ; 6d: ↑ ; 7s: ↑↓",
+        "GroundState":  "⁵I₄",
+        "Valence":  "3, 4, 5, 6",
+        "OxidationStates":  "+3, +4, +5, +6",
+        "ElectronBehaviorDescription":  "Neptunium có bốn electron 5f, một electron 6d và hai electron 7s. Nó chủ yếu tồn tại ở trạng thái oxi hóa +5, tạo ion NpO₂⁺ trong dung dịch. Np cũng có thể hình thành các hợp chất +3 và +4 với halogen và oxit.",
+        "MeltingPoint":  644,
+        "BoilingPoint":  4270,
+        "Density":  20.45,
+        "Electronegativity":  "1.36",
+        "IonizationEnergy":  604,
+        "AtomicRadius":  175,
+        "CovalentRadius":  163,
+        "ElectronAffinity":  54,
+        "ThermalConductivity":  6.4,
+        "SpecificHeat":  29.46,
+        "CrystalStructure":  "Lập phương tâm khối (bcc)",
+        "Magnetism":  "Yếu từ",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ",
+                                              "Description":  "Neptunium phóng alpha và beta, chủ yếu được xử lý trong môi trường hạt nhân có kiểm soát."
+                                          },
+                                          {
+                                              "Icon":  "🔬",
+                                              "Title":  "Nguyên tố transurani đầu tiên",
+                                              "Description":  "Neptunium là nguyên tố nặng hơn uranium đầu tiên được tổng hợp."
+                                          },
+                                          {
+                                              "Icon":  "⚛️",
+                                              "Title":  "Tiền chất plutonium",
+                                              "Description":  "Np-239 phân rã thành Pu-239, nguyên liệu hạt nhân quan trọng."
+                                          },
+                                          {
+                                              "Icon":  "🧪",
+                                              "Title":  "Đa hóa trị",
+                                              "Description":  "Có nhiều trạng thái oxy hóa từ +3 đến +7, phức tạp hóa học cao."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Actinide phóng xạ, chủ yếu tồn tại ở trạng thái oxi hóa +5.",
+                                   "Hợp chất Np phổ biến gồm NpO₂⁺, Np₂O₅, NpF₅.",
+                                   "Tương tự uranium, Np dễ phản ứng với oxy, halogen và axit mạnh.",
+                                   "Tạo ion neptunyl NpO₂⁺ trong dung dịch kiềm.",
+                                   "Kim loại Np bị oxy hóa nhanh trong không khí ẩm."
+                               ],
+        "TypicalReactions":  "4Np + 5O₂ → 2Np₂O₅; Np + 3HCl → NpCl₃ + 3/2H₂; Np + 4F₂ → NpF₆",
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Symbol":  "U",
+                                                 "Name":  "Uranium",
+                                                 "Value":  1.38
+                                             },
+                                             {
+                                                 "Symbol":  "Np",
+                                                 "Name":  "Neptunium",
+                                                 "Value":  1.36
+                                             },
+                                             {
+                                                 "Symbol":  "Pu",
+                                                 "Name":  "Plutonium",
+                                                 "Value":  1.28
+                                             }
+                                         ],
+        "Isotopes":  [
+                         {
+                             "Name":  "Neptunium-237",
+                             "Symbol":  "²³⁷Np",
+                             "MassNumber":  237,
+                             "IsStable":  false,
+                             "Abundance":  null,
+                             "HalfLife":  "2.14 triệu năm",
+                             "Description":  "Đồng vị phổ biến, được sản xuất từ U-238, chủ yếu dùng trong nghiên cứu hạt nhân."
+                         },
+                         {
+                             "Name":  "Neptunium-239",
+                             "Symbol":  "²³⁹Np",
+                             "MassNumber":  239,
+                             "IsStable":  false,
+                             "HalfLife":  "2.356 ngày",
+                             "Description":  "Tiền chất plutonium-239, đồng vị trung gian trong chuỗi phân rã hạt nhân từ U-238 → Pu-239."
+                         }
+                     ],
+        "SafetyHazards":  "Neptunium phóng xạ alpha và beta, có độc tính hóa học và phóng xạ. Cần xử lý trong môi trường hạt nhân an toàn, tránh hít hoặc nuốt phải.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Năng lượng hạt nhân",
+                                           "Icon":  "⚛️",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "⚛️",
+                                                                    "Name":  "Nhiên liệu hạt nhân",
+                                                                    "Description":  "Np-237 có thể dùng trong nghiên cứu tạo plutonium-238."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Nghiên cứu khoa học",
+                                           "Icon":  "🔬",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Name":  "Hóa học actinide",
+                                                                    "Description":  "Tìm hiểu tính chất hóa học của actinide và chu trình nhiên liệu hạt nhân."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Công nghệ hạt nhân",
+                                           "Icon":  "🧪",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🧪",
+                                                                    "Name":  "Chất đánh dấu phóng xạ",
+                                                                    "Description":  "Dùng trong nghiên cứu khoa học và theo dõi vật liệu hạt nhân."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.001,
+                                "AnnualProductionUnit":  "tấn (sản lượng nhỏ từ lò phản ứng)",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "USA",
+                                                         "Percentage":  50
+                                                     },
+                                                     {
+                                                         "Country":  "Russia",
+                                                         "Percentage":  30
+                                                     },
+                                                     {
+                                                         "Country":  "Japan",
+                                                         "Percentage":  20
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai (kiểm soát nghiêm ngặt)"
+                            },
+        "DiscoveryYear":  1940,
+        "Discoverer":  "Edwin McMillan \u0026 Philip H. Abelson",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "McMillan và Abelson tách Np từ uranium bằng phản ứng neutron.",
+                                  "Description":  "McMillan và Abelson tách Np từ uranium bằng phản ứng neutron.",
+                                  "Year":  "1940"
+                              },
+                              {
+                                  "Title":  "Np được nghiên cứu trong lò phản ứng và sản xuất plutonium.",
+                                  "Description":  "Np được nghiên cứu trong lò phản ứng và sản xuất plutonium.",
+                                  "Year":  "1940s"
+                              },
+                              {
+                                  "Title":  "Neptunium đóng vai trò trung gian trong sản xuất Pu-239.",
+                                  "Description":  "Neptunium đóng vai trò trung gian trong sản xuất Pu-239.",
+                                  "Year":  "Dự án Manhattan"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "U",
+                                      "Pu",
+                                      "Am"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "U":  "1132°C",
+                                                       "Np":  "644°C",
+                                                       "Pu":  "640°C"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng riêng",
+                                        "Values":  {
+                                                       "U":  "19.1 g/cm³",
+                                                       "Np":  "20.45 g/cm³",
+                                                       "Pu":  "19.84 g/cm³"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Trong dãy actinide, neptunium có điểm nóng chảy thấp hơn uranium do cấu trúc tinh thể và liên kết kim loại yếu hơn.",
+                                  "Khối lượng riêng tăng dần từ U đến Np do số proton và neutron tăng."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Dãy actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Th",
+                                                              "Name":  "Thorium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Pa",
+                                                              "Name":  "Protactinium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "U",
+                                                              "Name":  "Uranium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Np",
+                                                              "Name":  "Neptunium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Pu",
+                                                              "Name":  "Plutonium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Uranium (U)",
+                                    "Description":  "Neptunium nặng hơn, phóng xạ mạnh hơn và có nhiều trạng thái oxy hóa hơn uranium. Np là tiền chất quan trọng để tạo plutonium trong lò phản ứng."
+                                }
+                            ],
+        "HexColor":  "#FF6699",
+        "CategoryColor":  "#FF6699",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ThermalConductivityUnit":  "W/mK",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "SpecificHeatUnit":  "J/molK",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  94,
+        "Symbol":  "Pu",
+        "Name":  "Plutôni",
+        "NameEn":  "Plutonium",
+        "AtomicMass":  "244",
+        "Category":  "Actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f⁶ 7s²",
+        "Description":  "Plutôni là nguyên tố phóng xạ nặng thuộc nhóm actini, có tính chất kim loại mềm, màu bạc xám và rất phản ứng. Nó được tổng hợp lần đầu trong phòng thí nghiệm và không tồn tại tự nhiên với lượng lớn. Plutôni có nhiều đồng vị phóng xạ, trong đó Pu-239 và Pu-241 được sử dụng làm nhiên liệu hạt nhân và trong vũ khí hạt nhân. Do tính phóng xạ và độc tính cao, plutôni cần được xử lý cẩn trọng trong các ứng dụng khoa học và công nghiệp.",
+        "NaturalStateInfo":  "Plutôni không tồn tại phổ biến trong tự nhiên mà chủ yếu được tạo ra nhân tạo trong các lò phản ứng hạt nhân từ uranium-238. Một lượng nhỏ plutôni có thể được tìm thấy trong quặng uranium do sự phân rã phóng xạ tự nhiên, nhưng rất hiếm và không đủ để khai thác thương mại.",
+        "Etymology":  "Tên \u0027Plutonium\u0027 được đặt theo tên hành tinh lùn Pluto, theo truyền thống đặt tên các nguyên tố actini theo các thiên thể ngoài Trái Đất. Plutonium được đặt tên sau khi nguyên tố neptuni (Neptunium) được phát hiện, tiếp nối chuỗi các nguyên tố lấy tên từ các hành tinh trong hệ Mặt Trời.",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc xám",
+        "Abundance":  null,
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               24,
+                               8,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: ↑↑↑↑↑↑ ; 7s: ↑↓",
+        "GroundState":  "⁵I₄",
+        "Valence":  "3, 4, 5, 6",
+        "OxidationStates":  "+3, +4, +5, +6",
+        "ElectronBehaviorDescription":  "Plutôni có lớp electron 5f chưa đầy, dẫn đến tính chất hóa học phức tạp và đa dạng hóa trị. Các electron f có thể tham gia vào liên kết hóa học, làm plutôni có nhiều trạng thái oxy hóa khác nhau và khả năng tạo hợp chất phức tạp.",
+        "MeltingPoint":  639.5,
+        "BoilingPoint":  3228,
+        "Density":  19.84,
+        "Electronegativity":  "1.28",
+        "IonizationEnergy":  585,
+        "AtomicRadius":  175,
+        "CovalentRadius":  164,
+        "ElectronAffinity":  0,
+        "ThermalConductivity":  6.74,
+        "SpecificHeat":  35,
+        "CrystalStructure":  "Đa hình (monoclinic)",
+        "Magnetism":  "Yếu, phức tạp do electron f",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ mạnh",
+                                              "Description":  "Plutôni là nguyên tố phóng xạ với nhiều đồng vị có chu kỳ bán rã từ vài năm đến hàng nghìn năm."
+                                          },
+                                          {
+                                              "Icon":  "⚛️",
+                                              "Title":  "Đa hình tinh thể",
+                                              "Description":  "Plutôni có nhiều dạng tinh thể khác nhau tùy nhiệt độ và áp suất, ảnh hưởng đến tính chất vật lý."
+                                          },
+                                          {
+                                              "Icon":  "🔥",
+                                              "Title":  "Phản ứng hóa học mạnh",
+                                              "Description":  "Plutôni dễ oxy hóa và phản ứng với nhiều nguyên tố, tạo hợp chất phức tạp."
+                                          },
+                                          {
+                                              "Icon":  "💣",
+                                              "Title":  "Năng lượng phân hạch cao",
+                                              "Description":  "Pu-239 có tiết diện phân hạch lớn, dùng trong vũ khí và lò phản ứng."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Có nhiều trạng thái oxy hóa từ +3 đến +6, phổ biến nhất là +3 và +4.",
+                                   "Tính chất hóa học phức tạp do electron 5f tham gia liên kết.",
+                                   "Dễ oxy hóa trong không khí, tạo lớp oxit bảo vệ bề mặt.",
+                                   "Tạo hợp chất với halogen, oxy, cacbon và các nguyên tố khác.",
+                                   "Là nguyên liệu chính trong nhiên liệu hạt nhân và vũ khí hạt nhân."
+                               ],
+        "TypicalReactions":  "Pu + O₂ → PuO₂; 2Pu + 3Cl₂ → 2PuCl₃; Pu + 2F₂ → PuF₄",
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Symbol":  "U",
+                                                 "Name":  "Uranium",
+                                                 "Value":  1.38
+                                             },
+                                             {
+                                                 "Symbol":  "Np",
+                                                 "Name":  "Neptunium",
+                                                 "Value":  1.36
+                                             },
+                                             {
+                                                 "Symbol":  "Pu",
+                                                 "Name":  "Plutonium",
+                                                 "Value":  1.28
+                                             },
+                                             {
+                                                 "Symbol":  "Am",
+                                                 "Name":  "Americium",
+                                                 "Value":  1.13
+                                             }
+                                         ],
+        "Isotopes":  [
+                         {
+                             "Name":  "Plutonium-239",
+                             "Symbol":  "²³⁹Pu",
+                             "MassNumber":  239,
+                             "IsStable":  false,
+                             "Abundance":  null,
+                             "HalfLife":  "24,110 năm",
+                             "Description":  "Đồng vị phóng xạ chủ yếu dùng trong lò phản ứng và vũ khí hạt nhân, có chu kỳ bán rã dài và phát ra neutron."
+                         },
+                         {
+                             "Name":  "Plutonium-244",
+                             "Symbol":  "²⁴⁴Pu",
+                             "MassNumber":  244,
+                             "IsStable":  false,
+                             "HalfLife":  "80 triệu năm",
+                             "Description":  "Đồng vị lâu sống nhất của plutôni, được dùng để nghiên cứu các quá trình địa chất và vũ trụ."
+                         }
+                     ],
+        "SafetyHazards":  "Plutôni rất độc hại và phóng xạ mạnh, có thể gây ung thư và tổn thương mô nếu tiếp xúc hoặc hít phải bụi. Việc xử lý plutôni đòi hỏi thiết bị bảo hộ nghiêm ngặt và quy trình an toàn cao để tránh nhiễm xạ và ô nhiễm môi trường.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Năng lượng hạt nhân",
+                                           "Icon":  "⚛️",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "⚛️",
+                                                                    "Name":  "Nhiên liệu hạt nhân",
+                                                                    "Description":  "Pu-239 được sử dụng làm nhiên liệu trong lò phản ứng hạt nhân và tái chế nhiên liệu."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Quốc phòng",
+                                           "Icon":  "💣",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "💣",
+                                                                    "Name":  "Vũ khí hạt nhân",
+                                                                    "Description":  "Plutôni là thành phần chính trong nhiều loại vũ khí hạt nhân do khả năng phân hạch cao."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Khoa học",
+                                           "Icon":  "🔬",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Name":  "Nghiên cứu phóng xạ",
+                                                                    "Description":  "Sử dụng trong nghiên cứu vật lý hạt nhân và các quá trình phân rã phóng xạ."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Vũ trụ",
+                                           "Icon":  "🚀",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🚀",
+                                                                    "Name":  "Nguồn nhiệt RTG",
+                                                                    "Description":  "Đồng vị plutôni được dùng làm nguồn nhiệt trong các thiết bị phát điện nhiệt điện phóng xạ cho tàu vũ trụ."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.01,
+                                "AnnualProductionUnit":  "nghìn tấn (10 tấn)",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "USA",
+                                                         "Percentage":  70
+                                                     },
+                                                     {
+                                                         "Country":  "Russia",
+                                                         "Percentage":  20
+                                                     },
+                                                     {
+                                                         "Country":  "France",
+                                                         "Percentage":  10
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai, rất cao do tính phóng xạ và kiểm soát nghiêm ngặt"
+                            },
+        "DiscoveryYear":  1940,
+        "Discoverer":  "Glenn T. Seaborg, Edwin M. McMillan, Joseph W. Kennedy, Arthur C. Wahl",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Plutôni được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá neutron.",
+                                  "Description":  "Plutôni được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá neutron.",
+                                  "Year":  "1940"
+                              },
+                              {
+                                  "Title":  "Ứng dụng trong vũ khí hạt nhân: Plutôni-239 được sử dụng tro",
+                                  "Description":  "Ứng dụng trong vũ khí hạt nhân: Plutôni-239 được sử dụng trong quả bom nguyên tử \u0027Fat Man\u0027 tại Nagasaki.",
+                                  "Year":  "1945"
+                              },
+                              {
+                                  "Title":  "Phát triển nhiên liệu hạt nhân: Plutôni bắt đầu được sử dụng",
+                                  "Description":  "Phát triển nhiên liệu hạt nhân: Plutôni bắt đầu được sử dụng làm nhiên liệu trong các lò phản ứng hạt nhân thương mại.",
+                                  "Year":  "1950s"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "U",
+                                      "Np",
+                                      "Am",
+                                      "Cm"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "Pu":  "639.5°C",
+                                                       "U":  "1132°C",
+                                                       "Np":  "640°C",
+                                                       "Am":  "1176°C"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng nguyên tử",
+                                        "Values":  {
+                                                       "Pu":  "244",
+                                                       "U":  "238",
+                                                       "Np":  "237",
+                                                       "Am":  "243"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Trong dãy actini, điểm nóng chảy và khối lượng nguyên tử biến đổi không đều do cấu hình electron f phức tạp, plutôni có điểm nóng chảy thấp hơn uranium và neptuni."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "U",
+                                                              "Name":  "Uranium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Np",
+                                                              "Name":  "Neptunium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Am",
+                                                              "Name":  "Americium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Uranium (U)",
+                                    "Description":  "Plutôni có khối lượng nguyên tử lớn hơn và tính phóng xạ mạnh hơn, đa dạng hóa trị hơn, làm cho nó có ứng dụng rộng rãi hơn trong năng lượng và vũ khí hạt nhân."
+                                }
+                            ],
+        "HexColor":  "#FF5588",
+        "CategoryColor":  "#FF5588",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ThermalConductivityUnit":  "W/mK",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "SpecificHeatUnit":  "J/molK",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  95,
+        "Symbol":  "Am",
+        "Name":  "Americi",
+        "NameEn":  "Americium",
+        "AtomicMass":  "243",
+        "Category":  "Actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f⁷ 7s²",
+        "Description":  "Americi là nguyên tố phóng xạ thuộc nhóm actini, có màu bạc trắng và tính chất kim loại mềm. Nó được tổng hợp nhân tạo và không tồn tại tự nhiên với lượng đáng kể. Americi có nhiều đồng vị phóng xạ, trong đó Am-241 được sử dụng rộng rãi trong các thiết bị phát hiện khói và nguồn neutron. Do tính phóng xạ và độc tính, americi cần được xử lý cẩn trọng trong các ứng dụng công nghiệp và nghiên cứu.",
+        "NaturalStateInfo":  "Americi không tồn tại tự nhiên với lượng đáng kể mà chủ yếu được tạo ra trong các lò phản ứng hạt nhân từ plutôni hoặc uranium. Nó được thu thập từ nhiên liệu đã qua sử dụng hoặc tổng hợp trong phòng thí nghiệm.",
+        "Etymology":  "Tên \u0027Americium\u0027 được đặt theo châu Mỹ (America), tương tự như nguyên tố europi được đặt theo châu Âu. Tên gọi này phản ánh nguồn gốc phát hiện và tổng hợp nguyên tố tại Hoa Kỳ trong thời kỳ nghiên cứu hạt nhân.",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc trắng",
+        "Abundance":  null,
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               25,
+                               8,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: ↑↑↑↑↑↑↑ ; 7s: ↑↓",
+        "GroundState":  "⁸S₇/₂",
+        "Valence":  "2, 3, 4",
+        "OxidationStates":  "+2, +3, +4",
+        "ElectronBehaviorDescription":  "Americi có lớp electron 5f bán đầy với 7 electron, tạo ra tính chất hóa học ổn định hơn so với các actini trước đó. Các electron f tham gia liên kết hóa học, cho phép americi tồn tại trong nhiều trạng thái oxy hóa khác nhau, chủ yếu là +3.",
+        "MeltingPoint":  1176,
+        "BoilingPoint":  2607,
+        "Density":  13.69,
+        "Electronegativity":  "1.13",
+        "IonizationEnergy":  578,
+        "AtomicRadius":  194,
+        "CovalentRadius":  188,
+        "ElectronAffinity":  0,
+        "ThermalConductivity":  11.2,
+        "SpecificHeat":  29,
+        "CrystalStructure":  "Lập phương tâm khối (bcc)",
+        "Magnetism":  "Yếu, paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ",
+                                              "Description":  "Americi là nguyên tố phóng xạ với nhiều đồng vị có chu kỳ bán rã từ vài năm đến hàng nghìn năm."
+                                          },
+                                          {
+                                              "Icon":  "🔥",
+                                              "Title":  "Dễ oxy hóa",
+                                              "Description":  "Bề mặt americi dễ bị oxy hóa trong không khí tạo lớp oxit bảo vệ."
+                                          },
+                                          {
+                                              "Icon":  "🔬",
+                                              "Title":  "Ứng dụng trong cảm biến",
+                                              "Description":  "Đồng vị Am-241 được dùng trong thiết bị phát hiện khói và nguồn neutron."
+                                          },
+                                          {
+                                              "Icon":  "🚨",
+                                              "Title":  "An toàn cháy nổ",
+                                              "Description":  "Am-241 trong cảm biến khói ion hóa cứu hàng nghìn mạng sống mỗi năm."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Chủ yếu tồn tại ở trạng thái oxy hóa +3, đôi khi +2 và +4.",
+                                   "Tính chất hóa học tương tự lanthani và các actini khác.",
+                                   "Tạo hợp chất với halogen, oxy và các nguyên tố phi kim khác.",
+                                   "Dễ bị oxy hóa và phản ứng với axit khoáng.",
+                                   "Đồng vị Am-241 phát ra tia alpha và gamma, dùng trong công nghiệp và y học."
+                               ],
+        "TypicalReactions":  "2Am + 3O₂ → 2Am₂O₃; 2Am + 3Cl₂ → 2AmCl₃; Am + 3HCl → AmCl₃ + 3/2H₂",
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Symbol":  "Pu",
+                                                 "Name":  "Plutonium",
+                                                 "Value":  1.28
+                                             },
+                                             {
+                                                 "Symbol":  "Am",
+                                                 "Name":  "Americium",
+                                                 "Value":  1.13
+                                             },
+                                             {
+                                                 "Symbol":  "Cm",
+                                                 "Name":  "Curium",
+                                                 "Value":  1.28
+                                             }
+                                         ],
+        "Isotopes":  [
+                         {
+                             "Name":  "Americium-241",
+                             "Symbol":  "²⁴¹Am",
+                             "MassNumber":  241,
+                             "IsStable":  false,
+                             "Abundance":  null,
+                             "HalfLife":  "432.2 năm",
+                             "Description":  "Đồng vị phổ biến nhất của americi, phát ra tia alpha và gamma, được sử dụng rộng rãi trong công nghiệp và an toàn."
+                         },
+                         {
+                             "Name":  "Americium-243",
+                             "Symbol":  "²⁴³Am",
+                             "MassNumber":  243,
+                             "IsStable":  false,
+                             "HalfLife":  "7,370 năm",
+                             "Description":  "Đồng vị lâu sống hơn, dùng trong nghiên cứu và ứng dụng phóng xạ đặc biệt."
+                         }
+                     ],
+        "SafetyHazards":  "Americi là nguyên tố phóng xạ có thể gây nguy hiểm nếu tiếp xúc trực tiếp hoặc hít phải bụi. Việc xử lý americi đòi hỏi các biện pháp bảo hộ nghiêm ngặt để tránh nhiễm xạ và ô nhiễm môi trường.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "An toàn cháy nổ",
+                                           "Icon":  "🚨",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🚨",
+                                                                    "Name":  "Thiết bị phát hiện khói",
+                                                                    "Description":  "Am-241 được sử dụng trong cảm biến khói ion hóa nhờ phát xạ alpha."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Công nghiệp",
+                                           "Icon":  "⚛️",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "⚛️",
+                                                                    "Name":  "Nguồn neutron",
+                                                                    "Description":  "Sử dụng trong các thiết bị phát neutron cho nghiên cứu và công nghiệp."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Khoa học",
+                                           "Icon":  "🔬",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Name":  "Nghiên cứu phóng xạ",
+                                                                    "Description":  "Dùng trong nghiên cứu vật lý hạt nhân và các ứng dụng y học hạt nhân."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Y học",
+                                           "Icon":  "🏥",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🏥",
+                                                                    "Name":  "Nguồn phóng xạ",
+                                                                    "Description":  "Ứng dụng trong điều trị ung thư và các thiết bị y tế đặc biệt."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.001,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "USA",
+                                                         "Percentage":  80
+                                                     },
+                                                     {
+                                                         "Country":  "Russia",
+                                                         "Percentage":  15
+                                                     },
+                                                     {
+                                                         "Country":  "France",
+                                                         "Percentage":  5
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai, do kiểm soát nghiêm ngặt"
+                            },
+        "DiscoveryYear":  1944,
+        "Discoverer":  "Glenn T. Seaborg và nhóm nghiên cứu tại Berkeley",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Americi được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá neutron plutôni.",
+                                  "Description":  "Americi được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá neutron plutôni.",
+                                  "Year":  "1944"
+                              },
+                              {
+                                  "Title":  "Ứng dụng trong cảm biến khói: Am-241 bắt đầu được sử dụng rộ",
+                                  "Description":  "Ứng dụng trong cảm biến khói: Am-241 bắt đầu được sử dụng rộng rãi trong thiết bị phát hiện khói ion hóa.",
+                                  "Year":  "1950s"
+                              },
+                              {
+                                  "Title":  "Nguồn neutron công nghiệp: Americi được dùng làm nguồn neutr",
+                                  "Description":  "Nguồn neutron công nghiệp: Americi được dùng làm nguồn neutron trong nhiều ứng dụng công nghiệp và nghiên cứu.",
+                                  "Year":  "1970s"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Pu",
+                                      "Cm",
+                                      "Np",
+                                      "U"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "Am":  "1176°C",
+                                                       "Pu":  "639.5°C",
+                                                       "Cm":  "1340°C"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng nguyên tử",
+                                        "Values":  {
+                                                       "Am":  "243",
+                                                       "Pu":  "244",
+                                                       "Cm":  "247"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Trong dãy actini, americi có điểm nóng chảy cao hơn plutôni và thấp hơn curi, phản ánh sự thay đổi cấu trúc tinh thể và electron f."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Pu",
+                                                              "Name":  "Plutonium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Cm",
+                                                              "Name":  "Curium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Np",
+                                                              "Name":  "Neptunium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Plutôni (Pu)",
+                                    "Description":  "Americi có tính chất hóa học ổn định hơn, điểm nóng chảy cao hơn và ứng dụng rộng rãi trong cảm biến an toàn, trong khi plutôni chủ yếu dùng trong năng lượng và quốc phòng."
+                                }
+                            ],
+        "HexColor":  "#FF4477",
+        "CategoryColor":  "#FF4477",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ThermalConductivityUnit":  "W/mK",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "SpecificHeatUnit":  "J/molK",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  96,
+        "Symbol":  "Cm",
+        "Name":  "Curi",
+        "NameEn":  "Curium",
+        "AtomicMass":  247,
+        "Category":  "Actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f⁷ 6d¹ 7s²",
+        "Description":  "Curi là nguyên tố phóng xạ thuộc nhóm actini, có màu bạc trắng và tính chất kim loại mềm. Nó được tổng hợp nhân tạo và không tồn tại tự nhiên với lượng đáng kể. Curi có nhiều đồng vị phóng xạ, trong đó Cm-244 và Cm-247 được nghiên cứu rộng rãi. Nguyên tố này được sử dụng trong nghiên cứu khoa học và làm nguồn nhiệt cho các thiết bị vũ trụ nhờ khả năng phát xạ alpha mạnh.",
+        "NaturalStateInfo":  "Curi không tồn tại tự nhiên với lượng đáng kể mà chủ yếu được tạo ra trong các lò phản ứng hạt nhân từ americi hoặc plutôni. Nó được thu thập từ nhiên liệu đã qua sử dụng hoặc tổng hợp trong phòng thí nghiệm.",
+        "Etymology":  "Tên \u0027Curium\u0027 được đặt theo tên của Marie Curie và Pierre Curie, hai nhà khoa học tiên phong trong nghiên cứu phóng xạ. Tên gọi này vinh danh đóng góp to lớn của họ trong lĩnh vực vật lý và hóa học hạt nhân.",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc trắng",
+        "Abundance":  null,
+        "FullElectronConfig":  "[Rn] 5f⁷ 6d¹ 7s²",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               25,
+                               9,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: 7 electron, 6d: 1 electron, 7s: 2 electron",
+        "GroundState":  "⁸S₇/₂",
+        "Valence":  "3, 4",
+        "OxidationStates":  "+3, +4",
+        "ElectronBehavior":  "Curi có lớp electron 5f bán đầy với 7 electron và một electron ở orbital 6d, tạo ra tính chất hóa học phức tạp và đa dạng hóa trị. Các electron f và d tham gia liên kết hóa học, làm curi có khả năng tạo hợp chất ổn định ở nhiều trạng thái oxy hóa.",
+        "MeltingPoint":  1340,
+        "BoilingPoint":  3110,
+        "Density":  13.51,
+        "Electronegativity":  1.28,
+        "IonizationEnergy":  581,
+        "AtomicRadius":  186,
+        "CovalentRadius":  174,
+        "ElectronAffinity":  0,
+        "ThermalConductivity":  11,
+        "SpecificHeatCapacity":  0.12,
+        "CrystalStructure":  "Lập phương tâm khối (bcc)",
+        "MagneticType":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ mạnh",
+                                              "Description":  "Curi phát ra tia alpha mạnh, được sử dụng làm nguồn nhiệt trong các thiết bị vũ trụ."
+                                          },
+                                          {
+                                              "Icon":  "🔥",
+                                              "Title":  "Dễ oxy hóa",
+                                              "Description":  "Bề mặt curi dễ bị oxy hóa trong không khí tạo lớp oxit bảo vệ."
+                                          },
+                                          {
+                                              "Icon":  "🔬",
+                                              "Title":  "Nguồn nhiệt phóng xạ",
+                                              "Description":  "Đồng vị Cm-244 được dùng làm nguồn nhiệt cho tàu vũ trụ và các thiết bị nghiên cứu."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Chủ yếu tồn tại ở trạng thái oxy hóa +3, đôi khi +4.",
+                                   "Tính chất hóa học tương tự các actini khác, dễ tạo hợp chất với halogen và oxy.",
+                                   "Tạo hợp chất ổn định trong dung dịch và rắn.",
+                                   "Đồng vị Cm-244 phát ra tia alpha mạnh, dùng làm nguồn nhiệt phóng xạ."
+                               ],
+        "TypicalReactions":  [
+                                 "Phản ứng với oxy tạo curi oxit (Cm₂O₃)",
+                                 "Phản ứng với halogen tạo halogenua curi",
+                                 "Phản ứng với axit tạo dung dịch ion Cm³⁺"
+                             ],
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Element":  "Am",
+                                                 "Name":  "Americium",
+                                                 "Value":  1.13
+                                             },
+                                             {
+                                                 "Element":  "Cm",
+                                                 "Name":  "Curium",
+                                                 "Value":  1.28
+                                             },
+                                             {
+                                                 "Element":  "Bk",
+                                                 "Name":  "Berkelium",
+                                                 "Value":  1.30
+                                             }
+                                         ],
+        "Isotopes":  "Đồng vị phổ biến: ²⁴⁴Cm (T½ = 18.1 năm, phóng xạ), ²⁴⁷Cm (T½ = 15.6 triệu năm)",
+        "SafetyHazards":  "Curi là nguyên tố phóng xạ có thể gây nguy hiểm nghiêm trọng nếu tiếp xúc hoặc hít phải bụi. Việc xử lý curi đòi hỏi các biện pháp bảo hộ nghiêm ngặt để tránh nhiễm xạ và ô nhiễm môi trường.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Vũ trụ",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🚀",
+                                                                    "Title":  "Nguồn nhiệt cho tàu vũ trụ",
+                                                                    "Description":  "Cm-244 được sử dụng làm nguồn nhiệt phóng xạ trong các thiết bị phát điện nhiệt điện phóng xạ (RTG)."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Khoa học",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Title":  "Nghiên cứu hạt nhân",
+                                                                    "Description":  "Dùng trong nghiên cứu vật lý hạt nhân và các ứng dụng khoa học khác."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Công nghiệp",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🏭",
+                                                                    "Title":  "Nguồn nhiệt phóng xạ",
+                                                                    "Description":  "Ứng dụng làm nguồn nhiệt cho các thiết bị cần nhiệt độ ổn định trong môi trường khắc nghiệt."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.5,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Hoa Kỳ",
+                                                         "Percentage":  75
+                                                     },
+                                                     {
+                                                         "Country":  "Nga",
+                                                         "Percentage":  20
+                                                     },
+                                                     {
+                                                         "Country":  "Pháp",
+                                                         "Percentage":  5
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai, do kiểm soát nghiêm ngặt"
+                            },
+        "DiscoveryYear":  1944,
+        "Discoverer":  "Glenn T. Seaborg, Ralph A. James và Albert Ghiorso tại Đại học California, Berkeley",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Curi được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá neutron plutôni.",
+                                  "Description":  "Curi được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá neutron plutôni.",
+                                  "Year":  "1944"
+                              },
+                              {
+                                  "Title":  "Cm-244 bắt đầu được sử dụng làm nguồn nhiệt cho các thiết bị vũ trụ.",
+                                  "Description":  "Cm-244 bắt đầu được sử dụng làm nguồn nhiệt cho các thiết bị vũ trụ.",
+                                  "Year":  "1950s"
+                              },
+                              {
+                                  "Title":  "Curi được nghiên cứu rộng rãi trong vật lý hạt nhân và ứng dụng khoa học.",
+                                  "Description":  "Curi được nghiên cứu rộng rãi trong vật lý hạt nhân và ứng dụng khoa học.",
+                                  "Year":  "1970s"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Am",
+                                      "Pu",
+                                      "Bk"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "Cm":  "1340",
+                                                       "Am":  "1176",
+                                                       "Bk":  "1259"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng nguyên tử",
+                                        "Values":  {
+                                                       "Cm":  "247",
+                                                       "Am":  "243",
+                                                       "Bk":  "247"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Trong dãy actini, điểm nóng chảy tăng dần từ americi đến curi và berkelium, phản ánh sự thay đổi cấu trúc tinh thể và electron f."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Am",
+                                                              "Name":  "Americium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Cm",
+                                                              "Name":  "Curium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Bk",
+                                                              "Name":  "Berkelium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Americi (Am)",
+                                    "Description":  "Curi có điểm nóng chảy cao hơn và tính phóng xạ mạnh hơn, được ứng dụng rộng rãi hơn trong công nghệ vũ trụ và nghiên cứu hạt nhân."
+                                }
+                            ],
+        "HexColor":  "#785CE3",
+        "CategoryColor":  "#ff99cc",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ThermalConductivityUnit":  "W/mK",
+        "SpecificHeatCapacityUnit":  "J/gK",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  97,
+        "Symbol":  "Bk",
+        "Name":  "Berkeli",
+        "NameEn":  "Berkelium",
+        "AtomicMass":  247,
+        "Category":  "Actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f⁹ 7s²",
+        "Description":  "Berkeli là nguyên tố phóng xạ thuộc nhóm actini, có màu bạc trắng và tính chất kim loại mềm. Nó được tổng hợp nhân tạo và không tồn tại tự nhiên với lượng đáng kể. Berkeli có nhiều đồng vị phóng xạ, trong đó Bk-247 là đồng vị phổ biến nhất. Nguyên tố này được sử dụng chủ yếu trong nghiên cứu khoa học và phát triển vật liệu phóng xạ. Do tính phóng xạ và độc tính cao, berkeli cần được xử lý cẩn trọng trong các ứng dụng nghiên cứu và công nghiệp.",
+        "NaturalStateInfo":  "Berkeli không tồn tại tự nhiên mà được tạo ra trong các lò phản ứng hạt nhân hoặc trong các phòng thí nghiệm bằng cách bắn phá các nguyên tố actini nhẹ hơn bằng neutron hoặc hạt alpha. Lượng berkeli thu được rất nhỏ và chủ yếu phục vụ nghiên cứu khoa học.",
+        "Etymology":  "Tên \u0027Berkelium\u0027 được đặt theo tên thành phố Berkeley, California, nơi nguyên tố này được tổng hợp lần đầu tiên tại Đại học California, Berkeley. Tên gọi này vinh danh đóng góp của các nhà khoa học tại viện nghiên cứu này trong lĩnh vực hóa học hạt nhân.",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc trắng",
+        "Abundance":  null,
+        "FullElectronConfig":  "[Rn] 5f⁹ 7s²",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               27,
+                               8,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: 9 electron, 7s: 2 electron",
+        "GroundState":  "⁶H₁₅/₂",
+        "Valence":  "3",
+        "OxidationStates":  "+3, +4",
+        "ElectronBehavior":  "Berkeli có lớp electron 5f chứa 9 electron, tạo ra tính chất hóa học phức tạp với trạng thái oxy hóa chủ yếu là +3. Các electron f tham gia liên kết hóa học, làm berkeli có khả năng tạo hợp chất ổn định trong nhiều trạng thái oxy hóa.",
+        "MeltingPoint":  1259,
+        "BoilingPoint":  2900,
+        "Density":  14.78,
+        "Electronegativity":  1.30,
+        "IonizationEnergy":  601,
+        "AtomicRadius":  186,
+        "CovalentRadius":  174,
+        "ElectronAffinity":  0,
+        "ThermalConductivity":  12,
+        "SpecificHeatCapacity":  0.12,
+        "CrystalStructure":  "Lập phương tâm khối (bcc)",
+        "MagneticType":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ mạnh",
+                                              "Description":  "Berkeli là nguyên tố phóng xạ với nhiều đồng vị có chu kỳ bán rã từ vài năm đến hàng nghìn năm."
+                                          },
+                                          {
+                                              "Icon":  "🔥",
+                                              "Title":  "Dễ oxy hóa",
+                                              "Description":  "Bề mặt berkeli dễ bị oxy hóa trong không khí tạo lớp oxit bảo vệ."
+                                          },
+                                          {
+                                              "Icon":  "🔬",
+                                              "Title":  "Ứng dụng nghiên cứu",
+                                              "Description":  "Berkeli chủ yếu được sử dụng trong nghiên cứu vật lý hạt nhân và phát triển vật liệu phóng xạ."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Chủ yếu tồn tại ở trạng thái oxy hóa +3, đôi khi +4.",
+                                   "Tính chất hóa học tương tự các actini khác, dễ tạo hợp chất với halogen và oxy.",
+                                   "Tạo hợp chất ổn định trong dung dịch và rắn.",
+                                   "Đồng vị Bk-247 được nghiên cứu rộng rãi trong vật lý hạt nhân."
+                               ],
+        "TypicalReactions":  [
+                                 "Phản ứng với oxy tạo berkeli oxit (Bk₂O₃)",
+                                 "Phản ứng với halogen tạo halogenua berkeli",
+                                 "Phản ứng với axit tạo dung dịch ion Bk³⁺"
+                             ],
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Element":  "Cm",
+                                                 "Name":  "Curium",
+                                                 "Value":  1.28
+                                             },
+                                             {
+                                                 "Element":  "Bk",
+                                                 "Name":  "Berkelium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Cf",
+                                                 "Name":  "Californium",
+                                                 "Value":  1.30
+                                             }
+                                         ],
+        "Isotopes":  "Đồng vị phổ biến: ²⁴⁷Bk (T½ = 1,380 năm), ²⁴⁹Bk (T½ = 330 ngày)",
+        "SafetyHazards":  "Berkeli là nguyên tố phóng xạ có thể gây nguy hiểm nghiêm trọng nếu tiếp xúc hoặc hít phải bụi. Việc xử lý berkeli đòi hỏi các biện pháp bảo hộ nghiêm ngặt để tránh nhiễm xạ và ô nhiễm môi trường.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Khoa học",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Title":  "Nghiên cứu hạt nhân",
+                                                                    "Description":  "Berkeli được sử dụng trong nghiên cứu vật lý hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Công nghiệp",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "⚛️",
+                                                                    "Title":  "Nguồn neutron",
+                                                                    "Description":  "Bk-249 được dùng làm nguồn neutron trong các thí nghiệm và ứng dụng công nghiệp."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Vật liệu",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🏭",
+                                                                    "Title":  "Phát triển vật liệu phóng xạ",
+                                                                    "Description":  "Nghiên cứu các hợp chất và vật liệu chứa berkeli phục vụ khoa học và công nghệ."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.1,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Hoa Kỳ",
+                                                         "Percentage":  90
+                                                     },
+                                                     {
+                                                         "Country":  "Nga",
+                                                         "Percentage":  10
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai, do kiểm soát nghiêm ngặt"
+                            },
+        "DiscoveryYear":  1949,
+        "Discoverer":  "Stanley G. Thompson, Glenn T. Seaborg và Albert Ghiorso tại Đại học California, Berkeley",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Berkeli được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá neutron curi.",
+                                  "Description":  "Berkeli được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá neutron curi.",
+                                  "Year":  "1949"
+                              },
+                              {
+                                  "Title":  "Berkeli được nghiên cứu rộng rãi trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Description":  "Berkeli được nghiên cứu rộng rãi trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Year":  "1950s"
+                              },
+                              {
+                                  "Title":  "Bk-249 được sử dụng làm nguồn neutron trong nghiên cứu và công nghiệp.",
+                                  "Description":  "Bk-249 được sử dụng làm nguồn neutron trong nghiên cứu và công nghiệp.",
+                                  "Year":  "1970s"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Cm",
+                                      "Cf",
+                                      "Es"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "Bk":  "1259",
+                                                       "Cm":  "1340",
+                                                       "Cf":  "900"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng nguyên tử",
+                                        "Values":  {
+                                                       "Bk":  "247",
+                                                       "Cm":  "247",
+                                                       "Cf":  "251"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Trong dãy actini, berkeli có điểm nóng chảy thấp hơn curi nhưng cao hơn californi, phản ánh sự thay đổi cấu trúc electron và tinh thể."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Cm",
+                                                              "Name":  "Curium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Bk",
+                                                              "Name":  "Berkelium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Cf",
+                                                              "Name":  "Californium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Curi (Cm)",
+                                    "Description":  "Berkeli có điểm nóng chảy thấp hơn và tính phóng xạ đa dạng hơn, chủ yếu dùng trong nghiên cứu hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                }
+                            ],
+        "HexColor":  "#8A4FE3",
+        "CategoryColor":  "#ff99cc",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ThermalConductivityUnit":  "W/mK",
+        "SpecificHeatCapacityUnit":  "J/gK",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  98,
+        "Symbol":  "Cf",
+        "Name":  "Californi",
+        "NameEn":  "Californium",
+        "AtomicMass":  251,
+        "Category":  "Actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f¹⁰ 7s²",
+        "Description":  "Californi là nguyên tố phóng xạ thuộc nhóm actini, có màu bạc trắng và tính chất kim loại mềm. Nó được tổng hợp nhân tạo và không tồn tại tự nhiên với lượng đáng kể. Californi có nhiều đồng vị phóng xạ, trong đó Cf-252 được sử dụng rộng rãi làm nguồn neutron trong nghiên cứu khoa học, công nghiệp và y học. Do tính phóng xạ mạnh và độc tính cao, californi cần được xử lý cẩn trọng trong các ứng dụng.",
+        "NaturalStateInfo":  "Californi không tồn tại tự nhiên mà được tạo ra trong các lò phản ứng hạt nhân hoặc phòng thí nghiệm bằng cách bắn phá các nguyên tố actini nhẹ hơn bằng neutron hoặc hạt alpha. Lượng californi thu được rất nhỏ và chủ yếu phục vụ nghiên cứu khoa học và ứng dụng công nghiệp đặc biệt.",
+        "Etymology":  "Tên \u0027Californium\u0027 được đặt theo tên bang California, Hoa Kỳ, nơi nguyên tố này được tổng hợp lần đầu tiên tại Đại học California, Berkeley. Tên gọi này vinh danh đóng góp của các nhà khoa học và địa phương trong lĩnh vực hóa học hạt nhân.",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc trắng",
+        "Abundance":  null,
+        "FullElectronConfig":  "[Rn] 5f¹⁰ 7s²",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               28,
+                               8,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: 10 electron, 7s: 2 electron",
+        "GroundState":  "⁷I₈",
+        "Valence":  "3",
+        "OxidationStates":  "+2, +3, +4",
+        "ElectronBehavior":  "Californi có lớp electron 5f chứa 10 electron, tạo ra tính chất hóa học phức tạp với trạng thái oxy hóa chủ yếu là +3. Các electron f tham gia liên kết hóa học, làm californi có khả năng tạo hợp chất ổn định trong nhiều trạng thái oxy hóa.",
+        "MeltingPoint":  900,
+        "BoilingPoint":  1470,
+        "Density":  15.1,
+        "Electronegativity":  1.30,
+        "IonizationEnergy":  608,
+        "AtomicRadius":  186,
+        "CovalentRadius":  174,
+        "ElectronAffinity":  0,
+        "ThermalConductivity":  10,
+        "SpecificHeatCapacity":  0.12,
+        "CrystalStructure":  "Lập phương tâm khối (bcc)",
+        "MagneticType":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ mạnh",
+                                              "Description":  "Californi phát ra tia alpha mạnh và là nguồn neutron hiệu quả."
+                                          },
+                                          {
+                                              "Icon":  "🔥",
+                                              "Title":  "Dễ oxy hóa",
+                                              "Description":  "Bề mặt californi dễ bị oxy hóa trong không khí tạo lớp oxit bảo vệ."
+                                          },
+                                          {
+                                              "Icon":  "🔬",
+                                              "Title":  "Nguồn neutron",
+                                              "Description":  "Cf-252 là nguồn neutron mạnh được sử dụng trong nghiên cứu và công nghiệp."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Chủ yếu tồn tại ở trạng thái oxy hóa +3, đôi khi +2 và +4.",
+                                   "Tính chất hóa học tương tự các actini khác, dễ tạo hợp chất với halogen và oxy.",
+                                   "Tạo hợp chất ổn định trong dung dịch và rắn.",
+                                   "Đồng vị Cf-252 phát ra neutron tự nhiên, dùng làm nguồn neutron trong nhiều ứng dụng."
+                               ],
+        "TypicalReactions":  [
+                                 "Phản ứng với oxy tạo californi oxit (Cf₂O₃)",
+                                 "Phản ứng với halogen tạo halogenua californi",
+                                 "Phản ứng với axit tạo dung dịch ion Cf³⁺"
+                             ],
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Element":  "Bk",
+                                                 "Name":  "Berkelium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Cf",
+                                                 "Name":  "Californium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Es",
+                                                 "Name":  "Einsteinium",
+                                                 "Value":  1.30
+                                             }
+                                         ],
+        "Isotopes":  "Đồng vị phổ biến: ²⁵²Cf (T½ = 2.645 năm), ²⁵¹Cf (T½ = 898 năm)",
+        "SafetyHazards":  "Californi là nguyên tố phóng xạ có thể gây nguy hiểm nghiêm trọng nếu tiếp xúc hoặc hít phải bụi. Việc xử lý californi đòi hỏi các biện pháp bảo hộ nghiêm ngặt để tránh nhiễm xạ và ô nhiễm môi trường.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Khoa học",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Title":  "Nguồn neutron",
+                                                                    "Description":  "Cf-252 được sử dụng làm nguồn neutron trong nghiên cứu vật lý hạt nhân và công nghiệp."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Công nghiệp",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🏭",
+                                                                    "Title":  "Kiểm tra vật liệu",
+                                                                    "Description":  "Dùng trong kiểm tra không phá hủy và phát hiện vật liệu nứt gãy."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "Y học",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🏥",
+                                                                    "Title":  "Điều trị ung thư",
+                                                                    "Description":  "Ứng dụng trong xạ trị và nghiên cứu y học hạt nhân."
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "CategoryName":  "An ninh",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🚨",
+                                                                    "Title":  "Phát hiện chất nổ",
+                                                                    "Description":  "Sử dụng trong thiết bị phát hiện chất nổ và kiểm tra an ninh."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.05,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Hoa Kỳ",
+                                                         "Percentage":  85
+                                                     },
+                                                     {
+                                                         "Country":  "Nga",
+                                                         "Percentage":  15
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai, do kiểm soát nghiêm ngặt"
+                            },
+        "DiscoveryYear":  1950,
+        "Discoverer":  "Stanley G. Thompson, Kenneth Street, Albert Ghiorso và Glenn T. Seaborg tại Đại học California, Berkeley",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Californi được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá hạt alpha curi.",
+                                  "Description":  "Californi được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá hạt alpha curi.",
+                                  "Year":  "1950"
+                              },
+                              {
+                                  "Title":  "Cf-252 bắt đầu được sử dụng làm nguồn neutron trong nghiên cứu và công nghiệp.",
+                                  "Description":  "Cf-252 bắt đầu được sử dụng làm nguồn neutron trong nghiên cứu và công nghiệp.",
+                                  "Year":  "1960s"
+                              },
+                              {
+                                  "Title":  "Californi được nghiên cứu và ứng dụng trong điều trị ung thư và y học hạt nhân.",
+                                  "Description":  "Californi được nghiên cứu và ứng dụng trong điều trị ung thư và y học hạt nhân.",
+                                  "Year":  "1980s"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Bk",
+                                      "Es",
+                                      "Fm"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "Cf":  "900",
+                                                       "Bk":  "1259",
+                                                       "Es":  "860"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng nguyên tử",
+                                        "Values":  {
+                                                       "Cf":  "251",
+                                                       "Bk":  "247",
+                                                       "Es":  "252"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Trong dãy actini, californi có điểm nóng chảy thấp hơn berkeli và einsteini, phản ánh sự thay đổi cấu trúc electron và tinh thể."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Bk",
+                                                              "Name":  "Berkelium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Cf",
+                                                              "Name":  "Californium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Es",
+                                                              "Name":  "Einsteinium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Berkeli (Bk)",
+                                    "Description":  "Californi có điểm nóng chảy thấp hơn và ứng dụng rộng rãi hơn trong nguồn neutron và y học hạt nhân."
+                                }
+                            ],
+        "HexColor":  "#A136D4",
+        "CategoryColor":  "#ff99cc",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ThermalConductivityUnit":  "W/mK",
+        "SpecificHeatCapacityUnit":  "J/gK",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  99,
+        "Symbol":  "Es",
+        "Name":  "Einsteini",
+        "NameEn":  "Einsteinium",
+        "AtomicMass":  252,
+        "Category":  "Actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f¹¹ 7s²",
+        "Description":  "Einsteini là nguyên tố phóng xạ thuộc nhóm actini, có màu bạc trắng và tính chất kim loại mềm. Nó được tổng hợp nhân tạo và không tồn tại tự nhiên. Einsteini có nhiều đồng vị phóng xạ, trong đó Es-253 và Es-254 được nghiên cứu nhiều nhất. Nguyên tố này chủ yếu được sử dụng trong nghiên cứu khoa học về vật lý hạt nhân và tổng hợp nguyên tố siêu nặng. Do tính phóng xạ mạnh và độc tính cao, einsteini cần được xử lý cẩn trọng trong các ứng dụng nghiên cứu.",
+        "NaturalStateInfo":  "Einsteini không tồn tại tự nhiên mà được tạo ra trong các lò phản ứng hạt nhân hoặc phòng thí nghiệm bằng cách bắn phá các nguyên tố actini nhẹ hơn bằng neutron hoặc hạt alpha. Lượng einsteini thu được rất nhỏ và chủ yếu phục vụ nghiên cứu khoa học.",
+        "Etymology":  "Tên \u0027Einsteinium\u0027 được đặt theo tên nhà vật lý thiên tài Albert Einstein, nhằm vinh danh những đóng góp to lớn của ông cho khoa học. Nguyên tố này được phát hiện trong tro bụi của vụ thử bom nhiệt hạch đầu tiên năm 1952.",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc trắng",
+        "Abundance":  null,
+        "FullElectronConfig":  "[Rn] 5f¹¹ 7s²",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               29,
+                               8,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: 11 electron, 7s: 2 electron",
+        "GroundState":  "⁸I₉/₂",
+        "Valence":  "3",
+        "OxidationStates":  "+2, +3",
+        "ElectronBehavior":  "Einsteini có lớp electron 5f chứa 11 electron, tạo ra tính chất hóa học phức tạp với trạng thái oxy hóa chủ yếu là +3. Các electron f tham gia liên kết hóa học, làm einsteini có khả năng tạo hợp chất ổn định trong trạng thái oxy hóa này.",
+        "MeltingPoint":  860,
+        "BoilingPoint":  996,
+        "Density":  8.84,
+        "Electronegativity":  1.30,
+        "IonizationEnergy":  619,
+        "AtomicRadius":  186,
+        "CovalentRadius":  174,
+        "ElectronAffinity":  0,
+        "ThermalConductivity":  null,
+        "SpecificHeatCapacity":  null,
+        "CrystalStructure":  "Lập phương tâm khối (bcc)",
+        "MagneticType":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ mạnh",
+                                              "Description":  "Einsteini là nguyên tố phóng xạ mạnh, được tạo ra trong các vụ thử hạt nhân và lò phản ứng."
+                                          },
+                                          {
+                                              "Icon":  "🔬",
+                                              "Title":  "Ứng dụng nghiên cứu",
+                                              "Description":  "Chủ yếu dùng trong nghiên cứu vật lý hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Chủ yếu tồn tại ở trạng thái oxy hóa +3, đôi khi +2.",
+                                   "Tính chất hóa học tương tự các actini khác, dễ tạo hợp chất với halogen và oxy.",
+                                   "Tạo hợp chất ổn định trong dung dịch và rắn."
+                               ],
+        "TypicalReactions":  [
+                                 "Phản ứng với oxy tạo einsteini oxit (Es₂O₃)",
+                                 "Phản ứng với halogen tạo halogenua einsteini",
+                                 "Phản ứng với axit tạo dung dịch ion Es³⁺"
+                             ],
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Element":  "Cf",
+                                                 "Name":  "Californium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Es",
+                                                 "Name":  "Einsteinium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Fm",
+                                                 "Name":  "Fermium",
+                                                 "Value":  1.30
+                                             }
+                                         ],
+        "Isotopes":  "Đồng vị phổ biến: ²⁵³Es (T½ = 20.47 ngày), ²⁵⁴Es (T½ = 275.7 ngày)",
+        "SafetyHazards":  "Einsteini là nguyên tố phóng xạ mạnh có thể gây nguy hiểm nghiêm trọng nếu tiếp xúc hoặc hít phải bụi. Việc xử lý einsteini đòi hỏi các biện pháp bảo hộ nghiêm ngặt để tránh nhiễm xạ và ô nhiễm môi trường.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Khoa học",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Title":  "Nghiên cứu hạt nhân",
+                                                                    "Description":  "Einsteini được sử dụng trong nghiên cứu vật lý hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.01,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Hoa Kỳ",
+                                                         "Percentage":  100
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai, do kiểm soát nghiêm ngặt"
+                            },
+        "DiscoveryYear":  1952,
+        "Discoverer":  "Albert Ghiorso và nhóm nghiên cứu tại Đại học California, Berkeley",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Einsteini được phát hiện trong tro bụi của vụ thử bom nhiệt hạch Ivy Mike.",
+                                  "Description":  "Einsteini được phát hiện trong tro bụi của vụ thử bom nhiệt hạch Ivy Mike.",
+                                  "Year":  "1952"
+                              },
+                              {
+                                  "Title":  "Einsteini được nghiên cứu rộng rãi trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Description":  "Einsteini được nghiên cứu rộng rãi trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Year":  "1950s"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Cf",
+                                      "Fm",
+                                      "Md"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "Es":  "860",
+                                                       "Cf":  "900",
+                                                       "Fm":  "1527"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng nguyên tử",
+                                        "Values":  {
+                                                       "Es":  "252",
+                                                       "Cf":  "251",
+                                                       "Fm":  "257"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Trong dãy actini, einsteini có điểm nóng chảy thấp hơn californi và fermi, phản ánh sự thay đổi cấu trúc electron và tinh thể."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Cf",
+                                                              "Name":  "Californium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Es",
+                                                              "Name":  "Einsteinium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Fm",
+                                                              "Name":  "Fermium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Californi (Cf)",
+                                    "Description":  "Einsteini có điểm nóng chảy thấp hơn và tính phóng xạ đa dạng hơn, chủ yếu dùng trong nghiên cứu hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                }
+                            ],
+        "HexColor":  "#B31AB1",
+        "CategoryColor":  "#ff99cc",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "ThermalConductivityStatus":  "Unknown",
+        "SpecificHeatCapacityStatus":  "Unknown",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  100,
+        "Symbol":  "Fm",
+        "Name":  "Fermi",
+        "NameEn":  "Fermium",
+        "AtomicMass":  257,
+        "Category":  "Actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f¹² 7s²",
+        "Description":  "Fermi là nguyên tố phóng xạ thuộc nhóm actini, có màu bạc trắng và tính chất kim loại mềm. Nó được tổng hợp nhân tạo và không tồn tại tự nhiên. Fermium có nhiều đồng vị phóng xạ, trong đó Fm-257 là đồng vị phổ biến nhất. Nguyên tố này chủ yếu được sử dụng trong nghiên cứu khoa học về vật lý hạt nhân và tổng hợp nguyên tố siêu nặng. Do tính phóng xạ mạnh và độc tính cao, fermium cần được xử lý cẩn trọng trong các ứng dụng nghiên cứu.",
+        "NaturalStateInfo":  "Fermium không tồn tại tự nhiên mà được tạo ra trong các lò phản ứng hạt nhân hoặc phòng thí nghiệm bằng cách bắn phá các nguyên tố actini nhẹ hơn bằng neutron hoặc hạt alpha. Lượng fermium thu được rất nhỏ và chủ yếu phục vụ nghiên cứu khoa học.",
+        "Etymology":  "Tên \u0027Fermium\u0027 được đặt theo tên nhà vật lý Enrico Fermi, người có đóng góp quan trọng trong phát triển vật lý hạt nhân và lò phản ứng hạt nhân đầu tiên. Nguyên tố này được phát hiện trong tro bụi của vụ thử bom nhiệt hạch.",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc trắng",
+        "Abundance":  null,
+        "FullElectronConfig":  "[Rn] 5f¹² 7s²",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               30,
+                               8,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: 12 electron, 7s: 2 electron",
+        "GroundState":  "⁷F₀",
+        "Valence":  "3",
+        "OxidationStates":  "+2, +3",
+        "ElectronBehavior":  "Fermium có lớp electron 5f chứa 12 electron, tạo ra tính chất hóa học phức tạp với trạng thái oxy hóa chủ yếu là +3. Các electron f tham gia liên kết hóa học, làm fermium có khả năng tạo hợp chất ổn định trong trạng thái oxy hóa này.",
+        "MeltingPoint":  1527,
+        "BoilingPoint":  null,
+        "Density":  9.7,
+        "Electronegativity":  1.30,
+        "IonizationEnergy":  null,
+        "AtomicRadius":  186,
+        "CovalentRadius":  174,
+        "ElectronAffinity":  0,
+        "ThermalConductivity":  null,
+        "SpecificHeatCapacity":  null,
+        "CrystalStructure":  "Lập phương tâm khối (bcc)",
+        "MagneticType":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ mạnh",
+                                              "Description":  "Fermium là nguyên tố phóng xạ mạnh, được tạo ra trong các vụ thử hạt nhân và lò phản ứng."
+                                          },
+                                          {
+                                              "Icon":  "🔬",
+                                              "Title":  "Ứng dụng nghiên cứu",
+                                              "Description":  "Chủ yếu dùng trong nghiên cứu vật lý hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Chủ yếu tồn tại ở trạng thái oxy hóa +3, đôi khi +2.",
+                                   "Tính chất hóa học tương tự các actini khác, dễ tạo hợp chất với halogen và oxy.",
+                                   "Tạo hợp chất ổn định trong dung dịch và rắn."
+                               ],
+        "TypicalReactions":  [
+                                 "Phản ứng với oxy tạo fermium oxit (Fm₂O₃)",
+                                 "Phản ứng với halogen tạo halogenua fermium",
+                                 "Phản ứng với axit tạo dung dịch ion Fm³⁺"
+                             ],
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Element":  "Es",
+                                                 "Name":  "Einsteinium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Fm",
+                                                 "Name":  "Fermium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Md",
+                                                 "Name":  "Mendelevium",
+                                                 "Value":  1.30
+                                             }
+                                         ],
+        "Isotopes":  "Đồng vị phổ biến: ²⁵⁷Fm (T½ = 100.5 ngày), ²⁵⁵Fm (T½ = 20.07 giờ)",
+        "SafetyHazards":  "Fermium là nguyên tố phóng xạ mạnh có thể gây nguy hiểm nghiêm trọng nếu tiếp xúc hoặc hít phải bụi. Việc xử lý fermium đòi hỏi các biện pháp bảo hộ nghiêm ngặt để tránh nhiễm xạ và ô nhiễm môi trường.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Khoa học",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Title":  "Nghiên cứu hạt nhân",
+                                                                    "Description":  "Fermium được sử dụng trong nghiên cứu vật lý hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.01,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Hoa Kỳ",
+                                                         "Percentage":  100
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai, do kiểm soát nghiêm ngặt"
+                            },
+        "DiscoveryYear":  1952,
+        "Discoverer":  "Albert Ghiorso và nhóm nghiên cứu tại Đại học California, Berkeley",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Fermium được phát hiện trong tro bụi của vụ thử bom nhiệt hạch Ivy Mike.",
+                                  "Description":  "Fermium được phát hiện trong tro bụi của vụ thử bom nhiệt hạch Ivy Mike.",
+                                  "Year":  "1952"
+                              },
+                              {
+                                  "Title":  "Fermium được nghiên cứu rộng rãi trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Description":  "Fermium được nghiên cứu rộng rãi trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Year":  "1950s"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Es",
+                                      "Md",
+                                      "No"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "Fm":  "1527",
+                                                       "Es":  "860",
+                                                       "Md":  "827"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng nguyên tử",
+                                        "Values":  {
+                                                       "Fm":  "257",
+                                                       "Es":  "252",
+                                                       "Md":  "258"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Trong dãy actini, fermium có điểm nóng chảy cao hơn einsteini và mendelevi, phản ánh sự thay đổi cấu trúc electron và tinh thể."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Es",
+                                                              "Name":  "Einsteinium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Fm",
+                                                              "Name":  "Fermium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Md",
+                                                              "Name":  "Mendelevium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Einsteini (Es)",
+                                    "Description":  "Fermium có điểm nóng chảy cao hơn và tính phóng xạ đa dạng hơn, chủ yếu dùng trong nghiên cứu hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                }
+                            ],
+        "HexColor":  "#BC0D8A",
+        "CategoryColor":  "#ff99cc",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "BoilingPointStatus":  "Unknown",
+        "ThermalConductivityStatus":  "Unknown",
+        "SpecificHeatCapacityStatus":  "Unknown",
+        "IonizationEnergyStatus":  "Unknown",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  101,
+        "Symbol":  "Md",
+        "Name":  "Mendelevi",
+        "NameEn":  "Mendelevium",
+        "AtomicMass":  258,
+        "Category":  "Actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f¹³ 7s²",
+        "Description":  "Mendelevi là nguyên tố phóng xạ thuộc nhóm actini, có màu bạc trắng và tính chất kim loại mềm. Nó được tổng hợp nhân tạo và không tồn tại tự nhiên. Mendelevi có nhiều đồng vị phóng xạ, trong đó Md-258 là đồng vị phổ biến nhất. Nguyên tố này chủ yếu được sử dụng trong nghiên cứu khoa học về vật lý hạt nhân và tổng hợp nguyên tố siêu nặng. Do tính phóng xạ mạnh và độc tính cao, mendelevi cần được xử lý cẩn trọng trong các ứng dụng nghiên cứu.",
+        "NaturalStateInfo":  "Mendelevi không tồn tại tự nhiên mà được tạo ra trong các lò phản ứng hạt nhân hoặc phòng thí nghiệm bằng cách bắn phá các nguyên tố actini nhẹ hơn bằng neutron hoặc hạt alpha. Lượng mendelevi thu được rất nhỏ và chủ yếu phục vụ nghiên cứu khoa học.",
+        "Etymology":  "Tên \u0027Mendelevium\u0027 được đặt theo tên nhà hóa học Dmitri Mendeleev, người sáng lập bảng tuần hoàn các nguyên tố hóa học. Tên gọi này vinh danh đóng góp to lớn của ông trong lĩnh vực hóa học và khoa học tự nhiên.",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc trắng",
+        "Abundance":  null,
+        "FullElectronConfig":  "[Rn] 5f¹³ 7s²",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               31,
+                               8,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: 13 electron, 7s: 2 electron",
+        "GroundState":  "⁸I₉/₂",
+        "Valence":  "2, 3",
+        "OxidationStates":  "+2, +3",
+        "ElectronBehavior":  "Mendelevi có lớp electron 5f chứa 13 electron, tạo ra tính chất hóa học phức tạp với trạng thái oxy hóa chủ yếu là +3. Các electron f tham gia liên kết hóa học, làm mendelevi có khả năng tạo hợp chất ổn định trong trạng thái oxy hóa này.",
+        "MeltingPoint":  827,
+        "BoilingPoint":  null,
+        "Density":  9.9,
+        "Electronegativity":  1.30,
+        "IonizationEnergy":  null,
+        "AtomicRadius":  186,
+        "CovalentRadius":  174,
+        "ElectronAffinity":  0,
+        "ThermalConductivity":  null,
+        "SpecificHeatCapacity":  null,
+        "CrystalStructure":  "Lập phương tâm khối (bcc)",
+        "MagneticType":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ mạnh",
+                                              "Description":  "Mendelevi là nguyên tố phóng xạ mạnh, được tạo ra trong các vụ thử hạt nhân và lò phản ứng."
+                                          },
+                                          {
+                                              "Icon":  "🔬",
+                                              "Title":  "Ứng dụng nghiên cứu",
+                                              "Description":  "Chủ yếu dùng trong nghiên cứu vật lý hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Chủ yếu tồn tại ở trạng thái oxy hóa +3, đôi khi +2.",
+                                   "Tính chất hóa học tương tự các actini khác, dễ tạo hợp chất với halogen và oxy.",
+                                   "Tạo hợp chất ổn định trong dung dịch và rắn."
+                               ],
+        "TypicalReactions":  [
+                                 "Phản ứng với oxy tạo mendelevi oxit (Md₂O₃)",
+                                 "Phản ứng với halogen tạo halogenua mendelevi",
+                                 "Phản ứng với axit tạo dung dịch ion Md³⁺"
+                             ],
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Element":  "Fm",
+                                                 "Name":  "Fermium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Md",
+                                                 "Name":  "Mendelevium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "No",
+                                                 "Name":  "Nobelium",
+                                                 "Value":  1.30
+                                             }
+                                         ],
+        "Isotopes":  "Đồng vị phổ biến: ²⁵⁸Md (T½ = 51.5 ngày), ²⁵⁷Md (T½ = 5.52 ngày)",
+        "SafetyHazards":  "Mendelevi là nguyên tố phóng xạ mạnh có thể gây nguy hiểm nghiêm trọng nếu tiếp xúc hoặc hít phải bụi. Việc xử lý mendelevi đòi hỏi các biện pháp bảo hộ nghiêm ngặt để tránh nhiễm xạ và ô nhiễm môi trường.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Khoa học",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Title":  "Nghiên cứu hạt nhân",
+                                                                    "Description":  "Mendelevi được sử dụng trong nghiên cứu vật lý hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.01,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Hoa Kỳ",
+                                                         "Percentage":  100
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai, do kiểm soát nghiêm ngặt"
+                            },
+        "DiscoveryYear":  1955,
+        "Discoverer":  "Albert Ghiorso và nhóm nghiên cứu tại Đại học California, Berkeley",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Mendelevi được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá einsteini.",
+                                  "Description":  "Mendelevi được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá einsteini.",
+                                  "Year":  "1955"
+                              },
+                              {
+                                  "Title":  "Mendelevi được nghiên cứu rộng rãi trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Description":  "Mendelevi được nghiên cứu rộng rãi trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Year":  "1960s"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Fm",
+                                      "No",
+                                      "Lr"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "Md":  "827",
+                                                       "Fm":  "1527",
+                                                       "No":  "827"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng nguyên tử",
+                                        "Values":  {
+                                                       "Md":  "258",
+                                                       "Fm":  "257",
+                                                       "No":  "259"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Trong dãy actini, mendelevi có điểm nóng chảy thấp hơn fermium và nobelium, phản ánh sự thay đổi cấu trúc electron và tinh thể."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Fm",
+                                                              "Name":  "Fermium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Md",
+                                                              "Name":  "Mendelevium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "No",
+                                                              "Name":  "Nobelium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Fermium (Fm)",
+                                    "Description":  "Mendelevi có điểm nóng chảy thấp hơn và tính phóng xạ đa dạng hơn, chủ yếu dùng trong nghiên cứu hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                }
+                            ],
+        "HexColor":  "#C70066",
+        "CategoryColor":  "#ff99cc",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "BoilingPointStatus":  "Unknown",
+        "ThermalConductivityStatus":  "Unknown",
+        "SpecificHeatCapacityStatus":  "Unknown",
+        "IonizationEnergyStatus":  "Unknown",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  102,
+        "Symbol":  "No",
+        "Name":  "Nobeli",
+        "NameEn":  "Nobelium",
+        "AtomicMass":  259,
+        "Category":  "Actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "f",
+        "ElectronConfig":  "[Rn] 5f¹⁴ 7s²",
+        "Description":  "Nobeli là nguyên tố phóng xạ thuộc nhóm actini, có màu bạc trắng và tính chất kim loại mềm. Nó được tổng hợp nhân tạo và không tồn tại tự nhiên. Nobeli có nhiều đồng vị phóng xạ, trong đó No-259 là đồng vị phổ biến nhất. Nguyên tố này chủ yếu được sử dụng trong nghiên cứu khoa học về vật lý hạt nhân và tổng hợp nguyên tố siêu nặng. Do tính phóng xạ mạnh và độc tính cao, nobeli cần được xử lý cẩn trọng trong các ứng dụng nghiên cứu.",
+        "NaturalStateInfo":  "Nobeli không tồn tại tự nhiên mà được tạo ra trong các lò phản ứng hạt nhân hoặc phòng thí nghiệm bằng cách bắn phá các nguyên tố actini nhẹ hơn bằng neutron hoặc hạt alpha. Lượng nobeli thu được rất nhỏ và chủ yếu phục vụ nghiên cứu khoa học.",
+        "Etymology":  "Tên \u0027Nobelium\u0027 được đặt theo tên nhà sáng lập giải Nobel, Alfred Nobel, nhằm vinh danh những đóng góp của ông cho khoa học và nhân loại. Nguyên tố này được tổng hợp lần đầu tiên vào những năm 1950.",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc trắng",
+        "Abundance":  null,
+        "FullElectronConfig":  "[Rn] 5f¹⁴ 7s²",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               32,
+                               8,
+                               2
+                           ],
+        "OrbitalDiagram":  "5f: 14 electron (đầy), 7s: 2 electron",
+        "GroundState":  "¹S₀",
+        "Valence":  "2",
+        "OxidationStates":  "+2, +3",
+        "ElectronBehavior":  "Nobeli có lớp electron 5f đầy đủ với 14 electron, tạo ra tính chất hóa học tương tự các nguyên tố nhóm 2 trong bảng tuần hoàn. Trạng thái oxy hóa phổ biến nhất là +2, với tính chất hóa học khá ổn định so với các actini khác.",
+        "MeltingPoint":  827,
+        "BoilingPoint":  null,
+        "Density":  9.9,
+        "Electronegativity":  1.30,
+        "IonizationEnergy":  null,
+        "AtomicRadius":  175,
+        "CovalentRadius":  170,
+        "ElectronAffinity":  0,
+        "ThermalConductivity":  null,
+        "SpecificHeatCapacity":  null,
+        "CrystalStructure":  "Lập phương tâm khối (bcc)",
+        "MagneticType":  "Paramagnetic",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ mạnh",
+                                              "Description":  "Nobeli là nguyên tố phóng xạ mạnh, được tạo ra trong các vụ thử hạt nhân và lò phản ứng."
+                                          },
+                                          {
+                                              "Icon":  "🔬",
+                                              "Title":  "Tính chất hóa học đặc biệt",
+                                              "Description":  "Nobeli có lớp electron 5f đầy, tạo tính chất hóa học tương tự các kim loại kiềm thổ."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Chủ yếu tồn tại ở trạng thái oxy hóa +2, đôi khi +3.",
+                                   "Tính chất hóa học tương tự các kim loại kiềm thổ, khác biệt so với các actini khác.",
+                                   "Tạo hợp chất ổn định trong dung dịch và rắn."
+                               ],
+        "TypicalReactions":  [
+                                 "Phản ứng với halogen tạo halogenua nobeli",
+                                 "Phản ứng với axit tạo dung dịch ion No²⁺ hoặc No³⁺"
+                             ],
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Element":  "Md",
+                                                 "Name":  "Mendelevium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "No",
+                                                 "Name":  "Nobelium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Lr",
+                                                 "Name":  "Lawrencium",
+                                                 "Value":  1.30
+                                             }
+                                         ],
+        "Isotopes":  "Đồng vị phổ biến: ²⁵⁹No (T½ = 58 phút), ²⁵⁵No (T½ = 3.1 phút)",
+        "SafetyHazards":  "Nobeli là nguyên tố phóng xạ mạnh có thể gây nguy hiểm nghiêm trọng nếu tiếp xúc hoặc hít phải bụi. Việc xử lý nobeli đòi hỏi các biện pháp bảo hộ nghiêm ngặt để tránh nhiễm xạ và ô nhiễm môi trường.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Khoa học",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Title":  "Nghiên cứu hạt nhân",
+                                                                    "Description":  "Nobeli được sử dụng trong nghiên cứu vật lý hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.01,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Hoa Kỳ",
+                                                         "Percentage":  100
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai, do kiểm soát nghiêm ngặt"
+                            },
+        "DiscoveryYear":  1957,
+        "Discoverer":  "Albert Ghiorso và nhóm nghiên cứu tại Đại học California, Berkeley",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Nobeli được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá curi.",
+                                  "Description":  "Nobeli được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá curi.",
+                                  "Year":  "1957"
+                              },
+                              {
+                                  "Title":  "Nobeli được nghiên cứu rộng rãi trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Description":  "Nobeli được nghiên cứu rộng rãi trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Year":  "1960s"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "Md",
+                                      "Lr",
+                                      "Rf"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "No":  "827",
+                                                       "Md":  "827",
+                                                       "Lr":  "1627"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng nguyên tử",
+                                        "Values":  {
+                                                       "No":  "259",
+                                                       "Md":  "258",
+                                                       "Lr":  "262"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Nobeli có tính chất hóa học đặc biệt do lớp electron 5f đầy, tạo sự khác biệt so với các actini khác trong dãy."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "Md",
+                                                              "Name":  "Mendelevium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "No",
+                                                              "Name":  "Nobelium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Lr",
+                                                              "Name":  "Lawrencium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Mendelevi (Md)",
+                                    "Description":  "Nobeli có lớp electron đầy đủ và tính chất hóa học tương tự kim loại kiềm thổ, khác biệt với mendelevi và các actini khác."
+                                }
+                            ],
+        "HexColor":  "#D1004F",
+        "CategoryColor":  "#ff99cc",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "BoilingPointStatus":  "Unknown",
+        "ThermalConductivityStatus":  "Unknown",
+        "SpecificHeatCapacityStatus":  "Unknown",
+        "IonizationEnergyStatus":  "Unknown",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "ElectronegativityUnit":  "Pauling"
+    },
+    {
+        "AtomicNumber":  103,
+        "Symbol":  "Lr",
+        "Name":  "Lawrenci",
+        "NameEn":  "Lawrencium",
+        "AtomicMass":  262,
+        "Category":  "Actinide",
+        "Period":  7,
+        "Group":  0,
+        "Block":  "d",
+        "ElectronConfig":  "[Rn] 5f¹⁴ 7s² 7p¹",
+        "Description":  "Lawrenci là nguyên tố phóng xạ tổng hợp thuộc nhóm actini, có tính chất kim loại nặng và rất hiếm. Nó không tồn tại tự nhiên và chỉ được tạo ra trong phòng thí nghiệm với số lượng cực kỳ nhỏ. Lawrenci có tính chất hóa học phức tạp do sự tương tác mạnh của electron 5f và 7p, và được nghiên cứu chủ yếu trong vật lý hạt nhân và hóa học nguyên tố siêu nặng.",
+        "NaturalStateInfo":  "Lawrenci không tồn tại trong tự nhiên mà chỉ được tổng hợp nhân tạo trong các lò phản ứng hạt nhân hoặc máy gia tốc hạt. Do thời gian bán rã ngắn và số lượng cực nhỏ, nguyên tố này chỉ được nghiên cứu trong điều kiện phòng thí nghiệm chuyên sâu.",
+        "Etymology":  "Tên \u0027Lawrencium\u0027 được đặt theo tên nhà vật lý Ernest O. Lawrence, người phát minh ra máy gia tốc cyclotron, một công cụ quan trọng trong nghiên cứu hạt nhân và tổng hợp nguyên tố nặng.",
+        "PhaseAtSTP":  "Rắn",
+        "Color":  "Bạc trắng",
+        "Abundance":  null,
+        "FullElectronConfig":  "[Rn] 5f¹⁴ 7s² 7p¹",
+        "ElectronShells":  [
+                               2,
+                               8,
+                               18,
+                               32,
+                               32,
+                               8,
+                               3
+                           ],
+        "OrbitalDiagram":  "5f: 14 electron (đầy), 7s: 2 electron, 7p: 1 electron",
+        "GroundState":  "²P₁/₂",
+        "Valence":  "3",
+        "OxidationStates":  "+3",
+        "ElectronBehavior":  "Lawrenci có cấu hình electron phức tạp với electron 7p tham gia, tạo ra tính chất hóa học khác biệt so với các actini trước đó. Trạng thái oxy hóa phổ biến nhất là +3, với khả năng tạo hợp chất ổn định trong điều kiện phòng thí nghiệm.",
+        "MeltingPoint":  1627,
+        "BoilingPoint":  null,
+        "Density":  15.6,
+        "Electronegativity":  1.30,
+        "IonizationEnergy":  null,
+        "AtomicRadius":  170,
+        "CovalentRadius":  170,
+        "ElectronAffinity":  0,
+        "ThermalConductivity":  null,
+        "SpecificHeatCapacity":  null,
+        "CrystalStructure":  "Lập phương tâm khối (bcc)",
+        "MagneticType":  "Không rõ",
+        "SpecialPhysicalProperties":  [
+                                          {
+                                              "Icon":  "☢️",
+                                              "Title":  "Phóng xạ mạnh",
+                                              "Description":  "Lawrenci là nguyên tố phóng xạ tổng hợp với chu kỳ bán rã ngắn và số lượng cực nhỏ."
+                                          },
+                                          {
+                                              "Icon":  "🔬",
+                                              "Title":  "Tính chất hóa học phức tạp",
+                                              "Description":  "Cấu hình electron đặc biệt tạo ra tính chất hóa học khác biệt so với các actini khác."
+                                          }
+                                      ],
+        "ChemicalHighlights":  [
+                                   "Chủ yếu tồn tại ở trạng thái oxy hóa +3.",
+                                   "Tính chất hóa học chưa được nghiên cứu đầy đủ do số lượng nguyên tố rất hạn chế.",
+                                   "Có khả năng tạo hợp chất với halogen và các nguyên tố phi kim khác trong điều kiện phòng thí nghiệm."
+                               ],
+        "TypicalReactions":  [
+                                 "Phản ứng với halogen tạo halogenua lawrenci (chưa được xác định rõ)",
+                                 "Phản ứng với axit tạo dung dịch ion Lr³⁺ (ước lượng)"
+                             ],
+        "ElectronegativityComparisons":  [
+                                             {
+                                                 "Element":  "No",
+                                                 "Name":  "Nobelium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Lr",
+                                                 "Name":  "Lawrencium",
+                                                 "Value":  1.30
+                                             },
+                                             {
+                                                 "Element":  "Rf",
+                                                 "Name":  "Rutherfordium",
+                                                 "Value":  1.30
+                                             }
+                                         ],
+        "Isotopes":  "Đồng vị phổ biến: ²⁶²Lr (T½ = 3.6 giờ), ²⁶¹Lr (T½ = 3.4 giờ)",
+        "SafetyHazards":  "Lawrenci là nguyên tố phóng xạ mạnh có thể gây nguy hiểm nghiêm trọng nếu tiếp xúc hoặc hít phải bụi. Việc xử lý lawrenci đòi hỏi các biện pháp bảo hộ nghiêm ngặt để tránh nhiễm xạ và ô nhiễm môi trường.",
+        "ApplicationsByCategory":  [
+                                       {
+                                           "CategoryName":  "Khoa học",
+                                           "Applications":  [
+                                                                {
+                                                                    "Icon":  "🔬",
+                                                                    "Title":  "Nghiên cứu hạt nhân",
+                                                                    "Description":  "Lawrenci được sử dụng trong nghiên cứu vật lý hạt nhân và tổng hợp nguyên tố siêu nặng."
+                                                                }
+                                                            ]
+                                       }
+                                   ],
+        "ProductionStats":  {
+                                "AnnualProduction":  0.001,
+                                "AnnualProductionUnit":  "tấn",
+                                "TopProducers":  [
+                                                     {
+                                                         "Country":  "Hoa Kỳ",
+                                                         "Percentage":  100
+                                                     }
+                                                 ],
+                                "MarketPrice":  "Không công khai, do kiểm soát nghiêm ngặt"
+                            },
+        "DiscoveryYear":  1961,
+        "Discoverer":  "Albert Ghiorso và nhóm nghiên cứu tại Đại học California, Berkeley",
+        "HistoryEvents":  [
+                              {
+                                  "Title":  "Lawrenci được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá californi.",
+                                  "Description":  "Lawrenci được tổng hợp lần đầu tại Berkeley bằng phương pháp bắn phá californi.",
+                                  "Year":  "1961"
+                              },
+                              {
+                                  "Title":  "Lawrenci được nghiên cứu trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Description":  "Lawrenci được nghiên cứu trong vật lý hạt nhân và tổng hợp nguyên tố nặng hơn.",
+                                  "Year":  "1960s"
+                              }
+                          ],
+        "RelatedElementSymbols":  [
+                                      "No",
+                                      "Rf",
+                                      "Db"
+                                  ],
+        "ComparisonTableData":  [
+                                    {
+                                        "PropertyName":  "Điểm nóng chảy",
+                                        "Values":  {
+                                                       "Lr":  "1627",
+                                                       "No":  "827",
+                                                       "Rf":  "2400"
+                                                   }
+                                    },
+                                    {
+                                        "PropertyName":  "Khối lượng nguyên tử",
+                                        "Values":  {
+                                                       "Lr":  "262",
+                                                       "No":  "259",
+                                                       "Rf":  "267"
+                                                   }
+                                    }
+                                ],
+        "TrendExplanations":  [
+                                  "Lawrenci có tính chất hóa học phức tạp do cấu hình electron đặc biệt, khác biệt so với các actini trước đó."
+                              ],
+        "RelatedElementGroups":  [
+                                     {
+                                         "GroupName":  "Actinide",
+                                         "Elements":  [
+                                                          {
+                                                              "Symbol":  "No",
+                                                              "Name":  "Nobelium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Lr",
+                                                              "Name":  "Lawrencium"
+                                                          },
+                                                          {
+                                                              "Symbol":  "Rf",
+                                                              "Name":  "Rutherfordium"
+                                                          }
+                                                      ]
+                                     }
+                                 ],
+        "ComparisonNotes":  [
+                                {
+                                    "Title":  "So với Nobeli (No)",
+                                    "Description":  "Lawrenci có điểm nóng chảy cao hơn và tính chất hóa học phức tạp hơn, đóng vai trò quan trọng trong nghiên cứu nguyên tố siêu nặng."
+                                }
+                            ],
+        "HexColor":  "#CC0059",
+        "CategoryColor":  "#ff99cc",
+        "MeltingPointUnit":  "°C",
+        "BoilingPointUnit":  "°C",
+        "DensityUnit":  "g/cm",
+        "AtomicRadiusUnit":  "pm",
+        "CovalentRadiusUnit":  "pm",
+        "ElectronAffinityUnit":  "kJ/mol",
+        "BoilingPointStatus":  "Unknown",
+        "ThermalConductivityStatus":  "Unknown",
+        "SpecificHeatCapacityStatus":  "Unknown",
+        "IonizationEnergyStatus":  "Unknown",
+        "IonizationEnergyUnit":  "kJ/mol",
+        "ElectronegativityUnit":  "Pauling"
+    }
+]

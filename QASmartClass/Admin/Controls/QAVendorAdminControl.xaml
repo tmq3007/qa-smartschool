@@ -1,0 +1,1108 @@
+<UserControl x:Class="QASmartClass.Admin.Controls.QAVendorAdminControl"
+
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+
+             mc:Ignorable="d" 
+
+             d:DesignHeight="700" d:DesignWidth="1000"
+
+             Background="#0F172A" FontFamily="Segoe UI">
+
+
+
+    <UserControl.Resources>
+
+        <Style x:Key="KpiCardStyle" TargetType="Border">
+
+            <Setter Property="Background" Value="#1E293B"/>
+
+            <Setter Property="CornerRadius" Value="12"/>
+
+            <Setter Property="Padding" Value="20"/>
+
+            <Setter Property="Margin" Value="10"/>
+
+            <Setter Property="BorderBrush" Value="#334155"/>
+
+            <Setter Property="BorderThickness" Value="1"/>
+
+        </Style>
+
+
+
+        <Style x:Key="TabButtonStyle" TargetType="RadioButton">
+
+            <Setter Property="Background" Value="Transparent"/>
+
+            <Setter Property="Foreground" Value="#94A3B8"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="Margin" Value="0,0,20,0"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="RadioButton">
+
+                        <Border Background="{TemplateBinding Background}" Padding="10,5" CornerRadius="6">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsChecked" Value="True">
+
+                    <Setter Property="Foreground" Value="#F43F5E"/>
+
+                    <Setter Property="Background" Value="#1E293B"/>
+
+                </Trigger>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Foreground" Value="White"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </UserControl.Resources>
+
+
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <Border Grid.Row="0" Background="#1E293B" Padding="20,15" BorderBrush="#334155" BorderThickness="0,0,0,1">
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+
+                    <TextBlock Text="🏢" FontSize="28" Margin="0,0,10,0" VerticalAlignment="Center"/>
+
+                    <StackPanel VerticalAlignment="Center">
+
+                        <TextBlock Text="QA VENDOR DASHBOARD" Foreground="#F43F5E" FontSize="20" FontWeight="Black"/>
+
+                        <TextBlock Text="Hệ thống giám sát đa trường học (Toàn quốc)" Foreground="#94A3B8" FontSize="14"/>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+                
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+
+                    <Button Content="Tải Lại" Background="#334155" Foreground="White" BorderThickness="0" Padding="15,8" FontWeight="Bold" Margin="0,0,10,0" Cursor="Hand" Click="btnRefresh_Click"/>
+
+                    <Button Content="Tạo License Mới" Background="#10B981" Foreground="White" BorderThickness="0" Padding="15,8" FontWeight="Bold" Cursor="Hand" Click="btnGenerateLicense_Click"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- KPI Cards -->
+
+        <Grid Grid.Row="1" Margin="10,10,10,0">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Card 1 -->
+
+            <Border Grid.Column="0" Style="{StaticResource KpiCardStyle}">
+
+                <StackPanel>
+
+                    <TextBlock Text="Tổng Số Trường (Khách)" Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+
+                        <TextBlock x:Name="txtTotalSchools" Text="45" Foreground="White" FontSize="32" FontWeight="Black"/>
+
+                        <TextBlock Text="trường" Foreground="#94A3B8" FontSize="16" Margin="5,0,0,5" VerticalAlignment="Bottom"/>
+
+                    </StackPanel>
+
+                    <TextBlock Text="42 trường Active, 3 Hết hạn" Foreground="#10B981" FontSize="12" Margin="0,5,0,0"/>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Card 2 -->
+
+            <Border Grid.Column="1" Style="{StaticResource KpiCardStyle}">
+
+                <StackPanel>
+
+                    <TextBlock Text="Tổng Máy Trạm" Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+
+                        <TextBlock x:Name="txtTotalDevices" Text="4,250" Foreground="#38BDF8" FontSize="32" FontWeight="Black"/>
+
+                        <TextBlock Text="máy" Foreground="#94A3B8" FontSize="16" Margin="5,0,0,5" VerticalAlignment="Bottom"/>
+
+                    </StackPanel>
+
+                    <TextBlock Text="Tỉ lệ Online: 78%" Foreground="#38BDF8" FontSize="12" Margin="0,5,0,0"/>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Card 3 -->
+
+            <Border Grid.Column="2" Style="{StaticResource KpiCardStyle}">
+
+                <StackPanel>
+
+                    <TextBlock Text="Báo Cáo Lỗi (Crash)" Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+
+                        <TextBlock x:Name="txtCrashReports" Text="12" Foreground="#F43F5E" FontSize="32" FontWeight="Black"/>
+
+                        <TextBlock Text="lỗi" Foreground="#94A3B8" FontSize="16" Margin="5,0,0,5" VerticalAlignment="Bottom"/>
+
+                    </StackPanel>
+
+                    <TextBlock Text="Hôm nay: 2 lỗi mới" Foreground="#F43F5E" FontSize="12" Margin="0,5,0,0"/>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Card 4 -->
+
+            <Border Grid.Column="3" Style="{StaticResource KpiCardStyle}">
+
+                <StackPanel>
+
+                    <TextBlock Text="Doanh Thu / Licenses" Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+
+                        <TextBlock Text="$" Foreground="#94A3B8" FontSize="20" FontWeight="Black" VerticalAlignment="Center" Margin="0,0,5,0"/>
+
+                        <TextBlock x:Name="txtRevenue" Text="128K" Foreground="#FACC15" FontSize="32" FontWeight="Black"/>
+
+                    </StackPanel>
+
+                    <TextBlock Text="+ 12% so với tháng trước" Foreground="#10B981" FontSize="12" Margin="0,5,0,0"/>
+
+                </StackPanel>
+
+            </Border>
+
+        </Grid>
+
+
+
+        <!-- Main Content -->
+
+        <Border Grid.Row="2" Background="#1E293B" CornerRadius="12" Margin="20,10,20,20" BorderBrush="#334155" BorderThickness="1">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+
+                    <RowDefinition Height="Auto"/>
+
+                    <RowDefinition Height="*"/>
+
+                </Grid.RowDefinitions>
+
+                
+
+                <!-- Navigation -->
+
+                <Border BorderBrush="#334155" BorderThickness="0,0,0,1" Padding="20,10">
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <RadioButton Content="🌍 Bản Đồ Khách Hàng" IsChecked="True" GroupName="QATabs" Style="{StaticResource TabButtonStyle}" Checked="Tab_Checked" Tag="0"/>
+
+                        <RadioButton Content="🔑 Quản Lý Licenses" GroupName="QATabs" Style="{StaticResource TabButtonStyle}" Checked="Tab_Checked" Tag="1"/>
+
+                        <RadioButton Content="☁️ Cập Nhật OTA" GroupName="QATabs" Style="{StaticResource TabButtonStyle}" Checked="Tab_Checked" Tag="2"/>
+
+                        <RadioButton Content="🐛 Chẩn Đoán Từ Xa" GroupName="QATabs" Style="{StaticResource TabButtonStyle}" Checked="Tab_Checked" Tag="3"/>
+
+                        <RadioButton Content="📈 Analytics Tổng Hợp" GroupName="QATabs" Style="{StaticResource TabButtonStyle}" Checked="Tab_Checked" Tag="4"/>
+
+                    </StackPanel>
+
+                </Border>
+
+                
+
+                <!-- Content View -->
+
+                <Grid Grid.Row="1" Margin="20">
+
+                    <!-- Tab 0: Map / Schools -->
+
+                    <Grid x:Name="tabMap" Visibility="Visible">
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="*"/>
+
+                            <ColumnDefinition Width="350"/>
+
+                        </Grid.ColumnDefinitions>
+
+                        
+
+                        <Border Grid.Column="0" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Margin="0,0,20,0">
+
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                                <TextBlock Text="🗺️" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                                <TextBlock Text="Bản Đồ Phân Bố (Tính năng đang xây dựng...)" Foreground="#94A3B8"/>
+
+                                <TextBlock Text="Hiện tại có 45 điểm trường đang phủ sóng." Foreground="#64748B" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <StackPanel Grid.Column="1">
+
+                            <TextBlock Text="Danh Sách Trường Gần Đây" Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
+
+                            <Border Background="#0F172A" CornerRadius="8" Padding="15" BorderBrush="#334155" BorderThickness="1">
+
+                                <StackPanel>
+
+                                    <Border BorderBrush="#334155" BorderThickness="0,0,0,1" Padding="0,0,0,10" Margin="0,0,0,10">
+
+                                        <Grid>
+
+                                            <Grid.ColumnDefinitions>
+
+                                                <ColumnDefinition Width="*"/>
+
+                                                <ColumnDefinition Width="Auto"/>
+
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel>
+
+                                                <TextBlock Text="THPT Mẫu A (Hà Nội)" Foreground="White" FontWeight="Bold"/>
+
+                                                <TextBlock Text="120 Máy • Version: 3.1.2" Foreground="#94A3B8" FontSize="12"/>
+
+                                            </StackPanel>
+
+                                            <Border Grid.Column="1" Background="#10B981" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+
+                                                <TextBlock Text="Active" Foreground="White" FontSize="10" FontWeight="Bold"/>
+
+                                            </Border>
+
+                                        </Grid>
+
+                                    </Border>
+
+                                    
+
+                                    <Border BorderBrush="#334155" BorderThickness="0,0,0,1" Padding="0,0,0,10" Margin="0,0,0,10">
+
+                                        <Grid>
+
+                                            <Grid.ColumnDefinitions>
+
+                                                <ColumnDefinition Width="*"/>
+
+                                                <ColumnDefinition Width="Auto"/>
+
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel>
+
+                                                <TextBlock Text="THPT Lê Lợi (Đà Nẵng)" Foreground="White" FontWeight="Bold"/>
+
+                                                <TextBlock Text="85 Máy • Version: 3.1.2" Foreground="#94A3B8" FontSize="12"/>
+
+                                            </StackPanel>
+
+                                            <Border Grid.Column="1" Background="#10B981" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+
+                                                <TextBlock Text="Active" Foreground="White" FontSize="10" FontWeight="Bold"/>
+
+                                            </Border>
+
+                                        </Grid>
+
+                                    </Border>
+
+
+
+                                    <Border Padding="0,0,0,10">
+
+                                        <Grid>
+
+                                            <Grid.ColumnDefinitions>
+
+                                                <ColumnDefinition Width="*"/>
+
+                                                <ColumnDefinition Width="Auto"/>
+
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel>
+
+                                                <TextBlock Text="THPT Võ Thị Sáu (HCM)" Foreground="White" FontWeight="Bold"/>
+
+                                                <TextBlock Text="200 Máy • Version: 3.0.0" Foreground="#94A3B8" FontSize="12"/>
+
+                                            </StackPanel>
+
+                                            <Border Grid.Column="1" Background="#F43F5E" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+
+                                                <TextBlock Text="Expired" Foreground="White" FontSize="10" FontWeight="Bold"/>
+
+                                            </Border>
+
+                                        </Grid>
+
+                                    </Border>
+
+                                </StackPanel>
+
+                            </Border>
+
+                        </StackPanel>
+
+                    </Grid>
+
+                    
+
+                    <!-- Tab 1: License Manager -->
+
+                    <Grid x:Name="tabLicense" Visibility="Collapsed">
+
+                        <Grid.RowDefinitions>
+
+                            <RowDefinition Height="Auto"/>
+
+                            <RowDefinition Height="*"/>
+
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+
+                            <Button Content="➕ Tạo License Mới" Background="#10B981" Foreground="White" BorderThickness="0" Padding="15,8" FontWeight="Bold" Cursor="Hand" Click="btnGenerateLicense_Click"/>
+
+                            <Button Content="🔄 Làm mới" Background="#334155" Foreground="White" BorderThickness="0" Padding="15,8" FontWeight="Bold" Cursor="Hand" Margin="10,0,0,0" Click="BtnRefreshLicenses_Click"/>
+
+                        </StackPanel>
+
+                        <Border Grid.Row="1" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Padding="2">
+
+                            <DataGrid x:Name="dgLicenses" AutoGenerateColumns="False" Background="Transparent" 
+
+                                      Foreground="#E2E8F0" BorderThickness="0" HeadersVisibility="Column"
+
+                                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#1E293B"
+
+                                      CanUserAddRows="False" IsReadOnly="True" FontSize="13">
+
+                                <DataGrid.ColumnHeaderStyle>
+
+                                    <Style TargetType="DataGridColumnHeader">
+
+                                        <Setter Property="Background" Value="#1E293B"/>
+
+                                        <Setter Property="Foreground" Value="#94A3B8"/>
+
+                                        <Setter Property="Padding" Value="10,8"/>
+
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+
+                                        <Setter Property="FontSize" Value="12"/>
+
+                                        <Setter Property="BorderBrush" Value="#334155"/>
+
+                                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+
+                                    </Style>
+
+                                </DataGrid.ColumnHeaderStyle>
+
+                                <DataGrid.RowStyle>
+
+                                    <Style TargetType="DataGridRow">
+
+                                        <Setter Property="Background" Value="Transparent"/>
+
+                                        <Style.Triggers>
+
+                                            <Trigger Property="IsSelected" Value="True">
+
+                                                <Setter Property="Background" Value="#334155"/>
+
+                                            </Trigger>
+
+                                        </Style.Triggers>
+
+                                    </Style>
+
+                                </DataGrid.RowStyle>
+
+                                <DataGrid.Columns>
+
+                                    <DataGridTextColumn Header="License Key" Binding="{Binding Key}" Width="220"/>
+
+                                    <DataGridTextColumn Header="Trường" Binding="{Binding SchoolName}" Width="180"/>
+
+                                    <DataGridTextColumn Header="Ngày cấp" Binding="{Binding IssuedDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+
+                                    <DataGridTextColumn Header="Hết hạn" Binding="{Binding ExpiryDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+
+                                    <DataGridTextColumn Header="Số máy" Binding="{Binding MaxDevices}" Width="80"/>
+
+                                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="100"/>
+
+                                </DataGrid.Columns>
+
+                            </DataGrid>
+
+                        </Border>
+
+                    </Grid>
+
+
+
+                    <!-- Tab 2: OTA Update -->
+
+                    <Grid x:Name="tabOTA" Visibility="Collapsed">
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="3*"/>
+
+                            <ColumnDefinition Width="2*"/>
+
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Panel: Version & Available Releases -->
+
+                        <Grid Grid.Column="0" Margin="0,0,15,0">
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="*"/>
+
+                            </Grid.RowDefinitions>
+
+                            <!-- Current Version Info Card -->
+
+                            <Border Grid.Row="0" Background="#0F172A" CornerRadius="8" Padding="15" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,15">
+
+                                <Grid>
+
+                                    <Grid.ColumnDefinitions>
+
+                                        <ColumnDefinition Width="*"/>
+
+                                        <ColumnDefinition Width="Auto"/>
+
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Phiên Bản Hiện Tại" Foreground="#94A3B8" FontSize="13"/>
+
+                                        <TextBlock x:Name="txtCurrentVersion" Text="v3.1.2 (Build 2026.05.13)" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,4,0,0"/>
+
+                                        <TextBlock x:Name="txtVersionStatus" Text="✅ Đang là phiên bản mới nhất" Foreground="#10B981" FontSize="12" Margin="0,4,0,0"/>
+
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1" x:Name="btnCheckUpdate" Content="📦 Kiểm tra Update" Background="#6366F1" Foreground="White" BorderThickness="0" Padding="15,8" FontWeight="Bold" Cursor="Hand" VerticalAlignment="Center" Click="BtnCheckUpdate_Click"/>
+
+                                </Grid>
+
+                            </Border>
+
+                            <!-- Available Releases Grid -->
+
+                            <Border Grid.Row="1" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Padding="15">
+
+                                <Grid>
+
+                                    <Grid.RowDefinitions>
+
+                                        <RowDefinition Height="Auto"/>
+
+                                        <RowDefinition Height="*"/>
+
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="📦 Các Bản Cập Nhật Khả Dụng" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                                    <DataGrid Grid.Row="1" x:Name="dgOtaReleases" AutoGenerateColumns="False" Background="Transparent" 
+
+                                              Foreground="#E2E8F0" BorderThickness="0" HeadersVisibility="Column"
+
+                                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#1E293B"
+
+                                              CanUserAddRows="False" IsReadOnly="True" SelectionMode="Single"
+
+                                              SelectionChanged="dgOtaReleases_SelectionChanged" FontSize="12">
+
+                                        <DataGrid.ColumnHeaderStyle>
+
+                                            <Style TargetType="DataGridColumnHeader">
+
+                                                <Setter Property="Background" Value="#1E293B"/>
+
+                                                <Setter Property="Foreground" Value="#94A3B8"/>
+
+                                                <Setter Property="Padding" Value="8,6"/>
+
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+
+                                                <Setter Property="BorderBrush" Value="#334155"/>
+
+                                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+
+                                            </Style>
+
+                                        </DataGrid.ColumnHeaderStyle>
+
+                                        <DataGrid.RowStyle>
+
+                                            <Style TargetType="DataGridRow">
+
+                                                <Setter Property="Background" Value="Transparent"/>
+
+                                                <Style.Triggers>
+
+                                                    <Trigger Property="IsSelected" Value="True">
+
+                                                        <Setter Property="Background" Value="#334155"/>
+
+                                                    </Trigger>
+
+                                                </Style.Triggers>
+
+                                            </Style>
+
+                                        </DataGrid.RowStyle>
+
+                                        <DataGrid.Columns>
+
+                                            <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="70"/>
+
+                                            <DataGridTextColumn Header="Ngày phát hành" Binding="{Binding ReleaseDate}" Width="100"/>
+
+                                            <DataGridTextColumn Header="Mô tả" Binding="{Binding Description}" Width="*"/>
+
+                                            <DataGridTextColumn Header="SHA-256" Binding="{Binding SHA256}" Width="100"/>
+
+                                            <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="90"/>
+
+                                        </DataGrid.Columns>
+
+                                    </DataGrid>
+
+                                </Grid>
+
+                            </Border>
+
+                        </Grid>
+
+                        <!-- Right Panel: Configurations & Actions -->
+
+                        <Grid Grid.Column="1">
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="*"/>
+
+                            </Grid.RowDefinitions>
+
+                            <!-- GroupBox 1: Master Settings Options -->
+
+                            <Border Grid.Row="0" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Padding="15" Margin="0,0,0,15">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="⚙️ TÙY CHỌN MASTER (OTA OPTIONS)" Foreground="#38BDF8" FontSize="13" FontWeight="Bold" Margin="0,0,0,12"/>
+
+                                    <!-- Integrity Mode Selection -->
+
+                                    <TextBlock Text="Cơ chế Xác thực Toàn vẹn (SHA-256):" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,4"/>
+
+                                    <ComboBox x:Name="cboOtaIntegrityMode" Background="#1E293B" Foreground="White" BorderBrush="#334155" FontSize="12" Padding="6,4" Margin="0,0,0,10" SelectionChanged="cboOtaIntegrityMode_SelectionChanged">
+
+                                        <ComboBoxItem Content="High (Bắt buộc khớp SHA-256)" Tag="High"/>
+
+                                        <ComboBoxItem Content="Simple (Bỏ qua hoặc cảnh báo)" Tag="Simple"/>
+
+                                    </ComboBox>
+
+                                    <!-- Default Rollout Strategy -->
+
+                                    <TextBlock Text="Chiến lược Rollout mặc định:" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,4"/>
+
+                                    <ComboBox x:Name="cboOtaRolloutStrategy" Background="#1E293B" Foreground="White" BorderBrush="#334155" FontSize="12" Padding="6,4" SelectionChanged="cboOtaRolloutStrategy_SelectionChanged">
+
+                                        <ComboBoxItem Content="Immediate (Toàn trường ngay)" Tag="Immediate"/>
+
+                                        <ComboBoxItem Content="Staged (Chia nhỏ diện triển khai)" Tag="Staged"/>
+
+                                    </ComboBox>
+
+                                </StackPanel>
+
+                            </Border>
+
+                            <!-- GroupBox 2: Deploy & Rollout Configuration -->
+
+                            <Border Grid.Row="1" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Padding="15" Margin="0,0,0,15">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="🚀 CẤU HÌNH TRIỂN KHAI (ROLLOUT)" Foreground="White" FontSize="13" FontWeight="Bold" Margin="0,0,0,12"/>
+
+                                    <!-- Target Selection -->
+
+                                    <TextBlock Text="Diện Triển khai:" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,4"/>
+
+                                    <ComboBox x:Name="cboOtaRolloutScope" Background="#1E293B" Foreground="White" BorderBrush="#334155" FontSize="12" Padding="6,4" Margin="0,0,0,10" SelectionChanged="cboOtaRolloutScope_SelectionChanged">
+
+                                        <ComboBoxItem Content="10% Máy trạm (Thử nghiệm)" Tag="10"/>
+
+                                        <ComboBoxItem Content="50% Máy trạm (Bán phần)" Tag="50"/>
+
+                                        <ComboBoxItem Content="100% Toàn trường (Triệt để)" Tag="100"/>
+
+                                        <ComboBoxItem Content="Theo phòng học chuyên dụng" Tag="Room"/>
+
+                                    </ComboBox>
+
+                                    <!-- Room selection (visible only if room scope selected) -->
+
+                                    <StackPanel x:Name="panelOtaRoomSelection" Visibility="Collapsed" Margin="0,0,0,10">
+
+                                        <TextBlock Text="Chọn phòng học triển khai:" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,4"/>
+
+                                        <ComboBox x:Name="cboOtaRooms" Background="#1E293B" Foreground="White" BorderBrush="#334155" FontSize="12" Padding="6,4" DisplayMemberPath="Name" SelectedValuePath="ClassCode"/>
+
+                                    </StackPanel>
+
+                                    <!-- Selected Release Details -->
+
+                                    <Border Background="#1E293B" CornerRadius="6" Padding="10" BorderBrush="#334155" BorderThickness="1" Margin="0,5,0,0">
+
+                                        <StackPanel>
+
+                                            <TextBlock Text="Thông tin bản ghi:" Foreground="#94A3B8" FontSize="11" FontWeight="Bold"/>
+
+                                            <TextBlock x:Name="txtOtaSelectedInfo" Text="Chưa chọn bản cập nhật." Foreground="White" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+
+                                        </StackPanel>
+
+                                    </Border>
+
+                                </StackPanel>
+
+                            </Border>
+
+                            <!-- GroupBox 3: Deployment Progress & Action Buttons -->
+
+                            <Border Grid.Row="2" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Padding="15">
+
+                                <Grid>
+
+                                    <Grid.RowDefinitions>
+
+                                        <RowDefinition Height="*"/>
+
+                                        <RowDefinition Height="Auto"/>
+
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Progress displays -->
+
+                                    <StackPanel Grid.Row="0" VerticalAlignment="Center">
+
+                                        <StackPanel x:Name="panelOtaProgress" Visibility="Collapsed" Margin="0,0,0,15">
+
+                                            <TextBlock x:Name="txtOtaProgressStatus" Text="Bắt đầu triển khai..." Foreground="#38BDF8" FontSize="12" Margin="0,0,0,5"/>
+
+                                            <ProgressBar x:Name="prgOtaDeploy" Height="8" Background="#1E293B" Foreground="#10B981" BorderThickness="0" Minimum="0" Maximum="100" Value="0"/>
+
+                                        </StackPanel>
+
+                                    </StackPanel>
+
+                                    <!-- Action Buttons -->
+
+                                    <StackPanel Grid.Row="1">
+
+                                        <Grid Margin="0,0,0,10">
+
+                                            <Grid.ColumnDefinitions>
+
+                                                <ColumnDefinition Width="*"/>
+
+                                                <ColumnDefinition Width="*"/>
+
+                                            </Grid.ColumnDefinitions>
+
+                                            <Button Grid.Column="0" x:Name="btnVerifyIntegrity" Content="🛡️ Verify SHA256" Background="#334155" Foreground="White" BorderThickness="0" Padding="8" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,5,0" Click="BtnVerifyIntegrity_Click"/>
+
+                                            <Button Grid.Column="1" x:Name="btnDeployUpdate" Content="🚀 Deploy Update" Background="#10B981" Foreground="White" BorderThickness="0" Padding="8" FontWeight="Bold" Cursor="Hand" Margin="5,0,0,0" Click="BtnDeployUpdate_Click"/>
+
+                                        </Grid>
+
+                                        <Button x:Name="btnRollback" Content="↩️ Rollback Khẩn cấp (One-click)" Background="#F43F5E" Foreground="White" BorderThickness="0" Padding="10" FontWeight="Bold" Cursor="Hand" Click="BtnRollback_Click"/>
+
+                                    </StackPanel>
+
+                                </Grid>
+
+                            </Border>
+
+                        </Grid>
+
+                    </Grid>
+
+
+
+                    <!-- Tab 3: Crash Analytics -->
+
+                    <Grid x:Name="tabCrash" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="400"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Cột Trái: Danh Sách & Bộ Lọc -->
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Thanh Bộ Lọc -->
+                            <Border Grid.Row="0" Background="#1E293B" CornerRadius="8" Padding="15" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,15">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <WrapPanel VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,15,5">
+                                            <TextBlock Text="Cấp độ:" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,5,0" FontSize="12"/>
+                                            <ComboBox x:Name="cboSeverityFilter" Width="120" Height="28" SelectionChanged="FilterDiagnostics_Changed">
+                                                <ComboBoxItem Content="Tất cả" Tag="All" IsSelected="True"/>
+                                                <ComboBoxItem Content="INFO" Tag="INFO"/>
+                                                <ComboBoxItem Content="WARNING" Tag="WARN"/>
+                                                <ComboBoxItem Content="ERROR" Tag="ERROR"/>
+                                                <ComboBoxItem Content="CRITICAL" Tag="CRITICAL"/>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,15,5">
+                                            <TextBlock Text="Nhóm lỗi:" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,5,0" FontSize="12"/>
+                                            <ComboBox x:Name="cboCategoryFilter" Width="120" Height="28" SelectionChanged="FilterDiagnostics_Changed">
+                                                <ComboBoxItem Content="Tất cả" Tag="All" IsSelected="True"/>
+                                                <ComboBoxItem Content="Cơ sở dữ liệu" Tag="Database"/>
+                                                <ComboBoxItem Content="Mạng LAN" Tag="Network"/>
+                                                <ComboBoxItem Content="Ứng dụng" Tag="Application"/>
+                                            </ComboBox>
+                                        </StackPanel>
+
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                            <TextBlock Text="Tìm kiếm:" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,5,0" FontSize="12"/>
+                                            <TextBox x:Name="txtSearchFilter" Width="150" Height="28" VerticalContentAlignment="Center" TextChanged="FilterDiagnostics_Changed"/>
+                                        </StackPanel>
+                                    </WrapPanel>
+
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="🔄 Quét Lỗi" Background="#F43F5E" Foreground="White" BorderThickness="0" Padding="12,6" FontWeight="Bold" Cursor="Hand" Click="BtnScanCrashes_Click" Margin="10,0,0,0"/>
+                                        <TextBlock x:Name="txtCrashCount" Text="Tìm thấy 0 mục" Foreground="#38BDF8" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Bảng Danh Sách Lỗi -->
+                            <Border Grid.Row="1" Background="#0F172A" CornerRadius="8" BorderBrush="#334155" BorderThickness="1" Padding="10">
+                                <DataGrid x:Name="dgDiagnosticLogs" AutoGenerateColumns="False" IsReadOnly="True" Background="Transparent" BorderThickness="0"
+                                          RowBackground="Transparent" AlternatingRowBackground="#1E293B" Foreground="White" GridLinesVisibility="None"
+                                          HeadersVisibility="Column" SelectionMode="Single" SelectionChanged="dgDiagnosticLogs_SelectionChanged"
+                                          CanUserAddRows="False" CanUserDeleteRows="False" SelectionUnit="FullRow">
+                                    <DataGrid.Resources>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="Background" Value="#1E293B"/>
+                                            <Setter Property="Foreground" Value="#94A3B8"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="Padding" Value="10,8"/>
+                                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                            <Setter Property="BorderBrush" Value="#334155"/>
+                                        </Style>
+                                        <Style TargetType="DataGridCell">
+                                            <Setter Property="Padding" Value="10,8"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="DataGridCell">
+                                                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                                            <ContentPresenter VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Background" Value="#312E81"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.Resources>
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Thời gian" Binding="{Binding Time}" Width="130"/>
+                                        <DataGridTextColumn Header="Cấp độ" Binding="{Binding Level}" Width="80">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="Text" Value="CRITICAL">
+                                                            <Setter Property="Foreground" Value="#EF4444"/>
+                                                        </Trigger>
+                                                        <Trigger Property="Text" Value="ERROR">
+                                                            <Setter Property="Foreground" Value="#F87171"/>
+                                                        </Trigger>
+                                                        <Trigger Property="Text" Value="WARNING">
+                                                            <Setter Property="Foreground" Value="#FBBF24"/>
+                                                        </Trigger>
+                                                        <Trigger Property="Text" Value="INFO">
+                                                            <Setter Property="Foreground" Value="#34D399"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Header="Nhóm lỗi" Binding="{Binding Category}" Width="100"/>
+                                        <DataGridTextColumn Header="Nội dung thông báo" Binding="{Binding Message}" Width="*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Border>
+                        </Grid>
+
+                        <!-- Cột Phải: Chi Tiết, Cấu Hình & Tác Vụ -->
+                        <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                            <!-- GroupBox Chi Tiết -->
+                            <GroupBox Header="🔎 CHI TIẾT LỖI &amp; GỢI Ý" Foreground="White" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,15" Padding="10">
+                                <StackPanel>
+                                    <TextBlock Text="Chi tiết dấu vết log:" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                                    <Border Background="#0F172A" CornerRadius="4" Padding="8" Height="150" BorderBrush="#334155" BorderThickness="1">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                            <TextBlock x:Name="txtSelectedCrashLog" Text="Chọn một lỗi để xem chi tiết..." Foreground="#E2E8F0" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap"/>
+                                        </ScrollViewer>
+                                    </Border>
+
+                                    <TextBlock Text="Đề xuất khắc phục (Heuristic Advisor):" Foreground="#94A3B8" FontSize="11" Margin="0,10,0,5" FontWeight="SemiBold"/>
+                                    <Border Background="#1E1B4B" CornerRadius="4" Padding="10" BorderBrush="#312E81" BorderThickness="1">
+                                        <TextBlock x:Name="txtHeuristicAdvice" Text="Không có gợi ý khả dụng." Foreground="#38BDF8" FontSize="12" TextWrapping="Wrap" FontWeight="Medium"/>
+                                    </Border>
+                                </StackPanel>
+                            </GroupBox>
+
+                            <!-- GroupBox Cấu hình Master -->
+                            <GroupBox Header="⚙️ CẤU HÌNH MASTER DIAGNOSTICS" Foreground="White" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,15" Padding="10">
+                                <StackPanel>
+                                    <TextBlock Text="Cấp độ nhật ký tối thiểu:" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="cboDiagReportingLevel" Height="30" Margin="0,0,0,10">
+                                        <ComboBoxItem Content="Tất cả mọi nhật ký (All)" Tag="All"/>
+                                        <ComboBoxItem Content="Cảnh báo trở lên (Warning+)" Tag="WarningOrAbove" IsSelected="True"/>
+                                        <ComboBoxItem Content="Chỉ lỗi nghiêm trọng (Error)" Tag="ErrorOnly"/>
+                                    </ComboBox>
+
+                                    <TextBlock Text="Tự động gửi cảnh báo kỹ thuật:" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="cboDiagAutoNotification" Height="30" Margin="0,0,0,15">
+                                        <ComboBoxItem Content="Kích hoạt (Gửi cảnh báo)" Tag="Enabled"/>
+                                        <ComboBoxItem Content="Vô hiệu hóa (Tắt)" Tag="Disabled" IsSelected="True"/>
+                                    </ComboBox>
+
+                                    <Button Content="💾 Lưu cấu hình Master" Background="#10B981" Foreground="White" BorderThickness="0" Height="32" FontWeight="Bold" Cursor="Hand" Click="BtnSaveDiagSettings_Click"/>
+                                </StackPanel>
+                            </GroupBox>
+
+                            <!-- GroupBox Tác vụ Xuất Log -->
+                            <GroupBox Header="📦 BÁO CÁO KỸ THUẬT" Foreground="White" BorderBrush="#334155" BorderThickness="1" Padding="10">
+                                <Button Content="📤 Xuất Gói Chẩn Đoán Hệ Thống" Background="#3B82F6" Foreground="White" BorderThickness="0" Height="35" FontWeight="Bold" Cursor="Hand" Click="BtnExportDiagnostics_Click"/>
+                            </GroupBox>
+                        </StackPanel>
+                    </Grid>
+
+
+
+                    <!-- Tab 4: Analytics Summary -->
+
+                    <Grid x:Name="tabAnalytics" Visibility="Collapsed">
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                            <StackPanel>
+
+                                <TextBlock Text="📈 ANALYTICS TỔNG HỢP" Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                                <Grid Margin="0,0,0,15">
+
+                                    <Grid.ColumnDefinitions>
+
+                                        <ColumnDefinition Width="*"/>
+
+                                        <ColumnDefinition Width="*"/>
+
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Background="#0F172A" CornerRadius="8" Padding="18" BorderBrush="#334155" BorderThickness="1" Margin="0,0,10,0">
+
+                                        <StackPanel>
+
+                                            <TextBlock Text="Tổng Phiên Sử Dụng" Foreground="#94A3B8" FontSize="13"/>
+
+                                            <TextBlock x:Name="txtAnalyticsSessions" Text="0" Foreground="#60A5FA" FontSize="28" FontWeight="Black" Margin="0,5,0,0"/>
+
+                                        </StackPanel>
+
+                                    </Border>
+
+                                    <Border Grid.Column="1" Background="#0F172A" CornerRadius="8" Padding="18" BorderBrush="#334155" BorderThickness="1" Margin="10,0,0,0">
+
+                                        <StackPanel>
+
+                                            <TextBlock Text="Tổng Giờ Hoạt Động" Foreground="#94A3B8" FontSize="13"/>
+
+                                            <TextBlock x:Name="txtAnalyticsHours" Text="0h" Foreground="#FBBF24" FontSize="28" FontWeight="Black" Margin="0,5,0,0"/>
+
+                                        </StackPanel>
+
+                                    </Border>
+
+                                </Grid>
+
+                                <Border Background="#0F172A" CornerRadius="8" Padding="18" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,15">
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Top 10 Công Cụ Được Sử Dụng" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                        <TextBlock x:Name="txtAnalyticsTools" Text="Nhấn Tải Lại để xem dữ liệu." Foreground="#CBD5E1" FontSize="13" TextWrapping="Wrap"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                                <Border Background="#0F172A" CornerRadius="8" Padding="18" BorderBrush="#334155" BorderThickness="1">
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="Hoạt Động Gần Đây" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                        <TextBlock x:Name="txtAnalyticsRecent" Text="" Foreground="#4ADE80" FontFamily="Segoe UI" FontSize="12" TextWrapping="Wrap"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </StackPanel>
+
+                        </ScrollViewer>
+
+                    </Grid>
+
+                </Grid>
+
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+</UserControl>
+

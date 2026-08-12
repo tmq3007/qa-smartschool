@@ -1,0 +1,310 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_OCRResultDialog"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Kết Quả Nhận Diện Chữ"
+
+        Width="500" Height="350"
+
+        WindowStartupLocation="CenterScreen"
+
+        Background="#F5F6FA"
+
+        ResizeMode="NoResize">
+
+
+
+    <Window.Resources>
+
+        <Style x:Key="ModernButton" TargetType="Button">
+
+            <Setter Property="Background" Value="#4CAF50"/>
+
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="Padding" Value="20,12"/>
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                                CornerRadius="8"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center"
+
+                                            VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#388E3C"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+
+            <TextBlock Text="Kết Quả Nhận Diện Chữ Viết Tay"
+
+                       FontSize="18"
+
+                       FontWeight="Bold"
+
+                       Foreground="#2F3542"/>
+
+            <TextBlock Text="Chọn kết quả đúng nhất từ danh sách bên dưới"
+
+                       FontSize="12"
+
+                       Foreground="#747D8C"
+
+                       Margin="0,5,0,0"/>
+
+        </StackPanel>
+
+
+
+        <!-- Preview Image -->
+
+        <Border Grid.Row="1"
+
+                Background="White"
+
+                BorderBrush="#E1E8ED"
+
+                BorderThickness="2"
+
+                CornerRadius="8"
+
+                Padding="10"
+
+                Margin="0,0,0,15">
+
+            <StackPanel>
+
+                <TextBlock Text="🖼️ Hình ảnh đã chọn:"
+
+                           FontSize="12"
+
+                           FontWeight="Bold"
+
+                           Foreground="#2F3542"
+
+                           Margin="0,0,0,5"/>
+
+                <Image x:Name="PreviewImage"
+
+                       MaxHeight="100"
+
+                       Stretch="Uniform"
+
+                       HorizontalAlignment="Center"/>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- Results ComboBox -->
+
+        <Border Grid.Row="2"
+
+                Background="White"
+
+                BorderBrush="#E1E8ED"
+
+                BorderThickness="2"
+
+                CornerRadius="8"
+
+                Padding="15">
+
+            <StackPanel>
+
+                <TextBlock Text="Chọn kết quả đúng:"
+
+                           FontSize="14"
+
+                           FontWeight="Bold"
+
+                           Foreground="#2F3542"
+
+                           Margin="0,0,0,10"/>
+
+                
+
+                <ComboBox x:Name="ResultsComboBox"
+
+                          FontSize="16"
+
+                          Padding="10"
+
+                          Height="45"
+
+                          DisplayMemberPath="DisplayText"
+
+                          SelectionChanged="ResultsComboBox_SelectionChanged">
+
+                    <ComboBox.ItemContainerStyle>
+
+                        <Style TargetType="ComboBoxItem">
+
+                            <Setter Property="Padding" Value="10"/>
+
+                            <Setter Property="FontSize" Value="14"/>
+
+                        </Style>
+
+                    </ComboBox.ItemContainerStyle>
+
+                </ComboBox>
+
+
+
+                <TextBlock x:Name="SelectedTextPreview"
+
+                           Text="Chưa chọn kết quả"
+
+                           FontSize="12"
+
+                           Foreground="#95A5A6"
+
+                           Margin="0,10,0,0"
+
+                           TextWrapping="Wrap"/>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- Action Buttons -->
+
+        <Grid Grid.Row="3" Margin="0,20,0,0">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="Auto"/>
+
+                <ColumnDefinition Width="Auto"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Cancel Button -->
+
+            <Button x:Name="btnCancel"
+
+                    Grid.Column="1"
+
+                    Content="✕ Hủy"
+
+                    Width="100"
+
+                    Margin="0,0,10,0"
+
+                    Click="btnCancel_Click">
+
+                <Button.Style>
+
+                    <Style TargetType="Button" BasedOn="{StaticResource ModernButton}">
+
+                        <Setter Property="Background" Value="#F1F2F6"/>
+
+                        <Setter Property="Foreground" Value="#2F3542"/>
+
+                        <Style.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter Property="Background" Value="#DFE4EA"/>
+
+                            </Trigger>
+
+                        </Style.Triggers>
+
+                    </Style>
+
+                </Button.Style>
+
+            </Button>
+
+
+
+            <!-- Insert Button -->
+
+            <Button x:Name="btnInsert"
+
+                    Grid.Column="2"
+
+                    Content="✓ Chèn vào bảng"
+
+                    Width="140"
+
+                    Click="btnInsert_Click"
+
+                    Style="{StaticResource ModernButton}"
+
+                    IsEnabled="False"/>
+
+        </Grid>
+
+    </Grid>
+
+</Window>
+

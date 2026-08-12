@@ -1,0 +1,434 @@
+﻿{
+  "metadata": {
+    "examId": "dgnl_exam_02",
+    "title": "Đề thi ĐGNL ĐHQG - Phần Toán & Tư Duy Logic - Đề số 02",
+    "totalQuestions": 30,
+    "timeLimit": 45,
+    "totalPoints": 150,
+    "pointsPerQuestion": 5,
+    "grade": 12,
+    "examType": "DGNL"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Đường thẳng y=m cắt đồ thị y=x³-3x tại 3 điểm phân biệt khi:",
+      "options": [
+        "A) -2<m<2",
+        "B) m>2",
+        "C) |m|<2",
+        "D) m<-2 hoặc m>2"
+      ],
+      "answer": "A",
+      "solution": "y'=3x²-3=0→x=±1. y(-1)=2 (CĐ), y(1)=-2 (CT). Cắt 3 điểm khi -2<m<2"
+    },
+    {
+      "id": 2,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Chọn 3 HS từ nhóm 8 HS thành 1 tổ. Có bao nhiêu cách?",
+      "options": [
+        "A) 24",
+        "B) 56",
+        "C) 336",
+        "D) 512"
+      ],
+      "answer": "B",
+      "solution": "Không phân biệt thứ tự → C(8,3) = 8!/(3!·5!) = 56"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Từ các chữ số 0,1,2,3,4 lập số có 3 chữ số khác nhau. Có bao nhiêu số?",
+      "options": [
+        "A) 48",
+        "B) 60",
+        "C) 36",
+        "D) 120"
+      ],
+      "answer": "A",
+      "solution": "Chữ số hàng trăm ≠ 0: 4 cách\nChữ số hàng chục: 4 cách (còn lại)\nChữ số hàng đơn vị: 3 cách\nTổng: 4 × 4 × 3 = 48"
+    },
+    {
+      "id": 4,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "log₃(1/9) bằng:",
+      "options": [
+        "A) -2",
+        "B) 2",
+        "C) -3",
+        "D) 3"
+      ],
+      "answer": "A",
+      "solution": "1/9 = 3⁻² → log₃(3⁻²) = -2"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tính (3 + 2i) + (1 - 5i)",
+      "options": [
+        "A) 4 - 3i",
+        "B) 4 + 3i",
+        "C) 2 - 7i",
+        "D) 4 - 7i"
+      ],
+      "answer": "A",
+      "solution": "(3+1) + (2-5)i = 4 - 3i"
+    },
+    {
+      "id": 6,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Có 3 đường từ A đến B, 4 đường từ B đến C. Hỏi có bao nhiêu cách đi từ A đến C qua B?",
+      "options": [
+        "A) 7",
+        "B) 12",
+        "C) 24",
+        "D) 64"
+      ],
+      "answer": "B",
+      "solution": "Quy tắc nhân: 3 × 4 = 12 cách"
+    },
+    {
+      "id": 7,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Giá trị cực tiểu của y = x³ - 3x + 5 là:",
+      "options": [
+        "A) 3",
+        "B) 5",
+        "C) 7",
+        "D) -1"
+      ],
+      "answer": "A",
+      "solution": "y'=3x²-3=0→x=±1. y''=6x. y''(1)=6>0→CT tại x=1. y_CT=1-3+5=3"
+    },
+    {
+      "id": 8,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Tìm GTLN của f(x) = x + 1/x trên (0;+∞) nếu có:",
+      "options": [
+        "A) 2",
+        "B) Không có GTLN",
+        "C) +∞",
+        "D) 1"
+      ],
+      "answer": "B",
+      "solution": "f'=1-1/x²=0→x=1. f(1)=2 là cực tiểu. lim(x→+∞)=+∞→không có GTLN"
+    },
+    {
+      "id": 9,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Diện tích hình phẳng giới hạn bởi y=x², Ox, x=0, x=2 là:",
+      "options": [
+        "A) 4/3",
+        "B) 8/3",
+        "C) 4",
+        "D) 2"
+      ],
+      "answer": "B",
+      "solution": "S = ∫₀² x²dx = [x³/3]₀² = 8/3"
+    },
+    {
+      "id": 10,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Viết PT mặt cầu tâm I(1,-2,3) bán kính R = 4",
+      "options": [
+        "A) (x-1)² + (y+2)² + (z-3)² = 16",
+        "B) (x+1)² + (y-2)² + (z+3)² = 16",
+        "C) (x-1)² + (y+2)² + (z-3)² = 4",
+        "D) (x-1)² + (y-2)² + (z-3)² = 16"
+      ],
+      "answer": "A",
+      "solution": "(x-1)² + (y+2)² + (z-3)² = 16"
+    },
+    {
+      "id": 11,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm hệ số của x⁵ trong khai triển (2x - 1)¹⁰",
+      "options": [
+        "A) -8064",
+        "B) 8064",
+        "C) -252",
+        "D) 252"
+      ],
+      "answer": "A",
+      "solution": "Số hạng tổng quát: C(10,k)·(2x)¹⁰⁻ᵏ·(-1)ᵏ\nCần 10-k = 5 → k = 5\nHệ số = C(10,5)·2⁵·(-1)⁵ = 252·32·(-1) = -8064"
+    },
+    {
+      "id": 12,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Đạo hàm của y = ln(x² + 1) là:",
+      "options": [
+        "A) 2x/(x²+1)",
+        "B) 1/(x²+1)",
+        "C) 2x·ln(x²+1)",
+        "D) (x²+1)/2x"
+      ],
+      "answer": "A",
+      "solution": "y' = (x²+1)'/(x²+1) = 2x/(x²+1)"
+    },
+    {
+      "id": 13,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "∫₀^π sinx dx bằng:",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) 2",
+        "D) -2"
+      ],
+      "answer": "C",
+      "solution": "[-cosx]₀^π = -cosπ - (-cos0) = 1+1 = 2"
+    },
+    {
+      "id": 14,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "∫₀² (2x+1)dx bằng:",
+      "options": [
+        "A) 6",
+        "B) 5",
+        "C) 4",
+        "D) 8"
+      ],
+      "answer": "A",
+      "solution": "[x²+x]₀² = (4+2) - 0 = 6"
+    },
+    {
+      "id": 15,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Hàm số y = (x+1)/(x-2) có đồ thị dạng:",
+      "options": [
+        "A) Parabol",
+        "B) Hyperbol",
+        "C) Đường thẳng",
+        "D) Bậc 3"
+      ],
+      "answer": "B",
+      "solution": "Hàm phân thức bậc 1/bậc 1 → đồ thị Hyperbol"
+    },
+    {
+      "id": 16,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Số tiếp tuyến của đồ thị y=x³-3x đi qua điểm A(0;2) là:",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 0"
+      ],
+      "answer": "B",
+      "solution": "TT tại M(t, t³-3t): y-(t³-3t) = (3t²-3)(x-t)\nQua A(0;2): 2 = t³-3t + (3t²-3)(-t) = t³-3t-3t³+3t = -2t³\nt³ = -1 → t = -1.\nNhưng cũng cần kiểm tra: TT tại x=0 có qua A không? y'(0)=-3, TT: y=-3x+0, không qua (0,2).\nVậy có đúng 2 tiếp tuyến (1 từ t=-1, 1 nghiệm lặp phương trình bậc 3 2t³+2=0)"
+    },
+    {
+      "id": 17,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tìm tập hợp các điểm M biểu diễn z thỏa |z - 2| = |z + 2i|",
+      "options": [
+        "A) Đường thẳng y = -x",
+        "B) Đường thẳng y = x",
+        "C) Đường tròn tâm O bán kính 2",
+        "D) Đường thẳng x + y = 2"
+      ],
+      "answer": "A",
+      "solution": "Gọi z = x + yi.\n|z - 2| = |z + 2i|\n√((x-2)² + y²) = √(x² + (y+2)²)\n(x-2)² + y² = x² + (y+2)²\nx² - 4x + 4 + y² = x² + y² + 4y + 4\n-4x = 4y → y = -x\nTập hợp: đường thẳng y = -x"
+    },
+    {
+      "id": 18,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Đồ thị y = (x²+x+1)/(x+1) có tiệm cận xiên là:",
+      "options": [
+        "A) y=x",
+        "B) y=x+1",
+        "C) y=x-1",
+        "D) Không có"
+      ],
+      "answer": "A",
+      "solution": "Chia: y = x + 1/(x+1) → TCX: y=x. TCĐ: x=-1"
+    },
+    {
+      "id": 19,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Rút gọn: 2³ · 2⁵ / 2⁴ =",
+      "options": [
+        "A) 2⁴=16",
+        "B) 2³=8",
+        "C) 2²=4",
+        "D) 2⁶=64"
+      ],
+      "answer": "A",
+      "solution": "2^(3+5-4) = 2⁴ = 16"
+    },
+    {
+      "id": 20,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Giải: log₂(x-1) = 3",
+      "options": [
+        "A) x=8",
+        "B) x=9",
+        "C) x=7",
+        "D) x=4"
+      ],
+      "answer": "B",
+      "solution": "x-1 = 2³ = 8 → x = 9. ĐK: x>1 ✓"
+    },
+    {
+      "id": 21,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Tập hợp điểm biểu diễn số phức z thỏa |z - (1+i)| = 2 là:",
+      "options": [
+        "A) Đường thẳng",
+        "B) Đường tròn tâm (1,1) bán kính 2",
+        "C) Đường tròn tâm (1,-1) bán kính 2",
+        "D) Elip"
+      ],
+      "answer": "B",
+      "solution": "|z - (1+i)| = 2 nghĩa là khoảng cách từ điểm M(a,b) biểu diễn z đến điểm A(1,1) bằng 2 → đường tròn tâm (1,1) bán kính 2"
+    },
+    {
+      "id": 22,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "X có bảng: P(X=1)=0.3, P(X=2)=0.5, P(X=3)=0.2. E(X)=",
+      "options": [
+        "A) 1.9",
+        "B) 2.0",
+        "C) 1.5",
+        "D) 2.3"
+      ],
+      "answer": "A",
+      "solution": "E(X)=1·0.3+2·0.5+3·0.2=0.3+1.0+0.6=1.9"
+    },
+    {
+      "id": 23,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Khi n tăng gấp 4, độ rộng khoảng tin cậy:",
+      "options": [
+        "A) Giảm một nửa",
+        "B) Giảm 1/4",
+        "C) Không đổi",
+        "D) Tăng gấp đôi"
+      ],
+      "answer": "A",
+      "solution": "Độ rộng ~ 1/√n. √(4n)=2√n → 1/(2√n) = giảm 1/2"
+    },
+    {
+      "id": 24,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "f(x) = x³ - 2x² + 5x - 1. f'(x) =",
+      "options": [
+        "A) 3x²-4x+5",
+        "B) 3x²+4x+5",
+        "C) x²-2x+5",
+        "D) 3x²-4x-1"
+      ],
+      "answer": "A",
+      "solution": "(x³)'=3x², (-2x²)'=-4x, (5x)'=5, (-1)'=0"
+    },
+    {
+      "id": 25,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Số hạng chứa x³ trong (2+x)⁵ là:",
+      "options": [
+        "A) 40x³",
+        "B) 80x³",
+        "C) 10x³",
+        "D) 20x³"
+      ],
+      "answer": "A",
+      "solution": "Tₖ₊₁=C₅ᵏ·2⁵⁻ᵏ·xᵏ. k=3: C₅³·2²·x³=10·4·x³=40x³"
+    },
+    {
+      "id": 26,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Gieo xúc xắc 1 lần. X=số chấm. D(X)=",
+      "options": [
+        "A) 35/12",
+        "B) 7/2",
+        "C) 91/6",
+        "D) 3.5"
+      ],
+      "answer": "A",
+      "solution": "E(X)=(1+2+3+4+5+6)/6=7/2. E(X²)=(1+4+9+16+25+36)/6=91/6. D=91/6-(7/2)²=91/6-49/4=(182-147)/12=35/12"
+    },
+    {
+      "id": 27,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Vật chuyển động s(t)=t³-3t²+5t. Vận tốc tại t=2:",
+      "options": [
+        "A) 5",
+        "B) 3",
+        "C) 1",
+        "D) 7"
+      ],
+      "answer": "A",
+      "solution": "v(t)=s'(t)=3t²-6t+5. v(2)=12-12+5=5"
+    },
+    {
+      "id": 28,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Parabol y=x²-6x+5 cắt Ox tại:",
+      "options": [
+        "A) x=1,5",
+        "B) x=-1,-5",
+        "C) x=2,3",
+        "D) x=-1,5"
+      ],
+      "answer": "A",
+      "solution": "x²-6x+5=0→(x-1)(x-5)=0→x=1,5"
+    },
+    {
+      "id": 29,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "TXĐ của y=√(x-2) là:",
+      "options": [
+        "A) [2;+∞)",
+        "B) (2;+∞)",
+        "C) (-∞;2]",
+        "D) ℝ"
+      ],
+      "answer": "A",
+      "solution": "x-2≥0 → x≥2 → D=[2;+∞)"
+    },
+    {
+      "id": 30,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Giải: (x-1)/(x+2)≥0",
+      "options": [
+        "A) x<-2 hoặc x≥1",
+        "B) -2<x<1",
+        "C) x≤-2 hoặc x≥1",
+        "D) x>1"
+      ],
+      "answer": "A",
+      "solution": "Xét dấu: tử x-1=0↔x=1, mẫu x+2=0↔x=-2. Bảng xét dấu→f≥0 khi x<-2 hoặc x≥1"
+    }
+  ]
+}

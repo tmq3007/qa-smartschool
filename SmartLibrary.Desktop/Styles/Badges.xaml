@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Status Badge Base -->
+    <Style x:Key="BaseBadge" TargetType="Border">
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="12,4"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- Success Badge -->
+    <Style x:Key="SuccessBadge" TargetType="Border" BasedOn="{StaticResource BaseBadge}">
+        <Setter Property="Background" Value="{DynamicResource SuccessBgBrush}"/>
+    </Style>
+    <Style x:Key="SuccessBadgeText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <!-- Warning Badge -->
+    <Style x:Key="WarningBadge" TargetType="Border" BasedOn="{StaticResource BaseBadge}">
+        <Setter Property="Background" Value="{DynamicResource WarningBgBrush}"/>
+    </Style>
+    <Style x:Key="WarningBadgeText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <!-- Danger Badge -->
+    <Style x:Key="DangerBadge" TargetType="Border" BasedOn="{StaticResource BaseBadge}">
+        <Setter Property="Background" Value="{DynamicResource DangerBgBrush}"/>
+    </Style>
+    <Style x:Key="DangerBadgeText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource DangerTextBrush}"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+</ResourceDictionary>

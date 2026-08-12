@@ -1,0 +1,1049 @@
+{
+    "version": "1.0.0",
+    "lastModified": "2025-12-19T20:59:00+07:00",
+    "schemaVersion": "1.0",
+    "features": {
+        "DrawingTools": {
+            "id": "drawing_tools",
+            "name": "Công cụ vẽ",
+            "description": "Bút vẽ, tẩy và các công cụ vẽ cơ bản",
+            "enabled": true,
+            "children": {
+                "Pen": {
+                    "id": "pen",
+                    "name": "Bút vẽ",
+                    "description": "Các loại bút vẽ khác nhau",
+                    "enabled": true,
+                    "children": {
+                        "Brush": {
+                            "id": "brush",
+                            "name": "Brush",
+                            "enabled": true
+                        },
+                        "Calligraphy": {
+                            "id": "calligraphy",
+                            "name": "Calligraphy",
+                            "enabled": true
+                        },
+                        "CalligraphyPen": {
+                            "id": "calligraphy_pen",
+                            "name": "Calligraphy Pen",
+                            "enabled": true
+                        },
+                        "Airbrush": {
+                            "id": "airbrush",
+                            "name": "Airbrush",
+                            "enabled": true
+                        },
+                        "OilBrush": {
+                            "id": "oil_brush",
+                            "name": "Oil Brush",
+                            "enabled": false
+                        },
+                        "Crayon": {
+                            "id": "crayon",
+                            "name": "Crayon",
+                            "enabled": true
+                        },
+                        "Marker": {
+                            "id": "marker",
+                            "name": "Marker",
+                            "enabled": true
+                        },
+                        "NaturalPencil": {
+                            "id": "natural_pencil",
+                            "name": "Natural Pencil",
+                            "enabled": false
+                        },
+                        "WatercolorBrush": {
+                            "id": "watercolor",
+                            "name": "Watercolor",
+                            "enabled": false
+                        },
+                        "Highlighter": {
+                            "id": "highlighter",
+                            "name": "Highlighter",
+                            "enabled": true
+                        }
+                    }
+                },
+                "Eraser": {
+                    "id": "eraser",
+                    "name": "Tẩy",
+                    "description": "Công cụ xóa",
+                    "enabled": true
+                }
+            }
+        },
+        "ShapeTools2D": {
+            "id": "shapes_2d",
+            "name": "Vẽ hình 2D",
+            "description": "Các công cụ vẽ hình học 2D",
+            "enabled": true,
+            "children": {
+                "Lines": {
+                    "id": "lines_group",
+                    "name": "Nhóm đường thẳng",
+                    "enabled": true,
+                    "children": {
+                        "StraightLine": {
+                            "id": "straight_line",
+                            "name": "Đường thẳng",
+                            "enabled": true
+                        },
+                        "ArrowLine": {
+                            "id": "arrow_line",
+                            "name": "Đường mũi tên",
+                            "enabled": true
+                        },
+                        "DashedLine": {
+                            "id": "dashed_line",
+                            "name": "Nét đứt",
+                            "enabled": true
+                        },
+                        "DoubleArrowLine": {
+                            "id": "double_arrow_line",
+                            "name": "Mũi tên 2 đầu",
+                            "enabled": true
+                        },
+                        "ElbowConnector": {
+                            "id": "elbow_connector",
+                            "name": "Đường nối góc vuông",
+                            "enabled": true
+                        },
+                        "CurvedConnector": {
+                            "id": "curved_connector",
+                            "name": "Đường nối cong",
+                            "enabled": true
+                        }
+                    }
+                },
+                "Rectangles": {
+                    "id": "rectangles_group",
+                    "name": "Nhóm hình chữ nhật",
+                    "enabled": true,
+                    "children": {
+                        "Rectangle": {
+                            "id": "rectangle",
+                            "name": "Hình chữ nhật",
+                            "enabled": true
+                        },
+                        "RoundedRectangle": {
+                            "id": "rounded_rectangle",
+                            "name": "HCN góc bo tròn",
+                            "enabled": true
+                        },
+                        "SnipSingleCornerRectangle": {
+                            "id": "snip_single_corner",
+                            "name": "HCN cắt 1 góc",
+                            "enabled": true
+                        },
+                        "SnipDiagonalCornerRectangle": {
+                            "id": "snip_diagonal_corner",
+                            "name": "HCN cắt 2 góc chéo",
+                            "enabled": true
+                        },
+                        "RoundSingleCornerRectangle": {
+                            "id": "round_single_corner",
+                            "name": "HCN bo 1 góc",
+                            "enabled": true
+                        }
+                    }
+                },
+                "BasicShapes": {
+                    "id": "basic_shapes_group",
+                    "name": "Hình cơ bản",
+                    "description": "10 hình cơ bản trong menu vẽ hình",
+                    "enabled": true,
+                    "children": {
+                        "Circle": {
+                            "id": "circle",
+                            "name": "Hình tròn",
+                            "enabled": true
+                        },
+                        "Square": {
+                            "id": "square",
+                            "name": "Hình vuông",
+                            "enabled": true
+                        },
+                        "Triangle": {
+                            "id": "triangle",
+                            "name": "Tam giác",
+                            "enabled": true
+                        },
+                        "Pentagon": {
+                            "id": "pentagon",
+                            "name": "Ngũ giác",
+                            "enabled": false
+                        },
+                        "Hexagon": {
+                            "id": "hexagon",
+                            "name": "Lục giác",
+                            "enabled": false
+                        },
+                        "Star": {
+                            "id": "star",
+                            "name": "Ngôi sao",
+                            "enabled": true
+                        },
+                        "Heart": {
+                            "id": "heart",
+                            "name": "Trái tim",
+                            "enabled": true
+                        },
+                        "Diamond": {
+                            "id": "diamond",
+                            "name": "Hình thoi",
+                            "enabled": true
+                        },
+                        "Parallelogram": {
+                            "id": "parallelogram",
+                            "name": "Hình bình hành",
+                            "enabled": false
+                        },
+                        "Cross": {
+                            "id": "cross",
+                            "name": "Hình chữ thập",
+                            "enabled": true
+                        },
+                        "Cloud": {
+                            "id": "cloud",
+                            "name": "Đám mây",
+                            "enabled": true
+                        }
+                    }
+                },
+                "Callouts": {
+                    "id": "callouts_group",
+                    "name": "Chú thích",
+                    "enabled": true,
+                    "children": {
+                        "SpeechBubble": {
+                            "id": "speech_bubble",
+                            "name": "Bong bóng hội thoại",
+                            "enabled": true
+                        },
+                        "ThoughtBubble": {
+                            "id": "thought_bubble",
+                            "name": "Bong bóng suy nghĩ",
+                            "enabled": false
+                        },
+                        "CalloutBox": {
+                            "id": "callout_box",
+                            "name": "Hộp chú thích",
+                            "enabled": true
+                        }
+                    }
+                },
+                "BlockArrows": {
+                    "id": "block_arrows_group",
+                    "name": "Mũi tên khối",
+                    "description": "15 loại mũi tên khối",
+                    "enabled": true,
+                    "children": {
+                        "RightArrow": {
+                            "id": "right_arrow",
+                            "name": "Mũi tên phải",
+                            "enabled": true
+                        },
+                        "LeftArrow": {
+                            "id": "left_arrow",
+                            "name": "Mũi tên trái",
+                            "enabled": true
+                        },
+                        "UpArrow": {
+                            "id": "up_arrow",
+                            "name": "Mũi tên lên",
+                            "enabled": true
+                        },
+                        "DownArrow": {
+                            "id": "down_arrow",
+                            "name": "Mũi tên xuống",
+                            "enabled": true
+                        },
+                        "LeftRightArrow": {
+                            "id": "left_right_arrow",
+                            "name": "Mũi tên 2 chiều ngang",
+                            "enabled": true
+                        },
+                        "UpDownArrow": {
+                            "id": "up_down_arrow",
+                            "name": "Mũi tên 2 chiều dọc",
+                            "enabled": true
+                        },
+                        "QuadArrow": {
+                            "id": "quad_arrow",
+                            "name": "Mũi tên 4 hướng",
+                            "enabled": true
+                        },
+                        "NotchedRightArrow": {
+                            "id": "notched_arrow",
+                            "name": "Mũi tên có rãnh",
+                            "enabled": true
+                        },
+                        "PentagonArrow": {
+                            "id": "pentagon_arrow",
+                            "name": "Mũi tên ngũ giác",
+                            "enabled": true
+                        },
+                        "ChevronArrow": {
+                            "id": "chevron_arrow",
+                            "name": "Mũi tên chữ V",
+                            "enabled": true
+                        },
+                        "StripedRightArrow": {
+                            "id": "striped_arrow",
+                            "name": "Mũi tên sọc",
+                            "enabled": true
+                        },
+                        "CurvedRightArrow": {
+                            "id": "curved_right_arrow",
+                            "name": "Mũi tên cong phải",
+                            "enabled": true
+                        },
+                        "CurvedLeftArrow": {
+                            "id": "curved_left_arrow",
+                            "name": "Mũi tên cong trái",
+                            "enabled": true
+                        },
+                        "CurvedUpArrow": {
+                            "id": "curved_up_arrow",
+                            "name": "Mũi tên cong lên",
+                            "enabled": true
+                        },
+                        "CurvedDownArrow": {
+                            "id": "curved_down_arrow",
+                            "name": "Mũi tên cong xuống",
+                            "enabled": true
+                        }
+                    }
+                },
+                "StarsBanners": {
+                    "id": "stars_banners_group",
+                    "name": "Sao & Băng-rôn",
+                    "description": "15 loại sao và băng-rôn",
+                    "enabled": true,
+                    "children": {
+                        "Star4": {
+                            "id": "star_4",
+                            "name": "Sao 4 cánh",
+                            "enabled": true
+                        },
+                        "Star6": {
+                            "id": "star_6",
+                            "name": "Sao 6 cánh",
+                            "enabled": true
+                        },
+                        "Star7": {
+                            "id": "star_7",
+                            "name": "Sao 7 cánh",
+                            "enabled": true
+                        },
+                        "Star8": {
+                            "id": "star_8",
+                            "name": "Sao 8 cánh",
+                            "enabled": true
+                        },
+                        "Star10": {
+                            "id": "star_10",
+                            "name": "Sao 10 cánh",
+                            "enabled": true
+                        },
+                        "Star12": {
+                            "id": "star_12",
+                            "name": "Sao 12 cánh",
+                            "enabled": true
+                        },
+                        "Star16": {
+                            "id": "star_16",
+                            "name": "Sao 16 cánh",
+                            "enabled": false
+                        },
+                        "Star24": {
+                            "id": "star_24",
+                            "name": "Sao 24 cánh",
+                            "enabled": false
+                        },
+                        "Star32": {
+                            "id": "star_32",
+                            "name": "Sao 32 cánh",
+                            "enabled": false
+                        },
+                        "Explosion1": {
+                            "id": "explosion_1",
+                            "name": "Vụ nổ 1",
+                            "enabled": true
+                        },
+                        "Explosion2": {
+                            "id": "explosion_2",
+                            "name": "Vụ nổ 2",
+                            "enabled": true
+                        },
+                        "Wave": {
+                            "id": "wave",
+                            "name": "Sóng",
+                            "enabled": true
+                        },
+                        "DoubleWave": {
+                            "id": "double_wave",
+                            "name": "Sóng kép",
+                            "enabled": true
+                        },
+                        "Ribbon": {
+                            "id": "ribbon",
+                            "name": "Băng rôn",
+                            "enabled": true
+                        },
+                        "Scroll": {
+                            "id": "scroll",
+                            "name": "Cuộn giấy",
+                            "enabled": true
+                        }
+                    }
+                },
+                "Flowchart": {
+                    "id": "flowchart_group",
+                    "name": "Lưu đồ",
+                    "description": "20 ký hiệu lưu đồ",
+                    "enabled": true,
+                    "children": {
+                        "FlowProcess": {
+                            "id": "flow_process",
+                            "name": "Quy trình",
+                            "enabled": true
+                        },
+                        "FlowDecision": {
+                            "id": "flow_decision",
+                            "name": "Quyết định",
+                            "enabled": true
+                        },
+                        "FlowDocument": {
+                            "id": "flow_document",
+                            "name": "Tài liệu",
+                            "enabled": true
+                        },
+                        "FlowData": {
+                            "id": "flow_data",
+                            "name": "Dữ liệu",
+                            "enabled": true
+                        },
+                        "FlowPredefinedProcess": {
+                            "id": "flow_predefined",
+                            "name": "QT định sẵn",
+                            "enabled": true
+                        },
+                        "FlowInternalStorage": {
+                            "id": "flow_storage",
+                            "name": "Bộ nhớ trong",
+                            "enabled": true
+                        },
+                        "FlowSequentialData": {
+                            "id": "flow_seq_data",
+                            "name": "DL tuần tự",
+                            "enabled": true
+                        },
+                        "FlowDirectData": {
+                            "id": "flow_direct_data",
+                            "name": "DL trực tiếp",
+                            "enabled": true
+                        },
+                        "FlowManualInput": {
+                            "id": "flow_manual_input",
+                            "name": "Nhập tay",
+                            "enabled": true
+                        },
+                        "FlowManualOperation": {
+                            "id": "flow_manual_op",
+                            "name": "Thao tác tay",
+                            "enabled": true
+                        },
+                        "FlowConnector": {
+                            "id": "flow_connector",
+                            "name": "Kết nối",
+                            "enabled": true
+                        },
+                        "FlowOffPageConnector": {
+                            "id": "flow_offpage",
+                            "name": "Kết nối ngoài",
+                            "enabled": true
+                        },
+                        "FlowSummingJunction": {
+                            "id": "flow_summing",
+                            "name": "Điểm tổng",
+                            "enabled": true
+                        },
+                        "FlowOr": {
+                            "id": "flow_or",
+                            "name": "Hoặc",
+                            "enabled": true
+                        },
+                        "FlowSort": {
+                            "id": "flow_sort",
+                            "name": "Sắp xếp",
+                            "enabled": true
+                        },
+                        "FlowExtract": {
+                            "id": "flow_extract",
+                            "name": "Trích xuất",
+                            "enabled": true
+                        },
+                        "FlowMerge": {
+                            "id": "flow_merge",
+                            "name": "Gộp",
+                            "enabled": true
+                        },
+                        "FlowStoredData": {
+                            "id": "flow_stored",
+                            "name": "DL lưu trữ",
+                            "enabled": true
+                        },
+                        "FlowDelay": {
+                            "id": "flow_delay",
+                            "name": "Trễ",
+                            "enabled": true
+                        },
+                        "FlowPreparation": {
+                            "id": "flow_preparation",
+                            "name": "Chuẩn bị",
+                            "enabled": true
+                        }
+                    }
+                },
+                "EquationShapes": {
+                    "id": "equation_shapes_group",
+                    "name": "Ký hiệu Toán học",
+                    "description": "15 ký hiệu phương trình",
+                    "enabled": true,
+                    "children": {
+                        "Plus": {
+                            "id": "plus",
+                            "name": "Cộng (+)",
+                            "enabled": true
+                        },
+                        "Minus": {
+                            "id": "minus",
+                            "name": "Trừ (−)",
+                            "enabled": true
+                        },
+                        "Multiply": {
+                            "id": "multiply",
+                            "name": "Nhân (×)",
+                            "enabled": true
+                        },
+                        "Divide": {
+                            "id": "divide",
+                            "name": "Chia (÷)",
+                            "enabled": true
+                        },
+                        "Equal": {
+                            "id": "equal",
+                            "name": "Bằng (=)",
+                            "enabled": true
+                        },
+                        "NotEqual": {
+                            "id": "not_equal",
+                            "name": "Không bằng (≠)",
+                            "enabled": true
+                        },
+                        "LessThan": {
+                            "id": "less_than",
+                            "name": "Nhỏ hơn (<)",
+                            "enabled": true
+                        },
+                        "GreaterThan": {
+                            "id": "greater_than",
+                            "name": "Lớn hơn (>)",
+                            "enabled": true
+                        },
+                        "LessOrEqual": {
+                            "id": "less_or_equal",
+                            "name": "Nhỏ hơn bằng (≤)",
+                            "enabled": true
+                        },
+                        "GreaterOrEqual": {
+                            "id": "greater_or_equal",
+                            "name": "Lớn hơn bằng (≥)",
+                            "enabled": true
+                        },
+                        "Approximately": {
+                            "id": "approximately",
+                            "name": "Xấp xỉ (≈)",
+                            "enabled": false
+                        },
+                        "Infinity": {
+                            "id": "infinity",
+                            "name": "Vô cực (∞)",
+                            "enabled": false
+                        },
+                        "Radical": {
+                            "id": "radical",
+                            "name": "Căn bậc hai (√)",
+                            "enabled": false
+                        },
+                        "Summation": {
+                            "id": "summation",
+                            "name": "Tổng (Σ)",
+                            "enabled": false
+                        },
+                        "Integral": {
+                            "id": "integral",
+                            "name": "Tích phân (∫)",
+                            "enabled": false
+                        }
+                    }
+                }
+            }
+        },
+        "ShapeTools3D": {
+            "id": "shapes_3d",
+            "name": "Vẽ hình 3D",
+            "description": "Các hình khối không gian 3D",
+            "enabled": true,
+            "children": {
+                "BasicSolids": {
+                    "id": "basic_solids",
+                    "name": "Khối cơ bản",
+                    "enabled": true,
+                    "children": {
+                        "Cube": {
+                            "id": "cube",
+                            "name": "Hình hộp chữ nhật",
+                            "enabled": true
+                        },
+                        "Sphere": {
+                            "id": "sphere",
+                            "name": "Hình cầu",
+                            "enabled": true
+                        },
+                        "Cylinder": {
+                            "id": "cylinder",
+                            "name": "Hình trụ",
+                            "enabled": true
+                        },
+                        "Cone": {
+                            "id": "cone",
+                            "name": "Hình nón",
+                            "enabled": true
+                        }
+                    }
+                },
+                "AdvancedSolids": {
+                    "id": "advanced_solids",
+                    "name": "Khối nâng cao",
+                    "enabled": false,
+                    "children": {
+                        "Pyramid": {
+                            "id": "pyramid",
+                            "name": "Hình chóp",
+                            "enabled": false
+                        },
+                        "Prism": {
+                            "id": "prism",
+                            "name": "Lăng trụ",
+                            "enabled": false
+                        },
+                        "Torus": {
+                            "id": "torus",
+                            "name": "Hình xuyến",
+                            "enabled": false
+                        },
+                        "Tetrahedron": {
+                            "id": "tetrahedron",
+                            "name": "Tứ diện đều",
+                            "enabled": false
+                        }
+                    }
+                }
+            }
+        },
+        "ChartTools": {
+            "id": "chart_tools",
+            "name": "Biểu đồ",
+            "description": "Các loại biểu đồ thống kê",
+            "enabled": true,
+            "children": {
+                "BarChart": {
+                    "id": "bar_chart",
+                    "name": "Biểu đồ cột",
+                    "enabled": true
+                },
+                "LineChart": {
+                    "id": "line_chart",
+                    "name": "Biểu đồ đường",
+                    "enabled": true
+                },
+                "PieChart": {
+                    "id": "pie_chart",
+                    "name": "Biểu đồ tròn",
+                    "enabled": true
+                },
+                "AreaChart": {
+                    "id": "area_chart",
+                    "name": "Biểu đồ vùng",
+                    "enabled": false
+                },
+                "ScatterChart": {
+                    "id": "scatter_chart",
+                    "name": "Biểu đồ phân tán",
+                    "enabled": false
+                },
+                "RadarChart": {
+                    "id": "radar_chart",
+                    "name": "Biểu đồ radar",
+                    "enabled": false
+                }
+            }
+        },
+        "MathTools": {
+            "id": "math_tools",
+            "name": "Công cụ Toán học",
+            "description": "Dụng cụ học toán",
+            "enabled": true,
+            "children": {
+                "Ruler": {
+                    "id": "ruler",
+                    "name": "Thước kẻ",
+                    "enabled": true
+                },
+                "Protractor": {
+                    "id": "protractor",
+                    "name": "Thước đo góc",
+                    "enabled": true
+                },
+                "SetSquare": {
+                    "id": "set_square",
+                    "name": "Eke",
+                    "enabled": true
+                },
+                "Compass2D": {
+                    "id": "compass_2d",
+                    "name": "Com pa 2D",
+                    "enabled": true
+                },
+                "Compass3D": {
+                    "id": "compass_3d",
+                    "name": "Com pa 3D",
+                    "enabled": false
+                },
+                "Calculator": {
+                    "id": "calculator",
+                    "name": "Máy tính",
+                    "enabled": true
+                },
+                "GraphEditor": {
+                    "id": "graph_editor",
+                    "name": "Đồ thị hàm số 2D",
+                    "enabled": false
+                },
+                "Graph3DEditor": {
+                    "id": "graph_3d_editor",
+                    "name": "Đồ thị 3D",
+                    "enabled": false
+                }
+            }
+        },
+        "BoardManagement": {
+            "id": "board_management",
+            "name": "Quản lý bảng",
+            "description": "Các tính năng quản lý bảng vẽ",
+            "enabled": true,
+            "children": {
+                "MultiBoard": {
+                    "id": "multi_board",
+                    "name": "Nhiều bảng",
+                    "enabled": true
+                },
+                "BoardBackground": {
+                    "id": "board_background",
+                    "name": "Nền bảng",
+                    "enabled": true
+                },
+                "BoardThumbnail": {
+                    "id": "board_thumbnail",
+                    "name": "Thumbnail",
+                    "enabled": true
+                },
+                "BoardExport": {
+                    "id": "board_export",
+                    "name": "Xuất bảng",
+                    "enabled": true
+                },
+                "BoardDuplicate": {
+                    "id": "board_duplicate",
+                    "name": "Nhân đôi bảng",
+                    "enabled": true
+                },
+                "ScreenCurtain": {
+                    "id": "screen_curtain",
+                    "name": "Màn che",
+                    "enabled": true
+                },
+                "Spotlight": {
+                    "id": "spotlight",
+                    "name": "Spotlight",
+                    "enabled": false
+                },
+                "Magnifier": {
+                    "id": "magnifier",
+                    "name": "Kính lúp",
+                    "enabled": true
+                },
+                "CanvasResize": {
+                    "id": "canvas_resize",
+                    "name": "Thay đổi kích thước",
+                    "enabled": true
+                },
+                "Screenshot": {
+                    "id": "screenshot",
+                    "name": "Chụp màn hình",
+                    "enabled": true
+                }
+            }
+        },
+        "InsertContent": {
+            "id": "insert_content",
+            "name": "Chèn nội dung",
+            "description": "Chèn các loại nội dung vào bảng",
+            "enabled": true,
+            "children": {
+                "Text": {
+                    "id": "insert_text",
+                    "name": "Chèn văn bản",
+                    "enabled": true
+                },
+                "Image": {
+                    "id": "insert_image",
+                    "name": "Chèn hình ảnh",
+                    "enabled": true
+                },
+                "Video": {
+                    "id": "insert_video",
+                    "name": "Chèn video",
+                    "enabled": true
+                },
+                "Audio": {
+                    "id": "insert_audio",
+                    "name": "Chèn âm thanh",
+                    "enabled": false
+                },
+                "Table": {
+                    "id": "insert_table",
+                    "name": "Chèn bảng",
+                    "enabled": true
+                },
+                "Flashcard": {
+                    "id": "insert_flashcard",
+                    "name": "Flashcard",
+                    "enabled": false
+                },
+                "Link": {
+                    "id": "insert_link",
+                    "name": "Chèn liên kết",
+                    "enabled": false
+                },
+                "Equation": {
+                    "id": "insert_equation",
+                    "name": "Công thức toán",
+                    "enabled": false
+                }
+            }
+        },
+        "Utilities": {
+            "id": "utilities",
+            "name": "Tiện ích",
+            "description": "Các công cụ tiện ích hỗ trợ",
+            "enabled": true,
+            "children": {
+                "CountdownTimer": {
+                    "id": "countdown_timer",
+                    "name": "Đếm ngược",
+                    "enabled": true
+                },
+                "Stopwatch": {
+                    "id": "stopwatch",
+                    "name": "Đồng hồ bấm giờ",
+                    "enabled": false
+                },
+                "ColorPicker": {
+                    "id": "color_picker",
+                    "name": "Chọn màu",
+                    "enabled": true
+                },
+                "ScreenRecording": {
+                    "id": "screen_recording",
+                    "name": "Ghi màn hình",
+                    "enabled": false
+                },
+                "QuickSurvey": {
+                    "id": "quick_survey",
+                    "name": "Khảo sát nhanh",
+                    "enabled": false
+                },
+                "RandomPicker": {
+                    "id": "random_picker",
+                    "name": "Chọn ngẫu nhiên",
+                    "enabled": false
+                }
+            }
+        },
+        "Education": {
+            "id": "education",
+            "name": "Giáo dục",
+            "description": "Các công cụ hỗ trợ giảng dạy",
+            "enabled": false,
+            "children": {
+                "PeriodicTable": {
+                    "id": "periodic_table",
+                    "name": "Bảng tuần hoàn",
+                    "enabled": false
+                },
+                "BookViewer": {
+                    "id": "book_viewer",
+                    "name": "Xem sách",
+                    "enabled": false
+                },
+                "LectureLibrary": {
+                    "id": "lecture_library",
+                    "name": "Thư viện bài giảng",
+                    "enabled": false
+                },
+                "ChemistryTools": {
+                    "id": "chemistry_tools",
+                    "name": "Công cụ Hóa học",
+                    "enabled": false,
+                    "children": {
+                        "MoleculeViewer": {
+                            "id": "molecule_viewer",
+                            "name": "Xem phân tử",
+                            "enabled": false
+                        },
+                        "EquationBalancer": {
+                            "id": "equation_balancer",
+                            "name": "Cân bằng phương trình",
+                            "enabled": false
+                        }
+                    }
+                }
+            }
+        },
+        "Advanced": {
+            "id": "advanced",
+            "name": "Nâng cao",
+            "description": "Các tính năng nâng cao",
+            "enabled": false,
+            "children": {
+                "CameraAI": {
+                    "id": "camera_ai",
+                    "name": "Camera AI",
+                    "enabled": false
+                },
+                "CameraConfiguration": {
+                    "id": "camera_config",
+                    "name": "Cấu hình Camera",
+                    "enabled": false
+                },
+                "MultiUserMode": {
+                    "id": "multi_user",
+                    "name": "Chế độ nhiều người",
+                    "enabled": false
+                },
+                "AIFeatures": {
+                    "id": "ai_features",
+                    "name": "Tính năng AI",
+                    "enabled": false,
+                    "children": {
+                        "HandwritingOCR": {
+                            "id": "handwriting_ocr",
+                            "name": "Nhận dạng chữ viết",
+                            "enabled": false
+                        },
+                        "ShapeRecognition": {
+                            "id": "shape_recognition",
+                            "name": "Nhận dạng hình",
+                            "enabled": false
+                        },
+                        "SpeechToText": {
+                            "id": "speech_to_text",
+                            "name": "Chuyển giọng nói thành văn bản",
+                            "enabled": false
+                        },
+                        "TextToSpeech": {
+                            "id": "text_to_speech",
+                            "name": "Chuyển văn bản thành giọng nói",
+                            "enabled": false
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "versionTemplates": {
+        "1.0.0-public": {
+            "name": "Public Release v1.0",
+            "description": "Phiên bản phát hành công khai với các tính năng cơ bản",
+            "releaseType": "stable",
+            "overrides": {}
+        },
+        "1.0.0-full": {
+            "name": "Full Feature v1.0",
+            "description": "Phiên bản đầy đủ tất cả tính năng (nội bộ)",
+            "releaseType": "internal",
+            "overrides": {
+                "drawing_tools.pen.oil_brush": true,
+                "drawing_tools.pen.natural_pencil": true,
+                "drawing_tools.pen.watercolor": true,
+                "shapes_2d.basic_shapes_group.right_triangle": true,
+                "shapes_2d.basic_shapes_group.isosceles_triangle": true,
+                "shapes_2d.basic_shapes_group.parallelogram": true,
+                "shapes_2d.basic_shapes_group.trapezoid": true,
+                "shapes_2d.basic_shapes_group.pentagon": true,
+                "shapes_2d.basic_shapes_group.hexagon": true,
+                "shapes_3d.advanced_solids": true,
+                "shapes_3d.advanced_solids.pyramid": true,
+                "shapes_3d.advanced_solids.prism": true,
+                "shapes_3d.advanced_solids.torus": true,
+                "shapes_3d.advanced_solids.tetrahedron": true,
+                "chart_tools.area_chart": true,
+                "chart_tools.scatter_chart": true,
+                "chart_tools.radar_chart": true,
+                "math_tools.compass_3d": true,
+                "math_tools.graph_editor": true,
+                "math_tools.graph_3d_editor": true,
+                "board_management.spotlight": true,
+                "insert_content.insert_audio": true,
+                "insert_content.insert_flashcard": true,
+                "insert_content.insert_link": true,
+                "insert_content.insert_equation": true,
+                "utilities.stopwatch": true,
+                "utilities.screen_recording": true,
+                "utilities.quick_survey": true,
+                "utilities.random_picker": true,
+                "education": true,
+                "education.periodic_table": true,
+                "education.book_viewer": true,
+                "education.lecture_library": true,
+                "education.chemistry_tools": true,
+                "advanced": true,
+                "advanced.camera_ai": true,
+                "advanced.camera_config": true,
+                "advanced.multi_user": true,
+                "advanced.ai_features": true
+            }
+        },
+        "1.1.0-beta": {
+            "name": "Beta v1.1",
+            "description": "Phiên bản beta với thêm một số tính năng mới",
+            "releaseType": "beta",
+            "overrides": {
+                "shapes_3d.advanced_solids": true,
+                "shapes_3d.advanced_solids.pyramid": true,
+                "shapes_3d.advanced_solids.prism": true,
+                "chart_tools.area_chart": true,
+                "math_tools.compass_3d": true,
+                "education": true,
+                "education.periodic_table": true,
+                "education.book_viewer": true
+            }
+        }
+    }
+}

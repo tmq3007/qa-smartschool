@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA SmartClass - Bộ Công Cụ Học Tập</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ═══ TOP NAVBAR ═══ -->
+        <header class="top-navbar">
+            <div class="nav-left">
+                <a href="#" class="back-link">
+                    <span class="icon">←</span> Quay lại Bộ Công Cụ
+                </a>
+                <div class="app-title-group">
+                    <span class="badge-tag">Chuyển Tàu Toán Học</span>
+                    <h1 class="app-title">Chuyển Tàu Toán Học</h1>
+                    <p class="app-subtitle">Hành trình Lớp 1 → Lớp 12 • Khám phá toàn bộ chương trình Toán</p>
+                </div>
+            </div>
+            <div class="nav-right">
+                <button class="action-btn btn-focus">🎯 Focus HS</button>
+                <button class="action-btn btn-unfocus">❌ Unfocus</button>
+                <button class="action-btn btn-whiteboard">✍️ Bảng trắng</button>
+                <button class="action-btn btn-project">📺 Chiếu</button>
+            </div>
+        </header>
+
+        <!-- ═══ MAIN LAYOUT (Three Panes) ═══ -->
+        <div class="main-layout">
+            <!-- CỘT 1: Main Sidebar Navigation (Left) -->
+            <aside class="sidebar-main">
+                <nav class="nav-menu">
+                    <a href="#" class="menu-item">
+                        <span class="menu-icon">📖</span>
+                        <span class="menu-text">Hướng dẫn & Quy trình</span>
+                    </a>
+                    <a href="#" class="menu-item">
+                        <span class="menu-icon">🚂</span>
+                        <span class="menu-text">Chuyển tàu toán học</span>
+                    </a>
+                    <a href="#" class="menu-item active">
+                        <span class="menu-icon">🌍</span>
+                        <span class="menu-text">Ứng dụng thực tế</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- CỘT 2: Categories Sub-Sidebar Navigation (Middle) -->
+            <aside class="sidebar-sub">
+                <div class="sidebar-sub-header">
+                    <span class="header-icon">💡</span>
+                    <div class="header-info">
+                        <h3>Ứng dụng thực tế</h3>
+                        <p>Chọn đề mục để xem chi tiết</p>
+                    </div>
+                </div>
+                <div class="sub-menu">
+                    <button class="sub-item" onclick="selectSubTab(0)">
+                        <span class="sub-icon">🌉</span>
+                        <span class="sub-text">Thiết kế Kỹ thuật & Kiến trúc</span>
+                    </button>
+                    <button class="sub-item" onclick="selectSubTab(1)">
+                        <span class="sub-icon">🧪</span>
+                        <span class="sub-text">Toán học trong Hóa học & Phòng thí nghiệm</span>
+                    </button>
+                    <button class="sub-item" onclick="selectSubTab(2)">
+                        <span class="sub-icon">⚛️</span>
+                        <span class="sub-text">Vật lý Toán & Cơ học Lượng tử</span>
+                    </button>
+                    <button class="sub-item" onclick="selectSubTab(3)">
+                        <span class="sub-icon">🎮</span>
+                        <span class="sub-text">Đồ họa Máy tính & Mô phỏng</span>
+                    </button>
+                    <button class="sub-item" onclick="selectSubTab(4)">
+                        <span class="sub-icon">💻</span>
+                        <span class="sub-text">Khoa học Máy tính & Logic Boolean</span>
+                    </button>
+                    <button class="sub-item active" onclick="selectSubTab(5)">
+                        <span class="sub-icon">🤖</span>
+                        <span class="sub-text">Học sâu & Thiết kế Mạng Nơ-ron</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- CỘT 3: Content Preview Area (Right) -->
+            <main class="content-area">
+                <div class="preview-grid">
+                    <!-- Khu vực trực quan bên trái -->
+                    <div class="visual-panel">
+                        <div class="image-card">
+                            <div class="nn-container">
+                                <!-- Neural Network SVG Diagram -->
+                                <svg class="nn-svg" viewBox="0 0 600 450" width="100%" height="100%">
+                                    <defs>
+                                        <!-- Gradients for Connections -->
+                                        <linearGradient id="grad-active" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <gradientStop offset="0%" stop-color="#1565C0" stop-opacity="0.8"/>
+                                            <gradientStop offset="50%" stop-color="#E65100" stop-opacity="0.8"/>
+                                            <gradientStop offset="100%" stop-color="#2E7D32" stop-opacity="0.8"/>
+                                        </linearGradient>
+                                        <linearGradient id="grad-node-input" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <gradientStop offset="0%" stop-color="#42A5F5"/>
+                                            <gradientStop offset="100%" stop-color="#1565C0"/>
+                                        </linearGradient>
+                                        <linearGradient id="grad-node-hidden1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <gradientStop offset="0%" stop-color="#FFA726"/>
+                                            <gradientStop offset="100%" stop-color="#F57C00"/>
+                                        </linearGradient>
+                                        <linearGradient id="grad-node-hidden2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <gradientStop offset="0%" stop-color="#66BB6A"/>
+                                            <gradientStop offset="100%" stop-color="#2E7D32"/>
+                                        </linearGradient>
+                                        <linearGradient id="grad-node-output" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <gradientStop offset="0%" stop-color="#AB47BC"/>
+                                            <gradientStop offset="100%" stop-color="#7B1FA2"/>
+                                        </linearGradient>
+                                        <!-- Glow Filter -->
+                                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                            <feGaussianBlur stdDeviation="4" result="blur" />
+                                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                        </filter>
+                                    </defs>
+
+                                    <!-- Connections (Lines) -->
+                                    <g id="connections-group"></g>
+
+                                    <!-- Nodes (Circles) -->
+                                    <g id="nodes-group"></g>
+
+                                    <!-- Titles and Labels inside Diagram -->
+                                    <text x="300" y="40" class="svg-title" text-anchor="middle">Mạng nơ-ron nhân tạo</text>
+                                    
+                                    <!-- Column Headers -->
+                                    <text x="90" y="80" class="svg-header" text-anchor="middle">Lớp đầu vào</text>
+                                    <text x="90" y="95" class="svg-sub-header" text-anchor="middle">(Input Layer)</text>
+
+                                    <text x="290" y="80" class="svg-header" text-anchor="middle">Lớp ẩn (Hidden Layers)</text>
+                                    <text x="210" y="95" class="svg-sub-header" text-anchor="middle">Lớp ẩn 1</text>
+                                    <text x="370" y="95" class="svg-sub-header" text-anchor="middle">Lớp ẩn 2</text>
+
+                                    <text x="510" y="80" class="svg-header" text-anchor="middle">Lớp đầu ra</text>
+                                    <text x="510" y="95" class="svg-sub-header" text-anchor="middle">(Output Layer)</text>
+
+                                    <!-- Forward/Backward Indicators -->
+                                    <g class="flow-indicator" transform="translate(150, 390)">
+                                        <path d="M 0 5 L 80 5" stroke="#1565C0" stroke-width="2" stroke-dasharray="4,4"/>
+                                        <polygon points="80,2 86,5 80,8" fill="#1565C0"/>
+                                        <text x="40" y="-5" class="flow-text" text-anchor="middle">Lan truyền xuôi</text>
+                                    </g>
+                                    <g class="flow-indicator" transform="translate(350, 390)">
+                                        <path d="M 80 5 L 0 5" stroke="#E65100" stroke-width="2" stroke-dasharray="4,4"/>
+                                        <polygon points="0,2 -6,5 0,8" fill="#E65100"/>
+                                        <text x="40" y="-5" class="flow-text" text-anchor="middle">Lan truyền ngược</text>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Core Pedagogy Concept Card -->
+                        <div class="concept-card">
+                            <span class="concept-badge">🔑 Khái niệm sư phạm cốt lõi</span>
+                            <div class="formula-display">
+                                <span class="math-expr" id="math-formula">$$\frac{\partial L}{\partial w} = \frac{\partial L}{\partial a} \cdot \frac{\partial a}{\partial z} \cdot \frac{\partial z}{\partial w}$$</span>
+                                <p class="formula-desc" id="formula-desc">Lan truyền ngược (Backpropagation) và quy tắc chuỗi (Chain Rule) để tối ưu trọng số.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Khu vực chi tiết bên phải -->
+                    <div class="detail-panel">
+                        <div class="content-header">
+                            <h2 id="detail-title">Học sâu & Thiết kế Mạng Nơ-ron</h2>
+                            <p id="detail-desc" class="lead-text">
+                                Khám phá toán học đằng sau trí tuệ nhân tạo thông qua việc tính toán lan truyền ngược, đạo hàm hàm mất mát và tối ưu hóa trọng số trong các kiến trúc mạng nơ-ron phức tạp.
+                            </p>
+                        </div>
+
+                        <div class="accordion-group">
+                            <!-- Section 1: Phân tích Toán học -->
+                            <div class="accordion-item panel-blue">
+                                <div class="accordion-header">
+                                    <span class="accordion-icon">📊</span>
+                                    <h4>Phân tích Toán học</h4>
+                                </div>
+                                <div class="accordion-body" id="analysis-text">
+                                    Mạng nơ-ron hoạt động bằng cách xấp xỉ hàm số phức tạp \(y = f(x; w)\). Quá trình huấn luyện sử dụng giải thuật Cực tiểu hóa Hàm mất mát (Loss Function) thông qua Đạo hàm riêng (Partial Derivatives) và Gradient Descent. Tại mỗi nút ẩn, hàm kích hoạt phi tuyến tính (như Sigmoid, ReLU hoặc Tanh) giúp mạng học các ranh giới quyết định phi tuyến.
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Câu hỏi thảo luận -->
+                            <div class="accordion-item panel-orange">
+                                <div class="accordion-header">
+                                    <span class="accordion-icon">💬</span>
+                                    <h4>Câu hỏi gợi mở & Thảo luận</h4>
+                                </div>
+                                <div class="accordion-body" id="discussion-text">
+                                    1. Tại sao nếu không có hàm kích hoạt phi tuyến tính, mạng nơ-ron sâu nhiều lớp cũng chỉ tương đương với một mô hình hồi quy tuyến tính đơn giản? Hãy chứng minh bằng toán học ma trận.<br>
+                                    2. Hiện tượng tiêu biến gradient (vanishing gradient) là gì? Nó liên quan thế nào đến đạo hàm của hàm Sigmoid khi giá trị đầu vào rất lớn hoặc rất nhỏ?
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Nhiệm vụ thực hành -->
+                            <div class="accordion-item panel-green">
+                                <div class="accordion-header">
+                                    <span class="accordion-icon">✍️</span>
+                                    <h4>Nhiệm vụ thực hành học sinh</h4>
+                                </div>
+                                <div class="accordion-body" id="task-text">
+                                    Sử dụng công cụ mô phỏng để thay đổi tốc độ học (learning rate \(\eta\)). Quan sát sự hội tụ của hàm mất mát. Hãy thử đặt \(\eta\) quá lớn (ví dụ: 10) và quá nhỏ (ví dụ: 0.0001) và giải thích hiện tượng xảy ra đối với đồ thị hàm mất mát.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MathJax for rendering equations cleanly -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

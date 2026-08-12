@@ -1,0 +1,164 @@
+<Page x:Class="QASmartClass.Leadership.Views.AppUsageAnalyticsView"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      xmlns:oxy="http://oxyplot.org/wpf"
+
+      Title="Thống kê Tương tác Mobile App" Background="#F0F2F5">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+
+            <TextBlock Text="📊 Thống kê tương tác Mobile App" FontSize="24" FontWeight="Bold" Foreground="#212121"/>
+
+            <TextBlock Text="Tỷ lệ phụ huynh cài đặt và tương tác với hệ sinh thái QA SmartSchool." Foreground="#757575" Margin="0,5,0,0"/>
+
+        </StackPanel>
+
+
+
+        <!-- KPI Cards -->
+
+        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,20">
+
+            <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,10,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Tỷ lệ cài đặt App" Foreground="#757575" FontSize="14"/>
+
+                    <TextBlock Text="85%" FontSize="28" FontWeight="Bold" Foreground="#1976D2" Margin="0,5,0,0"/>
+
+                    <TextBlock Text="1,240 / 1,450 Phụ huynh" FontSize="12" Foreground="#4CAF50" Margin="0,2,0,0"/>
+
+                </StackPanel>
+
+            </Border>
+
+            
+
+            <Border Background="White" CornerRadius="8" Padding="15" Margin="10,0,10,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Tương tác hàng ngày (DAU)" Foreground="#757575" FontSize="14"/>
+
+                    <TextBlock Text="680" FontSize="28" FontWeight="Bold" Foreground="#4CAF50" Margin="0,5,0,0"/>
+
+                    <TextBlock Text="+12% so với tuần trước" FontSize="12" Foreground="#4CAF50" Margin="0,2,0,0"/>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <Border Background="White" CornerRadius="8" Padding="15" Margin="10,0,10,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Đơn xin phép qua App" Foreground="#757575" FontSize="14"/>
+
+                    <TextBlock Text="45" FontSize="28" FontWeight="Bold" Foreground="#FF9800" Margin="0,5,0,0"/>
+
+                    <TextBlock Text="Trong tuần này" FontSize="12" Foreground="#757575" Margin="0,2,0,0"/>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <Border Background="White" CornerRadius="8" Padding="15" Margin="10,0,0,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Đọc thông báo (Push Open Rate)" Foreground="#757575" FontSize="14"/>
+
+                    <TextBlock Text="92%" FontSize="28" FontWeight="Bold" Foreground="#9C27B0" Margin="0,5,0,0"/>
+
+                    <TextBlock Text="Rất cao" FontSize="12" Foreground="#4CAF50" Margin="0,2,0,0"/>
+
+                </StackPanel>
+
+            </Border>
+
+        </UniformGrid>
+
+
+
+        <!-- Charts Mock -->
+
+        <Grid Grid.Row="2">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="20" Margin="0,0,10,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Biểu đồ tương tác 7 ngày qua" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
+
+                    <Border Background="Transparent" Height="250">
+
+                        <oxy:PlotView x:Name="ChartAppAccess" Background="Transparent"/>
+
+                    </Border>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="20" Margin="10,0,0,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Tỷ lệ nền tảng (OS)" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
+
+                    <Border Background="Transparent" Height="250">
+
+                        <oxy:PlotView x:Name="ChartDeviceOS" Background="Transparent"/>
+
+                    </Border>
+
+                </StackPanel>
+
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+
+    </ScrollViewer>
+</Page>
+
+
+

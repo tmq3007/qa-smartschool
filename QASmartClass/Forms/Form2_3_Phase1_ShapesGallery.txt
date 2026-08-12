@@ -1,0 +1,64 @@
+PHASE 1 SHAPES GALLERY - XAML TEMPLATE
+=======================================
+
+SUB-CATEGORY 1: LINES (Đường kẻ) - 9 types
+==========================================
+1. StraightLine - Đường thẳng
+2. ArrowLine - Đường mũi tên  
+3. DoubleArrowLine - Đường mũi tên hai đầu
+4. ElbowConnector - Đường nối góc vuông
+5. ElbowArrowConnector - Đường nối góc vuông có mũi tên
+6. ElbowDoubleArrowConnector - Đường nối góc vuông mũi tên hai đầu
+7. CurvedConnector - Đường nối cong
+8. CurvedArrowConnector - Đường nối cong có mũi tên
+9. CurvedDoubleArrowConnector - Đường nối cong mũi tên hai đầu
+
+SUB-CATEGORY 2: RECTANGLES (Hình chữ nhật) - 9 types
+=====================================================
+1. Rectangle - Hình chữ nhật cơ bản
+2. RoundedRectangle - Hình chữ nhật góc bo tròn
+3. SnipSingleCornerRectangle - Hình chữ nhật cắt 1 góc
+4. SnipSameSideCornerRectangle - Hình chữ nhật cắt 2 góc cùng phía
+5. SnipDiagonalCornerRectangle - Hình chữ nhật cắt 2 góc chéo
+6. SnipAndRoundSingleCornerRectangle - Hình chữ nhật cắt và bo 1 góc
+7. RoundSingleCornerRectangle - Hình chữ nhật bo 1 góc
+8. RoundSameSideCornerRectangle - Hình chữ nhật bo 2 góc cùng phía
+9. RoundDiagonalCornerRectangle - Hình chữ nhật bo 2 góc chéo
+
+SUB-CATEGORY 3: BASIC SHAPES (Hình cơ bản) - 30 types
+======================================================
+1. Oval - Hình elip
+2. Circle - Hình tròn
+3. Triangle - Tam giác
+4. RightTriangle - Tam giác vuông
+5. Parallelogram - Hình bình hành
+6. Trapezoid - Hình thang
+7. Diamond - Hình thoi
+8. Pentagon - Ngũ giác
+9. Hexagon - Lục giác
+10. Heptagon - Thất giác
+11. Octagon - Bát giác
+12. Decagon - Thập giác
+13. Dodecagon - Thập nhị giác
+14. Cross - Hình chữ thập
+15. Plaque - Hình bảng
+16. Frame - Khung
+17. LShape - Hình chữ L
+18. DiagonalStripe - Sọc chéo
+19. Chord - Hình dây cung
+20. Arc - Hình cung
+21. Pie - Hình quạt
+22. BlockArc - Cung khối
+23. Can - Hình lon
+24. Cube2D - Hình khối lập phương (2D view)
+25. Bevel - Hình vát cạnh
+26. Donut - Hình vành khuyên
+27. NoSymbol - Biểu tượng cấm
+28. Heart - Hình trái tim
+29. LightningBolt - Tia chớp
+30. Sun - Mặt trời
+31. Moon - Mặt trăng
+32. SmileyFace - Mặt cười
+33. Cloud - Đám mây
+
+TOTAL PHASE 1: 51 shapes (9 Lines + 9 Rectangles + 33 Basic Shapes)

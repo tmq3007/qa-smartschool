@@ -1,0 +1,552 @@
+<Page x:Class="QASmartClass.Classroom.Views.BroadcastPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Chiếu màn hình" Background="#F5F7FA"
+      FontFamily="Segoe UI, Arial, sans-serif" FontSize="13">
+    <Page.Resources>
+        <ControlTemplate x:Key="RoundBtn" TargetType="Button">
+            <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="bd" Property="Opacity" Value="0.85"/></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <!-- V22-09: Font nhất quán cho ComboBoxItem -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="FontFamily" Value="Segoe UI, Arial, sans-serif"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+    </Page.Resources>
+    <Grid Margin="24,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- ═══ Header ═══ -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="Chiếu màn hình &amp; Truyền phát" FontSize="20" FontWeight="Bold" Foreground="#111111"/>
+                <TextBlock Text="Chiếu màn hình, gửi thông báo, ảnh, website tới học sinh" FontSize="13" Foreground="#424242" Margin="0,3,0,0"/>
+            </StackPanel>
+        </DockPanel>
+        <!-- ═══ Main Content ═══ -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="320" MinWidth="250" MaxWidth="450"/>
+            </Grid.ColumnDefinitions>
+            <!-- ═══ LEFT: Tabs + Content ═══ -->
+            <Grid Grid.Column="0" Margin="0,0,16,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <!-- Tab bar -->
+                <WrapPanel Grid.Row="0" Margin="0,0,0,12">
+                    <!-- V22-08: Margin 0,0,6,6 để tab xuống dòng có khoảng cách -->
+                    <Border x:Name="tabScreen" Background="#E3F2FD" BorderBrush="#1976D2" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,6,6" Cursor="Hand" MouseLeftButtonDown="Tab_Click" Tag="screen">
+                        <TextBlock Text="Chiếu màn hình" FontSize="13" FontWeight="Bold" Foreground="#1565C0"/>
+                    </Border>
+                    <Border x:Name="tabNotice" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,6,6" Cursor="Hand" MouseLeftButtonDown="Tab_Click" Tag="notice">
+                        <TextBlock Text="Thông báo" FontSize="13" FontWeight="Bold" Foreground="#333333"/>
+                    </Border>
+                    <Border x:Name="tabMedia" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,6,6" Cursor="Hand" MouseLeftButtonDown="Tab_Click" Tag="media">
+                        <TextBlock Text="Gửi ảnh/file" FontSize="13" FontWeight="Bold" Foreground="#333333"/>
+                    </Border>
+                    <Border x:Name="tabWeb" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,6,6" Cursor="Hand" MouseLeftButtonDown="Tab_Click" Tag="web">
+                        <TextBlock Text="Mở website" FontSize="13" FontWeight="Bold" Foreground="#333333"/>
+                    </Border>
+                </WrapPanel>
+                <!-- ═══ TAB 1: SCREEN SHARE ═══ -->
+                <Grid x:Name="panelScreen" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <!-- ── IDLE STATE: Hướng dẫn rõ ràng ── -->
+                    <Border x:Name="screenIdleState" Background="White" CornerRadius="12" Padding="0" BorderBrush="#E0E0E0" BorderThickness="1">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="28,24" MaxWidth="800" HorizontalAlignment="Left">
+                                <TextBlock Text="Chiếu màn hình cho học sinh" FontSize="16" FontWeight="Bold" Foreground="#212121" Margin="0,0,0,6"/>
+                                <TextBlock Text="Phát màn hình máy GV tới tất cả máy HS trong lớp, giúp HS theo dõi bài giảng trực tiếp." FontSize="12" Foreground="#757575" TextWrapping="Wrap" Margin="0,0,0,20"/>
+                                <!-- ── Cách sử dụng ── -->
+                                <Border Background="#E3F2FD" CornerRadius="10" Padding="16,14" Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <TextBlock Text="Hướng dẫn sử dụng:" FontSize="13" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,10"/>
+                                        <StackPanel Margin="8,0,0,0">
+                                            <TextBlock FontSize="12" Foreground="#37474F" Margin="0,0,0,6" TextWrapping="Wrap">
+                                                <Run FontWeight="Bold" Foreground="#1976D2">Bước 1:</Run>
+                                                <Run> Chọn </Run><Run FontWeight="SemiBold">Nguồn phát</Run><Run> ở panel bên phải (Toàn màn hình / Cửa sổ / Camera)</Run>
+                                            </TextBlock>
+                                            <TextBlock FontSize="12" Foreground="#37474F" Margin="0,0,0,6" TextWrapping="Wrap">
+                                                <Run FontWeight="Bold" Foreground="#1976D2">Bước 2:</Run>
+                                                <Run> Chọn </Run><Run FontWeight="SemiBold">Chất lượng</Run><Run> (độ phân giải + FPS phù hợp)</Run>
+                                            </TextBlock>
+                                            <TextBlock FontSize="12" Foreground="#37474F" Margin="0,0,0,6" TextWrapping="Wrap">
+                                                <Run FontWeight="Bold" Foreground="#1976D2">Bước 3:</Run>
+                                                <Run> Chọn </Run><Run FontWeight="SemiBold">Gửi đến</Run><Run> (toàn bộ HS / nhóm / chọn từng em)</Run>
+                                            </TextBlock>
+                                            <TextBlock FontSize="12" Foreground="#37474F" TextWrapping="Wrap">
+                                                <Run FontWeight="Bold" Foreground="#1976D2">Bước 4:</Run>
+                                                <Run> Nhấn nút </Run><Run FontWeight="Bold" Foreground="#1976D2">▶️ Bắt đầu</Run><Run> ở góc dưới bên phải</Run>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                                <!-- ── Màn hình HS sẽ hiển thị gì ── -->
+                                <Border Background="#E8F5E9" CornerRadius="10" Padding="16,14" Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <TextBlock Text="Học sinh sẽ thấy gì?" FontSize="13" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,8"/>
+                                        <StackPanel Margin="8,0,0,0">
+                                            <TextBlock Text="• Thông báo: &quot;GV đang chiếu màn hình — Hãy theo dõi&quot;" FontSize="12" Foreground="#37474F" Margin="0,0,0,4" TextWrapping="Wrap"/>
+                                            <TextBlock Text="• Màn hình HS nhận hình ảnh/nội dung trực tiếp từ máy GV" FontSize="12" Foreground="#37474F" Margin="0,0,0,4" TextWrapping="Wrap"/>
+                                            <TextBlock Text="• Khi GV dừng phát → HS nhận thông báo &quot;Dừng chiếu&quot;" FontSize="12" Foreground="#37474F" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                                <!-- ── Lưu ý ── -->
+                                <Border Background="#FFF3E0" CornerRadius="10" Padding="16,14">
+                                    <StackPanel>
+                                        <TextBlock Text="⚡ Mẹo:" FontSize="13" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,6"/>
+                                        <TextBlock Text="• Dùng &quot;Toàn màn hình&quot; khi trình chiếu PowerPoint, bảng trắng" FontSize="12" Foreground="#37474F" TextWrapping="Wrap" Margin="0,0,0,3"/>
+                                        <TextBlock Text="• Dùng &quot;Cửa sổ ứng dụng&quot; để chỉ phát 1 app (Word, Chrome...)" FontSize="12" Foreground="#37474F" TextWrapping="Wrap" Margin="0,0,0,3"/>
+                                        <TextBlock Text="• Dùng &quot;Camera&quot; để phát webcam trực tiếp" FontSize="12" Foreground="#37474F" TextWrapping="Wrap" Margin="0,0,0,3"/>
+                                        <TextBlock Text="• Mạng yếu: chọn 1-2fps. Mạng mạnh: chọn 10-15fps" FontSize="12" Foreground="#37474F" TextWrapping="Wrap" Margin="0,0,0,3"/>
+                                        <TextBlock Text="• Phím tắt: Ctrl+Shift+S (Bắt đầu/Dừng), Ctrl+Shift+P (Riêng tư)" FontSize="12" Foreground="#1565C0" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+                    <!-- ── LIVE STATE: Đang chiếu ── -->
+                    <!-- V22-28: Panel.ZIndex=1 đảm bảo luôn trên idle state -->
+                    <Border x:Name="screenLiveState" Visibility="Collapsed" Background="#0D1B2A" CornerRadius="12" Panel.ZIndex="1">
+                        <Grid>
+                            <!-- Live Preview Thumbnail Image wrapped in Border with rounded corners and shadow -->
+                            <Border Margin="20,20,20,105" CornerRadius="8" ClipToBounds="True" Background="#1B263B"
+                                    BorderBrush="#2A6F97" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="12" Color="#000000" Opacity="0.4" ShadowDepth="3"/>
+                                </Border.Effect>
+                                <Grid>
+                                    <Image x:Name="imgLivePreview" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <!-- Overlay for Freeze Mode -->
+                                    <Border x:Name="brdFreezeOverlay" Visibility="Collapsed" Padding="20">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#E6B71C1C" Offset="0"/>
+                                                <GradientStop Color="#E6880E4F" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <TextBlock Text="ĐÃ TẠM DỪNG PHÁT (RIÊNG TƯ)&#x0a;Nhấn Ctrl + Shift + P để phát tiếp"
+                                                   TextWrapping="Wrap" TextAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="White"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                            <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,25">
+                                <TextBlock x:Name="txtPreviewLabel" Text="Đang chiếu màn hình..."
+                                           FontSize="20" FontWeight="Bold" Foreground="#4FC3F7" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="txtBroadcastInfo" Text=""
+                                           FontSize="13" Foreground="#B0BEC5" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock x:Name="txtBroadcastStatus" Text="Học sinh đang nhận hình ảnh từ máy GV"
+                                           FontSize="12" Foreground="#90A4AE" HorizontalAlignment="Center" Margin="0,6,0,0" FontStyle="Italic"/>
+                            </StackPanel>
+                            <!-- Live badge -->
+                            <Border x:Name="liveBadge" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                    Margin="16,16,0,0" Background="#F44336" CornerRadius="6" Padding="12,5">
+                                <!-- V22-05: Tiếng Việt hóa -->
+                                <TextBlock Text="● ĐANG PHÁT" FontSize="12" Foreground="White" FontWeight="Bold"/>
+                            </Border>
+                            <!-- Resolution tag -->
+                            <Border x:Name="resBadge" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    Margin="0,16,16,0" Background="#263238" CornerRadius="6" Padding="10,4">
+                                <!-- V22-11: FontSize 10 → 12 -->
+                                <TextBlock x:Name="txtRes" Text="1920×1080  30fps" FontSize="12" Foreground="#90A4AE"/>
+                            </Border>
+                            <!-- Timer -->
+                            <Border x:Name="timeBadge" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                    Margin="0,0,16,16" Background="#263238" CornerRadius="6" Padding="10,4">
+                                <TextBlock x:Name="txtTimer" Text="00:00" FontSize="14" Foreground="#4FC3F7" FontWeight="Bold"/>
+                            </Border>
+                            <!-- Student count -->
+                            <Border HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                    Margin="16,0,0,16" Background="#263238" CornerRadius="6" Padding="10,4">
+                                <TextBlock x:Name="txtLiveRecipients" Text="0 HS đang xem" FontSize="12" Foreground="#90A4AE"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+                <!-- ═══ TAB 2: NOTICE ═══ -->
+                <Border x:Name="panelNotice" Grid.Row="1" Visibility="Collapsed" Background="White" CornerRadius="12" Padding="24" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Gửi thông báo tới học sinh" FontSize="14" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,12"/>
+                        <TextBlock Text="Tiêu đề:" FontSize="12" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,4"/>
+                        <TextBox x:Name="txtNoticeTitle" FontSize="13" Padding="10,8" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10"/>
+                        <TextBlock Text="Nội dung:" FontSize="12" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,4"/>
+                        <TextBox x:Name="txtNoticeBody" FontSize="13" Padding="10,8" Height="120" AcceptsReturn="True"
+                                 TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10"/>
+                        <!-- Notice type -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock Text="Loại:" FontSize="12" FontWeight="SemiBold" Foreground="#616161" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox x:Name="cboNoticeType" Width="160" FontSize="12" SelectedIndex="0">
+                                <ComboBoxItem Content="ℹ️ Thông tin" Tag="info"/>
+                                <ComboBoxItem Content="Cảnh báo" Tag="warning"/>
+                                <ComboBoxItem Content="Khẩn cấp" Tag="urgent"/>
+                                <ComboBoxItem Content="Chúc mừng" Tag="celebrate"/>
+                            </ComboBox>
+                            <!-- Duration -->
+                            <TextBlock Text="Thời gian hiển thị:" FontSize="12" Foreground="#616161" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                            <ComboBox x:Name="cboNoticeDuration" Width="100" FontSize="12" SelectedIndex="1">
+                                <ComboBoxItem Content="10 giây" Tag="10"/>
+                                <ComboBoxItem Content="30 giây" Tag="30"/>
+                                <ComboBoxItem Content="1 phút" Tag="60"/>
+                                <ComboBoxItem Content="Không tắt" Tag="0"/>
+                            </ComboBox>
+                        </StackPanel>
+                        <Button Content="Gửi thông báo tới HS" Padding="0,12" FontSize="13" FontWeight="SemiBold"
+                                Background="#1976D2" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="SendNotice_Click" Template="{StaticResource RoundBtn}"/>
+                        <!-- Notice history -->
+                        <TextBlock Text="Lịch sử thông báo:" FontSize="12" FontWeight="SemiBold" Foreground="#757575" Margin="0,16,0,6"/>
+                        <Border Background="#F5F7FA" CornerRadius="8" Padding="10" MaxHeight="150">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel x:Name="noticeHistory">
+                                    <TextBlock Text="Chưa có thông báo nào" FontSize="11" Foreground="#BDBDBD" FontStyle="Italic" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </StackPanel>
+                </Border>
+                <!-- ═══ TAB 3: MEDIA / FILE ═══ -->
+                <Border x:Name="panelMedia" Grid.Row="1" Visibility="Collapsed" Background="White" CornerRadius="12" Padding="24" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Gửi ảnh / tài liệu cho HS xem" FontSize="14" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,12"/>
+                        <!-- File picker area -->
+                        <Border x:Name="dropZone" Background="#F5F7FA" CornerRadius="10" Padding="30,24"
+                                BorderBrush="#BDBDBD" BorderThickness="1.5" Cursor="Hand"
+                                MouseLeftButtonDown="PickFile_Click" AllowDrop="True"
+                                DragOver="DropZone_DragOver" Drop="DropZone_Drop">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="BorderBrush" Value="#BDBDBD"/>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center">
+                                <Path Data="{StaticResource FolderIcon}" Fill="#90A4AE" Width="36" Height="36" Stretch="Uniform" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="txtFileName" Text="Click để chọn file (ảnh, PDF, video)"
+                                           FontSize="13" Foreground="#757575" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                <TextBlock Text="Hỗ trợ: PNG, JPG, PDF, MP4, PPTX" FontSize="10" Foreground="#BDBDBD" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <!-- Preview -->
+                        <Border x:Name="filePreview" Visibility="Collapsed" Background="#0D1B2A" CornerRadius="10" Padding="10"
+                                Margin="0,10,0,0" MaxHeight="200">
+                            <Image x:Name="imgPreview" Stretch="Uniform"/>
+                        </Border>
+                        <Button Content="Gửi file cho HS xem" Margin="0,12,0,0" Padding="0,12" FontSize="13" FontWeight="SemiBold"
+                                Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="SendMedia_Click" Template="{StaticResource RoundBtn}"/>
+                    </StackPanel>
+                </Border>
+                <!-- ═══ TAB 4: WEBSITE ═══ -->
+                <Border x:Name="panelWeb" Grid.Row="1" Visibility="Collapsed" Background="White" CornerRadius="12" Padding="24" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Mở website trên máy HS" FontSize="14" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,12"/>
+                        <TextBlock Text="URL:" FontSize="12" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,4"/>
+                        <TextBox x:Name="txtWebUrl" FontSize="13" Padding="10,8" Text="https://" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10"/>
+                        <!-- Quick links -->
+                        <TextBlock Text="Liên kết nhanh:" FontSize="12" FontWeight="SemiBold" Foreground="#757575" Margin="0,0,0,8"/>
+                        <WrapPanel Margin="0,0,0,12">
+                            <Border Background="#E3F2FD" CornerRadius="6" Padding="10,6" Margin="0,0,6,6" Cursor="Hand"
+                                    MouseLeftButtonDown="QuickLink_Click" Tag="https://google.com">
+                                <TextBlock Text="Google" FontSize="11" Foreground="#1565C0"/>
+                            </Border>
+                            <Border Background="#FFF3E0" CornerRadius="6" Padding="10,6" Margin="0,0,6,6" Cursor="Hand"
+                                    MouseLeftButtonDown="QuickLink_Click" Tag="https://youtube.com">
+                                <TextBlock Text="▶️ YouTube" FontSize="11" Foreground="#E65100"/>
+                            </Border>
+                            <Border Background="#E8F5E9" CornerRadius="6" Padding="10,6" Margin="0,0,6,6" Cursor="Hand"
+                                    MouseLeftButtonDown="QuickLink_Click" Tag="https://vi.wikipedia.org">
+                                <TextBlock Text="Wikipedia" FontSize="11" Foreground="#2E7D32"/>
+                            </Border>
+                            <Border Background="#F3E5F5" CornerRadius="6" Padding="10,6" Margin="0,0,6,6" Cursor="Hand"
+                                    MouseLeftButtonDown="QuickLink_Click" Tag="https://kahoot.it">
+                                <TextBlock Text="Kahoot" FontSize="11" Foreground="#7B1FA2"/>
+                            </Border>
+                            <Border Background="#FFEBEE" CornerRadius="6" Padding="10,6" Margin="0,0,6,6" Cursor="Hand"
+                                    MouseLeftButtonDown="QuickLink_Click" Tag="https://quizlet.com">
+                                <TextBlock Text="Quizlet" FontSize="11" Foreground="#C62828"/>
+                            </Border>
+                        </WrapPanel>
+                        <!-- V22-06: Đồng bộ màu xanh dương -->
+                        <Button Content="Mở website trên máy HS" Padding="0,12" FontSize="13" FontWeight="SemiBold"
+                                Background="#1565C0" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="SendWeb_Click" Template="{StaticResource RoundBtn}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            <!-- GridSplitter to resize settings panel -->
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#E0E0E0"/>
+            <!-- ═══ RIGHT: Settings Panel ═══ -->
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Source -->
+                <Border Background="White" CornerRadius="12" Padding="16" Margin="0,0,0,10" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Nguồn phát" FontSize="16" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,10"/>
+                        <RadioButton x:Name="rbFullScreen" Content="Toàn màn hình" IsChecked="True" FontSize="14" Margin="0,0,0,6"
+                                     GroupName="Source" Checked="SourceChanged"
+                                     ToolTip="📽️ Phù hợp cho: Trình chiếu PowerPoint, video bài giảng, demo toàn bộ desktop"/>
+                        <RadioButton x:Name="rbWindow" Content="Cửa sổ ứng dụng" FontSize="14" Margin="0,0,0,6"
+                                     GroupName="Source" Checked="SourceChanged"
+                                     ToolTip="💻 Phù hợp cho: Demo coding, thí nghiệm ảo PhET, ứng dụng cụ thể"/>
+                        <RadioButton x:Name="rbCamera" Content="Camera/Webcam" FontSize="14"
+                                     GroupName="Source" Checked="SourceChanged"
+                                     ToolTip="📷 Phù hợp cho: Chiếu vật thể thực tế, thí nghiệm bàn tay, biểu cảm GV"/>
+                        <!-- Sub: Window picker (hidden by default) -->
+                        <Border x:Name="panelWindowPicker" Visibility="Collapsed" Background="#F5F7FA" CornerRadius="8"
+                                Padding="10,8" Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Chọn cửa sổ:" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,0,6"/>
+                                <ComboBox x:Name="cmbWindowList" FontSize="14" MaxDropDownHeight="200"/>
+                                <Button Content="Làm mới" FontSize="14" Padding="8,4" Margin="0,6,0,0"
+                                        Background="#E3F2FD" Foreground="#1565C0" BorderThickness="0" Cursor="Hand"
+                                        HorizontalAlignment="Left" Click="RefreshWindows_Click"
+                                        Template="{StaticResource RoundBtn}"/>
+                            </StackPanel>
+                        </Border>
+                        <!-- Sub: Camera picker (hidden by default) -->
+                        <Border x:Name="panelCameraPicker" Visibility="Collapsed" Background="#F5F7FA" CornerRadius="8"
+                                Padding="10,8" Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Chọn camera:" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,0,6"/>
+                                <ComboBox x:Name="cmbCameraList" FontSize="14" ToolTip="Danh sách các camera được phát hiện trên máy tính">
+                                </ComboBox>
+                                <!-- TASK-16: Camera preview trước khi phát -->
+                                <!-- V22-12: Thống nhất dark tone + V22-30: MinHeight 80 -->
+                                <Border Background="#0D1B2A" CornerRadius="8" Margin="0,10,0,0" 
+                                        MinHeight="80" MaxHeight="180">
+                                    <Grid>
+                                        <Image x:Name="imgCameraPreview" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        <TextBlock x:Name="txtCameraPlaceholder" Text="Nhấn để xem trước camera" 
+                                                   FontSize="12" Foreground="#999" 
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                                <Button x:Name="btnPreviewCamera" Content="Xem trước Camera" FontSize="12" Padding="10,5" Margin="0,6,0,0"
+                                        Background="#E3F2FD" Foreground="#1565C0" BorderThickness="0" Cursor="Hand"
+                                        HorizontalAlignment="Left" Click="PreviewCamera_Click"
+                                        Template="{StaticResource RoundBtn}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+                <!-- Quality -->
+                <Border Background="White" CornerRadius="12" Padding="16" Margin="0,0,0,10" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="⚙️ Chất lượng" FontSize="16" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,10"/>
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <!-- V22-07: Contrast #616161 -->
+                            <TextBlock Text="Độ phân giải:" FontSize="14" Foreground="#616161" VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="1" x:Name="cmbResolution" FontSize="14" SelectedIndex="1">
+                                <ComboBoxItem Content="1280×720"/>
+                                <ComboBoxItem Content="1920×1080"/>
+                                <ComboBoxItem Content="2560×1440"/>
+                            </ComboBox>
+                        </Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                             <!-- V22-05 + V22-07 -->
+                             <TextBlock Text="Tốc độ khung hình:" FontSize="14" Foreground="#616161" VerticalAlignment="Center"/>
+                             <ComboBox Grid.Column="1" x:Name="cmbFPS" FontSize="14" SelectedIndex="1">
+                                 <ComboBoxItem Content="Thấp (1 fps)" Tag="1"/>
+                                 <ComboBoxItem Content="Trung bình (2 fps)" Tag="2"/>
+                                 <ComboBoxItem Content="Cao (5 fps)" Tag="5"/>
+                                 <ComboBoxItem Content="Mượt mà (15 fps)" Tag="15"/>
+                                 <ComboBoxItem Content="Rất mượt (30 fps)" Tag="30"/>
+                             </ComboBox>
+                        </Grid>
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="Nén ảnh:" FontSize="14" Foreground="#616161" VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="1" x:Name="cmbQuality" FontSize="14" SelectedIndex="1">
+                                <ComboBoxItem Content="Thấp (40% - Mạng yếu)" Tag="40"/>
+                                <ComboBoxItem Content="Bình thường (65%)" Tag="65"/>
+                                <ComboBoxItem Content="Cao (85% - Mạng mạnh)" Tag="85"/>
+                            </ComboBox>
+                        </Grid>
+                        <CheckBox x:Name="chkForceWatch" Content="Bắt buộc xem (Khóa nút đóng phía HS)" FontSize="14" Margin="0,10,0,0" VerticalAlignment="Center"/>
+                        
+                        <!-- SP-01: Tiêu đề bài giảng hiển thị trên overlay HS -->
+                        <TextBlock Text="Tiêu đề hiển thị trên máy HS:" FontSize="14" Foreground="#616161"
+                                   Margin="0,10,0,4" ToolTip="Nội dung này sẽ hiện trên thanh tiêu đề overlay phía HS"/>
+                        <Grid>
+                            <TextBox x:Name="txtLessonTitle" FontSize="13" Padding="10,8"
+                                     BorderBrush="#E0E0E0" BorderThickness="1"
+                                     ToolTip="Ví dụ: Bài 12 — Phương trình lượng giác"/>
+                            <TextBlock x:Name="txtLessonTitlePlaceholder"
+                                       Text="Nhập tiêu đề bài giảng (không bắt buộc)..."
+                                       FontSize="13" Foreground="#BDBDBD" Padding="12,9"
+                                       IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=txtLessonTitle}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                <!-- Recipients -->
+                <Border Background="White" CornerRadius="12" Padding="16" Margin="0,0,0,10" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Gửi đến" FontSize="16" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,10"/>
+                        <RadioButton x:Name="rbAllStudents" Content="Tất cả học sinh" IsChecked="True" FontSize="14" Margin="0,0,0,6"
+                                     GroupName="Target" Checked="TargetChanged"/>
+                        <RadioButton x:Name="rbGroup" Content="Nhóm cụ thể" FontSize="14" Margin="0,0,0,6"
+                                     GroupName="Target" Checked="TargetChanged"/>
+                        <RadioButton x:Name="rbIndividual" Content="Chọn từng HS" FontSize="14"
+                                     GroupName="Target" Checked="TargetChanged"/>
+                        <!-- Sub: Group picker -->
+                        <Border x:Name="panelGroupPicker" Visibility="Collapsed" Background="#E8F5E9" CornerRadius="8"
+                                Padding="10,8" Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Chọn nhóm:" FontSize="14" FontWeight="SemiBold" Foreground="#2E7D32" Margin="0,0,0,6"/>
+                                <StackPanel x:Name="groupCheckList">
+                                    <!-- V22-03: Dynamic từ DB, không hardcode -->
+                                    <TextBlock Text="Đang tải nhóm..." FontSize="14" Foreground="#BDBDBD" FontStyle="Italic"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                    <Button Content="Chọn tất cả" FontSize="14" Padding="10,4" Margin="0,0,6,0"
+                                            Background="#C8E6C9" Foreground="#2E7D32" BorderThickness="0" Cursor="Hand"
+                                            Click="SelectAllGroups_Click" Template="{StaticResource RoundBtn}"/>
+                                    <Button Content="Bỏ chọn" FontSize="14" Padding="10,4"
+                                            Background="#FFCDD2" Foreground="#C62828" BorderThickness="0" Cursor="Hand"
+                                            Click="DeselectAllGroups_Click" Template="{StaticResource RoundBtn}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <!-- Sub: Individual student picker -->
+                        <Border x:Name="panelStudentPicker" Visibility="Collapsed" Background="#E3F2FD" CornerRadius="8"
+                                Padding="10,8" Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Chọn học sinh:" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,0,6"/>
+                                <!-- V22-29: Tìm kiếm HS -->
+                                <Grid Margin="0,0,0,6">
+                                    <TextBox x:Name="txtSearchStudent" FontSize="13" Padding="8,6"
+                                             Background="White" BorderBrush="#BBDEFB" BorderThickness="1"
+                                             TextChanged="SearchStudent_TextChanged"/>
+                                    <TextBlock Text="Tìm học sinh theo tên..."
+                                               FontSize="13" Foreground="#BDBDBD" Padding="10,7"
+                                               IsHitTestVisible="False">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=txtSearchStudent}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                                <Border Background="White" CornerRadius="6" Padding="6" MaxHeight="250">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel x:Name="studentCheckList">
+                                            <TextBlock Text="Đang tải danh sách..." FontSize="14" Foreground="#BDBDBD" FontStyle="Italic"/>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Border>
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                    <Button Content="Chọn tất cả" FontSize="14" Padding="10,4" Margin="0,0,6,0"
+                                            Background="#BBDEFB" Foreground="#1565C0" BorderThickness="0" Cursor="Hand"
+                                            Click="SelectAllStudents_Click" Template="{StaticResource RoundBtn}"/>
+                                    <Button Content="Bỏ chọn" FontSize="14" Padding="10,4"
+                                            Background="#FFCDD2" Foreground="#C62828" BorderThickness="0" Cursor="Hand"
+                                            Click="DeselectAllStudents_Click" Template="{StaticResource RoundBtn}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock x:Name="txtRecipientCount" Text="→ 0 máy HS sẽ nhận"
+                                   FontSize="14" Foreground="#1976D2" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                <!-- Quick Actions -->
+                <Border Background="White" CornerRadius="12" Padding="16" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="⚡ Thao tác nhanh" FontSize="16" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,10"/>
+                        <Button Content="Khóa màn hình HS" Padding="0,10" Margin="0,0,0,6" FontSize="14" FontWeight="SemiBold"
+                                Background="#D32F2F" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="LockScreen_Click" Template="{StaticResource RoundBtn}"/>
+                        <Button Content="Mở khóa màn hình HS" Padding="0,10" Margin="0,0,0,6" FontSize="14" FontWeight="SemiBold"
+                                Background="#2E7D32" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="UnlockScreen_Click" Template="{StaticResource RoundBtn}"/>
+                        <Button Content="Tắt màn hình HS" Padding="0,10" FontSize="14" FontWeight="SemiBold"
+                                Background="#757575" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="BlackScreen_Click" Template="{StaticResource RoundBtn}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        <!-- ═══ Bottom Actions (V2.2) ═══ -->
+        <Grid Grid.Row="2" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <!-- V22-07 + V22-14 -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock x:Name="txtStatus"
+                           Text="Chưa phát — Chọn nguồn và nhấn Bắt đầu"
+                           FontSize="12" Foreground="#757575"/>
+                <TextBlock x:Name="txtCurrentModeDesc"
+                           Text="Chế độ khuyên dùng cho lập trình/toán học: Phát Chuyên Chữ"
+                           FontSize="11" Foreground="#9E9E9E" Margin="0,2,0,0" FontStyle="Italic"/>
+            </StackPanel>
+            
+            <!-- Hàng nút phát phía bên phải (Xếp 2 hàng để chống tràn màn hình) -->
+            <StackPanel Grid.Column="1" Orientation="Vertical">
+                <!-- Hàng 1: Hai nút phát cũ (Ẩn tạm thời) -->
+                <StackPanel Orientation="Horizontal" Margin="0" HorizontalAlignment="Right" Visibility="Collapsed">
+                    <Button x:Name="btnBroadcast" Content="▶️ Phát Thường" Visibility="Collapsed" Padding="16,8" FontSize="12" FontWeight="SemiBold"
+                            Background="#1976D2" Foreground="White"
+                            Click="Broadcast_Click" Template="{StaticResource RoundBtn}" ToolTip="Phát frame-by-frame mặc định, phù hợp slide tĩnh."/>
+                    
+                    <Button x:Name="btnTurboBroadcast" Content="🚀 Phát Siêu Tốc" Visibility="Collapsed" Padding="16,8" FontSize="12" FontWeight="SemiBold"
+                            Background="#E53935" Foreground="White" Margin="8,0,0,0"
+                            Click="TurboBroadcast_Click" Template="{StaticResource RoundBtn}" ToolTip="Tải video 30 FPS mượt mà cho game/mô phỏng."/>
+                </StackPanel>
+                
+                <!-- Hàng 2: Ba nút phát mới -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="btnTextBroadcast" Content="📄 Phát Chuyên Chữ" Visibility="Collapsed" Padding="16,8" FontSize="12" FontWeight="SemiBold"
+                            Background="#2E7D32" Foreground="White"
+                            Click="TextBroadcast_Click" Template="{StaticResource RoundBtn}" ToolTip="Tối ưu nén lossless DeskRT, hiển thị rõ nét từng dòng chữ nhỏ, code lập trình."/>
+                    
+                    <Button x:Name="btnMulticastBroadcast" Content="📡 Phát Đa Thiết Bị" Visibility="Collapsed" Padding="16,8" FontSize="12" FontWeight="SemiBold"
+                            Background="#7B1FA2" Foreground="White" Margin="8,0,0,0"
+                            Click="MulticastBroadcast_Click" Template="{StaticResource RoundBtn}" ToolTip="Sử dụng IP Multicast. Giảm tải CPU giáo viên và băng thông khi lớp đông hoặc Wi-Fi yếu."/>
+
+                                        <Button Content="⏸️ Tạm dừng" x:Name="btnPause" Padding="16,8" FontSize="12"
+                            Background="#FFF3E0" Foreground="#E65100" Margin="0,0,8,0" Visibility="Collapsed"
+                            Click="Pause_Click" Template="{StaticResource RoundBtn}" ToolTip="Tạm dừng / Tiếp tục phát"/>
+
+                    <Button x:Name="btnVncBroadcast" Content="⚡ Phát VNC (Tối ưu mạng)" Padding="16,8" FontSize="12" FontWeight="SemiBold"
+                            Background="#FF8C42" Foreground="White" Margin="0"
+                            Click="VncBroadcast_Click" Template="{StaticResource RoundBtn}" ToolTip="Truyền phát hiệu năng cao qua VNCTool (Rust). Tiết kiệm tối đa CPU giáo viên và băng thông LAN."/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

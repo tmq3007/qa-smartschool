@@ -1,0 +1,140 @@
+{
+  "metadata": {
+    "chapterId": "g08_ch05",
+    "chapterName": "Bài 5: Nghị luận trung đại",
+    "grade": 8,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 4
+  },
+  "sections": [
+    {
+      "sectionId": "s_g8_ch5_0",
+      "sectionName": "Chiếu dời đô (Thiên đô chiếu) — Lý Công Uẩn",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-8-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g8_chieu_doi_do.mp3",
+      "concepts": [
+        {
+          "name": "Hoàn cảnh ra đời",
+          "theorem": "Năm 1010, Lý Công Uẩn quyết định dời kinh đô từ Hoa Lư (Ninh Bình) — vùng núi non hiểm trở — ra thành Đại La (Hà Nội ngày nay) — vùng đồng bằng rộng lớn, mở ra một kỷ nguyên phát triển rực rỡ cho nước Đại Việt."
+        },
+        {
+          "name": "Phê phán việc đóng đô ở Hoa Lư",
+          "definition": "Thế mà hai nhà Đinh, Lê lại theo ý riêng mình, khinh thường mệnh trời, không noi theo dấu cũ của Thương, Chu, cứ đóng yên đô thành ở nơi đây, khiến cho triều đại không được lâu bền, số vận ngắn ngủi, trăm họ phải hao tổn, muôn vật không được thích nghi. Trẫm rất đau xót về việc đó, không thể không dời đổi."
+        },
+        {
+          "name": "Ca ngợi địa thế thành Đại La",
+          "definition": "Huống gì thành Đại La, kinh đô cũ của Cao Vương: Ở vào nơi trung tâm trời đất; được cái thế rồng cuộn hổ ngồi. Đã đúng ngôi nam bắc đông tây; lại tiện hướng nhìn sông dựa núi. Địa thế rộng mà bằng; đất đai cao mà thoáng... Thật là chốn tụ hội trọng yếu của bốn phương đất nước; cũng là nơi kinh đô bậc nhất của đế vương muôn đời."
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Việc dời đô từ Hoa Lư ra Đại La thể hiện ý chí gì của Lý Công Uẩn và dân tộc Đại Việt lúc bấy giờ?",
+          "difficulty": "Medium",
+          "options": [
+            "Thể hiện thế lực dân tộc đang lớn mạnh, không cần phòng thủ dựa vào địa thế hiểm trở nữa mà muốn mở rộng phát triển, kiến tạo đất nước lâu bền",
+            "Thể hiện sự hoảng sợ của vua Lý trước sự đe dọa của các thế lực phong kiến phương Bắc",
+            "Do thành Hoa Lư đã quá chật chội, không đủ chỗ cho quan lại triều đình",
+            "Do vua Lý Công Uẩn thích phong cảnh đẹp của thành Đại La"
+          ],
+          "answer": "Thể hiện thế lực dân tộc đang lớn mạnh, không cần phòng thủ dựa vào địa thế hiểm trở nữa mà muốn mở rộng phát triển, kiến tạo đất nước lâu bền",
+          "hints": ["Hoa Lư là núi non hiểm trở (dễ phòng thủ). Đại La là đồng bằng rộng bằng phẳng (dễ phát triển kinh tế). Việc dời ra đồng bằng chứng tỏ điều gì?"],
+          "explanation": "Triều Đinh, Lê đóng đô ở Hoa Lư vì đất nước còn non trẻ, cần địa thế núi non hiểm trở để phòng thủ. Đến thời Lý, đất nước đã ổn định, lớn mạnh. Việc dám dời đô ra vùng đồng bằng trống trải, giao thương thuận lợi (Đại La) thể hiện ý chí tự cường, tự tin vào sức mạnh quốc gia, khát vọng xây dựng đất nước hưng thịnh lâu dài."
+        },
+        {
+          "id": "p2",
+          "question": "Thành Đại La hội tụ những yếu tố địa lý nào để trở thành 'nơi kinh đô bậc nhất của đế vương muôn đời'?",
+          "difficulty": "Easy",
+          "options": [
+            "Trung tâm trời đất, thế rồng cuộn hổ ngồi, nhìn sông dựa núi, đất đai cao thoáng, bằng phẳng",
+            "Cách xa biển khơi nên không sợ sóng thần",
+            "Nằm trên đỉnh núi cao nên không bị ngập lụt",
+            "Được bao bọc bởi một lớp thành lũy kiên cố bằng đá"
+          ],
+          "answer": "Trung tâm trời đất, thế rồng cuộn hổ ngồi, nhìn sông dựa núi, đất đai cao thoáng, bằng phẳng",
+          "hints": ["Đọc lại đoạn văn mô tả địa thế của thành Đại La."],
+          "explanation": "Đại La (Hà Nội) hội tụ đầy đủ các yếu tố 'phong thủy' tuyệt đẹp và thuận lợi về mặt địa lý, kinh tế, chính trị: nằm ở trung tâm đất nước, địa thế vững chãi (rồng cuộn hổ ngồi), giao thông thuận tiện (nhìn sông dựa núi), môi trường sống tốt (cao mà thoáng, rộng mà bằng)."
+        },
+        {
+          "id": "p3",
+          "question": "Câu kết 'Trẫm muốn dựa vào sự thuận lợi của đất ấy để định chỗ ở. Các khanh nghĩ thế nào?' thể hiện điều gì ở vị vua khai sáng vương triều Lý?",
+          "difficulty": "Hard",
+          "options": [
+            "Dù có quyền uy tuyệt đối, vua vẫn tạo sự đồng thuận, gần gũi, chia sẻ dân chủ với quần thần",
+            "Vua Lý Công Uẩn thiếu quyết đoán, không dám tự mình quyết định việc lớn",
+            "Sự lúng túng của nhà vua trước sự phản đối của quan lại",
+            "Hình thức câu hỏi tu từ để cảnh cáo những người không đồng tình"
+          ],
+          "answer": "Dù có quyền uy tuyệt đối, vua vẫn tạo sự đồng thuận, gần gũi, chia sẻ dân chủ với quần thần",
+          "hints": ["Lời ban bố mệnh lệnh ('chiếu') thường rất uy quyền. Nhưng kết thúc bằng một câu hỏi ý kiến thì chứng tỏ thái độ của vua thế nào?"],
+          "explanation": "'Chiếu' là mệnh lệnh của vua ban cho bề tôi (phải phục tùng vô điều kiện). Tuy nhiên, cách kết thúc bằng một câu hỏi thảo luận ('Các khanh nghĩ thế nào?') mang tính chất tâm tình, đối thoại. Điều đó cho thấy Lý Công Uẩn là một vị vua sáng suốt, thấu tình đạt lý, muốn lấy ý nguyện của dân làm ý nguyện của mình, tạo khối đại đoàn kết toàn dân."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g8_ch5_1",
+      "sectionName": "Bàn luận về phép học — Nguyễn Thiếp",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-8-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g8_ban_luan_ve_phep_hoc.mp3",
+      "concepts": [
+        {
+          "name": "Mục đích chân chính của việc học",
+          "theorem": "Ngọc không mài, không thành đồ vật; người không học, không biết rõ đạo. Đạo là lẽ đối xử hằng ngày giữa mọi người. Mục đích chân chính của việc học là học để làm người, học để biết cách đối nhân xử thế."
+        },
+        {
+          "name": "Phê phán lối học lệch lạc",
+          "definition": "Nước Việt ta, từ khi lập quốc đến giờ, nền chính học đã bị thất truyền. Người ta đua nhau lối học hình thức hòng cầu danh lợi, không còn biết đến tam cương, ngũ thường. Chúa tầm thường, thần nịnh hót. Nước mất, nhà tan đều do những điều tệ hại ấy."
+        },
+        {
+          "name": "Phương pháp học đúng đắn",
+          "definition": "Theo điều học mà làm. (Học đi đôi với hành). Tuần tự tiến lên, từ thấp đến cao. Học rộng rồi tóm lược cho gọn."
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Theo Nguyễn Thiếp, 'lối học hình thức hòng cầu danh lợi' sẽ dẫn đến hậu quả gì cho đất nước?",
+          "difficulty": "Easy",
+          "options": [
+            "Đạo đức suy đồi (chúa tầm thường, thần nịnh hót), dẫn đến cảnh nước mất nhà tan",
+            "Học sinh bị áp lực điểm số nặng nề",
+            "Tốn kém tiền bạc của nhà nước để tổ chức thi cử",
+            "Đất nước không có đủ người tài làm quan"
+          ],
+          "answer": "Đạo đức suy đồi (chúa tầm thường, thần nịnh hót), dẫn đến cảnh nước mất nhà tan",
+          "hints": ["'Chúa tầm thường, thần nịnh hót. Nước mất, nhà tan đều do những điều tệ hại ấy'."],
+          "explanation": "Nguyễn Thiếp chỉ ra hậu quả tai hại của việc học sai mục đích. Khi người ta học chỉ để thuộc lòng văn mẫu, thi đỗ làm quan để vơ vét, kiếm tiền (cầu danh lợi) thì đạo đức xã hội sẽ xuống cấp nghiêm trọng. Kẻ làm quan chỉ biết nịnh hót, vị kỷ, tất yếu dẫn đến quốc gia sụp đổ."
+        },
+        {
+          "id": "p2",
+          "question": "Khái niệm 'Đạo' trong bài 'Bàn luận về phép học' được giải thích như thế nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Là lẽ đối xử hằng ngày giữa mọi người (đạo đức, nhân cách, cách làm người)",
+            "Là tôn giáo, tín ngưỡng của dân tộc",
+            "Là kiến thức uyên bác về vũ trụ và tự nhiên",
+            "Là bí quyết để thi đỗ trạng nguyên"
+          ],
+          "answer": "Là lẽ đối xử hằng ngày giữa mọi người (đạo đức, nhân cách, cách làm người)",
+          "hints": ["'Đạo là lẽ đối xử hằng ngày giữa mọi người'."],
+          "explanation": "Khác với những khái niệm triết học cao siêu, Nguyễn Thiếp định nghĩa 'Đạo' rất giản dị và thực tế: đó là cách đối nhân xử thế. Học đạo tức là học cách làm người lương thiện, sống có trách nhiệm với gia đình và xã hội. Đây là cốt lõi của triết lý giáo dục: Tiên học lễ, hậu học văn."
+        },
+        {
+          "id": "p3",
+          "question": "Phương pháp 'Theo điều học mà làm' của Nguyễn Thiếp tương đồng với nguyên lý giáo dục nào ngày nay?",
+          "difficulty": "Medium",
+          "options": [
+            "Học đi đôi với hành — lý thuyết phải gắn liền với thực tiễn",
+            "Học, học nữa, học mãi",
+            "Học tập suốt đời",
+            "Học nhóm và làm việc tập thể"
+          ],
+          "answer": "Học đi đôi với hành — lý thuyết phải gắn liền với thực tiễn",
+          "hints": ["'Học mà làm' có nghĩa là đem kiến thức áp dụng vào đâu?"],
+          "explanation": "'Theo điều học mà làm' chính là nguyên lý 'Học đi đôi với hành'. Kiến thức học được (lý thuyết) phải được mang ra ứng dụng vào cuộc sống (thực hành) để tạo ra giá trị thiết thực. Nếu học xong mà chỉ để đấy thì đó chỉ là lý thuyết suông."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,368 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Multi.PhysicsSandboxTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="#1A1A2E">
+ 
+    <UserControl.Resources>
+        <!-- Toolbox Item Style (Larger and cleaner for touch screens) -->
+        <Style x:Key="ToolboxBtn" TargetType="Button">
+            <Setter Property="Width" Value="85"/>
+            <Setter Property="Height" Value="85"/>
+            <Setter Property="Margin" Value="0,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="#252540" CornerRadius="12" 
+                                BorderBrush="#3A3A5C" BorderThickness="1.5" Padding="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#7C4DFF"/>
+                                <Setter TargetName="border" Property="Background" Value="#2D2D50"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+ 
+        <!-- Action Button Style -->
+        <Style x:Key="ActionBtn" TargetType="Button">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="{DynamicResource InterFont}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="10" Padding="{TemplateBinding Padding}"
+                                BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+ 
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+ 
+        <!-- MAIN LAYOUT (Master-Detail) -->
+        <Grid Grid.Row="0" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU (Dark themed with neon purple highlights) -->
+            <Grid Grid.Column="0" Background="#16162B">
+                <!-- Multi Category: Orange hover/selected -->
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#FFE0B2"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#E65100"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn thao tác" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔬" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextExperiments" Text="Thí nghiệm mẫu &amp; Câu hỏi" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚛️" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractice" Text="Mô phỏng vật lý" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#3A3A5C"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="0">
+                <!-- VIEW 0: HƯỚNG DẪN THAO TÁC -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" Margin="16">
+                    <StackPanel Background="Transparent" x:Name="GridHelpControls">
+<Border Background="#1E1E3A" CornerRadius="16" Padding="28,24" BorderBrush="#3A3A5C" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="📖 HƯỚNG DẪN THAO TÁC PHÒNG THÍ NGHIỆM" FontSize="20" FontWeight="Bold" Foreground="#FFD54F" Margin="0,0,0,16"/>
+                                
+                                <Border Background="#252545" CornerRadius="8" Padding="15,12" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="🔦 Bước 1: Lấy dụng cụ từ thanh công cụ" FontSize="14" FontWeight="Bold" Foreground="#AEEA00"/>
+                                        <TextBlock Text="Nhấp chuột vào một dụng cụ ở cột bên trái (Laser 🔦, Gương phẳng 🪞, Thấu kính hội tụ 🔍, Lăng kính 🔺)." FontSize="13" Foreground="#E0E0E0" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="#252545" CornerRadius="8" Padding="15,12" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="🖱️ Bước 2: Đặt dụng cụ lên Bảng thí nghiệm" FontSize="14" FontWeight="Bold" Foreground="#AEEA00"/>
+                                        <TextBlock Text="Nhấp chuột trái vào vị trí muốn đặt trên vùng Canvas tối. Thiết bị sẽ xuất hiện chính xác tại đó." FontSize="13" Foreground="#E0E0E0" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="#252545" CornerRadius="8" Padding="15,12" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="🔄 Bước 3: Di chuyển &amp; Xoay thiết bị 360°" FontSize="14" FontWeight="Bold" Foreground="#AEEA00"/>
+                                        <TextBlock Text="• Di chuyển: Nhấp giữ chuột trái trên thiết bị và kéo đi. Vật thể tự động bắt dính lưới Grid 50px (bắt điểm 10px) giúp thẳng hàng trục quang học.&#x0a;• Xoay thiết bị: Click chọn thiết bị (sẽ sáng viền vàng) và cuộn bánh xe chuột để xoay mịn 5°.&#x0a;• Mẹo bắt góc chẵn: Giữ phím Shift trong lúc cuộn chuột để nhảy chẵn góc 15° (0°, 15°, 30°, 45°...).&#x0a;• Xoay nhanh / Xóa nhanh: Dùng các nút xoay chéo hoặc nút Xóa vật ở thanh công cụ phía dưới." FontSize="13" Foreground="#E0E0E0" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="#252545" CornerRadius="8" Padding="15,12">
+                                    <StackPanel>
+                                        <TextBlock Text="💡 Gợi ý cho Giáo viên &amp; Học sinh" FontSize="14" FontWeight="Bold" Foreground="#AEEA00"/>
+                                        <TextBlock Text="• Có thể đặt nhiều nguồn sáng Laser cùng lúc để tạo hệ chùm tia sáng phức tạp.&#x0a;• Sử dụng nhãn góc xoay hiển thị trực tiếp bên dưới mỗi dụng cụ để ghi chép số liệu thí nghiệm chính xác." FontSize="13" Foreground="#E0E0E0" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Button Style="{StaticResource ActionBtn}" Content="Bắt đầu thí nghiệm ⚛️" 
+                                        Background="#7C4DFF" Foreground="White" Width="200" HorizontalAlignment="Center" 
+                                        Margin="0,20,0,0" Click="BtnCloseHelp_Click"/>
+                            </StackPanel>
+                        </Border>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: THÍ NGHIỆM MẪU -->
+                <ScrollViewer x:Name="viewExperiments" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" Margin="16">
+                    <StackPanel Background="Transparent" x:Name="GridHelpExperiments">
+                        <Border Background="#1E1E3A" CornerRadius="16" Padding="28,24" BorderBrush="#3A3A5C" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🔬 THÍ NGHIỆM MẪU &amp; CÂU HỎI THẢO LUẬN" FontSize="20" FontWeight="Bold" Foreground="#80DEEA" Margin="0,0,0,16"/>
+
+                                <Border Background="#252545" CornerRadius="8" Padding="15,12" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="🧪 Thí nghiệm 1: Hiện tượng tán sắc ánh sáng qua lăng kính" FontSize="14" FontWeight="Bold" Foreground="#80DEEA"/>
+                                        <TextBlock Text="• Mô tả: Chứng minh chùm sáng trắng đi qua lăng kính bị phân tách thành dải quang phổ cầu vồng.&#x0a;• Cách mở nhanh: Nhấp nút 'Mẫu 1: Tán sắc' ở thanh trên cùng.&#x0a;• Câu hỏi thảo luận: Quan sát dải màu ló ra khỏi lăng kính. Tại sao tia màu tím bị lệch nhiều nhất về phía đáy lăng kính còn tia màu đỏ bị lệch ít nhất?" FontSize="13" Foreground="#E0E0E0" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="#252545" CornerRadius="8" Padding="15,12" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="🧪 Thí nghiệm 2: Hiện tượng hội tụ ánh sáng qua thấu kính" FontSize="14" FontWeight="Bold" Foreground="#80DEEA"/>
+                                        <TextBlock Text="• Mô tả: Khảo sát đường đi của chùm sáng song song đi qua thấu kính hội tụ.&#x0a;• Cách mở nhanh: Nhấp nút 'Mẫu 2: Hội tụ' ở thanh trên cùng.&#x0a;• Câu hỏi thảo luận: Điểm mà chùm sáng hội tụ sau thấu kính gọi là gì? Thử kéo thấu kính sang trái/phải và nhận xét sự dịch chuyển của tiêu điểm ảnh." FontSize="13" Foreground="#E0E0E0" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="#252545" CornerRadius="8" Padding="15,12" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="🧪 Thí nghiệm 3: Định luật phản xạ qua hệ nhiều gương" FontSize="14" FontWeight="Bold" Foreground="#80DEEA"/>
+                                        <TextBlock Text="• Mô tả: Quan sát đường truyền của tia sáng khi phản xạ liên tục qua các gương phẳng nghiêng góc.&#x0a;• Cách mở nhanh: Nhấp nút 'Mẫu 3: Phản xạ' ở thanh trên cùng.&#x0a;• Câu hỏi thảo luận: Hãy đo và so sánh góc tới với góc phản xạ trên từng bề mặt gương. Thử xoay một gương và quan sát sự thay đổi hướng của tia ló cuối cùng." FontSize="13" Foreground="#E0E0E0" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="#252545" CornerRadius="8" Padding="15,12" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="🧪 Thí nghiệm 4: Nguyên lý hoạt động của Kính tiềm vọng" FontSize="14" FontWeight="Bold" Foreground="#80DEEA"/>
+                                        <TextBlock Text="• Mô tả: Mô phỏng hệ thống gương truyền tia sáng quanh góc khuất (thường dùng trong tàu ngầm).&#x0a;• Cách mở nhanh: Nhấp nút 'Mẫu 4: Kính tiềm vọng'.&#x0a;• Câu hỏi thảo luận: Hai gương phẳng được đặt ở vị trí và góc nghiêng như thế nào? Thử thay đổi góc gương 1 xem tia sáng có truyền tiếp tới gương 2 được không." FontSize="13" Foreground="#E0E0E0" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="#252545" CornerRadius="8" Padding="15,12">
+                                    <StackPanel>
+                                        <TextBlock Text="🧪 Thí nghiệm 5: Tổ hợp Hội tụ &amp; Phản xạ ánh sáng" FontSize="14" FontWeight="Bold" Foreground="#80DEEA"/>
+                                        <TextBlock Text="• Mô tả: Thí nghiệm nâng cao kết hợp hội tụ chùm tia song song qua thấu kính rồi phản xạ chùm hội tụ qua gương phẳng.&#x0a;• Cách mở nhanh: Nhấp nút 'Mẫu 5: Hội tụ &amp; Phản xạ'.&#x0a;• Câu hỏi thảo luận: Hai tia laser song song hội tụ tại điểm nào? Điểm hội tụ nằm trước hay trên mặt gương phẳng? Quan sát chùm tia sau khi phản xạ." FontSize="13" Foreground="#E0E0E0" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Button Style="{StaticResource ActionBtn}" Content="Bắt đầu thí nghiệm ⚛️" 
+                                        Background="#7C4DFF" Foreground="White" Width="200" HorizontalAlignment="Center" 
+                                        Margin="0,20,0,0" Click="BtnCloseHelp_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 2: MÔ PHỎNG VẬT LÝ -->
+                <Grid x:Name="viewPractice" Visibility="Visible">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+ 
+                    <!-- LEFT: TOOLBOX -->
+                    <Border Grid.Column="0" Background="#16162B" Width="110" Padding="8,15">
+                        <StackPanel>
+                            <TextBlock Text="⚛️ Dụng cụ" FontSize="15" FontWeight="Bold" Foreground="#B0BEC5" 
+                                       HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                            
+                            <!-- Light source -->
+                            <Button Style="{StaticResource ToolboxBtn}" Tag="laser" Click="ToolboxItem_Click">
+                                <StackPanel>
+                                    <TextBlock Text="🔦" FontSize="28" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Laser" FontSize="12" FontWeight="Bold" Foreground="#E0E0E0" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+ 
+                            <!-- Mirror -->
+                            <Button Style="{StaticResource ToolboxBtn}" Tag="mirror" Click="ToolboxItem_Click">
+                                <StackPanel>
+                                    <TextBlock Text="🪞" FontSize="28" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Gương" FontSize="12" FontWeight="Bold" Foreground="#E0E0E0" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+ 
+                            <!-- Lens -->
+                            <Button Style="{StaticResource ToolboxBtn}" Tag="lens" Click="ToolboxItem_Click">
+                                <StackPanel>
+                                    <TextBlock Text="🔍" FontSize="28" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Thấu kính" FontSize="12" FontWeight="Bold" Foreground="#E0E0E0" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+ 
+                            <!-- Prism -->
+                            <Button Style="{StaticResource ToolboxBtn}" Tag="prism" Click="ToolboxItem_Click">
+                                <StackPanel>
+                                    <TextBlock Text="🔺" FontSize="28" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Lăng kính" FontSize="12" FontWeight="Bold" Foreground="#E0E0E0" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+ 
+                            <!-- Separator -->
+                            <Border Height="1.5" Background="#3A3A5C" Margin="0,12"/>
+ 
+                            <!-- Clear -->
+                            <Button Style="{StaticResource ToolboxBtn}" Tag="clear" Click="BtnClear_Click">
+                                <StackPanel>
+                                    <TextBlock Text="🗑️" FontSize="26" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Xóa hết" FontSize="12" FontWeight="Bold" Foreground="#FF5252" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+ 
+                    <!-- RIGHT: WORKSPACE -->
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+ 
+                        <!-- TOP BAR -->
+                        <Border Grid.Row="0" Background="#1E1E3A" Padding="20,10">
+                            <DockPanel>
+                                <TextBlock Text="⚛️ Phòng Thí Nghiệm Vật Lý — Quang Học" FontSize="20" FontWeight="Bold" 
+                                           Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                
+                                <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <!-- Presets -->
+                                    <Button Style="{StaticResource ActionBtn}" Content="🧪 Mẫu 1: Tán sắc" 
+                                            Background="#00695C" Foreground="White" Click="BtnPresetDispersion_Click" Margin="2" Padding="10,6"/>
+                                    <Button Style="{StaticResource ActionBtn}" Content="🧪 Mẫu 2: Hội tụ" 
+                                            Background="#0277BD" Foreground="White" Click="BtnPresetFocus_Click" Margin="2" Padding="10,6"/>
+                                    <Button Style="{StaticResource ActionBtn}" Content="🧪 Mẫu 3: Phản xạ" 
+                                            Background="#D84315" Foreground="White" Click="BtnPresetReflection_Click" Margin="2" Padding="10,6"/>
+                                    <Button Style="{StaticResource ActionBtn}" Content="🧪 Mẫu 4: Kính tiềm vọng" 
+                                            Background="#00838F" Foreground="White" Click="BtnPresetPeriscope_Click" Margin="2" Padding="10,6"/>
+                                    <Button Style="{StaticResource ActionBtn}" Content="🧪 Mẫu 5: Hội tụ &amp; Phản xạ" 
+                                            Background="#6A1B9A" Foreground="White" Click="BtnPresetCombo_Click" Margin="2,2,10,2" Padding="10,6"/>
+                                    
+                                    <!-- Help button -->
+                                    <Button Style="{StaticResource ActionBtn}" Content="❓ Hướng dẫn" 
+                                            Background="#E65100" Foreground="White" Click="BtnHelp_Click" Margin="2" Padding="12,6"/>
+                                </WrapPanel>
+                            </DockPanel>
+                        </Border>
+ 
+                        <!-- WORKSPACE CANVAS -->
+                        <Canvas x:Name="WorkspaceCanvas" Grid.Row="1" ClipToBounds="True"
+                                MouseLeftButtonDown="Workspace_MouseDown"
+                                MouseMove="Workspace_MouseMove"
+                                MouseLeftButtonUp="Workspace_MouseUp"
+                                PreviewMouseWheel="Workspace_MouseWheel">
+                            <Canvas.Background>
+                                <VisualBrush TileMode="Tile" Viewport="0,0,50,50" ViewportUnits="Absolute">
+                                    <VisualBrush.Visual>
+                                        <Grid Width="50" Height="50">
+                                            <Border BorderBrush="#161633" BorderThickness="0,0,1,1" Background="#0D0D1A"/>
+                                        </Grid>
+                                    </VisualBrush.Visual>
+                                </VisualBrush>
+                            </Canvas.Background>
+                        </Canvas>
+ 
+                        <!-- BOTTOM INFO BAR -->
+                        <Border Grid.Row="2" Background="#1E1E3A" Padding="20,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <DockPanel Grid.Column="0">
+                                    <!-- Default Hint -->
+                                    <TextBlock x:Name="txtInfo" Text="💡 Click chọn dụng cụ ở cột trái, rồi click vào vùng tối để đặt." 
+                                               FontSize="14" FontWeight="Medium" Foreground="#B0BEC5" VerticalAlignment="Center"/>
+                                    
+                                    <!-- Selected Object Controls -->
+                                    <StackPanel x:Name="pnlSelectedControls" Orientation="Horizontal" Visibility="Collapsed" VerticalAlignment="Center">
+                                        <TextBlock x:Name="txtSelectedName" Text="Đang chọn: Gương phẳng 🪞 (0°)" 
+                                                   FontSize="14" FontWeight="Bold" Foreground="#FFD54F" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                        <Button Style="{StaticResource ActionBtn}" Content="↺ Xoay trái" 
+                                                Background="#3F51B5" Foreground="White" Click="BtnRotateLeft_Click"/>
+                                        <Button Style="{StaticResource ActionBtn}" Content="↻ Xoay phải" 
+                                                Background="#3F51B5" Foreground="White" Click="BtnRotateRight_Click"/>
+                                        <Button Style="{StaticResource ActionBtn}" Content="🗑️ Xóa vật" 
+                                                Background="#E53935" Foreground="White" Click="BtnDeleteSelected_Click"/>
+                                    </StackPanel>
+                                </DockPanel>
+                                
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <TextBlock x:Name="txtObjectCount" Text="Đối tượng: 0" FontSize="14" 
+                                               Foreground="#E040FB" FontWeight="Bold" 
+                                               VerticalAlignment="Center" Margin="0,0,20,0"/>
+                                    <Button Style="{StaticResource ActionBtn}" Content="🔄 Vẽ lại tia sáng" 
+                                            Background="#7C4DFF" Foreground="White" Click="BtnRedraw_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+ 
+                <!-- VIEW 3: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="contentApp" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+        
+        <!-- COMPATIBILITY HOOKS -->
+        <Grid x:Name="HelpOverlay" Visibility="Collapsed"/>
+        <Button x:Name="btnTabControls" Visibility="Collapsed"/>
+        <Button x:Name="btnTabExperiments" Visibility="Collapsed"/>
+    </Grid>
+</controls:BaseToolControl>

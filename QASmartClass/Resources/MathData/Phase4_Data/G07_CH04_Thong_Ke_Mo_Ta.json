@@ -1,0 +1,296 @@
+{
+  "metadata": {
+    "chapterId": "g07_ch04",
+    "chapterName": "Thống Kê Mô Tả",
+    "grade": 7,
+    "totalSections": 2,
+    "totalConcepts": 4,
+    "totalProblems": 12,
+    "toolMapping": [
+      "StatisticsTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 10,
+    "prerequisites": [
+      "g06_ch04"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "tkm7_01",
+      "sectionName": "Bảng phân bố tần số — tần suất",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "tkm7_001",
+          "name": "Tần suất",
+          "definition": "fi = ni/N (ni: tần số, N: tổng). Σfi = 1 (100%)",
+          "examples": [
+            "Tần số = 8, N = 40 → tần suất = 8/40 = 20%"
+          ]
+        },
+        {
+          "id": "tkm7_002",
+          "name": "Biểu đồ tần suất",
+          "definition": "Cột biểu diễn tần suất (%) thay vì tần số",
+          "examples": [
+            "Cột 20% thấp hơn cột 35%"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tkm7_p01",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Lớp 40 HS, 12 HS đạt giỏi. Tần suất giỏi = ?%",
+          "options": [
+            "A) 12%",
+            "B) 20%",
+            "C) 30%",
+            "D) 40%"
+          ],
+          "correctAnswer": "C",
+          "solution": "12/40 = 0,3 = 30%",
+          "points": 5
+        },
+        {
+          "problemId": "tkm7_p02",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Dữ liệu: Giỏi=12, Khá=18, TB=8, Yếu=2. N=40. Tần suất Khá = ?%",
+          "options": [
+            "A) 18%",
+            "B) 40%",
+            "C) 45%",
+            "D) 50%"
+          ],
+          "correctAnswer": "C",
+          "solution": "18/40 = 0,45 = 45%",
+          "points": 10
+        },
+        {
+          "problemId": "tkm7_p03",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tần suất loại A = 25%, loại B = 40%, loại C = 20%. Tổng = 60 SP. Số SP loại D = ?",
+          "options": [
+            "A) 6",
+            "B) 9",
+            "C) 12",
+            "D) 15"
+          ],
+          "correctAnswer": "B",
+          "solution": "D = 100-25-40-20 = 15%. Số D = 60 × 15% = 9",
+          "points": 15
+        },
+        {
+          "problemId": "tkm7_p04",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Tổng tất cả tần suất = ?",
+          "options": [
+            "A) 0",
+            "B) 1 (100%)",
+            "C) Tùy dữ liệu",
+            "D) N"
+          ],
+          "correctAnswer": "B",
+          "solution": "Σ tần suất = 100% = 1",
+          "points": 5
+        },
+        {
+          "problemId": "tkm7_p05",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "3 nhóm tần suất: 30%, 45%, x%. x = ?",
+          "options": [
+            "A) 15%",
+            "B) 20%",
+            "C) 25%",
+            "D) 30%"
+          ],
+          "correctAnswer": "C",
+          "solution": "x = 100 - 30 - 45 = 25%",
+          "points": 10
+        },
+        {
+          "problemId": "tkm7_p06",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Bảng tần số nhóm [0-3]: 5, [3-6]: 12, [6-9]: 8, [9-12]: 5. N=30. Tần suất tích lũy đến [6-9] = ?%",
+          "options": [
+            "A) 56,7%",
+            "B) 83,3%",
+            "C) 40%",
+            "D) 26,7%"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tích lũy = (5+12+8)/30 = 25/30 = 83,3%",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "tkm7_02",
+      "sectionName": "Số trung bình, trung vị, mốt",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "tkm7_003",
+          "name": "Trung bình có trọng số",
+          "definition": "x̄ = Σ(xi × ni) / N",
+          "examples": [
+            "Điểm 7 (8 HS), 8 (12 HS) → x̄ = (7×8+8×12)/20"
+          ]
+        },
+        {
+          "id": "tkm7_004",
+          "name": "Trung vị & Mốt",
+          "definition": "Trung vị (Me): giá trị ở giữa khi sắp xếp. Mốt (Mo): giá trị tần số cao nhất",
+          "examples": [
+            "1,2,3,4,5 → Me=3. Dữ liệu 5,5,5,8,9 → Mo=5"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tkm7_p07",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Dữ liệu: 2,3,3,5,7. Mốt = ?",
+          "options": [
+            "A) 2",
+            "B) 3",
+            "C) 5",
+            "D) 7"
+          ],
+          "correctAnswer": "B",
+          "solution": "3 xuất hiện 2 lần (nhiều nhất) → Mo = 3",
+          "points": 5
+        },
+        {
+          "problemId": "tkm7_p08",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Điểm 6 (5 HS), 7 (10 HS), 8 (8 HS), 9 (2 HS). x̄ = ?",
+          "options": [
+            "A) 6,8",
+            "B) 7,0",
+            "C) 7,28",
+            "D) 7,5"
+          ],
+          "correctAnswer": "C",
+          "solution": "x̄ = (6×5+7×10+8×8+9×2)/25 = (30+70+64+18)/25 = 182/25 = 7,28",
+          "points": 10
+        },
+        {
+          "problemId": "tkm7_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "8 số liệu sắp xếp: 2,3,4,5,6,7,8,9. Me = ?",
+          "options": [
+            "A) 5",
+            "B) 5,5",
+            "C) 6",
+            "D) 4,5"
+          ],
+          "correctAnswer": "B",
+          "solution": "N=8 (chẵn). Me = (số thứ 4 + số thứ 5)/2 = (5+6)/2 = 5,5",
+          "points": 10
+        },
+        {
+          "problemId": "tkm7_p10",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Dữ liệu: 1,1,2,2,2,3,3,100. So sánh x̄ và Me",
+          "options": [
+            "A) x̄ > Me",
+            "B) x̄ < Me",
+            "C) x̄ = Me",
+            "D) Không so sánh được"
+          ],
+          "correctAnswer": "A",
+          "solution": "Me = (2+2)/2 = 2. x̄ = (1+1+2+2+2+3+3+100)/8 = 114/8 = 14,25. x̄ >> Me (do outlier 100)",
+          "points": 15
+        },
+        {
+          "problemId": "tkm7_p11",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Khi nào nên dùng trung vị thay vì trung bình?",
+          "options": [
+            "A) Dữ liệu đều",
+            "B) Có giá trị ngoại lai (outlier)",
+            "C) Dữ liệu nhỏ",
+            "D) Luôn dùng trung vị"
+          ],
+          "correctAnswer": "B",
+          "solution": "Trung vị không bị ảnh hưởng bởi outlier, nên dùng khi có giá trị cực biên",
+          "points": 15
+        },
+        {
+          "problemId": "tkm7_p12",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Dữ liệu: 4,4,5,5,5,6. Mốt = ?",
+          "options": [
+            "A) 4",
+            "B) 5",
+            "C) 6",
+            "D) 4,5"
+          ],
+          "correctAnswer": "B",
+          "solution": "5 xuất hiện 3 lần (nhiều nhất) → Mo = 5",
+          "points": 5
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm tần số với tần suất",
+      "correction": "Tần số = SỐ LẦN. Tần suất = TỈ LỆ (%) = tần số ÷ tổng"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "tkm7_quiz_01",
+      "title": "Kiểm tra: Thống kê mô tả Lớp 7",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "tkm7_p01"
+        },
+        {
+          "ref": "tkm7_p07"
+        },
+        {
+          "ref": "tkm7_p08"
+        },
+        {
+          "ref": "tkm7_p03"
+        },
+        {
+          "ref": "tkm7_p10"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

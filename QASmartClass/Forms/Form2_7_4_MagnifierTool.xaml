@@ -1,0 +1,576 @@
+<Window x:Class="QASmartTouch.Forms.Form2_7_4_MagnifierTool"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Đèn soi" 
+
+        WindowState="Maximized"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        Topmost="True"
+
+        MouseMove="Window_MouseMove"
+
+        MouseWheel="Window_MouseWheel"
+
+        KeyDown="Window_KeyDown"
+
+        MouseDown="Window_MouseDown"
+
+        Loaded="Window_Loaded"
+
+        FontFamily="Segoe UI, Inter, Arial, sans-serif">
+
+
+
+    <Grid x:Name="MainGrid">
+        <!-- SPOTLIGHT MODE: Dark Overlay with Hole (ZIndex 1) -->
+        <Canvas x:Name="SpotlightCanvas"
+                Panel.ZIndex="1"
+                Visibility="Collapsed"
+                IsHitTestVisible="False">
+            <Path x:Name="SpotlightPath"
+                  Fill="#CC000000"
+                  Stroke="Transparent"/>
+        </Canvas>
+
+        <!-- Crosshair Canvas (ZIndex 2) - Rendered behind Control Panel -->
+        <Canvas x:Name="CrosshairCanvas" 
+                Panel.ZIndex="2"
+                Visibility="Collapsed"
+                IsHitTestVisible="False">
+            <Line x:Name="CrosshairH"
+                  Stroke="#2196F3"
+                  StrokeThickness="1"
+                  StrokeDashArray="4,2"
+                  X1="0" Y1="0" X2="100" Y2="0"/>
+            <Line x:Name="CrosshairV"
+                  Stroke="#2196F3"
+                  StrokeThickness="1"
+                  StrokeDashArray="4,2"
+                  X1="0" Y1="0" X2="0" Y2="100"/>
+        </Canvas>
+
+        <!-- MAGNIFY MODE: Magnifier Circle (ZIndex 3) -->
+        <Border x:Name="MagnifierBorder"
+                Panel.ZIndex="3"
+                Width="200" Height="200"
+                CornerRadius="100"
+                BorderBrush="#2196F3"
+                BorderThickness="4"
+                Visibility="Collapsed"
+                RenderTransformOrigin="0.5,0.5">
+
+            <Border.Effect>
+
+                <DropShadowEffect Color="#000000" 
+
+                                Direction="270" 
+
+                                ShadowDepth="0" 
+
+                                BlurRadius="20" 
+
+                                Opacity="0.5"/>
+
+            </Border.Effect>
+
+            
+
+            <Border.Clip>
+
+                <EllipseGeometry x:Name="MagnifierClip" 
+
+                               RadiusX="96" RadiusY="96"
+
+                               Center="100,100"/>
+
+            </Border.Clip>
+
+            
+
+            <!-- Magnified Content -->
+
+            <Grid x:Name="MagnifiedContent">
+
+                <Image x:Name="MagnifiedImage"
+
+                      Stretch="None"
+
+                      RenderTransformOrigin="0.5,0.5">
+
+                    <Image.RenderTransform>
+
+                        <ScaleTransform x:Name="MagnifyScale" ScaleX="2" ScaleY="2"/>
+
+                    </Image.RenderTransform>
+
+                </Image>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- Control Panel (ZIndex 10) - Always on top of crosshair -->
+        <Border x:Name="ControlPanel"
+                Panel.ZIndex="10"
+                Background="White"
+                CornerRadius="8"
+                Padding="15"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="20"
+                Visibility="Collapsed">
+
+            <Border.Effect>
+
+                <DropShadowEffect Color="#000000" 
+
+                                Direction="270" 
+
+                                ShadowDepth="2" 
+
+                                BlurRadius="10" 
+
+                                Opacity="0.3"/>
+
+            </Border.Effect>
+
+            
+
+            <StackPanel Width="220">
+
+                <TextBlock x:Name="txtTitle"
+
+                          Text="Đèn soi" 
+
+                          FontSize="14" 
+
+                          FontWeight="Bold" 
+
+                          Foreground="#2F3542"
+
+                          Margin="0,0,0,10"/>
+
+                
+
+                <!-- MODE TOGGLE -->
+
+                <StackPanel Margin="0,0,0,15">
+
+                    <TextBlock Text="Chế độ:" 
+
+                              FontSize="11"
+
+                              Foreground="#747D8C"
+
+                              Margin="0,0,0,6"/>
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="*"/>
+
+                            <ColumnDefinition Width="*"/>
+
+                        </Grid.ColumnDefinitions>
+
+                        <Button x:Name="btnMagnifyMode"
+
+                               Grid.Column="0"
+
+                               Height="40"
+
+                               Margin="0,0,4,0"
+
+                               Background="#2196F3"
+
+                               Foreground="White"
+
+                               BorderThickness="0"
+
+                               Cursor="Hand"
+
+                               Click="btnMagnifyMode_Click">
+
+                            <StackPanel>
+
+                                <TextBlock Text="🔍" FontSize="16" HorizontalAlignment="Center"/>
+
+                                <TextBlock Text="Phóng to" FontSize="9" HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+                        <Button x:Name="btnSpotlightMode"
+
+                               Grid.Column="1"
+
+                               Height="40"
+
+                               Margin="4,0,0,0"
+
+                               Background="#F1F2F6"
+
+                               Foreground="#2F3542"
+
+                               BorderThickness="0"
+
+                               Cursor="Hand"
+
+                               Click="btnSpotlightMode_Click">
+
+                            <StackPanel>
+
+                                <TextBlock Text="🎭" FontSize="16" HorizontalAlignment="Center"/>
+
+                                <TextBlock Text="Che màn" FontSize="9" HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+                    </Grid>
+
+                </StackPanel>
+
+
+
+                <!-- MAGNIFY MODE CONTROLS -->
+
+                <StackPanel x:Name="MagnifyControls" Visibility="Visible">
+
+                    <!-- Zoom Level -->
+
+                    <StackPanel Margin="0,0,0,10">
+
+                        <TextBlock Text="Độ phóng đại:" 
+
+                                  FontSize="11"
+
+                                  Foreground="#747D8C"
+
+                                  Margin="0,0,0,4"/>
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <Button x:Name="btn2x"
+
+                                   Width="65" Height="30"
+
+                                   Content="2x"
+
+                                   Margin="0,0,5,0"
+
+                                   Background="#2196F3"
+
+                                   Foreground="White"
+
+                                   BorderThickness="0"
+
+                                   FontSize="11"
+
+                                   FontWeight="Bold"
+
+                                   Cursor="Hand"
+
+                                   Click="btnZoom_Click"
+
+                                   Tag="2"/>
+
+                            <Button x:Name="btn3x"
+
+                                   Width="65" Height="30"
+
+                                   Content="3x"
+
+                                   Margin="0,0,5,0"
+
+                                   Background="#F1F2F6"
+
+                                   Foreground="#2F3542"
+
+                                   BorderThickness="0"
+
+                                   FontSize="11"
+
+                                   FontWeight="Bold"
+
+                                   Cursor="Hand"
+
+                                   Click="btnZoom_Click"
+
+                                   Tag="3"/>
+
+                            <Button x:Name="btn5x"
+
+                                   Width="65" Height="30"
+
+                                   Content="5x"
+
+                                   Background="#F1F2F6"
+
+                                   Foreground="#2F3542"
+
+                                   BorderThickness="0"
+
+                                   FontSize="11"
+
+                                   FontWeight="Bold"
+
+                                   Cursor="Hand"
+
+                                   Click="btnZoom_Click"
+
+                                   Tag="5"/>
+
+                        </StackPanel>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+
+
+                <!-- SPOTLIGHT MODE CONTROLS -->
+
+                <StackPanel x:Name="SpotlightControls" Visibility="Collapsed">
+
+                    <!-- Opacity -->
+
+                    <StackPanel Margin="0,0,0,10">
+
+                        <TextBlock Text="Độ mờ nền:" 
+
+                                  FontSize="11"
+
+                                  Foreground="#747D8C"
+
+                                  Margin="0,0,0,4"/>
+
+                        <Slider x:Name="opacitySlider"
+
+                               Minimum="0"
+
+                               Maximum="100"
+
+                               Value="80"
+
+                               TickFrequency="10"
+
+                               IsSnapToTickEnabled="True"
+
+                               ValueChanged="opacitySlider_ValueChanged"/>
+
+                        <TextBlock x:Name="txtOpacity"
+
+                                  Text="80%"
+
+                                  FontSize="10"
+
+                                  Foreground="#747D8C"
+
+                                  HorizontalAlignment="Center"/>
+
+                    </StackPanel>
+
+
+
+                    <!-- Shape -->
+
+                    <StackPanel Margin="0,0,0,10">
+
+                        <TextBlock Text="Hình dạng:" 
+
+                                  FontSize="11"
+
+                                  Foreground="#747D8C"
+
+                                  Margin="0,0,0,6"/>
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="btnCircleShape"
+
+                                   Grid.Column="0"
+
+                                   Height="35"
+
+                                   Margin="0,0,4,0"
+
+                                   Background="#2196F3"
+
+                                   Foreground="White"
+
+                                   BorderThickness="0"
+
+                                   Cursor="Hand"
+
+                                   Click="btnCircleShape_Click">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <TextBlock Text="⭕" FontSize="14" Margin="0,0,4,0"/>
+
+                                    <TextBlock Text="Tròn" FontSize="11"/>
+
+                                </StackPanel>
+
+                            </Button>
+
+                            <Button x:Name="btnSquareShape"
+
+                                   Grid.Column="1"
+
+                                   Height="35"
+
+                                   Margin="4,0,0,0"
+
+                                   Background="#F1F2F6"
+
+                                   Foreground="#2F3542"
+
+                                   BorderThickness="0"
+
+                                   Cursor="Hand"
+
+                                   Click="btnSquareShape_Click">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <TextBlock Text="⬜" FontSize="14" Margin="0,0,4,0"/>
+
+                                    <TextBlock Text="Vuông" FontSize="11"/>
+
+                                </StackPanel>
+
+                            </Button>
+
+                        </Grid>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+
+
+                <!-- COMMON CONTROLS -->
+
+                <!-- Size -->
+
+                <StackPanel Margin="0,0,0,10">
+
+                    <TextBlock x:Name="txtSizeLabel"
+
+                              Text="Kích thước:" 
+
+                              FontSize="11"
+
+                              Foreground="#747D8C"
+
+                              Margin="0,0,0,4"/>
+
+                    <Slider x:Name="sizeSlider"
+
+                           Minimum="100"
+
+                           Maximum="600"
+
+                           Value="200"
+
+                           TickFrequency="50"
+
+                           IsSnapToTickEnabled="True"
+
+                           ValueChanged="sizeSlider_ValueChanged"/>
+
+                    <TextBlock x:Name="txtSize"
+
+                              Text="200 px"
+
+                              FontSize="10"
+
+                              Foreground="#747D8C"
+
+                              HorizontalAlignment="Center"/>
+
+                </StackPanel>
+
+
+
+                <!-- Instructions -->
+
+                <Border Background="#F8F9FA"
+
+                       CornerRadius="4"
+
+                       Padding="8"
+
+                       Margin="0,0,0,10">
+
+                    <TextBlock x:Name="txtInstructions"
+
+                              FontSize="10"
+
+                              Foreground="#57606F"
+
+                              TextWrapping="Wrap">
+
+                        <Run Text="• Di chuyển chuột"/><LineBreak/>
+
+                        <Run Text="• Scroll để zoom"/><LineBreak/>
+
+                        <Run Text="• ESC để thoát"/>
+
+                    </TextBlock>
+
+                </Border>
+
+
+
+                <!-- Close Button -->
+
+                <Button Content="❌ Đóng (ESC)"
+
+                       Height="40"
+
+                       Background="#EE5A6F"
+
+                       Foreground="White"
+
+                       BorderThickness="0"
+
+                       FontSize="12"
+
+                       FontWeight="SemiBold"
+
+                       Cursor="Hand"
+
+                       Click="btnClose_Click"/>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</Window>

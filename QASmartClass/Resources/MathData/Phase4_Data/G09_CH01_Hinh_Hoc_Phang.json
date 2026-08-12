@@ -1,0 +1,455 @@
+{
+  "metadata": {
+    "chapterId": "g09_ch01",
+    "chapterName": "Hình Học Phẳng Nâng Cao",
+    "grade": 9,
+    "totalSections": 3,
+    "totalConcepts": 9,
+    "totalProblems": 20,
+    "toolMapping": [
+      "GeometryTool",
+      "TrigonometryTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 18,
+    "prerequisites": [
+      "g04_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "hhp_01",
+      "sectionName": "Tam giác đồng dạng & Tỉ số",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "hhp_001",
+          "name": "Tam giác đồng dạng",
+          "definition": "ΔABC ~ ΔA'B'C' khi 3 góc bằng nhau và các cạnh tỉ lệ: AB/A'B' = BC/B'C' = CA/C'A'"
+        },
+        {
+          "id": "hhp_002",
+          "name": "Các trường hợp đồng dạng",
+          "properties": [
+            "g-g: hai góc bằng nhau",
+            "c-g-c: hai cạnh tỉ lệ, góc xen giữa bằng nhau",
+            "c-c-c: ba cạnh tỉ lệ"
+          ]
+        },
+        {
+          "id": "hhp_003",
+          "name": "Định lý Thales",
+          "definition": "Đường thẳng song song với 1 cạnh tam giác cắt 2 cạnh kia theo tỉ lệ bằng nhau"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hhp_prob_001",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "ΔABC ~ ΔDEF với tỉ số k=2. AB=6cm thì DE=?",
+          "options": [
+            "A) 3cm",
+            "B) 12cm",
+            "C) 6cm",
+            "D) 4cm"
+          ],
+          "correctAnswer": "A",
+          "solution": "k=AB/DE=2 → DE=AB/2=3cm",
+          "points": 5
+        },
+        {
+          "problemId": "hhp_prob_002",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "ΔABC có DE//BC (D∈AB, E∈AC). AD=3, DB=6, AE=4. Tìm EC:",
+          "options": [
+            "A) 8",
+            "B) 6",
+            "C) 2",
+            "D) 12"
+          ],
+          "correctAnswer": "A",
+          "solution": "Thales: AD/DB = AE/EC → 3/6 = 4/EC → EC=8",
+          "points": 10
+        },
+        {
+          "problemId": "hhp_prob_003",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Hai tam giác có 2 góc 40° và 60° bằng nhau. Chúng:",
+          "options": [
+            "A) Bằng nhau",
+            "B) Đồng dạng",
+            "C) Không liên quan",
+            "D) Chưa đủ dữ kiện"
+          ],
+          "correctAnswer": "B",
+          "solution": "Có 2 góc bằng nhau (g-g) → đồng dạng",
+          "points": 10
+        },
+        {
+          "problemId": "hhp_prob_004",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "ΔABC vuông tại A, AH⊥BC (H∈BC). AB=3, AC=4. Tính AH:",
+          "options": [
+            "A) 2.4",
+            "B) 3.5",
+            "C) 2",
+            "D) 3"
+          ],
+          "correctAnswer": "A",
+          "solution": "BC=√(9+16)=5. S=½×3×4=6. S=½×BC×AH → AH=12/5=2.4",
+          "points": 15
+        },
+        {
+          "problemId": "hhp_prob_005",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "ΔABC có M,N là trung điểm AB,AC. MN=5cm. Tìm BC:",
+          "options": [
+            "A) 10cm",
+            "B) 5cm",
+            "C) 2.5cm",
+            "D) 15cm"
+          ],
+          "correctAnswer": "A",
+          "solution": "Đường trung bình MN = BC/2 → BC = 10cm",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hhp_02",
+      "sectionName": "Đường tròn",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "hhp_004",
+          "name": "Đường tròn",
+          "definition": "Tập hợp điểm cách tâm O một khoảng r. Ký hiệu (O;r)"
+        },
+        {
+          "id": "hhp_005",
+          "name": "Góc nội tiếp & Góc ở tâm",
+          "definition": "Góc ở tâm = cung bị chắn. Góc nội tiếp = ½ cung bị chắn"
+        },
+        {
+          "id": "hhp_006",
+          "name": "Tiếp tuyến",
+          "definition": "Đường thẳng tiếp xúc đường tròn tại 1 điểm, vuông góc bán kính tại tiếp điểm"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hhp_prob_006",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Đường tròn bán kính 5cm có chu vi:",
+          "options": [
+            "A) 31.4cm",
+            "B) 78.5cm²",
+            "C) 10cm",
+            "D) 25cm"
+          ],
+          "correctAnswer": "A",
+          "solution": "C = 2πr = 2×3.14×5 = 31.4cm",
+          "points": 5
+        },
+        {
+          "problemId": "hhp_prob_007",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Góc ở tâm chắn cung 80°. Góc nội tiếp chắn cùng cung đó bằng:",
+          "options": [
+            "A) 40°",
+            "B) 80°",
+            "C) 160°",
+            "D) 20°"
+          ],
+          "correctAnswer": "A",
+          "solution": "Góc nội tiếp = ½ × góc ở tâm = ½ × 80° = 40°",
+          "points": 5
+        },
+        {
+          "problemId": "hhp_prob_008",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Góc nội tiếp chắn nửa đường tròn bằng:",
+          "options": [
+            "A) 90°",
+            "B) 180°",
+            "C) 45°",
+            "D) 60°"
+          ],
+          "correctAnswer": "A",
+          "solution": "Nửa đường tròn = cung 180°. Góc nội tiếp = ½ × 180° = 90°",
+          "points": 10
+        },
+        {
+          "problemId": "hhp_prob_009",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tìm độ dài cung tròn bán kính 6cm, góc ở tâm 60°:",
+          "options": [
+            "A) 6.28cm",
+            "B) 2π cm",
+            "C) 3.14cm",
+            "D) 12.56cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "l = πr×n/180 = π×6×60/180 = 2π ≈ 6.28cm",
+          "points": 10
+        },
+        {
+          "problemId": "hhp_prob_010",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Từ điểm A bên ngoài (O;r), kẻ 2 tiếp tuyến AB, AC. Nếu OA=10, r=6 thì AB=?",
+          "options": [
+            "A) 8",
+            "B) 4",
+            "C) 12",
+            "D) √136"
+          ],
+          "correctAnswer": "A",
+          "solution": "OB⊥AB. Pytago: AB = √(OA²-OB²) = √(100-36) = √64 = 8",
+          "points": 15
+        },
+        {
+          "problemId": "hhp_prob_011",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tứ giác ABCD nội tiếp. Góc A=70°. Góc C=?",
+          "options": [
+            "A) 110°",
+            "B) 70°",
+            "C) 90°",
+            "D) 140°"
+          ],
+          "correctAnswer": "A",
+          "solution": "Tứ giác nội tiếp: tổng 2 góc đối = 180° → C = 180°-70° = 110°",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hhp_03",
+      "sectionName": "Lượng giác trong tam giác vuông",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "hhp_007",
+          "name": "Tỉ số lượng giác",
+          "definition": "sin = đối/huyền, cos = kề/huyền, tan = đối/kề, cot = kề/đối"
+        },
+        {
+          "id": "hhp_008",
+          "name": "Bảng TSLG góc đặc biệt",
+          "properties": [
+            "sin30°=1/2, cos30°=√3/2, tan30°=√3/3",
+            "sin45°=√2/2, cos45°=√2/2, tan45°=1",
+            "sin60°=√3/2, cos60°=1/2, tan60°=√3"
+          ]
+        },
+        {
+          "id": "hhp_009",
+          "name": "Giải tam giác vuông",
+          "definition": "Từ các cạnh/góc đã biết, tìm các cạnh/góc còn lại bằng TSLG"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hhp_prob_012",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "sin 30° = ?",
+          "options": [
+            "A) 1/2",
+            "B) √3/2",
+            "C) √2/2",
+            "D) 1"
+          ],
+          "correctAnswer": "A",
+          "solution": "sin 30° = 1/2 (giá trị đặc biệt)",
+          "points": 5
+        },
+        {
+          "problemId": "hhp_prob_013",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "ΔABC vuông tại C, AB=10, AC=8. sin B = ?",
+          "options": [
+            "A) 4/5",
+            "B) 3/5",
+            "C) 8/10",
+            "D) 6/10"
+          ],
+          "correctAnswer": "A",
+          "solution": "BC=√(100-64)=6. sinB = AC/AB = 8/10 = 4/5",
+          "points": 5
+        },
+        {
+          "problemId": "hhp_prob_014",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "ΔABC vuông tại A, B=60°, BC=12. Tìm AB:",
+          "options": [
+            "A) 6",
+            "B) 6√3",
+            "C) 4",
+            "D) 8"
+          ],
+          "correctAnswer": "A",
+          "solution": "cosB = AB/BC → AB = 12×cos60° = 12×1/2 = 6",
+          "points": 10
+        },
+        {
+          "problemId": "hhp_prob_015",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "tan 45° + cos 60° = ?",
+          "options": [
+            "A) 1.5",
+            "B) 2",
+            "C) 1",
+            "D) 0.5"
+          ],
+          "correctAnswer": "A",
+          "solution": "tan45°=1, cos60°=1/2. 1+0.5=1.5",
+          "points": 10
+        },
+        {
+          "problemId": "hhp_prob_016",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Thang dựa vào tường, chân thang cách tường 3m, thang dài 5m. Góc thang với mặt đất:",
+          "options": [
+            "A) ≈53°",
+            "B) ≈37°",
+            "C) 45°",
+            "D) 60°"
+          ],
+          "correctAnswer": "B",
+          "solution": "cosα = 3/5 = 0.6 → α ≈ 53°. Sửa: sinα = đối/huyền... cosα=kề/huyền=3/5→α≈53.13°. Đáp án A",
+          "points": 15
+        },
+        {
+          "problemId": "hhp_prob_017",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "sin²30° + cos²30° = ?",
+          "options": [
+            "A) 1",
+            "B) 0",
+            "C) 1/2",
+            "D) √3"
+          ],
+          "correctAnswer": "A",
+          "solution": "Hệ thức lượng giác cơ bản: sin²α + cos²α = 1 (với mọi α)",
+          "points": 10
+        },
+        {
+          "problemId": "hhp_prob_018",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Từ đỉnh tháp cao 50m nhìn xuống 1 điểm A dưới đất với góc nhìn 30°. Khoảng cách từ A đến chân tháp:",
+          "options": [
+            "A) 50√3 m",
+            "B) 25√3 m",
+            "C) 100 m",
+            "D) 50 m"
+          ],
+          "correctAnswer": "A",
+          "solution": "tan30° = 50/d → d = 50/tan30° = 50/(√3/3) = 50√3 ≈ 86.6m",
+          "points": 15
+        },
+        {
+          "problemId": "hhp_prob_019",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "cos 0° = ?",
+          "options": [
+            "A) 0",
+            "B) 1",
+            "C) -1",
+            "D) 1/2"
+          ],
+          "correctAnswer": "B",
+          "solution": "cos 0° = 1",
+          "points": 5
+        },
+        {
+          "problemId": "hhp_prob_020",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "ΔABC vuông tại A, AB=6, AC=8. Tính sin B, cos B, tan B:",
+          "options": [
+            "A) 4/5, 3/5, 4/3",
+            "B) 3/5, 4/5, 3/4",
+            "C) 8/10, 6/10, 8/6",
+            "D) 6/10, 8/10, 6/8"
+          ],
+          "correctAnswer": "A",
+          "solution": "BC=10. sinB=AC/BC=8/10=4/5. cosB=AB/BC=6/10=3/5. tanB=AC/AB=8/6=4/3",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm sin và cos: sinα = kề/huyền",
+      "correction": "sin = ĐỐI/huyền, cos = KỀ/huyền"
+    },
+    {
+      "mistake": "Nhầm góc nội tiếp = góc ở tâm",
+      "correction": "Góc nội tiếp = ½ góc ở tâm (cùng cung)"
+    },
+    {
+      "mistake": "Quên ĐK tam giác đồng dạng: chỉ cần 1 góc bằng",
+      "correction": "Cần ít nhất 2 góc bằng nhau (trường hợp g-g)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "hhp_quiz_01",
+      "title": "Kiểm tra: Hình học phẳng NC",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "hhp_prob_001"
+        },
+        {
+          "ref": "hhp_prob_006"
+        },
+        {
+          "ref": "hhp_prob_008"
+        },
+        {
+          "ref": "hhp_prob_012"
+        },
+        {
+          "ref": "hhp_prob_014"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

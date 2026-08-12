@@ -1,0 +1,196 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Literature.LiteratureCurriculumTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="{StaticResource Gray100}">
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0" CornerRadius="0" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#4A148C" Offset="0"/>
+                    <GradientStop Color="#6A1B9A" Offset="0.5"/>
+                    <GradientStop Color="#8E24AA" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel>
+                <!-- Controls & Back button -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                    <TextBlock Text="Cỡ chữ: " Foreground="White" FontSize="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <Slider x:Name="sliderFontSize" Minimum="0.8" Maximum="1.5" Value="1.0" Width="80" 
+                            TickFrequency="0.1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                            ValueChanged="sliderFontSize_ValueChanged"/>
+                    <TextBlock x:Name="txtFontSizeVal" Text="100%" Foreground="White" FontSize="11" Width="35" TextAlignment="Right" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <Button x:Name="btnBackToChapters" Content="← Quay lại" Margin="15,0,0,0"
+                             FontSize="14" Background="#FFFFFF20" Foreground="White"
+                             BorderThickness="0" Padding="12,6" Cursor="Hand"
+                             Visibility="Collapsed" Click="BackToChapters_Click"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock x:Name="txtHeaderTitle" Text="🚂 Chuyến Tàu Ngữ Văn"
+                               FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock x:Name="txtHeaderSub" Text="Hành trình cảm thụ Văn học • Khám phá toàn bộ tác phẩm"
+                               FontSize="14" Foreground="#E1BEE7" Margin="0,3,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#F3E5F5">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#E1BEE7"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#6A1B9A"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🚂" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextTrain" Text="Chuyến tàu Ngữ văn" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📚" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextChapters" Text="Chương trình học" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📝" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextExams" Text="Kho đề thi" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📊" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextDashboard" Text="Bảng điều khiển" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextApp" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#E1BEE7"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 0: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#E1BEE7" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#6A1B9A" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#E1BEE7" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEWS CŨ LỒNG NHAU -->
+                <ScrollViewer x:Name="mainScrollViewer" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <Grid>
+                        <StackPanel x:Name="mainPanel" Margin="8" HorizontalAlignment="Stretch">
+                            <StackPanel.LayoutTransform>
+                                <ScaleTransform ScaleX="{Binding ElementName=sliderFontSize, Path=Value}"
+                                                ScaleY="{Binding ElementName=sliderFontSize, Path=Value}"/>
+                            </StackPanel.LayoutTransform>
+                        </StackPanel>
+                        <StackPanel x:Name="relatedToolContainer" Visibility="Collapsed" Margin="8" HorizontalAlignment="Stretch">
+                            <StackPanel.LayoutTransform>
+                                <ScaleTransform ScaleX="{Binding ElementName=sliderFontSize, Path=Value}"
+                                                ScaleY="{Binding ElementName=sliderFontSize, Path=Value}"/>
+                            </StackPanel.LayoutTransform>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+
+                <!-- ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="contentApp" Margin="0">
+                        <controls:PracticalAppViewer.LayoutTransform>
+                            <ScaleTransform ScaleX="{Binding ElementName=sliderFontSize, Path=Value}"
+                                            ScaleY="{Binding ElementName=sliderFontSize, Path=Value}"/>
+                        </controls:PracticalAppViewer.LayoutTransform>
+                    </controls:PracticalAppViewer>
+                </Border>
+
+                <!-- OVERLAY GALLERY -->
+                <Grid x:Name="overlayGrid" Background="#CC000000" Visibility="Collapsed">
+                    <Border Background="White" CornerRadius="12" Margin="40" Padding="16" MaxWidth="1600" MaxHeight="800">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <DockPanel Grid.Row="0" Margin="0,0,0,16">
+                                <Button x:Name="btnCloseGallery" Content="✕" DockPanel.Dock="Right" 
+                                        FontSize="16" Background="Transparent" BorderThickness="0" 
+                                        Foreground="#333" Cursor="Hand" Click="CloseGallery_Click"
+                                        Padding="4,0,4,0"/>
+                                <TextBlock x:Name="txtGalleryTitle" Text="Phòng Trưng Bày Bối Cảnh" 
+                                           FontSize="16" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center"/>
+                            </DockPanel>
+                            
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <StackPanel x:Name="galleryContentPanel"/>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- CELEBRATION OVERLAY -->
+                <Canvas x:Name="celebrationCanvas" IsHitTestVisible="False" Background="Transparent"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

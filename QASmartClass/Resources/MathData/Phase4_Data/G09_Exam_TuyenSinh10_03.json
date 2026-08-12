@@ -1,0 +1,84 @@
+﻿{
+  "metadata": {
+    "examId": "g09_tuyensinh10_03",
+    "title": "Đề thi Tuyển Sinh vào Lớp 10 - Đề số 03",
+    "totalQuestions": 5,
+    "timeLimit": 120,
+    "totalPoints": 10,
+    "pointsPerQuestion": 2,
+    "grade": 9,
+    "examType": "TuyenSinh10"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "ΔABC vuông tại A, AH⊥BC (H∈BC). AB=3, AC=4. Tính AH:",
+      "options": [
+        "A) 2.4",
+        "B) 3.5",
+        "C) 2",
+        "D) 3"
+      ],
+      "answer": "A",
+      "solution": "BC=√(9+16)=5. S=½×3×4=6. S=½×BC×AH → AH=12/5=2.4"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Có bao nhiêu cách chọn 3 HS từ nhóm 7 HS?",
+      "options": [
+        "A) 35",
+        "B) 21",
+        "C) 210",
+        "D) 42"
+      ],
+      "answer": "A",
+      "solution": "C(7,3) = 7!/(3!×4!) = 5040/(6×24) = 35"
+    },
+    {
+      "id": 3,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "sin 30° = ?",
+      "options": [
+        "A) 1/2",
+        "B) √3/2",
+        "C) √2/2",
+        "D) 1"
+      ],
+      "answer": "A",
+      "solution": "sin 30° = 1/2 (giá trị đặc biệt)"
+    },
+    {
+      "id": 4,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "ΔABC có DE//BC (D∈AB, E∈AC). AD=3, DB=6, AE=4. Tìm EC:",
+      "options": [
+        "A) 8",
+        "B) 6",
+        "C) 2",
+        "D) 12"
+      ],
+      "answer": "A",
+      "solution": "Thales: AD/DB = AE/EC → 3/6 = 4/EC → EC=8"
+    },
+    {
+      "id": 5,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Mốt của dãy: 2, 3, 3, 5, 5, 5, 7:",
+      "options": [
+        "A) 3",
+        "B) 5",
+        "C) 7",
+        "D) 2"
+      ],
+      "answer": "B",
+      "solution": "5 xuất hiện 3 lần (nhiều nhất) → Mốt = 5"
+    }
+  ]
+}

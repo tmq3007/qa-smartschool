@@ -1,0 +1,74 @@
+<Page x:Class="QASmartClass.YouthUnion.Views.RecruitmentView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="clr-namespace:QASmartClass.YouthUnion.Views"
+      Title="Kết nạp Đoàn viên" Background="{StaticResource AppBackground}">
+
+    <Page.Resources>
+        <local:RecruitmentStatusConverter x:Key="RecruitmentStatusConverter"/>
+    </Page.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock Text="📝 Quy trình Kết nạp Đoàn viên" Style="{StaticResource StaffPageTitle}"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="Lọc:" VerticalAlignment="Center" Margin="0,0,5,0" FontWeight="SemiBold"/>
+                <ComboBox x:Name="CbFilterStatus" Width="130" Height="32" SelectionChanged="CbFilterStatus_Changed">
+                    <ComboBoxItem Content="Tất cả" Tag="All" IsSelected="True"/>
+                    <ComboBoxItem Content="Đang chờ" Tag="Applied"/>
+                    <ComboBoxItem Content="Đang xét" Tag="Reviewing"/>
+                    <ComboBoxItem Content="Đã duyệt" Tag="Approved"/>
+                    <ComboBoxItem Content="Từ chối" Tag="Rejected"/>
+                </ComboBox>
+                <Button x:Name="BtnExport" Content="📤 Xuất Excel" Style="{StaticResource StaffPrimaryBtn}" Margin="10,0,10,0" Click="BtnExport_Click"/>
+                <Button x:Name="BtnNewApply" Content="➕ Nộp hồ sơ mới" Style="{StaticResource StaffSuccessBtn}" Click="BtnNewApply_Click"/>
+            </StackPanel>
+        </DockPanel>
+
+        <Expander Grid.Row="1" Header="📖 Hướng dẫn quy trình kết nạp Đoàn viên mới" Style="{StaticResource StaffExpanderStandard}" Margin="0,0,0,15" IsExpanded="False">
+            <TextBlock TextWrapping="Wrap" Style="{StaticResource StaffBodyText}" LineHeight="20">
+                • <Run FontWeight="Bold">Mục đích:</Run> Quản lý quy trình đăng ký, thẩm định và phê duyệt hồ sơ kết nạp Đoàn viên mới cho học sinh.<LineBreak/>
+                • <Run FontWeight="Bold">Quy định Sư phạm:</Run> Hệ thống tự động kiểm tra độ tuổi học sinh (phải đạt từ đủ 15 tuổi trở lên tính đến thời điểm xét duyệt theo Điều lệ Đoàn TNCS Hồ Chí Minh). Học sinh dưới 15 tuổi sẽ không được kết nạp.<LineBreak/>
+                • <Run FontWeight="Bold">Thao tác duyệt:</Run> Bấm nút <Run FontWeight="Bold">✅ Duyệt</Run> để xác nhận kết nạp và cấp số sổ Đoàn, hoặc bấm nút <Run FontWeight="Bold">❌ Từ chối</Run> nếu hồ sơ chưa đạt yêu cầu.
+            </TextBlock>
+        </Expander>
+
+        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="15">
+            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+            <DataGrid x:Name="DgRecruitment" AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="0" 
+                      Background="White" HeadersVisibility="Column" RowHeight="42" FontSize="14"
+                      GridLinesVisibility="Horizontal" RowBackground="White" AlternatingRowBackground="#F8FAFC">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Họ và Tên" Binding="{Binding StudentName}" Width="2*"/>
+                    <DataGridTextColumn Header="Lớp" Binding="{Binding ClassName}" Width="80"/>
+                    <DataGridTextColumn Header="Ngày nộp" Binding="{Binding ApplyDateStr}" Width="110"/>
+                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status, Converter={StaticResource RecruitmentStatusConverter}}" Width="110"/>
+                    <DataGridTextColumn Header="Người duyệt" Binding="{Binding ApprovedBy}" Width="120"/>
+                    <DataGridTextColumn Header="Ngày duyệt" Binding="{Binding ApproveDateStr}" Width="110"/>
+                    <DataGridTemplateColumn Header="Thao tác" Width="250">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="✅ Duyệt" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="12" Tag="{Binding Id}" Click="BtnApprove_Click" Margin="0,0,10,0"/>
+                                    <Button Content="❌ Từ chối" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="12" Tag="{Binding Id}" Click="BtnReject_Click" Margin="0,0,10,0"/>
+                                    <Button Content="✏️ Sửa" Tag="{Binding Id}" Click="BtnEditRecruitment_Click" ToolTip="Sửa" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4,2" FontSize="12" Margin="0,0,10,0"/>
+                                    <Button Content="🗑️ Xóa" Tag="{Binding Id}" Click="BtnDeleteRecruitment_Click" ToolTip="Xóa" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4,2" FontSize="12" Foreground="Red"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+
+</Page>
+
+
+

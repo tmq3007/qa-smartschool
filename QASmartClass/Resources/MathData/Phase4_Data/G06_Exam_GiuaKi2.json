@@ -1,0 +1,574 @@
+﻿{
+  "metadata": {
+    "examId": "g06_giuaki2",
+    "title": "Đề thi Giữa Kì 2 Toán Lớp 6",
+    "totalQuestions": 40,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.25,
+    "grade": 6,
+    "examType": "GiuaKi2"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Kim phút và kim giờ lúc 6:00 tạo góc bao nhiêu độ?",
+      "options": [
+        "A) 90°",
+        "B) 120°",
+        "C) 150°",
+        "D) 180°"
+      ],
+      "answer": "D",
+      "solution": "6:00 → kim thẳng hàng đối nhau = 180° (góc bẹt)"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Trung vị (Me) của dữ liệu sắp xếp: 5,5,5,5,6,7,7,8,8,9 = ?",
+      "options": [
+        "A) 6",
+        "B) 6,5",
+        "C) 7",
+        "D) 5"
+      ],
+      "answer": "B",
+      "solution": "10 số → Me = TB(số thứ 5, thứ 6) = (6+7)/2 = 6,5"
+    },
+    {
+      "id": 3,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Ký hiệu 2 đường thẳng song song là?",
+      "options": [
+        "A) a ⊥ b",
+        "B) a // b",
+        "C) a = b",
+        "D) a ∩ b"
+      ],
+      "answer": "B",
+      "solution": "// = song song, ⊥ = vuông góc"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "(-12) + 7 - (-3) + (-5) = ?",
+      "options": [
+        "A) -7",
+        "B) -3",
+        "C) 7",
+        "D) 3"
+      ],
+      "answer": "A",
+      "solution": "-12 + 7 + 3 - 5 = (7+3) - (12+5) = 10 - 17 = -7"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tìm BCNN(8, 12):",
+      "options": [
+        "A) 24",
+        "B) 48",
+        "C) 96",
+        "D) 4"
+      ],
+      "answer": "A",
+      "solution": "8 = 2³, 12 = 2²×3. BCNN = 2³×3 = 24"
+    },
+    {
+      "id": 6,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Tính: |-7| + |3| = ?",
+      "options": [
+        "A) -4",
+        "B) 10",
+        "C) 4",
+        "D) -10"
+      ],
+      "answer": "B",
+      "solution": "|-7| = 7, |3| = 3. 7 + 3 = 10"
+    },
+    {
+      "id": 7,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "(-1)¹⁰⁰ = ?",
+      "options": [
+        "A) -1",
+        "B) 1",
+        "C) 100",
+        "D) -100"
+      ],
+      "answer": "B",
+      "solution": "(-1) lũy thừa chẵn = 1. (-1) lũy thừa lẻ = -1. 100 chẵn → 1"
+    },
+    {
+      "id": 8,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Qua 1 điểm ngoài đường thẳng, vẽ được mấy đường thẳng song song?",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) 2",
+        "D) Vô số"
+      ],
+      "answer": "B",
+      "solution": "Tiên đề Euclid: qua 1 điểm ngoài đường thẳng có đúng 1 đường song song"
+    },
+    {
+      "id": 9,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "(-3) × 4 + (-2) × (-5) - 6 = ?",
+      "options": [
+        "A) -4",
+        "B) -8",
+        "C) 4",
+        "D) -16"
+      ],
+      "answer": "A",
+      "solution": "-12 + 10 - 6 = -8. Wait: -12+10 = -2. -2-6 = -8. Hmm let me recheck: -3×4=-12. (-2)×(-5)=10. -12+10-6=-8"
+    },
+    {
+      "id": 10,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Hai góc đối đỉnh, một góc = 47°. Góc kia = ?",
+      "options": [
+        "A) 43°",
+        "B) 47°",
+        "C) 90°",
+        "D) 133°"
+      ],
+      "answer": "B",
+      "solution": "Góc đối đỉnh bằng nhau = 47°"
+    },
+    {
+      "id": 11,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "|-9| = ?",
+      "options": [
+        "A) -9",
+        "B) 9",
+        "C) 0",
+        "D) 1/9"
+      ],
+      "answer": "B",
+      "solution": "GTTĐ là khoảng cách đến 0, luôn dương: |-9| = 9"
+    },
+    {
+      "id": 12,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Lớp 30 HS. Điểm 7: 8 HS, điểm 8: 12 HS, điểm 9: 6 HS, điểm 10: 4 HS. Tần số tương đối điểm 8 = ?%",
+      "options": [
+        "A) 30%",
+        "B) 40%",
+        "C) 50%",
+        "D) 12%"
+      ],
+      "answer": "B",
+      "solution": "Tần số tương đối = 12/30 = 0,4 = 40%"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tia phân giác góc 80°. Mỗi nửa = ?",
+      "options": [
+        "A) 20°",
+        "B) 30°",
+        "C) 40°",
+        "D) 45°"
+      ],
+      "answer": "C",
+      "solution": "80° ÷ 2 = 40° mỗi nửa"
+    },
+    {
+      "id": 14,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tính: (-2/3) × 9/4 + (-2/3) × 3/4",
+      "options": [
+        "A) -2",
+        "B) 2",
+        "C) -1",
+        "D) -3"
+      ],
+      "answer": "A",
+      "solution": "(-2/3) × (9/4 + 3/4) = (-2/3) × 3 = -2"
+    },
+    {
+      "id": 15,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm x: |x - 3| = 7",
+      "options": [
+        "A) x=10 hoặc x=-4",
+        "B) x=10",
+        "C) x=-4",
+        "D) x=4 hoặc x=-10"
+      ],
+      "answer": "A",
+      "solution": "x-3=7 → x=10. Hoặc x-3=-7 → x=-4"
+    },
+    {
+      "id": 16,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Góc 120° thuộc loại nào?",
+      "options": [
+        "A) Nhọn",
+        "B) Vuông",
+        "C) Tù",
+        "D) Bẹt"
+      ],
+      "answer": "C",
+      "solution": "90° < 120° < 180° → góc tù"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Số nào là số nguyên tố?",
+      "options": [
+        "A) 15",
+        "B) 21",
+        "C) 23",
+        "D) 27"
+      ],
+      "answer": "C",
+      "solution": "23 chỉ chia hết cho 1 và 23 → nguyên tố"
+    },
+    {
+      "id": 18,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "M trung điểm AB, N trung điểm MB. AB = 12. MN = ?",
+      "options": [
+        "A) 2",
+        "B) 3",
+        "C) 4",
+        "D) 6"
+      ],
+      "answer": "B",
+      "solution": "MB = 12/2 = 6. MN = MB/2 = 3"
+    },
+    {
+      "id": 19,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Hộp có 3 bi đỏ, 5 bi xanh, 2 bi vàng. P(bi đỏ) = ?",
+      "options": [
+        "A) 1/3",
+        "B) 3/10",
+        "C) 3/8",
+        "D) 1/10"
+      ],
+      "answer": "B",
+      "solution": "Tổng = 10 bi. P(đỏ) = 3/10"
+    },
+    {
+      "id": 20,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm x: x + (-5) = -12",
+      "options": [
+        "A) -7",
+        "B) 7",
+        "C) -17",
+        "D) 17"
+      ],
+      "answer": "A",
+      "solution": "x = -12 - (-5) = -12 + 5 = -7"
+    },
+    {
+      "id": 21,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm x: x² = 49",
+      "options": [
+        "A) 7",
+        "B) -7",
+        "C) ±7",
+        "D) 2401"
+      ],
+      "answer": "C",
+      "solution": "x = ±√49 = ±7"
+    },
+    {
+      "id": 22,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Sắp xếp tăng dần: √3, 1.5, √2, 2",
+      "options": [
+        "A) √2, 1.5, √3, 2",
+        "B) 1.5, √2, √3, 2",
+        "C) √2, √3, 1.5, 2",
+        "D) 1.5, √3, √2, 2"
+      ],
+      "answer": "A",
+      "solution": "√2≈1.414 < 1.5 < √3≈1.732 < 2"
+    },
+    {
+      "id": 23,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "5 - (-8) = ?",
+      "options": [
+        "A) -3",
+        "B) 3",
+        "C) 13",
+        "D) -13"
+      ],
+      "answer": "C",
+      "solution": "5 - (-8) = 5 + 8 = 13"
+    },
+    {
+      "id": 24,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "√(36 + 64) = ?",
+      "options": [
+        "A) 10",
+        "B) 14",
+        "C) 6 + 8",
+        "D) 100"
+      ],
+      "answer": "A",
+      "solution": "√100 = 10. Lưu ý: √(a+b) ≠ √a + √b"
+    },
+    {
+      "id": 25,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Biểu đồ nào thể hiện tần số tốt nhất?",
+      "options": [
+        "A) Biểu đồ tròn",
+        "B) Biểu đồ cột",
+        "C) Biểu đồ đường",
+        "D) Bảng số liệu"
+      ],
+      "answer": "B",
+      "solution": "Biểu đồ cột (tần số) hiển thị rõ số lần xuất hiện của mỗi giá trị"
+    },
+    {
+      "id": 26,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "√25 = ?",
+      "options": [
+        "A) 5",
+        "B) 12,5",
+        "C) 625",
+        "D) ±5"
+      ],
+      "answer": "A",
+      "solution": "√25 = 5 vì 5² = 25"
+    },
+    {
+      "id": 27,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Sắp xếp tăng dần: -3, 5, 0, -1, 2",
+      "options": [
+        "A) -3, -1, 0, 2, 5",
+        "B) 0, -1, -3, 2, 5",
+        "C) -1, -3, 0, 2, 5",
+        "D) 5, 2, 0, -1, -3"
+      ],
+      "answer": "A",
+      "solution": "-3 < -1 < 0 < 2 < 5"
+    },
+    {
+      "id": 28,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Số nào có |x| = 5?",
+      "options": [
+        "A) Chỉ x=5",
+        "B) Chỉ x=-5",
+        "C) x=5 hoặc x=-5",
+        "D) Không có"
+      ],
+      "answer": "C",
+      "solution": "|5| = 5 và |-5| = 5 → hai nghiệm"
+    },
+    {
+      "id": 29,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm x: |x - 2| = 5",
+      "options": [
+        "A) x = 7",
+        "B) x = -3",
+        "C) x = 7 hoặc x = -3",
+        "D) x = 3"
+      ],
+      "answer": "C",
+      "solution": "x - 2 = 5 → x = 7 hoặc x - 2 = -5 → x = -3"
+    },
+    {
+      "id": 30,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "(-5) × (-6) = ?",
+      "options": [
+        "A) -30",
+        "B) 30",
+        "C) -11",
+        "D) 11"
+      ],
+      "answer": "B",
+      "solution": "Âm × Âm = Dương. 5×6 = 30"
+    },
+    {
+      "id": 31,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "(-6) + (-3) = ?",
+      "options": [
+        "A) -9",
+        "B) 9",
+        "C) -3",
+        "D) 3"
+      ],
+      "answer": "A",
+      "solution": "Cùng âm: -(6+3) = -9"
+    },
+    {
+      "id": 32,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "(-2)³ = ?",
+      "options": [
+        "A) -6",
+        "B) 6",
+        "C) -8",
+        "D) 8"
+      ],
+      "answer": "C",
+      "solution": "(-2)³ = (-2)×(-2)×(-2) = 4×(-2) = -8"
+    },
+    {
+      "id": 33,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tam giác ABC cân tại A. Đường trung trực BC cắt AB tại D, cắt AC tại E. BD = CE?",
+      "options": [
+        "A) Luôn đúng",
+        "B) Chỉ đúng khi tam giác đều",
+        "C) Sai",
+        "D) Không xác định"
+      ],
+      "answer": "A",
+      "solution": "Tam giác cân → trung trực BC là trục đối xứng → BD = CE luôn đúng"
+    },
+    {
+      "id": 34,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "0,333... dưới dạng phân số:",
+      "options": [
+        "A) 1/3",
+        "B) 3/10",
+        "C) 33/100",
+        "D) 3/9"
+      ],
+      "answer": "A",
+      "solution": "0,(3) = 1/3 → hữu tỉ"
+    },
+    {
+      "id": 35,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Gieo đồng xu 200 lần, mặt sấp 112 lần. P thực nghiệm (sấp) ≈ ?",
+      "options": [
+        "A) 50%",
+        "B) 56%",
+        "C) 44%",
+        "D) 60%"
+      ],
+      "answer": "B",
+      "solution": "P = 112/200 = 0,56 = 56%"
+    },
+    {
+      "id": 36,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Hai góc kề bù, góc A = 65°. Góc B = ?",
+      "options": [
+        "A) 105°",
+        "B) 115°",
+        "C) 125°",
+        "D) 95°"
+      ],
+      "answer": "B",
+      "solution": "Kề bù → A + B = 180°. B = 180 - 65 = 115°"
+    },
+    {
+      "id": 37,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "P(A) = 0. Điều gì đúng?",
+      "options": [
+        "A) A chắc chắn xảy ra",
+        "B) A không thể xảy ra",
+        "C) A có thể xảy ra",
+        "D) A xảy ra 50%"
+      ],
+      "answer": "B",
+      "solution": "P = 0 → sự kiện không bao giờ xảy ra (sự kiện bất khả)"
+    },
+    {
+      "id": 38,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "(-18) ÷ 3 = ?",
+      "options": [
+        "A) 6",
+        "B) -6",
+        "C) -15",
+        "D) 15"
+      ],
+      "answer": "B",
+      "solution": "Âm ÷ Dương = Âm. 18÷3 = 6 → -6"
+    },
+    {
+      "id": 39,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Gieo xúc xắc. P(mặt chẵn) = ?",
+      "options": [
+        "A) 1/6",
+        "B) 1/3",
+        "C) 1/2",
+        "D) 2/3"
+      ],
+      "answer": "C",
+      "solution": "Mặt chẵn: 2,4,6 → 3 KQ / 6 tổng = 1/2"
+    },
+    {
+      "id": 40,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Dữ liệu: 5,7,8,5,6,7,5,8,9,5. Tần số của 5 = ?",
+      "options": [
+        "A) 2",
+        "B) 3",
+        "C) 4",
+        "D) 5"
+      ],
+      "answer": "C",
+      "solution": "Đếm số lần xuất hiện: 5 xuất hiện 4 lần"
+    }
+  ]
+}

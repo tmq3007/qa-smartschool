@@ -1,0 +1,448 @@
+{
+  "metadata": {
+    "chapterId": "g11_ch04",
+    "chapterName": "Đạo Hàm Cơ Bản",
+    "grade": 11,
+    "totalSections": 4,
+    "totalConcepts": 13,
+    "totalProblems": 16,
+    "toolMapping": [
+      "DerivativeTool"
+    ],
+    "thptWeight": "8%",
+    "estimatedHours": 14
+  },
+  "sections": [
+    {
+      "sectionId": "dh_01",
+      "sectionName": "Khái niệm đạo hàm",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "dh_001",
+          "name": "Định nghĩa đạo hàm",
+          "formula": "f'(x₀) = lim [f(x₀+Δx) - f(x₀)] / Δx khi Δx→0",
+          "properties": [
+            "f'(x₀) là hệ số góc tiếp tuyến tại (x₀, f(x₀))",
+            "f khả vi tại x₀ ⇒ f liên tục tại x₀ (ngược lại không đúng)"
+          ]
+        },
+        {
+          "id": "dh_002",
+          "name": "Ý nghĩa hình học",
+          "definition": "f'(x₀) là hệ số góc của tiếp tuyến tại M(x₀; f(x₀))",
+          "formula": "PT tiếp tuyến: y = f'(x₀)(x-x₀) + f(x₀)"
+        },
+        {
+          "id": "dh_003",
+          "name": "Ý nghĩa vật lý",
+          "definition": "v(t) = s'(t) — vận tốc tức thời; a(t) = v'(t) — gia tốc"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dh_prob_001",
+          "difficulty": "Easy",
+          "question": "f(x)=x²-3x+1. f'(2) bằng:",
+          "options": [
+            "A) 1",
+            "B) -1",
+            "C) 3",
+            "D) 0"
+          ],
+          "correctAnswer": "A",
+          "solution": "f'(x)=2x-3. f'(2)=4-3=1",
+          "points": 10
+        },
+        {
+          "problemId": "dh_prob_002",
+          "difficulty": "Medium",
+          "question": "PT tiếp tuyến của y=x³ tại x=1:",
+          "options": [
+            "A) y=3x-2",
+            "B) y=3x+2",
+            "C) y=x-1",
+            "D) y=3x"
+          ],
+          "correctAnswer": "A",
+          "solution": "f(1)=1, f'(x)=3x², f'(1)=3. TT: y=3(x-1)+1=3x-2",
+          "points": 15
+        },
+        {
+          "problemId": "dh_prob_003",
+          "difficulty": "Medium",
+          "question": "Vật chuyển động s(t)=t³-3t²+5t. Vận tốc tại t=2:",
+          "options": [
+            "A) 5",
+            "B) 3",
+            "C) 1",
+            "D) 7"
+          ],
+          "correctAnswer": "A",
+          "solution": "v(t)=s'(t)=3t²-6t+5. v(2)=12-12+5=5",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "dh_02",
+      "sectionName": "Bảng đạo hàm cơ bản",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "dh_004",
+          "name": "Đạo hàm hàm cơ bản",
+          "formulas": [
+            "(c)'=0",
+            "(xⁿ)'=nxⁿ⁻¹",
+            "(√x)'=1/(2√x)",
+            "(1/x)'=-1/x²",
+            "(sinx)'=cosx",
+            "(cosx)'=-sinx",
+            "(tanx)'=1/cos²x",
+            "(cotx)'=-1/sin²x"
+          ]
+        },
+        {
+          "id": "dh_005",
+          "name": "Đạo hàm hàm mũ & logarit",
+          "formulas": [
+            "(eˣ)'=eˣ",
+            "(aˣ)'=aˣ·lna",
+            "(lnx)'=1/x",
+            "(logₐx)'=1/(x·lna)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dh_prob_004",
+          "difficulty": "Easy",
+          "question": "(x⁵)' bằng:",
+          "options": [
+            "A) 5x⁴",
+            "B) x⁴",
+            "C) 5x⁵",
+            "D) 4x⁵"
+          ],
+          "correctAnswer": "A",
+          "solution": "(xⁿ)' = nxⁿ⁻¹. (x⁵)' = 5x⁴",
+          "points": 10
+        },
+        {
+          "problemId": "dh_prob_005",
+          "difficulty": "Easy",
+          "question": "(sin x + cos x)' bằng:",
+          "options": [
+            "A) cos x - sin x",
+            "B) -cos x - sin x",
+            "C) cos x + sin x",
+            "D) sin x - cos x"
+          ],
+          "correctAnswer": "A",
+          "solution": "(sinx)' + (cosx)' = cosx + (-sinx) = cosx - sinx",
+          "points": 10
+        },
+        {
+          "problemId": "dh_prob_006",
+          "difficulty": "Medium",
+          "question": "(e²ˣ)' bằng:",
+          "options": [
+            "A) 2e²ˣ",
+            "B) e²ˣ",
+            "C) 2xe²ˣ",
+            "D) e²ˣ/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "Đặt u=2x. (eᵘ)'=eᵘ·u'=e²ˣ·2=2e²ˣ",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "dh_03",
+      "sectionName": "Quy tắc tính đạo hàm",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "dh_006",
+          "name": "Tổng, Hiệu, Tích, Thương",
+          "formulas": [
+            "(u±v)'=u'±v'",
+            "(k·u)'=k·u'",
+            "(u·v)'=u'v+uv'",
+            "(u/v)'=(u'v-uv')/v²"
+          ]
+        },
+        {
+          "id": "dh_007",
+          "name": "Đạo hàm hàm hợp",
+          "formula": "[f(u)]' = f'(u)·u'",
+          "properties": [
+            "(uⁿ)' = n·uⁿ⁻¹·u'",
+            "(√u)' = u'/(2√u)",
+            "(sin u)' = u'·cos u"
+          ]
+        },
+        {
+          "id": "dh_008",
+          "name": "Đạo hàm cấp cao",
+          "definition": "f''(x) = [f'(x)]' — đạo hàm cấp 2",
+          "properties": [
+            "Ý nghĩa: f'' liên quan đến độ lõm/lồi",
+            "f''>0: đồ thị lõm (lồi lên)",
+            "f''<0: đồ thị lồi (lõm xuống)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dh_prob_007",
+          "difficulty": "Easy",
+          "question": "f(x) = x³ - 2x² + 5x - 1. f'(x) =",
+          "options": [
+            "A) 3x²-4x+5",
+            "B) 3x²+4x+5",
+            "C) x²-2x+5",
+            "D) 3x²-4x-1"
+          ],
+          "correctAnswer": "A",
+          "solution": "(x³)'=3x², (-2x²)'=-4x, (5x)'=5, (-1)'=0",
+          "points": 10
+        },
+        {
+          "problemId": "dh_prob_008",
+          "difficulty": "Medium",
+          "question": "f(x) = x²·sinx. f'(x) =",
+          "options": [
+            "A) 2x·sinx + x²·cosx",
+            "B) 2x·cosx",
+            "C) x²·cosx",
+            "D) 2x·sinx - x²·cosx"
+          ],
+          "correctAnswer": "A",
+          "solution": "(uv)' = u'v + uv' = 2x·sinx + x²·cosx",
+          "points": 15
+        },
+        {
+          "problemId": "dh_prob_009",
+          "difficulty": "Medium",
+          "question": "f(x) = (2x+1)⁵. f'(x) =",
+          "options": [
+            "A) 10(2x+1)⁴",
+            "B) 5(2x+1)⁴",
+            "C) 10x(2x+1)⁴",
+            "D) 2(2x+1)⁵"
+          ],
+          "correctAnswer": "A",
+          "solution": "Hàm hợp: 5(2x+1)⁴·(2x+1)' = 5(2x+1)⁴·2 = 10(2x+1)⁴",
+          "points": 15
+        },
+        {
+          "problemId": "dh_prob_010",
+          "difficulty": "Hard",
+          "question": "f(x) = (x+1)/(x-1). f'(x) =",
+          "options": [
+            "A) -2/(x-1)²",
+            "B) 2/(x-1)²",
+            "C) 1/(x-1)²",
+            "D) -1/(x-1)"
+          ],
+          "correctAnswer": "A",
+          "solution": "(u/v)' = (u'v-uv')/v² = [(1)(x-1)-(x+1)(1)]/(x-1)² = -2/(x-1)²",
+          "points": 20
+        },
+        {
+          "problemId": "dh_prob_011",
+          "difficulty": "Hard",
+          "question": "f(x) = sin²(3x). f'(x) =",
+          "options": [
+            "A) 3sin(6x)",
+            "B) 6sin(3x)",
+            "C) 2sin(3x)cos(3x)",
+            "D) sin(6x)"
+          ],
+          "correctAnswer": "A",
+          "solution": "f'=2sin(3x)·cos(3x)·3 = 3·2sin(3x)cos(3x) = 3sin(6x)",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "dh_04",
+      "sectionName": "Vi phân & Ứng dụng cơ bản",
+      "order": 4,
+      "concepts": [
+        {
+          "id": "dh_009",
+          "name": "Vi phân",
+          "formula": "dy = f'(x)·dx",
+          "properties": [
+            "Δy ≈ dy khi Δx nhỏ",
+            "f(x₀+Δx) ≈ f(x₀) + f'(x₀)·Δx"
+          ]
+        },
+        {
+          "id": "dh_010",
+          "name": "Tính đơn điệu (cơ bản)",
+          "properties": [
+            "f'(x)>0 trên (a;b) ⇒ f tăng trên (a;b)",
+            "f'(x)<0 trên (a;b) ⇒ f giảm trên (a;b)"
+          ]
+        },
+        {
+          "id": "dh_011",
+          "name": "Cực trị (giới thiệu)",
+          "properties": [
+            "f'(x₀)=0 và f' đổi dấu qua x₀ ⇒ x₀ là cực trị",
+            "f' đổi dấu +→-: cực đại",
+            "f' đổi dấu -→+: cực tiểu"
+          ]
+        },
+        {
+          "id": "dh_012",
+          "name": "Tiếp tuyến qua điểm ngoài",
+          "method": "Gọi tiếp điểm M(a, f(a)), lập PT TT: y=f'(a)(x-a)+f(a), thay tọa độ điểm đã cho để tìm a"
+        },
+        {
+          "id": "dh_013",
+          "name": "Phương trình pháp tuyến",
+          "formula": "y = (-1/f'(x₀))(x-x₀) + f(x₀)",
+          "properties": [
+            "Pháp tuyến ⊥ tiếp tuyến",
+            "Chỉ tồn tại khi f'(x₀)≠0"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dh_prob_012",
+          "difficulty": "Easy",
+          "question": "f(x)=x³-3x. Hàm tăng trên khoảng:",
+          "options": [
+            "A) (-∞;-1)∪(1;+∞)",
+            "B) (-1;1)",
+            "C) (0;+∞)",
+            "D) (-∞;0)"
+          ],
+          "correctAnswer": "A",
+          "solution": "f'(x)=3x²-3=3(x-1)(x+1). f'>0: x<-1 hoặc x>1",
+          "points": 10
+        },
+        {
+          "problemId": "dh_prob_013",
+          "difficulty": "Medium",
+          "question": "f(x)=x³-3x²+1. Giá trị cực đại của f:",
+          "options": [
+            "A) 1",
+            "B) -3",
+            "C) 3",
+            "D) 0"
+          ],
+          "correctAnswer": "A",
+          "solution": "f'=3x²-6x=3x(x-2). f'=0: x=0,2. f''=6x-6. f''(0)=-6<0: CĐ. f(0)=1",
+          "points": 15
+        },
+        {
+          "problemId": "dh_prob_014",
+          "difficulty": "Medium",
+          "question": "Tính gần đúng √4.02 bằng vi phân:",
+          "options": [
+            "A) 2.005",
+            "B) 2.01",
+            "C) 2.004",
+            "D) 2.1"
+          ],
+          "correctAnswer": "A",
+          "solution": "f(x)=√x, x₀=4, Δx=0.02. f(4.02)≈f(4)+f'(4)·0.02 = 2+1/4·0.02 = 2.005",
+          "points": 15
+        },
+        {
+          "problemId": "dh_prob_015",
+          "difficulty": "Hard",
+          "question": "PT tiếp tuyến của y=x² kẻ từ điểm A(2;0):",
+          "options": [
+            "A) y=0 hoặc y=8x-16",
+            "B) y=4x-4",
+            "C) y=8x-16",
+            "D) y=2x-4"
+          ],
+          "correctAnswer": "A",
+          "solution": "TT tại M(a,a²): y=2a(x-a)+a²=2ax-a². Qua A(2;0): 0=4a-a²→a(a-4)=0→a=0,4. TT: y=0 và y=8x-16",
+          "points": 20
+        },
+        {
+          "problemId": "dh_prob_016",
+          "difficulty": "Hard",
+          "question": "f(x) = 2x³-9x²+12x-4 có bao nhiêu cực trị?",
+          "options": [
+            "A) 2",
+            "B) 0",
+            "C) 1",
+            "D) 3"
+          ],
+          "correctAnswer": "A",
+          "solution": "f'=6x²-18x+12=6(x-1)(x-2). f'=0: x=1,2. Đổi dấu tại cả hai → 2 cực trị",
+          "points": 20
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Quên nhân đạo hàm trong khi dùng hàm hợp",
+      "correction": "[f(u)]' = f'(u)·u', PHẢI nhân thêm u'"
+    },
+    {
+      "mistake": "Nhầm (u·v)' = u'·v'",
+      "correction": "Công thức đúng: (u·v)' = u'v + uv'"
+    },
+    {
+      "mistake": "f'(x₀)=0 ⇒ cực trị",
+      "correction": "Cần thêm: f' đổi dấu qua x₀. VD: f(x)=x³ có f'(0)=0 nhưng không phải cực trị"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "dh_quiz_01",
+      "title": "Kiểm tra: Đạo hàm cơ bản",
+      "timeLimit": 900,
+      "questions": [
+        {
+          "ref": "dh_prob_001"
+        },
+        {
+          "ref": "dh_prob_004"
+        },
+        {
+          "ref": "dh_prob_007"
+        },
+        {
+          "ref": "dh_prob_009"
+        },
+        {
+          "ref": "dh_prob_012"
+        },
+        {
+          "ref": "dh_prob_013"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

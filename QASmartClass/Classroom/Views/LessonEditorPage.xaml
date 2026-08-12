@@ -1,0 +1,862 @@
+<Page x:Class="QASmartClass.Classroom.Views.LessonEditorPage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Soạn bài" Background="#FAFAFA">
+
+
+
+    <Grid Margin="24,16">
+
+        <Grid.ColumnDefinitions>
+
+            <ColumnDefinition Width="*"/>       <!-- Editor area -->
+
+            <ColumnDefinition Width="280"/>     <!-- Properties panel -->
+
+        </Grid.ColumnDefinitions>
+
+
+
+        <!-- ═══ EDITOR AREA (LEFT) ═══ -->
+
+        <Grid Grid.Column="0" Margin="0,0,16,0">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/>  <!-- Tab bar -->
+
+                <RowDefinition Height="Auto"/>  <!-- Block toolbar -->
+
+                <RowDefinition Height="*"/>     <!-- Content blocks -->
+
+            </Grid.RowDefinitions>
+
+
+
+            <!-- Tab Bar -->
+
+            <Border Grid.Row="0" Background="White" CornerRadius="10,10,0,0" BorderBrush="#E0E0E0" BorderThickness="1,1,1,0" Padding="8,4">
+
+                <DockPanel>
+
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+
+                        <!-- Navigation sub-flow: Quay lại Danh sách -->
+
+                        <Button Content="&#xE72B; Danh sách" FontFamily="Segoe UI" 
+
+                                FontSize="12" Background="#F5F5F5" Foreground="#616161"
+
+                                BorderThickness="1" BorderBrush="#E0E0E0" Cursor="Hand" Padding="12,5" 
+
+                                Margin="0,0,6,0" Click="GoBackToList_Click" ToolTip="Lưu và quay lại Danh sách bài giảng">
+
+                            <Button.Template>
+
+                                <ControlTemplate TargetType="Button">
+
+                                    <Border x:Name="bg" Background="{TemplateBinding Background}" 
+
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+
+                                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                        <TextBlock Text="{TemplateBinding Content}" VerticalAlignment="Center"/>
+
+                                    </Border>
+
+                                    <ControlTemplate.Triggers>
+
+                                        <Trigger Property="IsMouseOver" Value="True">
+
+                                            <Setter TargetName="bg" Property="Background" Value="#E0E0E0"/>
+
+                                        </Trigger>
+
+                                    </ControlTemplate.Triggers>
+
+                                </ControlTemplate>
+
+                            </Button.Template>
+
+                        </Button>
+
+                        
+
+                        <!-- Navigation sub-flow: Bắt đầu Trình chiếu -->
+
+                        <Button Content="▶ Trình chiếu" FontFamily="Segoe UI" 
+
+                                FontSize="12" Background="#E8F5E9" Foreground="#2E7D32"
+
+                                BorderThickness="1" BorderBrush="#A5D6A7" Cursor="Hand" Padding="12,5" 
+
+                                Click="StartRunner_Click" ToolTip="Lưu và bắt đầu giảng dạy">
+
+                            <Button.Template>
+
+                                <ControlTemplate TargetType="Button">
+
+                                    <Border x:Name="bg" Background="{TemplateBinding Background}" 
+
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+
+                                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                        <TextBlock Text="{TemplateBinding Content}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+
+                                    </Border>
+
+                                    <ControlTemplate.Triggers>
+
+                                        <Trigger Property="IsMouseOver" Value="True">
+
+                                            <Setter TargetName="bg" Property="Background" Value="#C8E6C9"/>
+
+                                        </Trigger>
+
+                                    </ControlTemplate.Triggers>
+
+                                </ControlTemplate>
+
+                            </Button.Template>
+
+                        </Button>
+
+                    </StackPanel>
+
+                    
+
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+
+                        <Button x:Name="btnUndo" Content="↩️" FontSize="16" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="8,4" ToolTip="Hoàn tác" Click="Undo_Click"/>
+
+                        <Button x:Name="btnRedo" Content="↪️" FontSize="16" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="8,4" ToolTip="Làm lại" Click="Redo_Click"/>
+
+                        <Border Width="1" Height="20" Background="#E0E0E0" Margin="8,0"/>
+
+                        <Button Content="👁️ Xem trước" FontSize="12" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="8,4" Click="Preview_Click"/>
+
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <Border x:Name="tabContent" Background="#1976D2" CornerRadius="6" Padding="12,6" Margin="0,0,4,0" Cursor="Hand" MouseLeftButtonDown="TabContent_Click">
+
+                            <TextBlock Text="📝 Nội dung" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+
+                        </Border>
+
+                        <Border x:Name="tabQuiz" Background="#F5F5F5" CornerRadius="6" Padding="12,6" Margin="0,0,4,0" Cursor="Hand" MouseLeftButtonDown="TabQuiz_Click">
+
+                            <TextBlock Text="🏆 Câu hỏi" Foreground="#757575" FontSize="12"/>
+
+                        </Border>
+
+                        <Border x:Name="tabResources" Background="#F5F5F5" CornerRadius="6" Padding="12,6" Cursor="Hand" MouseLeftButtonDown="TabResources_Click">
+
+                            <TextBlock Text="📎 Tài nguyên" Foreground="#757575" FontSize="12"/>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </DockPanel>
+
+            </Border>
+
+
+
+            <!-- Block Toolbar (only visible in Content tab) -->
+
+            <Border x:Name="contentToolbar" Grid.Row="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" Padding="8,6">
+
+                <StackPanel Orientation="Horizontal">
+
+                    <TextBlock Text="Thêm block:" FontSize="12" Foreground="#757575" VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                    <Button Content="🔤 Văn bản" FontSize="11" Padding="8,5" Background="#E3F2FD" Foreground="#1565C0" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="AddTextBlock_Click">
+
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#BBDEFB"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                    </Button>
+
+                    <Button Content="🖼️ Hình ảnh" FontSize="11" Padding="8,5" Background="#E8F5E9" Foreground="#2E7D32" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="AddImageBlock_Click">
+
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#C8E6C9"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                    </Button>
+
+                    <Button Content="🎬 Video" FontSize="11" Padding="8,5" Background="#FFF3E0" Foreground="#E65100" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="AddVideoBlock_Click">
+
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFE0B2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                    </Button>
+
+                    <Button Content="🔬 Mô phỏng" FontSize="11" Padding="8,5" Background="#F3E5F5" Foreground="#7B1FA2" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="AddSimBlock_Click">
+
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#E1BEE7"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                    </Button>
+
+                    <Button Content="📄 PDF" FontSize="11" Padding="8,5" Background="#FFEBEE" Foreground="#C62828" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="AddPdfBlock_Click">
+
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFCDD2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                    </Button>
+
+                    <Button Content="❓ Quiz" FontSize="11" Padding="8,5" Background="#E0F2F1" Foreground="#00695C" BorderThickness="0" Cursor="Hand" Click="AddQuizBlock_Click">
+
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#B2DFDB"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                    </Button>
+
+
+
+                    <!-- ── Separator ── -->
+
+                    <Border Width="1" Height="22" Background="#E0E0E0" Margin="8,0"/>
+
+
+
+                    <!-- 📄 Tải mẫu Word -->
+
+                    <Button Content="📄 Tải mẫu Word" FontSize="11" Padding="8,5" Background="#FFEBEE" Foreground="#C62828" 
+
+                            BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="DownloadWordTemplate_Click" 
+
+                            ToolTip="Tạo file Word mẫu bài giảng để GV soạn nội dung">
+
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}" BorderBrush="#EF9A9A" BorderThickness="1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFCDD2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                    </Button>
+
+
+
+                    <!-- 📥 Import Word -->
+
+                    <Button Content="📥 Import Word" FontSize="11" Padding="8,5" Background="#E8EAF6" Foreground="#283593"
+
+                            BorderThickness="0" Cursor="Hand" Click="ImportWordFile_Click"
+
+                            ToolTip="Import file Word bài giảng đã soạn → tạo blocks tự động">
+
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}" BorderBrush="#7986CB" BorderThickness="1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#C5CAE9"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                    </Button>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- ═══ TAB: Nội dung (default) ═══ -->
+
+            <ScrollViewer x:Name="contentTabPanel" Grid.Row="2" VerticalScrollBarVisibility="Auto">
+
+                <StackPanel x:Name="blocksPanel" Margin="0,8,0,0">
+
+                    <Border x:Name="emptyPlaceholder" Background="White" CornerRadius="12" Padding="40" Margin="0,0,0,8"
+
+                            BorderBrush="#E0E0E0" BorderThickness="2" Cursor="Hand" MouseLeftButtonDown="StartTemplate_Click">
+
+                        <Border.Style>
+
+                            <Style TargetType="Border">
+
+                                <Style.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter Property="BorderBrush" Value="#1976D2"/>
+
+                                        <Setter Property="Background" Value="#FAFCFF"/>
+
+                                    </Trigger>
+
+                                </Style.Triggers>
+
+                            </Style>
+
+                        </Border.Style>
+
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                            <TextBlock Text="📝" FontSize="48" HorizontalAlignment="Center"/>
+
+                            <TextBlock Text="Bắt đầu soạn bài" FontSize="16" FontWeight="SemiBold" Foreground="#1976D2" HorizontalAlignment="Center" Margin="0,8,0,4"/>
+
+                            <TextBlock Text="Nhấn vào đây để tạo bài giảng mẫu theo Môn học và Lớp đã chọn ở bên phải" 
+
+                                       FontSize="12" Foreground="#757575" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="400"/>
+
+                            <TextBlock Text="hoặc dùng toolbar ở trên để thêm từng block thủ công" 
+
+                                       FontSize="11" Foreground="#BDBDBD" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+            <!-- ═══ TAB: Câu hỏi ═══ -->
+
+            <ScrollViewer x:Name="quizTabPanel" Grid.Row="2" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+
+                <StackPanel Margin="0,8,0,0">
+
+                    <!-- Quiz header + Add button -->
+
+                    <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="16,12" Margin="0,0,0,10">
+
+                        <DockPanel>
+
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+
+                                <TextBlock x:Name="txtQuizCount" Text="0 câu hỏi" FontSize="12" Foreground="#757575" 
+
+                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                                <!-- Bank management buttons -->
+
+                                <Button Content="📚 Ngân hàng" FontSize="11" Padding="10,6" Background="#FFF3E0" 
+
+                                        Foreground="#E65100" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="ManageQuestionBank_Click" ToolTip="Quản lý danh mục ngân hàng câu hỏi">
+
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}" BorderBrush="#FF9800" BorderThickness="1"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFE0B2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                                </Button>
+
+                                <Button Content="📥 Lấy từ NH" FontSize="11" Padding="10,6" Background="#E3F2FD" 
+
+                                        Foreground="#1565C0" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="ImportFromBank_Click" ToolTip="Import câu hỏi từ ngân hàng vào bài kiểm tra">
+
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}" BorderBrush="#1976D2" BorderThickness="1"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#BBDEFB"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                                </Button>
+
+                                <Button Content="📤 Export" FontSize="11" Padding="10,6" Background="#F3E5F5" 
+
+                                        Foreground="#7B1FA2" BorderThickness="0" Cursor="Hand" Margin="0,0,6,0" Click="ExportQuestionBank_Click" ToolTip="Xuất ngân hàng câu hỏi ra file JSON">
+
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}" BorderBrush="#9C27B0" BorderThickness="1"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#E1BEE7"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                                </Button>
+
+                                <Button Content="➕ Thêm câu hỏi" FontSize="12" Padding="12,7" Background="#00695C" 
+
+                                        Foreground="White" BorderThickness="0" Cursor="Hand" Click="AddQuizItem_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#004D40"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </StackPanel>
+
+                            <StackPanel>
+
+                                <TextBlock Text="🏆 Ngân hàng câu hỏi" FontSize="14" FontWeight="SemiBold" Foreground="#212121"/>
+
+                                <TextBlock Text="Tạo, quản lý và import/export câu hỏi đa dạng cho bài kiểm tra" FontSize="11" Foreground="#9E9E9E" Margin="0,2,0,0"/>
+
+                            </StackPanel>
+
+                        </DockPanel>
+
+                    </Border>
+
+                    <!-- Quiz items list -->
+
+                    <StackPanel x:Name="quizItemsPanel">
+
+                        <Border x:Name="quizEmptyPlaceholder" Background="White" CornerRadius="12" Padding="40" BorderBrush="#E0E0E0" BorderThickness="2">
+
+                            <StackPanel HorizontalAlignment="Center">
+
+                                <TextBlock Text="🏆" FontSize="40" HorizontalAlignment="Center"/>
+
+                                <TextBlock Text="Chưa có câu hỏi nào" FontSize="14" FontWeight="SemiBold" Foreground="#00695C" HorizontalAlignment="Center" Margin="0,6,0,2"/>
+
+                                <TextBlock Text="Nhấn nút ➕ Thêm câu hỏi ở trên để bắt đầu" FontSize="12" Foreground="#9E9E9E" HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+            <!-- ═══ TAB: Tài nguyên ═══ -->
+
+            <ScrollViewer x:Name="resourcesTabPanel" Grid.Row="2" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+
+                <StackPanel Margin="0,8,0,0">
+
+                    <!-- Resources header + Add buttons -->
+
+                    <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="16,12" Margin="0,0,0,10">
+
+                        <DockPanel>
+
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+
+                                <TextBlock x:Name="txtResourceCount" Text="0 tài nguyên" FontSize="12" Foreground="#757575" 
+
+                                           VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                                <Button Content="📁 Thêm file" FontSize="12" Padding="12,7" Background="#1565C0" 
+
+                                        Foreground="White" BorderThickness="0" Cursor="Hand" Click="AddResourceFile_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                                </Button>
+
+                                <Button Content="🔗 Thêm link" FontSize="12" Padding="12,7" Background="#E8F5E9" 
+
+                                        Foreground="#2E7D32" BorderThickness="0" Cursor="Hand" Margin="8,0,0,0" Click="AddResourceLink_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}" BorderBrush="#43A047" BorderThickness="1"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#C8E6C9"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </StackPanel>
+
+                            <StackPanel>
+
+                                <TextBlock Text="📎 Tài nguyên bài giảng" FontSize="14" FontWeight="SemiBold" Foreground="#212121"/>
+
+                                <TextBlock Text="Upload file bổ trợ, đường link tham khảo cho bài học" FontSize="11" Foreground="#9E9E9E" Margin="0,2,0,0"/>
+
+                            </StackPanel>
+
+                        </DockPanel>
+
+                    </Border>
+
+                    <!-- Resources list -->
+
+                    <StackPanel x:Name="resourcesListPanel">
+
+                        <Border x:Name="resourcesEmptyPlaceholder" Background="White" CornerRadius="12" Padding="40" BorderBrush="#E0E0E0" BorderThickness="2">
+
+                            <StackPanel HorizontalAlignment="Center">
+
+                                <TextBlock Text="📎" FontSize="40" HorizontalAlignment="Center"/>
+
+                                <TextBlock Text="Chưa có tài nguyên nào" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0" HorizontalAlignment="Center" Margin="0,6,0,2"/>
+
+                                <TextBlock Text="Nhấn 📁 Thêm file hoặc 🔗 Thêm link ở trên để bắt đầu" FontSize="12" Foreground="#9E9E9E" HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+        </Grid>
+
+
+
+        <!-- ═══ PROPERTIES PANEL (RIGHT) ═══ -->
+
+        <Border Grid.Column="1" Background="White" CornerRadius="12" BorderBrush="#E0E0E0" BorderThickness="1">
+
+            <Border.Effect>
+
+                <DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.08"/>
+
+            </Border.Effect>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                <StackPanel Margin="16">
+
+                    <TextBlock Text="📋 Thông tin bài giảng" FontSize="14" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,16"/>
+
+
+
+                    <TextBlock Text="Tiêu đề" FontSize="11" Foreground="#757575" Margin="0,0,0,4"/>
+
+                    <TextBox x:Name="txtTitle" FontSize="13" Padding="10,8" BorderBrush="#E0E0E0" Text="Hàm số bậc nhất y = ax + b">
+
+                        <TextBox.Template><ControlTemplate TargetType="TextBox"><Border Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6"><ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/></Border></ControlTemplate></TextBox.Template>
+
+                    </TextBox>
+
+
+
+                    <TextBlock Text="Môn học" FontSize="11" Foreground="#757575" Margin="0,12,0,4"/>
+
+                    <ComboBox x:Name="cmbSubject" FontSize="13" Padding="10,8" SelectedIndex="0">
+
+                        <ComboBoxItem Content="Toán"/>
+
+                        <ComboBoxItem Content="Vật lý"/>
+
+                        <ComboBoxItem Content="Hóa học"/>
+
+                        <ComboBoxItem Content="Sinh học"/>
+
+                        <ComboBoxItem Content="Ngữ văn"/>
+
+                        <ComboBoxItem Content="Lịch sử"/>
+
+                        <ComboBoxItem Content="Địa lý"/>
+
+                        <ComboBoxItem Content="Tiếng Anh"/>
+
+                        <ComboBoxItem Content="Tin học"/>
+
+                        <ComboBoxItem Content="GDCD"/>
+
+                    </ComboBox>
+
+
+
+                    <TextBlock Text="Lớp" FontSize="11" Foreground="#757575" Margin="0,12,0,4"/>
+
+                    <ComboBox x:Name="cmbGrade" FontSize="13" Padding="10,8" SelectedIndex="4">
+
+                        <ComboBoxItem Content="Lớp 6"/>
+
+                        <ComboBoxItem Content="Lớp 7"/>
+
+                        <ComboBoxItem Content="Lớp 8"/>
+
+                        <ComboBoxItem Content="Lớp 9"/>
+
+                        <ComboBoxItem Content="Lớp 10"/>
+
+                        <ComboBoxItem Content="Lớp 11"/>
+
+                        <ComboBoxItem Content="Lớp 12"/>
+
+                    </ComboBox>
+
+
+
+                    <TextBlock Text="Mô tả" FontSize="11" Foreground="#757575" Margin="0,12,0,4"/>
+
+                    <TextBox x:Name="txtDescription" FontSize="12" Padding="10,8" Height="80" AcceptsReturn="True"
+
+                             TextWrapping="Wrap" BorderBrush="#E0E0E0" Text="Khái niệm, đồ thị, tính chất hàm số bậc nhất">
+
+                        <TextBox.Template><ControlTemplate TargetType="TextBox"><Border Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6"><ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/></Border></ControlTemplate></TextBox.Template>
+
+                    </TextBox>
+
+
+
+                    <Border Height="1" Background="#E0E0E0" Margin="0,20,0,16"/>
+
+
+
+                    <!-- Save buttons -->
+
+                    <Button Content="💾 Lưu bài giảng" FontSize="13" FontWeight="SemiBold" Padding="0,12"
+
+                            Background="#1976D2" Foreground="White" BorderThickness="0" Cursor="Hand" Click="Save_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#0D47A1"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <Button Content="📤 Gửi phê duyệt" FontSize="12" Padding="0,10" Margin="0,8,0,0"
+
+                            Background="#E8F5E9" Foreground="#2E7D32" BorderThickness="0" Cursor="Hand"
+
+                            Click="SubmitApproval_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8"
+
+                                        Padding="{TemplateBinding Padding}" BorderBrush="#43A047" BorderThickness="1.5">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#C8E6C9"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <Button Content="🚀 Bắt đầu dạy ngay" FontSize="12" Padding="0,10" Margin="0,6,0,0"
+
+                            Background="#FF6F00" Foreground="White" BorderThickness="0" Cursor="Hand"
+
+                            Click="StartTeaching_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#E65100"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <Button Content="🖊️ Mở trên bảng trắng" FontSize="12" Padding="0,10" Margin="0,6,0,0"
+
+                            Background="White" Foreground="#1976D2" BorderThickness="0" Cursor="Hand" Click="OpenOnWhiteboard_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"
+
+                                        BorderBrush="#1976D2" BorderThickness="1.5">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#E3F2FD"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <!-- Status badge -->
+
+                    <Border x:Name="statusBadge" Background="#FFF9C4" CornerRadius="8" Padding="10,8" Margin="0,10,0,0">
+
+                        <TextBlock x:Name="txtStatus" Text="📝 Bản nháp" FontSize="12" Foreground="#F57F17"
+
+                                   HorizontalAlignment="Center" FontWeight="SemiBold"/>
+
+                    </Border>
+
+
+
+                    <!-- Stats -->
+
+
+
+                    <Border Height="1" Background="#E0E0E0" Margin="0,20,0,16"/>
+
+                    <TextBlock Text="📊 Thống kê" FontSize="13" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,8"/>
+
+                    <TextBlock x:Name="txtStats" FontSize="11" Foreground="#9E9E9E" LineHeight="22">
+
+                        <Run Text="📝 Blocks: 0"/><LineBreak/>
+
+                        <Run Text="🕐 Tạo lúc: 09/04/2026"/><LineBreak/>
+
+                        <Run Text="✏️ Sửa lần cuối: Hôm nay"/>
+
+                    </TextBlock>
+
+
+
+                    <!-- ── AI SUGGESTIONS ── -->
+
+                    <Border Height="1" Background="#E0E0E0" Margin="0,20,0,14"/>
+
+                    <DockPanel Margin="0,0,0,8">
+
+                        <TextBlock DockPanel.Dock="Right" Text="🤖 AI" FontSize="9"
+
+                                   Foreground="White" Background="#7C4DFF" Padding="5,2"
+
+                                   VerticalAlignment="Center">
+
+                            <TextBlock.Clip>
+
+                                <RectangleGeometry Rect="0,0,28,16" RadiusX="4" RadiusY="4"/>
+
+                            </TextBlock.Clip>
+
+                        </TextBlock>
+
+                        <TextBlock Text="💡 Gợi ý thông minh" FontSize="13" FontWeight="SemiBold" Foreground="#212121"/>
+
+                    </DockPanel>
+
+
+
+                    <TextBlock x:Name="txtAiStatus" Text="Phân tích bài giảng..." FontSize="10"
+
+                               Foreground="#9E9E9E" Margin="0,0,0,8"/>
+
+
+
+                    <ItemsControl x:Name="aiSuggestionsList">
+
+                        <ItemsControl.ItemTemplate>
+
+                            <DataTemplate>
+
+                                <Border Margin="0,0,0,6" CornerRadius="8" Padding="10,8"
+
+                                        Background="{Binding Bg}" Cursor="Hand"
+
+                                        MouseLeftButtonDown="AiSuggestion_Click">
+
+                                    <Border.Style>
+
+                                        <Style TargetType="Border">
+
+                                            <Style.Triggers>
+
+                                                <Trigger Property="IsMouseOver" Value="True">
+
+                                                    <Setter Property="Opacity" Value="0.82"/>
+
+                                                </Trigger>
+
+                                            </Style.Triggers>
+
+                                        </Style>
+
+                                    </Border.Style>
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="{Binding Title}" FontSize="11"
+
+                                                   FontWeight="SemiBold" Foreground="{Binding Fg}"
+
+                                                   TextWrapping="Wrap"/>
+
+                                        <TextBlock Text="{Binding Detail}" FontSize="10"
+
+                                                   Foreground="#757575" TextWrapping="Wrap" Margin="0,2,0,0"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </DataTemplate>
+
+                        </ItemsControl.ItemTemplate>
+
+                    </ItemsControl>
+
+
+
+                    <Button Content="🔄 Gợi ý mới" Background="#F5F5F5" Foreground="#616161"
+
+                            BorderThickness="0" Padding="0,8" FontSize="11" Margin="0,6,0,0"
+
+                            Cursor="Hand" Click="RefreshAiSuggestions_Click">
+
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#EEEEEE"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                    </Button>
+
+
+
+                    <!-- History shortcut -->
+
+                    <Button Content="🕐 Xem lịch sử phiên bản" Background="#EDE7F6" Foreground="#4527A0"
+
+                            BorderThickness="0" Padding="0,8" FontSize="11" Margin="0,6,0,0"
+
+                            Cursor="Hand" Click="ViewHistory_Click">
+
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#D1C4E9"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                    </Button>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+        </Border>
+
+    </Grid>
+
+</Page>
+

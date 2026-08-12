@@ -1,0 +1,148 @@
+﻿<Window x:Class="QASmartTouch.Forms.SplashScreen"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="QA SmartTouch"
+
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+
+        WindowStartupLocation="CenterScreen"
+
+        Width="560" Height="360"
+
+        ResizeMode="NoResize" Topmost="True"
+
+        ShowInTaskbar="False">
+
+    
+
+    <Border CornerRadius="16" Background="#1A1A2E" BorderBrush="#2E86DE" BorderThickness="1.5">
+
+        <Border.Effect>
+
+            <DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.5" Color="#2E86DE"/>
+
+        </Border.Effect>
+
+        
+
+        <Grid Margin="40,30">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/>
+
+                <RowDefinition Height="Auto"/>
+
+                <RowDefinition Height="Auto"/>
+
+                <RowDefinition Height="*"/>
+
+                <RowDefinition Height="Auto"/>
+
+                <RowDefinition Height="Auto"/>
+
+            </Grid.RowDefinitions>
+
+
+
+            <!-- Logo Icon -->
+
+            <Border Grid.Row="0" Width="72" Height="72" CornerRadius="16" 
+
+                    Background="#2E86DE" HorizontalAlignment="Center" Margin="0,0,0,16">
+
+                <Viewbox Width="40" Height="40">
+
+                    <Canvas Width="24" Height="24">
+
+                        <!-- Pen/Touch icon -->
+
+                        <Path Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" 
+
+                              Fill="White"/>
+
+                    </Canvas>
+
+                </Viewbox>
+
+            </Border>
+
+
+
+            <!-- App Name -->
+
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,0,0,6">
+
+                <TextBlock HorizontalAlignment="Center">
+
+                    <Run Text="QA " FontSize="30" FontWeight="Light" Foreground="#8E9AAF"/>
+
+                    <Run Text="SmartTouch" FontSize="30" FontWeight="Bold" Foreground="White"/>
+
+                </TextBlock>
+
+                <TextBlock Text="Bảng trắng tương tác thông minh" 
+
+                           FontSize="12" Foreground="#6C7A89" FontStyle="Italic"
+
+                           HorizontalAlignment="Center" Margin="0,4,0,0"/>
+
+            </StackPanel>
+
+
+
+            <!-- Version -->
+
+            <TextBlock Grid.Row="2" x:Name="tbVersion" 
+
+                       Text="v3.0.0" FontSize="11" Foreground="#4A5568"
+
+                       HorizontalAlignment="Center" Margin="0,6,0,20"/>
+
+
+
+            <!-- Loading Status -->
+
+            <StackPanel Grid.Row="4" Margin="0,10,0,8">
+
+                <TextBlock x:Name="tbStatus" Text="Đang khởi tạo..." 
+
+                           FontSize="11" Foreground="#8E9AAF" 
+
+                           HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                
+
+                <!-- Simple Progress Bar -->
+
+                <Border CornerRadius="2" Background="#2D3748" Height="4">
+
+                    <Border x:Name="progressFill" CornerRadius="2" Background="#2E86DE" 
+
+                            HorizontalAlignment="Left" Width="0"/>
+
+                </Border>
+
+            </StackPanel>
+
+
+
+            <!-- Copyright -->
+
+            <TextBlock Grid.Row="5" 
+
+                       Text="© 2026 QA Smart School — Giải pháp trường học thông minh" 
+
+                       FontSize="9" Foreground="#4A5568"
+
+                       HorizontalAlignment="Center" Margin="0,6,0,0"/>
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

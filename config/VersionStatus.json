@@ -1,0 +1,24 @@
+{
+    "currentVersion": "1.0.0",
+    "versionName": "Public Release",
+    "releaseDate": "2025-12-19",
+    "releaseType": "stable",
+    "buildNumber": 1001,
+    "isPublicRelease": true,
+    "activeTemplate": "1.0.0-public",
+    "description": "Phiên bản phát hành chính thức đầu tiên với các tính năng cơ bản",
+    "changelog": [
+        "- Công cụ vẽ cơ bản (bút, tẩy, màu sắc)",
+        "- Hình học 2D và 3D cơ bản",
+        "- Biểu đồ cột, đường, tròn",
+        "- Công cụ toán học (thước, compa, thước đo góc, eke)",
+        "- Quản lý bảng đa trang",
+        "- Màn che và đếm ngược",
+        "- Chèn văn bản, hình ảnh, video"
+    ],
+    "metadata": {
+        "createdAt": "2025-12-19T20:59:00+07:00",
+        "lastModified": "2025-12-19T20:59:00+07:00",
+        "author": "QA Education Technology"
+    }
+}

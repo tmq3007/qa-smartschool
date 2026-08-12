@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "topicId": "g06_ex03",
+    "topicName": "Phương Trình & Hình Học Cơ Bản",
+    "gradeRange": [6, 7],
+    "totalExercises": 15,
+    "difficulty": {"Easy": 5, "Medium": 5, "Hard": 5},
+    "toolMapping": ["GeometryTool"],
+    "sourceRef": "MATH_EXERCISES_BANK_250+.md (Bài 41-55)"
+  },
+  "exercises": [
+    {"exerciseId": "ex_pthh_041", "difficulty": "Easy", "type": "calculation", "question": "Giải: x + 5 = 12", "answer": "x = 7", "solution": "x = 12 - 5 = 7", "points": 5},
+    {"exerciseId": "ex_pthh_042", "difficulty": "Easy", "type": "calculation", "question": "Giải: 2x = 18", "answer": "x = 9", "solution": "x = 18 ÷ 2 = 9", "points": 5},
+    {"exerciseId": "ex_pthh_043", "difficulty": "Easy", "type": "calculation", "question": "Giải: 3x - 6 = 9", "answer": "x = 5", "solution": "3x = 15 → x = 5", "points": 5},
+    {"exerciseId": "ex_pthh_044", "difficulty": "Easy", "type": "calculation", "question": "Giải: x/2 = 8", "answer": "x = 16", "solution": "x = 8 × 2 = 16", "points": 5},
+    {"exerciseId": "ex_pthh_045", "difficulty": "Easy", "type": "calculation", "question": "Tìm góc còn lại trong tam giác có hai góc 60° & 70°", "answer": "50°", "solution": "Tổng 3 góc = 180°. Góc thứ 3 = 180 - 60 - 70 = 50°", "points": 5},
+    {"exerciseId": "ex_pthh_046", "difficulty": "Medium", "type": "calculation", "question": "Tính chu vi hình chữ nhật dài 8cm, rộng 5cm", "answer": "26cm", "solution": "C = 2(8+5) = 2×13 = 26cm", "points": 10},
+    {"exerciseId": "ex_pthh_047", "difficulty": "Medium", "type": "calculation", "question": "Tính diện tích hình vuông cạnh 6cm", "answer": "36cm²", "solution": "S = 6² = 36cm²", "points": 10},
+    {"exerciseId": "ex_pthh_048", "difficulty": "Medium", "type": "calculation", "question": "Tính diện tích tam giác có đáy 10cm, chiều cao 6cm", "answer": "30cm²", "solution": "S = ½ × 10 × 6 = 30cm²", "points": 10},
+    {"exerciseId": "ex_pthh_049", "difficulty": "Medium", "type": "calculation", "question": "Phân loại góc: 45°, 90°, 135°, 180°", "answer": "Nhọn, Vuông, Tù, Bẹt", "solution": "< 90° = Nhọn; = 90° = Vuông; > 90° & < 180° = Tù; = 180° = Bẹt", "points": 10},
+    {"exerciseId": "ex_pthh_050", "difficulty": "Medium", "type": "calculation", "question": "Tính chu vi hình tròn bán kính 3cm", "answer": "6π ≈ 18.85cm", "solution": "C = 2πr = 2π×3 = 6π ≈ 18.85cm", "points": 10},
+    {"exerciseId": "ex_pthh_051", "difficulty": "Hard", "type": "calculation", "question": "Giải: 2(x - 3) + 5 = 11", "answer": "x = 6", "solution": "2x - 6 + 5 = 11 → 2x - 1 = 11 → 2x = 12 → x = 6", "points": 15},
+    {"exerciseId": "ex_pthh_052", "difficulty": "Hard", "type": "proof", "question": "Chứng minh Định lý Pythagore cho tam giác 3-4-5", "answer": "3² + 4² = 5²", "solution": "9 + 16 = 25 = 5². Đây là bộ ba Pythagore đặc biệt.", "points": 20},
+    {"exerciseId": "ex_pthh_053", "difficulty": "Hard", "type": "calculation", "question": "Tính diện tích hình thang có đáy 6cm, 8cm, chiều cao 4cm", "answer": "28cm²", "solution": "S = ½(6+8)×4 = ½×14×4 = 28cm²", "points": 15},
+    {"exerciseId": "ex_pthh_054", "difficulty": "Hard", "type": "calculation", "question": "Tìm cạnh tam giác vuông biết hai cạnh góc vuông là 3 & 4cm", "answer": "5cm", "solution": "c = √(3²+4²) = √(9+16) = √25 = 5cm", "points": 15},
+    {"exerciseId": "ex_pthh_055", "difficulty": "Hard", "type": "calculation", "question": "Bài toán thực tế: Mảnh vườn hình chữ nhật 12m × 8m, chu vi bao nhiêu?", "answer": "40m", "solution": "C = 2(12+8) = 2×20 = 40m", "points": 15}
+  ]
+}

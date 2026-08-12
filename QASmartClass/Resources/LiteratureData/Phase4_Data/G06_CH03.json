@@ -1,0 +1,118 @@
+{
+  "metadata": {
+    "chapterId": "g06_ch03",
+    "chapterName": "Bài 3: Yêu thương và chia sẻ",
+    "grade": 6,
+    "totalProblems": 4,
+    "totalSections": 2,
+    "estimatedHours": 3
+  },
+  "sections": [
+    {
+      "sectionId": "s_g6_ch2_0",
+      "sectionName": "Cô bé bán diêm",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g6_Cô_bé_bán_diêm.mp3",
+      "concepts": [
+        {
+          "name": "Hoàn cảnh của Cô bé bán diêm",
+          "theorem": "Truyện ngắn của đại văn hào Đan Mạch Andersen viết về một cô bé nghèo khổ bán diêm trong đêm giao thừa lạnh giá. Hình ảnh đối lập gay gắt giữa sự ấm áp trong những ngôi nhà sáng đèn và cảnh đói rét, cô độc ngoài đường phố của em làm nổi bật tấm lòng nhân văn sâu sắc.",
+          "imageUrls": ["Resources/LiteratureData/Images/co_be_ban_diem.png"]
+        },
+        {
+          "name": "Năm lần quẹt diêm kỳ diệu",
+          "definition": "Mỗi lần quẹt diêm là một ước mơ tươi đẹp hiện lên: Lần 1: Lò sưởi bằng sắt rực lửa ấm áp. Lần 2: Bàn ăn thịnh soạn có ngỗng quay nhảy xuống. Lần 3: Cây thông Noel lộng lẫy lấp lánh ánh nến. Lần 4: Người bà hiền hậu mỉm cười thương yêu. Lần 5: Quẹt hết bao diêm để níu giữ bà. Hai bà cháu bay lên cao, về chầu Thượng đế."
+        },
+        {
+          "name": "Nghệ thuật tương phản và ý nghĩa",
+          "examples": [
+            "**Tương phản gay gắt**: Phố xá rét buốt tuyết rơi >< Ánh đèn sáng trưng thơm nức mùi ngỗng quay trong nhà.",
+            "**Ảo ảnh >< Thực tại**: Ánh lửa diêm mang lại niềm vui ngắn ngủi >< Khi diêm tắt, thực tại lạnh buốt, đói khát lại ập đến.",
+            "**Cái chết thanh thản**: Cô bé chết vì rét nhưng môi vẫn mỉm cười vì em đã đi cùng người bà yêu thương đến thế giới không còn đau khổ."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Năm lần quẹt diêm của cô bé bán diêm thể hiện những ước mơ gì theo thứ tự?",
+          "difficulty": "Easy",
+          "options": [
+            "Sưởi ấm (lò sưởi) → Ăn no (ngỗng quay) → Vui chơi (cây thông) → Tình thương (người bà) → Được ở cùng bà mãi mãi",
+            "Kiếm tiền mua nhà → Đi du lịch thế giới → Đi học đại học → Trở thành ca sĩ nổi tiếng",
+            "Gặp gỡ bạn bè → Đi mua quần áo mới → Đi chơi công viên → Đi mua đồ ăn ngon cho bố",
+            "Tìm kiếm cha mẹ thất lạc → Mua quần áo ấm → Có nhiều tiền vàng → Được đi xem xiếc"
+          ],
+          "answer": "Sưởi ấm (lò sưởi) → Ăn no (ngỗng quay) → Vui chơi (cây thông) → Tình thương (người bà) → Được ở cùng bà mãi mãi",
+          "hints": ["Chú ý nhu cầu sinh lý trước (ấm, no) rồi đến nhu cầu tinh thần (vui chơi, tình thương)."],
+          "explanation": "Mỗi lần quẹt diêm tương ứng với một ước mơ cháy bỏng của cô bé trong cơn đói rét: hơi ấm (lò sưởi), thức ăn (ngỗng quay), niềm vui trẻ thơ (cây thông Noel), và cuối cùng là tình yêu thương gia đình ấm áp (người bà hiện về đưa cô đi)."
+        },
+        {
+          "id": "p2",
+          "question": "Biện pháp nghệ thuật chủ đạo được Andersen sử dụng trong tác phẩm 'Cô bé bán diêm' là gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Tương phản đối lập (cảnh nghèo đói rét mướt của cô bé đối lập với sự giàu sang, ấm cúng và vô tình xung quanh)",
+            "Cường điệu phóng đại quá mức các hiện tượng tự nhiên để gây cười",
+            "Miêu tả chi tiết các trận chiến lịch sử hào hùng của đất nước Đan Mạch",
+            "Tự sự kết hợp với bình luận khoa học xã hội hiện đại"
+          ],
+          "answer": "Tương phản đối lập (cảnh nghèo đói rét mướt của cô bé đối lập với sự giàu sang, ấm cúng và vô tình xung quanh)",
+          "hints": ["Hãy so sánh hoàn cảnh của cô bé ngoài đường và không khí đón giao thừa trong các ngôi nhà."],
+          "explanation": "Tác giả liên tục đặt những hình ảnh đối lập cạnh nhau: phố xá lạnh giá đầy tuyết rơi >< cửa sổ nhà ai cũng sáng rực ánh đèn và thơm nức mùi ngỗng quay; cô bé bán diêm rét mướt đói lả >< dòng người vội vã thờ ơ qua đường; thế giới ảo ảnh ấm áp qua ánh lửa diêm >< thực tại lạnh lẽo, buốt giá khi diêm tắt."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g6_ch2_1",
+      "sectionName": "Gió lạnh đầu mùa",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g6_Gió_lạnh_đầu_mùa.mp3",
+      "concepts": [
+        {
+          "name": "Nội dung truyện ngắn 'Gió lạnh đầu mùa'",
+          "theorem": "Truyện ngắn của Thạch Lam kể về hành động đầy lòng nhân ái của hai chị em Sơn và Lan khi tự ý lấy chiếc áo bông cũ đem cho Hiên - cô bé nghèo hàng xóm đang co ro vì lạnh. Cách ứng xử đầy ấm áp của người lớn cuối truyện làm nổi bật tình thương yêu đùm bọc.",
+          "imageUrls": ["Resources/LiteratureData/Images/gio_lanh_dau_mua.png"]
+        },
+        {
+          "name": "Ý nghĩa nhân đạo",
+          "examples": [
+            "**Lòng nhân ái tự nhiên**: Trẻ thơ chưa bị ảnh hưởng bởi toan tính, thấy người khác khổ cực liền thương cảm sâu sắc.",
+            "**Giá trị của sự sẻ chia**: Chiếc áo bông cũ đối với gia đình Sơn không lớn, nhưng với Hiên là cả một sự ấm áp vô giá trong mùa đông.",
+            "**Tôn trọng lòng tự trọng**: Mẹ Hiên mang trả lại áo thể hiện lòng tự trọng của người nghèo; mẹ Sơn tế nhị cho mượn tiền mua áo thể hiện tình nghĩa xóm giềng ấm áp."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p3",
+          "question": "Hành động chị em Sơn đem chiếc áo bông cũ cho bé Hiên trong truyện thể hiện điều gì ở hai đứa trẻ?",
+          "difficulty": "Easy",
+          "options": [
+            "Lòng nhân ái, sự sẻ chia hồn nhiên và tình yêu thương ấm áp đối với những người có hoàn cảnh khó khăn hơn",
+            "Sự lãng phí của cải gia đình vì chiếc áo đó vẫn còn dùng được tốt",
+            "Mong muốn được mẹ và mọi người trong xóm khen ngợi là ngoan ngoãn",
+            "Sự ganh đua, muốn chứng tỏ gia đình mình giàu có trước các bạn cùng trang lứa"
+          ],
+          "answer": "Lòng nhân ái, sự sẻ chia hồn nhiên và tình yêu thương ấm áp đối với những người có hoàn cảnh khó khăn hơn",
+          "hints": ["Hành động này xuất phát từ lòng thương xót của hai chị em Sơn khi nhìn thấy manh áo rách của Hiên."],
+          "explanation": "Hành động tự nguyện đem chiếc áo bông cũ cho bé Hiên xuất phát từ tình thương chân thành, tự nhiên của trẻ thơ. Thạch Lam muốn ca ngợi tình yêu thương, sự sẻ chia đùm bọc giữa con người với con người, đặc biệt là sự nhạy cảm, ấm áp của những tâm hồn trẻ thơ trước nỗi đau của người khác."
+        },
+        {
+          "id": "p4",
+          "question": "Cách ứng xử của mẹ Sơn và mẹ Hiên ở cuối tác phẩm 'Gió lạnh đầu mùa' gửi gắm thông điệp gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Lòng nhân hậu, sự tôn trọng và cách sẻ chia tinh tế giữa những người hàng xóm nghèo và giàu",
+            "Sự phân chia giai cấp rõ rệt và bất bình đẳng sâu sắc trong xã hội cũ",
+            "Thái độ lạnh lùng, nghiêm khắc của cha mẹ đối với lỗi lầm của con cái",
+            "Sự tính toán thiệt hơn về mặt kinh tế giữa các gia đình trong xóm"
+          ],
+          "answer": "Lòng nhân hậu, sự tôn trọng và cách sẻ chia tinh tế giữa những người hàng xóm nghèo và giàu",
+          "hints": ["Hãy chú ý việc mẹ Hiên mang trả áo bông và mẹ Sơn tế nhị cho mẹ Hiên mượn tiền mua áo mới."],
+          "explanation": "Mẹ Hiên khi biết con nhận áo ấm liền đem sang trả lại vì lòng tự trọng. Mẹ Sơn hiểu hoàn cảnh nên đã cho mẹ Hiên vay tiền mua áo cho con, đồng thời âu yếm bảo ban các con mình. Cách hành xử đầy ấm áp, tôn trọng lẫn nhau làm nổi bật tinh thần lá lành đùm lá rách của dân tộc."
+        }
+      ]
+    }
+  ]
+}

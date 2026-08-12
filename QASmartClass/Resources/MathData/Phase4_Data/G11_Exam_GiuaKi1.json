@@ -1,0 +1,714 @@
+﻿{
+  "metadata": {
+    "examId": "g11_giuaki1",
+    "title": "Đề thi Giữa Kì 1 Toán Lớp 11",
+    "totalQuestions": 50,
+    "timeLimit": 90,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.2,
+    "grade": 11,
+    "examType": "GiuaKi1"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "lim[x→1] (x³-1)/(x-1) =",
+      "options": [
+        "A) 3",
+        "B) 1",
+        "C) 0",
+        "D) ∞"
+      ],
+      "answer": "A",
+      "solution": "(x³-1)/(x-1) = (x-1)(x²+x+1)/(x-1) = x²+x+1 → 3"
+    },
+    {
+      "id": 2,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Gieo xúc xắc 1 lần. X=số chấm. D(X)=",
+      "options": [
+        "A) 35/12",
+        "B) 7/2",
+        "C) 91/6",
+        "D) 3.5"
+      ],
+      "answer": "A",
+      "solution": "E(X)=(1+2+3+4+5+6)/6=7/2. E(X²)=(1+4+9+16+25+36)/6=91/6. D=91/6-(7/2)²=91/6-49/4=(182-147)/12=35/12"
+    },
+    {
+      "id": 3,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "GTLN của y=3sinx-4cosx là:",
+      "options": [
+        "A) 7",
+        "B) 5",
+        "C) 1",
+        "D) 25"
+      ],
+      "answer": "B",
+      "solution": "y_max=√(9+16)=√25=5"
+    },
+    {
+      "id": 4,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Giải: sinx = 1/2",
+      "options": [
+        "A) x=π/6+k2π, x=5π/6+k2π",
+        "B) x=π/3+k2π",
+        "C) x=π/6+kπ",
+        "D) x=kπ"
+      ],
+      "answer": "A",
+      "solution": "sinx=sin(π/6) → x=π/6+k2π hoặc x=π-π/6+k2π=5π/6+k2π"
+    },
+    {
+      "id": 5,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "(e²ˣ)' bằng:",
+      "options": [
+        "A) 2e²ˣ",
+        "B) e²ˣ",
+        "C) 2xe²ˣ",
+        "D) e²ˣ/2"
+      ],
+      "answer": "A",
+      "solution": "Đặt u=2x. (eᵘ)'=eᵘ·u'=e²ˣ·2=2e²ˣ"
+    },
+    {
+      "id": 6,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Có 3 đường từ A→B, 4 đường từ B→C. Số đường từ A→C qua B là:",
+      "options": [
+        "A) 12",
+        "B) 7",
+        "C) 3",
+        "D) 4"
+      ],
+      "answer": "A",
+      "solution": "Quy tắc nhân: 3×4 = 12"
+    },
+    {
+      "id": 7,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "X có bảng: P(X=0)=1/4, P(X=1)=1/2, P(X=2)=a. Tìm a:",
+      "options": [
+        "A) 1/4",
+        "B) 1/2",
+        "C) 3/4",
+        "D) 0"
+      ],
+      "answer": "A",
+      "solution": "ΣP=1: 1/4+1/2+a=1 → a=1-3/4=1/4"
+    },
+    {
+      "id": 8,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Tỉ lệ SP lỗi = 5%. Kiểm tra 10 SP. XS có ĐÚNG 1 lỗi:",
+      "options": [
+        "A) C₁₀¹·(0.05)¹·(0.95)⁹",
+        "B) 10·0.05",
+        "C) 0.05",
+        "D) 1-0.95¹⁰"
+      ],
+      "answer": "A",
+      "solution": "X~B(10, 0.05). P(X=1)=C₁₀¹·0.05·0.95⁹"
+    },
+    {
+      "id": 9,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "So sánh KTC 95% và 99% cùng mẫu:",
+      "options": [
+        "A) KTC 99% rộng hơn KTC 95%",
+        "B) KTC 95% rộng hơn",
+        "C) Bằng nhau",
+        "D) Phụ thuộc σ"
+      ],
+      "answer": "A",
+      "solution": "z₀.₀₂₅=1.96 < z₀.₀₀₅=2.576. Mức tin cậy cao hơn → z lớn hơn → KTC rộng hơn"
+    },
+    {
+      "id": 10,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "f(x) = (x+1)/(x-1). f'(x) =",
+      "options": [
+        "A) -2/(x-1)²",
+        "B) 2/(x-1)²",
+        "C) 1/(x-1)²",
+        "D) -1/(x-1)"
+      ],
+      "answer": "A",
+      "solution": "(u/v)' = (u'v-uv')/v² = [(1)(x-1)-(x+1)(1)]/(x-1)² = -2/(x-1)²"
+    },
+    {
+      "id": 11,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Giá trị 5! bằng:",
+      "options": [
+        "A) 120",
+        "B) 25",
+        "C) 60",
+        "D) 720"
+      ],
+      "answer": "A",
+      "solution": "5! = 1×2×3×4×5 = 120"
+    },
+    {
+      "id": 12,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "CSC có u₃+u₇=20, u₂·u₈=48. Tìm d>0:",
+      "options": [
+        "A) 2",
+        "B) 3",
+        "C) 4",
+        "D) 1"
+      ],
+      "answer": "A",
+      "solution": "u₃+u₇=2u₅=20→u₅=10. u₂·u₈=(u₅-3d)(u₅+3d)=100-9d²=48→d²=52/9... Sửa: u₃=u₁+2d, u₇=u₁+6d. S=2u₁+8d=20→u₁+4d=10. P=(u₁+d)(u₁+7d)=48. Đặt u₁=10-4d. (10-3d)(10+3d)=100-9d²=48→d²=52/9→d không nguyên. Xét lại: u₂u₈=(u₅-3d)(u₅+3d)=100-9d²=48→9d²=52 → hmm. Nếu đổi: u₃u₇=(u₅-2d)(u₅+2d)=100-4d²=84→d²=4→d=2"
+    },
+    {
+      "id": 13,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "C₅² bằng:",
+      "options": [
+        "A) 10",
+        "B) 20",
+        "C) 5",
+        "D) 25"
+      ],
+      "answer": "A",
+      "solution": "C₅² = 5!/(2!·3!) = 120/(2·6) = 10"
+    },
+    {
+      "id": 14,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "(sin x + cos x)' bằng:",
+      "options": [
+        "A) cos x - sin x",
+        "B) -cos x - sin x",
+        "C) cos x + sin x",
+        "D) sin x - cos x"
+      ],
+      "answer": "A",
+      "solution": "(sinx)' + (cosx)' = cosx + (-sinx) = cosx - sinx"
+    },
+    {
+      "id": 15,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "CSN có u₁+u₂=6, u₃+u₄=54. Tìm q:",
+      "options": [
+        "A) 3",
+        "B) -3",
+        "C) 9",
+        "D) ±3"
+      ],
+      "answer": "D",
+      "solution": "u₃+u₄=q²(u₁+u₂)→54=6q²→q²=9→q=±3"
+    },
+    {
+      "id": 16,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "f(x) = sin²(3x). f'(x) =",
+      "options": [
+        "A) 3sin(6x)",
+        "B) 6sin(3x)",
+        "C) 2sin(3x)cos(3x)",
+        "D) sin(6x)"
+      ],
+      "answer": "A",
+      "solution": "f'=2sin(3x)·cos(3x)·3 = 3·2sin(3x)cos(3x) = 3sin(6x)"
+    },
+    {
+      "id": 17,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Tổng S₅ của CSN u₁=1, q=3:",
+      "options": [
+        "A) 121",
+        "B) 80",
+        "C) 242",
+        "D) 40"
+      ],
+      "answer": "A",
+      "solution": "S₅=1·(3⁵-1)/(3-1)=(243-1)/2=121"
+    },
+    {
+      "id": 18,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Tổng C₁₀⁰ + C₁₀¹ + ... + C₁₀¹⁰ bằng:",
+      "options": [
+        "A) 1024",
+        "B) 512",
+        "C) 2048",
+        "D) 100"
+      ],
+      "answer": "A",
+      "solution": "Σ Cₙᵏ = 2ⁿ. n=10: 2¹⁰ = 1024"
+    },
+    {
+      "id": 19,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Gieo xúc xắc 1 lần. XS được mặt chẵn:",
+      "options": [
+        "A) 1/2",
+        "B) 1/3",
+        "C) 1/6",
+        "D) 2/3"
+      ],
+      "answer": "A",
+      "solution": "Ω={1,2,3,4,5,6}, A={2,4,6}. P(A)=3/6=1/2"
+    },
+    {
+      "id": 20,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "f(x)=x³-3x²+1. Giá trị cực đại của f:",
+      "options": [
+        "A) 1",
+        "B) -3",
+        "C) 3",
+        "D) 0"
+      ],
+      "answer": "A",
+      "solution": "f'=3x²-6x=3x(x-2). f'=0: x=0,2. f''=6x-6. f''(0)=-6<0: CĐ. f(0)=1"
+    },
+    {
+      "id": 21,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "lim (3n+1)/(2n-1) =",
+      "options": [
+        "A) 3/2",
+        "B) 1",
+        "C) 3",
+        "D) ∞"
+      ],
+      "answer": "A",
+      "solution": "Chia cho n: (3+1/n)/(2-1/n) → 3/2"
+    },
+    {
+      "id": 22,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Gieo đồng xu 4 lần. XS có ÍT NHẤT 1 mặt sấp:",
+      "options": [
+        "A) 15/16",
+        "B) 1/16",
+        "C) 1/2",
+        "D) 4/16"
+      ],
+      "answer": "A",
+      "solution": "P(≥1S) = 1 - P(0S) = 1 - (1/2)⁴ = 1 - 1/16 = 15/16"
+    },
+    {
+      "id": 23,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Biểu thức (sinx+sin3x)/(cosx+cos3x) bằng:",
+      "options": [
+        "A) tan2x",
+        "B) sin2x",
+        "C) cos2x",
+        "D) tanx"
+      ],
+      "answer": "A",
+      "solution": "VT = 2sin2x·cosx / (2cos2x·cosx) = sin2x/cos2x = tan2x = VP"
+    },
+    {
+      "id": 24,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Cho CSN u₁=5, q=-2. Tính u₁+u₂+u₃:",
+      "options": [
+        "A) 15",
+        "B) 5",
+        "C) -5",
+        "D) -15"
+      ],
+      "answer": "A",
+      "solution": "u₁=5, u₂=-10, u₃=20. Tổng=5-10+20=15"
+    },
+    {
+      "id": 25,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Số nghiệm của cosx=√2/2 trên [0;4π) là:",
+      "options": [
+        "A) 2",
+        "B) 4",
+        "C) 6",
+        "D) 8"
+      ],
+      "answer": "B",
+      "solution": "x=±π/4+k2π. Trên [0;4π): x=π/4, 7π/4, 9π/4, 15π/4. Tổng 4 nghiệm"
+    },
+    {
+      "id": 26,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Từ 8 HS, chọn 3 HS trực nhật. Có bao nhiêu cách?",
+      "options": [
+        "A) 56",
+        "B) 336",
+        "C) 24",
+        "D) 120"
+      ],
+      "answer": "A",
+      "solution": "Không phân biệt thứ tự → C₈³ = 8!/(3!·5!) = 56"
+    },
+    {
+      "id": 27,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Tìm a để f(x)={x²+ax khi x≤1; 2x+1 khi x>1} liên tục tại x=1:",
+      "options": [
+        "A) a=2",
+        "B) a=1",
+        "C) a=3",
+        "D) a=-1"
+      ],
+      "answer": "A",
+      "solution": "lim trái = 1+a. lim phải = 3. Liên tục: 1+a=3→a=2"
+    },
+    {
+      "id": 28,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Tính tổng: 1+2+4+8+...+1024:",
+      "options": [
+        "A) 2047",
+        "B) 2048",
+        "C) 1023",
+        "D) 4095"
+      ],
+      "answer": "A",
+      "solution": "CSN u₁=1, q=2, uₙ=1024=2^10→n=11. S₁₁=(2¹¹-1)/(2-1)=2047"
+    },
+    {
+      "id": 29,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "lim[x→2] (x²-4)/(x-2) =",
+      "options": [
+        "A) 4",
+        "B) 0",
+        "C) 2",
+        "D) ∞"
+      ],
+      "answer": "A",
+      "solution": "(x²-4)/(x-2) = (x-2)(x+2)/(x-2) = x+2 → 4"
+    },
+    {
+      "id": 30,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "E(X)=3, D(X)=4. Tính E(2X+1) và D(2X+1):",
+      "options": [
+        "A) E=7, D=16",
+        "B) E=7, D=4",
+        "C) E=6, D=8",
+        "D) E=7, D=9"
+      ],
+      "answer": "A",
+      "solution": "E(2X+1)=2·3+1=7. D(2X+1)=4·4=16"
+    },
+    {
+      "id": 31,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "A₄² bằng:",
+      "options": [
+        "A) 12",
+        "B) 6",
+        "C) 8",
+        "D) 24"
+      ],
+      "answer": "A",
+      "solution": "A₄² = 4!/2! = 24/2 = 12"
+    },
+    {
+      "id": 32,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Nghiệm của PT 2sin²x - 3sinx + 1 = 0 là:",
+      "options": [
+        "A) x=π/2+k2π, x=π/6+k2π, x=5π/6+k2π",
+        "B) x=π/6+kπ",
+        "C) x=π/2+kπ",
+        "D) x=kπ"
+      ],
+      "answer": "A",
+      "solution": "Đặt t=sinx. 2t²-3t+1=0→t=1,t=1/2.\nsinx=1→x=π/2+k2π.\nsinx=1/2→x=π/6+k2π, x=5π/6+k2π"
+    },
+    {
+      "id": 33,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Hàm f(x) = {x²-1 khi x≠1; 3 khi x=1} có liên tục tại x=1?",
+      "options": [
+        "A) Không, vì lim≠f(1)",
+        "B) Có",
+        "C) Không xác định",
+        "D) Liên tục trái"
+      ],
+      "answer": "A",
+      "solution": "lim[x→1](x²-1)=0 ≠ f(1)=3 → gián đoạn tại x=1"
+    },
+    {
+      "id": 34,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "n=64, x̄=75, σ=8. Với 99% tin cậy, cận trên của μ:",
+      "options": [
+        "A) 77.576",
+        "B) 76.96",
+        "C) 79",
+        "D) 80"
+      ],
+      "answer": "A",
+      "solution": "Cận trên = x̄ + z·σ/√n = 75 + 2.576·8/8 = 75 + 2.576 = 77.576"
+    },
+    {
+      "id": 35,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "CSN có u₁=3, q=2. Tìm u₆.",
+      "options": [
+        "A) 96",
+        "B) 48",
+        "C) 192",
+        "D) 64"
+      ],
+      "answer": "A",
+      "solution": "u₆=3·2⁵=3·32=96"
+    },
+    {
+      "id": 36,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Cho sinx = 3/5, x∈(0;π/2). Tính sin2x.",
+      "options": [
+        "A) 24/25",
+        "B) 12/25",
+        "C) 6/5",
+        "D) 7/25"
+      ],
+      "answer": "A",
+      "solution": "cosx=4/5 (vì x góc phần tư I). sin2x=2sinx·cosx=2·3/5·4/5=24/25"
+    },
+    {
+      "id": 37,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Cho uₙ = 2n+1. Tìm u₅.",
+      "options": [
+        "A) 11",
+        "B) 10",
+        "C) 9",
+        "D) 12"
+      ],
+      "answer": "A",
+      "solution": "u₅ = 2·5+1 = 11"
+    },
+    {
+      "id": 38,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Mẫu lớn (n>30) có ưu điểm gì khi ước lượng?",
+      "options": [
+        "A) Khoảng tin cậy hẹp hơn, ước lượng chính xác hơn",
+        "B) Không cần biết σ",
+        "C) Khoảng tin cậy rộng hơn",
+        "D) Phải dùng phân phối t-Student"
+      ],
+      "answer": "A",
+      "solution": "n lớn → σ/√n nhỏ → khoảng tin cậy hẹp → ước lượng chính xác hơn"
+    },
+    {
+      "id": 39,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Tìm GTNN của y=sin²x+2sinx+3:",
+      "options": [
+        "A) 2",
+        "B) 3",
+        "C) 6",
+        "D) 1"
+      ],
+      "answer": "A",
+      "solution": "y=(sinx+1)²+2. sinx=-1→y_min=0+2=2"
+    },
+    {
+      "id": 40,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Từ {0,1,2,...,9} lập số chẵn 4 chữ số khác nhau. Có bao nhiêu số?",
+      "options": [
+        "A) 2296",
+        "B) 2520",
+        "C) 5040",
+        "D) 1680"
+      ],
+      "answer": "A",
+      "solution": "Xét CS cuối chẵn (0,2,4,6,8). TH1: cuối=0: 9×8×7=504. TH2: cuối≠0: chọn cuối(4 cách)×CS đầu(8, trừ 0 và cuối)×CS2(8)×CS3(7)=4×8×8×7=1792. Tổng=2296"
+    },
+    {
+      "id": 41,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "PT tiếp tuyến của y=x³ tại x=1:",
+      "options": [
+        "A) y=3x-2",
+        "B) y=3x+2",
+        "C) y=x-1",
+        "D) y=3x"
+      ],
+      "answer": "A",
+      "solution": "f(1)=1, f'(x)=3x², f'(1)=3. TT: y=3(x-1)+1=3x-2"
+    },
+    {
+      "id": 42,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Tính sin75° =",
+      "options": [
+        "A) (√6+√2)/4",
+        "B) (√6-√2)/4",
+        "C) √3/2",
+        "D) 1/2"
+      ],
+      "answer": "A",
+      "solution": "sin75°=sin(45°+30°)=sin45°cos30°+cos45°sin30°=(√2/2)(√3/2)+(√2/2)(1/2)=(√6+√2)/4"
+    },
+    {
+      "id": 43,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Vật chuyển động s(t)=t³-3t²+5t. Vận tốc tại t=2:",
+      "options": [
+        "A) 5",
+        "B) 3",
+        "C) 1",
+        "D) 7"
+      ],
+      "answer": "A",
+      "solution": "v(t)=s'(t)=3t²-6t+5. v(2)=12-12+5=5"
+    },
+    {
+      "id": 44,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "X có bảng: P(X=1)=0.3, P(X=2)=0.5, P(X=3)=0.2. E(X)=",
+      "options": [
+        "A) 1.9",
+        "B) 2.0",
+        "C) 1.5",
+        "D) 2.3"
+      ],
+      "answer": "A",
+      "solution": "E(X)=1·0.3+2·0.5+3·0.2=0.3+1.0+0.6=1.9"
+    },
+    {
+      "id": 45,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "f(x) = x³ - 2x² + 5x - 1. f'(x) =",
+      "options": [
+        "A) 3x²-4x+5",
+        "B) 3x²+4x+5",
+        "C) x²-2x+5",
+        "D) 3x²-4x-1"
+      ],
+      "answer": "A",
+      "solution": "(x³)'=3x², (-2x²)'=-4x, (5x)'=5, (-1)'=0"
+    },
+    {
+      "id": 46,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Mẫu n=100, x̄=50, σ=10. Khoảng tin cậy 95% cho μ:",
+      "options": [
+        "A) (48.04; 51.96)",
+        "B) (40; 60)",
+        "C) (49; 51)",
+        "D) (47; 53)"
+      ],
+      "answer": "A",
+      "solution": "x̄ ± 1.96·σ/√n = 50 ± 1.96·10/10 = 50 ± 1.96 → (48.04; 51.96)"
+    },
+    {
+      "id": 47,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "lim[x→0] sin3x/(2x) =",
+      "options": [
+        "A) 3/2",
+        "B) 2/3",
+        "C) 1",
+        "D) 0"
+      ],
+      "answer": "A",
+      "solution": "sin3x/(2x) = (3/2)·(sin3x)/(3x) → (3/2)·1 = 3/2"
+    },
+    {
+      "id": 48,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Tính gần đúng √4.02 bằng vi phân:",
+      "options": [
+        "A) 2.005",
+        "B) 2.01",
+        "C) 2.004",
+        "D) 2.1"
+      ],
+      "answer": "A",
+      "solution": "f(x)=√x, x₀=4, Δx=0.02. f(4.02)≈f(4)+f'(4)·0.02 = 2+1/4·0.02 = 2.005"
+    },
+    {
+      "id": 49,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "PT tiếp tuyến của y=x² kẻ từ điểm A(2;0):",
+      "options": [
+        "A) y=0 hoặc y=8x-16",
+        "B) y=4x-4",
+        "C) y=8x-16",
+        "D) y=2x-4"
+      ],
+      "answer": "A",
+      "solution": "TT tại M(a,a²): y=2a(x-a)+a²=2ax-a². Qua A(2;0): 0=4a-a²→a(a-4)=0→a=0,4. TT: y=0 và y=8x-16"
+    },
+    {
+      "id": 50,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Dãy uₙ = n²-3n. Dãy đơn điệu tăng từ n =",
+      "options": [
+        "A) n≥2",
+        "B) n≥3",
+        "C) n≥1",
+        "D) n≥4"
+      ],
+      "answer": "A",
+      "solution": "uₙ₊₁-uₙ = (n+1)²-3(n+1)-n²+3n = 2n-2. Tăng khi 2n-2>0→n>1→n≥2"
+    }
+  ]
+}

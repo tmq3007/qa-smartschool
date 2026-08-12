@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-05-04",
+  "description": "Index file cho Exercise Bank - ánh xạ từ exercises_by_topic tới Phase4_Data chapters",
+  
+  "exerciseBankStats": {
+    "totalExercises": 450,
+    "breakdown": {
+      "G06_G07": {"files": 4, "exercises": 70, "source": "MATH_EXERCISES_BANK_250+.md"},
+      "G08_G09": {"files": 2, "exercises": 85, "source": "MATH_EXERCISES_BANK_250+.md"},
+      "G10": {"files": 6, "exercises": 82, "source": "Phase4_Data/G10_CH*.json (tích hợp sẵn)"},
+      "G11": {"files": 6, "exercises": 78, "source": "Phase4_Data/G11_CH*.json (tích hợp sẵn)"},
+      "G12": {"files": 6, "exercises": 82, "source": "Phase4_Data/G12_CH*.json (tích hợp sẵn)"},
+      "MockExams": {"files": 5, "exercises": 250, "source": "Phase4_Data/THPT_Mock_Exam_*.json"}
+    }
+  },
+  
+  "gradeMapping": {
+    "G06_G07": {
+      "description": "Lớp 6-7: Bài tập cơ bản",
+      "files": [
+        "G06_G07/EX_So_Tu_Nhien.json",
+        "G06_G07/EX_Phan_So.json",
+        "G06_G07/EX_PT_Hinh_Hoc.json",
+        "G06_G07/EX_Thong_Ke_Luong_Giac.json"
+      ]
+    },
+    "G08_G09": {
+      "description": "Lớp 8-9: Bài tập trung cấp",
+      "files": [
+        "G08_G09/EX_Dai_So.json",
+        "G08_G09/EX_Hinh_Hoc_Luong_Giac.json"
+      ]
+    },
+    "G10": {
+      "description": "Lớp 10: Exercises tích hợp trong Phase4_Data chapters",
+      "linkedChapters": [
+        "Phase4_Data/G10_CH01_Menh_De_Tap_Hop.json",
+        "Phase4_Data/G10_CH02_Ham_So_Do_Thi.json",
+        "Phase4_Data/G10_CH03_PT_BPT.json",
+        "Phase4_Data/G10_CH04_Luong_Giac.json",
+        "Phase4_Data/G10_CH05_Thong_Ke.json",
+        "Phase4_Data/G10_CH06_Vecto_Toa_Do.json"
+      ]
+    },
+    "G11": {
+      "description": "Lớp 11: Exercises tích hợp trong Phase4_Data chapters",
+      "linkedChapters": [
+        "Phase4_Data/G11_CH01_Luong_Giac_NC.json",
+        "Phase4_Data/G11_CH02_Day_So.json",
+        "Phase4_Data/G11_CH03_Gioi_Han.json",
+        "Phase4_Data/G11_CH04_Dao_Ham.json",
+        "Phase4_Data/G11_CH05_To_Hop_XS.json",
+        "Phase4_Data/G11_CH06_Thong_Ke_XS.json"
+      ]
+    },
+    "G12": {
+      "description": "Lớp 12: Exercises tích hợp trong Phase4_Data chapters",
+      "linkedChapters": [
+        "Phase4_Data/G12_CH01_Dao_Ham.json",
+        "Phase4_Data/G12_CH02_Mu_Logarit.json",
+        "Phase4_Data/G12_CH03_Tich_Phan.json",
+        "Phase4_Data/G12_CH04_So_Phuc.json",
+        "Phase4_Data/G12_CH05_To_Hop_XS.json",
+        "Phase4_Data/G12_CH06_Hinh_Hoc_KG.json"
+      ]
+    }
+  },
+  
+  "difficultyDistribution": {
+    "Easy": "30%",
+    "Medium": "45%",
+    "Hard": "25%"
+  }
+}

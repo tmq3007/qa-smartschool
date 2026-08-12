@@ -1,0 +1,410 @@
+<Window x:Class="QASmartTouch.Forms.Form2_6_3DPrismEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Chức năng vẽ lăng trụ 3D" 
+        Height="720" 
+        Width="1200"
+        MinHeight="720"
+        MinWidth="1000"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResizeWithGrip"
+        Background="#FF6674EA">
+
+    <Window.Resources>
+        <!-- Modern Slider Style -->
+        <Style x:Key="ModernSlider" TargetType="Slider">
+            <Setter Property="Height" Value="6"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+        </Style>
+
+        <!-- Modern Button Style -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#667EEA"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="5,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#5568D3"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#4451B8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Label Text Style -->
+        <Style x:Key="LabelText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="Margin" Value="0,8,0,4"/>
+        </Style>
+
+        <!-- Value Text Style -->
+        <Style x:Key="ValueText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#667EEA"/>
+            <Setter Property="Margin" Value="5,8,0,4"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="White" Padding="15,10" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Vertical">
+                    <TextBlock Text="Chức năng vẽ lăng trụ 3D" FontSize="20" FontWeight="Bold" Foreground="#2C3E50"/>
+                    <TextBlock Text="Công cụ hỗ trợ giảng dạy toán học trực quan" FontSize="11" Foreground="Gray" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <Button Grid.Column="1" Content="✕" FontSize="18" Width="35" Height="35"
+                        Background="Transparent" BorderThickness="0" Foreground="#666"
+                        Click="CloseButton_Click" Cursor="Hand"
+                        VerticalAlignment="Center">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#FFEBEE"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="330"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel - Canvas Area -->
+            <Border Grid.Column="0" Background="#F9F9F9" Margin="15" BorderBrush="#DDDDDD" BorderThickness="1" CornerRadius="10">
+                <Canvas x:Name="canvas3D" ClipToBounds="True"/>
+            </Border>
+
+            <!-- Right Panel - Controls -->
+            <Border Grid.Column="1" Background="White" BorderBrush="#CCCCCC" BorderThickness="1,0,0,0" Padding="15">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Title -->
+                        <TextBlock Text="⚙️ Điều Khiển Lăng Trụ" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,20"/>
+
+                        <!-- Stats Panel -->
+                        <Border Background="#FFF3CD" BorderBrush="#FFC107" BorderThickness="0,0,0,3" CornerRadius="6" Padding="12" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="Thông Số" FontSize="14" FontWeight="Bold" Foreground="#6A1B9A" Margin="0,0,0,10"/>
+                                <TextBlock x:Name="txtBaseType" Text="Loại đáy: Hình vuông" FontSize="12" Foreground="#7B1FA2" Margin="0,2"/>
+                                <TextBlock x:Name="txtBaseSize" Text="Cạnh đáy: 100 mm" FontSize="12" Foreground="#7B1FA2" Margin="0,2"/>
+                                <TextBlock x:Name="txtHeight" Text="Chiều cao (h): 200 mm" FontSize="12" Foreground="#7B1FA2" Margin="0,2"/>
+                                <TextBlock x:Name="txtBaseEdges" Text="Số cạnh đáy: 4" FontSize="12" Foreground="#7B1FA2" Margin="0,2"/>
+                                <TextBlock x:Name="txtVertices" Text="Số đỉnh: 8" FontSize="12" Foreground="#7B1FA2" Margin="0,2"/>
+                                <Separator Margin="0,8" Background="#FFC107"/>
+                                <TextBlock x:Name="txtVolume" Text="Thể tích: 2000000 mm³" FontSize="12" FontWeight="SemiBold" Foreground="#6A1B9A" Margin="0,2"/>
+                                <TextBlock x:Name="txtBaseArea" Text="Diện tích đáy: 10000 mm²" FontSize="12" FontWeight="SemiBold" Foreground="#6A1B9A" Margin="0,2"/>
+                                <TextBlock x:Name="txtLateralArea" Text="Diện tích xung quanh: 80000 mm²" FontSize="12" FontWeight="SemiBold" Foreground="#6A1B9A" Margin="0,2"/>
+                                <TextBlock x:Name="txtTotalArea" Text="Diện tích toàn phần: 100000 mm²" FontSize="12" FontWeight="SemiBold" Foreground="#6A1B9A" Margin="0,2"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Dimensions -->
+                        <GroupBox Header="📏 Kích Thước" Margin="0,0,0,15" FontWeight="SemiBold">
+                            <StackPanel Margin="5">
+                                <!-- Base Size -->
+                                <TextBlock Text="Cạnh đáy:" FontSize="11" Margin="0,5,0,3"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="sliderBaseSize" Minimum="30" Maximum="150" Value="100" 
+                                            TickFrequency="5" IsSnapToTickEnabled="True"
+                                            ValueChanged="OnDimensionChanged"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding ElementName=sliderBaseSize, Path=Value, StringFormat={}{0:F0}}" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11"/>
+                                </Grid>
+
+                                <!-- Height -->
+                                <TextBlock Text="Chiều cao (h):" FontSize="11" Margin="0,8,0,3"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="sliderHeight" Minimum="50" Maximum="300" Value="200" 
+                                            TickFrequency="10" IsSnapToTickEnabled="True"
+                                            ValueChanged="OnDimensionChanged"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding ElementName=sliderHeight, Path=Value, StringFormat={}{0:F0}}" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11"/>
+                                </Grid>
+                                
+                                <!-- Edge Thickness -->
+                                <TextBlock Text="Độ dày nét viền:" FontSize="11" Margin="0,8,0,3"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="sliderThickness" Minimum="0.5" Maximum="5" Value="1.5" 
+                                            TickFrequency="0.5" IsSnapToTickEnabled="True"
+                                            ValueChanged="OnThicknessChanged"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding ElementName=sliderThickness, Path=Value, StringFormat={}{0:F1}}" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11"/>
+                                </Grid>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Base Type Selection -->
+                        <GroupBox Header="👁️ Kiểu Hiển Thị" Margin="0,0,0,15" FontWeight="SemiBold">
+                            <StackPanel Margin="5">
+                                <TextBlock Text="Chọn hình đáy:" FontSize="11" Margin="0,5,0,5"/>
+                                <ComboBox x:Name="cmbBaseType" SelectionChanged="OnBaseTypeChanged" SelectedIndex="1">
+                                    <ComboBoxItem Content="🔺 Tam giác (Triangle)" Tag="Triangle"/>
+                                    <ComboBoxItem Content="🔲 Vuông (Square)" Tag="Square"/>
+                                    <ComboBoxItem Content="⬠ Ngũ giác (Pentagon)" Tag="Pentagon"/>
+                                    <ComboBoxItem Content="⬡ Lục giác (Hexagon)" Tag="Hexagon"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Drawing Mode -->
+                        <GroupBox Header="🎨 Chế Độ Vẽ" Margin="0,0,0,15" FontWeight="SemiBold">
+                            <StackPanel Margin="5">
+                                <RadioButton x:Name="rbWireframe" Content="Wireframe (Khung dây)" 
+                                             IsChecked="True" Margin="0,5" Checked="OnDrawingModeChanged"/>
+                                <RadioButton x:Name="rbSolid" Content="Solid (Tô màu)" 
+                                             Margin="0,5" Checked="OnDrawingModeChanged"/>
+                                <RadioButton x:Name="rbBoth" Content="Both (Cả hai)" 
+                                             Margin="0,5" Checked="OnDrawingModeChanged"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Colors -->
+                        <GroupBox Header="🎨 Màu Sắc" Margin="0,0,0,15" FontWeight="SemiBold">
+                            <StackPanel Margin="5">
+                                <!-- Edge Color -->
+                                <TextBlock Text="Màu viền (Edge):" FontSize="11" Margin="0,5,0,5"/>
+                                <ComboBox x:Name="cmbEdgeColor" SelectionChanged="OnEdgeColorChanged" SelectedIndex="0">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="16" Height="16" CornerRadius="2" Margin="0,0,8,0"
+                                                        Background="{Binding Tag, RelativeSource={RelativeSource AncestorType=ComboBoxItem}}"
+                                                        BorderBrush="#999" BorderThickness="1"/>
+                                                <TextBlock Text="{Binding Content, RelativeSource={RelativeSource AncestorType=ComboBoxItem}}" 
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                    <ComboBoxItem Content="Đen (Black)" Tag="Black"/>
+                                    <ComboBoxItem Content="Trắng (White)" Tag="White"/>
+                                    <ComboBoxItem Content="Đỏ (Red)" Tag="Red"/>
+                                    <ComboBoxItem Content="Xanh lá (Green)" Tag="Green"/>
+                                    <ComboBoxItem Content="Xanh dương (Blue)" Tag="Blue"/>
+                                    <ComboBoxItem Content="Vàng (Yellow)" Tag="Yellow"/>
+                                    <ComboBoxItem Content="Tím (Purple)" Tag="Purple"/>
+                                    <ComboBoxItem Content="Cam (Orange)" Tag="Orange"/>
+                                </ComboBox>
+
+                                <!-- Face Color -->
+                                <TextBlock Text="Màu mặt (Face):" FontSize="11" Margin="0,10,0,5"/>
+                                <ComboBox x:Name="cmbFaceColor" SelectionChanged="OnFaceColorChanged" SelectedIndex="0">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="16" Height="16" CornerRadius="2" Margin="0,0,8,0"
+                                                        Background="{Binding Tag, RelativeSource={RelativeSource AncestorType=ComboBoxItem}}"
+                                                        BorderBrush="#999" BorderThickness="1"/>
+                                                <TextBlock Text="{Binding Content, RelativeSource={RelativeSource AncestorType=ComboBoxItem}}" 
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                    <ComboBoxItem Content="Trong suốt (Transparent)" Tag="Transparent"/>
+                                    <ComboBoxItem Content="Trắng (White)" Tag="White"/>
+                                    <ComboBoxItem Content="Đỏ (Red)" Tag="Red"/>
+                                    <ComboBoxItem Content="Xanh lá (Green)" Tag="Green"/>
+                                    <ComboBoxItem Content="Xanh dương (Blue)" Tag="Blue"/>
+                                    <ComboBoxItem Content="Vàng (Yellow)" Tag="Yellow"/>
+                                    <ComboBoxItem Content="Tím (Purple)" Tag="Purple"/>
+                                    <ComboBoxItem Content="Cam (Orange)" Tag="Orange"/>
+                                    <ComboBoxItem Content="Nâu (Brown)" Tag="Brown"/>
+                                </ComboBox>
+
+                                <!-- Color Preview -->
+                                <TextBlock Text="Xem trước màu:" FontSize="11" Margin="0,10,0,5"/>
+                                <Grid Height="40">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" x:Name="EdgeColorPreview" Background="Black" 
+                                            BorderBrush="#666" BorderThickness="1" Margin="0,0,5,0" CornerRadius="4"/>
+                                    <Border Grid.Column="1" x:Name="FaceColorPreview" Background="Transparent" 
+                                            BorderBrush="#666" BorderThickness="1" Margin="5,0,0,0" CornerRadius="4"/>
+                                </Grid>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Advanced Features -->
+                        <GroupBox Header="⚡ Nâng Cao" Margin="0,0,0,15" FontWeight="SemiBold">
+                            <StackPanel Margin="5">
+                                <!-- Hidden Edges Option -->
+                                <CheckBox x:Name="chkShowHiddenEdges" 
+                                          Content="Hiển thị nét đứt (Cạnh khuất)" 
+                                          IsChecked="True" 
+                                          FontSize="12"
+                                          Foreground="#444444"
+                                          Margin="0,8,0,5"
+                                          Checked="chkShowHiddenEdges_Click"
+                                          Unchecked="chkShowHiddenEdges_Click"/>
+
+                                <!-- Vertex Labels Option -->
+                                <CheckBox x:Name="chkShowVertexLabels" 
+                                          Content="Hiển thị nhãn đỉnh (A, B, C...)" 
+                                          IsChecked="True" 
+                                          FontSize="12"
+                                          Foreground="#444444"
+                                          Margin="0,8,0,5"
+                                          Checked="chkShowVertexLabels_Click"
+                                          Unchecked="chkShowVertexLabels_Click"/>
+
+                                <!-- Opacity -->
+                                <TextBlock Text="Độ trong suốt:" FontSize="11" Margin="0,5,0,3"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="sliderOpacity" Minimum="0" Maximum="100" Value="70" 
+                                            TickFrequency="5" IsSnapToTickEnabled="True"
+                                            ValueChanged="OnOpacityChanged"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding ElementName=sliderOpacity, Path=Value, StringFormat={}{0:F0}%}" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11"/>
+                                </Grid>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Rotation Controls -->
+                        <GroupBox Header="🔄 Điều Khiển Xoay" Margin="0,0,0,15" FontWeight="SemiBold">
+                            <StackPanel Margin="5">
+                                <!-- Auto Rotate -->
+                                <CheckBox x:Name="chkAutoRotate" Content="🔄 Tự động xoay" 
+                                          Margin="0,5,0,10" Checked="OnAutoRotateChanged" Unchecked="OnAutoRotateChanged"/>
+
+                                <!-- X Axis -->
+                                <TextBlock Text="Trục X:" FontSize="11" Margin="0,5,0,3"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="sliderRotationX" Minimum="0" Maximum="360" Value="0" 
+                                            TickFrequency="15" IsSnapToTickEnabled="True"
+                                            ValueChanged="OnRotationChanged"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding ElementName=sliderRotationX, Path=Value, StringFormat={}{0:F0}°}" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11"/>
+                                </Grid>
+
+                                <!-- Y Axis -->
+                                <TextBlock Text="Trục Y:" FontSize="11" Margin="0,8,0,3"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="sliderRotationY" Minimum="0" Maximum="360" Value="30" 
+                                            TickFrequency="15" IsSnapToTickEnabled="True"
+                                            ValueChanged="OnRotationChanged"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding ElementName=sliderRotationY, Path=Value, StringFormat={}{0:F0}°}" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11"/>
+                                </Grid>
+
+                                <!-- Z Axis -->
+                                <TextBlock Text="Trục Z:" FontSize="11" Margin="0,8,0,3"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="sliderRotationZ" Minimum="0" Maximum="360" Value="0" 
+                                            TickFrequency="15" IsSnapToTickEnabled="True"
+                                            ValueChanged="OnRotationChanged"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding ElementName=sliderRotationZ, Path=Value, StringFormat={}{0:F0}°}" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11"/>
+                                </Grid>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Action Buttons -->
+                        <StackPanel Margin="0,10,0,0">
+                            <Button x:Name="btnConfirm" Content="✅ Xác nhận hoàn thành" 
+                                    Height="40" Margin="0,0,0,8" Click="btnConfirm_Click"
+                                    Background="#4CAF50" Foreground="White" FontWeight="Bold" FontSize="14" BorderThickness="0"/>
+                            
+                            <Button x:Name="btnDownload" Content="💾 Tải ảnh xuống máy" 
+                                    Height="35" Margin="0,0,0,8" Click="btnDownload_Click"
+                                    Background="#2196F3" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
+                            
+                            <Button x:Name="btnReset" Content="🔄 Đặt lại mặc định" 
+                                    Height="35" Margin="0,0,0,8" Click="btnReset_Click"
+                                    Background="#FF9800" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
+                            
+                            <Button x:Name="btnDisplayStats" Content="📋 Hiển thị thông số lên màn hình" 
+                                    Height="35" Margin="0,0,0,8" Click="btnDisplayStats_Click"
+                                    Background="#03A9F4" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
+
+                            <Button x:Name="btnCopyStats" Content="📋 Sao chép thông số vào Clipboard" 
+                                    Height="35" Margin="0,0,0,8" Click="btnCopyStats_Click"
+                                    Background="#03A9F4" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
+                            
+                            <Button x:Name="btnClose" Content="❌ Thoát" 
+                                    Height="35" Click="btnClose_Click"
+                                    Background="#F44336" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

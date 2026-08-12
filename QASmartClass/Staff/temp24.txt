@@ -1,0 +1,37 @@
+            _lastCommandTime = DateTime.Now;
+
+            switch (parts[1])
+            {
+                case "TIMER_START":
+                    if (parts.Length > 2 && int.TryParse(parts[2], out int sec))
+                    {
+                        _overlaySecondsLeft = sec;
+                        if (_overlayTimer == null)
+                        {
+                            _overlayTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+                            _overlayTimer.Tick += (s, e) =>
+                            {
+                                if (_overlaySecondsLeft > 0)
+                                {
+                                    _overlaySecondsLeft--;
+                                    txtTimerDisplay.Text = $"{_overlaySecondsLeft / 60:D2}:{_overlaySecondsLeft % 60:D2}";
+                                }
+                                else
+                                {
+                                    _overlayTimer.Stop();
+                                    timerOverlay.Visibility = Visibility.Collapsed;
+                                }
+                            };
+                        }
+                        txtTimerDisplay.Text = $"{_overlaySecondsLeft / 60:D2}:{_overlaySecondsLeft % 60:D2}";
+                        timerOverlay.Visibility = Visibility.Visible;
+                        _overlayTimer.Start();
+                    }
+                    break;
+                case "TIMER_PAUSE":
+                    if (_overlayTimer != null) _overlayTimer.Stop();
+                    break;
+                case "TIMER_STOP":
+                    if (_overlayTimer != null) _overlayTimer.Stop();
+                    timerOverlay.Visibility = Visibility.Collapsed;
+                    break;

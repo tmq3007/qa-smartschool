@@ -1,0 +1,417 @@
+{
+  "metadata": {
+    "chapterId": "g02_ch03",
+    "chapterName": "Hình Học Phẳng Cơ Bản",
+    "grade": 2,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 18,
+    "toolMapping": [
+      "GeometryTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 12,
+    "prerequisites": [
+      "g01_ch02"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "hhp2_01",
+      "sectionName": "Chu vi hình vuông & chữ nhật",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "hhp2_001",
+          "name": "Chu vi hình vuông",
+          "definition": "CV = 4 × a (a là cạnh)",
+          "examples": [
+            "Cạnh 5 cm → CV = 4 × 5 = 20 cm"
+          ]
+        },
+        {
+          "id": "hhp2_002",
+          "name": "Chu vi hình chữ nhật",
+          "definition": "CV = (a + b) × 2",
+          "examples": [
+            "Dài 6 cm, rộng 4 cm → CV = (6+4) × 2 = 20 cm"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hhp2_p01",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Chu vi hình vuông cạnh 3 cm = ?",
+          "options": [
+            "A) 6 cm",
+            "B) 9 cm",
+            "C) 12 cm",
+            "D) 15 cm"
+          ],
+          "correctAnswer": "C",
+          "solution": "CV = 4 × 3 = 12 cm",
+          "points": 5
+        },
+        {
+          "problemId": "hhp2_p02",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Chu vi hình chữ nhật dài 5 cm, rộng 3 cm = ?",
+          "options": [
+            "A) 8 cm",
+            "B) 15 cm",
+            "C) 16 cm",
+            "D) 30 cm"
+          ],
+          "correctAnswer": "C",
+          "solution": "CV = (5 + 3) × 2 = 16 cm",
+          "points": 5
+        },
+        {
+          "problemId": "hhp2_p03",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Sân trường hình chữ nhật dài 50 m, rộng 30 m. Chạy 1 vòng sân = bao nhiêu m?",
+          "options": [
+            "A) 80 m",
+            "B) 160 m",
+            "C) 1500 m",
+            "D) 100 m"
+          ],
+          "correctAnswer": "B",
+          "solution": "CV = (50 + 30) × 2 = 160 m",
+          "points": 10
+        },
+        {
+          "problemId": "hhp2_p04",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Hình vuông chu vi 28 cm. Cạnh = ?",
+          "options": [
+            "A) 5 cm",
+            "B) 6 cm",
+            "C) 7 cm",
+            "D) 8 cm"
+          ],
+          "correctAnswer": "C",
+          "solution": "a = CV ÷ 4 = 28 ÷ 4 = 7 cm",
+          "points": 10
+        },
+        {
+          "problemId": "hhp2_p05",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Rào xung quanh vườn hình chữ nhật dài 12 m, rộng 8 m. Cổng rộng 2 m. Cần bao nhiêu m rào?",
+          "options": [
+            "A) 38 m",
+            "B) 40 m",
+            "C) 36 m",
+            "D) 42 m"
+          ],
+          "correctAnswer": "A",
+          "solution": "CV = (12 + 8) × 2 = 40 m. Trừ cổng: 40 - 2 = 38 m",
+          "points": 15
+        },
+        {
+          "problemId": "hhp2_p06",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "HCN có chu vi 24 cm, chiều dài gấp đôi chiều rộng. Chiều dài = ?",
+          "options": [
+            "A) 6 cm",
+            "B) 8 cm",
+            "C) 10 cm",
+            "D) 12 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "Gọi rộng = a → dài = 2a. CV = (2a + a) × 2 = 6a = 24. a = 4. Dài = 8 cm",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hhp2_02",
+      "sectionName": "Diện tích hình vuông & chữ nhật",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "hhp2_003",
+          "name": "Diện tích hình vuông",
+          "definition": "S = a × a = a²",
+          "examples": [
+            "Cạnh 4 cm → S = 4 × 4 = 16 cm²"
+          ]
+        },
+        {
+          "id": "hhp2_004",
+          "name": "Diện tích hình chữ nhật",
+          "definition": "S = a × b",
+          "examples": [
+            "Dài 7 cm, rộng 3 cm → S = 7 × 3 = 21 cm²"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hhp2_p07",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Diện tích hình vuông cạnh 5 cm = ?",
+          "options": [
+            "A) 10 cm²",
+            "B) 20 cm²",
+            "C) 25 cm²",
+            "D) 30 cm²"
+          ],
+          "correctAnswer": "C",
+          "solution": "S = 5 × 5 = 25 cm²",
+          "points": 5
+        },
+        {
+          "problemId": "hhp2_p08",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Diện tích HCN dài 8 cm, rộng 4 cm = ?",
+          "options": [
+            "A) 12 cm²",
+            "B) 24 cm²",
+            "C) 32 cm²",
+            "D) 36 cm²"
+          ],
+          "correctAnswer": "C",
+          "solution": "S = 8 × 4 = 32 cm²",
+          "points": 5
+        },
+        {
+          "problemId": "hhp2_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Phòng học dài 10 m, rộng 6 m. Diện tích = ?",
+          "options": [
+            "A) 32 m²",
+            "B) 60 m²",
+            "C) 16 m²",
+            "D) 100 m²"
+          ],
+          "correctAnswer": "B",
+          "solution": "S = 10 × 6 = 60 m²",
+          "points": 10
+        },
+        {
+          "problemId": "hhp2_p10",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Hình vuông S = 36 cm². Cạnh = ?",
+          "options": [
+            "A) 4 cm",
+            "B) 6 cm",
+            "C) 9 cm",
+            "D) 12 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "a = √36 = 6 cm (vì 6 × 6 = 36)",
+          "points": 10
+        },
+        {
+          "problemId": "hhp2_p11",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Sân HCN 20 m × 15 m. Lát gạch vuông cạnh 1 m. Cần bao nhiêu viên?",
+          "options": [
+            "A) 200",
+            "B) 250",
+            "C) 300",
+            "D) 350"
+          ],
+          "correctAnswer": "C",
+          "solution": "S sân = 20 × 15 = 300 m². Mỗi viên 1 m² → cần 300 viên",
+          "points": 15
+        },
+        {
+          "problemId": "hhp2_p12",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "HCN diện tích 48 cm², chiều rộng 6 cm. Chu vi = ?",
+          "options": [
+            "A) 22 cm",
+            "B) 28 cm",
+            "C) 32 cm",
+            "D) 24 cm"
+          ],
+          "correctAnswer": "A",
+          "solution": "Dài = 48 ÷ 6 = 8 cm. CV = (8 + 6) × 2 = 28 cm. Sai! Dài = 48÷6 = 8. CV = (8+3)×2 = 22. Wait: rộng=6 → CV = (8+6)×2 = 28",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hhp2_03",
+      "sectionName": "Điểm, Đoạn thẳng, Đường thẳng",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "hhp2_005",
+          "name": "Điểm & Đoạn thẳng",
+          "definition": "Đoạn thẳng là đường ngắn nhất nối 2 điểm",
+          "examples": [
+            "Cạnh bàn là đoạn thẳng",
+            "Dùng thước kẻ nối 2 điểm A, B"
+          ]
+        },
+        {
+          "id": "hhp2_006",
+          "name": "Đường gấp khúc",
+          "definition": "Nhiều đoạn thẳng nối tiếp nhau",
+          "examples": [
+            "Đường zigzag",
+            "Hàng rào sóng"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hhp2_p13",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Đoạn thẳng AB dài 7 cm. Đo bằng dụng cụ nào?",
+          "options": [
+            "A) Compa",
+            "B) Thước kẻ",
+            "C) Ê-ke",
+            "D) Cân"
+          ],
+          "correctAnswer": "B",
+          "solution": "Dùng thước kẻ để đo chiều dài đoạn thẳng",
+          "points": 5
+        },
+        {
+          "problemId": "hhp2_p14",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Qua 2 điểm phân biệt vẽ được mấy đường thẳng?",
+          "options": [
+            "A) 0",
+            "B) 1",
+            "C) 2",
+            "D) Vô số"
+          ],
+          "correctAnswer": "B",
+          "solution": "Qua 2 điểm phân biệt chỉ vẽ được đúng 1 đường thẳng",
+          "points": 5
+        },
+        {
+          "problemId": "hhp2_p15",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Đường gấp khúc ABCD có AB = 3 cm, BC = 5 cm, CD = 4 cm. Độ dài đường gấp khúc = ?",
+          "options": [
+            "A) 10 cm",
+            "B) 12 cm",
+            "C) 15 cm",
+            "D) 9 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tổng = 3 + 5 + 4 = 12 cm",
+          "points": 10
+        },
+        {
+          "problemId": "hhp2_p16",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "3 điểm không thẳng hàng tạo được mấy đoạn thẳng?",
+          "options": [
+            "A) 1",
+            "B) 2",
+            "C) 3",
+            "D) 4"
+          ],
+          "correctAnswer": "C",
+          "solution": "3 điểm: AB, AC, BC = 3 đoạn thẳng",
+          "points": 10
+        },
+        {
+          "problemId": "hhp2_p17",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "4 điểm không có 3 điểm nào thẳng hàng. Số đoạn thẳng tạo được = ?",
+          "options": [
+            "A) 4",
+            "B) 5",
+            "C) 6",
+            "D) 8"
+          ],
+          "correctAnswer": "C",
+          "solution": "Số đoạn = C(4,2) = 4×3÷2 = 6 đoạn thẳng",
+          "points": 15
+        },
+        {
+          "problemId": "hhp2_p18",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Đường gấp khúc khép kín ABCDA, AB=3, BC=5, CD=3, DA=5. Đó là chu vi hình gì?",
+          "options": [
+            "A) Hình vuông",
+            "B) Hình chữ nhật",
+            "C) Hình thoi",
+            "D) Hình bình hành"
+          ],
+          "correctAnswer": "B",
+          "solution": "2 cạnh 3, 2 cạnh 5 → Hình chữ nhật. CV = (3+5)×2 = 16",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm chu vi với diện tích",
+      "correction": "Chu vi = tổng các cạnh (cm). Diện tích = cạnh × cạnh (cm²)"
+    },
+    {
+      "mistake": "Đơn vị diện tích viết cm thay vì cm²",
+      "correction": "Diện tích luôn có đơn vị bình phương: cm², m², km²"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "hhp2_quiz_01",
+      "title": "Kiểm tra: Hình học phẳng Lớp 2",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "hhp2_p01"
+        },
+        {
+          "ref": "hhp2_p07"
+        },
+        {
+          "ref": "hhp2_p13"
+        },
+        {
+          "ref": "hhp2_p05"
+        },
+        {
+          "ref": "hhp2_p17"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

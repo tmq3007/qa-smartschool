@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch05",
+    "chapterName": "Bài 5: Phú sông Bạch Đằng — Trương Hán Siêu",
+    "grade": 10,
+    "totalProblems": 3,
+    "totalSections": 1,
+    "estimatedHours": 2,
+    "thptWeight": "Thể phú trung đại — Niềm tự hào lịch sử"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g10_ch5_0",
+      "sectionName": "Phú sông Bạch Đằng",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-10-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g10_Phú_sông_Bạch_Đằng.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Trương Hán Siêu (mất 1354). Bài phú là đỉnh cao của văn học yêu nước thời Trần, ca ngợi cảnh sắc hùng vĩ và những chiến công oanh liệt trên dòng sông Bạch Đằng lịch sử."
+        },
+        {
+          "name": "Cảnh sắc Bạch Đằng",
+          "definition": "Bát ngát sóng kình muôn dặm,\nThướt tha đuôi trĩ một màu.\nNước trời: một sắc,\nPhong cảnh: ba thu.\nBờ lau san sát, bến lách đìu hiu\nSông chìm giáo gãy, gò đầy xương khô."
+        },
+        {
+          "name": "Bài học lịch sử",
+          "definition": "Khách rằng:\nAnh minh hai vị thánh quân,\nNơi đây lưu dấu chiến trần dạo qua.\nQuả là: Trời đất cho nơi hiểm trở,\nCũng nhờ: Nhân tài giữ cuộc điện an."
+        },
+        {
+          "name": "Phân tích giá trị",
+          "examples": [
+            "**Cảnh sắc hai mặt**: Vừa hùng vĩ, bát ngát (nước trời một sắc) vừa ảm đạm, bi tráng (bờ lau san sát, gò đầy xương khô) — dấu tích chiến tranh tàn khốc.",
+            "**Yếu tố quyết định chiến thắng**: Không chỉ nhờ địa thế hiểm trở (Trời đất) mà quan trọng nhất là sức mạnh và đức độ của con người (Nhân tài, thánh quân)."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Bức tranh thiên nhiên sông Bạch Đằng được miêu tả mang vẻ đẹp như thế nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Vừa hoành tráng, hùng vĩ (sóng kình muôn dặm) vừa ảm đạm, hắt hiu (bờ lau san sát, bến lách đìu hiu) gợi niềm hoài cổ",
+            "Tươi tắn, rực rỡ với cảnh sắc mùa xuân nhộn nhịp",
+            "Chỉ có sự tang tóc, chết chóc của chiến trường xưa",
+            "Mơ mộng, lãng mạn như một bức tranh thủy mặc"
+          ],
+          "answer": "Vừa hoành tráng, hùng vĩ (sóng kình muôn dặm) vừa ảm đạm, hắt hiu (bờ lau san sát, bến lách đìu hiu) gợi niềm hoài cổ",
+          "hints": ["So sánh hai cụm từ: 'Bát ngát sóng kình muôn dặm' và 'Bờ lau san sát, bến lách đìu hiu'."],
+          "explanation": "Cảnh Bạch Đằng mang hai sắc thái: vẻ đẹp kỳ vĩ của không gian sông nước mênh mông, nhưng lại nhuốm màu buồn bã, hoang vắng bởi những dấu tích tàn lụi của chiến trường xưa ('Sông chìm giáo gãy, gò đầy xương khô')."
+        },
+        {
+          "id": "p2",
+          "question": "Theo Trương Hán Siêu, yếu tố nào đóng vai trò quyết định nhất làm nên chiến thắng trên sông Bạch Đằng?",
+          "difficulty": "Hard",
+          "options": [
+            "Yếu tố con người (nhân tài, sự anh minh của các vị thánh quân)",
+            "Sự hiểm trở của địa thế thiên nhiên (trời đất cho nơi hiểm trở)",
+            "Số lượng quân lính đông đảo và vũ khí hiện đại",
+            "Sự yếu kém và hèn nhát của quân giặc phương Bắc"
+          ],
+          "answer": "Yếu tố con người (nhân tài, sự anh minh của các vị thánh quân)",
+          "hints": ["'Trời đất cho nơi hiểm trở / Cũng nhờ: Nhân tài giữ cuộc điện an'. Tác giả nhấn mạnh vế nào hơn?"],
+          "explanation": "Đây là tư tưởng tiến bộ và sâu sắc nhất của bài phú. Tác giả không phủ nhận vai trò của địa linh hiểm trở ('Trời đất'), nhưng khẳng định yếu tố quyết định là 'Nhân hòa' — sự anh minh của vua Trần ('thánh quân') và tài thao lược của tướng sĩ ('nhân tài')."
+        },
+        {
+          "id": "p3",
+          "question": "Hình ảnh 'Sông chìm giáo gãy, gò đầy xương khô' gợi lên cảm xúc gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Sự bi tráng, xót xa trước những tổn thất lớn lao của cuộc chiến, đồng thời cũng là niềm tự hào về chiến công tiêu diệt giặc",
+            "Sự hoảng sợ trước cảnh tượng rùng rợn của chiến trường",
+            "Nỗi buồn chán vì sự tàn phá của thiên nhiên",
+            "Sự hả hê, vui mừng vì kẻ thù đã chết sạch"
+          ],
+          "answer": "Sự bi tráng, xót xa trước những tổn thất lớn lao của cuộc chiến, đồng thời cũng là niềm tự hào về chiến công tiêu diệt giặc",
+          "hints": ["Nhìn xương khô và vũ khí gãy, người anh hùng xưa thường có cảm xúc gì?"],
+          "explanation": "Đó là nét bi tráng của văn học trung đại. Một mặt xót thương cho sinh mệnh con người bị chôn vùi dưới dòng sông, mặt khác đó cũng là đài kỷ niệm uy nghi về sức mạnh vô địch của dân tộc Đại Việt trước quân xâm lược hung bạo."
+        }
+      ]
+    }
+  ]
+}

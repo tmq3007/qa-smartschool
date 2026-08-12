@@ -1,0 +1,385 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Admin.MasterDataView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             KeyDown="UserControl_KeyDown" Loaded="UserControl_Loaded" Focusable="True">
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="⚙️ Quản lý danh mục dùng chung" ActionButtonText=""/>
+
+        <DockPanel Grid.Row="1" Margin="16">
+            <!-- Pending Proposals Alert Banner -->
+            <Border DockPanel.Dock="Top" Background="#20F59E0B" BorderBrush="#F59E0B" BorderThickness="1" Padding="12" Margin="0,0,0,16" CornerRadius="8"
+                    Visibility="{Binding HasPendingProposals, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="📨 " FontSize="16" VerticalAlignment="Center"/>
+                    <TextBlock Text="Có " Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding PendingProposalsCount}" Foreground="{StaticResource WarningTextBrush}" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text=" đề xuất danh mục mới từ Giáo viên đang chờ phê duyệt." Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <TabControl x:Name="MainTabControl" Background="Transparent" BorderThickness="0">
+            <TabControl.Resources>
+                <!-- Style for TabItem to make it premium and dark-themed -->
+                <Style TargetType="TabItem">
+                    <Setter Property="HeaderTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <ContentPresenter Content="{TemplateBinding Content}" Margin="12,6"/>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,3"/>
+                    <Setter Property="BorderBrush" Value="Transparent"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Margin="0,0,16,0" Cursor="Hand">
+                                    <ContentPresenter ContentSource="Header"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.Resources>
+                  <!-- TAB 1: NHÀ XUẤT BẢN -->
+            <TabItem Header="🏢 Nhà xuất bản">
+                <Grid Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="7*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Style="{StaticResource CardBorder}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Header / Action Toolbar -->
+                            <Grid Grid.Row="0" Margin="12,12,12,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Danh sách nhà xuất bản" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button Content="📄 Tải file mẫu" Command="{Binding ExportPublishersTemplateCommand}" Style="{StaticResource SecondaryButton}" Height="30" Padding="12,0" Margin="0,0,8,0" FontSize="12"/>
+                                    <Button Content="📥 Nhập Excel" Command="{Binding ImportPublishersExcelCommand}" Style="{StaticResource SecondaryButton}" Height="30" Padding="12,0" Margin="0,0,8,0" FontSize="12"/>
+                                    <Button Content="📤 Xuất Excel" Command="{Binding ExportPublishersExcelCommand}" Style="{StaticResource SecondaryButton}" Height="30" Padding="12,0" FontSize="12"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Search Toolbar -->
+                            <Grid Grid.Row="1" Margin="12,0,12,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="250"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="🔍 Tìm nhanh:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
+                                <Grid Grid.Column="1">
+                                    <TextBox x:Name="TxtPubSearch" Text="{Binding PublisherSearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Height="30" VerticalContentAlignment="Center" FontSize="12"/>
+                                    <TextBlock Text="🔍 Nhập tên NXB, địa chỉ..." Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" IsHitTestVisible="False" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=TxtPubSearch}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Grid>
+ 
+                            <DataGrid Grid.Row="2" Style="{StaticResource ModernDataGrid}" ItemsSource="{Binding Publishers}" SelectedItem="{Binding SelectedPublisher}"
+                                      VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã NXB" Binding="{Binding Id}" Width="80"/>
+                                    <DataGridTextColumn Header="Tên nhà xuất bản" Binding="{Binding Name}" Width="2*"/>
+                                    <DataGridTextColumn Header="Địa chỉ" Binding="{Binding Address}" Width="1.5*"/>
+                                    <DataGridTextColumn Header="Liên hệ" Binding="{Binding Contact}" Width="1.2*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Chi tiết nhà xuất bản" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="Tên nhà xuất bản *" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding PublisherName, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" Margin="0,0,0,12" Style="{StaticResource ModernInputStyle}"/>
+
+                            <TextBlock Text="Địa chỉ" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding PublisherAddress, UpdateSourceTrigger=PropertyChanged}" MaxLength="200" Margin="0,0,0,12" Style="{StaticResource ModernInputStyle}"/>
+
+                            <TextBlock Text="Thông tin liên hệ" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding PublisherContact, UpdateSourceTrigger=PropertyChanged}" MaxLength="50" Margin="0,0,0,16" Style="{StaticResource ModernInputStyle}"/>
+
+                            <!-- Error Message -->
+                            <TextBlock Text="{Binding PublisherError}" Foreground="{StaticResource DangerTextBrush}" FontSize="12" Margin="0,0,0,12" TextWrapping="Wrap"
+                                       Visibility="{Binding PublisherError, Converter={StaticResource StringToVisibilityConverter}, FallbackValue=Collapsed}"/>
+
+                            <!-- Buttons -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="💾 Lưu lại" Command="{Binding SavePublisherCommand}" Style="{StaticResource SuccessButton}" Height="38" FontWeight="Bold"/>
+                                <Button Grid.Column="2" Content="🔄 Làm mới" Command="{Binding ClearPublisherCommand}" Style="{StaticResource SecondaryButton}" Height="38"/>
+                            </Grid>
+                            <Button Content="🗑️ Xóa mục đã chọn" Command="{Binding DeletePublisherCommand}" Foreground="{StaticResource DangerTextBrush}" BorderBrush="{StaticResource DangerTextBrush}" Margin="0,12,0,0" Height="38">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPublisher}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 2: THỂ LOẠI SÁCH -->
+            <TabItem Header="🏷️ Thể loại sách">
+                <Grid Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="7*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource CardBorder}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Header / Action Toolbar -->
+                            <Grid Grid.Row="0" Margin="12,12,12,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Danh sách thể loại sách" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button Content="📄 Tải file mẫu" Command="{Binding ExportBookTypesTemplateCommand}" Style="{StaticResource SecondaryButton}" Height="30" Padding="12,0" Margin="0,0,8,0" FontSize="12"/>
+                                    <Button Content="📥 Nhập Excel" Command="{Binding ImportBookTypesExcelCommand}" Style="{StaticResource SecondaryButton}" Height="30" Padding="12,0" Margin="0,0,8,0" FontSize="12"/>
+                                    <Button Content="📤 Xuất Excel" Command="{Binding ExportBookTypesExcelCommand}" Style="{StaticResource SecondaryButton}" Height="30" Padding="12,0" FontSize="12"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Search Toolbar -->
+                            <Grid Grid.Row="1" Margin="12,0,12,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="250"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="🔍 Tìm nhanh:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
+                                <Grid Grid.Column="1">
+                                    <TextBox x:Name="TxtTypeSearch" Text="{Binding BookTypeSearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Height="30" VerticalContentAlignment="Center" FontSize="12"/>
+                                    <TextBlock Text="🔍 Nhập tên thể loại, mô tả..." Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" IsHitTestVisible="False" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=TxtTypeSearch}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Grid>
+ 
+                            <DataGrid Grid.Row="2" Style="{StaticResource ModernDataGrid}" ItemsSource="{Binding BookTypes}" SelectedItem="{Binding SelectedBookType}"
+                                      VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã thể loại" Binding="{Binding Id}" Width="100"/>
+                                    <DataGridTextColumn Header="Tên thể loại" Binding="{Binding Name}" Width="2*"/>
+                                    <DataGridTextColumn Header="Mô tả" Binding="{Binding Description}" Width="3*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Chi tiết thể loại sách" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="Tên thể loại sách *" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding BookTypeName, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" Margin="0,0,0,12" Style="{StaticResource ModernInputStyle}"/>
+
+                            <TextBlock Text="Mô tả" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding BookTypeDescription, UpdateSourceTrigger=PropertyChanged}" MaxLength="300" Margin="0,0,0,16" Height="80" AcceptsReturn="True" TextWrapping="Wrap" Style="{StaticResource ModernInputStyle}"/>
+
+                            <TextBlock Text="{Binding BookTypeError}" Foreground="{StaticResource DangerTextBrush}" FontSize="12" Margin="0,0,0,12" TextWrapping="Wrap"
+                                       Visibility="{Binding BookTypeError, Converter={StaticResource StringToVisibilityConverter}, FallbackValue=Collapsed}"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="💾 Lưu lại" Command="{Binding SaveBookTypeCommand}" Style="{StaticResource SuccessButton}" Height="38" FontWeight="Bold"/>
+                                <Button Grid.Column="2" Content="🔄 Làm mới" Command="{Binding ClearBookTypeCommand}" Style="{StaticResource SecondaryButton}" Height="38"/>
+                            </Grid>
+                            <Button Content="🗑️ Xóa mục đã chọn" Command="{Binding DeleteBookTypeCommand}" Foreground="{StaticResource DangerTextBrush}" BorderBrush="{StaticResource DangerTextBrush}" Margin="0,12,0,0" Height="38">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                        <Setter Property="BorderThickness" Value="1"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedBookType}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+            <!-- TAB 3: TỔ BỘ MÔN / PHÒNG BAN -->
+            <TabItem Header="🏫 Tổ bộ môn / Phòng ban">
+                <Grid Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="7*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource CardBorder}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Header / Action Toolbar -->
+                            <Grid Grid.Row="0" Margin="12,12,12,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Danh sách tổ bộ môn / phòng ban" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button Content="📄 Tải file mẫu" Command="{Binding ExportDepartmentsTemplateCommand}" Style="{StaticResource SecondaryButton}" Height="30" Padding="12,0" Margin="0,0,8,0" FontSize="12"/>
+                                    <Button Content="📥 Nhập Excel" Command="{Binding ImportDepartmentsExcelCommand}" Style="{StaticResource SecondaryButton}" Height="30" Padding="12,0" Margin="0,0,8,0" FontSize="12"/>
+                                    <Button Content="📤 Xuất Excel" Command="{Binding ExportDepartmentsExcelCommand}" Style="{StaticResource SecondaryButton}" Height="30" Padding="12,0" FontSize="12"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Search Toolbar -->
+                            <Grid Grid.Row="1" Margin="12,0,12,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="250"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="🔍 Tìm nhanh:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
+                                <Grid Grid.Column="1">
+                                    <TextBox x:Name="TxtDepSearch" Text="{Binding DepartmentSearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Height="30" VerticalContentAlignment="Center" FontSize="12"/>
+                                    <TextBlock Text="🔍 Nhập tên tổ bộ môn, viết tắt..." Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" IsHitTestVisible="False" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=TxtDepSearch}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Grid>
+ 
+                            <DataGrid Grid.Row="2" Style="{StaticResource ModernDataGrid}" ItemsSource="{Binding Departments}" SelectedItem="{Binding SelectedDepartment}"
+                                      VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã ID" Binding="{Binding Id}" Width="100"/>
+                                    <DataGridTextColumn Header="Tên tổ bộ môn / phòng ban" Binding="{Binding Name}" Width="2*"/>
+                                    <DataGridTextColumn Header="Ký hiệu viết tắt" Binding="{Binding Code}" Width="1.5*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Chi tiết tổ bộ môn / phòng ban" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="Tên tổ bộ môn / phòng ban *" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding DepartmentName, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" Margin="0,0,0,12" Style="{StaticResource ModernInputStyle}"/>
+
+                            <TextBlock Text="Mã viết tắt *" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding DepartmentCode, UpdateSourceTrigger=PropertyChanged}" MaxLength="20" Margin="0,0,0,16" Style="{StaticResource ModernInputStyle}"/>
+
+                            <TextBlock Text="{Binding DepartmentError}" Foreground="{StaticResource DangerTextBrush}" FontSize="12" Margin="0,0,0,12" TextWrapping="Wrap"
+                                       Visibility="{Binding DepartmentError, Converter={StaticResource StringToVisibilityConverter}, FallbackValue=Collapsed}"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="💾 Lưu lại" Command="{Binding SaveDepartmentCommand}" Style="{StaticResource SuccessButton}" Height="38" FontWeight="Bold"/>
+                                <Button Grid.Column="2" Content="🔄 Làm mới" Command="{Binding ClearDepartmentCommand}" Style="{StaticResource SecondaryButton}" Height="38"/>
+                            </Grid>
+                            <Button Content="🗑️ Xóa mục đã chọn" Command="{Binding DeleteDepartmentCommand}" Foreground="{StaticResource DangerTextBrush}" BorderBrush="{StaticResource DangerTextBrush}" Margin="0,12,0,0" Height="38">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedDepartment}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        </DockPanel>
+    </Grid>
+</UserControl>

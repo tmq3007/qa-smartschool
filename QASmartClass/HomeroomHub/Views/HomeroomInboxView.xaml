@@ -1,0 +1,364 @@
+﻿<UserControl x:Class="QASmartClass.HomeroomHub.Views.HomeroomInboxView"
+
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+
+             mc:Ignorable="d" 
+
+             d:DesignHeight="700" d:DesignWidth="1000" FontFamily="Segoe UI">
+
+    <UserControl.Resources>
+
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+    </UserControl.Resources>
+
+    
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="HỘP THƯ PHỤ HUYNH" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+
+            </StackPanel>
+
+            
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+                <TextBlock Text="{Binding StatusMessage}" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,20,0"/>
+
+                <Button Content="🔄 Làm mới" Command="{Binding RefreshCommand}" Background="#3498DB" Foreground="White" Padding="15,8" BorderThickness="0" Cursor="Hand">
+
+                    <Button.Template>
+
+                        <ControlTemplate TargetType="Button">
+
+                            <Border Background="{TemplateBinding Background}" CornerRadius="5">
+
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                            </Border>
+
+                        </ControlTemplate>
+
+                    </Button.Template>
+
+                </Button>
+
+            </StackPanel>
+
+        </Grid>
+
+
+
+        <!-- Main Content (2 Columns: List / Detail) -->
+
+        <Grid Grid.Row="1">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="350"/>
+
+                <ColumnDefinition Width="20"/>
+
+                <ColumnDefinition Width="*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Message List -->
+
+            <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="10">
+
+                <Border.Effect>
+
+                    <DropShadowEffect Color="Black" Opacity="0.1" BlurRadius="10" ShadowDepth="2"/>
+
+                </Border.Effect>
+
+                <ListBox ItemsSource="{Binding Messages}" SelectedItem="{Binding SelectedMessage}" 
+
+                         BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+                    <ListBox.ItemContainerStyle>
+
+                        <Style TargetType="ListBoxItem">
+
+                            <Setter Property="Padding" Value="0"/>
+
+                            <Setter Property="Margin" Value="0,0,0,10"/>
+
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+
+                            <Setter Property="Template">
+
+                                <Setter.Value>
+
+                                    <ControlTemplate TargetType="ListBoxItem">
+
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="5" Padding="10" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                                            <ContentPresenter/>
+
+                                        </Border>
+
+                                        <ControlTemplate.Triggers>
+
+                                            <Trigger Property="IsSelected" Value="True">
+
+                                                <Setter Property="Background" Value="#E8F8F5"/>
+
+                                                <Setter Property="BorderBrush" Value="#16A085"/>
+
+                                            </Trigger>
+
+                                            <Trigger Property="IsMouseOver" Value="True">
+
+                                                <Setter Property="Background" Value="#F5F5F5"/>
+
+                                            </Trigger>
+
+                                        </ControlTemplate.Triggers>
+
+                                    </ControlTemplate>
+
+                                </Setter.Value>
+
+                            </Setter>
+
+                        </Style>
+
+                    </ListBox.ItemContainerStyle>
+
+                    <ListBox.ItemTemplate>
+
+                        <DataTemplate>
+
+                            <Grid>
+
+                                <Grid.RowDefinitions>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                </Grid.RowDefinitions>
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding SenderName}" FontWeight="Bold" FontSize="16" Foreground="#2C3E50"/>
+
+                                
+
+                                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+
+                                    <Ellipse Width="10" Height="10" Fill="#E74C3C" Margin="0,0,5,0">
+
+                                        <Ellipse.Style>
+
+                                            <Style TargetType="Ellipse">
+
+                                                <Setter Property="Visibility" Value="Visible"/>
+
+                                                <Style.Triggers>
+
+                                                    <DataTrigger Binding="{Binding IsRead}" Value="True">
+
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+
+                                                    </DataTrigger>
+
+                                                    <DataTrigger Binding="{Binding SenderId}" Value="GV001">
+
+                                                        <!-- Đừng hiện chấm đỏ cho tin nhắn mình gửi -->
+
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+
+                                                    </DataTrigger>
+
+                                                </Style.Triggers>
+
+                                            </Style>
+
+                                        </Ellipse.Style>
+
+                                    </Ellipse>
+
+                                    <TextBlock Text="{Binding CreatedAt, StringFormat='dd/MM HH:mm'}" FontSize="12" Foreground="Gray"/>
+
+                                </StackPanel>
+
+                                
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Content}" FontSize="14" Foreground="#7F8C8D" TextTrimming="CharacterEllipsis" MaxHeight="40" Margin="0,5,0,0"/>
+
+                            </Grid>
+
+                        </DataTemplate>
+
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+
+            </Border>
+
+
+
+            <!-- Message Detail & Reply -->
+
+            <Border Grid.Column="2" Background="White" CornerRadius="10" Padding="20">
+
+                <Border.Effect>
+
+                    <DropShadowEffect Color="Black" Opacity="0.1" BlurRadius="10" ShadowDepth="2"/>
+
+                </Border.Effect>
+
+                
+
+                <Grid>
+
+                    <Grid.Style>
+
+                        <Style TargetType="Grid">
+
+                            <Setter Property="Visibility" Value="Visible"/>
+
+                            <Style.Triggers>
+
+                                <DataTrigger Binding="{Binding SelectedMessage}" Value="{x:Null}">
+
+                                    <Setter Property="Visibility" Value="Hidden"/>
+
+                                </DataTrigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </Grid.Style>
+
+
+
+                    <Grid.RowDefinitions>
+
+                        <RowDefinition Height="Auto"/>
+
+                        <RowDefinition Height="*"/>
+
+                        <RowDefinition Height="Auto"/>
+
+                        <RowDefinition Height="Auto"/>
+
+                    </Grid.RowDefinitions>
+
+
+
+                    <!-- Detail Header -->
+
+                    <Border Grid.Row="0" BorderBrush="#EEEEEE" BorderThickness="0,0,0,1" Padding="0,0,0,15" Margin="0,0,0,15">
+
+                        <StackPanel>
+
+                            <TextBlock Text="{Binding SelectedMessage.SenderName}" FontSize="22" FontWeight="Bold" Foreground="#2C3E50"/>
+
+                            <TextBlock Text="{Binding SelectedMessage.CreatedAt, StringFormat='Ngày gửi: dd/MM/yyyy lúc HH:mm'}" FontSize="14" Foreground="Gray" Margin="0,5,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Detail Content -->
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20">
+
+                        <TextBlock Text="{Binding SelectedMessage.Content}" FontSize="16" Foreground="#34495E" TextWrapping="Wrap" LineHeight="24"/>
+
+                    </ScrollViewer>
+
+
+
+                    <!-- Reply Area -->
+
+                    <StackPanel Grid.Row="2" Margin="0,0,0,15">
+
+                        <TextBlock Text="Trả lời phụ huynh:" FontSize="14" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,10"/>
+
+                        <TextBox Text="{Binding ReplyContent, UpdateSourceTrigger=PropertyChanged}" 
+
+                                 TextWrapping="Wrap" AcceptsReturn="True" Height="100" Padding="10" FontSize="14"
+
+                                 BorderBrush="#BDC3C7" BorderThickness="1"/>
+
+                    </StackPanel>
+
+
+
+                    <!-- Send Button -->
+
+                    <Button Grid.Row="3" Content="Gửi Phản Hồi" Command="{Binding SendReplyCommand}" 
+
+                            HorizontalAlignment="Right" Background="#16A085" Foreground="White" FontSize="16" FontWeight="Bold" Padding="25,12" BorderThickness="0" Cursor="Hand">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="{TemplateBinding Background}" CornerRadius="5">
+
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                </Grid>
+
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+</UserControl>
+
+
+

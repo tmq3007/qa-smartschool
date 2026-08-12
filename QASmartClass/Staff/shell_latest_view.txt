@@ -1,0 +1,34 @@
+Created At: 2026-06-04T10:08:16Z
+Completed At: 2026-06-04T10:08:17Z
+File Path: `file:///D:/JOB/QA%20SmartSchool/QA%20SmartClass_Document/QASmartClass_Dev/QASmartClass/scratch/add_bom.py`
+Total Lines: 26
+Total Bytes: 1130
+Showing lines 1 to 26
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import os
+2: 
+3: files = [
+4:     r"d:\JOB\QA SmartSchool\QA SmartClass_Document\QASmartClass_Dev\QASmartClass\Classroom\Services\WebSocketBridgeService.cs",
+5:     r"d:\JOB\QA SmartSchool\QA SmartClass_Document\QASmartClass_Dev\QASmartClass\StudentClient\Views\StudentSurveyPage.xaml.cs",
+6:     r"d:\JOB\QA SmartSchool\QA SmartClass_Document\QASmartClass_Dev\QASmartClass\StudentClient\Views\StudentShell.xaml.cs",
+7:     r"d:\JOB\QA SmartSchool\QA SmartClass_Document\QASmartClass_Dev\QASmartClass\Classroom\Views\SurveyPage.xaml.cs"
+8: ]
+9: 
+10: for file_path in files:
+11:     try:
+12:         with open(file_path, "rb") as f:
+13:             content = f.read()
+14:         
+15:         # Check if content starts with BOM bytes
+16:         if content.startswith(b"\xef\xbb\xbf"):
+17:             print(f"File already has BOM: {file_path}")
+18:         else:
+19:             text = content.decode("utf-8", errors="ignore")
+20:             # Write back with BOM
+21:             with open(file_path, "w", encoding="utf-8-sig") as f:
+22:                 f.write(text)
+23:             print(f"Added BOM signature to: {file_path}")
+24:     except Exception as e:
+25:         print(f"Error processing {file_path}: {e}")
+26: 
+The above content shows the entire, complete file contents of the requested file.

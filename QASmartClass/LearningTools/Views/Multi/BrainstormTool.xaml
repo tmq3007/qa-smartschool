@@ -1,0 +1,244 @@
+<UserControl x:Class="QASmartClass.LearningTools.Views.Multi.BrainstormTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="#F5F5F5">
+
+    <UserControl.Resources>
+        <!-- Toolbar Button Style -->
+        <Style x:Key="ToolBtn" TargetType="Button">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="{DynamicResource InterFont}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="10" Padding="{TemplateBinding Padding}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Color Picker Radio Button -->
+        <Style x:Key="NoteColorRadio" TargetType="RadioButton">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid>
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="2">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.15"/>
+                                </Border.Effect>
+                            </Border>
+                            <!-- Selected Indicator dot -->
+                            <Ellipse x:Name="indicator" Width="8" Height="8" Fill="#424242" 
+                                     Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="2.5"/>
+                                <Setter TargetName="indicator" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+ 
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+ 
+        <!-- TOP BAR -->
+        <Border Grid.Row="0" Background="White" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.06" Direction="270"/>
+            </Border.Effect>
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="❓ Hướng dẫn" Click="BtnHelp_Click"
+                        Background="#FFECEFF1" Foreground="#37474F" BorderBrush="#CFD8DC"
+                        Style="{StaticResource ToolBtn}" VerticalAlignment="Center" Padding="12,6"/>
+                <TextBlock Text="📌 Bức Tường Ý Tưởng" FontSize="22" FontWeight="Bold" 
+                           Foreground="#424242" VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <!-- MAIN LAYOUT (Master-Detail) -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#ECEFF1">
+                <!-- Multi Category: Orange hover/selected -->
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#FFE0B2"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#E65100"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Ghi chú" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💡" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextBoard" Text="Bảng ý tưởng" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#CFD8DC"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 0: HƯỚNG DẪN & GHI CHÚ -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel Background="White" Margin="12">
+<Border Background="White" CornerRadius="14" Padding="24,20" BorderBrush="#CFD8DC" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <TextBlock Text="📌 Hướng Dẫn Sử Dụng Bức Tường Ý Tưởng" FontSize="20" FontWeight="Bold" Foreground="#37474F" Margin="0,0,0,20"/>
+                                
+                                <TextBlock Text="Bước 1: Tạo giấy nhớ mới" FontSize="15" FontWeight="Bold" Foreground="#37474F" Margin="0,5,0,2"/>
+                                <TextBlock Text="• Nhấp đúp chuột (Double click) vào bất kỳ khoảng trống nào trên bảng." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                                <TextBlock Text="• Hoặc bấm nút '➕ Thêm Note' ở thanh điều khiển phía trên bên phải." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Bước 2: Soạn thảo nội dung" FontSize="15" FontWeight="Bold" Foreground="#37474F" Margin="0,5,0,2"/>
+                                <TextBlock Text="• Nhấp chuột trực tiếp vào phần ruột giấy nhớ để gõ nội dung." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                                <TextBlock Text="• Giấy nhớ sẽ tự động xoay thẳng đứng và hiện viền xanh nổi bật khi soạn thảo." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                                <TextBlock Text="• Khi click ra ngoài, giấy nhớ tự động nghiêng ngẫu nhiên và tự lưu vào CSDL." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Bước 3: Kéo thả và Xóa" FontSize="15" FontWeight="Bold" Foreground="#37474F" Margin="0,5,0,2"/>
+                                <TextBlock Text="• Nhấn giữ thanh tiêu đề (có biểu tượng ⠿) để kéo thả di chuyển giấy nhớ trên bảng." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                                <TextBlock Text="• Nhấp vào nút '✕' ở góc phải tiêu đề để xóa giấy nhớ đó." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Bước 4: Quản lý Chủ đề (Topic)" FontSize="15" FontWeight="Bold" Foreground="#37474F" Margin="0,5,0,2"/>
+                                <TextBlock Text="• Giáo viên nhập câu hỏi/chủ đề tại thanh 'Chủ đề' (ví dụ: 'Hôm nay em học được gì?')." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                                <TextBlock Text="• Khi thay đổi chủ đề, hệ thống sẽ hỏi bạn muốn đổi tên bảng hiện tại (Rename) hay tạo một bảng trống mới (Create New)." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Bước 5: Duyệt ý kiến học sinh từ xa" FontSize="15" FontWeight="Bold" Foreground="#37474F" Margin="0,5,0,2"/>
+                                <TextBlock Text="• Học sinh chọn màu và gửi ý kiến từ xa qua ứng dụng học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,16"/>
+                                <TextBlock Text="• Ý kiến gửi lên sẽ xuất hiện ở thanh bên phải của màn hình giáo viên. Giáo viên nhấp đúp vào ý kiến để ghim lên bảng hoặc bấm 'Xóa' để từ chối." FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,16"/>
+                            </StackPanel>
+                        </Border>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: BẢNG Ý TƯỞNG -->
+                <Grid x:Name="viewPractice" Visibility="Visible">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Control Panel (Moved note actions here) -->
+                    <Border Grid.Row="0" Background="#FAFAFA" Padding="16,8" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                                <!-- Note Color Picker -->
+                                <TextBlock Text="Màu:" FontSize="13" Foreground="#757575" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <RadioButton Style="{StaticResource NoteColorRadio}" Background="#FFF9C4" Tag="#FFF9C4" GroupName="NoteColors" IsChecked="True" Checked="NoteColor_Click"/>
+                                <RadioButton Style="{StaticResource NoteColorRadio}" Background="#FFCDD2" Tag="#FFCDD2" GroupName="NoteColors" Checked="NoteColor_Click"/>
+                                <RadioButton Style="{StaticResource NoteColorRadio}" Background="#C8E6C9" Tag="#C8E6C9" GroupName="NoteColors" Checked="NoteColor_Click"/>
+                                <RadioButton Style="{StaticResource NoteColorRadio}" Background="#BBDEFB" Tag="#BBDEFB" GroupName="NoteColors" Checked="NoteColor_Click"/>
+                                <RadioButton Style="{StaticResource NoteColorRadio}" Background="#E1BEE7" Tag="#E1BEE7" GroupName="NoteColors" Checked="NoteColor_Click"/>
+                                <RadioButton Style="{StaticResource NoteColorRadio}" Background="#FFE0B2" Tag="#FFE0B2" GroupName="NoteColors" Checked="NoteColor_Click"/>
+                                <RadioButton Style="{StaticResource NoteColorRadio}" Background="#FFFFFF" Tag="#FFFFFF" GroupName="NoteColors" Checked="NoteColor_Click"/>
+             
+                                <Border Width="1" Background="#E0E0E0" Margin="12,4"/>
+             
+                                <Button Style="{StaticResource ToolBtn}" Content="➕ Thêm Note" 
+                                        Background="#4CAF50" Foreground="White" BorderBrush="#388E3C"
+                                        Click="BtnAddNote_Click"/>
+                                <Button Style="{StaticResource ToolBtn}" Content="🗑️ Xóa tất cả" 
+                                        Background="#FFEBEE" Foreground="#D32F2F" BorderBrush="#FFCDD2"
+                                        Margin="20,4,4,4" Click="BtnClearAll_Click"/>
+                            </StackPanel>
+                            <TextBlock Text="Thao tác nhanh trên note ý tưởng" FontSize="13" Foreground="#757575" VerticalAlignment="Center" FontStyle="Italic"/>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- QUESTION / TOPIC BAR -->
+                    <Border Grid.Row="1" Background="#E3F2FD" Padding="16,10" Margin="0">
+                        <DockPanel>
+                            <TextBlock Text="💬 Chủ đề:" FontSize="20" FontWeight="Bold" Foreground="#1565C0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBox x:Name="txtTopic" FontSize="22" Foreground="#1565C0" 
+                                     Background="Transparent" BorderThickness="0,0,0,2" BorderBrush="#90CAF9"
+                                     Padding="4,2" Text="Hôm nay em học được gì?" FontWeight="Bold"
+                                     VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- CANVAS BOARD (Drag & Drop area) -->
+                    <Border Grid.Row="2" Margin="0" ClipToBounds="True">
+                        <Border.Background>
+                            <!-- Cork board texture simulation -->
+                            <VisualBrush TileMode="Tile" Viewport="0,0,20,20" ViewportUnits="Absolute">
+                                <VisualBrush.Visual>
+                                    <Grid Width="20" Height="20">
+                                        <Rectangle Fill="#EFEBE9" Width="20" Height="20"/>
+                                        <Ellipse Width="2" Height="2" Fill="#D7CCC8" Margin="5,5,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                                        <Ellipse Width="1.5" Height="1.5" Fill="#D7CCC8" Margin="14,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                                    </Grid>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </Border.Background>
+                        <ScrollViewer x:Name="BoardScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                            <Canvas x:Name="BoardCanvas" Background="Transparent" MouseLeftButtonDown="Canvas_MouseLeftButtonDown"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+
+                <!-- VIEW 2: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

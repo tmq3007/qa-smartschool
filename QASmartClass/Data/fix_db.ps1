@@ -1,0 +1,50 @@
+﻿$lines = Get-Content "D:\JOB\QA SmartSchool\QA SmartClass_Document\QASmartClass_Dev\QASmartClass\Data\AppDbContext.cs" -Encoding UTF8
+$newLines = @()
+for ($i = 0; $i -lt $lines.Count; $i++) {
+    if ($i -ge 302 -and $i -le 342) { continue }
+    $newLines += $lines[$i]
+    if ($i -eq 301) {
+        $newLines += '            // --- S1-05: SEED 20 CÂU HỎI MẪU ---'
+        $newLines += '            modelBuilder.Entity<QuestionBankItem>().HasData('
+        $newLines += '                new QuestionBankItem { Id = 1, CategoryId = 1, Subject = "Toán", Content = "2 + 3 = ?", CorrectAnswer = "5", Difficulty = "Easy", QuestionType = "MCQ", OptionsJson = "[\"3\",\"4\",\"5\",\"6\"]", Points = 5, TimeLimitSeconds = 30, Grade = "10", Tags = "so-hoc" },'
+        $newLines += '                new QuestionBankItem { Id = 2, CategoryId = 1, Subject = "Toán", Content = "Giải phương trình: x² - 5x + 6 = 0", CorrectAnswer = "x=2 hoặc x=3", Difficulty = "Medium", QuestionType = "SHORT", OptionsJson = "[]", Points = 10, TimeLimitSeconds = 60, Grade = "10", Tags = "pt-bac-2" },'
+        $newLines += '                new QuestionBankItem { Id = 3, CategoryId = 1, Subject = "Toán", Content = "Tìm đạo hàm: f(x) = x³ + 2x² - 5x + 1", CorrectAnswer = "3x²+4x-5", Difficulty = "Hard", QuestionType = "SHORT", OptionsJson = "[]", Points = 15, TimeLimitSeconds = 90, Grade = "12", Tags = "dao-ham" },'
+        $newLines += '                new QuestionBankItem { Id = 4, CategoryId = 1, Subject = "Toán", Content = "Tính tích phân: ∫(0→1) x² dx", CorrectAnswer = "1/3", Difficulty = "Hard", QuestionType = "SHORT", OptionsJson = "[]", Points = 20, TimeLimitSeconds = 120, Grade = "12", Tags = "tich-phan" },'
+        $newLines += '                new QuestionBankItem { Id = 5, CategoryId = 2, Subject = "Vật lý", Content = "Đơn vị của lực là gì?", CorrectAnswer = "Newton", Difficulty = "Easy", QuestionType = "MCQ", OptionsJson = "[\"Joule\",\"Newton\",\"Watt\",\"Pascal\"]", Points = 5, TimeLimitSeconds = 30, Grade = "10", Tags = "co-hoc" },'
+        $newLines += '                new QuestionBankItem { Id = 6, CategoryId = 2, Subject = "Vật lý", Content = "Công thức định luật II Newton?", CorrectAnswer = "F=ma", Difficulty = "Medium", QuestionType = "MCQ", OptionsJson = "[\"F=mv\",\"F=ma\",\"F=mg\",\"F=m/a\"]", Points = 10, TimeLimitSeconds = 45, Grade = "10", Tags = "dong-luc-hoc" },'
+        $newLines += '                new QuestionBankItem { Id = 7, CategoryId = 2, Subject = "Vật lý", Content = "Tính gia tốc vật m=2kg chịu lực F=10N", CorrectAnswer = "5 m/s²", Difficulty = "Medium", QuestionType = "SHORT", OptionsJson = "[]", Points = 10, TimeLimitSeconds = 60, Grade = "10", Tags = "dong-luc-hoc" },'
+        $newLines += '                new QuestionBankItem { Id = 8, CategoryId = 2, Subject = "Vật lý", Content = "Electron có điện tích bằng bao nhiêu?", CorrectAnswer = "-1.6×10⁻¹⁹ C", Difficulty = "Hard", QuestionType = "SHORT", OptionsJson = "[]", Points = 15, TimeLimitSeconds = 60, Grade = "11", Tags = "dien-hoc" },'
+        $newLines += '                new QuestionBankItem { Id = 9, CategoryId = 3, Subject = "Hóa học", Content = "Công thức hóa học của nước?", CorrectAnswer = "H2O", Difficulty = "Easy", QuestionType = "MCQ", OptionsJson = "[\"H2O\",\"CO2\",\"NaCl\",\"HCl\"]", Points = 5, TimeLimitSeconds = 30, Grade = "10", Tags = "vo-co" },'
+        $newLines += '                new QuestionBankItem { Id = 10, CategoryId = 3, Subject = "Hóa học", Content = "Cân bằng: Fe + O2 → Fe2O3", CorrectAnswer = "4Fe + 3O2 → 2Fe2O3", Difficulty = "Medium", QuestionType = "SHORT", OptionsJson = "[]", Points = 10, TimeLimitSeconds = 60, Grade = "10", Tags = "phan-ung" },'
+        $newLines += '                new QuestionBankItem { Id = 11, CategoryId = 3, Subject = "Hóa học", Content = "pH của dung dịch HCl 0.01M?", CorrectAnswer = "2", Difficulty = "Hard", QuestionType = "SHORT", OptionsJson = "[]", Points = 15, TimeLimitSeconds = 60, Grade = "11", Tags = "axit-bazo" },'
+        $newLines += '                new QuestionBankItem { Id = 12, CategoryId = 3, Subject = "Hóa học", Content = "Liên kết trong phân tử NaCl là liên kết gì?", CorrectAnswer = "Ion", Difficulty = "Easy", QuestionType = "MCQ", OptionsJson = "[\"Ion\",\"Cộng hóa trị\",\"Kim loại\",\"Van der Waals\"]", Points = 5, TimeLimitSeconds = 30, Grade = "10", Tags = "lien-ket" },'
+        $newLines += '                new QuestionBankItem { Id = 13, CategoryId = 4, Subject = "Ngữ văn", Content = "Tác giả của Truyện Kiều?", CorrectAnswer = "Nguyễn Du", Difficulty = "Easy", QuestionType = "MCQ", OptionsJson = "[\"Nguyễn Du\",\"Hồ Xuân Hương\",\"Nguyễn Trãi\",\"Nguyễn Đình Chiểu\"]", Points = 5, TimeLimitSeconds = 30, Grade = "10", Tags = "van-hoc-vn" },'
+        $newLines += '                new QuestionBankItem { Id = 14, CategoryId = 4, Subject = "Ngữ văn", Content = "Phép tu từ nào trong câu: Mặt trời bé con?", CorrectAnswer = "Ẩn dụ", Difficulty = "Medium", QuestionType = "MCQ", OptionsJson = "[\"So sánh\",\"Ẩn dụ\",\"Nhân hóa\",\"Hoán dụ\"]", Points = 10, TimeLimitSeconds = 45, Grade = "10", Tags = "tu-tu" },'
+        $newLines += '                new QuestionBankItem { Id = 15, CategoryId = 4, Subject = "Ngữ văn", Content = "Nêu ý nghĩa nhan đề Vợ chồng A Phủ", CorrectAnswer = "Chỉ 2 nhân vật chính", Difficulty = "Hard", QuestionType = "SHORT", OptionsJson = "[]", Points = 15, TimeLimitSeconds = 120, Grade = "12", Tags = "van-xuan-dieu" },'
+        $newLines += '                new QuestionBankItem { Id = 16, CategoryId = 4, Subject = "Ngữ văn", Content = "Thể loại của Chinh phụ ngâm?", CorrectAnswer = "Ngâm khúc", Difficulty = "Medium", QuestionType = "MCQ", OptionsJson = "[\"Truyện thơ\",\"Ngâm khúc\",\"Hịch\",\"Phú\"]", Points = 10, TimeLimitSeconds = 45, Grade = "11", Tags = "van-hoc-vn" },'
+        $newLines += '                new QuestionBankItem { Id = 17, CategoryId = 5, Subject = "Tiếng Anh", Content = "She ___ to school every day.", CorrectAnswer = "goes", Difficulty = "Easy", QuestionType = "MCQ", OptionsJson = "[\"go\",\"goes\",\"going\",\"gone\"]", Points = 5, TimeLimitSeconds = 30, Grade = "10", Tags = "grammar" },'
+        $newLines += '                new QuestionBankItem { Id = 18, CategoryId = 5, Subject = "Tiếng Anh", Content = "If I ___ rich, I would travel.", CorrectAnswer = "were", Difficulty = "Medium", QuestionType = "MCQ", OptionsJson = "[\"am\",\"was\",\"were\",\"be\"]", Points = 10, TimeLimitSeconds = 45, Grade = "11", Tags = "conditional" },'
+        $newLines += '                new QuestionBankItem { Id = 19, CategoryId = 5, Subject = "Tiếng Anh", Content = "Rewrite: They built this house in 1990 (Passive)", CorrectAnswer = "This house was built in 1990", Difficulty = "Hard", QuestionType = "SHORT", OptionsJson = "[]", Points = 15, TimeLimitSeconds = 60, Grade = "11", Tags = "passive" },'
+        $newLines += '                new QuestionBankItem { Id = 20, CategoryId = 5, Subject = "Tiếng Anh", Content = "Choose the synonym of enormous:", CorrectAnswer = "huge", Difficulty = "Easy", QuestionType = "MCQ", OptionsJson = "[\"tiny\",\"huge\",\"narrow\",\"thin\"]", Points = 5, TimeLimitSeconds = 30, Grade = "10", Tags = "vocabulary" }'
+        $newLines += '            );'
+        $newLines += ''
+        $newLines += '            // --- S1-02: SEED 10 HUY HIỆU MẪU ---'
+        $newLines += '            modelBuilder.Entity<Badge>().HasData('
+        $newLines += '                new Badge { Id = 1, Name = "🌟 Ngôi sao lớp", Description = "Đạt điểm cao nhất lớp 3 lần liên tiếp", IconPath = "star.png", RequiredPoints = 100 },'
+        $newLines += '                new Badge { Id = 2, Name = "📖 Mọt sách", Description = "Hoàn thành 50 bài tập đúng hạn", IconPath = "book.png", RequiredPoints = 200 },'
+        $newLines += '                new Badge { Id = 3, Name = "🏆 Quán quân Quiz", Description = "Top 1 quiz 5 lần", IconPath = "trophy.png", RequiredPoints = 150 },'
+        $newLines += '                new Badge { Id = 4, Name = "🎯 Bắn trúng đích", Description = "Đạt 100% câu đúng trong 1 quiz", IconPath = "target.png", RequiredPoints = 50 },'
+        $newLines += '                new Badge { Id = 5, Name = "🤝 Bạn tốt", Description = "Giúp đỡ bạn bè qua 10 câu hỏi trong Chat", IconPath = "handshake.png", RequiredPoints = 80 },'
+        $newLines += '                new Badge { Id = 6, Name = "🔥 Streak 7 ngày", Description = "Tham gia học 7 ngày liên tiếp", IconPath = "fire.png", RequiredPoints = 70 },'
+        $newLines += '                new Badge { Id = 7, Name = "💡 Sáng tạo", Description = "Nộp portfolio STEM xuất sắc", IconPath = "bulb.png", RequiredPoints = 120 },'
+        $newLines += '                new Badge { Id = 8, Name = "📓 Nhật ký siêng năng", Description = "Viết nhật ký học tập 30 ngày", IconPath = "diary.png", RequiredPoints = 90 },'
+        $newLines += '                new Badge { Id = 9, Name = "🎮 Game Master", Description = "Hoàn thành tất cả game trong Game Hub", IconPath = "game.png", RequiredPoints = 180 },'
+        $newLines += '                new Badge { Id = 10, Name = "🎓 Cử nhân Mini", Description = "Đạt tổng 1000 XP", IconPath = "graduate.png", RequiredPoints = 1000 }'
+        $newLines += '            );'
+        $newLines += '        }'
+        $newLines += '    }'
+        $newLines += ''
+        $newLines += '    // ======================= ENTITIES ======================='
+    }
+}
+$newLines | Set-Content -Path "D:\JOB\QA SmartSchool\QA SmartClass_Document\QASmartClass_Dev\QASmartClass\Data\AppDbContext.cs" -Encoding UTF8

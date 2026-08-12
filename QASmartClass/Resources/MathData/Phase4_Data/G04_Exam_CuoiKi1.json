@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g04_cuoiki1",
+    "title": "Đề thi Cuối Kì 1 Toán Lớp 4",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 4,
+    "examType": "CuoiKi1"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "TBC 5 số là 12. Bỏ 1 số = 8, TBC 4 số còn lại = ?",
+      "options": [
+        "A) 12",
+        "B) 13",
+        "C) 14",
+        "D) 11"
+      ],
+      "answer": "B",
+      "solution": "Tổng 5 số = 12×5 = 60. Bỏ 8: tổng 4 số = 52. TBC = 52/4 = 13"
+    },
+    {
+      "id": 2,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Biểu đồ cột: Toán=8, Văn=6, Anh=9. Môn nào điểm cao nhất?",
+      "options": [
+        "A) Toán",
+        "B) Văn",
+        "C) Anh",
+        "D) Bằng nhau"
+      ],
+      "answer": "C",
+      "solution": "9 > 8 > 6 → Anh cao nhất"
+    },
+    {
+      "id": 3,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "So sánh: 2/5 ... 0,45",
+      "options": [
+        "A) 2/5 > 0,45",
+        "B) 2/5 < 0,45",
+        "C) 2/5 = 0,45",
+        "D) Không so sánh được"
+      ],
+      "answer": "B",
+      "solution": "2/5 = 0,4 < 0,45"
+    },
+    {
+      "id": 4,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Nước chiếm 70% bề mặt Trái Đất. Đất chiếm bao nhiêu %?",
+      "options": [
+        "A) 20%",
+        "B) 25%",
+        "C) 30%",
+        "D) 35%"
+      ],
+      "answer": "C",
+      "solution": "100% - 70% = 30% là đất liền"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tính diện tích hình tròn có bán kính 5cm (lấy π ≈ 3,14):",
+      "options": [
+        "A) 31,4cm²",
+        "B) 78,5cm²",
+        "C) 15,7cm²",
+        "D) 25cm²"
+      ],
+      "answer": "B",
+      "solution": "S = 3,14 × 5² = 3,14 × 25 = 78,5cm²"
+    },
+    {
+      "id": 6,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Tam giác nào sau đây là tam giác vuông?",
+      "options": [
+        "A) 3cm, 4cm, 5cm",
+        "B) 3cm, 3cm, 3cm",
+        "C) 2cm, 3cm, 4cm",
+        "D) 5cm, 5cm, 5cm"
+      ],
+      "answer": "A",
+      "solution": "Kiểm tra: 3² + 4² = 9 + 16 = 25 = 5² → tam giác vuông (định lý Pytago)"
+    },
+    {
+      "id": 7,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính chu vi hình tròn có bán kính 7cm (lấy π ≈ 3,14):",
+      "options": [
+        "A) 43,96cm",
+        "B) 21,98cm",
+        "C) 153,86cm²",
+        "D) 44cm"
+      ],
+      "answer": "A",
+      "solution": "C = 2 × 3,14 × 7 = 43,96cm"
+    },
+    {
+      "id": 8,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "1/4 của 20 = ?",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 8",
+        "D) 10"
+      ],
+      "answer": "B",
+      "solution": "20 × 1/4 = 20 ÷ 4 = 5"
+    },
+    {
+      "id": 9,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Lớp 40 HS. Biểu đồ tròn: Giỏi 30%, Khá 45%, TB 25%. Số HS giỏi = ?",
+      "options": [
+        "A) 10",
+        "B) 12",
+        "C) 15",
+        "D) 18"
+      ],
+      "answer": "B",
+      "solution": "30% × 40 = 12 HS"
+    },
+    {
+      "id": 10,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Biểu đồ tròn: phần A chiếm 1/4. A = bao nhiêu %?",
+      "options": [
+        "A) 20%",
+        "B) 25%",
+        "C) 30%",
+        "D) 50%"
+      ],
+      "answer": "B",
+      "solution": "1/4 = 25%"
+    },
+    {
+      "id": 11,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "0,125 = phân số tối giản nào?",
+      "options": [
+        "A) 1/8",
+        "B) 125/100",
+        "C) 1/4",
+        "D) 5/40"
+      ],
+      "answer": "A",
+      "solution": "0,125 = 125/1000 = 1/8 (chia 125)"
+    },
+    {
+      "id": 12,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Đọc 2/5 quyển sách, đọc được 60 trang. Quyển sách có bao nhiêu trang?",
+      "options": [
+        "A) 120",
+        "B) 150",
+        "C) 180",
+        "D) 200"
+      ],
+      "answer": "B",
+      "solution": "2/5 × x = 60 → x = 60 × 5/2 = 150 trang"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Quy đồng: 1/2 và 1/3. Mẫu chung = ?",
+      "options": [
+        "A) 5",
+        "B) 6",
+        "C) 4",
+        "D) 3"
+      ],
+      "answer": "B",
+      "solution": "MC = BCNN(2,3) = 6. 1/2 = 3/6, 1/3 = 2/6"
+    },
+    {
+      "id": 14,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Rút gọn: 4/8 = ?",
+      "options": [
+        "A) 1/2",
+        "B) 2/4",
+        "C) 1/4",
+        "D) 2/8"
+      ],
+      "answer": "A",
+      "solution": "4/8 = 4÷4 / 8÷4 = 1/2"
+    },
+    {
+      "id": 15,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tính chu vi hình chữ nhật có chiều dài 8cm, chiều rộng 5cm:",
+      "options": [
+        "A) 13cm",
+        "B) 26cm",
+        "C) 40cm",
+        "D) 30cm"
+      ],
+      "answer": "B",
+      "solution": "C = (8+5) × 2 = 13 × 2 = 26cm"
+    },
+    {
+      "id": 16,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính diện tích tam giác có đáy 10cm, chiều cao 6cm:",
+      "options": [
+        "A) 60cm²",
+        "B) 30cm²",
+        "C) 16cm²",
+        "D) 32cm²"
+      ],
+      "answer": "B",
+      "solution": "S = (10 × 6) ÷ 2 = 60 ÷ 2 = 30cm²"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Đường kính hình tròn bằng 10cm. Bán kính là:",
+      "options": [
+        "A) 20cm",
+        "B) 5cm",
+        "C) 10cm",
+        "D) 15cm"
+      ],
+      "answer": "B",
+      "solution": "r = d ÷ 2 = 10 ÷ 2 = 5cm"
+    },
+    {
+      "id": 18,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Một hình chữ nhật có chu vi 30cm, chiều dài gấp đôi chiều rộng. Diện tích là:",
+      "options": [
+        "A) 50cm²",
+        "B) 40cm²",
+        "C) 100cm²",
+        "D) 75cm²"
+      ],
+      "answer": "A",
+      "solution": "Gọi rộng = a → dài = 2a. Chu vi: (2a + a)×2 = 30 → 3a = 15 → a = 5. Dài = 10. S = 10×5 = 50cm²"
+    },
+    {
+      "id": 19,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "0,5 = phân số nào?",
+      "options": [
+        "A) 1/5",
+        "B) 5/10",
+        "C) 1/2",
+        "D) 5/100"
+      ],
+      "answer": "C",
+      "solution": "0,5 = 5/10 = 1/2"
+    },
+    {
+      "id": 20,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "2/3 × 3/5 = ?",
+      "options": [
+        "A) 6/15",
+        "B) 5/8",
+        "C) 2/5",
+        "D) 1/3"
+      ],
+      "answer": "C",
+      "solution": "2/3 × 3/5 = 6/15 = 2/5 (rút gọn chia 3)"
+    }
+  ]
+}

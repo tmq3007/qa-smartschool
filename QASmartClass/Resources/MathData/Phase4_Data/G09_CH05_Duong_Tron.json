@@ -1,0 +1,372 @@
+{
+  "metadata": {
+    "chapterId": "g09_ch05",
+    "chapterName": "Đường Tròn & Hình Tròn",
+    "grade": 9,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 15,
+    "toolMapping": [
+      "GeometryTool",
+      "geometry"
+    ],
+    "thptWeight": "5%",
+    "estimatedHours": 14,
+    "prerequisites": [
+      "g07_ch02",
+      "g09_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "dt9_01",
+      "sectionName": "Đường tròn — Tính chất cơ bản",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "dt9_001",
+          "name": "Đường tròn & Cung",
+          "definition": "Đường tròn tâm O bán kính R: tập hợp điểm cách O = R. Cung = phần đường tròn giữa 2 điểm",
+          "examples": [
+            "Đường tròn (O; 5) → R=5 cm"
+          ]
+        },
+        {
+          "id": "dt9_002",
+          "name": "Dây cung & Đường kính",
+          "definition": "Dây = đoạn thẳng nối 2 điểm trên đường tròn. Đường kính = dây dài nhất = 2R",
+          "examples": [
+            "Dây AB = 8 cm, đường kính = 10 cm → R = 5 cm"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dt9_p01",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Đường tròn bán kính 7 cm. Đường kính = ?",
+          "options": [
+            "A) 7 cm",
+            "B) 14 cm",
+            "C) 21 cm",
+            "D) 3,5 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "d = 2R = 2 × 7 = 14 cm",
+          "points": 5
+        },
+        {
+          "problemId": "dt9_p02",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Đường tròn (O; 5). Dây AB cách tâm 3 cm. AB = ?",
+          "options": [
+            "A) 6 cm",
+            "B) 8 cm",
+            "C) 10 cm",
+            "D) 4 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "Khoảng cách = 3, R = 5. Nửa dây = √(5²-3²) = √16 = 4. AB = 2×4 = 8 cm",
+          "points": 10
+        },
+        {
+          "problemId": "dt9_p03",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Điểm M cách tâm O = 3. R = 5. M nằm ở vị trí nào?",
+          "options": [
+            "A) Trên đường tròn",
+            "B) Bên trong",
+            "C) Bên ngoài",
+            "D) Trên đường kính"
+          ],
+          "correctAnswer": "B",
+          "solution": "OM = 3 < R = 5 → M nằm bên trong đường tròn",
+          "points": 15
+        },
+        {
+          "problemId": "dt9_p04",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "2 đường tròn có tâm trùng nhau gọi là?",
+          "options": [
+            "A) Đồng tâm",
+            "B) Tiếp xúc",
+            "C) Cắt nhau",
+            "D) Trùng nhau"
+          ],
+          "correctAnswer": "A",
+          "solution": "Chung tâm, khác bán kính → đồng tâm",
+          "points": 5
+        },
+        {
+          "problemId": "dt9_p05",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Đường tròn (O; 10). Dây AB = 16 cm. Khoảng cách từ O đến AB = ?",
+          "options": [
+            "A) 4 cm",
+            "B) 6 cm",
+            "C) 8 cm",
+            "D) 3 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "Nửa dây = 8 cm. d = √(10²-8²) = √(100-64) = √36 = 6 cm",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "dt9_02",
+      "sectionName": "Góc nội tiếp & Tiếp tuyến",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "dt9_003",
+          "name": "Góc nội tiếp",
+          "definition": "Góc có đỉnh trên đường tròn, 2 cạnh là 2 dây. Góc nội tiếp = 1/2 cung bị chắn",
+          "examples": [
+            "Cung AB = 80° → góc nội tiếp chắn AB = 40°"
+          ]
+        },
+        {
+          "id": "dt9_004",
+          "name": "Tiếp tuyến",
+          "definition": "Đường thẳng chỉ cắt đường tròn tại 1 điểm, vuông góc với bán kính tại tiếp điểm",
+          "examples": [
+            "Tiếp tuyến tại A ⊥ OA"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dt9_p06",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Góc nội tiếp chắn cung 120°. Góc = ?",
+          "options": [
+            "A) 120°",
+            "B) 60°",
+            "C) 30°",
+            "D) 240°"
+          ],
+          "correctAnswer": "B",
+          "solution": "Góc nội tiếp = 1/2 × cung = 120/2 = 60°",
+          "points": 5
+        },
+        {
+          "problemId": "dt9_p07",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Góc nội tiếp chắn nửa đường tròn = ?",
+          "options": [
+            "A) 45°",
+            "B) 90°",
+            "C) 180°",
+            "D) 60°"
+          ],
+          "correctAnswer": "B",
+          "solution": "Nửa đường tròn = 180°. Góc nội tiếp = 180/2 = 90° (luôn vuông!)",
+          "points": 10
+        },
+        {
+          "problemId": "dt9_p08",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "2 góc nội tiếp cùng chắn cung AB. Góc thứ nhất = 35°. Góc thứ hai = ?",
+          "options": [
+            "A) 35°",
+            "B) 70°",
+            "C) 145°",
+            "D) 55°"
+          ],
+          "correctAnswer": "A",
+          "solution": "Các góc nội tiếp cùng chắn 1 cung thì bằng nhau = 35°",
+          "points": 15
+        },
+        {
+          "problemId": "dt9_p09",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Tiếp tuyến tại A. Góc giữa tiếp tuyến và bán kính OA = ?",
+          "options": [
+            "A) 0°",
+            "B) 45°",
+            "C) 90°",
+            "D) 180°"
+          ],
+          "correctAnswer": "C",
+          "solution": "Tiếp tuyến luôn vuông góc bán kính tại tiếp điểm: 90°",
+          "points": 10
+        },
+        {
+          "problemId": "dt9_p10",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Từ điểm M ngoài (O; 5), vẽ tiếp tuyến MA. OM = 13. MA = ?",
+          "options": [
+            "A) 8",
+            "B) 10",
+            "C) 12",
+            "D) 15"
+          ],
+          "correctAnswer": "C",
+          "solution": "OA ⊥ MA. MA² = OM²-OA² = 169-25 = 144. MA = 12",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "dt9_03",
+      "sectionName": "Chu vi & Diện tích hình tròn",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "dt9_005",
+          "name": "Chu vi hình tròn",
+          "definition": "C = 2πR = πd",
+          "examples": [
+            "R=7 → C = 2π(7) = 14π ≈ 43,96 cm"
+          ]
+        },
+        {
+          "id": "dt9_006",
+          "name": "Diện tích hình tròn & hình quạt",
+          "definition": "S tròn = πR². S quạt = (n/360) × πR² (n: số đo cung)",
+          "examples": [
+            "R=5 → S = 25π ≈ 78,5 cm². Quạt 90° → S = 25π/4"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dt9_p11",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Đường tròn R = 10 cm. C = ? (π≈3,14)",
+          "options": [
+            "A) 31,4 cm",
+            "B) 62,8 cm",
+            "C) 314 cm",
+            "D) 20 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "C = 2πR = 2 × 3,14 × 10 = 62,8 cm",
+          "points": 5
+        },
+        {
+          "problemId": "dt9_p12",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "S hình tròn R = 4 cm = ? (π≈3,14)",
+          "options": [
+            "A) 12,56 cm²",
+            "B) 25,12 cm²",
+            "C) 50,24 cm²",
+            "D) 100,48 cm²"
+          ],
+          "correctAnswer": "C",
+          "solution": "S = πR² = 3,14 × 16 = 50,24 cm²",
+          "points": 5
+        },
+        {
+          "problemId": "dt9_p13",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Hình quạt R=6, góc 60°. S quạt = ? (π≈3,14)",
+          "options": [
+            "A) 6,28 cm²",
+            "B) 12,56 cm²",
+            "C) 18,84 cm²",
+            "D) 37,68 cm²"
+          ],
+          "correctAnswer": "C",
+          "solution": "S = (60/360) × π × 36 = (1/6) × 113,04 = 18,84 cm²",
+          "points": 10
+        },
+        {
+          "problemId": "dt9_p14",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Bánh xe R=35 cm. Xe đi 220 m. Bánh quay bao nhiêu vòng? (π≈22/7)",
+          "options": [
+            "A) 50 vòng",
+            "B) 100 vòng",
+            "C) 200 vòng",
+            "D) 150 vòng"
+          ],
+          "correctAnswer": "B",
+          "solution": "C = 2 × 22/7 × 35 = 220 cm = 2,2 m. Số vòng = 220/2,2 = 100 vòng",
+          "points": 15
+        },
+        {
+          "problemId": "dt9_p15",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Hình vành khăn: R lớn=10, R nhỏ=6. S vành khăn = ? (π≈3,14)",
+          "options": [
+            "A) 100,48 cm²",
+            "B) 150,72 cm²",
+            "C) 200,96 cm²",
+            "D) 50,24 cm²"
+          ],
+          "correctAnswer": "C",
+          "solution": "S = π(R²-r²) = 3,14(100-36) = 3,14 × 64 = 200,96 cm²",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Góc nội tiếp = cung chắn (quên chia 2)",
+      "correction": "Góc nội tiếp = 1/2 cung bị chắn. Góc ở TÂM mới = cung"
+    },
+    {
+      "mistake": "S = πd² (dùng đường kính thay bán kính)",
+      "correction": "S = πR² = π(d/2)² = πd²/4. Nhớ: R = d/2"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "dt9_quiz_01",
+      "title": "Kiểm tra: Đường tròn Lớp 9",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "dt9_p01"
+        },
+        {
+          "ref": "dt9_p06"
+        },
+        {
+          "ref": "dt9_p11"
+        },
+        {
+          "ref": "dt9_p10"
+        },
+        {
+          "ref": "dt9_p14"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

@@ -1,0 +1,714 @@
+﻿{
+  "metadata": {
+    "examId": "thpt_mock_08",
+    "title": "Đề thi thử THPT Quốc Gia - Đề số 08 (Chuẩn 2025)",
+    "totalQuestions": 50,
+    "timeLimit": 90,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.2,
+    "grade": 12,
+    "examType": "MockExam"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Giải: 2ˣ = 32",
+      "options": [
+        "A) x=4",
+        "B) x=5",
+        "C) x=6",
+        "D) x=3"
+      ],
+      "answer": "B",
+      "solution": "2ˣ = 2⁵ → x = 5"
+    },
+    {
+      "id": 2,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Phương trình z² + 4 = 0 có nghiệm là:",
+      "options": [
+        "A) z = ±2",
+        "B) z = ±2i",
+        "C) z = ±4i",
+        "D) Vô nghiệm"
+      ],
+      "answer": "B",
+      "solution": "z² = -4 → z = ±√(-4) = ±2i"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Hộp có 5 bi đỏ, 3 bi xanh. Lấy ngẫu nhiên 3 bi. Tính XS có ít nhất 1 bi đỏ.",
+      "options": [
+        "A) 55/56",
+        "B) 5/8",
+        "C) 15/56",
+        "D) 1/56"
+      ],
+      "answer": "A",
+      "solution": "P(≥1 đỏ) = 1 - P(0 đỏ) = 1 - C(3,3)/C(8,3) = 1 - 1/56 = 55/56"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Cho A(1,2,3), B(3,4,5). Tìm tọa độ trung điểm I của AB.",
+      "options": [
+        "A) I(2, 3, 4)",
+        "B) I(4, 6, 8)",
+        "C) I(1, 1, 1)",
+        "D) I(2, 2, 2)"
+      ],
+      "answer": "A",
+      "solution": "I = ((1+3)/2, (2+4)/2, (3+5)/2) = (2, 3, 4)"
+    },
+    {
+      "id": 5,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "log₂(32) bằng:",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 6",
+        "D) 3"
+      ],
+      "answer": "B",
+      "solution": "2⁵ = 32 → log₂(32) = 5"
+    },
+    {
+      "id": 6,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Đạo hàm của y = 3ˣ là:",
+      "options": [
+        "A) x·3^(x-1)",
+        "B) 3ˣ·ln3",
+        "C) 3ˣ/ln3",
+        "D) 3^(x-1)"
+      ],
+      "answer": "B",
+      "solution": "(aˣ)' = aˣ·ln(a) → (3ˣ)' = 3ˣ·ln3"
+    },
+    {
+      "id": 7,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Viết PT mặt phẳng qua A(1,2,3) có VTPT n⃗ = (2,-1,3)",
+      "options": [
+        "A) 2x - y + 3z - 9 = 0",
+        "B) 2x + y + 3z - 9 = 0",
+        "C) 2x - y + 3z + 9 = 0",
+        "D) x - 2y + 3z - 9 = 0"
+      ],
+      "answer": "A",
+      "solution": "2(x-1) - 1(y-2) + 3(z-3) = 0\n2x - y + 3z - 9 = 0"
+    },
+    {
+      "id": 8,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "∫₁ᵉ (1/x)dx bằng:",
+      "options": [
+        "A) 1",
+        "B) e",
+        "C) 0",
+        "D) ln(e)=1"
+      ],
+      "answer": "A",
+      "solution": "[ln|x|]₁ᵉ = ln(e) - ln(1) = 1 - 0 = 1"
+    },
+    {
+      "id": 9,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Cho z thỏa |z - 1 - i| = 1 và |z| đạt giá trị lớn nhất. Tìm z.",
+      "options": [
+        "A) 1 + i + (1+i)/√2",
+        "B) 1 + i + √2",
+        "C) (1 + √2/2) + (1 + √2/2)i",
+        "D) 2 + 2i"
+      ],
+      "answer": "C",
+      "solution": "|z - (1+i)| = 1: đường tròn tâm I(1,1), R=1.\n|z| max khi z nằm trên tia OI phía xa O nhất.\nOI = √2, |z|_max = √2 + 1.\nHướng OI: (1/√2, 1/√2).\nz = (1+1/√2) + (1+1/√2)i"
+    },
+    {
+      "id": 10,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Giải: 4ˣ - 3·2ˣ + 2 = 0",
+      "options": [
+        "A) x=0, x=1",
+        "B) x=1, x=2",
+        "C) x=0, x=2",
+        "D) x=-1, x=1"
+      ],
+      "answer": "A",
+      "solution": "Đặt t=2ˣ>0. t²-3t+2=0 → t=1,2. 2ˣ=1→x=0; 2ˣ=2→x=1"
+    },
+    {
+      "id": 11,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Đồ thị y = (x²+x+1)/(x+1) có tiệm cận xiên là:",
+      "options": [
+        "A) y=x",
+        "B) y=x+1",
+        "C) y=x-1",
+        "D) Không có"
+      ],
+      "answer": "A",
+      "solution": "Chia: y = x + 1/(x+1) → TCX: y=x. TCĐ: x=-1"
+    },
+    {
+      "id": 12,
+      "topic": "chuyen_de",
+      "difficulty": "Extreme",
+      "question": "Tìm m để PT x⁴ - 2x² = m có đúng 4 nghiệm phân biệt:",
+      "options": [
+        "A) -1<m<0",
+        "B) 0<m<1",
+        "C) m>0",
+        "D) m<-1"
+      ],
+      "answer": "A",
+      "solution": "Đặt t=x²≥0. Khảo sát f(x)=x⁴-2x². Vẽ đồ thị hàm bậc 4 trùng phương, ta thấy điểm cực tiểu tại x=±1, y=-1 và cực đại tại x=0, y=0. Để đường thẳng y=m cắt đồ thị tại 4 điểm thì -1 < m < 0."
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính (2 + 3i)(1 - 4i)",
+      "options": [
+        "A) 14 - 5i",
+        "B) 2 - 5i",
+        "C) 14 + 5i",
+        "D) -10 - 5i"
+      ],
+      "answer": "A",
+      "solution": "= 2·1 + 2·(-4i) + 3i·1 + 3i·(-4i)\n= 2 - 8i + 3i - 12i²\n= 2 - 5i + 12 = 14 - 5i"
+    },
+    {
+      "id": 14,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Diện tích hình phẳng giới hạn bởi y=x², Ox, x=0, x=2 là:",
+      "options": [
+        "A) 4/3",
+        "B) 8/3",
+        "C) 4",
+        "D) 2"
+      ],
+      "answer": "B",
+      "solution": "S = ∫₀² x²dx = [x³/3]₀² = 8/3"
+    },
+    {
+      "id": 15,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Giải BPT: log₂(x+3) > log₂(2x-1)",
+      "options": [
+        "A) 1/2<x<4",
+        "B) x>4",
+        "C) x<4",
+        "D) 0<x<4"
+      ],
+      "answer": "A",
+      "solution": "ĐK: x+3>0 và 2x-1>0 → x>1/2.\nVì cơ số 2>1: x+3>2x-1 → 4>x.\nKết hợp: 1/2 < x < 4"
+    },
+    {
+      "id": 16,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Chọn 3 HS từ nhóm 8 HS thành 1 tổ. Có bao nhiêu cách?",
+      "options": [
+        "A) 24",
+        "B) 56",
+        "C) 336",
+        "D) 512"
+      ],
+      "answer": "B",
+      "solution": "Không phân biệt thứ tự → C(8,3) = 8!/(3!·5!) = 56"
+    },
+    {
+      "id": 17,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Viết PT mặt phẳng qua 3 điểm A(1,0,0), B(0,2,0), C(0,0,3)",
+      "options": [
+        "A) 6x + 3y + 2z - 6 = 0",
+        "B) x + 2y + 3z - 6 = 0",
+        "C) 3x + 6y + 2z - 6 = 0",
+        "D) 6x + 3y + 2z + 6 = 0"
+      ],
+      "answer": "A",
+      "solution": "AB⃗ = (-1,2,0), AC⃗ = (-1,0,3)\nn⃗ = AB⃗ × AC⃗ = (6,3,2)\nPT: 6(x-1) + 3y + 2z = 0\n6x + 3y + 2z - 6 = 0\nHay: x/1 + y/2 + z/3 = 1"
+    },
+    {
+      "id": 18,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm mô-đun của z = (1+i)⁶",
+      "options": [
+        "A) 8",
+        "B) 4",
+        "C) 2√2",
+        "D) 16"
+      ],
+      "answer": "A",
+      "solution": "|1+i| = √2\n|(1+i)⁶| = |1+i|⁶ = (√2)⁶ = 2³ = 8"
+    },
+    {
+      "id": 19,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Điểm cực đại và cực tiểu của y = x³ - 3x + 2 đối xứng qua đường thẳng:",
+      "options": [
+        "A) y=x",
+        "B) y=2",
+        "C) x=0",
+        "D) y=-x+2"
+      ],
+      "answer": "B",
+      "solution": "CĐ tại x=-1: y(-1)=4. CT tại x=1: y(1)=0. Trung điểm: (0,2).\nĐường đối xứng qua y=2 vì y_CĐ + y_CT = 4+0 = 4, trung bình = 2"
+    },
+    {
+      "id": 20,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Tìm GTLN của f(x) = x + 1/x trên (0;+∞) nếu có:",
+      "options": [
+        "A) 2",
+        "B) Không có GTLN",
+        "C) +∞",
+        "D) 1"
+      ],
+      "answer": "B",
+      "solution": "f'=1-1/x²=0→x=1. f(1)=2 là cực tiểu. lim(x→+∞)=+∞→không có GTLN"
+    },
+    {
+      "id": 21,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Hàm số y = -x² + 4x - 1 nghịch biến trên:",
+      "options": [
+        "A) (-∞;2)",
+        "B) (2;+∞)",
+        "C) (-∞;0)",
+        "D) (0;2)"
+      ],
+      "answer": "B",
+      "solution": "y' = -2x+4 = 0 → x=2. y'<0 khi x>2 → nghịch biến trên (2;+∞)"
+    },
+    {
+      "id": 22,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Viết PT mặt cầu tâm I(1,-2,3) bán kính R = 4",
+      "options": [
+        "A) (x-1)² + (y+2)² + (z-3)² = 16",
+        "B) (x+1)² + (y-2)² + (z+3)² = 16",
+        "C) (x-1)² + (y+2)² + (z-3)² = 4",
+        "D) (x-1)² + (y-2)² + (z-3)² = 16"
+      ],
+      "answer": "A",
+      "solution": "(x-1)² + (y+2)² + (z-3)² = 16"
+    },
+    {
+      "id": 23,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "∫x·e^x dx bằng:",
+      "options": [
+        "A) xe^x-e^x+C",
+        "B) xe^x+C",
+        "C) e^x(x+1)+C",
+        "D) x²e^x/2+C"
+      ],
+      "answer": "A",
+      "solution": "Từng phần: u=x, dv=e^x dx → du=dx, v=e^x.\n∫xe^x dx = xe^x - ∫e^x dx = xe^x - e^x + C"
+    },
+    {
+      "id": 24,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Đồ thị y = x³ - 3x² + 2 cắt trục Ox tại mấy điểm?",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 0"
+      ],
+      "answer": "C",
+      "solution": "x³-3x²+2=0. x=1 là nghiệm. Chia: (x-1)(x²-2x-2)=0. Δ=12>0→2 nghiệm nữa. Tổng: 3"
+    },
+    {
+      "id": 25,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm hệ số của x⁵ trong khai triển (2x - 1)¹⁰",
+      "options": [
+        "A) -8064",
+        "B) 8064",
+        "C) -252",
+        "D) 252"
+      ],
+      "answer": "A",
+      "solution": "Số hạng tổng quát: C(10,k)·(2x)¹⁰⁻ᵏ·(-1)ᵏ\nCần 10-k = 5 → k = 5\nHệ số = C(10,5)·2⁵·(-1)⁵ = 252·32·(-1) = -8064"
+    },
+    {
+      "id": 26,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tính (3 + i)/(1 - 2i)",
+      "options": [
+        "A) 1/5 + 7i/5",
+        "B) 3/5 + i/5",
+        "C) 1 + 7i",
+        "D) 7/5 + i/5"
+      ],
+      "answer": "A",
+      "solution": "Nhân liên hợp:\n= (3+i)(1+2i) / [(1-2i)(1+2i)]\n= (3+6i+i+2i²) / (1+4)\n= (3+7i-2) / 5\n= (1+7i)/5 = 1/5 + 7i/5"
+    },
+    {
+      "id": 27,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "∫sin(3x+1)dx bằng:",
+      "options": [
+        "A) -cos(3x+1)/3+C",
+        "B) cos(3x+1)+C",
+        "C) -3cos(3x+1)+C",
+        "D) cos(3x+1)/3+C"
+      ],
+      "answer": "A",
+      "solution": "Đặt u=3x+1, du=3dx. ∫sin(u)·du/3 = -cos(u)/3 + C"
+    },
+    {
+      "id": 28,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Từ các chữ số 0,1,2,3,4 lập số có 3 chữ số khác nhau. Có bao nhiêu số?",
+      "options": [
+        "A) 48",
+        "B) 60",
+        "C) 36",
+        "D) 120"
+      ],
+      "answer": "A",
+      "solution": "Chữ số hàng trăm ≠ 0: 4 cách\nChữ số hàng chục: 4 cách (còn lại)\nChữ số hàng đơn vị: 3 cách\nTổng: 4 × 4 × 3 = 48"
+    },
+    {
+      "id": 29,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Diện tích giới hạn bởi y=x² và y=2x là:",
+      "options": [
+        "A) 1/3",
+        "B) 2/3",
+        "C) 4/3",
+        "D) 1"
+      ],
+      "answer": "C",
+      "solution": "x²=2x → x=0,2. S=∫₀²(2x-x²)dx = [x²-x³/3]₀² = 4-8/3 = 4/3"
+    },
+    {
+      "id": 30,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "GTNN của y = x³ - 3x + 2 trên [-2;2] là:",
+      "options": [
+        "A) -2",
+        "B) 0",
+        "C) -4",
+        "D) 2"
+      ],
+      "answer": "B",
+      "solution": "y'=3x²-3=0→x=±1. y(-2)=0, y(-1)=4, y(1)=0, y(2)=4. Min=0"
+    },
+    {
+      "id": 31,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tìm tập hợp các điểm M biểu diễn z thỏa |z - 2| = |z + 2i|",
+      "options": [
+        "A) Đường thẳng y = -x",
+        "B) Đường thẳng y = x",
+        "C) Đường tròn tâm O bán kính 2",
+        "D) Đường thẳng x + y = 2"
+      ],
+      "answer": "A",
+      "solution": "Gọi z = x + yi.\n|z - 2| = |z + 2i|\n√((x-2)² + y²) = √(x² + (y+2)²)\n(x-2)² + y² = x² + (y+2)²\nx² - 4x + 4 + y² = x² + y² + 4y + 4\n-4x = 4y → y = -x\nTập hợp: đường thẳng y = -x"
+    },
+    {
+      "id": 32,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Cho y = x⁴ - 2x² + 1. Số điểm cực trị là:",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 0"
+      ],
+      "answer": "C",
+      "solution": "y'=4x³-4x=4x(x²-1)=0→x=0,±1. Cả 3 đều đổi dấu→3 cực trị"
+    },
+    {
+      "id": 33,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Cho log₂(a) = 3, log₂(b) = 5. Tính log₂(a²b³):",
+      "options": [
+        "A) 21",
+        "B) 19",
+        "C) 16",
+        "D) 23"
+      ],
+      "answer": "A",
+      "solution": "log₂(a²b³) = 2log₂(a) + 3log₂(b) = 2·3 + 3·5 = 21"
+    },
+    {
+      "id": 34,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Cho y = (2x-1)/(x+1). Tâm đối xứng của đồ thị là:",
+      "options": [
+        "A) (-1;2)",
+        "B) (1;2)",
+        "C) (-1;-2)",
+        "D) (1;-2)"
+      ],
+      "answer": "A",
+      "solution": "TCĐ: x=-1, TCN: y=2. Tâm đối xứng = giao TCĐ và TCN = (-1;2)"
+    },
+    {
+      "id": 35,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Ném đồng xu 5 lần. Tính XS được đúng 3 lần sấp.",
+      "options": [
+        "A) 5/16",
+        "B) 3/5",
+        "C) 10/32",
+        "D) 1/4"
+      ],
+      "answer": "A",
+      "solution": "P(X=3) = C(5,3)·(1/2)³·(1/2)² = 10·1/32 = 10/32 = 5/16"
+    },
+    {
+      "id": 36,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "X nhận giá trị 1,2,3 với XS bằng nhau. E(X)=",
+      "options": [
+        "A) 2",
+        "B) 1.5",
+        "C) 3",
+        "D) 1"
+      ],
+      "answer": "A",
+      "solution": "E(X)=(1+2+3)/3=6/3=2"
+    },
+    {
+      "id": 37,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Từ 3 nam, 5 nữ, chọn 2 người. XS cả 2 đều nữ:",
+      "options": [
+        "A) 5/14",
+        "B) 10/28",
+        "C) 1/4",
+        "D) 25/64"
+      ],
+      "answer": "A",
+      "solution": "C₈²=28, C₅²=10. P=10/28=5/14"
+    },
+    {
+      "id": 38,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Gieo 2 xúc xắc. XS tổng = 7:",
+      "options": [
+        "A) 1/6",
+        "B) 1/12",
+        "C) 5/36",
+        "D) 7/36"
+      ],
+      "answer": "A",
+      "solution": "Ω=36. A={(1,6),(2,5),(3,4),(4,3),(5,2),(6,1)}. P=6/36=1/6"
+    },
+    {
+      "id": 39,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Gieo đồng xu 4 lần. XS có ÍT NHẤT 1 mặt sấp:",
+      "options": [
+        "A) 15/16",
+        "B) 1/16",
+        "C) 1/2",
+        "D) 4/16"
+      ],
+      "answer": "A",
+      "solution": "P(≥1S) = 1 - P(0S) = 1 - (1/2)⁴ = 1 - 1/16 = 15/16"
+    },
+    {
+      "id": 40,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "lim[x→2] (x²-4)/(x-2) =",
+      "options": [
+        "A) 4",
+        "B) 0",
+        "C) 2",
+        "D) ∞"
+      ],
+      "answer": "A",
+      "solution": "(x²-4)/(x-2) = (x-2)(x+2)/(x-2) = x+2 → 4"
+    },
+    {
+      "id": 41,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Tính sin75° =",
+      "options": [
+        "A) (√6+√2)/4",
+        "B) (√6-√2)/4",
+        "C) √3/2",
+        "D) 1/2"
+      ],
+      "answer": "A",
+      "solution": "sin75°=sin(45°+30°)=sin45°cos30°+cos45°sin30°=(√2/2)(√3/2)+(√2/2)(1/2)=(√6+√2)/4"
+    },
+    {
+      "id": 42,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Mẫu lớn (n>30) có ưu điểm gì khi ước lượng?",
+      "options": [
+        "A) Khoảng tin cậy hẹp hơn, ước lượng chính xác hơn",
+        "B) Không cần biết σ",
+        "C) Khoảng tin cậy rộng hơn",
+        "D) Phải dùng phân phối t-Student"
+      ],
+      "answer": "A",
+      "solution": "n lớn → σ/√n nhỏ → khoảng tin cậy hẹp → ước lượng chính xác hơn"
+    },
+    {
+      "id": 43,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Rút gọn: cos²x - sin²x =",
+      "options": [
+        "A) cos2x",
+        "B) sin2x",
+        "C) 1",
+        "D) -cos2x"
+      ],
+      "answer": "A",
+      "solution": "cos²x - sin²x = cos2x (công thức nhân đôi)"
+    },
+    {
+      "id": 44,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Hàm f(x) = {x²-1 khi x≠1; 3 khi x=1} có liên tục tại x=1?",
+      "options": [
+        "A) Không, vì lim≠f(1)",
+        "B) Có",
+        "C) Không xác định",
+        "D) Liên tục trái"
+      ],
+      "answer": "A",
+      "solution": "lim[x→1](x²-1)=0 ≠ f(1)=3 → gián đoạn tại x=1"
+    },
+    {
+      "id": 45,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Cho uₙ = 2n+1. Tìm u₅.",
+      "options": [
+        "A) 11",
+        "B) 10",
+        "C) 9",
+        "D) 12"
+      ],
+      "answer": "A",
+      "solution": "u₅ = 2·5+1 = 11"
+    },
+    {
+      "id": 46,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Nghiệm của sinx+sin3x=0 trên [0;2π) là:",
+      "options": [
+        "A) 0, π/2, π, 3π/2",
+        "B) 0, π",
+        "C) π/2, 3π/2",
+        "D) 0, π/4, π/2, 3π/4, π, 5π/4, 3π/2, 7π/4"
+      ],
+      "answer": "A",
+      "solution": "sinx+sin3x=2sin2x·cosx=0. sin2x=0: 2x=kπ→x=0,π/2,π,3π/2. cosx=0: x=π/2,3π/2. Hợp: 0,π/2,π,3π/2"
+    },
+    {
+      "id": 47,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Số nghiệm của cos²x-3sinx·cosx+2sin²x=0 trên (0;π):",
+      "options": [
+        "A) 2",
+        "B) 1",
+        "C) 3",
+        "D) 4"
+      ],
+      "answer": "A",
+      "solution": "Chia cos²x: 1-3tanx+2tan²x=0 → (tanx-1)(2tanx-1)=0. tanx=1: x=π/4. tanx=1/2: x=arctan(1/2). Hai nghiệm"
+    },
+    {
+      "id": 48,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Giải: 2sin²x - sinx - 1 = 0",
+      "options": [
+        "A) x=π/2+k2π hoặc x=7π/6+k2π hoặc x=11π/6+k2π",
+        "B) x=π/6+kπ",
+        "C) x=π/2+kπ",
+        "D) x=±π/6+k2π"
+      ],
+      "answer": "A",
+      "solution": "Đặt t=sinx: 2t²-t-1=0 → (2t+1)(t-1)=0 → t=-1/2 hoặc t=1. sinx=1: x=π/2+k2π. sinx=-1/2: x=7π/6+k2π hoặc x=11π/6+k2π"
+    },
+    {
+      "id": 49,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Mệnh đề nào sau đây là mệnh đề tương đương?",
+      "options": [
+        "A) x>0 ⇔ x²>0",
+        "B) |x|=x ⇔ x≥0",
+        "C) x²=1 ⇔ x=1",
+        "D) x>1 ⇔ x>2"
+      ],
+      "answer": "B",
+      "solution": "|x|=x đúng khi x≥0 và ngược lại → tương đương"
+    },
+    {
+      "id": 50,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Giải BPT: x²-5x+6≤0",
+      "options": [
+        "A) [2;3]",
+        "B) (-∞;2]∪[3;+∞)",
+        "C) (2;3)",
+        "D) x≤2"
+      ],
+      "answer": "A",
+      "solution": "x²-5x+6=(x-2)(x-3)≤0, a=1>0. Nghiệm: 2≤x≤3"
+    }
+  ]
+}

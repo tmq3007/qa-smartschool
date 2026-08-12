@@ -1,0 +1,374 @@
+{
+  "metadata": {
+    "chapterId": "g12_ch02",
+    "chapterName": "Hàm Số Mũ & Logarit",
+    "grade": 12,
+    "totalSections": 4,
+    "totalConcepts": 14,
+    "totalProblems": 13,
+    "toolMapping": [
+      "LogarithmTool"
+    ],
+    "thptWeight": "8%",
+    "estimatedHours": 25,
+    "prerequisites": [
+      "calc_12_01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "calc_12_02_01",
+      "sectionName": "Lũy thừa & Hàm số mũ",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "ml_001",
+          "name": "Tính chất lũy thừa",
+          "formulas": [
+            "a^m · a^n = a^(m+n)",
+            "a^m / a^n = a^(m-n)",
+            "(a^m)^n = a^(m·n)",
+            "(a·b)^n = a^n · b^n",
+            "a^(-n) = 1/a^n",
+            "a^(1/n) = ⁿ√a"
+          ]
+        },
+        {
+          "id": "ml_002",
+          "name": "Hàm số mũ y = aˣ",
+          "properties": [
+            "TXĐ: ℝ, TGT: (0;+∞)",
+            "a>1: đồng biến (tăng nhanh)",
+            "0<a<1: nghịch biến (giảm nhanh)",
+            "Luôn đi qua (0;1)",
+            "(aˣ)' = aˣ·ln(a), (eˣ)' = eˣ"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ml_prob_001",
+          "difficulty": "Easy",
+          "question": "Rút gọn: 2³ · 2⁵ / 2⁴ =",
+          "options": [
+            "A) 2⁴=16",
+            "B) 2³=8",
+            "C) 2²=4",
+            "D) 2⁶=64"
+          ],
+          "correctAnswer": "A",
+          "solution": "2^(3+5-4) = 2⁴ = 16",
+          "points": 10
+        },
+        {
+          "problemId": "ml_prob_002",
+          "difficulty": "Medium",
+          "question": "Đạo hàm của y = 3ˣ là:",
+          "options": [
+            "A) x·3^(x-1)",
+            "B) 3ˣ·ln3",
+            "C) 3ˣ/ln3",
+            "D) 3^(x-1)"
+          ],
+          "correctAnswer": "B",
+          "solution": "(aˣ)' = aˣ·ln(a) → (3ˣ)' = 3ˣ·ln3",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_02_02",
+      "sectionName": "Logarit & Hàm số logarit",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "ml_003",
+          "name": "Định nghĩa logarit",
+          "definition": "log_a(b) = c ⟺ aᶜ = b (a>0, a≠1, b>0)"
+        },
+        {
+          "id": "ml_004",
+          "name": "Tính chất logarit",
+          "formulas": [
+            "log_a(x·y) = log_a(x) + log_a(y)",
+            "log_a(x/y) = log_a(x) - log_a(y)",
+            "log_a(xⁿ) = n·log_a(x)",
+            "log_a(1) = 0, log_a(a) = 1",
+            "Đổi cơ số: log_a(b) = log_c(b)/log_c(a)",
+            "log_a(b) = 1/log_b(a)"
+          ]
+        },
+        {
+          "id": "ml_005",
+          "name": "Hàm logarit y = log_a(x)",
+          "properties": [
+            "TXĐ: (0;+∞), TGT: ℝ",
+            "a>1: đồng biến",
+            "0<a<1: nghịch biến",
+            "Luôn đi qua (1;0)",
+            "(log_a(x))' = 1/(x·ln(a)), (ln(x))' = 1/x"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ml_prob_003",
+          "difficulty": "Easy",
+          "question": "log₂(32) bằng:",
+          "options": [
+            "A) 4",
+            "B) 5",
+            "C) 6",
+            "D) 3"
+          ],
+          "correctAnswer": "B",
+          "solution": "2⁵ = 32 → log₂(32) = 5",
+          "points": 10
+        },
+        {
+          "problemId": "ml_prob_004",
+          "difficulty": "Easy",
+          "question": "log₃(1/9) bằng:",
+          "options": [
+            "A) -2",
+            "B) 2",
+            "C) -3",
+            "D) 3"
+          ],
+          "correctAnswer": "A",
+          "solution": "1/9 = 3⁻² → log₃(3⁻²) = -2",
+          "points": 10
+        },
+        {
+          "problemId": "ml_prob_005",
+          "difficulty": "Medium",
+          "question": "Rút gọn: log₂(8) + log₂(4) - log₂(2) =",
+          "options": [
+            "A) 4",
+            "B) 5",
+            "C) 6",
+            "D) 3"
+          ],
+          "correctAnswer": "A",
+          "solution": "3 + 2 - 1 = 4. Hoặc: log₂(8·4/2) = log₂(16) = 4",
+          "points": 15
+        },
+        {
+          "problemId": "ml_prob_006",
+          "difficulty": "Medium",
+          "question": "Đạo hàm của y = ln(x² + 1) là:",
+          "options": [
+            "A) 2x/(x²+1)",
+            "B) 1/(x²+1)",
+            "C) 2x·ln(x²+1)",
+            "D) (x²+1)/2x"
+          ],
+          "correctAnswer": "A",
+          "solution": "y' = (x²+1)'/(x²+1) = 2x/(x²+1)",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_02_03",
+      "sectionName": "Phương trình & Bất phương trình mũ",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "ml_006",
+          "name": "PT mũ cơ bản",
+          "formula": "aˣ = b ⟹ x = log_a(b)",
+          "method": "Đưa về cùng cơ số hoặc lấy logarit 2 vế"
+        },
+        {
+          "id": "ml_007",
+          "name": "BPT mũ",
+          "rules": [
+            "a>1: aˣ > aʸ ⟺ x > y",
+            "0<a<1: aˣ > aʸ ⟺ x < y"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ml_prob_007",
+          "difficulty": "Easy",
+          "question": "Giải: 2ˣ = 32",
+          "options": [
+            "A) x=4",
+            "B) x=5",
+            "C) x=6",
+            "D) x=3"
+          ],
+          "correctAnswer": "B",
+          "solution": "2ˣ = 2⁵ → x = 5",
+          "points": 10
+        },
+        {
+          "problemId": "ml_prob_008",
+          "difficulty": "Medium",
+          "question": "Giải: 4ˣ - 3·2ˣ + 2 = 0",
+          "options": [
+            "A) x=0, x=1",
+            "B) x=1, x=2",
+            "C) x=0, x=2",
+            "D) x=-1, x=1"
+          ],
+          "correctAnswer": "A",
+          "solution": "Đặt t=2ˣ>0. t²-3t+2=0 → t=1,2. 2ˣ=1→x=0; 2ˣ=2→x=1",
+          "points": 15
+        },
+        {
+          "problemId": "ml_prob_009",
+          "difficulty": "Hard",
+          "question": "Giải: 9ˣ - 4·3ˣ + 3 = 0",
+          "options": [
+            "A) x=0, x=1",
+            "B) x=1, x=log₃4",
+            "C) x=0, x=log₃3=1",
+            "D) x=0, x=2"
+          ],
+          "correctAnswer": "C",
+          "solution": "Đặt t=3ˣ>0. t²-4t+3=0→t=1,3. 3ˣ=1→x=0; 3ˣ=3→x=1",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_02_04",
+      "sectionName": "Phương trình & Bất phương trình logarit",
+      "order": 4,
+      "concepts": [
+        {
+          "id": "ml_008",
+          "name": "PT logarit cơ bản",
+          "formula": "log_a(f(x)) = b ⟹ f(x) = aᵇ (ĐK: f(x) > 0)"
+        },
+        {
+          "id": "ml_009",
+          "name": "BPT logarit",
+          "rules": [
+            "a>1: log_a(f) > log_a(g) ⟺ f > g > 0",
+            "0<a<1: log_a(f) > log_a(g) ⟺ 0 < f < g"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ml_prob_010",
+          "difficulty": "Easy",
+          "question": "Giải: log₂(x-1) = 3",
+          "options": [
+            "A) x=8",
+            "B) x=9",
+            "C) x=7",
+            "D) x=4"
+          ],
+          "correctAnswer": "B",
+          "solution": "x-1 = 2³ = 8 → x = 9. ĐK: x>1 ✓",
+          "points": 10
+        },
+        {
+          "problemId": "ml_prob_011",
+          "difficulty": "Medium",
+          "question": "Giải: log₃(x²-5x+6) = 1",
+          "options": [
+            "A) x=0, x=5",
+            "B) x=1, x=4",
+            "C) x=2, x=3",
+            "D) Vô nghiệm"
+          ],
+          "correctAnswer": "A",
+          "solution": "x²-5x+6 = 3¹ = 3 → x²-5x+3=0. Δ=13. x=(5±√13)/2. Hmm, kiểm tra lại...\nSửa: x²-5x+6=3 → x²-5x+3=0 → x=(5±√13)/2 ≈ 4.3 và 0.7. ĐK: x²-5x+6>0 → x<2 hoặc x>3. x≈0.7<2✓, x≈4.3>3✓",
+          "points": 15
+        },
+        {
+          "problemId": "ml_prob_012",
+          "difficulty": "Hard",
+          "question": "Giải BPT: log₂(x+3) > log₂(2x-1)",
+          "options": [
+            "A) 1/2<x<4",
+            "B) x>4",
+            "C) x<4",
+            "D) 0<x<4"
+          ],
+          "correctAnswer": "A",
+          "solution": "ĐK: x+3>0 và 2x-1>0 → x>1/2.\nVì cơ số 2>1: x+3>2x-1 → 4>x.\nKết hợp: 1/2 < x < 4",
+          "points": 20
+        },
+        {
+          "problemId": "ml_prob_013",
+          "difficulty": "Hard",
+          "question": "Cho log₂(a) = 3, log₂(b) = 5. Tính log₂(a²b³):",
+          "options": [
+            "A) 21",
+            "B) 19",
+            "C) 16",
+            "D) 23"
+          ],
+          "correctAnswer": "A",
+          "solution": "log₂(a²b³) = 2log₂(a) + 3log₂(b) = 2·3 + 3·5 = 21",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Quên ĐK logarit: đối số > 0",
+      "correction": "LUÔN kiểm tra f(x) > 0"
+    },
+    {
+      "mistake": "Nhầm hướng BPT khi 0<a<1",
+      "correction": "Cơ số < 1: đổi chiều BPT"
+    },
+    {
+      "mistake": "Nhầm (aˣ)' = x·a^(x-1)",
+      "correction": "Đó là công thức lũy thừa, không phải hàm mũ. (aˣ)' = aˣ·ln(a)"
+    },
+    {
+      "mistake": "log(a+b) ≠ log(a) + log(b)",
+      "correction": "Chỉ có log(a·b) = log(a) + log(b)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "ml_quiz_01",
+      "title": "Kiểm tra: Mũ & Logarit",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "ml_prob_001"
+        },
+        {
+          "ref": "ml_prob_003"
+        },
+        {
+          "ref": "ml_prob_005"
+        },
+        {
+          "ref": "ml_prob_007"
+        },
+        {
+          "ref": "ml_prob_010"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

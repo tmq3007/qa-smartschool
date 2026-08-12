@@ -1,0 +1,278 @@
+<Page x:Class="QASmartClass.Classroom.Views.RubricEditorPage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Tạo Rubric Mới" Background="#F0F2F5">
+
+
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+
+        <StackPanel MaxWidth="900" HorizontalAlignment="Center">
+
+
+
+            <!-- Header -->
+
+            <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,20">
+
+                <Border.Effect>
+
+                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05" Color="Black"/>
+
+                </Border.Effect>
+
+                <DockPanel>
+
+                    <Border DockPanel.Dock="Left" Width="60" Height="60" CornerRadius="30" Margin="0,0,16,0">
+
+                        <Border.Background>
+
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+
+                                <GradientStop Color="#EC4899" Offset="0"/>
+
+                                <GradientStop Color="#F43F5E" Offset="1"/>
+
+                            </LinearGradientBrush>
+
+                        </Border.Background>
+
+                        <TextBlock Text="&#xE8B5;" FontFamily="Segoe MDL2 Assets" FontSize="24"
+
+                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    </Border>
+
+                    <StackPanel VerticalAlignment="Center">
+
+                        <TextBlock Text="Tạo Rubric Đánh Giá" FontSize="22" FontWeight="Bold" Foreground="#1E293B"/>
+
+                        <TextBlock Text="Thiết lập tiêu chí đánh giá cho bài tập/dự án" FontSize="14" Foreground="#64748B"/>
+
+                    </StackPanel>
+
+                </DockPanel>
+
+            </Border>
+
+
+
+            <!-- Basic Info -->
+
+            <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,20">
+
+                <Border.Effect>
+
+                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05" Color="Black"/>
+
+                </Border.Effect>
+
+                <StackPanel>
+
+                    <TextBlock Text="Thông tin chung" FontSize="16" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,0,0,16"/>
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="*"/>
+
+                            <ColumnDefinition Width="20"/>
+
+                            <ColumnDefinition Width="*"/>
+
+                            <ColumnDefinition Width="20"/>
+
+                            <ColumnDefinition Width="*"/>
+
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+
+                            <TextBlock Text="Tên Rubric (*)" Foreground="#64748B" Margin="0,0,0,4"/>
+
+                            <TextBox x:Name="txtTitle" Padding="8" FontSize="14"/>
+
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+
+                            <TextBlock Text="Môn học" Foreground="#64748B" Margin="0,0,0,4"/>
+
+                            <ComboBox x:Name="cbSubject" Padding="8" FontSize="14">
+
+                                <ComboBoxItem Content="Toán"/>
+
+                                <ComboBoxItem Content="Ngữ Văn"/>
+
+                                <ComboBoxItem Content="Tiếng Anh"/>
+
+                                <ComboBoxItem Content="Khoa Học"/>
+
+                                <ComboBoxItem Content="Chung"/>
+
+                            </ComboBox>
+
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="4">
+
+                            <TextBlock Text="Lớp" Foreground="#64748B" Margin="0,0,0,4"/>
+
+                            <TextBox x:Name="txtGrade" Padding="8" FontSize="14" Text="10"/>
+
+                        </StackPanel>
+
+                    </Grid>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Criteria List -->
+
+            <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,20">
+
+                <Border.Effect>
+
+                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05" Color="Black"/>
+
+                </Border.Effect>
+
+                <StackPanel>
+
+                    <DockPanel Margin="0,0,0,16">
+
+                        <TextBlock Text="Các Tiêu Chí Đánh Giá" FontSize="16" FontWeight="SemiBold" Foreground="#1E293B" VerticalAlignment="Center"/>
+
+                        <Button Content="＋ Thêm Tiêu Chí" Style="{StaticResource SecondaryButton}"
+
+                                BorderBrush="#3B82F6" Foreground="#3B82F6"
+
+                                Padding="16,8" Cursor="Hand" Click="AddCriteria_Click"/>
+
+                    </DockPanel>
+
+
+
+                    <ItemsControl x:Name="icCriteria">
+
+                        <ItemsControl.ItemTemplate>
+
+                            <DataTemplate>
+
+                                <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,12">
+
+                                    <StackPanel>
+
+                                        <DockPanel Margin="0,0,0,12">
+
+                                            <TextBox Text="{Binding Name, Mode=TwoWay}" Width="300" DockPanel.Dock="Left" Padding="6" 
+
+                                                     Tag="Tên tiêu chí (vd: Nội dung, Trình bày)"/>
+
+                                            <Button Content="✕" Width="24" Height="24" DockPanel.Dock="Right" 
+
+                                                    Style="{StaticResource DangerButton}" Padding="0" Margin="8,0,0,0"
+
+                                                    Cursor="Hand" Click="RemoveCriteria_Click" VerticalAlignment="Center"/>
+
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,16,0">
+
+                                                <TextBlock Text="Điểm tối đa: " VerticalAlignment="Center" Foreground="#64748B"/>
+
+                                                <TextBox Text="{Binding MaxPoints, Mode=TwoWay}" Width="60" Padding="6" TextAlignment="Center"/>
+
+                                            </StackPanel>
+
+                                        </DockPanel>
+
+                                        <Grid>
+
+                                            <Grid.ColumnDefinitions>
+
+                                                <ColumnDefinition Width="*"/>
+
+                                                <ColumnDefinition Width="10"/>
+
+                                                <ColumnDefinition Width="*"/>
+
+                                                <ColumnDefinition Width="10"/>
+
+                                                <ColumnDefinition Width="*"/>
+
+                                                <ColumnDefinition Width="10"/>
+
+                                                <ColumnDefinition Width="*"/>
+
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0">
+
+                                                <TextBlock Text="Mức 1 (Chưa đạt)" FontSize="11" Foreground="#EF4444" Margin="0,0,0,4"/>
+
+                                                <TextBox Text="{Binding L1, Mode=TwoWay}" Height="50" TextWrapping="Wrap" AcceptsReturn="True" Padding="4"/>
+
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="2">
+
+                                                <TextBlock Text="Mức 2 (Đạt)" FontSize="11" Foreground="#F59E0B" Margin="0,0,0,4"/>
+
+                                                <TextBox Text="{Binding L2, Mode=TwoWay}" Height="50" TextWrapping="Wrap" AcceptsReturn="True" Padding="4"/>
+
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="4">
+
+                                                <TextBlock Text="Mức 3 (Khá)" FontSize="11" Foreground="#3B82F6" Margin="0,0,0,4"/>
+
+                                                <TextBox Text="{Binding L3, Mode=TwoWay}" Height="50" TextWrapping="Wrap" AcceptsReturn="True" Padding="4"/>
+
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="6">
+
+                                                <TextBlock Text="Mức 4 (Giỏi/Xuất sắc)" FontSize="11" Foreground="#10B981" Margin="0,0,0,4"/>
+
+                                                <TextBox Text="{Binding L4, Mode=TwoWay}" Height="50" TextWrapping="Wrap" AcceptsReturn="True" Padding="4"/>
+
+                                            </StackPanel>
+
+                                        </Grid>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </DataTemplate>
+
+                        </ItemsControl.ItemTemplate>
+
+                    </ItemsControl>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Save Action -->
+
+            <Button Content="💾 Lưu Rubric Đánh Giá" Style="{StaticResource ModernButton}" 
+
+                    Background="#10B981" Foreground="White" FontSize="15" FontWeight="Bold"
+
+                    Padding="0,12" Cursor="Hand" Click="SaveRubric_Click"/>
+
+        </StackPanel>
+
+    </ScrollViewer>
+
+</Page>
+

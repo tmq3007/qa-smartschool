@@ -1,0 +1,296 @@
+{
+  "metadata": {
+    "chapterId": "g08_ch03",
+    "chapterName": "Hình Học Không Gian (THCS)",
+    "grade": 8,
+    "totalSections": 2,
+    "totalConcepts": 4,
+    "totalProblems": 12,
+    "toolMapping": [
+      "GeometryTool"
+    ],
+    "thptWeight": "5%",
+    "estimatedHours": 12,
+    "prerequisites": [
+      "g07_ch02"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "hk8_01",
+      "sectionName": "Hình chóp & Lăng trụ",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "hk8_001",
+          "name": "Hình chóp",
+          "definition": "Đáy là đa giác, các mặt bên là tam giác chung đỉnh. V = Sđáy × h / 3",
+          "examples": [
+            "Kim tự tháp = hình chóp tứ giác đều"
+          ]
+        },
+        {
+          "id": "hk8_002",
+          "name": "Lăng trụ",
+          "definition": "2 đáy song song bằng nhau, mặt bên là HBH. V = Sđáy × h",
+          "examples": [
+            "Hộp bút = lăng trụ đứng HCN"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hk8_p01",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Lăng trụ đứng đáy tam giác, Sđáy=12 cm², h=10 cm. V = ?",
+          "options": [
+            "A) 60 cm³",
+            "B) 120 cm³",
+            "C) 22 cm³",
+            "D) 240 cm³"
+          ],
+          "correctAnswer": "B",
+          "solution": "V = Sđáy × h = 12 × 10 = 120 cm³",
+          "points": 5
+        },
+        {
+          "problemId": "hk8_p02",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Hình chóp đáy vuông cạnh 6 cm, cao 8 cm. V = ?",
+          "options": [
+            "A) 48 cm³",
+            "B) 96 cm³",
+            "C) 144 cm³",
+            "D) 288 cm³"
+          ],
+          "correctAnswer": "B",
+          "solution": "Sđáy = 6² = 36 cm². V = 36 × 8 / 3 = 96 cm³",
+          "points": 10
+        },
+        {
+          "problemId": "hk8_p03",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Lăng trụ đáy tam giác đều cạnh 4 cm, cao 9 cm. V = ? (S tam giác đều = a²√3/4)",
+          "options": [
+            "A) 36√3 cm³",
+            "B) 4√3 cm³",
+            "C) 9√3 cm³",
+            "D) 12√3 cm³"
+          ],
+          "correctAnswer": "A",
+          "solution": "S = 4²√3/4 = 4√3. V = 4√3 × 9 = 36√3 cm³",
+          "points": 15
+        },
+        {
+          "problemId": "hk8_p04",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Hình chóp tam giác có bao nhiêu mặt?",
+          "options": [
+            "A) 3",
+            "B) 4",
+            "C) 5",
+            "D) 6"
+          ],
+          "correctAnswer": "B",
+          "solution": "1 đáy tam giác + 3 mặt bên tam giác = 4 mặt",
+          "points": 5
+        },
+        {
+          "problemId": "hk8_p05",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Lăng trụ đứng đáy HCN 5×3 cm, cao 8 cm. Diện tích xung quanh = ?",
+          "options": [
+            "A) 64 cm²",
+            "B) 128 cm²",
+            "C) 120 cm²",
+            "D) 160 cm²"
+          ],
+          "correctAnswer": "B",
+          "solution": "Sxq = Chu vi đáy × h = (5+3)×2 × 8 = 16 × 8 = 128 cm²",
+          "points": 10
+        },
+        {
+          "problemId": "hk8_p06",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Bể nước hình lăng trụ đáy thang: 2 đáy 3m & 5m, cao thang 2m, bể cao 1,5m. V = ? m³",
+          "options": [
+            "A) 6 m³",
+            "B) 8 m³",
+            "C) 12 m³",
+            "D) 15 m³"
+          ],
+          "correctAnswer": "C",
+          "solution": "S thang = (3+5)×2/2 = 8 m². V = 8 × 1,5 = 12 m³",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hk8_02",
+      "sectionName": "Diện tích & Thể tích tổng hợp",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "hk8_003",
+          "name": "Diện tích toàn phần",
+          "definition": "Stp = Sxq + 2Sđáy (lăng trụ) hoặc Sxq + Sđáy (chóp)",
+          "examples": [
+            "Lăng trụ: Stp = Sxq + 2Sđáy"
+          ]
+        },
+        {
+          "id": "hk8_004",
+          "name": "So sánh thể tích",
+          "definition": "Dùng đơn vị chung để so sánh: 1 m³ = 1000 lít = 1.000.000 cm³",
+          "examples": [
+            "1 lít = 1 dm³ = 1000 cm³"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hk8_p07",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "1 m³ = ? lít",
+          "options": [
+            "A) 10",
+            "B) 100",
+            "C) 1000",
+            "D) 10000"
+          ],
+          "correctAnswer": "C",
+          "solution": "1 m³ = 1000 dm³ = 1000 lít",
+          "points": 5
+        },
+        {
+          "problemId": "hk8_p08",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Hình hộp CN 4×3×2 cm. Stp = ?",
+          "options": [
+            "A) 24 cm²",
+            "B) 52 cm²",
+            "C) 26 cm²",
+            "D) 48 cm²"
+          ],
+          "correctAnswer": "B",
+          "solution": "Stp = 2(4×3 + 4×2 + 3×2) = 2(12+8+6) = 2×26 = 52 cm²",
+          "points": 10
+        },
+        {
+          "problemId": "hk8_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Hình trụ r=5, h=12 cm. V = ? (π≈3,14)",
+          "options": [
+            "A) 471 cm³",
+            "B) 942 cm³",
+            "C) 188,4 cm³",
+            "D) 314 cm³"
+          ],
+          "correctAnswer": "B",
+          "solution": "V = πr²h = 3,14 × 25 × 12 = 942 cm³",
+          "points": 10
+        },
+        {
+          "problemId": "hk8_p10",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Bồn nước hình trụ r=0,5m, h=1,2m. Chứa bao nhiêu lít? (π≈3,14)",
+          "options": [
+            "A) 785 lít",
+            "B) 942 lít",
+            "C) 1570 lít",
+            "D) 2000 lít"
+          ],
+          "correctAnswer": "B",
+          "solution": "V = 3,14 × 0,25 × 1,2 = 0,942 m³ = 942 lít",
+          "points": 15
+        },
+        {
+          "problemId": "hk8_p11",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "So sánh V hình cầu r=3 cm và V hình trụ r=3, h=4 cm",
+          "options": [
+            "A) Cầu lớn hơn",
+            "B) Trụ lớn hơn",
+            "C) Bằng nhau",
+            "D) Không so sánh được"
+          ],
+          "correctAnswer": "A",
+          "solution": "V cầu = 4π(27)/3 = 36π ≈ 113,1. V trụ = π(9)(4) = 36π ≈ 113,1. BẰNG NHAU!",
+          "points": 15
+        },
+        {
+          "problemId": "hk8_p12",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "5 lít = ? cm³",
+          "options": [
+            "A) 50",
+            "B) 500",
+            "C) 5000",
+            "D) 50000"
+          ],
+          "correctAnswer": "C",
+          "solution": "1 lít = 1000 cm³. 5 lít = 5000 cm³",
+          "points": 5
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "V chóp = Sđáy × h (quên chia 3)",
+      "correction": "V chóp = Sđáy × h ÷ 3. Nhớ: chóp = 1/3 lăng trụ cùng đáy cùng cao"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "hk8_quiz_01",
+      "title": "Kiểm tra: Hình học KG THCS",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "hk8_p01"
+        },
+        {
+          "ref": "hk8_p07"
+        },
+        {
+          "ref": "hk8_p02"
+        },
+        {
+          "ref": "hk8_p08"
+        },
+        {
+          "ref": "hk8_p10"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

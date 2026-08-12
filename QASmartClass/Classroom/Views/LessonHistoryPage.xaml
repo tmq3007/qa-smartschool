@@ -1,0 +1,362 @@
+﻿<Page x:Class="QASmartClass.Classroom.Views.LessonHistoryPage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Lịch Sử Phiên Bản" Background="#FAFAFA">
+
+
+
+    <Grid Margin="24,16">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <DockPanel Grid.Row="0" Margin="0,0,0,16">
+
+            <Button DockPanel.Dock="Right" Content="🔄 Làm mới" Padding="12,8" FontSize="11"
+
+                    Background="#F5F5F5" Foreground="#424242" BorderThickness="0"
+
+                    Cursor="Hand" Click="Refresh_Click">
+
+                <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#EEEEEE"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+            </Button>
+
+            <StackPanel>
+
+                <TextBlock Text="🕐 Lịch Sử Phiên Bản Bài Giảng" FontSize="18" FontWeight="Bold" Foreground="#212121"/>
+
+                <TextBlock x:Name="txtInfo" Text="Xem và khôi phục các phiên bản trước"
+
+                           FontSize="12" Foreground="#757575" Margin="0,2,0,0"/>
+
+            </StackPanel>
+
+        </DockPanel>
+
+
+
+        <!-- Content: two columns -->
+
+        <Grid Grid.Row="1">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="320"/>
+
+                <ColumnDefinition Width="*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Left: Lesson selector -->
+
+            <Border Grid.Column="0" Background="White" CornerRadius="12" BorderBrush="#E0E0E0"
+
+                    BorderThickness="1" Padding="16" Margin="0,0,12,0">
+
+                <StackPanel>
+
+                    <TextBlock Text="📚 Chọn bài giảng" FontSize="13" FontWeight="SemiBold"
+
+                               Foreground="#212121" Margin="0,0,0,10"/>
+
+                    <ComboBox x:Name="cmbLesson" FontSize="13" Padding="10,8"
+
+                              SelectionChanged="LessonSelected" Margin="0,0,0,12">
+
+                        <ComboBox.Template>
+
+                            <ControlTemplate TargetType="ComboBox">
+
+                                <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
+
+                                    <Grid>
+
+                                        <ContentPresenter Margin="10,8" Content="{TemplateBinding SelectionBoxItem}"/>
+
+                                        <ToggleButton IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+
+                                                      Background="Transparent" BorderThickness="0" HorizontalAlignment="Right" Width="30">
+
+                                            <TextBlock Text="▼" FontSize="10" Foreground="#757575"/>
+
+                                        </ToggleButton>
+
+                                        <Popup IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+
+                                            <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" MaxHeight="300">
+
+                                                <ScrollViewer><ItemsPresenter/></ScrollViewer>
+
+                                            </Border>
+
+                                        </Popup>
+
+                                    </Grid>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </ComboBox.Template>
+
+                    </ComboBox>
+
+
+
+                    <Border Height="1" Background="#E0E0E0" Margin="0,4,0,12"/>
+
+
+
+                    <TextBlock Text="📋 Danh sách phiên bản" FontSize="13" FontWeight="SemiBold"
+
+                               Foreground="#212121" Margin="0,0,0,10"/>
+
+                    <ScrollViewer MaxHeight="600" VerticalScrollBarVisibility="Auto">
+
+                        <ItemsControl x:Name="historyList">
+
+                            <ItemsControl.ItemTemplate>
+
+                                <DataTemplate>
+
+                                    <Border Margin="0,0,0,6" CornerRadius="8" Padding="12,10"
+
+                                            Cursor="Hand" BorderThickness="1.5"
+
+                                            MouseLeftButtonDown="HistoryItem_Click">
+
+                                        <Border.Style>
+
+                                            <Style TargetType="Border">
+
+                                                <Setter Property="Background" Value="White"/>
+
+                                                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+
+                                                <Style.Triggers>
+
+                                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                                        <Setter Property="Background" Value="#E3F2FD"/>
+
+                                                        <Setter Property="BorderBrush" Value="#1976D2"/>
+
+                                                    </Trigger>
+
+                                                </Style.Triggers>
+
+                                            </Style>
+
+                                        </Border.Style>
+
+                                        <StackPanel>
+
+                                            <DockPanel>
+
+                                                <Border DockPanel.Dock="Right" Background="{Binding StatusBg}" CornerRadius="4" Padding="6,2">
+
+                                                    <TextBlock Text="{Binding Status}" FontSize="9" Foreground="{Binding StatusFg}" FontWeight="SemiBold"/>
+
+                                                </Border>
+
+                                                <TextBlock Text="{Binding SavedAt, StringFormat='{}{0:HH:mm dd/MM/yy}'}"
+
+                                                           FontSize="12" FontWeight="SemiBold" Foreground="#212121"/>
+
+                                            </DockPanel>
+
+                                            <TextBlock Text="{Binding TitleSnapshot}" FontSize="11" Foreground="#616161"
+
+                                                       TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+
+                                            <TextBlock Text="{Binding ChangeNote}" FontSize="10" Foreground="#9E9E9E" Margin="0,2,0,0"/>
+
+                                        </StackPanel>
+
+                                    </Border>
+
+                                </DataTemplate>
+
+                            </ItemsControl.ItemTemplate>
+
+                        </ItemsControl>
+
+                    </ScrollViewer>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Right: Version detail -->
+
+            <Border Grid.Column="1" Background="White" CornerRadius="12"
+
+                    BorderBrush="#E0E0E0" BorderThickness="1" Padding="20">
+
+                <StackPanel>
+
+                    <TextBlock Text="📄 Chi Tiết Phiên Bản" FontSize="14" FontWeight="SemiBold"
+
+                               Foreground="#212121" Margin="0,0,0,16"/>
+
+
+
+                    <!-- Version info cards -->
+
+                    <UniformGrid Columns="3" Margin="0,0,0,16">
+
+                        <Border Background="#E3F2FD" CornerRadius="8" Padding="14,10" Margin="0,0,6,0">
+
+                            <StackPanel>
+
+                                <TextBlock Text="📅 Thời gian lưu" FontSize="10" Foreground="#1565C0"/>
+
+                                <TextBlock x:Name="txtDetailDate" Text="—" FontSize="14" FontWeight="Bold" Foreground="#0D47A1" Margin="0,4,0,0"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <Border Background="#E8F5E9" CornerRadius="8" Padding="14,10" Margin="0,0,6,0">
+
+                            <StackPanel>
+
+                                <TextBlock Text="🏷️ Trạng thái" FontSize="10" Foreground="#2E7D32"/>
+
+                                <TextBlock x:Name="txtDetailStatus" Text="—" FontSize="14" FontWeight="Bold" Foreground="#1B5E20" Margin="0,4,0,0"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <Border Background="#FFF3E0" CornerRadius="8" Padding="14,10">
+
+                            <StackPanel>
+
+                                <TextBlock Text="✏️ Người sửa" FontSize="10" Foreground="#E65100"/>
+
+                                <TextBlock x:Name="txtDetailEditor" Text="—" FontSize="14" FontWeight="Bold" Foreground="#BF360C" Margin="0,4,0,0"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </UniformGrid>
+
+
+
+                    <!-- Title snapshot -->
+
+                    <TextBlock Text="Tiêu đề tại phiên bản này:" FontSize="12" Foreground="#757575" Margin="0,0,0,6"/>
+
+                    <Border Background="#F8F9FA" CornerRadius="8" Padding="14,12" Margin="0,0,0,14">
+
+                        <TextBlock x:Name="txtDetailTitle" Text="Chọn một phiên bản để xem chi tiết"
+
+                                   FontSize="15" FontWeight="SemiBold" Foreground="#212121" TextWrapping="Wrap"/>
+
+                    </Border>
+
+
+
+                    <!-- Change note -->
+
+                    <TextBlock Text="Ghi chú thay đổi:" FontSize="12" Foreground="#757575" Margin="0,0,0,6"/>
+
+                    <Border Background="#F8F9FA" CornerRadius="8" Padding="14,12" Margin="0,0,0,16">
+
+                        <TextBlock x:Name="txtDetailNote" Text="—" FontSize="13" Foreground="#424242" TextWrapping="Wrap"/>
+
+                    </Border>
+
+
+
+                    <!-- Timeline chart placeholder -->
+
+                    <TextBlock Text="📊 Biểu đồ lịch sử lưu:" FontSize="12" Foreground="#757575" Margin="0,0,0,8"/>
+
+                    <Border x:Name="timelineBar" Background="#F0F4FF" CornerRadius="8" Padding="14,12" Margin="0,0,0,20" MinHeight="60">
+
+                        <ItemsControl x:Name="timelineDots">
+
+                            <ItemsControl.ItemsPanel>
+
+                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+
+                            </ItemsControl.ItemsPanel>
+
+                            <ItemsControl.ItemTemplate>
+
+                                <DataTemplate>
+
+                                    <StackPanel Margin="0,0,8,0" ToolTip="{Binding Tip}">
+
+                                        <Ellipse Width="14" Height="14" Fill="{Binding Dot}" Margin="0,0,0,4"/>
+
+                                        <TextBlock Text="{Binding Label}" FontSize="8" Foreground="#757575" HorizontalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                </DataTemplate>
+
+                            </ItemsControl.ItemTemplate>
+
+                        </ItemsControl>
+
+                    </Border>
+
+
+
+                    <!-- Actions -->
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <Button Content="♻️ Khôi phục phiên bản này" Background="#1976D2" Foreground="White"
+
+                                BorderThickness="0" Padding="16,10" FontSize="12" FontWeight="SemiBold"
+
+                                Cursor="Hand" Margin="0,0,10,0" Click="Restore_Click">
+
+                            <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+
+                        </Button>
+
+                        <Button Content="🗑️ Xoá phiên bản" Background="#FFEBEE" Foreground="#C62828"
+
+                                BorderThickness="0" Padding="16,10" FontSize="12"
+
+                                Cursor="Hand" Click="DeleteVersion_Click">
+
+                            <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+
+                        </Button>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+</Page>
+

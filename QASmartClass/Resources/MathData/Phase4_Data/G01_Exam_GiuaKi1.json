@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g01_giuaki1",
+    "title": "Đề thi Giữa Kì 1 Toán Lớp 1",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 1,
+    "examType": "GiuaKi1"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính: 53 - 28 = ?",
+      "options": [
+        "A) 25",
+        "B) 35",
+        "C) 15",
+        "D) 31"
+      ],
+      "answer": "A",
+      "solution": "53 - 28: 3-8 không đủ, mượn 1: 13-8=5. 4-2=2. Kết quả: 25"
+    },
+    {
+      "id": 2,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Dùng ca 500 ml múc nước đổ vào xô. Múc 8 lần thì đầy xô. Xô chứa bao nhiêu lít?",
+      "options": [
+        "A) 3 lít",
+        "B) 4 lít",
+        "C) 5 lít",
+        "D) 8 lít"
+      ],
+      "answer": "B",
+      "solution": "8 × 500 ml = 4000 ml = 4 lít"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính: 36 + 27 = ?",
+      "options": [
+        "A) 53",
+        "B) 63",
+        "C) 62",
+        "D) 73"
+      ],
+      "answer": "B",
+      "solution": "36 + 27: 6+7=13, viết 3 nhớ 1. 3+2+1=6. Kết quả: 63"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tính: 6 + 4 = ?",
+      "options": [
+        "A) 10",
+        "B) 9",
+        "C) 11",
+        "D) 8"
+      ],
+      "answer": "A",
+      "solution": "6 + 4 = 10"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tính: 9 - 4 = ?",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 6",
+        "D) 3"
+      ],
+      "answer": "B",
+      "solution": "9 - 4 = 5. Duỗi 9 ngón tay, gập 4 ngón, còn 5 ngón"
+    },
+    {
+      "id": 6,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "5 quả cam cân nặng 1 kg. Mỗi quả cam nặng khoảng bao nhiêu gam?",
+      "options": [
+        "A) 100 g",
+        "B) 150 g",
+        "C) 200 g",
+        "D) 250 g"
+      ],
+      "answer": "C",
+      "solution": "1 kg = 1000 g. 1000 ÷ 5 = 200 g mỗi quả"
+    },
+    {
+      "id": 7,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "3 gói kẹo, mỗi gói 350 g. Tổng cộng bao nhiêu kg và g?",
+      "options": [
+        "A) 1 kg 50 g",
+        "B) 1 kg 500 g",
+        "C) 1 kg 150 g",
+        "D) 1 kg 100 g"
+      ],
+      "answer": "A",
+      "solution": "3 × 350 = 1050 g = 1 kg 50 g"
+    },
+    {
+      "id": 8,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Có 5 bạn xếp hàng. Bạn An đứng thứ 3 từ trái. An đứng thứ mấy từ phải?",
+      "options": [
+        "A) 2",
+        "B) 3",
+        "C) 4",
+        "D) 1"
+      ],
+      "answer": "B",
+      "solution": "5 bạn, An thứ 3 từ trái → từ phải: 5 - 3 + 1 = 3"
+    },
+    {
+      "id": 9,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Quy luật: △, ○, □, △, ○, □, △, ?, ?",
+      "options": [
+        "A) △, ○",
+        "B) ○, □",
+        "C) □, △",
+        "D) ○, △"
+      ],
+      "answer": "B",
+      "solution": "Chu kỳ 3: △○□ lặp lại → sau △ là ○, □"
+    },
+    {
+      "id": 10,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Chai nước suối thường chứa bao nhiêu lít?",
+      "options": [
+        "A) 0.5 lít",
+        "B) 5 lít",
+        "C) 50 lít",
+        "D) 500 lít"
+      ],
+      "answer": "A",
+      "solution": "Chai nước suối phổ biến chứa khoảng 0.5 lít (500 ml)"
+    },
+    {
+      "id": 11,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Hình nào có 4 cạnh bằng nhau?",
+      "options": [
+        "A) Hình tròn",
+        "B) Hình vuông",
+        "C) Hình tam giác",
+        "D) Hình chữ nhật"
+      ],
+      "answer": "B",
+      "solution": "Hình vuông có 4 cạnh bằng nhau và 4 góc vuông"
+    },
+    {
+      "id": 12,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Mẹ mua 2 kg gạo và 500 g đường. Tổng cộng nặng bao nhiêu gam?",
+      "options": [
+        "A) 2500 g",
+        "B) 2050 g",
+        "C) 3000 g",
+        "D) 250 g"
+      ],
+      "answer": "A",
+      "solution": "2 kg = 2000 g. 2000 + 500 = 2500 g"
+    },
+    {
+      "id": 13,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Bể cá chứa 20 lít hay 20 ml nước?",
+      "options": [
+        "A) 20 ml",
+        "B) 20 lít",
+        "C) 20 kg",
+        "D) 20 m"
+      ],
+      "answer": "B",
+      "solution": "Bể cá là vật chứa lớn → đo bằng lít: khoảng 20 lít"
+    },
+    {
+      "id": 14,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Chữ cái nào KHÔNG có trục đối xứng? A, B, F, M",
+      "options": [
+        "A) A",
+        "B) B",
+        "C) F",
+        "D) M"
+      ],
+      "answer": "C",
+      "solution": "F không có trục đối xứng. A, B, M đều có ít nhất 1 trục"
+    },
+    {
+      "id": 15,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Bình A chứa 3 lít, bình B chứa 1 lít 500 ml. Tổng cộng bao nhiêu ml?",
+      "options": [
+        "A) 4000 ml",
+        "B) 4500 ml",
+        "C) 5000 ml",
+        "D) 3500 ml"
+      ],
+      "answer": "B",
+      "solution": "3 lít = 3000 ml. 1 lít 500 ml = 1500 ml. Tổng: 3000 + 1500 = 4500 ml"
+    },
+    {
+      "id": 16,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Đoạn dây dài 2 m 30 cm. Đổi ra cm = ?",
+      "options": [
+        "A) 203 cm",
+        "B) 230 cm",
+        "C) 2030 cm",
+        "D) 23 cm"
+      ],
+      "answer": "B",
+      "solution": "2 m = 200 cm. 200 + 30 = 230 cm"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Trong rổ có 8 quả cam. Lấy ra 3 quả. Số quả cam TRONG rổ còn lại là?",
+      "options": [
+        "A) 3",
+        "B) 11",
+        "C) 5",
+        "D) 8"
+      ],
+      "answer": "C",
+      "solution": "8 - 3 = 5 quả cam còn trong rổ"
+    },
+    {
+      "id": 18,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Bánh xe ô tô có hình gì?",
+      "options": [
+        "A) Hình vuông",
+        "B) Hình tam giác",
+        "C) Hình tròn",
+        "D) Hình chữ nhật"
+      ],
+      "answer": "C",
+      "solution": "Bánh xe có dạng hình tròn"
+    },
+    {
+      "id": 19,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Bạn Bình quay mặt về hướng Bắc. Tay phải Bình chỉ hướng nào?",
+      "options": [
+        "A) Nam",
+        "B) Đông",
+        "C) Tây",
+        "D) Bắc"
+      ],
+      "answer": "B",
+      "solution": "Quay mặt về Bắc → tay phải chỉ Đông, tay trái chỉ Tây"
+    },
+    {
+      "id": 20,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Bạn An cao 1 m 25 cm. Bạn Bình cao 1 m 32 cm. Bình cao hơn An bao nhiêu cm?",
+      "options": [
+        "A) 5 cm",
+        "B) 7 cm",
+        "C) 10 cm",
+        "D) 12 cm"
+      ],
+      "answer": "B",
+      "solution": "132 - 125 = 7 cm"
+    }
+  ]
+}

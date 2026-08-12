@@ -1,0 +1,1424 @@
+<Window x:Class="QASmartTouch.Forms.Form2_7_1_BackgroundSelector"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Chọn nền bảng" 
+
+        Width="520" Height="680"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        ResizeMode="NoResize"
+
+        Topmost="True"
+
+        ShowInTaskbar="False"
+
+        FontFamily="Segoe UI, Inter, Arial, sans-serif">
+
+
+
+    <!-- ✨ RESOURCES -->
+
+    <Window.Resources>
+
+        <!-- Quick Preset Button Style -->
+
+        <Style x:Key="QuickPresetButtonStyle" TargetType="Button">
+
+            <Setter Property="Padding" Value="8,5"/>
+
+            <Setter Property="Background" Value="White"/>
+
+            <Setter Property="Foreground" Value="#667EEA"/>
+
+            <Setter Property="BorderBrush" Value="#667EEA"/>
+
+            <Setter Property="BorderThickness" Value="2"/>
+
+            <Setter Property="FontSize" Value="12"/>
+
+            <Setter Property="FontWeight" Value="Medium"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Margin" Value="0,0,8,0"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                                BorderBrush="{TemplateBinding BorderBrush}"
+
+                                BorderThickness="{TemplateBinding BorderThickness}"
+
+                                CornerRadius="16"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center"
+
+                                            VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#667EEA"/>
+
+                    <Setter Property="Foreground" Value="White"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Border Background="White" 
+
+            CornerRadius="15" 
+
+            BorderBrush="#E1E8ED" 
+
+            BorderThickness="1">
+
+        <Border.Effect>
+
+            <DropShadowEffect Color="#CCCCCC" 
+
+                            Direction="270" 
+
+                            ShadowDepth="3" 
+
+                            BlurRadius="15" 
+
+                            Opacity="0.3"/>
+
+        </Border.Effect>
+
+
+
+        <Grid Margin="20">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Header with Gradient -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Quick Presets -->
+
+                <RowDefinition Height="*"/>
+
+                <!-- Content -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Actions -->
+
+            </Grid.RowDefinitions>
+
+
+
+            <!-- ✨ HEADER WITH GRADIENT -->
+
+            <Border Grid.Row="0" 
+
+                    Margin="-20,-20,-20,0"
+
+                    CornerRadius="15,15,0,0">
+
+                <Border.Background>
+
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+
+                        <GradientStop Color="#667EEA" Offset="0"/>
+
+                        <GradientStop Color="#764BA2" Offset="1"/>
+
+                    </LinearGradientBrush>
+
+                </Border.Background>
+
+                
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    
+
+                    <StackPanel Orientation="Horizontal" 
+
+                                Grid.Column="0"
+
+                                Margin="20,15">
+
+                        <TextBlock Text="⚙️ " 
+
+                                   FontSize="20"
+
+                                   Foreground="White"
+
+                                   VerticalAlignment="Center"
+
+                                   Margin="0,0,8,0"/>
+
+                        <TextBlock Text="Chọn nền bảng" 
+
+                                   FontSize="18" 
+
+                                   FontWeight="Bold" 
+
+                                   Foreground="White"
+
+                                   VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
+                    
+
+                    <Button x:Name="btnClose" 
+
+                            Grid.Column="1"
+
+                            Width="32" Height="32"
+
+                            Margin="20,15"
+
+                            Background="Transparent"
+
+                            BorderThickness="0"
+
+                            Cursor="Hand"
+
+                            Click="btnClose_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="Transparent"
+
+                                        CornerRadius="16">
+
+                                    <Border.Style>
+
+                                        <Style TargetType="Border">
+
+                                            <Style.Triggers>
+
+                                                <Trigger Property="IsMouseOver" Value="True">
+
+                                                    <Setter Property="Background" Value="#40FFFFFF"/>
+
+                                                </Trigger>
+
+                                            </Style.Triggers>
+
+                                        </Style>
+
+                                    </Border.Style>
+
+                                    <Path Fill="White" 
+
+                                          Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+
+                                          Width="16" Height="16"
+
+                                          Stretch="Uniform"
+
+                                          HorizontalAlignment="Center"
+
+                                          VerticalAlignment="Center"/>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                </Grid>
+
+            </Border>
+
+
+
+            <!-- ✨ QUICK PRESETS SECTION -->
+
+            <Border Grid.Row="1" 
+
+                    Background="#F8F9FF" 
+
+                    Padding="12,8"
+
+                    Margin="-20,0,-20,0"
+
+                    BorderBrush="#E0E0E0"
+
+                    BorderThickness="0,0,0,1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Gợi ý nhanh theo môn học:" 
+
+                               FontSize="12"
+
+                               Foreground="#666"
+
+                               FontWeight="Medium"
+
+                               Margin="0,0,0,8"/>
+
+                    
+
+                    <WrapPanel>
+
+                        <Button x:Name="btnPresetMath"
+
+                                Content="📐 Toán học" 
+
+                                Click="btnPreset_Click"
+
+                                Tag="Math"
+
+                                Style="{StaticResource QuickPresetButtonStyle}"/>
+
+                        
+
+                        <Button x:Name="btnPresetLiterature"
+
+                                Content="📖 Ngữ văn" 
+
+                                Click="btnPreset_Click"
+
+                                Tag="Literature"
+
+                                Style="{StaticResource QuickPresetButtonStyle}"/>
+
+                        
+
+                        <Button x:Name="btnPresetMusic"
+
+                                Content="🎵 Âm nhạc" 
+
+                                Click="btnPreset_Click"
+
+                                Tag="Music"
+
+                                Style="{StaticResource QuickPresetButtonStyle}"/>
+
+                        
+
+                        <Button x:Name="btnPresetPresentation"
+
+                                Content="🎬 Trình chiếu" 
+
+                                Click="btnPreset_Click"
+
+                                Tag="Presentation"
+
+                                Style="{StaticResource QuickPresetButtonStyle}"
+
+                                Margin="0"/>
+
+                    </WrapPanel>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- CONTENT -->
+
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,15,0,0">
+
+                <StackPanel>
+
+                    <!-- ✨ Step 1: Solid Colors -->
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+
+                        <Border Background="#667EEA"
+
+                                Width="24" Height="24"
+
+                                CornerRadius="12"
+
+                                Margin="0,0,8,0">
+
+                            <TextBlock Text="1"
+
+                                       Foreground="White"
+
+                                       FontSize="13"
+
+                                       FontWeight="Bold"
+
+                                       HorizontalAlignment="Center"
+
+                                       VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        
+
+                        <TextBlock Text="Chọn màu nền" 
+
+                                   FontSize="13" 
+
+                                   FontWeight="SemiBold" 
+
+                                   Foreground="#57606F"
+
+                                   VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
+                    
+
+                    <UniformGrid Columns="4" Rows="2" Margin="0,0,0,15">
+
+                        <!-- White -->
+
+                        <Button Height="55" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="2"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="White">
+
+                            <StackPanel>
+
+                                <Border Width="40" Height="30" 
+
+                                       Background="White"
+
+                                       BorderBrush="#DFE4EA"
+
+                                       BorderThickness="1"
+
+                                       CornerRadius="4"
+
+                                       Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Trắng" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- Light Gray -->
+
+                        <Button Height="55" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="#F8F9FA">
+
+                            <StackPanel>
+
+                                <Border Width="40" Height="30" 
+
+                                       Background="#F8F9FA"
+
+                                       BorderBrush="#DFE4EA"
+
+                                       BorderThickness="1"
+
+                                       CornerRadius="4"
+
+                                       Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Xám nhạt" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- Light Blue -->
+
+                        <Button Height="55" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="#E3F2FD">
+
+                            <StackPanel>
+
+                                <Border Width="40" Height="30" 
+
+                                       Background="#E3F2FD"
+
+                                       BorderBrush="#DFE4EA"
+
+                                       BorderThickness="1"
+
+                                       CornerRadius="4"
+
+                                       Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Xanh nhạt" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- Light Green -->
+
+                        <Button Height="55" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="#E8F5E9">
+
+                            <StackPanel>
+
+                                <Border Width="40" Height="30" 
+
+                                       Background="#E8F5E9"
+
+                                       BorderBrush="#DFE4EA"
+
+                                       BorderThickness="1"
+
+                                       CornerRadius="4"
+
+                                       Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Xanh lá nhạt" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- Light Yellow -->
+
+                        <Button Height="55" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="#FFFDE7">
+
+                            <StackPanel>
+
+                                <Border Width="40" Height="30" 
+
+                                       Background="#FFFDE7"
+
+                                       BorderBrush="#DFE4EA"
+
+                                       BorderThickness="1"
+
+                                       CornerRadius="4"
+
+                                       Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Vàng nhạt" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- Light Pink -->
+
+                        <Button Height="55" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="#FCE4EC">
+
+                            <StackPanel>
+
+                                <Border Width="40" Height="30" 
+
+                                       Background="#FCE4EC"
+
+                                       BorderBrush="#DFE4EA"
+
+                                       BorderThickness="1"
+
+                                       CornerRadius="4"
+
+                                       Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Hồng nhạt" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- Black -->
+
+                        <Button Height="55" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="#2F3542">
+
+                            <StackPanel>
+
+                                <Border Width="40" Height="30" 
+
+                                       Background="#2F3542"
+
+                                       BorderBrush="#DFE4EA"
+
+                                       BorderThickness="1"
+
+                                       CornerRadius="4"
+
+                                       Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Đen" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- Dark Green (Chalkboard) -->
+
+                        <Button Height="55" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="#3D6D64">
+
+                            <StackPanel>
+
+                                <Border Width="40" Height="30" 
+
+                                       Background="#3D6D64"
+
+                                       BorderBrush="#DFE4EA"
+
+                                       BorderThickness="1"
+
+                                       CornerRadius="4"
+
+                                       Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Xanh" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+                    </UniformGrid>
+
+
+
+                    <!-- ✨ PREVIEW AREA -->
+
+                    <TextBlock Text="Xem trước" 
+
+                               FontSize="13" 
+
+                               FontWeight="SemiBold" 
+
+                               Foreground="#57606F"
+
+                               Margin="0,0,0,10"/>
+
+                    
+
+                    <Border BorderBrush="#DFE4EA" 
+
+                            BorderThickness="2" 
+
+                            CornerRadius="8"
+
+                            Height="100" 
+
+                            Margin="0,0,0,15">
+
+                        <Grid>
+
+                            <!-- Background color layer -->
+
+                            <Rectangle x:Name="PreviewBackground" 
+
+                                       Fill="White"/>
+
+                            
+
+                            <!-- Pattern overlay layer -->
+
+                            <Rectangle x:Name="PreviewPattern" 
+
+                                       Fill="{x:Null}"/>
+
+                            
+
+                            <!-- Label overlay -->
+
+                            <TextBlock Text="Chọn màu và mẫu để xem trước" 
+
+                                       FontSize="11"
+
+                                       Foreground="#95A5A6"
+
+                                       HorizontalAlignment="Center"
+
+                                       VerticalAlignment="Center"
+
+                                       x:Name="PreviewHintText"/>
+
+                        </Grid>
+
+                    </Border>
+
+
+
+                    <!-- ✨ Step 2: Patterns -->
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+
+                        <Border Background="#667EEA"
+
+                                Width="24" Height="24"
+
+                                CornerRadius="12"
+
+                                Margin="0,0,8,0">
+
+                            <TextBlock Text="2"
+
+                                       Foreground="White"
+
+                                       FontSize="13"
+
+                                       FontWeight="Bold"
+
+                                       HorizontalAlignment="Center"
+
+                                       VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        
+
+                        <TextBlock Text="Chọn mẫu nền (tùy chọn)" 
+
+                                   FontSize="13" 
+
+                                   FontWeight="SemiBold" 
+
+                                   Foreground="#57606F"
+
+                                   VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
+                    
+
+                    <UniformGrid Columns="5" Rows="1">
+
+                        <!-- ✨ NEW: None Pattern -->
+
+                        <Button Height="65" Margin="4"
+
+                                Background="White"
+
+                                BorderBrush="#DFE4EA"
+
+                                BorderThickness="1"
+
+                                Cursor="Hand"
+
+                                Click="btnBackground_Click"
+
+                                Tag="None">
+
+                            <StackPanel>
+
+                                <Path Fill="#9E9E9E" 
+
+                                      Data="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z"
+
+                                      Width="32" Height="32"
+
+                                      Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Không mẫu" 
+
+                                           FontSize="10"
+
+                                           Foreground="#2F3542"
+
+                                           HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+                        
+
+                        <!-- Grid Pattern -->
+
+                        <Button Height="65" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="Grid">
+
+                            <StackPanel>
+
+                                <Path Fill="#2196F3" 
+
+                                     Data="M2,2V22H22V2H2M20,12H12V20H20V12M20,10V4H12V10H20M10,12H4V20H10V12M10,10V4H4V10H10Z"
+
+                                     Width="32" Height="32"
+
+                                     Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Lưới ô vuông" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- Lined Pattern -->
+
+                        <Button Height="65" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="Lines">
+
+                            <StackPanel>
+
+                                <Path Fill="#FF9800" 
+
+                                     Data="M2,6H22V8H2V6M2,10H22V12H2V10M2,14H22V16H2V14M2,18H22V20H2V18Z"
+
+                                     Width="32" Height="32"
+
+                                     Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Kẻ ngang" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- Music Staff -->
+
+                        <Button Height="65" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnBackground_Click"
+
+                               Tag="MusicStaff">
+
+                            <StackPanel>
+
+                                <Path Fill="#4CAF50" 
+
+                                     Data="M12,3V12.26C11.5,12.09 11,12 10.5,12C8,12 6,14 6,16.5C6,19 8,21 10.5,21C13,21 15,19 15,16.5V6H19V3H12Z"
+
+                                     Width="32" Height="32"
+
+                                     Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Nhạc lý" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <!-- ✨ NEW: Load Background Image Button -->
+
+                        <Button Height="65" Margin="4"
+
+                               Background="White"
+
+                               BorderBrush="#DFE4EA"
+
+                               BorderThickness="1"
+
+                               Cursor="Hand"
+
+                               Click="btnLoadBackgroundImage_Click">
+
+                            <StackPanel>
+
+                                <Path Fill="#2196F3" 
+
+                                     Data="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"
+
+                                     Width="32" Height="32"
+
+                                     Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Tải ảnh lên" 
+
+                                          FontSize="10"
+
+                                          Foreground="#2F3542"
+
+                                          HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+                    </UniformGrid>
+
+                    
+
+                    <!-- ✨ NEW: Line Spacing Control (only visible for Lines/MusicStaff patterns) -->
+
+                    <StackPanel x:Name="SpacingControl" 
+
+                                Visibility="Collapsed"
+
+                                Margin="0,15,0,0">
+
+                        <TextBlock Text="⚙️ Khoảng cách dòng kẻ:" 
+
+                                   FontSize="12"
+
+                                   FontWeight="Medium"
+
+                                   Foreground="#57606F"
+
+                                   Margin="0,0,0,8"/>
+
+                        
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            
+
+                            <Slider x:Name="LineSpacingSlider"
+
+                                    Grid.Column="0"
+
+                                    Minimum="20"
+
+                                    Maximum="300"
+
+                                    Value="40"
+
+                                    TickFrequency="10"
+
+                                    IsSnapToTickEnabled="True"
+
+                                    VerticalAlignment="Center"
+
+                                    ValueChanged="LineSpacingSlider_ValueChanged"/>
+
+                            
+
+                            <Border Grid.Column="1"
+
+                                    Background="#667EEA"
+
+                                    CornerRadius="4"
+
+                                    Padding="8,4"
+
+                                    Margin="10,0,0,0">
+
+                                <TextBlock x:Name="SpacingValueText"
+
+                                           Text="40px"
+
+                                           FontSize="12"
+
+                                           FontWeight="SemiBold"
+
+                                           Foreground="White"/>
+
+                            </Border>
+
+                        </Grid>
+
+                        
+
+                        <!-- ✨ NEW: Line Opacity Control -->
+
+                        <TextBlock Text="Độ đậm nhạt dòng kẻ:" 
+
+                                   FontSize="12"
+
+                                   FontWeight="Medium"
+
+                                   Foreground="#57606F"
+
+                                   Margin="0,15,0,8"/>
+
+                        
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            
+
+                            <Slider x:Name="LineOpacitySlider"
+
+                                    Grid.Column="0"
+
+                                    Minimum="10"
+
+                                    Maximum="100"
+
+                                    Value="10"
+
+                                    TickFrequency="5"
+
+                                    IsSnapToTickEnabled="True"
+
+                                    VerticalAlignment="Center"
+
+                                    ValueChanged="LineOpacitySlider_ValueChanged"/>
+
+                            
+
+                            <Border Grid.Column="1"
+
+                                    Background="#764BA2"
+
+                                    CornerRadius="4"
+
+                                    Padding="8,4"
+
+                                    Margin="10,0,0,0">
+
+                                <TextBlock x:Name="OpacityValueText"
+
+                                           Text="10%"
+
+                                           FontSize="12"
+
+                                           FontWeight="SemiBold"
+
+                                           Foreground="White"/>
+
+                            </Border>
+
+                        </Grid>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+            <!-- ✨ ACTIONS - Updated with Set Default button -->
+
+            <Grid Grid.Row="3" Margin="0,15,0,0">
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+                
+
+                <!-- Left side buttons -->
+
+                <StackPanel Grid.Column="0" 
+
+                            Orientation="Horizontal" 
+
+                            HorizontalAlignment="Left">
+
+                    <Button Content="Hủy" 
+
+                            Width="100" Height="40"
+
+                            Margin="0,0,10,0"
+
+                            Background="#F1F2F6"
+
+                            Foreground="#2F3542"
+
+                            BorderThickness="0"
+
+                            FontSize="13"
+
+                            FontWeight="SemiBold"
+
+                            Cursor="Hand"
+
+                            Click="btnClose_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="{TemplateBinding Background}" 
+
+                                        CornerRadius="8"
+
+                                        Padding="15,10">
+
+                                    <ContentPresenter HorizontalAlignment="Center" 
+
+                                                    VerticalAlignment="Center"/>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                    
+
+                    <!-- ✨ NEW: Set Default button -->
+
+                    <Button x:Name="btnSetDefault"
+
+                            Content="⭐ Đặt mặc định" 
+
+                            Width="130" Height="40"
+
+                            Background="White"
+
+                            Foreground="#667EEA"
+
+                            BorderBrush="#667EEA"
+
+                            BorderThickness="2"
+
+                            FontSize="13"
+
+                            FontWeight="SemiBold"
+
+                            Cursor="Hand"
+
+                            Click="btnSetDefault_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="{TemplateBinding Background}"
+
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+
+                                        CornerRadius="8"
+
+                                        Padding="15,10">
+
+                                    <ContentPresenter HorizontalAlignment="Center"
+
+                                                    VerticalAlignment="Center"/>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                        <Button.Style>
+
+                            <Style TargetType="Button">
+
+                                <Style.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter Property="Background" Value="#F8F9FF"/>
+
+                                    </Trigger>
+
+                                </Style.Triggers>
+
+                            </Style>
+
+                        </Button.Style>
+
+                    </Button>
+
+                </StackPanel>
+
+                
+
+                <!-- Right side button -->
+
+                <Button x:Name="btnApply"
+
+                        Grid.Column="1"
+
+                        Content="✓ Áp dụng" 
+
+                        Width="100" Height="40"
+
+                        Background="#667EEA"
+
+                        Foreground="White"
+
+                        BorderThickness="0"
+
+                        FontSize="13"
+
+                        FontWeight="SemiBold"
+
+                        Cursor="Hand"
+
+                        Click="btnApply_Click">
+
+                    <Button.Template>
+
+                        <ControlTemplate TargetType="Button">
+
+                            <Border Background="{TemplateBinding Background}" 
+
+                                    CornerRadius="8"
+
+                                    Padding="15,10">
+
+                                <ContentPresenter HorizontalAlignment="Center" 
+
+                                                VerticalAlignment="Center"/>
+
+                            </Border>
+
+                        </ControlTemplate>
+
+                    </Button.Template>
+
+                </Button>
+
+            </Grid>
+
+
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

@@ -1,0 +1,1260 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
+using QASmartClass.LearningTools.Models;
+
+namespace QASmartClass.LearningTools.Helpers
+{
+    public class UserProgress
+    {
+        public int Id { get; set; }
+        public string GameName { get; set; } = "";
+        public int Score { get; set; }
+        public int Total { get; set; }
+        public double DurationSeconds { get; set; }
+        public string Difficulty { get; set; } = "";
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public int IsEndless { get; set; }
+    }
+
+    public class CustomTimelineEvent
+    {
+        public int Id { get; set; }
+        public int Year { get; set; }
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Category { get; set; } = "vietnam";
+        public string Detail { get; set; } = "";
+        public string Figures { get; set; } = "";
+        public string Significance { get; set; } = "";
+    }
+
+    public class StemFormula
+    {
+        public int Id { get; set; }
+        public string Category { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Formula { get; set; } = "";
+        public string Description { get; set; } = "";
+    }
+
+    public class StemConstant
+    {
+        public int Id { get; set; }
+        public string Symbol { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Value { get; set; } = "";
+        public string Unit { get; set; } = "";
+        public string ColorHex { get; set; } = "";
+        public string CopyValue { get; set; } = "";
+    }
+
+    public class StemPreset
+    {
+        public int Id { get; set; }
+        public string TabName { get; set; } = "";
+        public string GroupName { get; set; } = "";
+        public string Label { get; set; } = "";
+        public string Expression { get; set; } = "";
+    }
+
+    public static class DbManager
+    {
+        private static readonly string DbPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "QASmartClass", "smartclass.db");
+
+        private static readonly string ConnectionString = $"Data Source={DbPath};Default Timeout=5;";
+
+        static DbManager()
+        {
+            try
+            {
+                string dir = Path.GetDirectoryName(DbPath);
+                if (dir != null && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                using (var conn = OpenConnection())
+                {
+                    string sql = @"CREATE TABLE IF NOT EXISTS UserProgress (
+                                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    GameName TEXT,
+                                    Score INTEGER,
+                                    Total INTEGER,
+                                    DurationSeconds REAL,
+                                    Difficulty TEXT,
+                                    CreatedAt TEXT)";
+                    using (var cmd = new SqliteCommand(sql, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlPending = @"CREATE TABLE IF NOT EXISTS PendingSync (
+                                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                            GameName TEXT,
+                                            Score INTEGER,
+                                            Total INTEGER,
+                                            DurationSeconds REAL,
+                                            Difficulty TEXT,
+                                            CreatedAt TEXT,
+                                            IsEndless INTEGER DEFAULT 0)";
+                    using (var cmd = new SqliteCommand(sqlPending, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlWorkplace = @"CREATE TABLE IF NOT EXISTS WorkplaceState (
+                                            ToolId TEXT PRIMARY KEY,
+                                            StateJson TEXT,
+                                            UpdatedAt TEXT)";
+                    using (var cmd = new SqliteCommand(sqlWorkplace, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlFiveSHistory = @"CREATE TABLE IF NOT EXISTS five_s_history (
+                                                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                Subject TEXT,
+                                                TotalScore REAL,
+                                                ScoresJson TEXT,
+                                                CreatedAt TEXT)";
+                    using (var cmd = new SqliteCommand(sqlFiveSHistory, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlFormulaFav = @"CREATE TABLE IF NOT EXISTS FormulaFavorites (
+                                                FormulaName TEXT PRIMARY KEY)";
+                    using (var cmd = new SqliteCommand(sqlFormulaFav, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlFormulaStats = @"CREATE TABLE IF NOT EXISTS FormulaStats (
+                                                FormulaName TEXT PRIMARY KEY,
+                                                ViewCount INTEGER DEFAULT 0)";
+                    using (var cmd = new SqliteCommand(sqlFormulaStats, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlFormulaNotes = @"CREATE TABLE IF NOT EXISTS FormulaTeacherNotes (
+                                                FormulaName TEXT PRIMARY KEY,
+                                                NoteText TEXT)";
+                    using (var cmd = new SqliteCommand(sqlFormulaNotes, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlCalcHistory = @"CREATE TABLE IF NOT EXISTS CalculatorHistory (
+                                                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                Expression TEXT,
+                                                Result TEXT,
+                                                CreatedAt TEXT)";
+                    using (var cmd = new SqliteCommand(sqlCalcHistory, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Automatic schema migration: check and add IsEndless column if it does not exist
+                    bool hasIsEndless = false;
+                    using (var cmd = new SqliteCommand("PRAGMA table_info(UserProgress)", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string colName = reader["name"]?.ToString() ?? "";
+                            if (colName.Equals("IsEndless", StringComparison.OrdinalIgnoreCase))
+                            {
+                                hasIsEndless = true;
+                                break;
+                             }
+                        }
+                    }
+                    if (!hasIsEndless)
+                    {
+                        using (var cmd = new SqliteCommand("ALTER TABLE UserProgress ADD COLUMN IsEndless INTEGER DEFAULT 0", conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    // Create index for better search performance
+                    using (var cmd = new SqliteCommand("CREATE INDEX IF NOT EXISTS IX_UserProgress_Game_Score ON UserProgress (GameName, Score DESC, DurationSeconds ASC)", conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlTimeline = @"CREATE TABLE IF NOT EXISTS CustomTimelineEvents (
+                                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                            Year INTEGER NOT NULL,
+                                            Title TEXT NOT NULL,
+                                            Description TEXT,
+                                            Category TEXT,
+                                            Detail TEXT,
+                                            Figures TEXT,
+                                            Significance TEXT)";
+                    using (var cmd = new SqliteCommand(sqlTimeline, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlDynasties = @"CREATE TABLE IF NOT EXISTS HistoricalDynasties (
+                                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                            Category TEXT NOT NULL,
+                                            NameVi TEXT NOT NULL,
+                                            NameEn TEXT NOT NULL,
+                                            Period TEXT NOT NULL,
+                                            DetailIcon TEXT DEFAULT '👤',
+                                            DetailVi TEXT NOT NULL,
+                                            DetailEn TEXT NOT NULL,
+                                            EventsVi TEXT NOT NULL,
+                                            EventsEn TEXT NOT NULL,
+                                            DisplayOrder INTEGER DEFAULT 0)";
+                    using (var cmd = new SqliteCommand(sqlDynasties, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlFormulas = @"CREATE TABLE IF NOT EXISTS StemFormulas (
+                                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                            Category TEXT NOT NULL,
+                                            Name TEXT NOT NULL,
+                                            Formula TEXT NOT NULL,
+                                            Description TEXT)";
+                    using (var cmd = new SqliteCommand(sqlFormulas, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlConstants = @"CREATE TABLE IF NOT EXISTS StemConstants (
+                                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                            Symbol TEXT NOT NULL,
+                                            Name TEXT NOT NULL,
+                                            Value TEXT NOT NULL,
+                                            Unit TEXT,
+                                            ColorHex TEXT,
+                                            CopyValue TEXT NOT NULL)";
+                    using (var cmd = new SqliteCommand(sqlConstants, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sqlPresets = @"CREATE TABLE IF NOT EXISTS StemPresets (
+                                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                            TabName TEXT NOT NULL,
+                                            GroupName TEXT NOT NULL,
+                                            Label TEXT NOT NULL,
+                                            Expression TEXT NOT NULL)";
+                    using (var cmd = new SqliteCommand(sqlPresets, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    SeedHistoricalDynasties(conn);
+                    SeedStemFormulas(conn);
+                    // Sửa ký hiệu Công suất thành P = A / t cho các CSDL đã khởi tạo
+                    using (var cmdUpdate = new SqliteCommand("UPDATE StemFormulas SET Formula = 'P = A / t', Description = 'A: công, t: thời gian' WHERE Formula = 'P = W / t' AND Name = 'Công suất';", conn))
+                    {
+                        cmdUpdate.ExecuteNonQuery();
+                    }
+                    SeedStemConstants(conn);
+                    SeedStemPresets(conn);
+                }
+            }
+            catch
+            {
+                // Tránh đổ bể nếu không khởi tạo được database cục bộ
+            }
+        }
+
+        public static void Initialize()
+        {
+            // Trình kích hoạt hàm khởi tạo tĩnh (Static Constructor trigger)
+        }
+
+        private static readonly object DbLock = new object();
+
+        private static SqliteConnection OpenConnection()
+        {
+            var conn = new SqliteConnection(ConnectionString);
+            conn.Open();
+            try
+            {
+                using (var cmd = new SqliteCommand("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;", conn))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch
+            {
+                // Swallowing PRAGMA failures
+            }
+            return conn;
+        }
+
+
+        public static void SaveProgress(UserProgress progress)
+        {
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = @"INSERT INTO UserProgress (GameName, Score, Total, DurationSeconds, Difficulty, CreatedAt, IsEndless)
+                                       VALUES (@Game, @Score, @Total, @Dur, @Diff, @Time, @Endless)";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Game", progress.GameName);
+                            cmd.Parameters.AddWithValue("@Score", progress.Score);
+                            cmd.Parameters.AddWithValue("@Total", progress.Total);
+                            cmd.Parameters.AddWithValue("@Dur", progress.DurationSeconds);
+                            cmd.Parameters.AddWithValue("@Diff", progress.Difficulty);
+                            cmd.Parameters.AddWithValue("@Time", progress.CreatedAt.ToString("o"));
+                            cmd.Parameters.AddWithValue("@Endless", progress.IsEndless);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch
+                {
+                    // Swallowing write failures (e.g. file lock or permissions)
+                }
+            }
+        }
+
+        public static List<UserProgress> GetTopProgress(string gameName, int limit, int isEndless = 0)
+        {
+            var list = new List<UserProgress>();
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = @"SELECT Id, GameName, Score, Total, DurationSeconds, Difficulty, CreatedAt, IsEndless 
+                                       FROM UserProgress 
+                                       WHERE GameName = @Game AND IsEndless = @IsEndless
+                                       ORDER BY Score DESC, DurationSeconds ASC 
+                                       LIMIT @Limit";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Game", gameName);
+                            cmd.Parameters.AddWithValue("@IsEndless", isEndless);
+                            cmd.Parameters.AddWithValue("@Limit", limit);
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var item = new UserProgress
+                                    {
+                                        Id = Convert.ToInt32(reader["Id"]),
+                                        GameName = reader["GameName"]?.ToString() ?? "",
+                                        Score = Convert.ToInt32(reader["Score"]),
+                                        Total = Convert.ToInt32(reader["Total"]),
+                                        DurationSeconds = Convert.ToDouble(reader["DurationSeconds"]),
+                                        Difficulty = reader["Difficulty"]?.ToString() ?? "",
+                                        IsEndless = Convert.ToInt32(reader["IsEndless"] ?? 0)
+                                    };
+                                    if (DateTime.TryParse(reader["CreatedAt"]?.ToString(), out DateTime dt))
+                                    {
+                                        item.CreatedAt = dt;
+                                    }
+                                    list.Add(item);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Swallowing read failures
+                }
+            }
+            return list;
+        }
+
+        public static List<UserProgress> GetAllProgress(string gameName)
+        {
+            var list = new List<UserProgress>();
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = @"SELECT Id, GameName, Score, Total, DurationSeconds, Difficulty, CreatedAt, IsEndless 
+                                       FROM UserProgress 
+                                       WHERE GameName = @Game 
+                                       ORDER BY CreatedAt DESC";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Game", gameName);
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var item = new UserProgress
+                                    {
+                                        Id = Convert.ToInt32(reader["Id"]),
+                                        GameName = reader["GameName"]?.ToString() ?? "",
+                                        Score = Convert.ToInt32(reader["Score"]),
+                                        Total = Convert.ToInt32(reader["Total"]),
+                                        DurationSeconds = Convert.ToDouble(reader["DurationSeconds"]),
+                                        Difficulty = reader["Difficulty"]?.ToString() ?? "",
+                                        IsEndless = Convert.ToInt32(reader["IsEndless"] ?? 0)
+                                    };
+                                    if (DateTime.TryParse(reader["CreatedAt"]?.ToString(), out DateTime dt))
+                                    {
+                                        item.CreatedAt = dt;
+                                    }
+                                    list.Add(item);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Swallowing read failures
+                }
+            }
+            return list;
+        }
+
+        public static void SavePendingSync(UserProgress progress)
+        {
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = @"INSERT INTO PendingSync (GameName, Score, Total, DurationSeconds, Difficulty, CreatedAt, IsEndless)
+                                       VALUES (@Game, @Score, @Total, @Dur, @Diff, @Time, @Endless)";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Game", progress.GameName);
+                            cmd.Parameters.AddWithValue("@Score", progress.Score);
+                            cmd.Parameters.AddWithValue("@Total", progress.Total);
+                            cmd.Parameters.AddWithValue("@Dur", progress.DurationSeconds);
+                            cmd.Parameters.AddWithValue("@Diff", progress.Difficulty);
+                            cmd.Parameters.AddWithValue("@Time", progress.CreatedAt.ToString("o"));
+                            cmd.Parameters.AddWithValue("@Endless", progress.IsEndless);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch
+                {
+                    // Swallowing write failures
+                }
+            }
+        }
+
+        public static System.Collections.Generic.List<UserProgress> GetPendingSyncs()
+        {
+            var list = new System.Collections.Generic.List<UserProgress>();
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = @"SELECT Id, GameName, Score, Total, DurationSeconds, Difficulty, CreatedAt, IsEndless FROM PendingSync";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var item = new UserProgress
+                                    {
+                                        Id = Convert.ToInt32(reader["Id"]),
+                                        GameName = reader["GameName"]?.ToString() ?? "",
+                                        Score = Convert.ToInt32(reader["Score"]),
+                                        Total = Convert.ToInt32(reader["Total"]),
+                                        DurationSeconds = Convert.ToDouble(reader["DurationSeconds"]),
+                                        Difficulty = reader["Difficulty"]?.ToString() ?? "",
+                                        IsEndless = Convert.ToInt32(reader["IsEndless"] ?? 0)
+                                    };
+                                    if (DateTime.TryParse(reader["CreatedAt"]?.ToString(), out DateTime dt))
+                                    {
+                                        item.CreatedAt = dt;
+                                    }
+                                    list.Add(item);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Swallowing read failures
+                }
+            }
+            return list;
+        }
+
+        public static void DeletePendingSync(int id)
+        {
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = "DELETE FROM PendingSync WHERE Id = @Id";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Id", id);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch
+                {
+                    // Swallowing delete failures
+                }
+            }
+        }
+
+        public static void SaveFiveSHistory(string subject, double totalScore, string scoresJson)
+        {
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = @"INSERT INTO five_s_history (Subject, TotalScore, ScoresJson, CreatedAt)
+                                       VALUES (@Subj, @Total, @Scores, @Time)";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Subj", subject);
+                            cmd.Parameters.AddWithValue("@Total", totalScore);
+                            cmd.Parameters.AddWithValue("@Scores", scoresJson);
+                            cmd.Parameters.AddWithValue("@Time", DateTime.Now.ToString("o"));
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch
+                {
+                    // Swallowing write failures
+                }
+            }
+        }
+
+        public static void SaveWorkplaceState(string toolId, string stateJson)
+        {
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = @"REPLACE INTO WorkplaceState (ToolId, StateJson, UpdatedAt)
+                                       VALUES (@ToolId, @StateJson, @UpdatedAt)";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@ToolId", toolId);
+                            cmd.Parameters.AddWithValue("@StateJson", stateJson);
+                            cmd.Parameters.AddWithValue("@UpdatedAt", DateTime.Now.ToString("o"));
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch
+                {
+                    // Swallowing write failures
+                }
+            }
+        }
+
+        public static string LoadWorkplaceState(string toolId)
+        {
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = "SELECT StateJson FROM WorkplaceState WHERE ToolId = @ToolId";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@ToolId", toolId);
+                            object result = cmd.ExecuteScalar();
+                            return result?.ToString() ?? "";
+                        }
+                    }
+                }
+                catch
+                {
+                    return "";
+                }
+            }
+        }
+
+        public static void SaveCustomTimelineEvent(int year, string title, string description, string category, string detail, string figures, string significance)
+        {
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = @"INSERT INTO CustomTimelineEvents (Year, Title, Description, Category, Detail, Figures, Significance)
+                                       VALUES (@Year, @Title, @Desc, @Cat, @Detail, @Figures, @Sig)";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Year", year);
+                            cmd.Parameters.AddWithValue("@Title", title);
+                            cmd.Parameters.AddWithValue("@Desc", description);
+                            cmd.Parameters.AddWithValue("@Cat", category);
+                            cmd.Parameters.AddWithValue("@Detail", detail);
+                            cmd.Parameters.AddWithValue("@Figures", figures);
+                            cmd.Parameters.AddWithValue("@Sig", significance);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error("Failed to save custom timeline event: {Err}", ex.Message);
+                }
+            }
+        }
+
+        public static System.Collections.Generic.List<CustomTimelineEvent> GetCustomTimelineEvents()
+        {
+            var list = new System.Collections.Generic.List<CustomTimelineEvent>();
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = @"SELECT Id, Year, Title, Description, Category, Detail, Figures, Significance 
+                                       FROM CustomTimelineEvents 
+                                       ORDER BY Year ASC";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    list.Add(new CustomTimelineEvent
+                                    {
+                                        Id = reader.GetInt32(0),
+                                        Year = reader.GetInt32(1),
+                                        Title = reader.GetString(2),
+                                        Description = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                                        Category = reader.IsDBNull(4) ? "vietnam" : reader.GetString(4),
+                                        Detail = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                                        Figures = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                                        Significance = reader.IsDBNull(7) ? "" : reader.GetString(7)
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error("Failed to get custom timeline events: {Err}", ex.Message);
+                }
+            }
+            return list;
+        }
+
+        public static void ClearAllCustomTimelineEvents()
+        {
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = "DELETE FROM CustomTimelineEvents";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error("Failed to clear custom timeline events: {Err}", ex.Message);
+                }
+            }
+        }
+
+        public static System.Collections.Generic.List<HistoricalDynasty> GetHistoricalDynasties()
+        {
+            var list = new System.Collections.Generic.List<HistoricalDynasty>();
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = @"SELECT Id, Category, NameVi, NameEn, Period, DetailIcon, DetailVi, DetailEn, EventsVi, EventsEn, DisplayOrder 
+                                       FROM HistoricalDynasties 
+                                       ORDER BY DisplayOrder ASC";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    list.Add(new HistoricalDynasty
+                                    {
+                                        Id = reader.GetInt32(0),
+                                        Category = reader.GetString(1),
+                                        NameVi = reader.GetString(2),
+                                        NameEn = reader.GetString(3),
+                                        Period = reader.GetString(4),
+                                        DetailIcon = reader.IsDBNull(5) ? "👤" : reader.GetString(5),
+                                        DetailVi = reader.GetString(6),
+                                        DetailEn = reader.GetString(7),
+                                        EventsVi = reader.GetString(8),
+                                        EventsEn = reader.GetString(9),
+                                        DisplayOrder = reader.GetInt32(10)
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error("Failed to get historical dynasties: {Err}", ex.Message);
+                }
+            }
+            return list;
+        }
+
+        private static void SeedHistoricalDynasties(SqliteConnection conn)
+        {
+            long count = 0;
+            using (var cmd = new SqliteCommand("SELECT COUNT(*) FROM HistoricalDynasties", conn))
+            {
+                count = (long)(cmd.ExecuteScalar() ?? 0L);
+            }
+            if (count > 0) return;
+
+            var list = new (string Category, string NameVi, string NameEn, string Period, string Icon, string DetailVi, string DetailEn, string EventsVi, string EventsEn, int Order)[]
+            {
+                // VN Dynasties
+                ("Vietnam", "Hồng Bàng", "Hong Bang era", "2879 TCN – 258 TCN", "👤", "Kinh Dương Vương", "Kinh Duong Vuong", "Thời Hùng Vương, nước Văn Lang sơ khai", "Vang Lang nation, Hung Kings period", 1),
+                ("Vietnam", "Thục", "Thuc dynasty", "257 TCN – 207 TCN", "👤", "An Dương Vương", "An Duong Vuong", "Nước Âu Lạc, xây dựng thành Cổ Loa chống Triệu", "Au Lac nation, Co Loa citadel construction", 2),
+                ("Vietnam", "Triệu", "Trieu dynasty", "207 TCN – 111 TCN", "👤", "Triệu Đà", "Zhao Tuo", "Nước Nam Việt, đối đầu với nhà Hán", "Nam Viet nation, conflict with Han dynasty", 3),
+                ("Vietnam", "Bắc thuộc lần 1-2", "First & Second Chinese Domination", "111 TCN – 543", "👤", "—", "—", "Khởi nghĩa Hai Bà Trưng (40-43), Bà Triệu (248)", "Trung Sisters rebellion (40-43), Lady Trieu uprising (248)", 4),
+                ("Vietnam", "Tiền Lý (Vạn Xuân)", "Early Ly dynasty", "544 – 602", "👤", "Lý Nam Đế", "Ly Nam De", "Lý Bí khởi nghĩa lập nước Vạn Xuân, chùa Trấn Quốc", "Ly Bi established Van Xuan, Tran Quoc Pagoda built", 5),
+                ("Vietnam", "Bắc thuộc lần 3", "Third Chinese Domination", "602 – 905", "👤", "—", "—", "Khởi nghĩa Mai Thúc Loan (722), Phùng Hưng (791)", "Mai Thuc Loan (722) and Phung Hung (791) rebellions", 6),
+                ("Vietnam", "Họ Khúc (Tự chủ)", "Khuc family", "905 – 930", "👤", "Khúc Thừa Dụ", "Khuc Thua Du", "Giành quyền tự chủ, Khúc Hạo cải cách hành chính", "Achieved autonomy, Khuc Hao administrative reforms", 7),
+                ("Vietnam", "Dương Đình Nghệ", "Duong Dinh Nghe rule", "931 – 937", "👤", "Dương Đình Nghệ", "Duong Dinh Nghe", "Đánh bại quân Nam Hán bảo vệ nền tự chủ", "Defeated Southern Han to protect autonomy", 8),
+                ("Vietnam", "Ngô", "Ngo dynasty", "939 – 965", "👤", "Ngô Quyền", "Ngo Quyen", "Chiến thắng Bạch Đằng 938, xưng vương mở nền độc lập", "Victory of Bach Dang River 938, declared king", 9),
+                ("Vietnam", "Đinh", "Dinh dynasty", "968 – 980", "👤", "Đinh Bộ Lĩnh", "Dinh Bo Linh", "Dẹp loạn 12 sứ quân, lập nước Đại Cồ Việt", "Pacified 12 warlords, established Dai Co Viet", 10),
+                ("Vietnam", "Tiền Lê", "Early Le dynasty", "980 – 1009", "👤", "Lê Hoàn", "Le Hoan", "Đánh thắng quân Tống xâm lược lần 1 (981)", "Defeated the first Song invasion (981)", 11),
+                ("Vietnam", "Lý", "Ly dynasty", "1009 – 1225", "👤", "Lý Công Uẩn", "Ly Cong Uan", "Dời đô Thăng Long (1010), xây Văn Miếu", "Relocated capital to Thang Long (1010), Van Mieu", 12),
+                ("Vietnam", "Trần", "Tran dynasty", "1225 – 1400", "👤", "Trần Cảnh", "Tran Canh", "Ba lần đánh bại quân Nguyên Mông xâm lược", "Three times defeated the Mongol invasions", 13),
+                ("Vietnam", "Hồ", "Ho dynasty", "1400 – 1407", "👤", "Hồ Quý Ly", "Ho Quy Ly", "Cải cách hành chính, phát hành tiền giấy đầu tiên", "Administrative reforms, first paper money printed", 14),
+                ("Vietnam", "Bắc thuộc lần 4 & Hậu Trần", "Fourth Domination & Later Tran", "1407 – 1427", "👤", "Giản Định Đế & Lê Lợi", "Jian Ding De & Le Loi", "Nhà Minh cai trị, khởi nghĩa Hậu Trần, khởi nghĩa Lam Sơn", "Ming domination, Later Tran uprising, Lam Son uprising", 15),
+                ("Vietnam", "Lê sơ", "Later Le (Early period)", "1428 – 1527", "👤", "Lê Lợi", "Le Loi", "Phục hưng đất nước, thời kỳ hoàng kim Lê Thánh Tông", "Nation reconstruction, golden age of Le Thanh Tong", 16),
+                ("Vietnam", "Mạc", "Mac dynasty", "1527 – 1677", "👤", "Mạc Đăng Dung", "Mac Dang Dung", "Thời kỳ Nam Bắc Triều chiến tranh", "Northern and Southern Dynasties civil war", 17),
+                ("Vietnam", "Lê trung hưng", "Later Le (Restored period)", "1533 – 1789", "👤", "Lê Trang Tông", "Le Trang Tong", "Trịnh–Nguyễn phân tranh, chia cắt Đàng Trong/Ngoài", "Trinh-Nguyen conflict, division of Dang Trong/Ngoai", 18),
+                ("Vietnam", "Tây Sơn", "Tay Son dynasty", "1778 – 1802", "👤", "Nguyễn Nhạc", "Nguyen Nhac", "Quang Trung đại phá quân Thanh (1789), đánh bại quân Xiêm (1785)", "Quang Trung defeated Qing (1789) and Siamese (1785)", 19),
+                ("Vietnam", "Nguyễn", "Nguyen dynasty", "1802 – 1945", "👤", "Gia Long", "Gia Long", "Triều đại cuối cùng, thống nhất lãnh thổ, kinh đô Huế", "Final dynasty, unified territory, Hue capital", 20),
+
+                // World Dynasties
+                ("World", "Pharaoh Ai Cập", "Egyptian Pharaohs", "3100 TCN – 30 TCN", "🌍", "Ai Cập", "Egypt", "Xây dựng Kim tự tháp, tượng Nhân sư", "Pyramids and Great Sphinx construction", 21),
+                ("World", "Đế quốc La Mã", "Roman Empire", "27 TCN – 476", "🌍", "La Mã", "Rome", "Đấu trường Colosseum, đặt nền móng luật pháp phương Tây", "Colosseum, laid foundation of Western law", 22),
+                ("World", "Nhà Tần & Nhà Hán", "Qin & Han Dynasties", "221 TCN – 220 CN", "🌍", "Trung Quốc", "China", "Thống nhất Trung Hoa, Vạn Lý Trường Thành, con đường Tơ Lụa", "Unified China, Great Wall, Silk Road", 23),
+                ("World", "Đế quốc Byzantine", "Byzantine Empire", "395 – 1453", "🌍", "Đông La Mã", "Eastern Roman", "Cầu nối văn hóa Đông - Tây, Thánh đường Hagia Sophia", "East-West culture bridge, Hagia Sophia construction", 24),
+                ("World", "Nhà Đường", "Tang Dynasty", "618 – 907", "🌍", "Trung Quốc", "China", "Thời kỳ hoàng kim văn hóa, nghệ thuật Trung Hoa", "Golden age of Chinese culture and arts", 25),
+                ("World", "Đế chế Mông Cổ", "Mongol Empire", "1206 – 1368", "🌍", "Mông Cổ", "Mongolia", "Thành Cát Tư Hãn, đế quốc lục địa rộng lớn nhất", "Genghis Khan, largest contiguous land empire", 26),
+                ("World", "Đế quốc Ottoman", "Ottoman Empire", "1299 – 1922", "🌍", "Thổ Nhĩ Kỳ", "Turkey", "Đánh chiếm Constantinople năm 1453, kiểm soát Á-Âu", "Captured Constantinople in 1453, Afro-Eurasia control", 27),
+                ("World", "Vương triều Mughal", "Mughal Empire", "1526 – 1857", "🌍", "Ấn Độ", "India", "Nghệ thuật kiến trúc Hồi giáo phát triển, đền Taj Mahal", "Islamic architecture flourishing, Taj Mahal built", 28),
+                ("World", "Nhà Minh", "Ming Dynasty", "1368 – 1644", "🌍", "Trung Quốc", "China", "Tử Cấm Thành, phục dựng Vạn Lý Trường Thành", "Forbidden City, restored Great Wall of China", 29),
+                ("World", "Đế quốc Anh", "British Empire", "1583 – 1997", "🌍", "Vương quốc Anh", "United Kingdom", "Đế quốc mặt trời không bao giờ lặn, cách mạng công nghiệp", "The empire on which the sun never sets, industrial revolution", 30),
+                ("World", "Nhật Bản thời Minh Trị", "Meiji Era Japan", "1868 – 1912", "🌍", "Nhật Bản", "Japan", "Cải cách Minh Trị duy tân, hiện đại hóa đất nước", "Meiji Restoration, modernized Japan", 31),
+                ("World", "Nhà Thanh", "Qing Dynasty", "1644 – 1912", "🌍", "Trung Quốc", "China", "Triều đại phong kiến cuối cùng Trung Hoa, mở rộng lãnh thổ tối đa", "Final imperial dynasty of China, maximum territory expansion", 32)
+            };
+
+            using (var tx = conn.BeginTransaction())
+            {
+                try
+                {
+                    string sql = @"INSERT INTO HistoricalDynasties (Category, NameVi, NameEn, Period, DetailIcon, DetailVi, DetailEn, EventsVi, EventsEn, DisplayOrder)
+                                   VALUES (@Cat, @NameVi, @NameEn, @Period, @Icon, @DetailVi, @DetailEn, @EventsVi, @EventsEn, @Order)";
+                    using (var cmd = new SqliteCommand(sql, conn, tx))
+                    {
+                        foreach (var d in list)
+                        {
+                            cmd.Parameters.Clear();
+                            cmd.Parameters.AddWithValue("@Cat", d.Category);
+                            cmd.Parameters.AddWithValue("@NameVi", d.NameVi);
+                            cmd.Parameters.AddWithValue("@NameEn", d.NameEn);
+                            cmd.Parameters.AddWithValue("@Period", d.Period);
+                            cmd.Parameters.AddWithValue("@Icon", d.Icon);
+                            cmd.Parameters.AddWithValue("@DetailVi", d.DetailVi);
+                            cmd.Parameters.AddWithValue("@DetailEn", d.DetailEn);
+                            cmd.Parameters.AddWithValue("@EventsVi", d.EventsVi);
+                            cmd.Parameters.AddWithValue("@EventsEn", d.EventsEn);
+                            cmd.Parameters.AddWithValue("@Order", d.Order);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    tx.Commit();
+                }
+                catch (Exception ex)
+                {
+                    tx.Rollback();
+                    Serilog.Log.Error("Failed to seed historical dynasties: {Err}", ex.Message);
+                }
+            }
+        }
+
+        public static System.Collections.Generic.List<StemFormula> GetStemFormulas(string category)
+        {
+            var list = new System.Collections.Generic.List<StemFormula>();
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = "SELECT Id, Category, Name, Formula, Description FROM StemFormulas WHERE Category = @Cat ORDER BY Id ASC";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Cat", category);
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    list.Add(new StemFormula
+                                    {
+                                        Id = reader.GetInt32(0),
+                                        Category = reader.GetString(1),
+                                        Name = reader.GetString(2),
+                                        Formula = reader.GetString(3),
+                                        Description = reader.IsDBNull(4) ? "" : reader.GetString(4)
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error("Failed to get STEM formulas: {Err}", ex.Message);
+                }
+            }
+            return list;
+        }
+
+        public static System.Collections.Generic.List<StemConstant> GetStemConstants()
+        {
+            var list = new System.Collections.Generic.List<StemConstant>();
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = "SELECT Id, Symbol, Name, Value, Unit, ColorHex, CopyValue FROM StemConstants ORDER BY Id ASC";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    list.Add(new StemConstant
+                                    {
+                                        Id = reader.GetInt32(0),
+                                        Symbol = reader.GetString(1),
+                                        Name = reader.GetString(2),
+                                        Value = reader.GetString(3),
+                                        Unit = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                                        ColorHex = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                                        CopyValue = reader.GetString(6)
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error("Failed to get STEM constants: {Err}", ex.Message);
+                }
+            }
+            return list;
+        }
+
+        public static System.Collections.Generic.List<StemPreset> GetStemPresets(string tabName)
+        {
+            var list = new System.Collections.Generic.List<StemPreset>();
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = "SELECT Id, TabName, GroupName, Label, Expression FROM StemPresets WHERE TabName = @Tab ORDER BY Id ASC";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Tab", tabName);
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    list.Add(new StemPreset
+                                    {
+                                        Id = reader.GetInt32(0),
+                                        TabName = reader.GetString(1),
+                                        GroupName = reader.GetString(2),
+                                        Label = reader.GetString(3),
+                                        Expression = reader.GetString(4)
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error("Failed to get STEM presets: {Err}", ex.Message);
+                }
+            }
+            return list;
+        }
+
+        private static void SeedStemFormulas(SqliteConnection conn)
+        {
+            long count = 0;
+            using (var cmd = new SqliteCommand("SELECT COUNT(*) FROM StemFormulas", conn))
+            {
+                count = (long)(cmd.ExecuteScalar() ?? 0L);
+            }
+            if (count > 0) return;
+
+            var list = new (string Category, string Name, string Formula, string Description)[]
+            {
+                ("Physics", "Vận tốc", "v = s / t", "v: vận tốc, s: quãng đường, t: thời gian"),
+                ("Physics", "Gia tốc", "a = (v - v₀) / t", "a: gia tốc, v: vận tốc sau, v₀: vận tốc đầu, t: thời gian"),
+                ("Physics", "Lực", "F = m × a", "Định luật II Newton"),
+                ("Physics", "Trọng lực", "P = m × g", "P: trọng lực, g ≈ 9.8 m/s²"),
+                ("Physics", "Động năng", "Wđ = ½mv²", "m: khối lượng, v: vận tốc"),
+                ("Physics", "Thế năng", "Wt = mgh", "h: độ cao so với gốc"),
+                ("Physics", "Công suất", "P = A / t", "A: công, t: thời gian"),
+                ("Physics", "Điện trở", "R = U / I", "Định luật Ohm"),
+                ("Physics", "Công suất điện", "P = U × I", "U: hiệu điện thế, I: cường độ"),
+                ("Physics", "Tần số", "f = 1 / T", "T: chu kỳ"),
+                ("Physics", "Bước sóng", "λ = v / f", "v: tốc độ sóng, f: tần số"),
+                ("Physics", "Năng lượng photon", "E = h × f", "h: hằng số Planck"),
+
+                ("Chemistry", "Số mol", "n = m / M", "m: khối lượng, M: khối lượng mol"),
+                ("Chemistry", "Nồng độ mol", "CM = n / V", "n: số mol, V: thể tích (lít)"),
+                ("Chemistry", "Nồng độ %", "C% = mct/mdd × 100%", "mct: chất tan, mdd: dung dịch"),
+                ("Chemistry", "PV = nRT", "PV = nRT", "PT trạng thái khí lý tưởng"),
+                ("Chemistry", "pH", "pH = -log[H⁺]", "[H⁺]: nồng độ ion H⁺"),
+                ("Chemistry", "Tốc độ phản ứng", "v_tb = |ΔC| / Δt", "ΔC: biến thiên nồng độ, tốc độ luôn dương"),
+                ("Chemistry", "Entanpi", "ΔrH = ΣΔfH(sp) - ΣΔfH(tc)", "sp: sản phẩm, tc: tác chất (nhiệt tạo thành)"),
+                ("Chemistry", "Hằng số cân bằng", "Kc = [sp]ⁿ / [tc]ᵐ", "Ở trạng thái cân bằng"),
+
+                ("Math", "PT bậc 2", "x = (-b±√Δ) / 2a", "Δ = b² - 4ac"),
+                ("Math", "Diện tích tròn", "S = πr²", "r: bán kính"),
+                ("Math", "Chu vi tròn", "C = 2πr", "r: bán kính"),
+                ("Math", "Thể tích cầu", "V = 4πr³/3", "r: bán kính"),
+                ("Math", "Pythagoras", "a² + b² = c²", "Tam giác vuông"),
+                ("Math", "Sin/Cos", "sin²α + cos²α = 1", "Hệ thức lượng giác cơ bản"),
+                ("Math", "Đạo hàm", "(xⁿ)' = n·xⁿ⁻¹", "Công thức đạo hàm lũy thừa"),
+                ("Math", "Tích phân", "∫xⁿdx = xⁿ⁺¹/(n+1)+C", "n ≠ -1"),
+                ("Math", "Logarit", "logₐ(xy) = logₐx + logₐy", "a > 0, a ≠ 1, x, y > 0"),
+                ("Math", "Lãi suất kép", "A = P(1+r)ⁿ", "P: vốn, r: lãi suất, n: kỳ")
+            };
+
+            using (var tx = conn.BeginTransaction())
+            {
+                try
+                {
+                    string sql = "INSERT INTO StemFormulas (Category, Name, Formula, Description) VALUES (@Cat, @Name, @Form, @Desc)";
+                    using (var cmd = new SqliteCommand(sql, conn, tx))
+                    {
+                        foreach (var f in list)
+                        {
+                            cmd.Parameters.Clear();
+                            cmd.Parameters.AddWithValue("@Cat", f.Category);
+                            cmd.Parameters.AddWithValue("@Name", f.Name);
+                            cmd.Parameters.AddWithValue("@Form", f.Formula);
+                            cmd.Parameters.AddWithValue("@Desc", f.Description);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    tx.Commit();
+                }
+                catch (Exception ex)
+                {
+                    tx.Rollback();
+                    Serilog.Log.Error("Failed to seed STEM formulas: {Err}", ex.Message);
+                }
+            }
+        }
+
+        private static void SeedStemConstants(SqliteConnection conn)
+        {
+            long count = 0;
+            using (var cmd = new SqliteCommand("SELECT COUNT(*) FROM StemConstants", conn))
+            {
+                count = (long)(cmd.ExecuteScalar() ?? 0L);
+            }
+            if (count > 0) return;
+
+            var list = new (string Symbol, string Name, string Value, string Unit, string ColorHex, string CopyValue)[]
+            {
+                ("c",  "Tốc độ ánh sáng",     "299,792,458",        "m/s",       "#E3F2FD", "299792458"),
+                ("h",  "Hằng số Planck",       "6.626 × 10⁻³⁴",     "J·s",       "#F3E5F5", "6.626e-34"),
+                ("kB", "Hằng số Boltzmann",    "1.381 × 10⁻²³",     "J/K",       "#FFF3E0", "1.381e-23"),
+                ("e",  "Điện tích electron",   "1.602 × 10⁻¹⁹",     "C",         "#E0F2F1", "1.602e-19"),
+                ("NA", "Số Avogadro",          "6.022 × 10²³",      "mol⁻¹",     "#FCE4EC", "6.022e23"),
+                ("G",  "Hằng số hấp dẫn",     "6.674 × 10⁻¹¹",     "N·m²/kg²",  "#E8F5E9", "6.674e-11"),
+                ("g",  "Gia tốc trọng trường", "9.80665",            "m/s²",      "#FFF8E1", "9.80665"),
+                ("R",  "Hằng số khí",          "8.31446",            "J/(mol·K)", "#E8EAF6", "8.31446"),
+                ("R_atm", "Hằng số khí (hệ atm)", "0.08206",         "L·atm/(mol·K)", "#F3E5F5", "0.08206"),
+                ("F",  "Hằng số Faraday",      "96,485",            "C/mol",     "#FFF9C4", "96485"),
+                ("π",  "Số Pi",                "3.14159265359",      "—",         "#FFEBEE", "3.14159265359"),
+                ("e",  "Số Euler",             "2.71828182846",      "—",         "#F1F8E9", "2.71828182846"),
+                ("√2", "Căn 2",                "1.41421356237",      "—",         "#E0F7FA", "1.41421356237"),
+                ("me", "Khối lượng electron",  "9.109 × 10⁻³¹",     "kg",        "#FBE9E7", "9.109e-31")
+            };
+
+            using (var tx = conn.BeginTransaction())
+            {
+                try
+                {
+                    string sql = "INSERT INTO StemConstants (Symbol, Name, Value, Unit, ColorHex, CopyValue) VALUES (@Sym, @Name, @Val, @Unit, @Col, @Copy)";
+                    using (var cmd = new SqliteCommand(sql, conn, tx))
+                    {
+                        foreach (var c in list)
+                        {
+                            cmd.Parameters.Clear();
+                            cmd.Parameters.AddWithValue("@Sym", c.Symbol);
+                            cmd.Parameters.AddWithValue("@Name", c.Name);
+                            cmd.Parameters.AddWithValue("@Val", c.Value);
+                            cmd.Parameters.AddWithValue("@Unit", c.Unit);
+                            cmd.Parameters.AddWithValue("@Col", c.ColorHex);
+                            cmd.Parameters.AddWithValue("@Copy", c.CopyValue);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    tx.Commit();
+                }
+                catch (Exception ex)
+                {
+                    tx.Rollback();
+                    Serilog.Log.Error("Failed to seed STEM constants: {Err}", ex.Message);
+                }
+            }
+        }
+
+        private static void SeedStemPresets(SqliteConnection conn)
+        {
+            long count = 0;
+            using (var cmd = new SqliteCommand("SELECT COUNT(*) FROM StemPresets", conn))
+            {
+                count = (long)(cmd.ExecuteScalar() ?? 0L);
+            }
+            if (count > 0) return;
+
+            var list = new (string TabName, string GroupName, string Label, string Expression)[]
+            {
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = 2x - 3", "2x - 3"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -3x + 4", "-3x + 4"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = 5", "5"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = x", "x"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -x", "-x"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = 5x - 2", "5x - 2"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -4x + 1", "-4x + 1"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -2.5x", "-2.5x"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = x²", "x^2"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -x²", "-x^2"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = 3x²", "3x^2"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -5x²", "-5x^2"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = 0.2x²", "0.2x^2"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = (x-2)²", "(x-2)^2"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = (x+3)²", "(x+3)^2"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = x² + 3", "x^2 + 3"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = x² - 4", "x^2 - 4"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = (x+2)²+3", "(x+2)^2 + 3"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = (x-3)²-2", "(x-3)^2 - 2"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = x² - 4x + 3", "x^2 - 4x + 3"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = x² - 6x + 9", "x^2 - 6x + 9"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = x² - 2x + 5", "x^2 - 2x + 5"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -2x² + 8", "-2x^2 + 8"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = |2x-4|", "\\left|2x - 4\\right|"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -|x|+3", "-\\left|x\\right| + 3"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = 2x", "2x"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -0.5x + 3", "-0.5x + 3"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = 3x - 1", "3x - 1"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = 2x² - 4x + 1", "2x^2 - 4x + 1"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -x² + 2x - 3", "-x^2 + 2x - 3"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = 0.5x² - 2", "0.5x^2 - 2"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = x² + 2x", "x^2 + 2x"),
+                ("Graph", "📐 Hàm số Bậc 1 & Bậc 2 (Lớp 10)", "y = -3x² + 6x", "-3x^2 + 6x"),
+
+                ("Graph", "📈 Hàm Lũy thừa, Mũ & Lôgarit (Lớp 11)", "y = x³", "x^3"),
+                ("Graph", "📈 Hàm Lũy thừa, Mũ & Lôgarit (Lớp 11)", "y = x⁴", "x^4"),
+                ("Graph", "📈 Hàm Lũy thừa, Mũ & Lôgarit (Lớp 11)", "y = √x", "\\sqrt{x}"),
+                ("Graph", "📈 Hàm Lũy thừa, Mũ & Lôgarit (Lớp 11)", "y = 2^x", "2^x"),
+                ("Graph", "📈 Hàm Lũy thừa, Mũ & Lôgarit (Lớp 11)", "y = e^x", "e^x"),
+                ("Graph", "📈 Hàm Lũy thừa, Mũ & Lôgarit (Lớp 11)", "y = ln(x)", "\\ln(x)"),
+                ("Graph", "📈 Hàm Lũy thừa, Mũ & Lôgarit (Lớp 11)", "y = log(x)", "\\log(x)"),
+
+                ("Graph", "🔄 Hàm số Lượng giác (Lớp 11)", "y = sin(x)", "\\sin(x)"),
+                ("Graph", "🔄 Hàm số Lượng giác (Lớp 11)", "y = cos(x)", "\\cos(x)"),
+                ("Graph", "🔄 Hàm số Lượng giác (Lớp 11)", "y = tan(x)", "\\tan(x)"),
+                ("Graph", "🔄 Hàm số Lượng giác (Lớp 11)", "y = sin(2x)", "\\sin(2x)"),
+
+                ("Graph", "🚀 Mô hình Vật lý & STEM (Liên môn)", "Ném xiên 45°", "-0.05x^2 + x"),
+                ("Graph", "🚀 Mô hình Vật lý & STEM (Liên môn)", "DĐ điều hòa", "5\\cos(x)"),
+                ("Graph", "🚀 Mô hình Vật lý & STEM (Liên môn)", "DĐ tắt dần chậm", "e^{-0.1x}\\cos(x)"),
+                ("Graph", "🚀 Mô hình Vật lý & STEM (Liên môn)", "Logistics Sinh học", "\\frac{1}{1+e^{-x}}"),
+
+                ("Chem", "🔥 Phản ứng cháy & Oxi hóa nhanh", "C + O2 -> CO2", ""),
+                ("Chem", "🔥 Phản ứng cháy & Oxi hóa nhanh", "S + O2 -> SO2", ""),
+                ("Chem", "🔥 Phản ứng cháy & Oxi hóa nhanh", "Fe + O2 -> Fe3O4", ""),
+                ("Chem", "🔥 Phản ứng cháy & Oxi hóa nhanh", "Al + O2 -> Al2O3", ""),
+                ("Chem", "🔥 Phản ứng cháy & Oxi hóa nhanh", "CH4 + O2 -> CO2 + H2O", ""),
+                ("Chem", "🔥 Phản ứng cháy & Oxi hóa nhanh", "C2H5OH + O2 -> CO2 + H2O", ""),
+                ("Chem", "🔥 Phản ứng cháy & Oxi hóa nhanh", "FeS2 + O2 -> Fe2O3 + SO2", ""),
+
+                ("Chem", "⚗️ Axit – Bazơ & Oxit", "HCl + NaOH -> NaCl + H2O", ""),
+                ("Chem", "⚗️ Axit – Bazơ & Oxit", "H2SO4 + NaOH -> Na2SO4 + H2O", ""),
+                ("Chem", "⚗️ Axit – Bazơ & Oxit", "Ca(OH)2 + CO2 -> CaCO3 + H2O", ""),
+
+                ("Chem", "🧪 Phân hủy", "CaCO3 -> CaO + CO2", ""),
+                ("Chem", "🧪 Phân hủy", "KClO3 -> KCl + O2", ""),
+                ("Chem", "🧪 Phân hủy", "KMnO4 -> K2MnO4 + MnO2 + O2", ""),
+
+                ("Chem", "⚡ Oxi hóa – Khử & Nhiệt luyện", "Fe + CuSO4 -> FeSO4 + Cu", ""),
+                ("Chem", "⚡ Oxi hóa – Khử & Nhiệt luyện", "CuO + H2 -> Cu + H2O", ""),
+                ("Chem", "⚡ Oxi hóa – Khử & Nhiệt luyện", "Fe2O3 + CO -> Fe + CO2", ""),
+
+                ("Chem", "🧬 Kim loại + Axit (Thường & Đặc nóng)", "Zn + HCl -> ZnCl2 + H2", ""),
+                ("Chem", "🧬 Kim loại + Axit (Thường & Đặc nóng)", "Al + HCl -> AlCl3 + H2", ""),
+                ("Chem", "🧬 Kim loại + Axit (Thường & Đặc nóng)", "Cu + H2SO4 -> CuSO4 + SO2 + H2O", ""),
+                ("Chem", "🧬 Kim loại + Axit (Thường & Đặc nóng)", "Fe + HNO3 -> Fe(NO3)3 + NO2 + H2O", "")
+            };
+
+            using (var tx = conn.BeginTransaction())
+            {
+                try
+                {
+                    string sql = "INSERT INTO StemPresets (TabName, GroupName, Label, Expression) VALUES (@Tab, @Group, @Label, @Expr)";
+                    using (var cmd = new SqliteCommand(sql, conn, tx))
+                    {
+                        foreach (var p in list)
+                        {
+                            cmd.Parameters.Clear();
+                            cmd.Parameters.AddWithValue("@Tab", p.TabName);
+                            cmd.Parameters.AddWithValue("@Group", p.GroupName);
+                            cmd.Parameters.AddWithValue("@Label", p.Label);
+                            cmd.Parameters.AddWithValue("@Expr", p.Expression);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    tx.Commit();
+                }
+                catch (Exception ex)
+                {
+                    tx.Rollback();
+                    Serilog.Log.Error("Failed to seed STEM presets: {Err}", ex.Message);
+                }
+            }
+        }
+
+        public static void SaveCalculatorHistory(string expression, string result)
+        {
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = "INSERT INTO CalculatorHistory (Expression, Result, CreatedAt) VALUES (@expr, @res, @time)";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@expr", expression);
+                            cmd.Parameters.AddWithValue("@res", result);
+                            cmd.Parameters.AddWithValue("@time", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Warning("SaveCalculatorHistory error: {Err}", ex.Message);
+                }
+            }
+        }
+
+        public static System.Collections.Generic.List<string> LoadCalculatorHistory()
+        {
+            var list = new System.Collections.Generic.List<string>();
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = "SELECT Expression, Result FROM CalculatorHistory ORDER BY Id DESC LIMIT 50";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string expr = reader.GetString(0);
+                                string res = reader.GetString(1);
+                                list.Add($"{expr} = {res}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Warning("LoadCalculatorHistory error: {Err}", ex.Message);
+                }
+            }
+            list.Reverse();
+            return list;
+        }
+
+        public static void ClearCalculatorHistory()
+        {
+            lock (DbLock)
+            {
+                try
+                {
+                    using (var conn = OpenConnection())
+                {
+                        string sql = "DELETE FROM CalculatorHistory";
+                        using (var cmd = new SqliteCommand(sql, conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Warning("ClearCalculatorHistory error: {Err}", ex.Message);
+                }
+            }
+        }
+    }
+}

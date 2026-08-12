@@ -1,0 +1,336 @@
+<Page x:Class="QASmartClass.Classroom.Views.AttendancePage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Background="#F5F5F5">
+
+
+
+    <Grid Margin="24,16">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- ═══ HEADER ═══ -->
+
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12"
+
+                BorderBrush="#E0E0E0" BorderThickness="1">
+
+            <DockPanel>
+
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+
+                    <!-- Date Picker -->
+
+                    <TextBlock Text="📅 Ngày:" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0,0,6,0"/>
+
+                    <DatePicker x:Name="dpDate" SelectedDate="{x:Static sys:DateTime.Today}" FontSize="12"
+
+                                SelectedDateChanged="DateChanged" Width="140"
+
+                                xmlns:sys="clr-namespace:System;assembly=System.Runtime"/>
+
+                    
+
+                    <Border Width="1" Background="#E0E0E0" Margin="12,4" Height="28"/>
+
+                    
+
+                    <!-- Quick Actions -->
+
+                    <Button x:Name="btnAutoAttend" Content="⚡ Tự động điểm danh" FontSize="12" Padding="12,7"
+
+                            Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"
+
+                            Click="AutoAttend_Click" ToolTip="Đánh dấu tất cả HS online = Có mặt" Margin="0,0,6,0">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#388E3C"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <Button Content="📥 Xuất Excel" FontSize="12" Padding="12,7"
+
+                            Background="#1976D2" Foreground="White" BorderThickness="0" Cursor="Hand"
+
+                            Click="ExportExcel_Click" Margin="0,0,6,0">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#1565C0"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <Button Content="💾 Lưu" FontSize="12" Padding="12,7"
+
+                            Background="#FF9800" Foreground="White" BorderThickness="0" Cursor="Hand"
+
+                            Click="SaveAttendance_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="bd" Property="Background" Value="#F57C00"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                </StackPanel>
+
+
+
+                <StackPanel>
+
+                    <TextBlock Text="📋 Điểm danh học sinh" FontSize="18" FontWeight="Bold" Foreground="#212121"/>
+
+                    <TextBlock x:Name="txtSubtitle" Text="Đang tải..." FontSize="12" Foreground="#757575" Margin="0,2,0,0"/>
+
+                </StackPanel>
+
+            </DockPanel>
+
+        </Border>
+
+
+
+        <!-- ═══ STATISTICS BAR ═══ -->
+
+        <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="16,10" Margin="0,0,0,12"
+
+                BorderBrush="#E0E0E0" BorderThickness="1">
+
+            <UniformGrid Columns="5">
+
+                <!-- Total -->
+
+                <StackPanel HorizontalAlignment="Center">
+
+                    <TextBlock x:Name="txtTotal" Text="0" FontSize="22" FontWeight="Bold" Foreground="#1976D2" HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="Tổng HS" FontSize="10" Foreground="#999" HorizontalAlignment="Center"/>
+
+                </StackPanel>
+
+                <!-- Present -->
+
+                <StackPanel HorizontalAlignment="Center">
+
+                    <TextBlock x:Name="txtPresent" Text="0" FontSize="22" FontWeight="Bold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="✅ Có mặt" FontSize="10" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+
+                </StackPanel>
+
+                <!-- Late -->
+
+                <StackPanel HorizontalAlignment="Center">
+
+                    <TextBlock x:Name="txtLate" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FF9800" HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="⏰ Đi trễ" FontSize="10" Foreground="#FF9800" HorizontalAlignment="Center"/>
+
+                </StackPanel>
+
+                <!-- Absent -->
+
+                <StackPanel HorizontalAlignment="Center">
+
+                    <TextBlock x:Name="txtAbsent" Text="0" FontSize="22" FontWeight="Bold" Foreground="#F44336" HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="❌ Vắng" FontSize="10" Foreground="#F44336" HorizontalAlignment="Center"/>
+
+                </StackPanel>
+
+                <!-- Rate -->
+
+                <StackPanel HorizontalAlignment="Center">
+
+                    <TextBlock x:Name="txtRate" Text="0%" FontSize="22" FontWeight="Bold" Foreground="#7B1FA2" HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="📊 Chuyên cần" FontSize="10" Foreground="#7B1FA2" HorizontalAlignment="Center"/>
+
+                </StackPanel>
+
+            </UniformGrid>
+
+        </Border>
+
+
+
+        <!-- ═══ ATTENDANCE TABLE ═══ -->
+
+        <Border Grid.Row="2" Background="White" CornerRadius="10" Padding="0" 
+
+                BorderBrush="#E0E0E0" BorderThickness="1">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+
+                    <RowDefinition Height="Auto"/>
+
+                    <RowDefinition Height="*"/>
+
+                </Grid.RowDefinitions>
+
+
+
+                <!-- Table Header -->
+
+                <Border Grid.Row="0" Background="#F8F9FA" CornerRadius="10,10,0,0" Padding="16,10">
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="50"/>
+
+                            <ColumnDefinition Width="*"/>
+
+                            <ColumnDefinition Width="100"/>
+
+                            <ColumnDefinition Width="80"/>
+
+                            <ColumnDefinition Width="120"/>
+
+                            <ColumnDefinition Width="120"/>
+
+                            <ColumnDefinition Width="120"/>
+
+                            <ColumnDefinition Width="*"/>
+
+                        </Grid.ColumnDefinitions>
+
+                         <TextBlock Grid.Column="0" Text="STT" FontSize="12" FontWeight="Bold" Foreground="#1A237E"/>
+
+                         <TextBlock Grid.Column="1" Text="Họ và tên" FontSize="12" FontWeight="Bold" Foreground="#1A237E"/>
+
+                         <TextBlock Grid.Column="2" Text="Mã HS" FontSize="12" FontWeight="Bold" Foreground="#1A237E"/>
+
+                         <TextBlock Grid.Column="3" Text="Online" FontSize="12" FontWeight="Bold" Foreground="#1A237E" HorizontalAlignment="Center"/>
+
+                         <TextBlock Grid.Column="4" Text="✅ Có mặt" FontSize="12" FontWeight="Bold" Foreground="#2E7D32" HorizontalAlignment="Center"/>
+
+                         <TextBlock Grid.Column="5" Text="⏰ Đi trễ" FontSize="12" FontWeight="Bold" Foreground="#E65100" HorizontalAlignment="Center"/>
+
+                         <TextBlock Grid.Column="6" Text="❌ Vắng" FontSize="12" FontWeight="Bold" Foreground="#C62828" HorizontalAlignment="Center"/>
+
+                         <TextBlock Grid.Column="7" Text="Ghi chú" FontSize="12" FontWeight="Bold" Foreground="#1A237E"/>
+
+                    </Grid>
+
+                </Border>
+
+
+
+                <!-- Student Rows -->
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+
+                    <StackPanel x:Name="attendanceList" Margin="0,4,0,8"/>
+
+                </ScrollViewer>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- ═══ FOOTER ═══ -->
+
+        <Border Grid.Row="3" Margin="0,8,0,0" Padding="8,6">
+
+            <DockPanel>
+
+                <TextBlock DockPanel.Dock="Right" x:Name="txtLastSaved" Text="" FontSize="10" Foreground="#999" VerticalAlignment="Center"/>
+
+                <TextBlock x:Name="txtFooterInfo" Text="💡 Nhấn 'Tự động điểm danh' để đánh dấu HS online = Có mặt" 
+
+                           FontSize="11" Foreground="#7B1FA2" VerticalAlignment="Center"/>
+
+            </DockPanel>
+
+        </Border>
+
+    </Grid>
+
+</Page>
+

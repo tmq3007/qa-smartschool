@@ -1,0 +1,190 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Teacher.TeacherAnalyticsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1000"
+             
+             KeyDown="UserControl_KeyDown" Focusable="True">
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="📊 Báo cáo phân tích học tập lớp học (AI Analytics)" />
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24">
+            <StackPanel>
+                
+                <!-- Bộ lọc chọn lớp -->
+                <Border Style="{StaticResource CardBorder}" Padding="16" Margin="0,0,0,16" Background="{DynamicResource CardBrush}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="🏫 Chọn lớp học quản lý:" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <ComboBox ItemsSource="{Binding AvailableClasses}" SelectedItem="{Binding SelectedClass}" Width="150" Height="36" VerticalContentAlignment="Center" Padding="8,4" FontSize="13" Style="{StaticResource ModernComboBox}"/>
+                        <Button Content="🔄 Làm mới dữ liệu" Command="{Binding LoadAnalyticsCommand}" Margin="16,0,0,0" Style="{StaticResource SecondaryButton}" Height="36" Padding="16,0"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- KPI Cards -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <shared:StatCardControl Grid.Column="0" Icon="⏱️" Label="Thời gian đọc trung bình" Value="{Binding AverageReadingMinutes, StringFormat='{}{0} phút/HS'}" ChangeText="Đọc sách điện tử Ebook"/>
+                    <shared:StatCardControl Grid.Column="2" Icon="📖" Label="Tổng trang sách đã đọc" Value="{Binding TotalPagesRead, StringFormat='{}{0} trang'}" ChangeText="Tính luỹ kế từ đầu học kỳ"/>
+                    <shared:StatCardControl Grid.Column="4" Icon="👥" Label="Sĩ số học sinh lớp" Value="{Binding StudentCount, StringFormat='{}{0} học sinh'}" ChangeText="Danh sách tham gia học tập"/>
+                </Grid>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.2*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- CỘT TRÁI: BẢNG CÂU HỎI KHÓ (DIFFICULT QUESTIONS) -->
+                    <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="20" Background="{DynamicResource CardBrush}">
+                        <StackPanel>
+                            <TextBlock Text="⚠️ Các câu hỏi hay làm sai (Cần giáo viên lưu ý)" Style="{StaticResource CardTitleText}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                            <TextBlock Text="Dưới đây là các câu hỏi trắc nghiệm đọc hiểu có tỷ lệ làm bài đúng thấp nhất của học sinh trong lớp." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,16" TextWrapping="Wrap"/>
+                            
+                            <ItemsControl ItemsSource="{Binding DifficultQuestions}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#0F172A" CornerRadius="8" Padding="16" Margin="0,0,0,12" BorderBrush="#334155" BorderThickness="1">
+                                            <StackPanel>
+                                                <Grid Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding BookTitle, StringFormat='Tác phẩm: {0}'}" Foreground="{DynamicResource SuccessTextBrush}" FontWeight="Bold" FontSize="13" TextWrapping="Wrap"/>
+                                                    <Border Grid.Column="1" Background="{DynamicResource StateError}" CornerRadius="4" Padding="6,2">
+                                                        <TextBlock Text="{Binding PassRatePercentage, StringFormat='Tỷ lệ đạt: {0}%'}" Foreground="White" FontSize="11" FontWeight="Bold"/>
+                                                    </Border>
+                                                </Grid>
+                                                
+                                                <TextBlock Text="{Binding QuestionText, StringFormat='Câu hỏi: {0}'}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                <TextBlock Text="{Binding CorrectAnswer, StringFormat='✅ Đáp án đúng: {0}'}" Foreground="{DynamicResource SuccessTextBrush}" FontSize="13" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- CỘT PHẢI: TOP ĐỘC GIẢ TÍCH CỰC (TOP READERS) -->
+                    <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="20" Background="{DynamicResource CardBrush}">
+                        <StackPanel>
+                            <TextBlock Text="🏆 Top độc giả tích cực của lớp" Style="{StaticResource CardTitleText}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                            
+                            <ItemsControl ItemsSource="{Binding TopReaders}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="#334155" BorderThickness="0,0,0,1" Padding="0,12" Background="Transparent">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <Border Width="24" Height="24" CornerRadius="12" Background="{DynamicResource SuccessTextBrush}" VerticalAlignment="Center" Margin="0,0,12,0">
+                                                    <TextBlock Text="⭐" Foreground="White" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding StudentName}" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="Bold" FontSize="13" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding SsoUserId}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+                                                </StackPanel>
+                                                
+                                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                    <TextBlock Text="{Binding TotalMinutes, StringFormat='{}{0} phút'}" Foreground="{DynamicResource SuccessTextBrush}" FontWeight="Bold" FontSize="13" HorizontalAlignment="Right"/>
+                                                    <TextBlock Text="{Binding TotalPages, StringFormat='({0} trang)'}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" HorizontalAlignment="Right"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                
+                <!-- Bảng Học sinh cần hỗ trợ -->
+                <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,20,0,0" Background="{DynamicResource CardBrush}">
+                    <StackPanel>
+                        <TextBlock Text="⚠️ Học sinh cần hỗ trợ học tập (Đọc ít hoặc điểm trung bình Quiz &lt; 5)" Style="{StaticResource CardTitleText}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                        <TextBlock Text="Danh sách học sinh có kết quả quiz thấp hoặc thời lượng đọc ebook dưới 30 phút trong tuần. Giáo viên có thể gửi nhắc nhở học tập nhanh." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,16"/>
+
+                        <!-- Thanh tìm kiếm học sinh -->
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="300"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="🔍 Lọc nhanh học sinh:" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <TextBox x:Name="TxtStudentSearch" Grid.Column="1" Text="{Binding StudentSearchKeyword, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Height="34" VerticalContentAlignment="Center" Padding="10,4" FontSize="13" ToolTip="Nhấn Ctrl+F để tìm kiếm nhanh"/>
+                        </Grid>
+
+                        <DataGrid Style="{StaticResource ModernDataGrid}" ItemsSource="{Binding StudentsNeedingSupport}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="300" VerticalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Mã học sinh" Binding="{Binding SsoUserId}" Width="120"/>
+                                <DataGridTextColumn Header="Họ và tên" Binding="{Binding StudentName}" Width="200"/>
+                                <DataGridTextColumn Header="Thời lượng đọc" Binding="{Binding ReadingMinutes, StringFormat='{}{0} phút/tuần'}" Width="150"/>
+                                <DataGridTextColumn Header="Điểm Quiz TB" Binding="{Binding AverageScore, StringFormat='{}{0}/10'}" Width="120"/>
+                                <DataGridTextColumn Header="Lý do cần hỗ trợ" Binding="{Binding SupportReason}" Width="3*"/>
+                                <DataGridTemplateColumn Header="Hành động" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="💬 Nhắc nhở" Command="{Binding DataContext.SendReminderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource SecondaryButton}" Height="26" Padding="12,0" FontSize="11" Cursor="Hand"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Đề xuất giáo trình/sách theo tuần học -->
+                <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,20,0,20" Background="{DynamicResource CardBrush}">
+                    <StackPanel>
+                        <TextBlock Text="📚 Gợi ý sách bổ trợ theo Chương trình học (Tuần 24)" Style="{StaticResource CardTitleText}" Foreground="{DynamicResource WarningTextBrush}" Margin="0,0,0,12"/>
+                        <TextBlock Text="Đề xuất các đầu sách bổ trợ, tư liệu chuyên sâu phù hợp với chủ đề bài học của tuần học hiện tại để thầy cô định hướng cho học sinh đọc thêm." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,16"/>
+
+                        <ItemsControl ItemsSource="{Binding CurriculumRecommendations}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="260" Background="#0F172A" CornerRadius="12" Padding="15" Margin="0,0,16,16" BorderBrush="#334155" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="📘" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                            <TextBlock Text="{Binding Title}" Foreground="#F8FAFC" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxHeight="40" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Author, StringFormat='Tác giả: {0}'}" Foreground="#94A3B8" FontSize="12" HorizontalAlignment="Center" Margin="0,6,0,0" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Publisher, StringFormat='NXB: {0}'}" Foreground="#64748B" FontSize="11" HorizontalAlignment="Center" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding PublishYear, StringFormat='Năm XB: {0}'}" Foreground="#64748B" FontSize="11" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

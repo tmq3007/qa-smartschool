@@ -1,0 +1,371 @@
+{
+  "metadata": {
+    "chapterId": "g05_ch02",
+    "chapterName": "Hình Học Không Gian Cơ Bản",
+    "grade": 5,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 15,
+    "toolMapping": [
+      "GeometryTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 12,
+    "prerequisites": [
+      "g04_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "hk5_01",
+      "sectionName": "Hình hộp chữ nhật & Hình lập phương",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "hk5_001",
+          "name": "Hình hộp chữ nhật",
+          "definition": "6 mặt HCN, 12 cạnh, 8 đỉnh. V = dài × rộng × cao",
+          "examples": [
+            "Hộp giày, thùng carton"
+          ]
+        },
+        {
+          "id": "hk5_002",
+          "name": "Hình lập phương",
+          "definition": "6 mặt vuông bằng nhau. V = a³, Stp = 6a²",
+          "examples": [
+            "Xúc xắc, hộp Rubik"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hk5_p01",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "V hình hộp CN: dài 5, rộng 3, cao 4 (cm) = ?",
+          "options": [
+            "A) 12 cm³",
+            "B) 60 cm³",
+            "C) 20 cm³",
+            "D) 15 cm³"
+          ],
+          "correctAnswer": "B",
+          "solution": "V = 5 × 3 × 4 = 60 cm³",
+          "points": 5
+        },
+        {
+          "problemId": "hk5_p02",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "V hình lập phương cạnh 3 cm = ?",
+          "options": [
+            "A) 9 cm³",
+            "B) 18 cm³",
+            "C) 27 cm³",
+            "D) 36 cm³"
+          ],
+          "correctAnswer": "C",
+          "solution": "V = 3³ = 27 cm³",
+          "points": 5
+        },
+        {
+          "problemId": "hk5_p03",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Bể cá hình hộp CN: 60×30×40 cm. Chứa bao nhiêu lít nước (khi đầy)?",
+          "options": [
+            "A) 36 lít",
+            "B) 72 lít",
+            "C) 120 lít",
+            "D) 7200 lít"
+          ],
+          "correctAnswer": "B",
+          "solution": "V = 60×30×40 = 72.000 cm³. 1 lít = 1.000 cm³ → 72 lít",
+          "points": 10
+        },
+        {
+          "problemId": "hk5_p04",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Diện tích toàn phần hình lập phương cạnh 5 cm = ?",
+          "options": [
+            "A) 100 cm²",
+            "B) 125 cm²",
+            "C) 150 cm²",
+            "D) 200 cm²"
+          ],
+          "correctAnswer": "C",
+          "solution": "Stp = 6 × 5² = 6 × 25 = 150 cm²",
+          "points": 15
+        },
+        {
+          "problemId": "hk5_p05",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Hình hộp CN V=120 cm³, đáy 6×5 cm. Chiều cao = ?",
+          "options": [
+            "A) 3 cm",
+            "B) 4 cm",
+            "C) 5 cm",
+            "D) 6 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "h = V ÷ (dài×rộng) = 120 ÷ 30 = 4 cm",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hk5_02",
+      "sectionName": "Hình trụ & Hình cầu (nhận dạng)",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "hk5_003",
+          "name": "Hình trụ",
+          "definition": "2 mặt đáy hình tròn, 1 mặt xung quanh cong. V = πr²h",
+          "examples": [
+            "Lon nước ngọt, ống nước"
+          ]
+        },
+        {
+          "id": "hk5_004",
+          "name": "Hình cầu",
+          "definition": "Mọi điểm trên mặt cách đều tâm. V = 4πr³/3",
+          "examples": [
+            "Quả bóng, trái đất"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hk5_p06",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Lon Coca Cola có dạng hình gì?",
+          "options": [
+            "A) Hình hộp",
+            "B) Hình trụ",
+            "C) Hình cầu",
+            "D) Hình nón"
+          ],
+          "correctAnswer": "B",
+          "solution": "Lon nước ngọt có dạng hình trụ tròn",
+          "points": 5
+        },
+        {
+          "problemId": "hk5_p07",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Hình trụ bán kính đáy 3 cm, cao 10 cm. V = ? (lấy π ≈ 3,14)",
+          "options": [
+            "A) 94,2 cm³",
+            "B) 188,4 cm³",
+            "C) 282,6 cm³",
+            "D) 314 cm³"
+          ],
+          "correctAnswer": "C",
+          "solution": "V = πr²h = 3,14 × 9 × 10 = 282,6 cm³",
+          "points": 10
+        },
+        {
+          "problemId": "hk5_p08",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Bể nước hình trụ r=1m, h=2m. Chứa bao nhiêu lít? (1m³=1000 lít, π≈3,14)",
+          "options": [
+            "A) 3140 lít",
+            "B) 6280 lít",
+            "C) 9420 lít",
+            "D) 2000 lít"
+          ],
+          "correctAnswer": "B",
+          "solution": "V = 3,14 × 1 × 2 = 6,28 m³ = 6280 lít",
+          "points": 15
+        },
+        {
+          "problemId": "hk5_p09",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Hình nào KHÔNG có đỉnh?",
+          "options": [
+            "A) Hình hộp",
+            "B) Hình trụ",
+            "C) Hình chóp",
+            "D) Hình lập phương"
+          ],
+          "correctAnswer": "B",
+          "solution": "Hình trụ và hình cầu không có đỉnh (chỉ có mặt cong)",
+          "points": 10
+        },
+        {
+          "problemId": "hk5_p10",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Quả bóng bán kính 7 cm. V ≈ ? cm³ (π≈22/7)",
+          "options": [
+            "A) 718 cm³",
+            "B) 1078 cm³",
+            "C) 1437 cm³",
+            "D) 1796 cm³"
+          ],
+          "correctAnswer": "C",
+          "solution": "V = 4/3 × 22/7 × 7³ = 4/3 × 22/7 × 343 = 4/3 × 1078 ≈ 1437 cm³",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hk5_03",
+      "sectionName": "Tỉ số phần trăm",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "hk5_005",
+          "name": "Phần trăm (%)",
+          "definition": "Tỉ lệ trên 100. a% = a/100",
+          "examples": [
+            "50% = 1/2 = 0,5",
+            "25% = 1/4"
+          ]
+        },
+        {
+          "id": "hk5_006",
+          "name": "Bài toán phần trăm",
+          "definition": "Tìm a% của b = b × a/100",
+          "examples": [
+            "20% của 150 = 150 × 20/100 = 30"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hk5_p11",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "10% của 200 = ?",
+          "options": [
+            "A) 10",
+            "B) 20",
+            "C) 30",
+            "D) 40"
+          ],
+          "correctAnswer": "B",
+          "solution": "200 × 10/100 = 20",
+          "points": 5
+        },
+        {
+          "problemId": "hk5_p12",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Giảm giá 20%. Giá gốc 250.000đ. Giá sau giảm = ?",
+          "options": [
+            "A) 180.000đ",
+            "B) 200.000đ",
+            "C) 210.000đ",
+            "D) 230.000đ"
+          ],
+          "correctAnswer": "B",
+          "solution": "Giảm = 250.000 × 20% = 50.000. Sau: 250.000 - 50.000 = 200.000đ",
+          "points": 10
+        },
+        {
+          "problemId": "hk5_p13",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Lớp 40 HS, 15 HS nữ. % HS nữ = ?",
+          "options": [
+            "A) 25%",
+            "B) 37,5%",
+            "C) 40%",
+            "D) 60%"
+          ],
+          "correctAnswer": "B",
+          "solution": "15/40 × 100% = 37,5%",
+          "points": 10
+        },
+        {
+          "problemId": "hk5_p14",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Gửi tiết kiệm 10 triệu, lãi suất 6%/năm. Sau 1 năm có tổng cộng bao nhiêu?",
+          "options": [
+            "A) 10,06 triệu",
+            "B) 10,3 triệu",
+            "C) 10,6 triệu",
+            "D) 16 triệu"
+          ],
+          "correctAnswer": "C",
+          "solution": "Lãi = 10.000.000 × 6% = 600.000đ. Tổng = 10.600.000đ = 10,6 triệu",
+          "points": 15
+        },
+        {
+          "problemId": "hk5_p15",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Giá sau tăng 15% là 460.000đ. Giá gốc = ?",
+          "options": [
+            "A) 380.000đ",
+            "B) 391.000đ",
+            "C) 400.000đ",
+            "D) 410.000đ"
+          ],
+          "correctAnswer": "C",
+          "solution": "Giá gốc × 1,15 = 460.000. Giá gốc = 460.000 ÷ 1,15 = 400.000đ",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "V hình hộp = dài + rộng + cao",
+      "correction": "V = dài × rộng × cao (NHÂN, không phải cộng)"
+    },
+    {
+      "mistake": "20% của 50 = 20 × 50 = 1000",
+      "correction": "20% = 20/100 = 0,2. 0,2 × 50 = 10"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "hk5_quiz_01",
+      "title": "Kiểm tra: Hình học KG & Phần trăm Lớp 5",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "hk5_p01"
+        },
+        {
+          "ref": "hk5_p06"
+        },
+        {
+          "ref": "hk5_p11"
+        },
+        {
+          "ref": "hk5_p04"
+        },
+        {
+          "ref": "hk5_p14"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

@@ -1,0 +1,734 @@
+<Window x:Class="QASmartTouch.PeriodicTable.Views.IntroductionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="📚 GIỚI THIỆU BẢNG TUẦN HOÀN" 
+        Height="700" Width="950"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F5F5"
+        ResizeMode="CanResize">
+    
+    <Window.Resources>
+        <!-- Tab Header Style -->
+        <Style x:Key="TabHeaderStyle" TargetType="TabItem">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="Foreground" Value="#424242"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border Name="Border" 
+                                Background="White" 
+                                BorderBrush="#E0E0E0" 
+                                BorderThickness="1,1,1,0"
+                                CornerRadius="8,8,0,0"
+                                Margin="2,0,2,0">
+                            <ContentPresenter ContentSource="Header" 
+                                            HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"
+                                            Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#E3F2FD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Section Title Style -->
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#1976D2"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <!-- Content Text Style -->
+        <Style x:Key="ContentTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#424242"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="LineHeight" Value="24"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <!-- Highlight Box Style -->
+        <Style x:Key="HighlightBoxStyle" TargetType="Border">
+            <Setter Property="Background" Value="#E3F2FD"/>
+            <Setter Property="BorderBrush" Value="#2196F3"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,15,0,15"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#1976D2" Padding="25,20">
+            <StackPanel>
+                <TextBlock Text="📚 GIỚI THIỆU BẢNG TUẦN HOÀN" 
+                          FontSize="28" FontWeight="Bold" 
+                          Foreground="White"
+                          HorizontalAlignment="Center"/>
+                <TextBlock Text="Khám phá trái tim của hóa học" 
+                          FontSize="14" 
+                          Foreground="#E3F2FD"
+                          HorizontalAlignment="Center"
+                          Margin="0,8,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Tab Control -->
+        <TabControl Grid.Row="1" 
+                   Margin="20"
+                   Background="White"
+                   BorderBrush="#E0E0E0"
+                   BorderThickness="1">
+            
+            <!-- Tab 1: Khái niệm -->
+            <TabItem Header="📖 Khái niệm" Style="{StaticResource TabHeaderStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="30">
+                        <TextBlock Text="📖 KHÁI NIỆM CHUNG" Style="{StaticResource SectionTitleStyle}"/>
+                        
+                        <TextBlock Style="{StaticResource ContentTextStyle}">
+                            <Run FontWeight="Bold">Bảng tuần hoàn các nguyên tố hóa học</Run>
+                            <Run> (Periodic Table of Elements) là một công cụ khoa học sắp xếp toàn bộ các nguyên tố hóa học đã biết dựa trên </Run>
+                            <Run FontWeight="Bold" Foreground="#D32F2F">số hiệu nguyên tử (Z)</Run>
+                            <Run> — tức là số proton có trong hạt nhân nguyên tử.</Run>
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource ContentTextStyle}">
+                            Nhờ bảng này, ta có thể nhận thấy mối liên hệ chặt chẽ giữa cấu tạo nguyên tử và tính chất hóa học của các nguyên tố.
+                        </TextBlock>
+
+                        <!-- Highlight Box -->
+                        <Border Style="{StaticResource HighlightBoxStyle}">
+                            <StackPanel>
+                                <TextBlock Text="🔍 ĐIỂM NỔI BẬT" 
+                                         FontSize="16" FontWeight="Bold" 
+                                         Foreground="#1976D2" Margin="0,0,0,12"/>
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • Sắp xếp theo số hiệu nguyên tử (Z) tăng dần
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • Hiện có 118 nguyên tố (tính đến năm 2025)
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • Dự đoán tính chất hóa học dựa vào vị trí
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • Là "bản đồ hóa học" của thế giới vật chất
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <Image Source="/Resources/Images/periodic_table_overview.png" 
+                               Stretch="Uniform" 
+                               MaxHeight="250"
+                               Margin="0,20,0,0"
+                               HorizontalAlignment="Center"/>
+                        <TextBlock Text="Hình: Bảng tuần hoàn các nguyên tố hóa học" 
+                                 FontSize="12" FontStyle="Italic" 
+                                 Foreground="#757575"
+                                 HorizontalAlignment="Center"
+                                 Margin="0,8,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 2: Cấu trúc -->
+            <TabItem Header="🏗️ Cấu trúc" Style="{StaticResource TabHeaderStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="30">
+                        <TextBlock Text="🏗️ CẤU TRÚC CỦA BẢNG TUẦN HOÀN" Style="{StaticResource SectionTitleStyle}"/>
+                        
+                        <TextBlock Style="{StaticResource ContentTextStyle}">
+                            Bảng tuần hoàn được chia thành <Run FontWeight="Bold">hàng ngang</Run> gọi là <Run FontWeight="Bold" Foreground="#D32F2F">chu kỳ</Run> và <Run FontWeight="Bold">cột dọc</Run> gọi là <Run FontWeight="Bold" Foreground="#1976D2">nhóm</Run>:
+                        </TextBlock>
+
+                        <!-- Chu kỳ Section -->
+                        <Border Background="#FFF3E0" 
+                                BorderBrush="#FF9800" 
+                                BorderThickness="2" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="0,15,0,20">
+                            <StackPanel>
+                                <TextBlock Text="🔸 CHU KỲ (Hàng ngang)" 
+                                         FontSize="18" FontWeight="Bold" 
+                                         Foreground="#E65100" 
+                                         Margin="0,0,0,12"/>
+                                
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • Hiện nay có <Run FontWeight="Bold">7 chu kỳ</Run> trong bảng tuần hoàn.
+                                </TextBlock>
+                                
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • <Run FontWeight="Bold">Số thứ tự của chu kỳ</Run> cho biết <Run FontWeight="Bold" Foreground="#D32F2F">số lớp electron</Run> của nguyên tử nguyên tố đó.
+                                </TextBlock>
+                                
+                                <Border Background="White" 
+                                        BorderBrush="#FF9800" 
+                                        BorderThickness="1" 
+                                        CornerRadius="4" 
+                                        Padding="12" 
+                                        Margin="0,8,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="💡 Ví dụ:" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,6"/>
+                                        <TextBlock Style="{StaticResource ContentTextStyle}">
+                                            Nguyên tố <Run FontWeight="Bold">Na (Z = 11)</Run> thuộc <Run FontWeight="Bold">chu kỳ 3</Run>, vì có <Run FontWeight="Bold" Foreground="#D32F2F">3 lớp electron</Run>.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Style="{StaticResource ContentTextStyle}" FontWeight="SemiBold">
+                                    📊 Khi đi từ trái → phải trong cùng một chu kỳ:
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • Số proton và số electron tăng dần
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • Tính kim loại giảm dần, tính phi kim tăng dần
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Nhóm Section -->
+                        <Border Background="#E8F5E9" 
+                                BorderBrush="#4CAF50" 
+                                BorderThickness="2" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="🔸 NHÓM (Cột dọc)" 
+                                         FontSize="18" FontWeight="Bold" 
+                                         Foreground="#2E7D32" 
+                                         Margin="0,0,0,12"/>
+                                
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • Có <Run FontWeight="Bold">18 nhóm chính</Run>, đánh số từ I → XVIII (hoặc 1 → 18 theo quy ước quốc tế IUPAC).
+                                </TextBlock>
+                                
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • Các nguyên tố trong cùng một nhóm có:
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource ContentTextStyle}" Margin="20,0,0,0">
+                                    ✓ <Run FontWeight="Bold" Foreground="#1976D2">Số electron lớp ngoài cùng bằng nhau</Run>
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource ContentTextStyle}" Margin="20,0,0,12">
+                                    ✓ <Run FontWeight="Bold">Tính chất hóa học tương tự nhau</Run>
+                                </TextBlock>
+
+                                <Border Background="White" 
+                                        BorderBrush="#4CAF50" 
+                                        BorderThickness="1" 
+                                        CornerRadius="4" 
+                                        Padding="12" 
+                                        Margin="0,8,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="💡 Ví dụ:" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,6"/>
+                                        <TextBlock Style="{StaticResource ContentTextStyle}">
+                                            • <Run FontWeight="Bold">Nhóm IA (1):</Run> Li, Na, K... là kim loại kiềm – rất hoạt động.
+                                        </TextBlock>
+                                        <TextBlock Style="{StaticResource ContentTextStyle}">
+                                            • <Run FontWeight="Bold">Nhóm VIIA (17):</Run> F, Cl, Br, I... là halogen – phi kim mạnh.
+                                        </TextBlock>
+                                        <TextBlock Style="{StaticResource ContentTextStyle}">
+                                            • <Run FontWeight="Bold">Nhóm VIIIA (18):</Run> He, Ne, Ar... là khí hiếm, rất bền.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 3: Ý nghĩa -->
+            <TabItem Header="🎯 Ý nghĩa" Style="{StaticResource TabHeaderStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="30">
+                        <TextBlock Text="🎯 Ý NGHĨA CỦA BẢNG TUẦN HOÀN" Style="{StaticResource SectionTitleStyle}"/>
+                        
+                        <TextBlock Style="{StaticResource ContentTextStyle}">
+                            Bảng tuần hoàn là <Run FontWeight="Bold" Foreground="#D32F2F">"bản đồ hóa học"</Run> giúp:
+                        </TextBlock>
+
+                        <!-- Applications Grid -->
+                        <Grid Margin="0,15,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Card 1 -->
+                            <Border Grid.Row="0" Grid.Column="0" 
+                                    Background="#E8F5E9" 
+                                    BorderBrush="#4CAF50" 
+                                    BorderThickness="2" 
+                                    CornerRadius="8" 
+                                    Padding="15" 
+                                    Margin="0,0,10,10">
+                                <StackPanel>
+                                    <TextBlock Text="🔬 Dự đoán cấu tạo" 
+                                             FontSize="16" FontWeight="Bold" 
+                                             Foreground="#2E7D32" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Dự đoán cấu tạo nguyên tử của một nguyên tố dựa vào vị trí." 
+                                             FontSize="13" TextWrapping="Wrap" 
+                                             Foreground="#424242"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Card 2 -->
+                            <Border Grid.Row="0" Grid.Column="1" 
+                                    Background="#FFF3E0" 
+                                    BorderBrush="#FF9800" 
+                                    BorderThickness="2" 
+                                    CornerRadius="8" 
+                                    Padding="15" 
+                                    Margin="10,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="⚗️ Dự đoán tính chất" 
+                                             FontSize="16" FontWeight="Bold" 
+                                             Foreground="#E65100" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Dự đoán tính chất vật lý và hóa học dựa vào vị trí của nó." 
+                                             FontSize="13" TextWrapping="Wrap" 
+                                             Foreground="#424242"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Card 3 -->
+                            <Border Grid.Row="1" Grid.Column="0" 
+                                    Background="#E3F2FD" 
+                                    BorderBrush="#2196F3" 
+                                    BorderThickness="2" 
+                                    CornerRadius="8" 
+                                    Padding="15" 
+                                    Margin="0,0,10,10">
+                                <StackPanel>
+                                    <TextBlock Text="📊 Quy luật tuần hoàn" 
+                                             FontSize="16" FontWeight="Bold" 
+                                             Foreground="#1976D2" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Hiểu quy luật biến đổi: bán kính nguyên tử, độ âm điện, năng lượng ion hóa..." 
+                                             FontSize="13" TextWrapping="Wrap" 
+                                             Foreground="#424242"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Card 4 -->
+                            <Border Grid.Row="1" Grid.Column="1" 
+                                    Background="#FCE4EC" 
+                                    BorderBrush="#E91E63" 
+                                    BorderThickness="2" 
+                                    CornerRadius="8" 
+                                    Padding="15" 
+                                    Margin="10,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="🔍 Nghiên cứu khoa học" 
+                                             FontSize="16" FontWeight="Bold" 
+                                             Foreground="#C2185B" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Nền tảng nghiên cứu cấu tạo chất, phản ứng hóa học, và phát hiện nguyên tố mới." 
+                                             FontSize="13" TextWrapping="Wrap" 
+                                             Foreground="#424242"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Card 5 -->
+                            <Border Grid.Row="2" Grid.ColumnSpan="2" 
+                                    Background="#F3E5F5" 
+                                    BorderBrush="#9C27B0" 
+                                    BorderThickness="2" 
+                                    CornerRadius="8" 
+                                    Padding="15" 
+                                    Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="🌟 Ứng dụng thực tiễn" 
+                                             FontSize="16" FontWeight="Bold" 
+                                             Foreground="#7B1FA2" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Ứng dụng trong y học, năng lượng, công nghệ nano, và nhiều lĩnh vực khác." 
+                                             FontSize="13" TextWrapping="Wrap" 
+                                             Foreground="#424242"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Link to features -->
+                        <Border Style="{StaticResource HighlightBoxStyle}" Margin="0,20,0,0">
+                            <StackPanel>
+                                <TextBlock Text="🔗 KHÁM PHÁ THÊM TRONG ỨNG DỤNG" 
+                                         FontSize="16" FontWeight="Bold" 
+                                         Foreground="#1976D2" Margin="0,0,0,12"/>
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • 📊 <Run FontWeight="Bold">Biểu đồ hóa tan:</Run> Xem quy tắc tan của 238 muối vô cơ
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • 🧪 <Run FontWeight="Bold">Mô phỏng thí nghiệm:</Run> Quan sát phản ứng kết tủa trực quan
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • 💡 <Run FontWeight="Bold">Quy tắc tan:</Run> Học các quy tắc tan cơ bản trong hóa học
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 4: Lịch sử -->
+            <TabItem Header="📜 Lịch sử" Style="{StaticResource TabHeaderStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="30">
+                        <TextBlock Text="📜 LỊCH SỬ HÌNH THÀNH BẢNG TUẦN HOÀN" Style="{StaticResource SectionTitleStyle}"/>
+                        
+                        <!-- Timeline -->
+                        <StackPanel>
+                            <!-- Period 1: Trước Mendeleev -->
+                            <Border Background="#FFF3E0" 
+                                    BorderBrush="#FF9800" 
+                                    BorderThickness="2,2,2,0" 
+                                    CornerRadius="8,8,0,0" 
+                                    Padding="20">
+                                <StackPanel>
+                                    <TextBlock Text="📅 Thế kỷ XIX - Trước Mendeleev" 
+                                             FontSize="18" FontWeight="Bold" 
+                                             Foreground="#E65100" Margin="0,0,0,12"/>
+                                    <TextBlock Style="{StaticResource ContentTextStyle}">
+                                        Nhiều nhà khoa học đã cố gắng sắp xếp các nguyên tố:
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource ContentTextStyle}">
+                                        • <Run FontWeight="Bold">Dobereiner:</Run> Đề xuất "bộ ba nguyên tố"
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource ContentTextStyle}">
+                                        • <Run FontWeight="Bold">Newlands:</Run> Luật bát âm
+                                    </TextBlock>
+                                    <TextBlock Style="{StaticResource ContentTextStyle}">
+                                        Tuy nhiên, các phương pháp này chưa đầy đủ và chính xác.
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Period 2: Mendeleev -->
+                            <Border Background="#E3F2FD" 
+                                    BorderBrush="#2196F3" 
+                                    BorderThickness="2,0,2,0" 
+                                    Padding="20">
+                                <StackPanel>
+                                    <TextBlock Text="🏆 1869 - Dmitri Ivanovich Mendeleev" 
+                                             FontSize="18" FontWeight="Bold" 
+                                             Foreground="#1976D2" Margin="0,0,0,12"/>
+                                    
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" 
+                                                Background="White" 
+                                                BorderBrush="#2196F3" 
+                                                BorderThickness="2" 
+                                                CornerRadius="8" 
+                                                Padding="8"
+                                                Margin="0,0,15,0"
+                                                VerticalAlignment="Top">
+                                            <StackPanel>
+                                                <TextBlock Text="👨‍🔬" FontSize="48" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="Mendeleev" 
+                                                         FontSize="12" FontWeight="Bold" 
+                                                         HorizontalAlignment="Center"
+                                                         Margin="0,4,0,0"/>
+                                                <TextBlock Text="1834-1907" 
+                                                         FontSize="10" 
+                                                         HorizontalAlignment="Center"
+                                                         Foreground="#757575"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Style="{StaticResource ContentTextStyle}">
+                                                <Run FontWeight="Bold">Nhà hóa học người Nga</Run>, được coi là <Run FontWeight="Bold" Foreground="#D32F2F">cha đẻ của bảng tuần hoàn hiện đại</Run>.
+                                            </TextBlock>
+                                            
+                                            <TextBlock Style="{StaticResource ContentTextStyle}">
+                                                ✓ Sắp xếp 63 nguyên tố theo khối lượng nguyên tử tăng dần
+                                            </TextBlock>
+                                            
+                                            <TextBlock Style="{StaticResource ContentTextStyle}">
+                                                ✓ Xếp các nguyên tố có tính chất tương tự vào cùng cột
+                                            </TextBlock>
+                                            
+                                            <Border Background="#FFFDE7" 
+                                                    BorderBrush="#FBC02D" 
+                                                    BorderThickness="2" 
+                                                    CornerRadius="4" 
+                                                    Padding="12" 
+                                                    Margin="0,8,0,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="⭐ THÀNH TỰU VĨ ĐẠI:" 
+                                                             FontWeight="Bold" 
+                                                             Foreground="#F57F17" 
+                                                             Margin="0,0,0,6"/>
+                                                    <TextBlock Style="{StaticResource ContentTextStyle}">
+                                                        Chừa chỗ trống cho các nguyên tố chưa được phát hiện và dự đoán chính xác tính chất của chúng (như Ga, Ge, Sc).
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Period 3: Hoàn thiện -->
+                            <Border Background="#E8F5E9" 
+                                    BorderBrush="#4CAF50" 
+                                    BorderThickness="2,0,2,2" 
+                                    CornerRadius="0,0,8,8" 
+                                    Padding="20">
+                                <StackPanel>
+                                    <TextBlock Text="🔬 1913 - Henry Moseley và sau này" 
+                                             FontSize="18" FontWeight="Bold" 
+                                             Foreground="#2E7D32" Margin="0,0,0,12"/>
+                                    
+                                    <TextBlock Style="{StaticResource ContentTextStyle}">
+                                        <Run FontWeight="Bold">Nhà vật lý Henry Moseley</Run> xác định được <Run FontWeight="Bold" Foreground="#D32F2F">số hiệu nguyên tử (Z)</Run> là đại lượng cơ bản.
+                                    </TextBlock>
+                                    
+                                    <TextBlock Style="{StaticResource ContentTextStyle}">
+                                        → Bảng tuần hoàn được sắp xếp lại theo Z tăng dần thay vì khối lượng nguyên tử.
+                                    </TextBlock>
+
+                                    <Border Background="White" 
+                                            BorderBrush="#4CAF50" 
+                                            BorderThickness="2" 
+                                            CornerRadius="4" 
+                                            Padding="12" 
+                                            Margin="0,12,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="📌 NGÀY NAY (2025):" 
+                                                     FontWeight="Bold" 
+                                                     Foreground="#2E7D32" 
+                                                     Margin="0,0,0,6"/>
+                                            <TextBlock Style="{StaticResource ContentTextStyle}">
+                                                • Bảng tuần hoàn hiện đại có <Run FontWeight="Bold" Foreground="#D32F2F">118 nguyên tố</Run>
+                                            </TextBlock>
+                                            <TextBlock Style="{StaticResource ContentTextStyle}">
+                                                • Vẫn được IUPAC (Liên minh Hóa học Quốc tế) cập nhật định kỳ
+                                            </TextBlock>
+                                            <TextBlock Style="{StaticResource ContentTextStyle}">
+                                                • Tiếp tục mở rộng với các nguyên tố siêu nặng mới
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 5: Giáo dục -->
+            <TabItem Header="🎓 Giáo dục" Style="{StaticResource TabHeaderStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="30">
+                        <TextBlock Text="🎓 Ý NGHĨA GIÁO DỤC VÀ KHOA HỌC" Style="{StaticResource SectionTitleStyle}"/>
+                        
+                        <!-- Benefits Section -->
+                        <Border Background="#E8F5E9" 
+                                BorderBrush="#4CAF50" 
+                                BorderThickness="2" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="📚 LỢI ÍCH TRONG HỌC TẬP" 
+                                         FontSize="18" FontWeight="Bold" 
+                                         Foreground="#2E7D32" Margin="0,0,0,15"/>
+                                
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="1️⃣" FontSize="24" Margin="0,0,15,10"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource ContentTextStyle}">
+                                        <Run FontWeight="Bold">Dễ dàng nhớ và hiểu:</Run> Giúp học sinh nắm vững mối quan hệ giữa các nguyên tố một cách có hệ thống.
+                                    </TextBlock>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="2️⃣" FontSize="24" Margin="0,0,15,10"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource ContentTextStyle}">
+                                        <Run FontWeight="Bold">Giải thích phản ứng hóa học:</Run> Là nền tảng để hiểu cơ chế phản ứng, liên kết hóa học và tính chất vật chất.
+                                    </TextBlock>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="3️⃣" FontSize="24" Margin="0,0,15,10"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource ContentTextStyle}">
+                                        <Run FontWeight="Bold">Phát triển tư duy khoa học:</Run> Rèn luyện khả năng quan sát, so sánh và dự đoán dựa trên quy luật.
+                                    </TextBlock>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Research Section -->
+                        <Border Background="#E3F2FD" 
+                                BorderBrush="#2196F3" 
+                                BorderThickness="2" 
+                                CornerRadius="8" 
+                                Padding="20" 
+                                Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="🔬 GIÁ TRỊ NGHIÊN CỨU KHOA HỌC" 
+                                         FontSize="18" FontWeight="Bold" 
+                                         Foreground="#1976D2" Margin="0,0,0,15"/>
+                                
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • <Run FontWeight="Bold">Công cụ dự đoán mạnh mẽ:</Run> Hỗ trợ phát hiện nguyên tố mới, vật liệu mới
+                                </TextBlock>
+                                
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • <Run FontWeight="Bold">Ứng dụng đa ngành:</Run> Y học, năng lượng, công nghệ nano, vật liệu học
+                                </TextBlock>
+                                
+                                <TextBlock Style="{StaticResource ContentTextStyle}">
+                                    • <Run FontWeight="Bold">Nền tảng hóa học hiện đại:</Run> Là công cụ không thể thiếu trong mọi phòng thí nghiệm
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Summary Box -->
+                        <Border Background="#FFF3E0" 
+                                BorderBrush="#FF9800" 
+                                BorderThickness="3" 
+                                CornerRadius="8" 
+                                Padding="25">
+                            <StackPanel>
+                                <TextBlock Text="💡 TÓM LẠI" 
+                                         FontSize="20" FontWeight="Bold" 
+                                         Foreground="#E65100" 
+                                         HorizontalAlignment="Center"
+                                         Margin="0,0,0,15"/>
+                                
+                                <TextBlock Text="Bảng tuần hoàn không chỉ là danh sách các nguyên tố, mà là 'trái tim của hóa học' – thể hiện trật tự, quy luật và sự liên kết giữa cấu trúc vi mô của nguyên tử và thế giới vật chất xung quanh chúng ta." 
+                                         FontSize="15"
+                                         FontWeight="SemiBold"
+                                         FontStyle="Italic"
+                                         Foreground="#424242"
+                                         TextWrapping="Wrap"
+                                         TextAlignment="Center"
+                                         LineHeight="26"/>
+                                
+                                <TextBlock Text="🌟 🌟 🌟" 
+                                         FontSize="24"
+                                         HorizontalAlignment="Center"
+                                         Margin="0,15,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 6: Ứng dụng thực tế -->
+            <TabItem Header="🏭 Ứng dụng thực tế" Style="{StaticResource TabHeaderStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="30">
+                        <TextBlock Text="🏭 ỨNG DỤNG THỰC TẾ CỦA CÁC NGUYÊN TỐ HÓA HỌC" Style="{StaticResource SectionTitleStyle}"/>
+                        <TextBlock Style="{StaticResource ContentTextStyle}" Margin="0,0,0,20">
+                            Bảng tuần hoàn không chỉ là lý thuyết khô khan mà còn là chìa khóa mở ra thế giới công nghệ, y học và năng lượng hiện đại. Dưới đây là 6 ví dụ mô tả trực quan ứng dụng thực tế sinh động của các nguyên tố hóa học trong đời sống.
+                        </TextBlock>
+
+                        <UniformGrid Columns="2" Margin="0,10,0,0">
+                            <!-- 1. Hydrogen -->
+                            <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15" Margin="10" Background="White">
+                                <StackPanel>
+                                    <TextBlock Text="🚀 1. Hydro (H) - Năng lượng vũ trụ &amp; Tương lai" FontWeight="Bold" FontSize="15" Foreground="#1976D2" Margin="0,0,0,10"/>
+                                    <Image x:Name="imgApp1" Height="180" Stretch="Uniform" Margin="0,0,0,10"/>
+                                    <TextBlock Style="{StaticResource ContentTextStyle}" FontSize="13" Margin="0" LineHeight="20">
+                                        Hydro lỏng là nhiên liệu phóng tên lửa vũ trụ nhờ hiệu suất cháy cực cao. Đồng thời, pin nhiên liệu Hydro đang được nghiên cứu làm nguồn năng lượng sạch không phát thải cho ô tô tương lai.
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 2. Silicon -->
+                            <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15" Margin="10" Background="White">
+                                <StackPanel>
+                                    <TextBlock Text="💻 2. Silic (Si) - Trái tim của Công nghệ số" FontWeight="Bold" FontSize="15" Foreground="#1976D2" Margin="0,0,0,10"/>
+                                    <Image x:Name="imgApp2" Height="180" Stretch="Uniform" Margin="0,0,0,10"/>
+                                    <TextBlock Style="{StaticResource ContentTextStyle}" FontSize="13" Margin="0" LineHeight="20">
+                                        Silic là chất bán dẫn cơ bản để sản xuất các vi mạch tích hợp (chip điện tử) trong máy tính, điện thoại thông minh và các tế bào quang điện của pin mặt trời.
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 3. Helium -->
+                            <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15" Margin="10" Background="White">
+                                <StackPanel>
+                                    <TextBlock Text="🎈 3. Heli (He) - Khí khinh khí cầu &amp; Làm lạnh MRI" FontWeight="Bold" FontSize="15" Foreground="#1976D2" Margin="0,0,0,10"/>
+                                    <Image x:Name="imgApp3" Height="180" Stretch="Uniform" Margin="0,0,0,10"/>
+                                    <TextBlock Style="{StaticResource ContentTextStyle}" FontSize="13" Margin="0" LineHeight="20">
+                                        Khí Heli nhẹ hơn không khí và không cháy, dùng để bơm khinh khí cầu. Ở dạng lỏng, Heli là chất làm lạnh siêu việt để làm mát nam châm siêu dẫn trong máy chụp cộng hưởng từ (MRI).
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 4. Iron -->
+                            <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15" Margin="10" Background="White">
+                                <StackPanel>
+                                    <TextBlock Text="🏗️ 4. Sắt (Fe) - Khung xương của mọi Công trình" FontWeight="Bold" FontSize="15" Foreground="#1976D2" Margin="0,0,0,10"/>
+                                    <Image x:Name="imgApp4" Height="180" Stretch="Uniform" Margin="0,0,0,10"/>
+                                    <TextBlock Style="{StaticResource ContentTextStyle}" FontSize="13" Margin="0" LineHeight="20">
+                                        Sắt và các hợp kim của sắt (thép) là vật liệu xây dựng và chế tạo máy móc phổ biến nhất thế giới nhờ độ bền cơ học cao, chịu lực tốt và giá thành hợp lý.
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 5. Gold -->
+                            <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15" Margin="10" Background="White">
+                                <StackPanel>
+                                    <TextBlock Text="👑 5. Vàng (Au) - Trang sức &amp; Lá chắn Vũ trụ" FontWeight="Bold" FontSize="15" Foreground="#1976D2" Margin="0,0,0,10"/>
+                                    <Image x:Name="imgApp5" Height="180" Stretch="Uniform" Margin="0,0,0,10"/>
+                                    <TextBlock Style="{StaticResource ContentTextStyle}" FontSize="13" Margin="0" LineHeight="20">
+                                        Vàng có tính dẫn điện cực tốt, không bị oxy hóa, được dùng trong các tiếp điểm điện tử cao cấp và làm màng mỏng phản xạ bức xạ hồng ngoại bảo vệ kính phi hành gia và tàu vũ trụ.
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 6. Uranium -->
+                            <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="15" Margin="10" Background="White">
+                                <StackPanel>
+                                    <TextBlock Text="⚛️ 6. Urani (U) - Nguồn Năng lượng hạt nhân" FontWeight="Bold" FontSize="15" Foreground="#1976D2" Margin="0,0,0,10"/>
+                                    <Image x:Name="imgApp6" Height="180" Stretch="Uniform" Margin="0,0,0,10"/>
+                                    <TextBlock Style="{StaticResource ContentTextStyle}" FontSize="13" Margin="0" LineHeight="20">
+                                        Urani là nguyên liệu hạt nhân chính trong các lò phản ứng điện hạt nhân. Phân hạch hạt nhân của U-235 giải phóng năng lượng khổng lồ để phát điện sạch phục vụ hàng triệu người.
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

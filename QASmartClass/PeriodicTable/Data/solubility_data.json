@@ -1,0 +1,591 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "lastUpdate": "2025-11-12",
+    "description": "Biểu đồ hòa tan - Tra cứu tính tan của muối",
+    "totalCations": 14,
+    "totalAnions": 17,
+    "totalSalts": 238
+  },
+  "cations": [
+    {
+      "symbol": "NH₄⁺",
+      "name": "Amoni",
+      "nameEnglish": "Ammonium",
+      "group": "ammonium",
+      "charge": 1
+    },
+    {
+      "symbol": "Li⁺",
+      "name": "Liti",
+      "nameEnglish": "Lithium",
+      "group": "alkali_metal",
+      "charge": 1
+    },
+    {
+      "symbol": "Na⁺",
+      "name": "Natri",
+      "nameEnglish": "Sodium",
+      "group": "alkali_metal",
+      "charge": 1
+    },
+    {
+      "symbol": "K⁺",
+      "name": "Kali",
+      "nameEnglish": "Potassium",
+      "group": "alkali_metal",
+      "charge": 1
+    },
+    {
+      "symbol": "Mg²⁺",
+      "name": "Magiê",
+      "nameEnglish": "Magnesium",
+      "group": "alkaline_earth_metal",
+      "charge": 2
+    },
+    {
+      "symbol": "Ca²⁺",
+      "name": "Canxi",
+      "nameEnglish": "Calcium",
+      "group": "alkaline_earth_metal",
+      "charge": 2
+    },
+    {
+      "symbol": "Ba²⁺",
+      "name": "Bari",
+      "nameEnglish": "Barium",
+      "group": "alkaline_earth_metal",
+      "charge": 2
+    },
+    {
+      "symbol": "Fe²⁺",
+      "name": "Sắt (II)",
+      "nameEnglish": "Iron (II)",
+      "group": "transition_metal",
+      "charge": 2
+    },
+    {
+      "symbol": "Fe³⁺",
+      "name": "Sắt (III)",
+      "nameEnglish": "Iron (III)",
+      "group": "transition_metal",
+      "charge": 3
+    },
+    {
+      "symbol": "Cu²⁺",
+      "name": "Đồng (II)",
+      "nameEnglish": "Copper (II)",
+      "group": "transition_metal",
+      "charge": 2
+    },
+    {
+      "symbol": "Ag⁺",
+      "name": "Bạc",
+      "nameEnglish": "Silver",
+      "group": "transition_metal",
+      "charge": 1
+    },
+    {
+      "symbol": "Zn²⁺",
+      "name": "Kẽm",
+      "nameEnglish": "Zinc",
+      "group": "transition_metal",
+      "charge": 2
+    },
+    {
+      "symbol": "Pb²⁺",
+      "name": "Chì",
+      "nameEnglish": "Lead",
+      "group": "post_transition_metal",
+      "charge": 2
+    },
+    {
+      "symbol": "Al³⁺",
+      "name": "Nhôm",
+      "nameEnglish": "Aluminum",
+      "group": "post_transition_metal",
+      "charge": 3
+    }
+  ],
+  "anions": [
+    {
+      "symbol": "F⁻",
+      "name": "Florua",
+      "nameEnglish": "Fluoride",
+      "group": "halide",
+      "charge": -1
+    },
+    {
+      "symbol": "Cl⁻",
+      "name": "Clorua",
+      "nameEnglish": "Chloride",
+      "group": "halide",
+      "charge": -1
+    },
+    {
+      "symbol": "Br⁻",
+      "name": "Bromua",
+      "nameEnglish": "Bromide",
+      "group": "halide",
+      "charge": -1
+    },
+    {
+      "symbol": "I⁻",
+      "name": "Iodua",
+      "nameEnglish": "Iodide",
+      "group": "halide",
+      "charge": -1
+    },
+    {
+      "symbol": "ClO₃⁻",
+      "name": "Clorat",
+      "nameEnglish": "Chlorate",
+      "group": "oxyanion",
+      "charge": -1
+    },
+    {
+      "symbol": "OH⁻",
+      "name": "Hiđroxit",
+      "nameEnglish": "Hydroxide",
+      "group": "hydroxide",
+      "charge": -1
+    },
+    {
+      "symbol": "SO₃²⁻",
+      "name": "Sunfit",
+      "nameEnglish": "Sulfite",
+      "group": "oxyanion",
+      "charge": -2
+    },
+    {
+      "symbol": "SO₄²⁻",
+      "name": "Sunfat",
+      "nameEnglish": "Sulfate",
+      "group": "oxyanion",
+      "charge": -2
+    },
+    {
+      "symbol": "CO₃²⁻",
+      "name": "Cacbonat",
+      "nameEnglish": "Carbonate",
+      "group": "oxyanion",
+      "charge": -2
+    },
+    {
+      "symbol": "NO₂⁻",
+      "name": "Nitrit",
+      "nameEnglish": "Nitrite",
+      "group": "oxyanion",
+      "charge": -1
+    },
+    {
+      "symbol": "NO₃⁻",
+      "name": "Nitrat",
+      "nameEnglish": "Nitrate",
+      "group": "oxyanion",
+      "charge": -1
+    },
+    {
+      "symbol": "PO₄³⁻",
+      "name": "Photphat",
+      "nameEnglish": "Phosphate",
+      "group": "oxyanion",
+      "charge": -3
+    },
+    {
+      "symbol": "CN⁻",
+      "name": "Xianua",
+      "nameEnglish": "Cyanide",
+      "group": "other",
+      "charge": -1
+    },
+    {
+      "symbol": "OCN⁻",
+      "name": "Xianat",
+      "nameEnglish": "Cyanate",
+      "group": "other",
+      "charge": -1
+    },
+    {
+      "symbol": "SCN⁻",
+      "name": "Tioxianat",
+      "nameEnglish": "Thiocyanate",
+      "group": "other",
+      "charge": -1
+    },
+    {
+      "symbol": "Cr₂O₇²⁻",
+      "name": "Đicromat",
+      "nameEnglish": "Dichromate",
+      "group": "oxyanion",
+      "charge": -2
+    },
+    {
+      "symbol": "O²⁻",
+      "name": "Oxit",
+      "nameEnglish": "Oxide",
+      "group": "oxide",
+      "charge": -2
+    }
+  ],
+  "solubilityMatrix": [
+    { "cation": "NH₄⁺", "anion": "F⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NH₄F", "saltName": "Amoni florua", "solubilityValue": "tan", "note": "Muối tan tốt" },
+    { "cation": "NH₄⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NH₄Cl", "saltName": "Amoni clorua", "solubilityValue": "tan", "note": "Tan tốt, dùng làm chất điện phân, phân bón. Độ tan: 37.2g/100ml (20°C)" },
+    { "cation": "NH₄⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NH₄Br", "saltName": "Amoni bromua", "solubilityValue": "tan", "note": "Tan tốt, dùng trong nhiếp ảnh, dược phẩm진정제" },
+    { "cation": "NH₄⁺", "anion": "I⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NH₄I", "saltName": "Amoni iodua", "solubilityValue": "tan", "note": "Tan tốt, dùng trong nhiếp ảnh, y học" },
+    { "cation": "NH₄⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NH₄ClO₃", "saltName": "Amoni clorat", "solubilityValue": "tan", "note": "Tan tốt, chất oxy hóa mạnh, dễ nổ" },
+    { "cation": "NH₄⁺", "anion": "OH⁻", "status": "reacts", "color": "#9C27B0", "saltFormula": "NH₄OH", "saltName": "Amoni hiđroxit", "solubilityValue": "phản ứng", "note": "Không tồn tại dạng tinh thể, chỉ tồn tại trong dung dịch NH₃ + H₂O" },
+    { "cation": "NH₄⁺", "anion": "SO₃²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "(NH₄)₂SO₃", "saltName": "Amoni sunfit", "solubilityValue": "tan", "note": "Tan tốt, chất khử, chống oxy hóa thực phẩm" },
+    { "cation": "NH₄⁺", "anion": "SO₄²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "(NH₄)₂SO₄", "saltName": "Amoni sunfat", "solubilityValue": "tan", "note": "Tan tốt, phân bón phổ biến, %N=21%. Độ tan: 76g/100ml (20°C)" },
+    { "cation": "NH₄⁺", "anion": "CO₃²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "(NH₄)₂CO₃", "saltName": "Amoni cacbonat", "solubilityValue": "tan", "note": "Tan nhưng dễ phân hủy: (NH₄)₂CO₃ → 2NH₃ + H₂O + CO₂" },
+    { "cation": "NH₄⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NH₄NO₂", "saltName": "Amoni nitrit", "solubilityValue": "tan", "note": "Tan tốt, không bền, phân hủy: NH₄NO₂ → N₂ + 2H₂O" },
+    { "cation": "NH₄⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NH₄NO₃", "saltName": "Amoni nitrat", "solubilityValue": "tan", "note": "Tan rất tốt, phân bón %N=35%, chất nổ AN-FO. Độ tan: 192g/100ml (20°C)" },
+    { "cation": "NH₄⁺", "anion": "PO₄³⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "(NH₄)₃PO₄", "saltName": "Amoni photphat", "solubilityValue": "tan", "note": "Tan tốt, phân bón DAP, MAP. Dùng làm chất chống cháy" },
+    { "cation": "NH₄⁺", "anion": "CN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NH₄CN", "saltName": "Amoni xianua", "solubilityValue": "tan", "note": "Tan tốt nhưng rất độc, giải phóng HCN trong môi trường axit" },
+    { "cation": "NH₄⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NH₄OCN", "saltName": "Amoni xianat", "solubilityValue": "tan", "note": "Tan tốt, đồng phân hóa thành (NH₄)₂CO ở nhiệt độ cao" },
+    { "cation": "NH₄⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NH₄SCN", "saltName": "Amoni tioxianat", "solubilityValue": "tan", "note": "Tan rất tốt, dùng trong phân tích Fe³⁺ (màu đỏ máu)" },
+    { "cation": "NH₄⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "(NH₄)₂Cr₂O₇", "saltName": "Amoni đicromat", "solubilityValue": "tan", "note": "Tan tốt, màu da cam, chất oxy hóa mạnh, độc, gây ung thư" },
+    { "cation": "NH₄⁺", "anion": "O²⁻", "status": "na", "color": "#9E9E9E", "saltFormula": "-", "saltName": "-", "solubilityValue": "không tồn tại", "note": "Không tạo muối oxit" },
+    
+    { "cation": "Na⁺", "anion": "F⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaF", "saltName": "Natri florua", "solubilityValue": "tan", "note": "Tan vừa phải (4g/100ml), dùng chống sâu răng trong kem đánh răng" },
+    { "cation": "Na⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaCl", "saltName": "Natri clorua", "solubilityValue": "tan", "note": "Muối ăn, độ tan 36g/100ml (20°C). Điện phân → NaOH + Cl₂" },
+    { "cation": "Na⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaBr", "saltName": "Natri bromua", "solubilityValue": "tan", "note": "Tan rất tốt (90g/100ml), dùng trong y học làm thuốc an thần" },
+    { "cation": "Na⁺", "anion": "I⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaI", "saltName": "Natri iodua", "solubilityValue": "tan", "note": "Tan tốt, bổ sung iod, điều trị bướu cổ. Dễ bị oxy hóa thành I₂" },
+    { "cation": "Na⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaClO₃", "saltName": "Natri clorat", "solubilityValue": "tan", "note": "Tan tốt, chất oxy hóa mạnh, dùng sản xuất ClO₂ tẩy trắng giấy" },
+    { "cation": "Na⁺", "anion": "OH⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaOH", "saltName": "Natri hiđroxit", "solubilityValue": "tan", "note": "Xút ăn da, bazơ mạnh. Độ tan 109g/100ml (20°C). Dùng rộng rãi CN" },
+    { "cation": "Na⁺", "anion": "SO₃²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Na₂SO₃", "saltName": "Natri sunfit", "solubilityValue": "tan", "note": "Tan tốt, chất khử, chống oxy hóa, tẩy trắng giấy. Bảo quản thực phẩm" },
+    { "cation": "Na⁺", "anion": "SO₄²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Na₂SO₄", "saltName": "Natri sunfat", "solubilityValue": "tan", "note": "Muối Glauber, độ tan 19g/100ml. Sản xuất thủy tinh, giấy kraft" },
+    { "cation": "Na⁺", "anion": "CO₃²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Na₂CO₃", "saltName": "Natri cacbonat", "solubilityValue": "tan", "note": "Soda, độ tan 22g/100ml. Làm mềm nước cứng, sản xuất thủy tinh, xà phòng" },
+    { "cation": "Na⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaNO₂", "saltName": "Natri nitrit", "solubilityValue": "tan", "note": "Tan tốt, chất bảo quản thịt (E250), có thể gây ung thư nếu dùng nhiều" },
+    { "cation": "Na⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaNO₃", "saltName": "Natri nitrat", "solubilityValue": "tan", "note": "Tiêu Chilê, phân đạm, độ tan 88g/100ml. Dùng sản xuất axit nitric" },
+    { "cation": "Na⁺", "anion": "PO₄³⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Na₃PO₄", "saltName": "Natri photphat", "solubilityValue": "tan", "note": "Tan tốt, tẩy rửa mạnh, làm mềm nước. TSP - chất tẩy công nghiệp" },
+    { "cation": "Na⁺", "anion": "CN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaCN", "saltName": "Natri xianua", "solubilityValue": "tan", "note": "Tan tốt, cực độc! Dùng tách vàng, mạ điện. LD50: 5-10 mg/kg" },
+    { "cation": "Na⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaOCN", "saltName": "Natri xianat", "solubilityValue": "tan", "note": "Tan tốt, kém độc hơn NaCN. Dùng trong tổng hợp hữu cơ" },
+    { "cation": "Na⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "NaSCN", "saltName": "Natri tioxianat", "solubilityValue": "tan", "note": "Tan rất tốt, dùng nhuộm vải, thuốc trừ cỏ, phân tích Fe³⁺" },
+    { "cation": "Na⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Na₂Cr₂O₇", "saltName": "Natri đicromat", "solubilityValue": "tan", "note": "Tan tốt, màu da cam, chất oxy hóa mạnh. Gây ung thư, độc" },
+    { "cation": "Na⁺", "anion": "O²⁻", "status": "reacts", "color": "#9C27B0", "saltFormula": "Na₂O", "saltName": "Natri oxit", "solubilityValue": "phản ứng", "note": "Phản ứng bùng nổ với H₂O: Na₂O + H₂O → 2NaOH + nhiệt" },
+    
+    { "cation": "K⁺", "anion": "F⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KF", "saltName": "Kali florua", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "K⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KCl", "saltName": "Kali clorua", "solubilityValue": "tan", "note": "Tan tốt, phân kali" },
+    { "cation": "K⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KBr", "saltName": "Kali bromua", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "K⁺", "anion": "I⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KI", "saltName": "Kali iodua", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "K⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KClO₃", "saltName": "Kali clorat", "solubilityValue": "tan", "note": "Tan tốt, chất oxy hóa" },
+    { "cation": "K⁺", "anion": "OH⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KOH", "saltName": "Kali hiđroxit", "solubilityValue": "tan", "note": "Bazơ mạnh, tan tốt" },
+    { "cation": "K⁺", "anion": "SO₃²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "K₂SO₃", "saltName": "Kali sunfit", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "K⁺", "anion": "SO₄²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "K₂SO₄", "saltName": "Kali sunfat", "solubilityValue": "tan", "note": "Tan tốt, phân kali" },
+    { "cation": "K⁺", "anion": "CO₃²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "K₂CO₃", "saltName": "Kali cacbonat", "solubilityValue": "tan", "note": "Potas, tan tốt" },
+    { "cation": "K⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KNO₂", "saltName": "Kali nitrit", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "K⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KNO₃", "saltName": "Kali nitrat", "solubilityValue": "tan", "note": "Tan tốt, phân đạm kali" },
+    { "cation": "K⁺", "anion": "PO₄³⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "K₃PO₄", "saltName": "Kali photphat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "K⁺", "anion": "CN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KCN", "saltName": "Kali xianua", "solubilityValue": "tan", "note": "Tan tốt, rất độc" },
+    { "cation": "K⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KOCN", "saltName": "Kali xianat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "K⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "KSCN", "saltName": "Kali tioxianat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "K⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "K₂Cr₂O₇", "saltName": "Kali đicromat", "solubilityValue": "tan", "note": "Tan tốt, màu da cam" },
+    { "cation": "K⁺", "anion": "O²⁻", "status": "reacts", "color": "#9C27B0", "saltFormula": "K₂O", "saltName": "Kali oxit", "solubilityValue": "phản ứng", "note": "Phản ứng mạnh với H₂O → KOH" },
+    
+    { "cation": "Mg²⁺", "anion": "F⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "MgF₂", "saltName": "Magiê florua", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Mg²⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "MgCl₂", "saltName": "Magiê clorua", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Mg²⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "MgBr₂", "saltName": "Magiê bromua", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Mg²⁺", "anion": "I⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "MgI₂", "saltName": "Magiê iodua", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Mg²⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Mg(ClO₃)₂", "saltName": "Magiê clorat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Mg²⁺", "anion": "OH⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Mg(OH)₂", "saltName": "Magiê hiđroxit", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Mg²⁺", "anion": "SO₃²⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "MgSO₃", "saltName": "Magiê sunfit", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Mg²⁺", "anion": "SO₄²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "MgSO₄", "saltName": "Magiê sunfat", "solubilityValue": "tan", "note": "Muối Epsom, tan tốt" },
+    { "cation": "Mg²⁺", "anion": "CO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "MgCO₃", "saltName": "Magiê cacbonat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Mg²⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Mg(NO₂)₂", "saltName": "Magiê nitrit", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Mg²⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Mg(NO₃)₂", "saltName": "Magiê nitrat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Mg²⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Mg₃(PO₄)₂", "saltName": "Magiê photphat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Mg²⁺", "anion": "CN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Mg(CN)₂", "saltName": "Magiê xianua", "solubilityValue": "không tan", "note": "Độ tan rất thấp" },
+    { "cation": "Mg²⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Mg(OCN)₂", "saltName": "Magiê xianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Mg²⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Mg(SCN)₂", "saltName": "Magiê tioxianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Mg²⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "MgCr₂O₇", "saltName": "Magiê đicromat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Mg²⁺", "anion": "O²⁻", "status": "reacts", "color": "#9C27B0", "saltFormula": "MgO", "saltName": "Magiê oxit", "solubilityValue": "phản ứng", "note": "Phản ứng chậm với H₂O" },
+    
+    { "cation": "Ca²⁺", "anion": "F⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "CaF₂", "saltName": "Canxi florua", "solubilityValue": "không tan", "note": "Fluorit, khoáng chất tự nhiên. Dùng sản xuất HF, thủy tinh quang học" },
+    { "cation": "Ca²⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "CaCl₂", "saltName": "Canxi clorua", "solubilityValue": "tan", "note": "Tan 74g/100ml, hút ẩm mạnh. Dùng làm khô, rải đường băng tuyết" },
+    { "cation": "Ca²⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "CaBr₂", "saltName": "Canxi bromua", "solubilityValue": "tan", "note": "Tan 125g/100ml (0°C), dùng trong dược phẩm" },
+    { "cation": "Ca²⁺", "anion": "I⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "CaI₂", "saltName": "Canxi iodua", "solubilityValue": "tan", "note": "Tan tốt, hút ẩm. Bổ sung iod, chụp X-quang" },
+    { "cation": "Ca²⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ca(ClO₃)₂", "saltName": "Canxi clorat", "solubilityValue": "tan", "note": "Tan tốt, chất oxy hóa, dùng diệt cỏ" },
+    { "cation": "Ca²⁺", "anion": "OH⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "Ca(OH)₂", "saltName": "Canxi hiđroxit", "solubilityValue": "ít tan", "note": "Vôi tôi, độ tan 0.165g/100ml (20°C). Dùng xây dựng, khử chua đất" },
+    { "cation": "Ca²⁺", "anion": "SO₃²⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "CaSO₃", "saltName": "Canxi sunfit", "solubilityValue": "ít tan", "note": "Độ tan 0.004g/100ml, chất khử trong công nghiệp giấy" },
+    { "cation": "Ca²⁺", "anion": "SO₄²⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "CaSO₄", "saltName": "Canxi sunfat", "solubilityValue": "ít tan", "note": "Thạch cao (CaSO₄·2H₂O), độ tan 0.2g/100ml. Xây dựng, nẹp bó gẫy" },
+    { "cation": "Ca²⁺", "anion": "CO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "CaCO₃", "saltName": "Canxi cacbonat", "solubilityValue": "không tan", "note": "Đá vôi, đá hoa, vỏ sò. Sản xuất vôi, xi măng, tượng, mảng vôi ấm" },
+    { "cation": "Ca²⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ca(NO₂)₂", "saltName": "Canxi nitrit", "solubilityValue": "tan", "note": "Tan tốt, chống gỉ sét bê tông" },
+    { "cation": "Ca²⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ca(NO₃)₂", "saltName": "Canxi nitrat", "solubilityValue": "tan", "note": "Tan 121g/100ml, phân bón, pháo hoa, bê tông đông lạnh" },
+    { "cation": "Ca²⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Ca₃(PO₄)₂", "saltName": "Canxi photphat", "solubilityValue": "không tan", "note": "Thành phần chính xương răng (hydroxyapatite). Phân lân, thức ăn gia súc" },
+    { "cation": "Ca²⁺", "anion": "CN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Ca(CN)₂", "saltName": "Canxi xianua", "solubilityValue": "không tan", "note": "Độ tan cực thấp, độc. Dùng mạ vàng, thép thấm cacbon" },
+    { "cation": "Ca²⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ca(OCN)₂", "saltName": "Canxi xianat", "solubilityValue": "tan", "note": "Tan tốt, ít được sử dụng" },
+    { "cation": "Ca²⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ca(SCN)₂", "saltName": "Canxi tioxianat", "solubilityValue": "tan", "note": "Tan 130g/100ml, hút ẩm mạnh. Chất làm lạnh sâu" },
+    { "cation": "Ca²⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "CaCr₂O₇", "saltName": "Canxi đicromat", "solubilityValue": "tan", "note": "Tan tốt, chất oxy hóa, ít dùng so với K₂Cr₂O₇" },
+    { "cation": "Ca²⁺", "anion": "O²⁻", "status": "reacts", "color": "#9C27B0", "saltFormula": "CaO", "saltName": "Canxi oxit", "solubilityValue": "phản ứng", "note": "Vôi sống, toả nhiệt mạnh: CaO + H₂O → Ca(OH)₂ + 65kJ. Xây dựng" },
+    
+    { "cation": "Ba²⁺", "anion": "F⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "BaF₂", "saltName": "Bari florua", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Ba²⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "BaCl₂", "saltName": "Bari clorua", "solubilityValue": "tan", "note": "Tan tốt, độc" },
+    { "cation": "Ba²⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "BaBr₂", "saltName": "Bari bromua", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Ba²⁺", "anion": "I⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "BaI₂", "saltName": "Bari iodua", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Ba²⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ba(ClO₃)₂", "saltName": "Bari clorat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Ba²⁺", "anion": "OH⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ba(OH)₂", "saltName": "Bari hiđroxit", "solubilityValue": "tan", "note": "Tan, bazơ mạnh" },
+    { "cation": "Ba²⁺", "anion": "SO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "BaSO₃", "saltName": "Bari sunfit", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Ba²⁺", "anion": "SO₄²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "BaSO₄", "saltName": "Bari sunfat", "solubilityValue": "không tan", "note": "Kết tủa trắng, nhận biết SO₄²⁻" },
+    { "cation": "Ba²⁺", "anion": "CO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "BaCO₃", "saltName": "Bari cacbonat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Ba²⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ba(NO₂)₂", "saltName": "Bari nitrit", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Ba²⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ba(NO₃)₂", "saltName": "Bari nitrat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Ba²⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Ba₃(PO₄)₂", "saltName": "Bari photphat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Ba²⁺", "anion": "CN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ba(CN)₂", "saltName": "Bari xianua", "solubilityValue": "tan", "note": "Tan trong nước, rất độc" },
+    { "cation": "Ba²⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ba(OCN)₂", "saltName": "Bari xianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Ba²⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Ba(SCN)₂", "saltName": "Bari tioxianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Ba²⁺", "anion": "Cr₂O₇²⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "BaCr₂O₇", "saltName": "Bari đicromat", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Ba²⁺", "anion": "O²⁻", "status": "reacts", "color": "#9C27B0", "saltFormula": "BaO", "saltName": "Bari oxit", "solubilityValue": "phản ứng", "note": "Phản ứng với H₂O → Ba(OH)₂" },
+    
+    { "cation": "Li⁺", "anion": "F⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "LiF", "saltName": "Liti florua", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Li⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "LiCl", "saltName": "Liti clorua", "solubilityValue": "tan", "note": "Tan tốt, hút ẩm mạnh" },
+    { "cation": "Li⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "LiBr", "saltName": "Liti bromua", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Li⁺", "anion": "I⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "LiI", "saltName": "Liti iodua", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Li⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "LiClO₃", "saltName": "Liti clorat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Li⁺", "anion": "OH⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "LiOH", "saltName": "Liti hiđroxit", "solubilityValue": "ít tan", "note": "Ít tan hơn các bazơ kiềm khác" },
+    { "cation": "Li⁺", "anion": "SO₃²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Li₂SO₃", "saltName": "Liti sunfit", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Li⁺", "anion": "SO₄²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Li₂SO₄", "saltName": "Liti sunfat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Li⁺", "anion": "CO₃²⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "Li₂CO₃", "saltName": "Liti cacbonat", "solubilityValue": "ít tan", "note": "Ít tan, dùng trong y học" },
+    { "cation": "Li⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "LiNO₂", "saltName": "Liti nitrit", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Li⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "LiNO₃", "saltName": "Liti nitrat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Li⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Li₃PO₄", "saltName": "Liti photphat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Li⁺", "anion": "CN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "LiCN", "saltName": "Liti xianua", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Li⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "LiOCN", "saltName": "Liti xianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Li⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "LiSCN", "saltName": "Liti tioxianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Li⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Li₂Cr₂O₇", "saltName": "Liti đicromat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Li⁺", "anion": "O²⁻", "status": "reacts", "color": "#9C27B0", "saltFormula": "Li₂O", "saltName": "Liti oxit", "solubilityValue": "phản ứng", "note": "Phản ứng với H₂O → LiOH" },
+    
+    { "cation": "Fe²⁺", "anion": "F⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "FeF₂", "saltName": "Sắt(II) florua", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Fe²⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "FeCl₂", "saltName": "Sắt(II) clorua", "solubilityValue": "tan", "note": "Tan, màu xanh lục nhạt" },
+    { "cation": "Fe²⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "FeBr₂", "saltName": "Sắt(II) bromua", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Fe²⁺", "anion": "I⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "FeI₂", "saltName": "Sắt(II) iodua", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Fe²⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(ClO₃)₂", "saltName": "Sắt(II) clorat", "solubilityValue": "tan", "note": "Tan, không bền" },
+    { "cation": "Fe²⁺", "anion": "OH⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Fe(OH)₂", "saltName": "Sắt(II) hiđroxit", "solubilityValue": "không tan", "note": "Kết tủa xanh lục, dễ bị oxy hóa" },
+    { "cation": "Fe²⁺", "anion": "SO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "FeSO₃", "saltName": "Sắt(II) sunfit", "solubilityValue": "không tan", "note": "Kết tủa" },
+    { "cation": "Fe²⁺", "anion": "SO₄²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "FeSO₄", "saltName": "Sắt(II) sunfat", "solubilityValue": "tan", "note": "Tan, màu xanh lục" },
+    { "cation": "Fe²⁺", "anion": "CO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "FeCO₃", "saltName": "Sắt(II) cacbonat", "solubilityValue": "không tan", "note": "Kết tủa trắng xám" },
+    { "cation": "Fe²⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(NO₂)₂", "saltName": "Sắt(II) nitrit", "solubilityValue": "tan", "note": "Tan, không bền" },
+    { "cation": "Fe²⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(NO₃)₂", "saltName": "Sắt(II) nitrat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Fe²⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Fe₃(PO₄)₂", "saltName": "Sắt(II) photphat", "solubilityValue": "không tan", "note": "Kết tủa trắng xám" },
+    { "cation": "Fe²⁺", "anion": "CN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Fe(CN)₂", "saltName": "Sắt(II) xianua", "solubilityValue": "không tan", "note": "Kết tủa, tạo phức" },
+    { "cation": "Fe²⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(OCN)₂", "saltName": "Sắt(II) xianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Fe²⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(SCN)₂", "saltName": "Sắt(II) tioxianat", "solubilityValue": "tan", "note": "Tan, tạo phức màu" },
+    { "cation": "Fe²⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "FeCr₂O₇", "saltName": "Sắt(II) đicromat", "solubilityValue": "tan", "note": "Tan, phản ứng oxy hóa-khử" },
+    { "cation": "Fe²⁺", "anion": "O²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "FeO", "saltName": "Sắt(II) oxit", "solubilityValue": "không tan", "note": "Không tan, màu đen" },
+    
+    { "cation": "Fe³⁺", "anion": "F⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "FeF₃", "saltName": "Sắt(III) florua", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Fe³⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "FeCl₃", "saltName": "Sắt(III) clorua", "solubilityValue": "tan", "note": "Tan tốt, màu vàng nâu" },
+    { "cation": "Fe³⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "FeBr₃", "saltName": "Sắt(III) bromua", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Fe³⁺", "anion": "I⁻", "status": "na", "color": "#9E9E9E", "saltFormula": "-", "saltName": "-", "solubilityValue": "không tồn tại", "note": "Fe³⁺ oxy hóa I⁻ → I₂" },
+    { "cation": "Fe³⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(ClO₃)₃", "saltName": "Sắt(III) clorat", "solubilityValue": "tan", "note": "Tan, không bền" },
+    { "cation": "Fe³⁺", "anion": "OH⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Fe(OH)₃", "saltName": "Sắt(III) hiđroxit", "solubilityValue": "không tan", "note": "Kết tủa nâu đỏ" },
+    { "cation": "Fe³⁺", "anion": "SO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Fe₂(SO₃)₃", "saltName": "Sắt(III) sunfit", "solubilityValue": "không tan", "note": "Kết tủa, phản ứng khử" },
+    { "cation": "Fe³⁺", "anion": "SO₄²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe₂(SO₄)₃", "saltName": "Sắt(III) sunfat", "solubilityValue": "tan", "note": "Tan, màu vàng nâu" },
+    { "cation": "Fe³⁺", "anion": "CO₃²⁻", "status": "na", "color": "#9E9E9E", "saltFormula": "-", "saltName": "-", "solubilityValue": "không tồn tại", "note": "Phân hủy thành Fe(OH)₃ + CO₂" },
+    { "cation": "Fe³⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(NO₂)₃", "saltName": "Sắt(III) nitrit", "solubilityValue": "tan", "note": "Tan, không bền" },
+    { "cation": "Fe³⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(NO₃)₃", "saltName": "Sắt(III) nitrat", "solubilityValue": "tan", "note": "Tan tốt, màu vàng nâu" },
+    { "cation": "Fe³⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "FePO₄", "saltName": "Sắt(III) photphat", "solubilityValue": "không tan", "note": "Kết tủa vàng nâu" },
+    { "cation": "Fe³⁺", "anion": "CN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(CN)₃", "saltName": "Sắt(III) xianua", "solubilityValue": "tan", "note": "Tạo phức [Fe(CN)₆]³⁻" },
+    { "cation": "Fe³⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(OCN)₃", "saltName": "Sắt(III) xianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Fe³⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe(SCN)₃", "saltName": "Sắt(III) tioxianat", "solubilityValue": "tan", "note": "Tạo phức màu đỏ máu" },
+    { "cation": "Fe³⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Fe₂(Cr₂O₇)₃", "saltName": "Sắt(III) đicromat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Fe³⁺", "anion": "O²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Fe₂O₃", "saltName": "Sắt(III) oxit", "solubilityValue": "không tan", "note": "Không tan, màu nâu đỏ" },
+    
+    { "cation": "Cu²⁺", "anion": "F⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "CuF₂", "saltName": "Đồng(II) florua", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Cu²⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "CuCl₂", "saltName": "Đồng(II) clorua", "solubilityValue": "tan", "note": "Tan, màu xanh lục" },
+    { "cation": "Cu²⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "CuBr₂", "saltName": "Đồng(II) bromua", "solubilityValue": "tan", "note": "Tan, màu xanh đen" },
+    { "cation": "Cu²⁺", "anion": "I⁻", "status": "na", "color": "#9E9E9E", "saltFormula": "CuI", "saltName": "Đồng(I) iodua", "solubilityValue": "không tan", "note": "Cu²⁺ bị khử thành CuI (kết tủa trắng)" },
+    { "cation": "Cu²⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Cu(ClO₃)₂", "saltName": "Đồng(II) clorat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Cu²⁺", "anion": "OH⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Cu(OH)₂", "saltName": "Đồng(II) hiđroxit", "solubilityValue": "không tan", "note": "Kết tủa xanh lam" },
+    { "cation": "Cu²⁺", "anion": "SO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "CuSO₃", "saltName": "Đồng(II) sunfit", "solubilityValue": "không tan", "note": "Kết tủa" },
+    { "cation": "Cu²⁺", "anion": "SO₄²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "CuSO₄", "saltName": "Đồng(II) sunfat", "solubilityValue": "tan", "note": "Tan, màu xanh lam, đá xanh" },
+    { "cation": "Cu²⁺", "anion": "CO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "CuCO₃", "saltName": "Đồng(II) cacbonat", "solubilityValue": "không tan", "note": "Kết tủa xanh lục" },
+    { "cation": "Cu²⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Cu(NO₂)₂", "saltName": "Đồng(II) nitrit", "solubilityValue": "tan", "note": "Tan, không bền" },
+    { "cation": "Cu²⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Cu(NO₃)₂", "saltName": "Đồng(II) nitrat", "solubilityValue": "tan", "note": "Tan tốt, màu xanh lam" },
+    { "cation": "Cu²⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Cu₃(PO₄)₂", "saltName": "Đồng(II) photphat", "solubilityValue": "không tan", "note": "Kết tủa xanh lục" },
+    { "cation": "Cu²⁺", "anion": "CN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Cu(CN)₂", "saltName": "Đồng(II) xianua", "solubilityValue": "không tan", "note": "Phân hủy, tạo phức" },
+    { "cation": "Cu²⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Cu(OCN)₂", "saltName": "Đồng(II) xianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Cu²⁺", "anion": "SCN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Cu(SCN)₂", "saltName": "Đồng(II) tioxianat", "solubilityValue": "không tan", "note": "Bị khử thành CuSCN trắng" },
+    { "cation": "Cu²⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "CuCr₂O₇", "saltName": "Đồng(II) đicromat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Cu²⁺", "anion": "O²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "CuO", "saltName": "Đồng(II) oxit", "solubilityValue": "không tan", "note": "Không tan, màu đen" },
+    
+    { "cation": "Ag⁺", "anion": "F⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "AgF", "saltName": "Bạc florua", "solubilityValue": "tan", "note": "Ngoại lệ hiếm: muối bạc TAN. Độ tan 182g/100ml (25°C)" },
+    { "cation": "Ag⁺", "anion": "Cl⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "AgCl", "saltName": "Bạc clorua", "solubilityValue": "không tan", "note": "Kết tủa trắng, nhận biết Cl⁻. Tan trong NH₃. Dùng làm phim ảnh" },
+    { "cation": "Ag⁺", "anion": "Br⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "AgBr", "saltName": "Bạc bromua", "solubilityValue": "không tan", "note": "Kết tủa vàng nhạt, nhạy sáng. Dùng trong nhiếp ảnh truyền thống" },
+    { "cation": "Ag⁺", "anion": "I⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "AgI", "saltName": "Bạc iodua", "solubilityValue": "không tan", "note": "Kết tủa vàng đậm, ít tan nhất. Dùng gây mưa nhân tạo" },
+    { "cation": "Ag⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "AgClO₃", "saltName": "Bạc clorat", "solubilityValue": "tan", "note": "Ngoại lệ muối bạc tan, nhạy sáng và nhiệt" },
+    { "cation": "Ag⁺", "anion": "OH⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "AgOH", "saltName": "Bạc hiđroxit", "solubilityValue": "không tan", "note": "Không bền, ngay lập tức phân hủy: 2AgOH → Ag₂O + H₂O" },
+    { "cation": "Ag⁺", "anion": "SO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Ag₂SO₃", "saltName": "Bạc sunfit", "solubilityValue": "không tan", "note": "Kết tủa trắng, dễ bị oxy hóa thành Ag₂SO₄" },
+    { "cation": "Ag⁺", "anion": "SO₄²⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "Ag₂SO₄", "saltName": "Bạc sunfat", "solubilityValue": "ít tan", "note": "Độ tan 0.8g/100ml (20°C), tan nhiều ở nước nóng 1.4g/100ml (100°C)" },
+    { "cation": "Ag⁺", "anion": "CO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Ag₂CO₃", "saltName": "Bạc cacbonat", "solubilityValue": "không tan", "note": "Kết tủa vàng nhạt, phân hủy khi đun: Ag₂CO₃ → Ag₂O + CO₂" },
+    { "cation": "Ag⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "AgNO₂", "saltName": "Bạc nitrit", "solubilityValue": "tan", "note": "Tan 155g/100ml, nhạy sáng, phân hủy khi đun" },
+    { "cation": "Ag⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "AgNO₃", "saltName": "Bạc nitrat", "solubilityValue": "tan", "note": "Tan 222g/100ml, phản ứng tráng gương. Ăn da, gây bỏng" },
+    { "cation": "Ag⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Ag₃PO₄", "saltName": "Bạc photphat", "solubilityValue": "không tan", "note": "Kết tủa vàng, dùng làm chất xúc tác quang hóa" },
+    { "cation": "Ag⁺", "anion": "CN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "AgCN", "saltName": "Bạc xianua", "solubilityValue": "không tan", "note": "Kết tủa trắng, tan trong CN⁻ dư tạo phức [Ag(CN)₂]⁻ (mạ điện)" },
+    { "cation": "Ag⁺", "anion": "OCN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "AgOCN", "saltName": "Bạc xianat", "solubilityValue": "không tan", "note": "Kết tủa trắng, ít nghiên cứu" },
+    { "cation": "Ag⁺", "anion": "SCN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "AgSCN", "saltName": "Bạc tioxianat", "solubilityValue": "không tan", "note": "Kết tủa trắng, ít tan hơn AgCl. Dùng chuẩn độ Ag⁺" },
+    { "cation": "Ag⁺", "anion": "Cr₂O₇²⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "Ag₂Cr₂O₇", "saltName": "Bạc đicromat", "solubilityValue": "ít tan", "note": "Kết tủa đỏ nâu thẫm, tan kém trong nước" },
+    { "cation": "Ag⁺", "anion": "O²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Ag₂O", "saltName": "Bạc oxit", "solubilityValue": "không tan", "note": "Màu nâu đen, chất oxy hóa yếu. Dùng làm pin nút áo" },
+    
+    { "cation": "Zn²⁺", "anion": "F⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "ZnF₂", "saltName": "Kẽm florua", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Zn²⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "ZnCl₂", "saltName": "Kẽm clorua", "solubilityValue": "tan", "note": "Tan tốt, hút ẩm" },
+    { "cation": "Zn²⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "ZnBr₂", "saltName": "Kẽm bromua", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Zn²⁺", "anion": "I⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "ZnI₂", "saltName": "Kẽm iodua", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Zn²⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Zn(ClO₃)₂", "saltName": "Kẽm clorat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Zn²⁺", "anion": "OH⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Zn(OH)₂", "saltName": "Kẽm hiđroxit", "solubilityValue": "không tan", "note": "Kết tủa trắng, lưỡng tính" },
+    { "cation": "Zn²⁺", "anion": "SO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "ZnSO₃", "saltName": "Kẽm sunfit", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Zn²⁺", "anion": "SO₄²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "ZnSO₄", "saltName": "Kẽm sunfat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Zn²⁺", "anion": "CO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "ZnCO₃", "saltName": "Kẽm cacbonat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Zn²⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Zn(NO₂)₂", "saltName": "Kẽm nitrit", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Zn²⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Zn(NO₃)₂", "saltName": "Kẽm nitrat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Zn²⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Zn₃(PO₄)₂", "saltName": "Kẽm photphat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Zn²⁺", "anion": "CN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Zn(CN)₂", "saltName": "Kẽm xianua", "solubilityValue": "không tan", "note": "Kết tủa trắng, tan trong CN⁻ dư" },
+    { "cation": "Zn²⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Zn(OCN)₂", "saltName": "Kẽm xianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Zn²⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Zn(SCN)₂", "saltName": "Kẽm tioxianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Zn²⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "ZnCr₂O₇", "saltName": "Kẽm đicromat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Zn²⁺", "anion": "O²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "ZnO", "saltName": "Kẽm oxit", "solubilityValue": "không tan", "note": "Không tan, màu trắng, lưỡng tính" },
+    
+    { "cation": "Pb²⁺", "anion": "F⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "PbF₂", "saltName": "Chì florua", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Pb²⁺", "anion": "Cl⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "PbCl₂", "saltName": "Chì clorua", "solubilityValue": "không tan", "note": "Kết tủa trắng, tan trong nước nóng" },
+    { "cation": "Pb²⁺", "anion": "Br⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "PbBr₂", "saltName": "Chì bromua", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Pb²⁺", "anion": "I⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "PbI₂", "saltName": "Chì iodua", "solubilityValue": "không tan", "note": "Kết tủa vàng đẹp" },
+    { "cation": "Pb²⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Pb(ClO₃)₂", "saltName": "Chì clorat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Pb²⁺", "anion": "OH⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Pb(OH)₂", "saltName": "Chì hiđroxit", "solubilityValue": "không tan", "note": "Kết tủa trắng, lưỡng tính" },
+    { "cation": "Pb²⁺", "anion": "SO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "PbSO₃", "saltName": "Chì sunfit", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Pb²⁺", "anion": "SO₄²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "PbSO₄", "saltName": "Chì sunfat", "solubilityValue": "không tan", "note": "Kết tủa trắng, nhận biết SO₄²⁻" },
+    { "cation": "Pb²⁺", "anion": "CO₃²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "PbCO₃", "saltName": "Chì cacbonat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Pb²⁺", "anion": "NO₂⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "Pb(NO₂)₂", "saltName": "Chì nitrit", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Pb²⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Pb(NO₃)₂", "saltName": "Chì nitrat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Pb²⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Pb₃(PO₄)₂", "saltName": "Chì photphat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Pb²⁺", "anion": "CN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Pb(CN)₂", "saltName": "Chì xianua", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Pb²⁺", "anion": "OCN⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "Pb(OCN)₂", "saltName": "Chì xianat", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Pb²⁺", "anion": "SCN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Pb(SCN)₂", "saltName": "Chì tioxianat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Pb²⁺", "anion": "Cr₂O₇²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "PbCr₂O₇", "saltName": "Chì đicromat", "solubilityValue": "không tan", "note": "Kết tủa vàng cam" },
+    { "cation": "Pb²⁺", "anion": "O²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "PbO", "saltName": "Chì oxit", "solubilityValue": "không tan", "note": "Không tan, màu vàng đỏ" },
+    
+    { "cation": "Al³⁺", "anion": "F⁻", "status": "slightly_soluble", "color": "#FFC107", "saltFormula": "AlF₃", "saltName": "Nhôm florua", "solubilityValue": "ít tan", "note": "Độ tan thấp" },
+    { "cation": "Al³⁺", "anion": "Cl⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "AlCl₃", "saltName": "Nhôm clorua", "solubilityValue": "tan", "note": "Tan tốt, thủy phân mạnh" },
+    { "cation": "Al³⁺", "anion": "Br⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "AlBr₃", "saltName": "Nhôm bromua", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Al³⁺", "anion": "I⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "AlI₃", "saltName": "Nhôm iodua", "solubilityValue": "tan", "note": "Tan, thủy phân" },
+    { "cation": "Al³⁺", "anion": "ClO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Al(ClO₃)₃", "saltName": "Nhôm clorat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Al³⁺", "anion": "OH⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Al(OH)₃", "saltName": "Nhôm hiđroxit", "solubilityValue": "không tan", "note": "Kết tủa trắng keo, lưỡng tính" },
+    { "cation": "Al³⁺", "anion": "SO₃²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Al₂(SO₃)₃", "saltName": "Nhôm sunfit", "solubilityValue": "tan", "note": "Tan, thủy phân" },
+    { "cation": "Al³⁺", "anion": "SO₄²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Al₂(SO₄)₃", "saltName": "Nhôm sunfat", "solubilityValue": "tan", "note": "Tan tốt, phèn" },
+    { "cation": "Al³⁺", "anion": "CO₃²⁻", "status": "na", "color": "#9E9E9E", "saltFormula": "-", "saltName": "-", "solubilityValue": "không tồn tại", "note": "Thủy phân hoàn toàn" },
+    { "cation": "Al³⁺", "anion": "NO₂⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Al(NO₂)₃", "saltName": "Nhôm nitrit", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Al³⁺", "anion": "NO₃⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Al(NO₃)₃", "saltName": "Nhôm nitrat", "solubilityValue": "tan", "note": "Tan tốt trong nước" },
+    { "cation": "Al³⁺", "anion": "PO₄³⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "AlPO₄", "saltName": "Nhôm photphat", "solubilityValue": "không tan", "note": "Kết tủa trắng" },
+    { "cation": "Al³⁺", "anion": "CN⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Al(CN)₃", "saltName": "Nhôm xianua", "solubilityValue": "không tan", "note": "Thủy phân mạnh" },
+    { "cation": "Al³⁺", "anion": "OCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Al(OCN)₃", "saltName": "Nhôm xianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Al³⁺", "anion": "SCN⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Al(SCN)₃", "saltName": "Nhôm tioxianat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Al³⁺", "anion": "Cr₂O₇²⁻", "status": "soluble", "color": "#4CAF50", "saltFormula": "Al₂(Cr₂O₇)₃", "saltName": "Nhôm đicromat", "solubilityValue": "tan", "note": "Tan trong nước" },
+    { "cation": "Al³⁺", "anion": "O²⁻", "status": "insoluble", "color": "#F44336", "saltFormula": "Al₂O₃", "saltName": "Nhôm oxit", "solubilityValue": "không tan", "note": "Không tan, màu trắng, lưỡng tính" }
+  ],
+  "rules": [
+    {
+      "id": 1,
+      "category": "Muối tan",
+      "rule": "Tất cả muối của Na⁺, K⁺, NH₄⁺ đều TAN",
+      "examples": ["NaCl", "KNO₃", "NH₄Cl"],
+      "exceptions": ["Na₂O, K₂O, NH₄OH (phản ứng với nước)"]
+    },
+    {
+      "id": 2,
+      "category": "Muối tan",
+      "rule": "Tất cả muối nitrat (NO₃⁻) đều TAN",
+      "examples": ["AgNO₃", "Pb(NO₃)₂", "Cu(NO₃)₂"],
+      "exceptions": []
+    },
+    {
+      "id": 3,
+      "category": "Muối tan",
+      "rule": "Tất cả muối clorat (ClO₃⁻) đều TAN",
+      "examples": ["KClO₃", "NaClO₃", "Ba(ClO₃)₂"],
+      "exceptions": []
+    },
+    {
+      "id": 4,
+      "category": "Halogenua",
+      "rule": "Muối clorua (Cl⁻), bromua (Br⁻), iodua (I⁻) đều TAN",
+      "examples": ["NaCl", "KBr", "NH₄I"],
+      "exceptions": ["AgCl, AgBr, AgI, PbCl₂, PbBr₂, PbI₂ KHÔNG TAN"]
+    },
+    {
+      "id": 5,
+      "category": "Sunfat",
+      "rule": "Hầu hết muối sunfat (SO₄²⁻) đều TAN",
+      "examples": ["Na₂SO₄", "K₂SO₄", "MgSO₄"],
+      "exceptions": ["BaSO₄, PbSO₄ KHÔNG TAN; CaSO₄, Ag₂SO₄ ÍT TAN"]
+    },
+    {
+      "id": 6,
+      "category": "Hiđroxit",
+      "rule": "Hầu hết muối hiđroxit (OH⁻) đều KHÔNG TAN",
+      "examples": ["Fe(OH)₂", "Cu(OH)₂", "Al(OH)₃"],
+      "exceptions": ["NaOH, KOH, Ba(OH)₂ TAN; Ca(OH)₂, LiOH ÍT TAN"]
+    },
+    {
+      "id": 7,
+      "category": "Cacbonat",
+      "rule": "Hầu hết muối cacbonat (CO₃²⁻) đều KHÔNG TAN",
+      "examples": ["CaCO₃", "BaCO₃", "FeCO₃"],
+      "exceptions": ["Na₂CO₃, K₂CO₃, (NH₄)₂CO₃ TAN; Li₂CO₃ ÍT TAN"]
+    },
+    {
+      "id": 8,
+      "category": "Photphat",
+      "rule": "Hầu hết muối photphat (PO₄³⁻) đều KHÔNG TAN",
+      "examples": ["Ca₃(PO₄)₂", "FePO₄", "Ag₃PO₄"],
+      "exceptions": ["Na₃PO₄, K₃PO₄, (NH₄)₃PO₄ TAN"]
+    },
+    {
+      "id": 9,
+      "category": "Sunfit",
+      "rule": "Hầu hết muối sunfit (SO₃²⁻) đều KHÔNG TAN",
+      "examples": ["CaSO₃", "BaSO₃", "Ag₂SO₃"],
+      "exceptions": ["Na₂SO₃, K₂SO₃, (NH₄)₂SO₃ TAN"]
+    },
+    {
+      "id": 10,
+      "category": "Muối bạc",
+      "rule": "Hầu hết muối bạc (Ag⁺) đều KHÔNG TAN",
+      "examples": ["AgCl", "AgBr", "AgI", "Ag₂CO₃"],
+      "exceptions": ["AgF, AgNO₃, AgClO₃ TAN; Ag₂SO₄ ÍT TAN"]
+    },
+    {
+      "id": 11,
+      "category": "Muối chì",
+      "rule": "Hầu hết muối chì (Pb²⁺) đều KHÔNG TAN",
+      "examples": ["PbCl₂", "PbBr₂", "PbI₂", "PbSO₄", "PbCO₃"],
+      "exceptions": ["Pb(NO₃)₂, Pb(ClO₃)₂ TAN"]
+    },
+    {
+      "id": 12,
+      "category": "Lưỡng tính",
+      "rule": "Hiđroxit lưỡng tính tan trong cả axit và bazơ",
+      "examples": ["Al(OH)₃", "Zn(OH)₂", "Pb(OH)₂"],
+      "exceptions": []
+    },
+    {
+      "id": 13,
+      "category": "Phản ứng đặc biệt",
+      "rule": "Một số muối phản ứng với nước thay vì hòa tan",
+      "examples": ["Na₂O + H₂O → 2NaOH", "CaO + H₂O → Ca(OH)₂"],
+      "exceptions": []
+    },
+    {
+      "id": 14,
+      "category": "Phản ứng oxy hóa-khử",
+      "rule": "Một số ion oxy hóa-khử lẫn nhau, không tạo muối bền",
+      "examples": ["Fe³⁺ + I⁻ → Fe²⁺ + I₂", "Cu²⁺ + 2I⁻ → CuI + I₂"],
+      "exceptions": []
+    },
+    {
+      "id": 15,
+      "category": "Thủy phân",
+      "rule": "Muối của kim loại mạnh và axit yếu bị thủy phân",
+      "examples": ["Fe₂(CO₃)₃ → Fe(OH)₃ + CO₂", "Al₂(CO₃)₃ → Al(OH)₃ + CO₂"],
+      "exceptions": []
+    }
+  ]
+}

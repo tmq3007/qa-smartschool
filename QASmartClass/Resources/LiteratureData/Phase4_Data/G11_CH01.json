@@ -1,0 +1,232 @@
+{
+  "metadata": {
+    "chapterId": "g11_ch01",
+    "chapterName": "Bài 1: Thơ Mới 1932-1945",
+    "grade": 11,
+    "totalProblems": 9,
+    "totalSections": 3,
+    "estimatedHours": 3
+  },
+  "sections": [
+    {
+      "sectionId": "s_g11_ch0_0",
+      "sectionName": "Vội Vàng — Xuân Diệu",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-11-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g11_Vội_Vàng.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả",
+          "theorem": "Xuân Diệu (1916–1985) — 'ông hoàng thơ tình' Việt Nam, nhà thơ tiêu biểu nhất của phong trào Thơ Mới. 'Vội vàng' (1938) là tuyên ngôn sống mãnh liệt của tuổi trẻ.",
+          "imageUrls": ["Resources/LiteratureData/Images/xuan_dieu.png"]
+        },
+        {
+          "name": "Đoạn 1 — Khát vọng đoạt quyền tạo hóa",
+          "definition": "Tôi muốn tắt nắng đi\nCho màu đừng nhạt mất;\nTôi muốn buộc gió lại\nCho hương đừng bay đi."
+        },
+        {
+          "name": "Đoạn cuối — Sống vội vàng cuống quýt",
+          "definition": "Mau đi thôi! Mùa chưa ngả chiều hôm,\nTa muốn ôm\nCả sự sống mới bắt đầu mơn mởn;\nTa muốn riết mây đưa và gió lượn,\nTa muốn say cánh bướm với tình yêu,\nTa muốn thâu trong một cái hôn nhiều..."
+        },
+        {
+          "name": "Phân tích nghệ thuật",
+          "examples": [
+            "**'Tắt nắng', 'buộc gió'**: Động từ mạnh diễn tả khát vọng phi thường — muốn đoạt quyền tạo hóa để giữ lại cái đẹp.",
+            "**Điệp từ 'Ta muốn'**: Nhấn mạnh bản ngã mạnh mẽ, cái tôi ham muốn tận hưởng cuộc sống.",
+            "**Quan niệm thời gian tuyến tính**: Khác với thơ cổ điển (thời gian tuần hoàn), Xuân Diệu coi thời gian là dòng chảy một chiều — tuổi trẻ qua đi không trở lại → phải sống vội."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Câu thơ 'Tôi muốn tắt nắng đi / Tôi muốn buộc gió lại' thể hiện điều gì đặc biệt trong triết lý sống của Xuân Diệu?",
+          "difficulty": "Medium",
+          "options": [
+            "Khát vọng đoạt quyền tạo hóa để giữ lại vẻ đẹp của cuộc sống đang trôi qua",
+            "Nỗi sợ hãi trước sự tàn phá của thiên nhiên đối với con người",
+            "Ước mơ trở thành người có quyền năng siêu nhiên",
+            "Phê phán sự vô thường của thiên nhiên và cuộc đời"
+          ],
+          "answer": "Khát vọng đoạt quyền tạo hóa để giữ lại vẻ đẹp của cuộc sống đang trôi qua",
+          "hints": ["Tại sao Xuân Diệu muốn 'tắt nắng' và 'buộc gió'?"],
+          "explanation": "Xuân Diệu coi thời gian là kẻ thù số một của cái đẹp — màu nhạt dần, hương bay đi. Muốn 'tắt nắng, buộc gió' là muốn ngăn thời gian lại để giữ nguyên vẹn vẻ đẹp. Đây là khát vọng phi thường, táo bạo — thể hiện cái tôi lãng mạn không chịu khuất phục trước quy luật tự nhiên."
+        },
+        {
+          "id": "p2",
+          "question": "Quan niệm thời gian trong 'Vội vàng' khác với thơ ca trung đại như thế nào?",
+          "difficulty": "Hard",
+          "options": [
+            "Thơ Mới: thời gian tuyến tính một chiều (tuổi trẻ mất đi không trở lại); Thơ cổ điển: thời gian tuần hoàn (xuân đi xuân lại)",
+            "Thơ Mới: thời gian chậm chạp nặng nề; Thơ cổ điển: thời gian nhanh chóng vun vút",
+            "Cả hai đều có cùng quan niệm về sự vô thường của thời gian",
+            "Thơ Mới: thời gian là bạn đồng hành; Thơ cổ điển: thời gian là kẻ thù"
+          ],
+          "answer": "Thơ Mới: thời gian tuyến tính một chiều (tuổi trẻ mất đi không trở lại); Thơ cổ điển: thời gian tuần hoàn (xuân đi xuân lại)",
+          "hints": ["Trong ca dao/thơ cổ: 'Xuân đi xuân lại'. Xuân Diệu nghĩ sao?"],
+          "explanation": "Thơ cổ điển: 'Xuân đi xuân lại' — thời gian tuần hoàn, xuân năm nay mất nhưng xuân sang năm sẽ trở lại. Xuân Diệu đảo lộn quan niệm này: 'Xuân đương tới nghĩa là xuân đương qua / Xuân còn non nghĩa là xuân sẽ già' — thời gian một chiều, tuổi trẻ không tái sinh → phải sống gấp."
+        },
+        {
+          "id": "p3",
+          "question": "Điệp từ 'Ta muốn' ở đoạn cuối bài thơ có tác dụng nghệ thuật nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Nhấn mạnh cái tôi ham sống, khẳng định bản ngã mạnh mẽ và khát vọng tận hưởng cuộc sống",
+            "Tạo nhịp thơ nhanh, gấp gáp thể hiện sự hối hả của thời gian",
+            "Liệt kê các mong muốn cụ thể của tác giả trong cuộc sống",
+            "Thể hiện sự ích kỷ và tham lam trong triết lý sống của Xuân Diệu"
+          ],
+          "answer": "Nhấn mạnh cái tôi ham sống, khẳng định bản ngã mạnh mẽ và khát vọng tận hưởng cuộc sống",
+          "hints": ["'Ta muốn' lặp lại nhiều lần — điều đó nói lên điều gì về chủ thể trữ tình?"],
+          "explanation": "Điệp từ 'Ta muốn' tạo ra cái tôi đầy tham vọng sống — ôm, riết, say, thâu... Xuân Diệu muốn tận hưởng cuộc đời bằng tất cả giác quan. Đây là đặc điểm nổi bật của Thơ Mới: đề cao cái tôi cá nhân, dám bộc lộ khát vọng — khác với thơ cổ điển thường ẩn cái tôi đằng sau thiên nhiên."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g11_ch0_1",
+      "sectionName": "Tràng Giang — Huy Cận",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-11-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g11_Tràng_Giang.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả",
+          "theorem": "Huy Cận (1919–2005). 'Tràng giang' (1939) — bài thơ tiêu biểu nhất của Huy Cận, mang nỗi sầu vũ trụ mênh mang trước thiên nhiên bao la.",
+          "imageUrls": ["Resources/LiteratureData/Images/huy_can.png"]
+        },
+        {
+          "name": "Khổ 1 — Nỗi buồn sông nước",
+          "definition": "Sóng gợn tràng giang buồn điệp điệp,\nCon thuyền xuôi mái nước song song,\nThuyền về nước lại, sầu trăm ngả;\nCủi một cành khô lạc mấy dòng."
+        },
+        {
+          "name": "Khổ 4 — Nỗi nhớ nhà",
+          "definition": "Lòng quê dợn dợn vời con nước,\nKhông khói hoàng hôn cũng nhớ nhà."
+        },
+        {
+          "name": "Phân tích",
+          "examples": [
+            "**'Củi một cành khô lạc mấy dòng'**: Hình ảnh nhỏ bé, cô đơn nhất bài thơ — biểu tượng kiếp người trôi dạt vô định giữa cuộc đời.",
+            "**Từ láy 'điệp điệp', 'song song', 'dợn dợn'**: Gợi cảm giác kéo dài, mênh mang của nỗi buồn.",
+            "**'Không khói hoàng hôn cũng nhớ nhà'**: Đảo câu thơ Thôi Hiệu — Huy Cận không cần khói bếp mà tự nhiên nhớ nhà — nỗi nhớ sâu hơn."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hình ảnh 'Củi một cành khô lạc mấy dòng' mang ý nghĩa biểu tượng gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Biểu tượng kiếp người bơ vơ, nhỏ bé, trôi dạt vô định giữa dòng đời",
+            "Hình ảnh thực của cành củi khô trôi theo sông mùa lũ",
+            "Sự tàn phá của lũ lụt đối với cây cối và cuộc sống của người dân",
+            "Nỗi buồn của thiên nhiên trước cảnh vật hoang vắng"
+          ],
+          "answer": "Biểu tượng kiếp người bơ vơ, nhỏ bé, trôi dạt vô định giữa dòng đời",
+          "hints": ["Cành củi khô trôi lạc 'mấy dòng' — gợi đến số phận gì?"],
+          "explanation": "Cành củi khô là hình ảnh nhỏ bé nhất, cô đơn nhất trong bức tranh sông nước mênh mang. Huy Cận dùng nó để biểu tượng cho thân phận con người thời đó: bơ vơ, không định hướng, không điểm tựa — nỗi cô đơn của thế hệ Thơ Mới trước 1945."
+        },
+        {
+          "id": "p2",
+          "question": "Câu thơ 'Không khói hoàng hôn cũng nhớ nhà' có điểm gì đặc sắc so với câu thơ Thôi Hiệu ('Nhật mộ hương quan hà xứ thị / Yên ba giang thượng sử nhân sầu')?",
+          "difficulty": "Hard",
+          "options": [
+            "Huy Cận không cần khói bếp mà tự nhiên nhớ nhà — nỗi nhớ bản năng và sâu sắc hơn",
+            "Huy Cận dịch câu thơ Thôi Hiệu sang tiếng Việt một cách sáng tạo",
+            "Huy Cận phủ nhận quan niệm của Thôi Hiệu về nỗi nhớ nhà",
+            "Cả hai câu thơ đều diễn tả nỗi buồn trước cảnh hoàng hôn trên sông"
+          ],
+          "answer": "Huy Cận không cần khói bếp mà tự nhiên nhớ nhà — nỗi nhớ bản năng và sâu sắc hơn",
+          "hints": ["Thôi Hiệu nhớ nhà vì 'khói sóng'. Huy Cận thì 'không khói' mà vẫn..."],
+          "explanation": "Thôi Hiệu nhớ nhà khi nhìn khói bếp chiều (có tác nhân gợi nhớ). Huy Cận 'không khói hoàng hôn CŨng nhớ nhà' — không cần tác nhân vẫn nhớ, nghĩa là nỗi nhớ đã thường trực, ăn sâu vào tâm khảm. Đây là sự tiếp thu sáng tạo thơ Đường — Huy Cận vượt lên người đi trước."
+        },
+        {
+          "id": "p3",
+          "question": "Nỗi sầu trong 'Tràng giang' khác với nỗi buồn trong thơ ca hiện thực như thế nào?",
+          "difficulty": "Hard",
+          "options": [
+            "Sầu vũ trụ — nỗi buồn siêu hình trước không gian bao la, không gắn với một nguyên nhân xã hội cụ thể",
+            "Nỗi buồn giai cấp của tầng lớp trí thức mất nước dưới thực dân Pháp",
+            "Nỗi cô đơn cá nhân vì thất tình hoặc xa nhà lâu ngày",
+            "Nỗi buồn thiên nhiên do tiết trời thu hoàng hôn gây ra"
+          ],
+          "answer": "Sầu vũ trụ — nỗi buồn siêu hình trước không gian bao la, không gắn với một nguyên nhân xã hội cụ thể",
+          "hints": ["Tại sao nỗi buồn trong bài thơ này không có nguyên nhân rõ ràng?"],
+          "explanation": "Khác với thơ hiện thực (buồn vì đói nghèo, áp bức), nỗi sầu của Huy Cận là 'sầu vũ trụ' — buồn vì sự mênh mang vô tận của không gian, vì sự nhỏ bé của con người trước vũ trụ. Đây là đặc điểm của chủ nghĩa lãng mạn Thơ Mới: đặt cái tôi cô đơn trước vũ trụ rộng lớn."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g11_ch0_2",
+      "sectionName": "Đây Thôn Vĩ Dạ — Hàn Mặc Tử",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-11-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g11_Đây_thôn_Vĩ_Dạ.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh",
+          "theorem": "Hàn Mặc Tử (1912–1940) — nhà thơ thiên tài của phong trào Thơ Mới, mắc bệnh phong và mất lúc 28 tuổi. 'Đây thôn Vĩ Dạ' (1938) được gợi cảm hứng từ tấm ảnh của người con gái Huế tên Hoàng Cúc.",
+          "imageUrls": ["Resources/LiteratureData/Images/han_mac_tu.png"]
+        },
+        {
+          "name": "Khổ 1 — Vĩ Dạ trong sáng và tươi đẹp",
+          "definition": "Sao anh không về chơi thôn Vĩ?\nNhìn nắng hàng cau nắng mới lên\nVườn ai mướt quá xanh như ngọc\nLá trúc che ngang mặt chữ điền."
+        },
+        {
+          "name": "Khổ 3 — Câu hỏi ai?",
+          "definition": "Mơ khách đường xa, khách đường xa\nÁo em trắng quá nhìn không ra\nỞ đây sương khói mờ nhân ảnh\nAi biết tình ai có đậm đà?"
+        },
+        {
+          "name": "Phân tích",
+          "examples": [
+            "**Câu hỏi tu từ mở đầu**: 'Sao anh không về?' — lời trách móc nhẹ nhàng hay lời mời gọi tha thiết?",
+            "**'Vườn ai mướt quá xanh như ngọc'**: Màu xanh ngọc — thiên nhiên Vĩ Dạ tinh khôi, thuần khiết.",
+            "**'Sương khói mờ nhân ảnh'**: Khổ 3 bỗng chìm vào ảo mộng — ranh giới thực/mơ mờ nhạt dần.",
+            "**'Ai biết tình ai có đậm đà?'**: Câu hỏi không lời đáp — hoài nghi về tình cảm, về sự kết nối giữa người bệnh với thế giới."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Câu hỏi mở đầu 'Sao anh không về chơi thôn Vĩ?' có thể hiểu theo những cách nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Vừa là lời trách móc nhẹ nhàng của người con gái, vừa là lời tự hỏi của chính tác giả về việc không thể trở về",
+            "Câu hỏi của người dân thôn Vĩ hỏi về một người khách quen",
+            "Lời mời gọi thân thiện của Hoàng Cúc khi gửi tấm ảnh cho Hàn Mặc Tử",
+            "Câu hỏi tu từ thể hiện nỗi nhớ quê hương của tác giả"
+          ],
+          "answer": "Vừa là lời trách móc nhẹ nhàng của người con gái, vừa là lời tự hỏi của chính tác giả về việc không thể trở về",
+          "hints": ["Hàn Mặc Tử bị bệnh phong, không thể về thôn Vĩ — câu hỏi đó có ý nghĩa gì với ông?"],
+          "explanation": "Câu hỏi đa nghĩa: (1) Giọng người con gái Huế nhẹ nhàng trách móc. (2) Lời tự vấn của Hàn Mặc Tử — người biết mình không thể trở về Huế vì bệnh tật. Sự đa nghĩa này tạo nên chiều sâu cảm xúc: bài thơ vừa là lời thăm hỏi vừa là nỗi đau của người bị cô lập khỏi cuộc đời."
+        },
+        {
+          "id": "p2",
+          "question": "Sự chuyển đổi từ khổ 1 (tươi sáng, rõ ràng) sang khổ 3 (mờ ảo, câu hỏi) phản ánh điều gì trong tâm trạng tác giả?",
+          "difficulty": "Hard",
+          "options": [
+            "Hành trình từ ký ức tươi đẹp về Vĩ Dạ đến thực tại mờ ảo của bệnh tật và sự chia cắt",
+            "Sự thay đổi thời tiết từ buổi sáng sáng sủa đến buổi chiều sương mù",
+            "Tâm trạng của người con gái thôn Vĩ khi chờ đợi người không về",
+            "Phong cách siêu thực của Hàn Mặc Tử thể hiện qua việc xáo trộn thực và mơ"
+          ],
+          "answer": "Hành trình từ ký ức tươi đẹp về Vĩ Dạ đến thực tại mờ ảo của bệnh tật và sự chia cắt",
+          "hints": ["Khổ 1 = thực hay mơ? Khổ 3 = thực hay mơ?"],
+          "explanation": "Khổ 1: ký ức rõ ràng, đẹp đẽ về Vĩ Dạ ('nắng mới lên', 'xanh như ngọc'). Khổ 3: hiện thực bệnh tật khiến mọi thứ mờ đi ('sương khói mờ nhân ảnh'). Bài thơ là hành trình tâm lý từ giấc mơ đẹp đến nhận thức đau đớn: tác giả không thể về, không thể kết nối — câu hỏi 'Ai biết tình ai?' là tiếng kêu của sự cô đơn tuyệt đối."
+        },
+        {
+          "id": "p3",
+          "question": "Vẻ đẹp thiên nhiên thôn Vĩ trong khổ 1 ('vườn mướt như ngọc', 'lá trúc che ngang mặt chữ điền') gợi lên điều gì đặc trưng của xứ Huế?",
+          "difficulty": "Easy",
+          "options": [
+            "Vẻ đẹp trong sáng, tinh khôi, thanh lịch — đặc trưng phong vị Huế nhẹ nhàng và e ấp",
+            "Sự hoang sơ và hùng vĩ của thiên nhiên miền Trung",
+            "Vẻ đẹp rực rỡ, sôi động của những khu vườn nhiều màu sắc",
+            "Nét cổ kính, rêu phong của kiến trúc Cố đô Huế"
+          ],
+          "answer": "Vẻ đẹp trong sáng, tinh khôi, thanh lịch — đặc trưng phong vị Huế nhẹ nhàng và e ấp",
+          "hints": ["'Mướt xanh như ngọc', 'lá trúc che ngang' — đây là vẻ đẹp mạnh bạo hay tinh tế?"],
+          "explanation": "'Mướt quá xanh như ngọc' gợi màu sắc trong veo, thuần khiết. 'Lá trúc che ngang mặt chữ điền' — khuôn mặt phúc hậu ẩn hiện sau tán lá — gợi nét e ấp, kín đáo đặc trưng của người Huế. Khổ thơ đầu là bức họa đồng quê Vĩ Dạ tinh tế, nhẹ nhàng — hoàn toàn phù hợp với khí chất Huế."
+        }
+      ]
+    }
+  ]
+}

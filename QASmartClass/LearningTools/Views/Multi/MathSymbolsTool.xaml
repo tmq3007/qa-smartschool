@@ -1,0 +1,323 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Multi.MathSymbolsTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="{StaticResource Gray100}">
+    <controls:BaseToolControl.Resources>
+        <Style x:Key="TabItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="#15FFFFFF"/>
+            <Setter Property="Foreground" Value="#9FA8DA"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontFamily" Value="{DynamicResource InterFont}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="14" Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#3F51B5"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#30FFFFFF"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </controls:BaseToolControl.Resources>
+    
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER (Gradient + Search + Mute) ═══ -->
+        <Border Grid.Row="0" CornerRadius="0" Padding="16,12" Margin="0,0,0,10" BorderThickness="0,0,0,1" BorderBrush="#1F2937">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#0D0E1A" Offset="0"/>
+                    <GradientStop Color="#1A1C33" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel>
+                <StackPanel>
+                    <TextBlock Text="∑ Ký Hiệu Toán Học &amp; LaTeX" FontSize="20" FontWeight="Bold" Foreground="#8C9EFF"/>
+                    <TextBlock Text="Học tập ý nghĩa ký hiệu toán học phổ thông và tra cứu mã lệnh LaTeX" FontSize="13" Foreground="#9FA8DA" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#1AFFFFFF" CornerRadius="8" Padding="10,6,10,6" Width="240" BorderThickness="1" BorderBrush="#3F51B5" VerticalAlignment="Center">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Left" Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBox x:Name="txtSymSearch" BorderThickness="0" Background="Transparent" Foreground="White" FontSize="14"
+                                     VerticalAlignment="Center" TextChanged="SymSearch_Changed" CaretBrush="White"/>
+                        </DockPanel>
+                    </Border>
+                    <!-- Mute Toggle -->
+                    <ToggleButton x:Name="btnMute" Click="BtnMute_Click" Content="🔊" Background="Transparent" Foreground="White" BorderThickness="0" FontSize="16" VerticalAlignment="Center" Margin="8,0,0,0" Cursor="Hand" ToolTip="Tắt/Bật âm thanh tương tác"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- MAIN LAYOUT (Master-Detail) -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU (Dark themed) -->
+            <Grid Grid.Column="0" Background="#0D0E1A">
+                <!-- Multi Category: Orange hover/selected -->
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#FFE0B2"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#E65100"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Ghi chú" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="∑" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextSymbols" Text="Bảng ký hiệu" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#3F51B5"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 0: HƯỚNG DẪN & GHI CHÚ -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel Background="Transparent" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#FFE0B2" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#FFE0B2" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+<Border Background="#1A1C33" CornerRadius="14" Padding="24,20" BorderBrush="#3F51B5" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <TextBlock Text="📖 CHỈ DẪN TRA CỨU KÝ HIỆU TOÁN HỌC &amp; LATEX" FontSize="15" FontWeight="Bold" Foreground="#8C9EFF" Margin="0,0,0,16"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="13.5" Foreground="#9FA8DA" LineHeight="22">
+                                    • <Run FontWeight="Bold" Foreground="#8C9EFF">Bước 1: Chọn Danh mục:</Run> Click các bộ lọc phía dưới (Phép tính, Đại số, Tập hợp...) hoặc nhập ô tìm kiếm để tra nhanh ký hiệu.&#x0a;&#x0a;
+                                    • <Run FontWeight="Bold" Foreground="#8C9EFF">Bước 2: Click xem chi tiết:</Run> Chọn ký hiệu ở cột trái để xem tên khoa học, ý nghĩa sư phạm, ví dụ mẫu và mã LaTeX tương ứng ở cột phải.&#x0a;&#x0a;
+                                    • <Run FontWeight="Bold" Foreground="#8C9EFF">Bước 3: Sử dụng Khay nháp:</Run> Bấm &quot;Thêm&quot; để đẩy ký hiệu vào Khay nháp công thức, tự do gõ sửa và bấm &quot;Copy LaTeX&quot; để chèn vào tài liệu học tập.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: BẢNG KÝ HIỆU CHÍNH -->
+                <Grid x:Name="viewPractice" Visibility="Visible">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Category Tabs Filter -->
+                        <RowDefinition Height="*"/>    <!-- Workspace -->
+                    </Grid.RowDefinitions>
+
+                    <!-- ═══ CATEGORY TABS FILTER ═══ -->
+                    <ListBox Grid.Row="0" x:Name="lstCategoryTabs" SelectionChanged="CategoryTabs_SelectionChanged" Background="Transparent" BorderThickness="0" Margin="0,0,0,10" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBoxItem Content="Tất cả" IsSelected="True" Style="{StaticResource TabItemStyle}"/>
+                        <ListBoxItem Content="Phép tính" Style="{StaticResource TabItemStyle}"/>
+                        <ListBoxItem Content="Đại số" Style="{StaticResource TabItemStyle}"/>
+                        <ListBoxItem Content="Hy Lạp" Style="{StaticResource TabItemStyle}"/>
+                        <ListBoxItem Content="Tập hợp" Style="{StaticResource TabItemStyle}"/>
+                        <ListBoxItem Content="Logic" Style="{StaticResource TabItemStyle}"/>
+                        <ListBoxItem Content="Giải tích" Style="{StaticResource TabItemStyle}"/>
+                        <ListBoxItem Content="Hình học" Style="{StaticResource TabItemStyle}"/>
+                        <ListBoxItem Content="Mũi tên" Style="{StaticResource TabItemStyle}"/>
+                        <ListBoxItem Content="Chỉ số" Style="{StaticResource TabItemStyle}"/>
+                    </ListBox>
+
+                    <!-- ═══ WORKSPACE ═══ -->
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="310"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Side: Scrollable list of symbols -->
+                        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,12,0">
+                            <StackPanel x:Name="symbolsPanel" Margin="4"/>
+                        </ScrollViewer>
+
+                        <!-- Right Side: Selected Symbol Details Card (Premium Scrollable Sidebar) -->
+                        <Border Grid.Column="1" x:Name="SymbolDetailPanel" Background="#F2070714" CornerRadius="16" Padding="16,16,10,16" BorderThickness="1.5" BorderBrush="#3F51B5" Margin="0,4,0,4" VerticalAlignment="Stretch">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel Margin="0,0,6,0">
+                                    <TextBlock Text="CHI TIẾT KÝ HIỆU" Foreground="White" FontSize="13" FontWeight="Bold" Margin="0,0,0,16" HorizontalAlignment="Center"/>
+                                    
+                                    <!-- Large Symbol display -->
+                                    <Border Background="#12FFFFFF" CornerRadius="10" Padding="16" Height="100" Margin="0,0,0,16" BorderThickness="1" BorderBrush="#2A2F45">
+                                        <TextBlock x:Name="txtDetailSymbol" Text="∑" FontSize="52" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Segoe UI Symbol"/>
+                                    </Border>
+                                    
+                                    <TextBlock x:Name="txtDetailName" Text="Tổng (Summation)" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,4" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    <TextBlock x:Name="txtDetailCategory" Text="📂 Đại số" FontSize="13" Foreground="#9FA8DA" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                                    
+                                    <!-- LaTeX box -->
+                                    <TextBlock Text="Mã lệnh LaTeX:" Foreground="#9FA8DA" FontSize="12" Margin="0,0,0,4"/>
+                                    <Border Background="#1AFFFFFF" CornerRadius="6" Padding="10,8" Margin="0,0,0,12" BorderThickness="0.5" BorderBrush="#2A2F45">
+                                        <TextBlock x:Name="txtDetailLaTeX" Text="\sum" FontSize="14" Foreground="#FFD54F" FontWeight="Bold"/>
+                                    </Border>
+
+                                    <!-- LaTeX Preview Area -->
+                                    <TextBlock Text="Trực quan công thức (Preview):" Foreground="#9FA8DA" FontSize="12" Margin="0,0,0,4"/>
+                                    <Border Background="#12FFFFFF" CornerRadius="8" Padding="12" Margin="0,0,0,16" MinHeight="60" BorderThickness="0.5" BorderBrush="#2A2F45" VerticalAlignment="Center">
+                                        <ContentControl x:Name="latexPreviewCtrl" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Description / Examples -->
+                                    <TextBlock Text="Ý nghĩa &amp; Ví dụ:" Foreground="#9FA8DA" FontSize="12" Margin="0,0,0,4"/>
+                                    <Border Background="#12FFFFFF" CornerRadius="8" Padding="12" Margin="0,0,0,20" MinHeight="100" BorderThickness="0.5" BorderBrush="#2A2F45">
+                                        <TextBlock x:Name="txtDetailDescription" Text="Biểu thị phép cộng của một dãy số." FontSize="13" Foreground="#E2E8F0" TextWrapping="Wrap"/>
+                                    </Border>
+                                    
+                                    <!-- Copy Buttons -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0" Content="Copy Ký Hiệu" Click="BtnCopySymbol_Click" Background="#3F51B5" Foreground="White" FontSize="12" FontWeight="Bold" Padding="8,8" Margin="0,0,4,0" Cursor="Hand" BorderThickness="0">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="6"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button Grid.Column="1" Content="Copy LaTeX" Click="BtnCopyLaTeX_Click" Background="#00897B" Foreground="White" FontSize="12" FontWeight="Bold" Padding="8,8" Margin="4,0,0,0" Cursor="Hand" BorderThickness="0">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="6"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                    </Grid>
+                                    
+                                    <!-- Status message -->
+                                    <TextBlock x:Name="txtCopyStatus" Text="" Foreground="#69F0AE" FontSize="12" FontWeight="Bold" Margin="0,16,0,0" HorizontalAlignment="Center"/>
+
+                                    <Separator Background="#2A2F45" Margin="0,16,0,16"/>
+                                    
+                                    <!-- Equation Sandbox -->
+                                    <TextBlock Text="KHAY NHÁP CÔNG THỨC" Foreground="White" FontSize="13" FontWeight="Bold" Margin="0,0,0,12" HorizontalAlignment="Center"/>
+                                    
+                                    <Border Background="#12FFFFFF" CornerRadius="8" Padding="8" Margin="0,0,0,12" BorderThickness="0.5" BorderBrush="#2A2F45">
+                                        <TextBox x:Name="txtSandbox" Height="50" Background="Transparent" Foreground="White" BorderThickness="0" 
+                                                 TextWrapping="Wrap" AcceptsReturn="False" FontSize="14" FontFamily="Segoe UI Symbol" VerticalScrollBarVisibility="Auto"
+                                                 CaretBrush="White" ToolTip="Nhập tự do hoặc click Thêm từ danh sách"
+                                                 TextChanged="Sandbox_TextChanged"/>
+                                    </Border>
+
+                                    <!-- Sandbox LaTeX Preview Area -->
+                                    <TextBlock Text="Trực quan nháp (Preview):" Foreground="#9FA8DA" FontSize="11" Margin="0,4,0,4"/>
+                                    <Border Background="#12FFFFFF" CornerRadius="8" Padding="12" Margin="0,0,0,12" MinHeight="60" BorderThickness="0.5" BorderBrush="#2A2F45" VerticalAlignment="Center">
+                                        <ContentControl x:Name="sandboxPreviewCtrl" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0" Content="Thêm" Click="BtnAddToSandbox_Click" Background="#3F51B5" Foreground="White" FontSize="11" FontWeight="Bold" Padding="4,6" Margin="0,0,2,0" Cursor="Hand" BorderThickness="0">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button Grid.Column="1" Content="Copy Nháp" Click="BtnCopySandbox_Click" Background="#00897B" Foreground="White" FontSize="11" FontWeight="Bold" Padding="4,6" Margin="2,0,2,0" Cursor="Hand" BorderThickness="0">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button Grid.Column="2" Content="Xóa" Click="BtnClearSandbox_Click" Background="#D32F2F" Foreground="White" FontSize="11" FontWeight="Bold" Padding="4,6" Margin="2,0,0,0" Cursor="Hand" BorderThickness="0">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                    </Grid>
+                                    <Button Content="Copy LaTeX Nháp" Click="BtnCopySandboxLaTeX_Click" Background="#FF8F00" Foreground="White" FontSize="11" FontWeight="Bold" Padding="8,6" Margin="0,4,0,0" Cursor="Hand" BorderThickness="0">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="4"/>
+                                            </Style>
+                                        </Button.Resources>
+                                    </Button>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <!-- VIEW 2: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

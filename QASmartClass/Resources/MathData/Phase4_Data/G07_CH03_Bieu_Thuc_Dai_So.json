@@ -1,0 +1,303 @@
+﻿{
+  "metadata": {
+    "chapterId": "g07_ch03",
+    "chapterName": "Biểu Thức Đại Số",
+    "grade": 7,
+    "totalSections": 2,
+    "totalConcepts": 4,
+    "totalProblems": 12,
+    "toolMapping": [
+      "basic_math"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 14,
+    "prerequisites": [
+      "g07_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "bt7_01",
+      "sectionName": "Đơn thức & Đa thức",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "bt7_001",
+          "name": "Đơn thức",
+          "definition": "Biểu thức chỉ gồm 1 hạng tử: hệ số × biến. Bậc = tổng số mũ biến",
+          "examples": [
+            "3x²y = đơn thức bậc 3",
+            "-5 = đơn thức bậc 0"
+          ]
+        },
+        {
+          "id": "bt7_002",
+          "name": "Đa thức",
+          "definition": "Tổng các đơn thức. Thu gọn = gộp hạng tử đồng dạng",
+          "examples": [
+            "3x² + 2x - 1 = đa thức bậc 2"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "bt7_p01",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Bậc của đơn thức 4x³y² = ?",
+          "options": [
+            "A) 3",
+            "B) 4",
+            "C) 5",
+            "D) 6"
+          ],
+          "correctAnswer": "C",
+          "solution": "Bậc = 3 + 2 = 5",
+          "points": 5
+        },
+        {
+          "problemId": "bt7_p02",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Thu gọn: 3x² + 5x - 2x² + x - 4 = ?",
+          "options": [
+            "A) x² + 6x - 4",
+            "B) x² + 4x - 4",
+            "C) 5x² + 6x - 4",
+            "D) x² + 6x + 4"
+          ],
+          "correctAnswer": "A",
+          "solution": "(3x²-2x²) + (5x+x) - 4 = x² + 6x - 4",
+          "points": 10
+        },
+        {
+          "problemId": "bt7_p03",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Giá trị đa thức P(x) = 2x² - 3x + 1 tại x = 2 = ?",
+          "options": [
+            "A) 1",
+            "B) 3",
+            "C) 5",
+            "D) 7"
+          ],
+          "correctAnswer": "B",
+          "solution": "P(2) = 2(4) - 3(2) + 1 = 8 - 6 + 1 = 3",
+          "points": 10
+        },
+        {
+          "problemId": "bt7_p04",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "P(x) = x³ - 2x + 1, Q(x) = 2x² + x - 3. P(x) + Q(x) = ?",
+          "options": [
+            "A) x³ + 2x² - x - 2",
+            "B) x³ + 2x² - 3x + 4",
+            "C) x³ + 2x² + x - 2",
+            "D) 3x³ - x + 4"
+          ],
+          "correctAnswer": "A",
+          "solution": "x³ + 2x² + (-2x+x) + (1-3) = x³ + 2x² - x - 2",
+          "points": 15
+        },
+        {
+          "problemId": "bt7_p05",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm nghiệm đa thức: P(x) = 2x - 6",
+          "options": [
+            "A) x = 2",
+            "B) x = 3",
+            "C) x = -3",
+            "D) x = 6"
+          ],
+          "correctAnswer": "B",
+          "solution": "2x - 6 = 0 → 2x = 6 → x = 3",
+          "points": 15
+        },
+        {
+          "problemId": "bt7_p06",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Bậc đa thức: 5x⁴ - 3x² + 7x - 1 = ?",
+          "options": [
+            "A) 2",
+            "B) 3",
+            "C) 4",
+            "D) 5"
+          ],
+          "correctAnswer": "C",
+          "solution": "Hạng tử bậc cao nhất: 5x⁴ → bậc = 4",
+          "points": 5
+        }
+      ]
+    },
+    {
+      "sectionId": "bt7_02",
+      "sectionName": "Hằng đẳng thức đáng nhớ",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "bt7_003",
+          "name": "Bình phương tổng/hiệu",
+          "definition": "(a+b)² = a²+2ab+b². (a-b)² = a²-2ab+b²",
+          "examples": [
+            "(x+3)² = x²+6x+9",
+            "(2x-1)² = 4x²-4x+1"
+          ]
+        },
+        {
+          "id": "bt7_004",
+          "name": "Hiệu 2 bình phương",
+          "definition": "a²-b² = (a+b)(a-b)",
+          "examples": [
+            "x²-9 = (x+3)(x-3)",
+            "4x²-1 = (2x+1)(2x-1)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "bt7_p07",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "(x + 2)² = ?",
+          "options": [
+            "A) x² + 2x + 4",
+            "B) x² + 4x + 4",
+            "C) x² + 4",
+            "D) 2x² + 4"
+          ],
+          "correctAnswer": "B",
+          "solution": "(x+2)² = x² + 2(x)(2) + 2² = x² + 4x + 4",
+          "points": 5
+        },
+        {
+          "problemId": "bt7_p08",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Phân tích: x² - 16 = ?",
+          "options": [
+            "A) (x-4)²",
+            "B) (x+4)(x-4)",
+            "C) (x-8)(x+2)",
+            "D) x(x-16)"
+          ],
+          "correctAnswer": "B",
+          "solution": "x² - 16 = x² - 4² = (x+4)(x-4)",
+          "points": 10
+        },
+        {
+          "problemId": "bt7_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính nhanh: 101² = ?",
+          "options": [
+            "A) 10100",
+            "B) 10201",
+            "C) 10001",
+            "D) 10301"
+          ],
+          "correctAnswer": "B",
+          "solution": "101² = (100+1)² = 10000 + 200 + 1 = 10201",
+          "points": 10
+        },
+        {
+          "problemId": "bt7_p10",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Phân tích: 9x² - 12x + 4 = ?",
+          "options": [
+            "A) (3x-2)²",
+            "B) (3x+2)²",
+            "C) (9x-4)(x-1)",
+            "D) 3(3x²-4x+1)"
+          ],
+          "correctAnswer": "A",
+          "solution": "9x² - 12x + 4 = (3x)² - 2(3x)(2) + 2² = (3x-2)²",
+          "points": 15
+        },
+        {
+          "problemId": "bt7_p11",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tính: 53² - 47² = ?",
+          "options": [
+            "A) 36",
+            "B) 360",
+            "C) 600",
+            "D) 6000"
+          ],
+          "correctAnswer": "C",
+          "solution": "53²-47² = (53+47)(53-47) = 100 × 6 = 600",
+          "points": 15
+        },
+        {
+          "problemId": "bt7_p12",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "(x - 5)² = ?",
+          "options": [
+            "A) x² - 5x + 25",
+            "B) x² - 10x + 25",
+            "C) x² - 25",
+            "D) x² + 10x + 25"
+          ],
+          "correctAnswer": "B",
+          "solution": "(x-5)² = x² - 2(5)x + 25 = x² - 10x + 25",
+          "points": 5
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "(a+b)² = a² + b² (quên hạng 2ab)",
+      "correction": "(a+b)² = a² + 2ab + b². LUÔN có hạng tử ở giữa 2ab"
+    },
+    {
+      "mistake": "a²-b² = (a-b)²",
+      "correction": "a²-b² = (a+b)(a-b). (a-b)² = a²-2ab+b²"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "bt7_quiz_01",
+      "title": "Kiểm tra: Biểu thức đại số Lớp 7",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "bt7_p01"
+        },
+        {
+          "ref": "bt7_p07"
+        },
+        {
+          "ref": "bt7_p02"
+        },
+        {
+          "ref": "bt7_p08"
+        },
+        {
+          "ref": "bt7_p11"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

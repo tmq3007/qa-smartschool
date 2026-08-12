@@ -1,0 +1,287 @@
+{
+  "metadata": {
+    "chapterId": "g11_ch03",
+    "chapterName": "Giới Hạn & Hàm Số Liên Tục",
+    "grade": 11,
+    "totalSections": 3,
+    "totalConcepts": 10,
+    "totalProblems": 9,
+    "toolMapping": [
+      "LimitTool"
+    ],
+    "thptWeight": "4%",
+    "estimatedHours": 12
+  },
+  "sections": [
+    {
+      "sectionId": "gh_01",
+      "sectionName": "Giới hạn dãy số",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "gh_001",
+          "name": "Định nghĩa giới hạn dãy số",
+          "definition": "lim uₙ = L nếu |uₙ-L| → 0 khi n → ∞"
+        },
+        {
+          "id": "gh_002",
+          "name": "Giới hạn cơ bản",
+          "formulas": [
+            "lim c = c",
+            "lim 1/n = 0",
+            "lim 1/n^k = 0 (k>0)",
+            "lim qⁿ = 0 (|q|<1)"
+          ]
+        },
+        {
+          "id": "gh_003",
+          "name": "Phương pháp tính",
+          "method": "Chia tử/mẫu cho n^(bậc cao nhất)"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "gh_prob_001",
+          "difficulty": "Easy",
+          "question": "lim (3n+1)/(2n-1) =",
+          "options": [
+            "A) 3/2",
+            "B) 1",
+            "C) 3",
+            "D) ∞"
+          ],
+          "correctAnswer": "A",
+          "solution": "Chia cho n: (3+1/n)/(2-1/n) → 3/2",
+          "points": 10
+        },
+        {
+          "problemId": "gh_prob_002",
+          "difficulty": "Medium",
+          "question": "lim (n²+2n)/(3n²-1) =",
+          "options": [
+            "A) 1/3",
+            "B) 2/3",
+            "C) 0",
+            "D) ∞"
+          ],
+          "correctAnswer": "A",
+          "solution": "Chia cho n²: (1+2/n)/(3-1/n²) → 1/3",
+          "points": 15
+        },
+        {
+          "problemId": "gh_prob_003",
+          "difficulty": "Hard",
+          "question": "lim (√(n²+n) - n) =",
+          "options": [
+            "A) 1/2",
+            "B) 0",
+            "C) 1",
+            "D) ∞"
+          ],
+          "correctAnswer": "A",
+          "solution": "Nhân liên hợp: (n²+n-n²)/(√(n²+n)+n) = n/(n√(1+1/n)+n) = 1/(√(1+1/n)+1) → 1/2",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "gh_02",
+      "sectionName": "Giới hạn hàm số",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "gh_004",
+          "name": "Giới hạn hàm số tại 1 điểm",
+          "definition": "lim[x→a] f(x) = L"
+        },
+        {
+          "id": "gh_005",
+          "name": "Giới hạn dạng 0/0",
+          "method": "Phân tích, rút gọn nhân tử gây 0/0"
+        },
+        {
+          "id": "gh_006",
+          "name": "Giới hạn tại vô cực",
+          "method": "Chia cho x^(bậc cao nhất)"
+        },
+        {
+          "id": "gh_007",
+          "name": "Giới hạn đặc biệt",
+          "formulas": [
+            "lim[x→0] sinx/x = 1",
+            "lim[x→0] (1-cosx)/x² = 1/2",
+            "lim[x→0] (eˣ-1)/x = 1"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "gh_prob_004",
+          "difficulty": "Easy",
+          "question": "lim[x→2] (x²-4)/(x-2) =",
+          "options": [
+            "A) 4",
+            "B) 0",
+            "C) 2",
+            "D) ∞"
+          ],
+          "correctAnswer": "A",
+          "solution": "(x²-4)/(x-2) = (x-2)(x+2)/(x-2) = x+2 → 4",
+          "points": 10
+        },
+        {
+          "problemId": "gh_prob_005",
+          "difficulty": "Medium",
+          "question": "lim[x→1] (x³-1)/(x-1) =",
+          "options": [
+            "A) 3",
+            "B) 1",
+            "C) 0",
+            "D) ∞"
+          ],
+          "correctAnswer": "A",
+          "solution": "(x³-1)/(x-1) = (x-1)(x²+x+1)/(x-1) = x²+x+1 → 3",
+          "points": 15
+        },
+        {
+          "problemId": "gh_prob_006",
+          "difficulty": "Hard",
+          "question": "lim[x→0] sin3x/(2x) =",
+          "options": [
+            "A) 3/2",
+            "B) 2/3",
+            "C) 1",
+            "D) 0"
+          ],
+          "correctAnswer": "A",
+          "solution": "sin3x/(2x) = (3/2)·(sin3x)/(3x) → (3/2)·1 = 3/2",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "gh_03",
+      "sectionName": "Hàm số liên tục",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "gh_008",
+          "name": "Định nghĩa liên tục",
+          "definition": "f liên tục tại x₀ ⟺ lim[x→x₀] f(x) = f(x₀)"
+        },
+        {
+          "id": "gh_009",
+          "name": "Các loại gián đoạn",
+          "types": [
+            "Gián đoạn loại 1: tồn tại giới hạn trái/phải nhưng không bằng nhau",
+            "Gián đoạn loại 2: giới hạn không tồn tại"
+          ]
+        },
+        {
+          "id": "gh_010",
+          "name": "Định lý giá trị trung gian",
+          "theorem": "f liên tục trên [a;b], f(a)·f(b)<0 → ∃c∈(a;b): f(c)=0"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "gh_prob_007",
+          "difficulty": "Easy",
+          "question": "Hàm f(x) = {x²-1 khi x≠1; 3 khi x=1} có liên tục tại x=1?",
+          "options": [
+            "A) Không, vì lim≠f(1)",
+            "B) Có",
+            "C) Không xác định",
+            "D) Liên tục trái"
+          ],
+          "correctAnswer": "A",
+          "solution": "lim[x→1](x²-1)=0 ≠ f(1)=3 → gián đoạn tại x=1",
+          "points": 10
+        },
+        {
+          "problemId": "gh_prob_008",
+          "difficulty": "Medium",
+          "question": "Tìm a để f(x)={x²+ax khi x≤1; 2x+1 khi x>1} liên tục tại x=1:",
+          "options": [
+            "A) a=2",
+            "B) a=1",
+            "C) a=3",
+            "D) a=-1"
+          ],
+          "correctAnswer": "A",
+          "solution": "lim trái = 1+a. lim phải = 3. Liên tục: 1+a=3→a=2",
+          "points": 15
+        },
+        {
+          "problemId": "gh_prob_009",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Phương trình x³+x-1=0 có nghiệm thuộc khoảng nào?",
+          "options": [
+            "A) (0;1)",
+            "B) (-1;0)",
+            "C) (1;2)",
+            "D) Vô nghiệm"
+          ],
+          "correctAnswer": "A",
+          "solution": "f(x)=x³+x-1 liên tục trên [0;1]. f(0)=-1<0, f(1)=1>0. Theo ĐL GTTG: ∃c∈(0;1): f(c)=0",
+          "points": 20
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm lim[x→a] f(x) với f(a)",
+      "correction": "Giới hạn là giá trị tiến tới, không phải giá trị tại điểm"
+    },
+    {
+      "mistake": "Quên liên hợp khi tính giới hạn có căn",
+      "correction": "√A-√B → nhân (√A+√B)/(√A+√B)"
+    },
+    {
+      "mistake": "Áp dụng sinx/x=1 khi x≠0",
+      "correction": "Chỉ đúng khi x→0"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "gh_quiz_01",
+      "title": "Kiểm tra: Giới hạn & Liên tục",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "gh_prob_001"
+        },
+        {
+          "ref": "gh_prob_002"
+        },
+        {
+          "ref": "gh_prob_004"
+        },
+        {
+          "ref": "gh_prob_005"
+        },
+        {
+          "ref": "gh_prob_007"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

@@ -1,0 +1,1230 @@
+<Page x:Class="QASmartClass.Classroom.Views.StemToolsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:multi="clr-namespace:QASmartClass.LearningTools.Views.Multi"
+      Background="#F0F2F5">
+
+    <Grid Margin="20,12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0" CornerRadius="14" Padding="20,14" Margin="0,0,0,12">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#1A2332" Offset="0"/>
+                    <GradientStop Color="#2C3E50" Offset="0.5"/>
+                    <GradientStop Color="#34495E" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <!-- Navigation sub-flow: Quay lại Trang chủ -->
+                    <Button x:Name="btnBackHome" Content="&#xE72B;" FontFamily="Segoe MDL2 Assets" 
+                            Width="36" Height="36" Margin="0,0,12,0" Padding="0"
+                            Background="Transparent" Foreground="White" BorderThickness="0"
+                            Cursor="Hand" Click="GoBackHome_Click" ToolTip="Quay lại Trang chủ"
+                            FontSize="16">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="18">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bg" Property="Background" Value="#33FFFFFF"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Nút Focus / Unfocus -->
+                    <Button x:Name="btnFocusHS" Content="🎯 Tập trung HS" FontSize="13" FontWeight="Bold"
+                            Background="#E8F5E9" Foreground="#2E7D32" BorderThickness="0"
+                            Padding="12,6" Margin="0,0,8,0" Cursor="Hand" Click="FocusHS_Click"
+                            ToolTip="Yêu cầu tất cả HS tập trung vào công cụ này">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="8" BorderThickness="1" BorderBrush="#C8E6C9">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bg" Property="Background" Value="#C8E6C9"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="btnUnfocusHS" Content="❌ Hủy tập trung" FontSize="13" FontWeight="Bold"
+                            Background="#FFEBEE" Foreground="#C62828" BorderThickness="0"
+                            Padding="12,6" Margin="0,0,16,0" Cursor="Hand" Click="UnfocusHS_Click"
+                            ToolTip="Bỏ Focus — HS tự do trở lại">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="8" BorderThickness="1" BorderBrush="#FFCDD2">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bg" Property="Background" Value="#FFCDD2"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <Border Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,6,0">
+                        <TextBlock Text="🔬 Vật lý" FontSize="11" Foreground="#333333" FontWeight="SemiBold"/>
+                    </Border>
+                    <Border Background="White" CornerRadius="8" Padding="10,5" Margin="0,0,6,0">
+                        <TextBlock Text="🧪 Hóa học" FontSize="11" Foreground="#333333" FontWeight="SemiBold"/>
+                    </Border>
+                    <Border Background="White" CornerRadius="8" Padding="10,5">
+                        <TextBlock Text="📐 Toán học" FontSize="11" Foreground="#333333" FontWeight="SemiBold"/>
+                    </Border>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="🔭 Công cụ STEM" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Máy tính khoa học • Bấm giờ thí nghiệm" 
+                               FontSize="11" Foreground="#B0BEC5" Margin="0,3,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ═══ MAIN CONTENT ═══ -->
+        <TabControl x:Name="mainTabControl" Grid.Row="1" Background="Transparent" BorderThickness="0" Margin="0,8,0,0">
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border x:Name="Border" Padding="20,12" Margin="0,0,8,0" CornerRadius="8,8,0,0" Background="#E0E0E0" Cursor="Hand">
+                                    <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="White"/>
+                                        <Setter Property="Foreground" Value="#1565C0"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="Foreground" Value="#757575"/>
+                </Style>
+
+                <Style x:Key="QuickBtnStyle" TargetType="Button">
+                    <Setter Property="Background" Value="#F3E5F5"/>
+                    <Setter Property="Foreground" Value="#7B1FA2"/>
+                    <Setter Property="Padding" Value="8,4"/>
+                    <Setter Property="Margin" Value="0,0,4,4"/>
+                    <Setter Property="FontSize" Value="10.5"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="FontFamily" Value="Segoe UI"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#E1BEE7"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+
+                <Style x:Key="QuickBtnStyle_Timer" TargetType="Button">
+                    <Setter Property="Background" Value="#FFF3E0"/>
+                    <Setter Property="Foreground" Value="#E65100"/>
+                    <Setter Property="Padding" Value="8,4"/>
+                    <Setter Property="Margin" Value="0,0,4,4"/>
+                    <Setter Property="FontSize" Value="10.5"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="FontFamily" Value="Segoe UI"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#FFE082"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+
+                <Style x:Key="QuickBtnStyle_Quad" TargetType="Button">
+                    <Setter Property="Background" Value="#E8F5E9"/>
+                    <Setter Property="Foreground" Value="#2E7D32"/>
+                    <Setter Property="Padding" Value="8,4"/>
+                    <Setter Property="Margin" Value="0,0,4,4"/>
+                    <Setter Property="FontSize" Value="10.5"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="FontFamily" Value="Segoe UI"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#C8E6C9"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TabControl.Resources>
+
+            <!-- TAB 1: MÁY TÍNH -->
+            <TabItem Header="🔢 Máy tính khoa học">
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#D0D5DD" BorderThickness="1" Padding="40">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Grid MaxWidth="1200" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MaxWidth="650" MinWidth="320"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                        
+                        <Border Grid.Column="0" CornerRadius="14" Padding="0" BorderBrush="#D0D5DD" BorderThickness="1" HorizontalAlignment="Stretch">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#F8F9FA" Offset="0"/>
+                                    <GradientStop Color="#FFFFFF" Offset="0.3"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <StackPanel>
+                                <DockPanel Margin="16,12,16,0">
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <CheckBox x:Name="chkDegMode" Content="Độ (Deg)" IsChecked="True" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Bật để dùng chế độ Độ (Degrees), tắt để dùng chế độ Radian (Rad)"/>
+                                        <Button x:Name="btnCalcHistory" Content="📋" FontSize="16" Padding="8,4" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="CalcHistory_Click" ToolTip="Lịch sử tính toán"/>
+                                        <Button Content="🗑️" FontSize="16" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="8,4" Click="CalcClearAll_Click" ToolTip="Xóa tất cả"/>
+                                    </StackPanel>
+                                    <TextBlock Text="🔢 Máy tính khoa học" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                </DockPanel>
+
+                                <Border Background="#1E293B" CornerRadius="10" Margin="16,12,16,0" Padding="20,16">
+                                    <StackPanel>
+                                        <TextBox x:Name="txtCalcInput" FontSize="20" FontFamily="Cambria Math, Segoe UI" Background="Transparent" BorderThickness="0" Foreground="#94A3B8" TextAlignment="Right" Padding="0,0,0,4" CaretBrush="#94A3B8" KeyDown="CalcInput_KeyDown" ToolTip="Nhập biểu thức → Enter"/>
+                                        <TextBlock x:Name="txtCalcDisplay" Text="0" FontSize="56" FontWeight="Bold" Foreground="White" TextAlignment="Right" FontFamily="Segoe UI"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <UniformGrid x:Name="calcButtons" Columns="6" Margin="16,12,16,20"/>
+
+                                <Border x:Name="calcHistoryPanel" Visibility="Collapsed" Background="#F8F9FA" Padding="12" Margin="16,0,16,16" MaxHeight="200">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel x:Name="calcHistoryList"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Quick info area in calculator tab -->
+                        <Border Grid.Column="1" Margin="24,0,0,0" Background="#F8FAFE" CornerRadius="12" Padding="20">
+                            <StackPanel>
+                                <TextBlock Text="💡 Hướng dẫn sử dụng" FontSize="18" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                <TextBlock Text="• Có thể nhập trực tiếp từ bàn phím" FontSize="16" Margin="0,0,0,10" Foreground="#555"/>
+                                <TextBlock Text="• Nhấn Enter để tính kết quả" FontSize="16" Margin="0,0,0,10" Foreground="#555"/>
+                                <TextBlock Text="• Bấm 📋 để xem các phép tính cũ" FontSize="16" Margin="0,0,0,10" Foreground="#555"/>
+                                <TextBlock Text="• Hỗ trợ các hàm lượng giác sin, cos, tan" FontSize="16" Margin="0,0,0,10" Foreground="#555"/>
+                                <TextBlock Text="• Có thể gọi các hằng số ở tab Hằng số" FontSize="16" Foreground="#555"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+
+            <!-- TAB 2: ĐỔI ĐƠN VỊ -->
+            <TabItem Header="📏 Đổi đơn vị">
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E3E8EE" BorderThickness="1" Padding="30,40">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Grid MaxWidth="1200" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*" MaxWidth="680" MinWidth="320"/>
+                            </Grid.ColumnDefinitions>
+
+                        <!-- Cột 0: Quy đổi chính -->
+                        <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                            <DockPanel Margin="0,0,0,24">
+                                <Border DockPanel.Dock="Left" Background="#F3E5F5" CornerRadius="12" Padding="16,8" Margin="0,0,16,0">
+                                    <TextBlock Text="📏" FontSize="28"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Đổi đơn vị" FontSize="22" FontWeight="Bold" Foreground="#7B1FA2"/>
+                                    <TextBlock Text="Hỗ trợ 7 loại đơn vị đo lường phổ biến" FontSize="14" Foreground="#9E9E9E"/>
+                                </StackPanel>
+                            </DockPanel>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <ComboBox Grid.ColumnSpan="3" x:Name="cboUnitType" FontSize="16" Padding="16,12" Margin="0,0,0,20" SelectionChanged="UnitType_Changed">
+                                    <ComboBoxItem Content="📏 Chiều dài" IsSelected="True"/>
+                                    <ComboBoxItem Content="⚖️ Khối lượng"/>
+                                    <ComboBoxItem Content="🌡️ Nhiệt độ"/>
+                                    <ComboBoxItem Content="📐 Diện tích"/>
+                                    <ComboBoxItem Content="🧊 Thể tích"/>
+                                    <ComboBoxItem Content="⏱️ Thời gian"/>
+                                    <ComboBoxItem Content="⚡ Năng lượng"/>
+                                </ComboBox>
+
+                                <Border Grid.Row="1" Grid.Column="0" Background="#F8FAFE" CornerRadius="12" Padding="20,16" BorderBrush="#E3E8EE" BorderThickness="1">
+                                    <DockPanel>
+                                        <ComboBox x:Name="cboFromUnit" DockPanel.Dock="Right" Width="100" FontSize="14" Padding="8,6" Margin="12,0,0,0" SelectionChanged="Convert_UnitChanged"/>
+                                        <TextBox x:Name="txtFromValue" FontSize="28" Padding="4" Text="1" FontWeight="SemiBold" Background="Transparent" BorderThickness="0" Foreground="#1A237E" TextChanged="Convert_Changed"/>
+                                    </DockPanel>
+                                </Border>
+
+                                <Button Grid.Row="1" Grid.Column="1" Margin="16,0" Cursor="Hand" VerticalAlignment="Center" Click="SwapUnits_Click" ToolTip="Hoán đổi">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="bd" Background="#F5F5F5" CornerRadius="24" Width="48" Height="48">
+                                                <TextBlock Text="🔄" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="bd" Property="Background" Value="#E8EAF6"/></Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+
+                                <Border Grid.Row="1" Grid.Column="2" CornerRadius="12" Padding="20,16" BorderBrush="#CE93D8" BorderThickness="2">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#F3E5F5" Offset="0"/>
+                                            <GradientStop Color="#EDE7F6" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <DockPanel>
+                                        <ComboBox x:Name="cboToUnit" DockPanel.Dock="Right" Width="100" FontSize="14" Padding="8,6" Margin="12,0,0,0" SelectionChanged="Convert_UnitChanged"/>
+                                        <TextBlock x:Name="txtToValue" FontSize="32" FontWeight="Bold" Foreground="#4A148C" VerticalAlignment="Center"/>
+                                    </DockPanel>
+                                </Border>
+
+                                <StackPanel Grid.Row="2" Grid.ColumnSpan="3" x:Name="panelSaoRegion" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0" Visibility="Collapsed">
+                                    <TextBlock Text="Khu vực quy đổi Sào:" VerticalAlignment="Center" FontSize="13" Foreground="#555" Margin="0,0,8,0"/>
+                                    <ComboBox x:Name="cboSaoRegion" Width="180" FontSize="13" Padding="8,4" SelectionChanged="SaoRegion_SelectionChanged">
+                                        <ComboBoxItem Content="Bắc Bộ (360 m²)" Tag="360" IsSelected="True"/>
+                                        <ComboBoxItem Content="Trung Bộ (500 m²)" Tag="500"/>
+                                        <ComboBoxItem Content="Nam Bộ (1000 m²)" Tag="1000"/>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock x:Name="txtConvertFormula" Text="" FontSize="14" Foreground="#757575" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+                        </StackPanel>
+
+                        <!-- Cột 1: Ví dụ nhanh (Presets) -->
+                        <Border Grid.Column="1" Background="#FAF5FC" BorderBrush="#E1BEE7" BorderThickness="1" CornerRadius="12" Padding="16,16,6,16">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="⚡ Ví dụ nhanh (Presets)" FontSize="13" FontWeight="Bold" Foreground="#7B1FA2" Margin="0,0,0,10"/>
+                                    
+                                    <!-- Group 1: Chiều dài -->
+                                    <Border Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,8" BorderBrush="#EDE7F6" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="📏 Chiều dài &amp; Vũ trụ/Vi mô" FontSize="13" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,6"/>
+                                            <WrapPanel Margin="0,0,0,4">
+                                                <Button Content="Thiên văn (AU)" Style="{StaticResource QuickBtnStyle}" Click="Preset_AstronomicalLength"/>
+                                                <Button Content="Năm ánh sáng (ly)" Style="{StaticResource QuickBtnStyle}" Click="Preset_LightYear"/>
+                                                <Button Content="Công nghệ Nano (nm)" Style="{StaticResource QuickBtnStyle}" Click="Preset_NanoLength"/>
+                                                <Button Content="Màn hình (inch)" Style="{StaticResource QuickBtnStyle}" Click="Preset_InchToCm"/>
+                                                <Button Content="Cao độ bay (ft -> m)" Style="{StaticResource QuickBtnStyle}" Click="Preset_FlightAltitude"/>
+                                                <Button Content="Marathon (mile -> km)" Style="{StaticResource QuickBtnStyle}" Click="Preset_MarathonDistance"/>
+                                                <Button Content="Độ dày tóc (μm -> mm)" Style="{StaticResource QuickBtnStyle}" Click="Preset_HairThickness"/>
+                                            </WrapPanel>
+                                            <TextBlock Text="• Thiên văn học dùng AU và ly để đo khoảng cách hệ Mặt Trời. Vật lý bán dẫn dùng nm đo kích thước chip." FontSize="13" Foreground="#666666" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Group 2: Khối lượng -->
+                                    <Border Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,8" BorderBrush="#EDE7F6" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="⚖️ Khối lượng &amp; Hóa học/Đời sống" FontSize="13" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,6"/>
+                                            <WrapPanel Margin="0,0,0,4">
+                                                <Button Content="Y tế (mg -> g)" Style="{StaticResource QuickBtnStyle}" Click="Preset_MgToG"/>
+                                                <Button Content="Nông sản (Tạ -> kg)" Style="{StaticResource QuickBtnStyle}" Click="Preset_TaToKg"/>
+                                                <Button Content="Vận tải (Tấn -> kg)" Style="{StaticResource QuickBtnStyle}" Click="Preset_TanToKg"/>
+                                                <Button Content="Đo Anh-Mỹ (lb -> kg)" Style="{StaticResource QuickBtnStyle}" Click="Preset_LbToKg"/>
+                                                <Button Content="Kim cương (carat -> g)" Style="{StaticResource QuickBtnStyle}" Click="Preset_DiamondHope"/>
+                                                <Button Content="Vàng (oz -> g)" Style="{StaticResource QuickBtnStyle}" Click="Preset_GoldOunce"/>
+                                                <Button Content="Voi châu Á (tấn -> kg)" Style="{StaticResource QuickBtnStyle}" Click="Preset_AsianElephant"/>
+                                            </WrapPanel>
+                                            <TextBlock Text="• Y sinh học dùng mg để định liều dược phẩm. Nông nghiệp và vận tải Việt Nam dùng Tạ, Tấn để tính sản lượng." FontSize="13" Foreground="#666666" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Group 3: Nhiệt độ -->
+                                    <Border Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,8" BorderBrush="#EDE7F6" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="🌡️ Nhiệt độ &amp; Nhiệt động học" FontSize="13" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,6"/>
+                                            <WrapPanel Margin="0,0,0,4">
+                                                <Button Content="Thân nhiệt (37°C -> °F)" Style="{StaticResource QuickBtnStyle}" Click="Preset_BodyTemp"/>
+                                                <Button Content="Không tuyệt đối (0 K -> °C)" Style="{StaticResource QuickBtnStyle}" Click="Preset_AbsoluteZero"/>
+                                                <Button Content="Nước sôi (100°C -> °F)" Style="{StaticResource QuickBtnStyle}" Click="Preset_BoilingTemp"/>
+                                                <Button Content="Độ chuẩn (98.6°F -> °C)" Style="{StaticResource QuickBtnStyle}" Click="Preset_StandardFahrenheit"/>
+                                                <Button Content="Nướng bánh (350°F -> °C)" Style="{StaticResource QuickBtnStyle}" Click="Preset_BakingTemp"/>
+                                                <Button Content="Nitơ lỏng (-196°C -> K)" Style="{StaticResource QuickBtnStyle}" Click="Preset_LiquidNitrogen"/>
+                                            </WrapPanel>
+                                            <TextBlock Text="• Thân nhiệt chuẩn con người là 37°C (98.6°F). Thang đo Kelvin (K) dùng trong nghiên cứu vũ trụ." FontSize="13" Foreground="#666666" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Group 4: Diện tích -->
+                                    <Border Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,8" BorderBrush="#EDE7F6" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="📐 Diện tích &amp; Lâm nghiệp/Quy hoạch" FontSize="13" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,6"/>
+                                            <WrapPanel Margin="0,0,0,4">
+                                                <Button Content="Địa lý (km² -> ha)" Style="{StaticResource QuickBtnStyle}" Click="Preset_Km2ToHa"/>
+                                                <Button Content="Rừng (ha -> m²)" Style="{StaticResource QuickBtnStyle}" Click="Preset_HaToM2"/>
+                                                <Button Content="Ruộng đất (Sào -> m²)" Style="{StaticResource QuickBtnStyle}" Click="Preset_SaoToM2"/>
+                                                <Button Content="Tiết diện dây (cm² -> mm²)" Style="{StaticResource QuickBtnStyle}" Click="Preset_Cm2ToMm2"/>
+                                                <Button Content="Trang trại Mỹ (acre -> m²)" Style="{StaticResource QuickBtnStyle}" Click="Preset_USFarm"/>
+                                                <Button Content="Sân bóng đá (ha -> m²)" Style="{StaticResource QuickBtnStyle}" Click="Preset_FootballPitch"/>
+                                            </WrapPanel>
+                                            <TextBlock Text="• Địa chính Việt Nam sử dụng đơn vị Sào và Ha để đo ruộng đất. Vật lý kỹ thuật sử dụng mm² đo tiết diện cáp điện." FontSize="13" Foreground="#666666" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Group 5: Thể tích -->
+                                    <Border Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,8" BorderBrush="#EDE7F6" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="🧊 Thể tích &amp; Động cơ/Sinh hoạt" FontSize="13" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,6"/>
+                                            <WrapPanel Margin="0,0,0,4">
+                                                <Button Content="Bể nước (m³ -> lít)" Style="{StaticResource QuickBtnStyle}" Click="Preset_M3ToLit"/>
+                                                <Button Content="Xi-lanh (cc -> lít)" Style="{StaticResource QuickBtnStyle}" Click="Preset_CcToLit"/>
+                                                <Button Content="Dầu thô (gallon -> lít)" Style="{StaticResource QuickBtnStyle}" Click="Preset_GallonToLit"/>
+                                                <Button Content="Nước ngọt (330ml -> lít)" Style="{StaticResource QuickBtnStyle}" Click="Preset_NuocNgotLit"/>
+                                                <Button Content="Bình xăng Lead (lít -> ml)" Style="{StaticResource QuickBtnStyle}" Click="Preset_MotorcycleTank"/>
+                                                <Button Content="Giọt nước (ml -> lít)" Style="{StaticResource QuickBtnStyle}" Click="Preset_WaterDrop"/>
+                                            </WrapPanel>
+                                            <TextBlock Text="• Thể tích động cơ xe máy thường đo bằng cc (cm³). Thể tích bể nước gia đình đo bằng m³ (khối)." FontSize="13" Foreground="#666666" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Group 6: Thời gian -->
+                                    <Border Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,8" BorderBrush="#EDE7F6" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="⏱️ Thời gian &amp; Cơ học/Tin học" FontSize="13" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,6"/>
+                                            <WrapPanel Margin="0,0,0,4">
+                                                <Button Content="1 Ngày -> Giây" Style="{StaticResource QuickBtnStyle}" Click="Preset_DayToSec"/>
+                                                <Button Content="Vận tốc (1 Giờ -> Giây)" Style="{StaticResource QuickBtnStyle}" Click="Preset_HourToSec"/>
+                                                <Button Content="Màn hình (ms -> Giây)" Style="{StaticResource QuickBtnStyle}" Click="Preset_MsToSec"/>
+                                                <Button Content="Nghỉ hè (tuần -> ngày)" Style="{StaticResource QuickBtnStyle}" Click="Preset_SummerVacation"/>
+                                                <Button Content="Sóng âm 1kHz (ms -> s)" Style="{StaticResource QuickBtnStyle}" Click="Preset_SoundWavePeriod"/>
+                                            </WrapPanel>
+                                            <TextBlock Text="• Độ trễ phản hồi của màn hình gaming được đo bằng mili giây (ms). Công cơ học đo thời gian bằng giây." FontSize="13" Foreground="#666666" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Group 7: Năng lượng -->
+                                    <Border Background="White" CornerRadius="8" Padding="10" BorderBrush="#EDE7F6" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="⚡ Năng lượng &amp; Điện/Dinh dưỡng" FontSize="13" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,6"/>
+                                            <WrapPanel Margin="0,0,0,4">
+                                                <Button Content="Điện năng (kWh -> J)" Style="{StaticResource QuickBtnStyle}" Click="Preset_KwhToJ"/>
+                                                <Button Content="Dinh dưỡng (cal -> J)" Style="{StaticResource QuickBtnStyle}" Click="Preset_CalToJ"/>
+                                                <Button Content="Năng lượng (kcal -> kJ)" Style="{StaticResource QuickBtnStyle}" Click="Preset_KcalToKj"/>
+                                                <Button Content="Điều hòa (BTU -> J)" Style="{StaticResource QuickBtnStyle}" Click="Preset_BtuToJ"/>
+                                                <Button Content="Ánh sáng xanh (eV -> J)" Style="{StaticResource QuickBtnStyle}" Click="Preset_PhotonEnergy"/>
+                                            </WrapPanel>
+                                            <TextBlock Text="• Hoá đơn tiền điện dùng số điện (kWh). Chế độ ăn kiêng và tập thể thao sử dụng Calorie (cal) đo năng lượng tiêu thụ." FontSize="10" Foreground="#666666" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+
+            <!-- TAB 3: GIẢI PHƯƠNG TRÌNH -->
+            <TabItem Header="🧮 Giải phương trình">
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E3E8EE" BorderThickness="1" Padding="30,40">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Grid MaxWidth="1200" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*" MaxWidth="680" MinWidth="320"/>
+                            </Grid.ColumnDefinitions>
+
+                        <!-- Cột 0: Khung giải chính -->
+                        <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                            <DockPanel Margin="0,0,0,24">
+                                <Border DockPanel.Dock="Left" Background="#E8F5E9" CornerRadius="12" Padding="16,8" Margin="0,0,16,0">
+                                    <TextBlock Text="🧮" FontSize="28"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Giải phương trình Bậc 2" FontSize="22" FontWeight="Bold" Foreground="#2E7D32"/>
+                                    <TextBlock Text="Dạng phương trình: ax² + bx + c = 0" FontSize="14" Foreground="#9E9E9E" FontFamily="Cambria Math, Segoe UI"/>
+                                </StackPanel>
+                            </DockPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,24" HorizontalAlignment="Center">
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Text="a" FontSize="14" Foreground="#757575" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="txtCoeffA" Width="80" FontSize="20" Padding="10,8" Text="1" TextAlignment="Center" TextChanged="SolveQuadratic_Changed"/>
+                                </StackPanel>
+                                <TextBlock Text="x² +" FontSize="22" Foreground="#333" VerticalAlignment="Bottom" Margin="0,0,8,12"/>
+                                
+                                <StackPanel Margin="0,0,8,0">
+                                    <TextBlock Text="b" FontSize="14" Foreground="#757575" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="txtCoeffB" Width="80" FontSize="20" Padding="10,8" Text="-5" TextAlignment="Center" TextChanged="SolveQuadratic_Changed"/>
+                                </StackPanel>
+                                <TextBlock Text="x +" FontSize="22" Foreground="#333" VerticalAlignment="Bottom" Margin="0,0,8,12"/>
+                                
+                                <StackPanel>
+                                    <TextBlock Text="c" FontSize="14" Foreground="#757575" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="txtCoeffC" Width="80" FontSize="20" Padding="10,8" Text="6" TextAlignment="Center" TextChanged="SolveQuadratic_Changed"/>
+                                </StackPanel>
+                                <TextBlock Text="= 0" FontSize="22" Foreground="#333" VerticalAlignment="Bottom" Margin="12,0,0,12"/>
+                            </StackPanel>
+
+                            <Border Background="#F1F8E9" CornerRadius="12" Padding="24,20" BorderBrush="#C8E6C9" BorderThickness="2">
+                                <StackPanel>
+                                    <TextBlock Text="Kết quả tính toán:" FontSize="14" Foreground="#558B2F" Margin="0,0,0,8"/>
+                                    <TextBlock x:Name="txtDelta" Text="Δ = 1" FontSize="18" Foreground="#33691E" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBlock x:Name="txtQuadResult" Text="x₁ = 2, x₂ = 3" FontSize="28" FontWeight="Bold" Foreground="#1B5E20"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Graph Graph Viewer -->
+                        <Border Grid.Column="1" Background="#F1F8E9" BorderBrush="#C8E6C9" BorderThickness="1" CornerRadius="12" Padding="16,16,6,16">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Hướng dẫn sử dụng nhanh" FontSize="13" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,10"/>
+                                    
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="1️⃣" FontSize="13" Foreground="#2E7D32" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="1" Text="Nhập hệ số a, b, c (a ≠ 0) vào các ô tương ứng." FontSize="13" Foreground="#333333" TextWrapping="Wrap"/>
+                                    </Grid>
+                                    
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="2️⃣" FontSize="13" Foreground="#2E7D32" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="1" Text="Xem giá trị biệt thức Delta (Δ) và nghiệm được tự động tính toán tức thì." FontSize="13" Foreground="#333333" TextWrapping="Wrap"/>
+                                    </Grid>
+                                    
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="3️⃣" FontSize="13" Foreground="#2E7D32" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="1" Text="Nhấn 📈 Xem đồ thị để trực quan hóa đồ thị Parabol và vị trí tọa độ đỉnh cực trị." FontSize="13" Foreground="#333333" TextWrapping="Wrap"/>
+                                    </Grid>
+
+                                    <Border Height="1" Background="#C8E6C9" Margin="0,4,0,10"/>
+                                    
+                                    <!-- Panel mô tả ví dụ -->
+                                    <Border x:Name="quadPresetDescPanel" Background="White" BorderBrush="#C8E6C9" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10" Visibility="Collapsed">
+                                        <StackPanel>
+                                            <TextBlock x:Name="txtQuadPresetTitle" Text="" FontSize="13" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,4"/>
+                                            <TextBlock x:Name="txtQuadPresetDesc" Text="" FontSize="13" Foreground="#555555" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Height="1" Background="#C8E6C9" Margin="0,4,0,10"/>
+                                    
+                                    <TextBlock Text="⚡ Ví dụ nhanh (Presets)" FontSize="13" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,8"/>
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <Button Content="Ném xiên" Style="{StaticResource QuickBtnStyle_Quad}" Click="Preset_QuadNemXien"/>
+                                        <Button Content="Cổng parabol" Style="{StaticResource QuickBtnStyle_Quad}" Click="Preset_QuadCongVom"/>
+                                        <Button Content="Chao đèn" Style="{StaticResource QuickBtnStyle_Quad}" Click="Preset_QuadChaoDen"/>
+                                        <Button Content="Tối ưu doanh thu" Style="{StaticResource QuickBtnStyle_Quad}" Click="Preset_QuadLoiNhuan"/>
+                                        <Button Content="Rơi tự do" Style="{StaticResource QuickBtnStyle_Quad}" Click="Preset_QuadRoiTuDo"/>
+                                        <Button Content="Nghiệm kép" Style="{StaticResource QuickBtnStyle_Quad}" Click="Preset_QuadCatDiem"/>
+                                    </WrapPanel>
+ 
+                                    <Border Height="1" Background="#C8E6C9" Margin="0,4,0,10"/>
+                                    
+                                    <TextBlock Text="🚀 Ứng dụng thực tế (STEM)" FontSize="13" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Mô hình hàm số bậc hai (Parabol) xuất hiện rộng rãi trong tự nhiên và kỹ thuật:" FontSize="13" Foreground="#555555" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                                    
+                                    <StackPanel Margin="4,0,0,0">
+                                        <TextBlock Text="• Quỹ đạo chuyển động ném xiên (tia nước, đường đi của quả bóng)." FontSize="13" Foreground="#333333" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                        <TextBlock Text="• Thiết kế cổng vòm chịu lực lớn (Cổng trường Đại học Bách Khoa, Gateway Arch)." FontSize="13" Foreground="#333333" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                        <TextBlock Text="• Gương phản xạ parabol (thu sóng anten parabol, cho chóa đèn pha ô tô)." FontSize="13" Foreground="#333333" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                        <TextBlock Text="• Tối ưu hóa doanh thu cực đại trong kinh tế học." FontSize="13" Foreground="#333333" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+
+            <!-- TAB 4: BẤM GIỜ -->
+            <TabItem Header="⏱️ Bấm giờ">
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E3E8EE" BorderThickness="1" Padding="30,40">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Grid MaxWidth="1200" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*" MaxWidth="680" MinWidth="320"/>
+                            </Grid.ColumnDefinitions>
+
+                        <!-- Cột 0: Khung bấm giờ chính -->
+                        <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                            <DockPanel Margin="0,0,0,24">
+                                <Border DockPanel.Dock="Left" Background="#FFF8E1" CornerRadius="12" Padding="16,8" Margin="0,0,16,0">
+                                    <TextBlock Text="⏱️" FontSize="28"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Bấm giờ thí nghiệm" FontSize="22" FontWeight="Bold" Foreground="#FF8F00"/>
+                                    <TextBlock Text="Đo thời gian chính xác cho các phản ứng hóa học hoặc vật lý" FontSize="14" Foreground="#9E9E9E"/>
+                                </StackPanel>
+                            </DockPanel>
+
+                            <Border Background="#FAFAFA" CornerRadius="16" Padding="40" Margin="0,0,0,24" BorderBrush="#EEEEEE" BorderThickness="2">
+                                <StackPanel>
+                                    <TextBlock x:Name="txtStopwatch" Text="00:00.000" FontSize="64" FontWeight="Bold" Foreground="#FF6F00" HorizontalAlignment="Center" FontFamily="Segoe UI" Margin="0,0,0,24"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button x:Name="btnStopwatchStart" Content="▶ Bắt đầu" FontSize="16" FontWeight="SemiBold" Padding="24,12" Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="0,0,12,0" Click="Stopwatch_Start">
+                                            <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#388E3C"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                                        </Button>
+                                        <Button x:Name="btnStopwatchLap" Content="🏁 Ghi" FontSize="16" FontWeight="SemiBold" Padding="24,12" Background="#FF9800" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="0,0,12,0" Click="Stopwatch_Lap" IsEnabled="False">
+                                            <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#F57C00"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                                        </Button>
+                                        <Button Content="⏹ Đặt lại" FontSize="16" FontWeight="SemiBold" Padding="24,12" Background="#F44336" Foreground="White" BorderThickness="0" Cursor="Hand" Click="Stopwatch_Reset">
+                                            <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#D32F2F"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="150" Margin="0,8,0,0">
+                                <StackPanel x:Name="lapTimesPanel"/>
+                            </ScrollViewer>
+                        </StackPanel>
+
+                        <!-- Cột 1: Hướng dẫn sử dụng & Ví dụ thực tiễn (STEM) -->
+                        <Border Grid.Column="1" Background="#FFFDE7" BorderBrush="#FFE082" BorderThickness="1" CornerRadius="12" Padding="16,16,6,16">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Hướng dẫn sử dụng nhanh" FontSize="13" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,10"/>
+                                    
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="1️⃣" FontSize="13" Foreground="#E65100" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="1" Text="Nhấn ▶ Bắt đầu để chạy đồng hồ đo thời gian thí nghiệm." FontSize="13" Foreground="#333333" TextWrapping="Wrap"/>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="2️⃣" FontSize="13" Foreground="#E65100" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="1" Text="Nhấn 🏁 Ghi để lưu mốc thời gian (Lap) tại các thời điểm quan trọng." FontSize="13" Foreground="#333333" TextWrapping="Wrap"/>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="3️⃣" FontSize="13" Foreground="#E65100" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="1" Text="Nhấn ⏹ Đặt lại để điều khiển đồng hồ." FontSize="13" Foreground="#333333" TextWrapping="Wrap"/>
+                                    </Grid>
+
+                                    <Border Height="1" Background="#FFE082" Margin="0,4,0,10"/>
+
+                                    <TextBlock Text="⏱️ Ví dụ nhanh &amp; Ứng dụng STEM" FontSize="13" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,8"/>
+                                    
+                                    <Border Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,8" BorderBrush="#FFF9C4" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="🍎 Vật lý: Rơi tự do &amp; Con lắc" FontSize="13" FontWeight="Bold" Foreground="#F57F17" Margin="0,0,0,6"/>
+                                            <WrapPanel Margin="0,0,0,4">
+                                                <Button Content="Rơi tự do (2m)" Style="{StaticResource QuickBtnStyle_Timer}" Click="Preset_FreeFall2m"/>
+                                                <Button Content="Rơi tự do (5m)" Style="{StaticResource QuickBtnStyle_Timer}" Click="Preset_FreeFall5m"/>
+                                                <Button Content="Con lắc đơn (L=1m)" Style="{StaticResource QuickBtnStyle_Timer}" Click="Preset_Pendulum1m"/>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,8" BorderBrush="#FFF9C4" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="🧪 Hóa học &amp; Sinh học thực nghiệm" FontSize="13" FontWeight="Bold" Foreground="#F57F17" Margin="0,0,0,6"/>
+                                            <WrapPanel Margin="0,0,0,4">
+                                                <Button Content="Phản ứng kết tủa" Style="{StaticResource QuickBtnStyle_Timer}" Click="Preset_ChemReaction"/>
+                                                <Button Content="Nhịp tim vận động" Style="{StaticResource QuickBtnStyle_Timer}" Click="Preset_HeartRateSport"/>
+                                                <Button Content="Tốc độ âm (340m)" Style="{StaticResource QuickBtnStyle_Timer}" Click="Preset_SpeedOfSound"/>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- Panel mô tả ví dụ -->
+                                    <Border x:Name="stopwatchPresetDescPanel" Background="White" BorderBrush="#FFE082" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10" Visibility="Collapsed">
+                                        <StackPanel>
+                                            <TextBlock x:Name="txtStopwatchPresetTitle" Text="" FontSize="13" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,4"/>
+                                            <TextBlock x:Name="txtStopwatchPresetDesc" Text="" FontSize="13" Foreground="#555555" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+
+            <!-- TAB 5: CÔNG THỨC & HẰNG SỐ -->
+            <TabItem Header="📐 Công thức &amp; Hằng số">
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E3E8EE" BorderThickness="1" Padding="30">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel MaxWidth="1200" HorizontalAlignment="Center">
+                            <DockPanel Margin="0,0,0,16">
+                                <Border DockPanel.Dock="Left" Background="#FFF3E0" CornerRadius="8" Padding="12,6" Margin="0,0,12,0">
+                                    <TextBlock Text="📐" FontSize="20"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Công thức tham khảo" FontSize="18" FontWeight="Bold" Foreground="#E65100"/>
+                                    <TextBlock Text="Nhấn vào công thức để copy" FontSize="12" Foreground="#9E9E9E"/>
+                                </StackPanel>
+                            </DockPanel>
+                            
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <Border x:Name="tabPhysics" Background="#E3F2FD" CornerRadius="8" Padding="16,8" Margin="0,0,8,0" Cursor="Hand" MouseLeftButtonDown="FormulaTab_Click" Tag="Physics">
+                                    <TextBlock Text="🔬 Vật lý" FontSize="14" Foreground="#1565C0" FontWeight="SemiBold"/>
+                                </Border>
+                                <Border x:Name="tabChemistry" Background="#F5F5F5" CornerRadius="8" Padding="16,8" Margin="0,0,8,0" Cursor="Hand" MouseLeftButtonDown="FormulaTab_Click" Tag="Chemistry">
+                                    <TextBlock Text="🧪 Hóa học" FontSize="14" Foreground="#757575"/>
+                                </Border>
+                                <Border x:Name="tabMath" Background="#F5F5F5" CornerRadius="8" Padding="16,8" Cursor="Hand" MouseLeftButtonDown="FormulaTab_Click" Tag="Math">
+                                    <TextBlock Text="📐 Toán học" FontSize="14" Foreground="#757575"/>
+                                </Border>
+                            </StackPanel>
+
+                            <WrapPanel x:Name="formulasPanel" Margin="0,0,0,30"/>
+
+                            <Border Height="1" Background="#E0E0E0" Margin="0,0,0,30"/>
+
+                            <DockPanel Margin="0,0,0,16">
+                                <Border DockPanel.Dock="Left" Background="#FCE4EC" CornerRadius="8" Padding="12,6" Margin="0,0,12,0">
+                                    <TextBlock Text="📊" FontSize="20"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Hằng số Vật lý &amp; Toán học" FontSize="18" FontWeight="Bold" Foreground="#C62828"/>
+                                    <TextBlock Text="Nhấn để copy giá trị • Có thể dùng trong máy tính" FontSize="12" Foreground="#9E9E9E"/>
+                                </StackPanel>
+                            </DockPanel>
+
+                            <WrapPanel x:Name="constantsPanel" Margin="0,0,0,20"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+
+            <!-- TAB 6: ĐỒ THỊ NHANH -->
+            <TabItem Header="📊 Đồ thị nhanh">
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E3E8EE" BorderThickness="1" Padding="30">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Grid MaxWidth="1200" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="3*" MinWidth="480" MaxWidth="960"/>
+                            </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                            <DockPanel Margin="0,0,0,16">
+                                <Border DockPanel.Dock="Left" Background="#E3F2FD" CornerRadius="12" Padding="16,8" Margin="0,0,16,0">
+                                    <TextBlock Text="📊" FontSize="28"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Đồ Thị Nhanh" FontSize="22" FontWeight="Bold" Foreground="#1565C0"/>
+                                    <TextBlock Text="Nhập biểu thức hàm số → xem đồ thị tương tác (Desmos)" FontSize="13" Foreground="#9E9E9E"/>
+                                </StackPanel>
+                            </DockPanel>
+
+                            <!-- Expression 1 -->
+                            <TextBlock Text="Biểu thức 1 (bắt buộc)" FontSize="12" Foreground="#757575" Margin="0,0,0,4"/>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Background="#1565C0" CornerRadius="6,0,0,6" Padding="8,10">
+                                    <TextBlock Text="y =" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                </Border>
+                                <TextBox x:Name="txtExpr1" Grid.Column="1" FontSize="16" Padding="12,10" Text="x^2 - 3*x + 2" FontFamily="Cambria Math, Segoe UI" ToolTip="Nhập biểu thức, VD: x^2, sin(x), 2*x+1"/>
+                            </Grid>
+
+                            <!-- Expression 2 (optional) -->
+                            <TextBlock Text="Biểu thức 2 (so sánh — tùy chọn)" FontSize="12" Foreground="#757575" Margin="0,0,0,4"/>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Background="#E65100" CornerRadius="6,0,0,6" Padding="8,10">
+                                    <TextBlock Text="y =" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                </Border>
+                                <TextBox x:Name="txtExpr2" Grid.Column="1" FontSize="16" Padding="12,10" FontFamily="Cambria Math, Segoe UI" ToolTip="Để trống nếu chỉ vẽ 1 hàm"/>
+                            </Grid>
+
+                            <!-- Draw button -->
+                            <Button x:Name="btnDrawGraph" Content="📈  Vẽ đồ thị" FontSize="16" FontWeight="SemiBold" Padding="20,12" Cursor="Hand" Click="DrawGraph_Click" HorizontalAlignment="Left" Margin="0,4,0,0">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="b" Background="#1565C0" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <Button.Foreground>
+                                    <SolidColorBrush Color="White"/>
+                                </Button.Foreground>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Right panel: presets + guide -->
+                        <Border Grid.Column="1" Background="#F8FAFE" CornerRadius="12" Padding="16">
+                            <StackPanel>
+                                <TextBlock Text="⚡ Ví dụ nhanh" FontSize="14" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,10"/>
+                                <WrapPanel x:Name="graphPresetPanel"/>
+                                <Border Height="1" Background="#E0E0E0" Margin="0,12"/>
+                                <TextBlock Text="💡 Hướng dẫn sử dụng" FontSize="13" FontWeight="Bold" Foreground="#616161" Margin="0,0,0,8"/>
+                                <TextBlock Text="1️⃣ Nhập biểu thức vào ô y = (bắt buộc)" FontSize="11" Foreground="#757575" Margin="0,0,0,3"/>
+                                <TextBlock Text="2️⃣ Nhập thêm ô 2 để so sánh 2 đồ thị" FontSize="11" Foreground="#757575" Margin="0,0,0,3"/>
+                                <TextBlock Text="3️⃣ Nhấn 📈 Vẽ đồ thị → mở Desmos" FontSize="11" Foreground="#757575" Margin="0,0,0,6"/>
+                                <Border Height="1" Background="#E0E0E0" Margin="0,2,0,6"/>
+                                <TextBlock Text="⌨️ Cú pháp Desmos:" FontSize="12" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,4"/>
+                                <TextBlock Text="• x^2  →  x²     • \sqrt{x}  →  √x" FontSize="11" Foreground="#757575" FontFamily="Segoe UI" Margin="0,0,0,2"/>
+                                <TextBlock Text="• \sin(x)  →  sin(x)   • \pi  →  π" FontSize="11" Foreground="#757575" FontFamily="Segoe UI" Margin="0,0,0,2"/>
+                                <TextBlock Text="• e^{-x}  →  e⁻ˣ    • \frac{1}{x}  →  1/x" FontSize="11" Foreground="#757575" FontFamily="Segoe UI" Margin="0,0,0,2"/>
+                                <TextBlock Text="• \left|x\right|  →  |x|  (trị tuyệt đối)" FontSize="11" Foreground="#757575" FontFamily="Segoe UI" Margin="0,0,0,4"/>
+                                <Border Height="1" Background="#E0E0E0" Margin="0,2,0,6"/>
+                                <TextBlock Text="🎓 Mẹo cho GV:" FontSize="12" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,0,4"/>
+                                <TextBlock Text="• Dùng F11 để phóng toàn màn hình" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                <TextBlock Text="• Ctrl+S chụp ảnh đồ thị vào clipboard" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                <TextBlock Text="• Thay hệ số a trong ax² để HS thấy parabol thu/mở" FontSize="11" Foreground="#757575" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+
+            <!-- TAB 7: CÂN BẰNG PTHH -->
+            <TabItem Header="⚗️ Cân bằng PTHH">
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E3E8EE" BorderThickness="1" Padding="24">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Grid MaxWidth="1100" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="380"/>
+                                <ColumnDefinition Width="*" MaxWidth="380" MinWidth="250"/>
+                            </Grid.ColumnDefinitions>
+
+                        <!-- ═══ LEFT: Input + Presets + Guide ═══ -->
+                        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,16,0">
+                            <StackPanel>
+                                <!-- Header -->
+                                <DockPanel Margin="0,0,0,16">
+                                    <Border DockPanel.Dock="Left" Background="#E8F5E9" CornerRadius="12" Padding="14,8" Margin="0,0,14,0">
+                                        <TextBlock Text="⚗️" FontSize="26"/>
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Cân Bằng Phương Trình Hóa Học" FontSize="20" FontWeight="Bold" Foreground="#2E7D32"/>
+                                        <TextBlock Text="Nhập phương trình → tự động cân bằng hệ số — kiểm tra bảo toàn" FontSize="12" Foreground="#9E9E9E"/>
+                                    </StackPanel>
+                                </DockPanel>
+
+                                <!-- Input -->
+                                <TextBlock Text="Nhập phương trình (dùng -&gt; hoặc → để phân tách)" FontSize="12" Foreground="#757575" Margin="0,0,0,6"/>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="txtChemEquation" FontSize="18" Padding="14,10" FontFamily="Cambria Math, Segoe UI"
+                                             Text="Fe + O2 -&gt; Fe2O3" ToolTip="VD: H2 + O2 -> H2O, Al + HCl -> AlCl3 + H2"/>
+                                    <Button Grid.Column="1" Content="⚖️ Cân bằng" FontSize="14" FontWeight="SemiBold" Padding="16,10" Margin="8,0,0,0" Cursor="Hand" Click="BalanceChem_Click">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="b" Background="#2E7D32" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#1B5E20"/></Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <Button.Foreground><SolidColorBrush Color="White"/></Button.Foreground>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Presets -->
+                                <TextBlock Text="⚡ Phương trình phổ biến:" FontSize="13" FontWeight="SemiBold" Foreground="#757575" Margin="0,0,0,6"/>
+                                <Border Background="#FAFAFA" CornerRadius="10" Padding="12,8" BorderBrush="#E8E8E8" BorderThickness="1" Margin="0,0,0,12">
+                                    <ScrollViewer MaxHeight="280" VerticalScrollBarVisibility="Auto">
+                                        <StackPanel x:Name="chemPresetPanel"/>
+                                    </ScrollViewer>
+                                </Border>
+
+                                <!-- Guide -->
+                                <Border Background="#F5F5F5" CornerRadius="10" Padding="14,10">
+                                    <StackPanel>
+                                        <TextBlock Text="💡 Hướng dẫn sử dụng" FontSize="13" FontWeight="Bold" Foreground="#616161" Margin="0,0,0,6"/>
+                                        <TextBlock Text="1️⃣  Nhập PT dạng: Chất PƯ -> Sản phẩm" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                        <TextBlock Text="2️⃣  Dùng + ngăn cách, -> phân tách vế" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                        <TextBlock Text="3️⃣  Nhấn ⚖️ Cân bằng → xem kết quả bên phải" FontSize="11" Foreground="#757575" Margin="0,0,0,4"/>
+                                        <Border Height="1" Background="#E0E0E0" Margin="0,2,0,4"/>
+                                        <TextBlock Text="⌨️ Quy tắc:" FontSize="11" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,3"/>
+                                        <TextBlock Text="• Viết hoa nguyên tố: Fe, Al, Na (không viết fe)" FontSize="10" Foreground="#757575" Margin="0,0,0,2"/>
+                                        <TextBlock Text="• Hỗ trợ ngoặc: Ca(OH)2, Al2(SO4)3" FontSize="10" Foreground="#757575" Margin="0,0,0,2"/>
+                                        <TextBlock Text="• Không cần viết hệ số — tự cân bằng!" FontSize="10" Foreground="#2E7D32" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                        <Border Height="1" Background="#E0E0E0" Margin="0,2,0,4"/>
+                                        <TextBlock Text="🎓 Mẹo: Cho HS viết PT trước → dùng tool kiểm tra" FontSize="10" Foreground="#1565C0" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- ═══ RIGHT: Result Panel ═══ -->
+                        <Border Grid.Column="1" Background="#F8FAF8" CornerRadius="12" Padding="20" BorderBrush="#E0E8E0" BorderThickness="1">
+                            <Grid>
+                                <!-- Empty state -->
+                                <StackPanel x:Name="chemEmptyState" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="⚗️" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Kết quả cân bằng" FontSize="18" FontWeight="Bold" Foreground="#BDBDBD" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Nhập phương trình bên trái&#10;rồi nhấn ⚖️ Cân bằng" FontSize="13" Foreground="#BDBDBD" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,6,0,0"/>
+                                </StackPanel>
+
+                                <!-- Result content -->
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel>
+                                        <!-- Balanced equation -->
+                                        <Border x:Name="chemResultPanel" Visibility="Collapsed" Background="#E8F5E9" CornerRadius="12" Padding="20,16" BorderBrush="#A5D6A7" BorderThickness="2" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="✅ Phương trình đã cân bằng:" FontSize="12" FontWeight="SemiBold" Foreground="#558B2F" Margin="0,0,0,8"/>
+                                                <TextBlock x:Name="txtChemResult" Text="" FontSize="22" FontWeight="Bold" Foreground="#1B5E20" FontFamily="Cambria Math, Segoe UI" TextWrapping="Wrap"/>
+                                                <Border Height="1" Background="#C8E6C9" Margin="0,14,0,10"/>
+                                                <TextBlock Text="📋 Kiểm tra bảo toàn nguyên tố:" FontSize="13" FontWeight="SemiBold" Foreground="#558B2F" Margin="0,0,0,6"/>
+                                                <StackPanel x:Name="chemVerifyPanel"/>
+                                                <TextBlock Text="* Với các phản ứng có nhiều cách cân bằng, hệ thống sẽ đưa ra tỷ lệ tối giản toán học." FontSize="11" FontStyle="Italic" Foreground="#558B2F" Margin="0,10,0,0" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Error -->
+                                        <Border x:Name="chemErrorPanel" Visibility="Collapsed" Background="#FFEBEE" CornerRadius="10" Padding="16,12" BorderBrush="#EF9A9A" BorderThickness="1">
+                                            <StackPanel>
+                                                <TextBlock Text="❌ Lỗi" FontSize="13" FontWeight="Bold" Foreground="#C62828" Margin="0,0,0,4"/>
+                                                <TextBlock x:Name="txtChemError" Text="" FontSize="13" Foreground="#C62828" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+
+            <!-- TAB 8: BẢNG TRA STEM -->
+            <TabItem Header="🔬 Bảng tra STEM">
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E3E8EE" BorderThickness="1" Padding="30">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel MaxWidth="1200" HorizontalAlignment="Center">
+                            <DockPanel Margin="0,0,0,16">
+                                <Border DockPanel.Dock="Left" Background="#EDE7F6" CornerRadius="12" Padding="16,8" Margin="0,0,16,0">
+                                    <TextBlock Text="🔬" FontSize="28"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Bảng Tra Nhanh STEM" FontSize="22" FontWeight="Bold" Foreground="#4527A0"/>
+                                    <TextBlock Text="Lượng giác • Bình phương &amp; Căn • Logarit • Lũy thừa 2" FontSize="13" Foreground="#9E9E9E"/>
+                                </StackPanel>
+                            </DockPanel>
+
+                            <!-- Sub-tab selector -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <Border x:Name="tabTrig" Background="#EDE7F6" CornerRadius="8" Padding="14,8" Margin="0,0,8,0" Cursor="Hand" MouseLeftButtonDown="StemTab_Click" Tag="Trig">
+                                    <TextBlock Text="📐 Lượng giác" FontSize="13" Foreground="#4527A0" FontWeight="SemiBold"/>
+                                </Border>
+                                <Border x:Name="tabSquare" Background="#F5F5F5" CornerRadius="8" Padding="14,8" Margin="0,0,8,0" Cursor="Hand" MouseLeftButtonDown="StemTab_Click" Tag="Square">
+                                    <TextBlock Text="🔢 Bình phương" FontSize="13" Foreground="#757575"/>
+                                </Border>
+                                <Border x:Name="tabLog" Background="#F5F5F5" CornerRadius="8" Padding="14,8" Margin="0,0,8,0" Cursor="Hand" MouseLeftButtonDown="StemTab_Click" Tag="Log">
+                                    <TextBlock Text="📈 Logarit" FontSize="13" Foreground="#757575"/>
+                                </Border>
+                                <Border x:Name="tabPow2" Background="#F5F5F5" CornerRadius="8" Padding="14,8" Cursor="Hand" MouseLeftButtonDown="StemTab_Click" Tag="Pow2">
+                                    <TextBlock Text="💻 Lũy thừa 2" FontSize="13" Foreground="#757575"/>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Table content -->
+                            <WrapPanel x:Name="stemTablePanel"/>
+
+                            <!-- HƯỚNG DẪN SỬ DỤNG -->
+                            <Border Background="#F5F5F5" CornerRadius="10" Padding="16,12" Margin="0,16,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Hướng dẫn sử dụng" FontSize="14" FontWeight="Bold" Foreground="#616161" Margin="0,0,0,8"/>
+                                    <TextBlock Text="1️⃣  Chọn loại bảng bằng các tab ở trên (Lượng giác, Bình phương, v.v.)" FontSize="12" Foreground="#757575" Margin="0,0,0,3"/>
+                                    <TextBlock Text="2️⃣  Click vào bất kỳ thẻ nào để copy giá trị vào clipboard" FontSize="12" Foreground="#757575" Margin="0,0,0,3"/>
+                                    <TextBlock Text="3️⃣  Thẻ chuyển xanh lá 1 giây = đã copy thành công ✅" FontSize="12" Foreground="#757575" Margin="0,0,0,6"/>
+                                    <Border Height="1" Background="#E0E0E0" Margin="0,2,0,6"/>
+                                    <TextBlock Text="📐 Nội dung các bảng:" FontSize="12" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,4"/>
+                                    <TextBlock Text="• Lượng giác: sin, cos, tan, cot cho 13 góc đặc biệt (0° → 360°)" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• Bình phương: n² và √n cho n = 1 → 30" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• Logarit: log₁₀(n) và ln(n) cho n = 1 → 20" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• Lũy thừa 2: 2ⁿ cho n = 0 → 20 (dùng trong Tin học)" FontSize="11" Foreground="#757575" Margin="0,0,0,4"/>
+                                    <Border Height="1" Background="#E0E0E0" Margin="0,2,0,6"/>
+                                    <TextBlock Text="🎓 Mẹo cho GV:" FontSize="12" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,0,4"/>
+                                    <TextBlock Text="• Chiếu bảng lượng giác lên smartboard khi giảng bài" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• Góc đặc biệt (30°, 45°, 60°) có viền xanh — tập trung ôn thi" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• Copy giá trị nhanh để dán vào đề kiểm tra hoặc slide" FontSize="11" Foreground="#757575"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+
+            <!-- TAB 9: THỐNG KÊ & BIỂU ĐỒ -->
+            <TabItem Header="📈 Thống kê">
+                <Border Background="White" CornerRadius="0,12,12,12" BorderBrush="#E3E8EE" BorderThickness="1" Padding="30">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Grid MaxWidth="1200" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MaxWidth="360" MinWidth="300"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                        <!-- Left: data input -->
+                        <Border Grid.Column="0" Background="#F8FAFE" CornerRadius="12" Padding="14,12" Margin="0,0,16,0">
+                            <DockPanel>
+                                <!-- TOP: Input area -->
+                                <StackPanel DockPanel.Dock="Top">
+                                    <TextBlock Text="📈 Nhập dữ liệu" FontSize="15" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,2"/>
+                                    <TextBlock Text="Nhập tên danh mục và giá trị tương ứng" FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,6"/>
+
+                                    <!-- Column headers -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <TextBlock Text="Tên / Nhãn" FontSize="12" FontWeight="Bold" Foreground="#616161" Width="100" Margin="0,0,4,0"/>
+                                        <TextBlock Text="Giá trị" FontSize="12" FontWeight="Bold" Foreground="#616161" Width="80" TextAlignment="Center"/>
+                                        <TextBlock Text="Xóa" FontSize="11" Foreground="#BDBDBD" Width="32" TextAlignment="Center" Margin="4,0,0,0"/>
+                                    </StackPanel>
+
+                                    <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto">
+                                        <StackPanel x:Name="statsInputPanel"/>
+                                    </ScrollViewer>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                        <Button Content="➕ Thêm dòng" Padding="8,5" FontSize="12" Cursor="Hand" Click="StatsAddRow_Click"/>
+                                        <TextBlock Text="💡 Chạm ô Giá trị → bàn phím số" FontSize="11" Foreground="#BDBDBD" Margin="8,0,0,0" VerticalAlignment="Center" FontStyle="Italic"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- MIDDLE: Chart controls (compact) -->
+                                <Border DockPanel.Dock="Top" Background="#F0F4FA" CornerRadius="8" Padding="10,8" Margin="0,10,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                             <TextBlock Text="Loại biểu đồ" FontSize="12" Foreground="#757575" Margin="0,0,0,3"/>
+                                             <ComboBox x:Name="cboChartType" FontSize="12" Padding="6,4" SelectionChanged="ChartType_Changed">
+                                                 <ComboBoxItem Content="📊 Cột" IsSelected="True"/>
+                                                 <ComboBoxItem Content="🔵 Tròn"/>
+                                                 <ComboBoxItem Content="📈 Đường"/>
+                                                 <ComboBoxItem Content="📦 Hộp"/>
+                                             </ComboBox>
+                                             <TextBlock Text="🎨 Bảng màu" FontSize="12" Foreground="#757575" Margin="0,6,0,3"/>
+                                             <ComboBox x:Name="cboColorTheme" FontSize="12" Padding="6,4" SelectedIndex="0">
+                                                 <ComboBoxItem Content="🔵 Chuyên nghiệp"/>
+                                                 <ComboBoxItem Content="🌈 Sinh động"/>
+                                                 <ComboBoxItem Content="🌿 Pastel"/>
+                                                 <ComboBoxItem Content="🔥 Ấm"/>
+                                             </ComboBox>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                             <TextBlock Text="⚙️ Tùy chọn" FontSize="12" FontWeight="Bold" Foreground="#616161" Margin="0,0,0,4"/>
+                                             <CheckBox x:Name="chkMeanLine" Content="📏 Đường TB" FontSize="12" Margin="0,0,0,3" IsChecked="True"/>
+                                             <CheckBox x:Name="chkShowValues" Content="🔢 Hiện giá trị" FontSize="12" Margin="0,0,0,3" IsChecked="True"/>
+                                             <CheckBox x:Name="chkShowLabels" Content="🏷️ Hiện nhãn" FontSize="12" IsChecked="True"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- DRAW BUTTON -->
+                                <Button DockPanel.Dock="Top" Content="📊  Vẽ biểu đồ" FontSize="13" FontWeight="SemiBold" Padding="12,8" Margin="0,8,0,0" Cursor="Hand" Click="StatsCalc_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="b" Background="#1565C0" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <Button.Foreground><SolidColorBrush Color="White"/></Button.Foreground>
+                                </Button>
+
+                                <!-- BOTTOM: Preset data (fills remaining space) -->
+                                <Border Margin="0,10,0,0" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="0,8,0,0">
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Top" Text="⚡ Dữ liệu mẫu — chạm để tự điền" FontSize="12" FontWeight="SemiBold" Foreground="#757575" Margin="0,0,0,8"/>
+                                        <ScrollViewer VerticalScrollBarVisibility="Visible" Padding="0,0,4,0">
+                                            <StackPanel>
+                                                <!-- Nhóm 1: Toán & Điểm số -->
+                                                <TextBlock Text="📐 Toán &amp; Điểm số" FontSize="12" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,4"/>
+                                                <WrapPanel Margin="0,0,0,6">
+                                                     <Button Content="🎓 Điểm toán 10A" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_Scores"/>
+                                                     <Button Content="📝 KT 15 phút" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_Quiz15"/>
+                                                     <Button Content="📊 TB HK1" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_HK1"/>
+                                                </WrapPanel>
+
+                                                <!-- Nhóm 2: KHTN -->
+                                                <TextBlock Text="🔬 Khoa học tự nhiên" FontSize="12" FontWeight="Bold" Foreground="#2E7D32" Margin="0,2,0,4"/>
+                                                <WrapPanel Margin="0,0,0,6">
+                                                     <Button Content="🌡️ Nhiệt độ 7 ngày" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_Temp"/>
+                                                     <Button Content="🧪 Nồng độ dd" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_Concentration"/>
+                                                     <Button Content="🌱 Chiều cao cây" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_PlantHeight"/>
+                                                     <Button Content="⚡ Điện trở" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_Resistance"/>
+                                                </WrapPanel>
+
+                                                <!-- Nhóm 3: Xã hội -->
+                                                <TextBlock Text="🏫 Xã hội &amp; Đời sống" FontSize="12" FontWeight="Bold" Foreground="#E65100" Margin="0,2,0,4"/>
+                                                <WrapPanel Margin="0,0,0,6">
+                                                     <Button Content="👥 Sĩ số 6 lớp" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_ClassSize"/>
+                                                     <Button Content="📚 Giờ tự học" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_StudyHours"/>
+                                                     <Button Content="💰 Chi tiêu tuần" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_Spending"/>
+                                                     <Button Content="📖 Số sách đọc/tháng" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_BooksRead"/>
+                                                </WrapPanel>
+
+                                                <!-- Nhóm 4: Sức khỏe & Thể dục -->
+                                                <TextBlock Text="🏃 Sức khỏe &amp; Thể dục" FontSize="12" FontWeight="Bold" Foreground="#7B1FA2" Margin="0,2,0,4"/>
+                                                <WrapPanel Margin="0,0,0,6">
+                                                     <Button Content="❤️ Nhịp tim" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_HeartRate"/>
+                                                     <Button Content="🏋️ Cân nặng HS" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_Weight"/>
+                                                     <Button Content="🏃 Chạy 100m" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_Sprint"/>
+                                                     <Button Content="📏 Chiều cao HS" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_StudentHeight"/>
+                                                </WrapPanel>
+
+                                                <!-- Nhóm 5: Môi trường & Địa lý -->
+                                                <TextBlock Text="🌍 Môi trường &amp; Địa lý" FontSize="12" FontWeight="Bold" Foreground="#00838F" Margin="0,2,0,4"/>
+                                                <WrapPanel Margin="0,0,0,4">
+                                                     <Button Content="🌧️ Lượng mưa" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_Rainfall"/>
+                                                     <Button Content="💨 Chất lượng KK" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_AirQuality"/>
+                                                     <Button Content="👨‍👩‍👧 Dân số tỉnh" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_Population"/>
+                                                     <Button Content="🌾 Sản lượng lúa" Padding="6,4" Margin="0,0,4,4" FontSize="12" Cursor="Hand" Click="StatsPreset_RiceYield"/>
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </DockPanel>
+                                </Border>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Right: chart + results + guide -->
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Header -->
+                            <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                                <Border DockPanel.Dock="Left" Background="#E3F2FD" CornerRadius="12" Padding="14,8" Margin="0,0,14,0">
+                                    <TextBlock Text="📈" FontSize="24"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Thống Kê &amp; Biểu Đồ" FontSize="20" FontWeight="Bold" Foreground="#1565C0"/>
+                                    <TextBlock Text="Nhập dữ liệu → tính Mean, Median, Mode, σ → vẽ biểu đồ trực quan" FontSize="12" Foreground="#9E9E9E"/>
+                                </StackPanel>
+                            </DockPanel>
+
+                            <!-- Chart area -->
+                            <Border Grid.Row="1" Background="#FAFAFA" CornerRadius="12" MinHeight="260" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10">
+                                <Canvas x:Name="chartCanvas" ClipToBounds="True"/>
+                            </Border>
+
+                            <!-- Stats results -->
+                            <Border Grid.Row="2" x:Name="statsResultPanel" Visibility="Collapsed" Background="#F1F8E9" CornerRadius="10" Padding="16,12" BorderBrush="#C8E6C9" BorderThickness="1" Margin="0,0,0,10">
+                                <WrapPanel x:Name="statsValuesPanel"/>
+                            </Border>
+
+                            <!-- HƯỚNG DẪN SỬ DỤNG -->
+                            <Border Grid.Row="3" Background="#F5F5F5" CornerRadius="10" Padding="16,12">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Hướng dẫn sử dụng" FontSize="14" FontWeight="Bold" Foreground="#616161" Margin="0,0,0,8"/>
+                                    <TextBlock Text="1️⃣  Nhập tên (cột trái) và giá trị số (cột phải) cho mỗi dòng" FontSize="12" Foreground="#757575" Margin="0,0,0,3"/>
+                                    <TextBlock Text="2️⃣  Nhấn ➕ Thêm dòng nếu cần thêm dữ liệu (✕ để xóa dòng)" FontSize="12" Foreground="#757575" Margin="0,0,0,3"/>
+                                    <TextBlock Text="3️⃣  Chọn loại biểu đồ: Cột (so sánh), Tròn (tỉ lệ %), Đường (xu hướng)" FontSize="12" Foreground="#757575" Margin="0,0,0,3"/>
+                                    <TextBlock Text="4️⃣  Nhấn 📊 Vẽ biểu đồ → xem chart + 7 chỉ số thống kê tự động" FontSize="12" Foreground="#757575" Margin="0,0,0,6"/>
+                                    <Border Height="1" Background="#E0E0E0" Margin="0,2,0,6"/>
+                                    <TextBlock Text="📊 Ý nghĩa các chỉ số:" FontSize="12" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,4"/>
+                                    <TextBlock Text="• Mean (TB): Điểm trung bình = tổng / số lượng" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• Median (TrV): Giá trị giữa khi sắp xếp tăng dần" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• Mode (YV): Giá trị xuất hiện nhiều nhất" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• σ (Std Dev): Độ lệch chuẩn — đo mức phân tán" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• Variance: Phương sai = σ² — thường dùng trong CT GDPT 2018" FontSize="11" Foreground="#757575" Margin="0,0,0,4"/>
+                                    <Border Height="1" Background="#E0E0E0" Margin="0,2,0,6"/>
+                                    <TextBlock Text="🎓 Mẹo cho GV:" FontSize="12" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,0,4"/>
+                                    <TextBlock Text="• Dùng preset 'Điểm toán lớp 10A' để demo nhanh trên bảng" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• So sánh biểu đồ Cột vs Tròn để HS hiểu khi nào dùng loại nào" FontSize="11" Foreground="#757575" Margin="0,0,0,2"/>
+                                    <TextBlock Text="• Cho HS nhập điểm thật → phân tích → thảo luận kết quả" FontSize="11" Foreground="#757575"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+            
+            <!-- MINDMAP TOOL -->
+            <TabItem Header="🧠 Sơ đồ tư duy">
+                <multi:MindmapTool/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Page>

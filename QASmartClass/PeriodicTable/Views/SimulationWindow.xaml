@@ -1,0 +1,1185 @@
+<Window FontFamily="Segoe UI" x:Class="QASmartTouch.PeriodicTable.Views.SimulationWindow"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="🧪 Mô Phỏng Thí Nghiệm Kết Tủa" 
+
+        Height="700" Width="950"
+
+        WindowStartupLocation="CenterScreen"
+
+        Background="#F5F5F5">
+
+
+
+    <Window.Resources>
+
+        <!-- Enhanced Animation Storyboard -->
+
+        <Storyboard x:Key="PourAnimation">
+
+            <!-- Rotate left test tube with easing -->
+
+            <DoubleAnimation Storyboard.TargetName="LeftTubeRotate"
+
+                           Storyboard.TargetProperty="Angle"
+
+                           From="0" To="50" Duration="0:0:2"
+
+                           AutoReverse="True">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <QuadraticEase EasingMode="EaseInOut"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+            
+
+            <!-- Rotate right test tube with easing -->
+
+            <DoubleAnimation Storyboard.TargetName="RightTubeRotate"
+
+                           Storyboard.TargetProperty="Angle"
+
+                           From="0" To="-50" Duration="0:0:2"
+
+                           AutoReverse="True">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <QuadraticEase EasingMode="EaseInOut"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+            
+
+            <!-- Left liquid: Decrease height -->
+
+            <DoubleAnimation Storyboard.TargetName="LeftLiquid"
+
+                           Storyboard.TargetProperty="Height"
+
+                           From="150" To="30" Duration="0:0:2">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <QuadraticEase EasingMode="EaseIn"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+            
+
+            <!-- Left liquid: Move top down (180-height) -->
+
+            <DoubleAnimation Storyboard.TargetName="LeftLiquid"
+
+                           Storyboard.TargetProperty="(Canvas.Top)"
+
+                           From="30" To="150" Duration="0:0:2">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <QuadraticEase EasingMode="EaseIn"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+            
+
+            <!-- Left wave: Move with liquid surface -->
+
+            <DoubleAnimation Storyboard.TargetName="LeftWave"
+
+                           Storyboard.TargetProperty="(Canvas.Top)"
+
+                           From="30" To="150" Duration="0:0:2">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <QuadraticEase EasingMode="EaseIn"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+            
+
+            <!-- Right liquid: Decrease height -->
+
+            <DoubleAnimation Storyboard.TargetName="RightLiquid"
+
+                           Storyboard.TargetProperty="Height"
+
+                           From="150" To="30" Duration="0:0:2">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <QuadraticEase EasingMode="EaseIn"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+            
+
+            <!-- Right liquid: Move top down -->
+
+            <DoubleAnimation Storyboard.TargetName="RightLiquid"
+
+                           Storyboard.TargetProperty="(Canvas.Top)"
+
+                           From="30" To="150" Duration="0:0:2">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <QuadraticEase EasingMode="EaseIn"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+            
+
+            <!-- Right wave: Move with liquid surface -->
+
+            <DoubleAnimation Storyboard.TargetName="RightWave"
+
+                           Storyboard.TargetProperty="(Canvas.Top)"
+
+                           From="30" To="150" Duration="0:0:2">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <QuadraticEase EasingMode="EaseIn"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+            
+
+            <!-- Beaker liquid: Increase height from bottom -->
+
+            <DoubleAnimation Storyboard.TargetName="BeakerLiquid"
+
+                           Storyboard.TargetProperty="Height"
+
+                           From="0" To="60" Duration="0:0:2.5"
+
+                           BeginTime="0:0:0.5">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <QuadraticEase EasingMode="EaseOut"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+            
+
+            <!-- Beaker liquid: Move top up (140-height) -->
+
+            <DoubleAnimation Storyboard.TargetName="BeakerLiquid"
+
+                           Storyboard.TargetProperty="(Canvas.Top)"
+
+                           From="135" To="75" Duration="0:0:2.5"
+
+                           BeginTime="0:0:0.5">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <QuadraticEase EasingMode="EaseOut"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+        </Storyboard>
+
+
+
+        <Storyboard x:Key="PrecipitateAnimation">
+
+            <!-- Precipitate particles fade in gradually -->
+
+            <DoubleAnimation Storyboard.TargetName="PrecipitateContainer"
+
+                           Storyboard.TargetProperty="Opacity"
+
+                           From="0" To="1" Duration="0:0:2.5"
+
+                           BeginTime="0:0:2.5">
+
+                <DoubleAnimation.EasingFunction>
+
+                    <ExponentialEase EasingMode="EaseIn" Exponent="3"/>
+
+                </DoubleAnimation.EasingFunction>
+
+            </DoubleAnimation>
+
+        </Storyboard>
+
+        
+
+        <!-- Button hover effects -->
+
+        <Style x:Key="AnimatedButtonStyle" TargetType="Button">
+
+            <Setter Property="Background" Value="#4CAF50"/>
+
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}" 
+
+                                CornerRadius="6" 
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <Border.Effect>
+
+                                <DropShadowEffect Color="Black" BlurRadius="8" 
+
+                                                ShadowDepth="2" Opacity="0.3"/>
+
+                            </Border.Effect>
+
+                            <ContentPresenter HorizontalAlignment="Center" 
+
+                                            VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#388E3C"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Grid>
+
+        <!-- Header -->
+
+        <Border Background="#1976D2" Height="70" VerticalAlignment="Top">
+
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="30,0">
+
+                <TextBlock Text="🧪" FontSize="36" VerticalAlignment="Center" Margin="0,0,15,0"/>
+
+                <StackPanel>
+
+                    <TextBlock Text="MÔ PHỎNG THÍ NGHIỆM KẾT TỦA" 
+
+                             FontSize="20" FontWeight="Bold" Foreground="White"/>
+
+                    <TextBlock Text="Mô phỏng - Phòng thí nghiệm hóa học tương tác" 
+
+                             FontSize="12" Foreground="#E3F2FD" Margin="0,3,0,0"/>
+
+                </StackPanel>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- Main Content -->
+
+        <Grid Margin="0,70,0,0">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="2*"/>
+
+                <ColumnDefinition Width="3*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Left Panel: Controls -->
+
+            <Border Grid.Column="0" Background="White" Margin="20,20,10,20" CornerRadius="8" 
+
+                    BorderBrush="#E0E0E0" BorderThickness="1">
+
+                <StackPanel Margin="20">
+
+                    <!-- Title -->
+
+                    <TextBlock Text="⚗️ CHỌN HÓA CHẤT" FontSize="16" FontWeight="Bold" 
+
+                             Foreground="#1976D2" Margin="0,0,0,20"/>
+
+
+
+                    <!-- Cation Selection -->
+
+                    <TextBlock Text="Dung dịch Cation (M⁺/M²⁺):" FontSize="13" 
+
+                             Foreground="#424242" Margin="0,0,0,8"/>
+
+                    <ComboBox x:Name="CationComboBox" Height="35" FontSize="13"
+
+                            SelectedIndex="0" SelectionChanged="OnSelectionChanged">
+
+                        <ComboBoxItem Content="Ca²⁺ (Canxi)"/>
+
+                        <ComboBoxItem Content="Ba²⁺ (Bari)"/>
+
+                        <ComboBoxItem Content="Ag⁺ (Bạc)"/>
+
+                        <ComboBoxItem Content="Pb²⁺ (Chì)"/>
+
+                        <ComboBoxItem Content="Fe³⁺ (Sắt III)"/>
+
+                        <ComboBoxItem Content="Cu²⁺ (Đồng II)"/>
+
+                    </ComboBox>
+
+
+
+                    <!-- Anion Selection -->
+
+                    <TextBlock Text="Dung dịch Anion (X⁻/X²⁻):" FontSize="13" 
+
+                             Foreground="#424242" Margin="0,20,0,8"/>
+
+                    <ComboBox x:Name="AnionComboBox" Height="35" FontSize="13"
+
+                            SelectedIndex="0" SelectionChanged="OnSelectionChanged">
+
+                        <ComboBoxItem Content="CO₃²⁻ (Cacbonat)"/>
+
+                        <ComboBoxItem Content="SO₄²⁻ (Sunfat)"/>
+
+                        <ComboBoxItem Content="Cl⁻ (Clorua)"/>
+
+                        <ComboBoxItem Content="OH⁻ (Hidroxit)"/>
+
+                        <ComboBoxItem Content="PO₄³⁻ (Photphat)"/>
+
+                        <ComboBoxItem Content="S²⁻ (Sunfua)"/>
+
+                    </ComboBox>
+
+
+
+                    <!-- Prediction Panel - Enhanced -->
+
+                    <Border Background="#E8F5E9" BorderBrush="#4CAF50" BorderThickness="3" 
+
+                            CornerRadius="8" Margin="0,25,0,0" Padding="18">
+
+                        <Border.Effect>
+
+                            <DropShadowEffect Color="#4CAF50" BlurRadius="10" 
+
+                                            ShadowDepth="0" Opacity="0.3"/>
+
+                        </Border.Effect>
+
+                        <StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+
+                                <TextBlock Text="🔬" FontSize="16" Margin="0,0,8,0"/>
+
+                                <TextBlock Text="DỰ ĐOÁN KẾT QUẢ" 
+
+                                         FontSize="13" FontWeight="Bold" 
+
+                                         Foreground="#2E7D32"/>
+
+                            </StackPanel>
+
+                            <TextBlock x:Name="PredictionText" 
+
+                                     Text="Chọn hóa chất để xem kết quả" 
+
+                                     FontSize="13" Foreground="#1B5E20" 
+
+                                     TextWrapping="Wrap" LineHeight="20"
+
+                                     FontWeight="SemiBold"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Control Buttons -->
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,25,0,0">
+
+                        <Button x:Name="RunButton" Content="▶️ Chạy" 
+
+                              Width="95" Height="42" 
+
+                              FontSize="14" FontWeight="Bold" 
+
+                              Margin="0,0,12,0"
+
+                              Style="{StaticResource AnimatedButtonStyle}"
+
+                              Click="RunButton_Click"/>
+
+                        
+
+                        <Button x:Name="ResetButton" Content="🔄 Reset" 
+
+                              Width="95" Height="42" 
+
+                              FontSize="14" FontWeight="Bold"
+
+                              Background="#FF9800"
+
+                              Click="ResetButton_Click">
+
+                            <Button.Style>
+
+                                <Style TargetType="Button" BasedOn="{StaticResource AnimatedButtonStyle}">
+
+                                    <Setter Property="Background" Value="#FF9800"/>
+
+                                    <Style.Triggers>
+
+                                        <Trigger Property="IsMouseOver" Value="True">
+
+                                            <Setter Property="Background" Value="#F57C00"/>
+
+                                        </Trigger>
+
+                                    </Style.Triggers>
+
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                    <!-- Chỉ dẫn sử dụng từng bước -->
+                    <Border Background="#FFFDE7" BorderBrush="#FBC02D" BorderThickness="1" 
+                            CornerRadius="8" Margin="0,20,0,0" Padding="15">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="📖" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="HƯỚNG DẪN TỪNG BƯỚC" FontSize="13" FontWeight="Bold" Foreground="#F57F17"/>
+                            </StackPanel>
+                            <TextBlock Text="1. Chọn cation ở menu 'Dung dịch Cation' (bên trái)." TextWrapping="Wrap" FontSize="11" Foreground="#5D4037" Margin="0,0,0,4"/>
+                            <TextBlock Text="2. Chọn anion ở menu 'Dung dịch Anion' (bên phải)." TextWrapping="Wrap" FontSize="11" Foreground="#5D4037" Margin="0,0,0,4"/>
+                            <TextBlock Text="3. Nhấn nút [Chạy] để xem mô phỏng phản ứng rót hóa chất." TextWrapping="Wrap" FontSize="11" Foreground="#5D4037" Margin="0,0,0,4"/>
+                            <TextBlock Text="4. Quan sát hiện tượng tạo kết tủa, phương trình ion và giải thích." TextWrapping="Wrap" FontSize="11" Foreground="#5D4037" Margin="0,0,0,4"/>
+                            <TextBlock Text="5. Nhấn [Reset] để xóa cốc nghiệm và thực hiện lại thí nghiệm." TextWrapping="Wrap" FontSize="11" Foreground="#5D4037"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+
+            <!-- Right Panel: Simulation Canvas -->
+
+            <Border Grid.Column="1" Background="White" Margin="10,20,20,20" CornerRadius="8" 
+
+                    BorderBrush="#E0E0E0" BorderThickness="1">
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+
+                        <RowDefinition Height="*"/>
+
+                        <RowDefinition Height="Auto"/>
+
+                    </Grid.RowDefinitions>
+
+
+
+                    <!-- Canvas for Animation -->
+
+                    <Canvas x:Name="SimulationCanvas" Background="#FAFAFA" Margin="20">
+
+                        <!-- Left Test Tube - 3D Enhanced -->
+
+                        <Canvas Canvas.Left="55" Canvas.Top="30" RenderTransformOrigin="0.5,1">
+
+                            <Canvas.RenderTransform>
+
+                                <RotateTransform x:Name="LeftTubeRotate" Angle="0"/>
+
+                            </Canvas.RenderTransform>
+
+                            
+
+                            <!-- Test tube body (empty glass) -->
+
+                            <Rectangle Width="70" Height="180" 
+
+                                     RadiusX="8" RadiusY="8"
+
+                                     Stroke="#1976D2" StrokeThickness="4">
+
+                                <Rectangle.Fill>
+
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                                        <GradientStop Color="#F0F8FF" Offset="0"/>
+
+                                        <GradientStop Color="White" Offset="0.5"/>
+
+                                        <GradientStop Color="#F0F8FF" Offset="1"/>
+
+                                    </LinearGradientBrush>
+
+                                </Rectangle.Fill>
+
+                                <Rectangle.Effect>
+
+                                    <DropShadowEffect Color="#1976D2" BlurRadius="12" 
+
+                                                    ShadowDepth="4" Opacity="0.4"/>
+
+                                </Rectangle.Effect>
+
+                            </Rectangle>
+
+                            
+
+                            <!-- Liquid Level (animated) - Always at bottom -->
+
+                            <Rectangle x:Name="LeftLiquid" 
+
+                                     Width="62" Height="150" 
+
+                                     Canvas.Left="4" Canvas.Top="30"
+
+                                     RadiusX="6" RadiusY="6">
+
+                                <Rectangle.Fill>
+
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                                        <GradientStop Color="#64B5F6" Offset="0"/>
+
+                                        <GradientStop Color="#42A5F5" Offset="0.5"/>
+
+                                        <GradientStop Color="#64B5F6" Offset="1"/>
+
+                                    </LinearGradientBrush>
+
+                                </Rectangle.Fill>
+
+                                <Rectangle.Effect>
+
+                                    <DropShadowEffect Color="#1976D2" BlurRadius="6" 
+
+                                                    ShadowDepth="0" Opacity="0.3"/>
+
+                                </Rectangle.Effect>
+
+                            </Rectangle>
+
+                            
+
+                            <!-- Surface wave effect - positioned at liquid top -->
+
+                            <Ellipse x:Name="LeftWave" Width="62" Height="12" 
+
+                                   Canvas.Left="4" Canvas.Top="30"
+
+                                   Opacity="0.4">
+
+                                <Ellipse.Fill>
+
+                                    <RadialGradientBrush>
+
+                                        <GradientStop Color="#E3F2FD" Offset="0"/>
+
+                                        <GradientStop Color="Transparent" Offset="1"/>
+
+                                    </RadialGradientBrush>
+
+                                </Ellipse.Fill>
+
+                            </Ellipse>
+
+                            
+
+                            <!-- Glass reflection effect -->
+
+                            <Rectangle Width="20" Height="160" Canvas.Left="8" Canvas.Top="10"
+
+                                     RadiusX="4" RadiusY="4" Opacity="0.3">
+
+                                <Rectangle.Fill>
+
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                                        <GradientStop Color="White" Offset="0"/>
+
+                                        <GradientStop Color="Transparent" Offset="1"/>
+
+                                    </LinearGradientBrush>
+
+                                </Rectangle.Fill>
+
+                                <Rectangle.RenderTransform>
+
+                                    <RotateTransform Angle="0" CenterX="0" CenterY="160"/>
+
+                                </Rectangle.RenderTransform>
+
+                            </Rectangle>
+
+                            
+
+                            <!-- Label with icon -->
+
+                            <StackPanel Canvas.Left="0" Canvas.Top="195">
+
+                                <TextBlock Text="🧪 Dung dịch 1" 
+
+                                         FontSize="11" Foreground="#666666" 
+
+                                         HorizontalAlignment="Center"/>
+
+                                <TextBlock x:Name="LeftLabel" Text="Ca²⁺" 
+
+                                         FontSize="14" FontWeight="Bold" 
+
+                                         Foreground="#1976D2" 
+
+                                         HorizontalAlignment="Center" Margin="0,2,0,0"/>
+
+                            </StackPanel>
+
+                        </Canvas>
+
+
+
+                        <!-- Right Test Tube - 3D Enhanced -->
+
+                        <Canvas Canvas.Left="345" Canvas.Top="30" RenderTransformOrigin="0.5,1">
+
+                            <Canvas.RenderTransform>
+
+                                <RotateTransform x:Name="RightTubeRotate" Angle="0"/>
+
+                            </Canvas.RenderTransform>
+
+                            
+
+                            <!-- Test tube body (empty glass) -->
+
+                            <Rectangle Width="70" Height="180" 
+
+                                     RadiusX="8" RadiusY="8"
+
+                                     Stroke="#FF9800" StrokeThickness="4">
+
+                                <Rectangle.Fill>
+
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                                        <GradientStop Color="#FFF8F0" Offset="0"/>
+
+                                        <GradientStop Color="White" Offset="0.5"/>
+
+                                        <GradientStop Color="#FFF8F0" Offset="1"/>
+
+                                    </LinearGradientBrush>
+
+                                </Rectangle.Fill>
+
+                                <Rectangle.Effect>
+
+                                    <DropShadowEffect Color="#FF9800" BlurRadius="12" 
+
+                                                    ShadowDepth="4" Opacity="0.4"/>
+
+                                </Rectangle.Effect>
+
+                            </Rectangle>
+
+                            
+
+                            <!-- Liquid Level (animated) - Always at bottom -->
+
+                            <Rectangle x:Name="RightLiquid" 
+
+                                     Width="62" Height="150" 
+
+                                     Canvas.Left="4" Canvas.Top="30"
+
+                                     RadiusX="6" RadiusY="6">
+
+                                <Rectangle.Fill>
+
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                                        <GradientStop Color="#FFB74D" Offset="0"/>
+
+                                        <GradientStop Color="#FFA726" Offset="0.5"/>
+
+                                        <GradientStop Color="#FFB74D" Offset="1"/>
+
+                                    </LinearGradientBrush>
+
+                                </Rectangle.Fill>
+
+                                <Rectangle.Effect>
+
+                                    <DropShadowEffect Color="#FF9800" BlurRadius="6" 
+
+                                                    ShadowDepth="0" Opacity="0.3"/>
+
+                                </Rectangle.Effect>
+
+                            </Rectangle>
+
+                            
+
+                            <!-- Surface wave effect - positioned at liquid top -->
+
+                            <Ellipse x:Name="RightWave" Width="62" Height="12" 
+
+                                   Canvas.Left="4" Canvas.Top="30"
+
+                                   Opacity="0.4">
+
+                                <Ellipse.Fill>
+
+                                    <RadialGradientBrush>
+
+                                        <GradientStop Color="#FFE0B2" Offset="0"/>
+
+                                        <GradientStop Color="Transparent" Offset="1"/>
+
+                                    </RadialGradientBrush>
+
+                                </Ellipse.Fill>
+
+                            </Ellipse>
+
+                            
+
+                            <!-- Glass reflection -->
+
+                            <Rectangle Width="20" Height="160" Canvas.Left="8" Canvas.Top="10"
+
+                                     RadiusX="4" RadiusY="4" Opacity="0.3">
+
+                                <Rectangle.Fill>
+
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                                        <GradientStop Color="White" Offset="0"/>
+
+                                        <GradientStop Color="Transparent" Offset="1"/>
+
+                                    </LinearGradientBrush>
+
+                                </Rectangle.Fill>
+
+                                <Rectangle.RenderTransform>
+
+                                    <RotateTransform Angle="0" CenterX="0" CenterY="160"/>
+
+                                </Rectangle.RenderTransform>
+
+                            </Rectangle>
+
+                            
+
+                            <StackPanel Canvas.Left="0" Canvas.Top="195">
+
+                                <TextBlock Text="🧪 Dung dịch 2" 
+
+                                         FontSize="11" Foreground="#666666"
+
+                                         HorizontalAlignment="Center"/>
+
+                                <TextBlock x:Name="RightLabel" Text="CO₃²⁻" 
+
+                                         FontSize="14" FontWeight="Bold" 
+
+                                         Foreground="#FF9800"
+
+                                         HorizontalAlignment="Center" Margin="0,2,0,0"/>
+
+                            </StackPanel>
+
+                        </Canvas>
+
+
+
+                        <!-- Droplets Container (for falling drops) -->
+
+                        <Canvas x:Name="DropletsCanvas" Width="470" Height="450"/>
+
+                        
+
+                        <!-- Center Beaker - Professional Glass Effect -->
+
+                        <Canvas Canvas.Left="175" Canvas.Top="280">
+
+                            <!-- Beaker shadow -->
+
+                            <Rectangle Width="120" Height="140" Canvas.Left="2" Canvas.Top="2"
+
+                                     RadiusX="6" RadiusY="6" Fill="#E0E0E0" Opacity="0.3"/>
+
+                            
+
+                            <!-- Main beaker body -->
+
+                            <Rectangle Width="120" Height="140" 
+
+                                     RadiusX="6" RadiusY="6"
+
+                                     Stroke="#424242" StrokeThickness="3">
+
+                                <Rectangle.Fill>
+
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                                        <GradientStop Color="#F5F5F5" Offset="0"/>
+
+                                        <GradientStop Color="White" Offset="0.5"/>
+
+                                        <GradientStop Color="#F5F5F5" Offset="1"/>
+
+                                    </LinearGradientBrush>
+
+                                </Rectangle.Fill>
+
+                                <Rectangle.Effect>
+
+                                    <DropShadowEffect Color="Black" BlurRadius="15" 
+
+                                                    ShadowDepth="5" Opacity="0.3"/>
+
+                                </Rectangle.Effect>
+
+                            </Rectangle>
+
+                            
+
+                            <!-- Mixed liquid in beaker (animated) -->
+
+                            <Rectangle x:Name="BeakerLiquid" 
+
+                                     Width="110" Height="0" 
+
+                                     Canvas.Left="5" Canvas.Top="135"
+
+                                     RadiusX="4" RadiusY="4">
+
+                                <Rectangle.Fill>
+
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                                        <GradientStop Color="#B3E5FC" Offset="0"/>
+
+                                        <GradientStop Color="#81D4FA" Offset="0.5"/>
+
+                                        <GradientStop Color="#B3E5FC" Offset="1"/>
+
+                                    </LinearGradientBrush>
+
+                                </Rectangle.Fill>
+
+                                <Rectangle.Effect>
+
+                                    <DropShadowEffect Color="#03A9F4" BlurRadius="8" 
+
+                                                    ShadowDepth="0" Opacity="0.4"/>
+
+                                </Rectangle.Effect>
+
+                            </Rectangle>
+
+                            
+
+                            <!-- Glass shine effect -->
+
+                            <Ellipse Width="80" Height="30" Canvas.Left="10" Canvas.Top="15"
+
+                                   Opacity="0.4">
+
+                                <Ellipse.Fill>
+
+                                    <RadialGradientBrush>
+
+                                        <GradientStop Color="White" Offset="0"/>
+
+                                        <GradientStop Color="Transparent" Offset="1"/>
+
+                                    </RadialGradientBrush>
+
+                                </Ellipse.Fill>
+
+                            </Ellipse>
+
+                            
+
+                            <!-- Measurement lines -->
+
+                            <Line X1="10" Y1="100" X2="25" Y2="100" Stroke="#9E9E9E" StrokeThickness="1"/>
+
+                            <Line X1="10" Y1="70" X2="25" Y2="70" Stroke="#9E9E9E" StrokeThickness="1"/>
+
+                            <TextBlock Canvas.Left="28" Canvas.Top="95" Text="50ml" 
+
+                                     FontSize="9" Foreground="#757575"/>
+
+                            <TextBlock Canvas.Left="28" Canvas.Top="65" Text="100ml" 
+
+                                     FontSize="9" Foreground="#757575"/>
+
+                            
+
+                            <!-- Precipitate Container - Inside Beaker (relative to beaker position) -->
+
+                            <ItemsControl x:Name="PrecipitateContainer" 
+
+                                        Canvas.Left="5" Canvas.Top="5" 
+
+                                        Opacity="1">
+
+                                <ItemsControl.ItemsPanel>
+
+                                    <ItemsPanelTemplate>
+
+                                        <Canvas Width="110" Height="130" ClipToBounds="True"/>
+
+                                    </ItemsPanelTemplate>
+
+                                </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemTemplate>
+
+                                    <DataTemplate>
+
+                                        <Ellipse Width="8" Height="8" Fill="White">
+
+                                            <Ellipse.Effect>
+
+                                                <DropShadowEffect Color="Black" BlurRadius="3" 
+
+                                                                ShadowDepth="1" Opacity="0.5"/>
+
+                                            </Ellipse.Effect>
+
+                                        </Ellipse>
+
+                                    </DataTemplate>
+
+                                </ItemsControl.ItemTemplate>
+
+                            </ItemsControl>
+
+                            
+
+                            <TextBlock Canvas.Left="25" Canvas.Top="150" Text="⚗️ Cốc thủy tinh" 
+
+                                     FontSize="11" FontWeight="SemiBold" Foreground="#424242"/>
+
+                        </Canvas>
+
+
+
+                        <!-- Animated Arrow with glow -->
+
+                        <Path Canvas.Left="220" Canvas.Top="245" 
+
+                            Data="M0,0 L0,25 M-6,18 L0,25 L6,18" 
+
+                            Stroke="#757575" StrokeThickness="3"
+
+                            StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+
+                            <Path.Effect>
+
+                                <DropShadowEffect Color="#2196F3" BlurRadius="8" 
+
+                                                ShadowDepth="0" Opacity="0.6"/>
+
+                            </Path.Effect>
+
+                        </Path>
+
+                        
+
+                        <!-- Mixing wave effect (decorative) -->
+
+                        <Path Canvas.Left="190" Canvas.Top="385" 
+
+                            Data="M0,0 Q15,-5 30,0 T60,0" 
+
+                            Stroke="#2196F3" StrokeThickness="2" 
+
+                            Opacity="0.3" StrokeDashArray="3,2"/>
+
+                    </Canvas>
+
+
+
+                    <!-- Result Panel - Enhanced -->
+
+                    <Border Grid.Row="1" Padding="25" BorderBrush="#E0E0E0" 
+
+                            BorderThickness="0,2,0,0">
+
+                        <Border.Background>
+
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+
+                                <GradientStop Color="#FAFAFA" Offset="0"/>
+
+                                <GradientStop Color="#F0F0F0" Offset="1"/>
+
+                            </LinearGradientBrush>
+
+                        </Border.Background>
+
+                        <StackPanel>
+
+                            <!-- Equation Section -->
+
+                            <Border Background="White" BorderBrush="#1976D2" BorderThickness="2" 
+
+                                    CornerRadius="6" Padding="15" Margin="0,0,0,15">
+
+                                <Border.Effect>
+
+                                    <DropShadowEffect Color="#1976D2" BlurRadius="8" 
+
+                                                    ShadowDepth="0" Opacity="0.2"/>
+
+                                </Border.Effect>
+
+                                <StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+
+                                        <TextBlock Text="⚗️" FontSize="16" Margin="0,0,8,0"/>
+
+                                        <TextBlock Text="PHƯƠNG TRÌNH HÓA HỌC" 
+
+                                                 FontSize="13" FontWeight="Bold" 
+
+                                                 Foreground="#1976D2"/>
+
+                                    </StackPanel>
+
+                                    <TextBlock x:Name="EquationText" 
+
+                                             Text="Ca²⁺ + CO₃²⁻ → CaCO₃↓" 
+
+                                             FontSize="16" FontWeight="Bold" 
+
+                                             Foreground="#0D47A1" 
+
+                                             HorizontalAlignment="Center"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Explanation Section -->
+
+                            <Border Background="White" BorderBrush="#FF9800" BorderThickness="2" 
+
+                                    CornerRadius="6" Padding="15">
+
+                                <Border.Effect>
+
+                                    <DropShadowEffect Color="#FF9800" BlurRadius="8" 
+
+                                                    ShadowDepth="0" Opacity="0.2"/>
+
+                                </Border.Effect>
+
+                                <StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+
+                                        <TextBlock Text="📋" FontSize="16" Margin="0,0,8,0"/>
+
+                                        <TextBlock Text="GIẢI THÍCH" 
+
+                                                 FontSize="13" FontWeight="Bold" 
+
+                                                 Foreground="#FF9800"/>
+
+                                    </StackPanel>
+
+                                    <TextBlock x:Name="ExplanationText" 
+
+                                             Text="CaCO₃ không tan trong nước theo QUY TẮC 3, tạo kết tủa màu trắng."
+
+                                             FontSize="13" Foreground="#424242" 
+
+                                             TextWrapping="Wrap" LineHeight="20"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </Grid>
+
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+</Window>
+
+
+

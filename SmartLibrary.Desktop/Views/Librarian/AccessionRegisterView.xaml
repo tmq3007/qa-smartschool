@@ -1,0 +1,207 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Librarian.AccessionRegisterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Loaded="UserControl_Loaded" KeyDown="UserControl_KeyDown" Focusable="True">
+    <Grid Background="{DynamicResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="📖 Sổ đăng ký cá biệt" ActionButtonText=""/>
+
+        <Grid Grid.Row="1" Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Filters -->
+                <RowDefinition Height="*"/>    <!-- DataGrid -->
+                <RowDefinition Height="Auto"/> <!-- Progress / Info -->
+            </Grid.RowDefinitions>
+
+            <!-- Filters Area -->
+            <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="16" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Search Input -->
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Tìm kiếm nhanh" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <Grid>
+                            <TextBox x:Name="TxtSearch" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Height="36" VerticalContentAlignment="Center" Padding="10,4" FontSize="13" TabIndex="1" ToolTip="Nhấn Ctrl+F để tìm kiếm nhanh (Giới hạn 100 ký tự)" MaxLength="100"/>
+                            <TextBlock Text="🔍 Nhập tên sách, tác giả, mã vạch..." 
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" IsHitTestVisible="False"
+                                       VerticalAlignment="Center" Margin="12,0,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=TxtSearch}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Status Filter -->
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Trạng thái tài liệu" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <ComboBox x:Name="ComboStatus" SelectedItem="{Binding SelectedStatus}" ItemsSource="{Binding Statuses}" Style="{StaticResource ModernComboBox}" TabIndex="2" ToolTip="Nhấn Alt+T để chọn nhanh trạng thái"/>
+                    </StackPanel>
+
+                    <!-- Publisher Filter -->
+                    <StackPanel Grid.Column="4">
+                        <TextBlock Text="Nhà xuất bản" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <ComboBox x:Name="ComboPublisher" SelectedItem="{Binding SelectedPublisher}" ItemsSource="{Binding Publishers}" Style="{StaticResource ModernComboBox}" TabIndex="3" ToolTip="Nhấn Alt+P để mở nhanh"/>
+                    </StackPanel>
+
+                    <!-- Source Filter -->
+                    <StackPanel Grid.Column="6">
+                        <TextBlock Text="Nguồn cung cấp" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <ComboBox x:Name="ComboSource" SelectedItem="{Binding SelectedSource}" ItemsSource="{Binding Sources}" Style="{StaticResource ModernComboBox}" TabIndex="4" ToolTip="Nhấn Alt+S để mở nhanh"/>
+                    </StackPanel>
+
+                    <!-- Export Button -->
+                    <Button Grid.Column="8" Content="📤 Xuất Excel" Command="{Binding ExportExcelCommand}" Style="{StaticResource SuccessButton}" BorderThickness="0" Height="36" VerticalAlignment="Bottom" Padding="16,0" FontWeight="Bold" TabIndex="5"/>
+                </Grid>
+            </Border>
+
+            <!-- DataGrid Area -->
+            <Border Grid.Row="1" Style="{StaticResource CardBorder}">
+                <Grid>
+                    <DataGrid Style="{StaticResource ModernDataGrid}" ItemsSource="{Binding Records}" AutoGenerateColumns="False" IsReadOnly="True"
+                              VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Số ĐKCB" Binding="{Binding AccessionNumber}" Width="130" MinWidth="130"/>
+                            <DataGridTextColumn Header="Mã vạch (Barcode)" Binding="{Binding Barcode}" Width="100"/>
+                            <DataGridTemplateColumn Header="Tên sách" Width="2.5*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding BookTitle}" TextTrimming="CharacterEllipsis" ToolTip="{Binding BookTitle}" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Tác giả" Binding="{Binding Author}" Width="1.5*"/>
+                            <DataGridTextColumn Header="Nhà xuất bản" Binding="{Binding PublisherName}" Width="1.5*"/>
+                            <DataGridTextColumn Header="Năm xuất bản" Binding="{Binding PublishYear}" Width="80"/>
+                            <DataGridTextColumn Header="Đơn giá" Binding="{Binding PriceText}" Width="130" MinWidth="130"/>
+                            <DataGridTextColumn Header="Nguồn cung cấp" Binding="{Binding Source}" Width="100"/>
+                            <DataGridTemplateColumn Header="Trạng thái" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Center">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#1AFFFFFF"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Trong kho">
+                                                            <Setter Property="Background" Value="{DynamicResource SuccessBgBrush}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Đã mượn">
+                                                            <Setter Property="Background" Value="{DynamicResource SelectedBackgroundBrush}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Thất lạc">
+                                                            <Setter Property="Background" Value="{DynamicResource DangerBgBrush}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding Status}" FontSize="12" FontWeight="Bold">
+                                                <TextBlock.Style>
+                                                     <Style TargetType="TextBlock">
+                                                         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+                                                         <Style.Triggers>
+                                                             <DataTrigger Binding="{Binding Status}" Value="Trong kho">
+                                                                 <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}"/>
+                                                             </DataTrigger>
+                                                             <DataTrigger Binding="{Binding Status}" Value="Đã mượn">
+                                                                 <Setter Property="Foreground" Value="{DynamicResource SelectedTextBrush}"/>
+                                                             </DataTrigger>
+                                                             <DataTrigger Binding="{Binding Status}" Value="Thất lạc">
+                                                                 <Setter Property="Foreground" Value="{DynamicResource DangerTextBrush}"/>
+                                                             </DataTrigger>
+                                                         </Style.Triggers>
+                                                     </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Ngày nhập" Binding="{Binding DateText}" Width="130" MinWidth="130"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Empty State Card -->
+                    <Border Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="400" Margin="24">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Records.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="📚" FontSize="40" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <TextBlock Text="Không tìm thấy tài sản nào phù hợp!" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                            <TextBlock Text="Vui lòng thử tìm kiếm bằng từ khóa khác hoặc điều chỉnh lại các bộ lọc nhé." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Progress & Status Info Area -->
+            <Grid Grid.Row="2" Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
+                    <TextBlock Text="Tổng cộng: " Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                    <TextBlock Text="{Binding TotalRecordsCount}" Foreground="{DynamicResource SuccessTextBrush}" FontSize="13" FontWeight="Bold"/>
+                    <TextBlock Text=" bản ghi Số ĐKCB - Tổng giá trị tài sản: " Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                    <TextBlock Text="{Binding TotalAssetValue, StringFormat='{}{0:N0} VNĐ'}" Foreground="{DynamicResource SuccessTextBrush}" FontSize="13" FontWeight="Bold"/>
+                </StackPanel>
+
+                <!-- Bộ điều khiển phân trang -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Button Content="◀" Command="{Binding PrevPageCommand}" Style="{StaticResource SecondaryButton}" Width="32" Height="30" Padding="0" Margin="0,0,8,0" FontSize="10" Cursor="Hand"/>
+                    <TextBlock VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}">
+                        <Run Text="Trang "/>
+                        <Run Text="{Binding CurrentPage}" FontWeight="Bold"/>
+                        <Run Text=" / "/>
+                        <Run Text="{Binding TotalPages}" FontWeight="Bold"/>
+                    </TextBlock>
+                    <Button Content="▶" Command="{Binding NextPageCommand}" Style="{StaticResource SecondaryButton}" Width="32" Height="30" Padding="0" Margin="8,0,0,0" FontSize="10" Cursor="Hand"/>
+                </StackPanel>
+
+                <!-- Export Progress Bar -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{Binding IsExporting, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="Đang xuất file Excel... " Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding ExportProgress}" Width="150" Height="14" Foreground="{DynamicResource SuccessTextBrush}" Background="{DynamicResource BorderBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

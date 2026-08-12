@@ -1,0 +1,118 @@
+{
+  "metadata": {
+    "chapterId": "g07_ch03",
+    "chapterName": "Bài 3: Tùy bút",
+    "grade": 7,
+    "totalProblems": 4,
+    "totalSections": 2,
+    "estimatedHours": 3
+  },
+  "sections": [
+    {
+      "sectionId": "s_g7_ch2_0",
+      "sectionName": "Cốm",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-7-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g7_Cốm.mp3",
+      "concepts": [
+        {
+          "name": "Nguồn gốc và tính chất thanh quý",
+          "theorem": "Cốm Vòng là thức quà đặc sản kết tinh từ hạt thóc nếp non ngậm sữa, ủ trong những chiếc lá sen thơm ngát. Thạch Lam trân trọng gọi cốm là 'thức quà thanh nhã và tinh sạch' của đồng ruộng quê hương.",
+          "imageUrls": ["Resources/LiteratureData/Images/com_vong.png"]
+        },
+        {
+          "name": "Nghệ thuật thưởng thức Cốm",
+          "definition": "Ăn cốm không thể vội vàng. Phải ăn từng chút một, nhai thật chậm rãi, thong thả ngẫm nghĩ để cảm nhận vị ngọt dẻo của gạo nếp non hòa quyện cùng hương sen thơm dịu nhẹ tỏa ra từ lớp lá bọc."
+        },
+        {
+          "name": "Sự kết hợp văn hóa Cốm và Hồng",
+          "examples": [
+            "**Sắc màu hòa quyện**: Sắc xanh lục của cốm như ngọc thạch sánh đôi cùng sắc đỏ thắm của hồng như ngọc lựu.",
+            "**Hương vị bổ trợ**: Một thứ dẻo ngọt, thanh tao nâng đỡ một thứ ngọt sắc, đậm đà.",
+            "**Ý nghĩa văn hóa**: Cốm và Hồng kết đôi làm lễ vật cưới hỏi truyền thống, tượng trưng cho sự gắn bó hài hòa, thủy chung của lứa đôi."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Theo Thạch Lam, làm thế nào để cảm nhận hết hương vị thanh nhã của món Cốm Vòng?",
+          "difficulty": "Easy",
+          "options": [
+            "Phải ăn thong thả, từng chút một, nhai chậm rãi để ngẫm nghĩ và cảm nhận sự hòa quyện của lúa non và hương sen",
+            "Phải chế biến cốm thành các món chè hoặc bánh cốm ngọt sắc trước khi thưởng thức",
+            "Phải ăn cốm thật nhanh lúc cốm còn nóng hổi vừa ra lò từ làng Vòng để tránh bị nguội",
+            "Phải kết hợp cốm với các món ăn hiện đại của phương Tây để tăng thêm hương vị đậm đà"
+          ],
+          "answer": "Phải ăn thong thả, từng chút một, nhai chậm rãi để ngẫm nghĩ và cảm nhận sự hòa quyện của lúa non và hương sen",
+          "hints": ["Nhớ câu viết nổi tiếng của Thạch Lam: 'Cốm không phải thức quà của người vội...'."],
+          "explanation": "Thạch Lam viết: 'Cốm không phải thức quà của người vội; ăn cốm phải ăn từng chút một, thong thả và ngẫm nghĩ.' Nhai chậm để thấy chất ngọt dẻo của hạt lúa non quyện với hương sen thơm mát bao bọc trong lá sen. Ăn cốm là một nghệ thuật thưởng thức tinh tế."
+        },
+        {
+          "id": "p2",
+          "question": "Sự kết hợp giữa Cốm và Hồng trong tục lệ cưới hỏi truyền thống được Thạch Lam đánh giá thế nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Là một sự hòa hợp tuyệt mỹ về cả màu sắc (xanh tươi của cốm - đỏ chói của hồng) lẫn hương vị (dẻo ngọt - thanh ngọt)",
+            "Là sự lãng phí tài chính không cần thiết vì cả hai thức quà này đều đắt đỏ vào mùa thu",
+            "Là sự bắt chước máy móc các nghi lễ phong kiến xa xưa cần được giản lược",
+            "Là sự kết hợp không ăn ý do mùi vị đặc trưng của hai thức quả này triệt tiêu lẫn nhau"
+          ],
+          "answer": "Là một sự hòa hợp tuyệt mỹ về cả màu sắc (xanh tươi của cốm - đỏ chói của hồng) lẫn hương vị (dẻo ngọt - thanh ngọt)",
+          "hints": ["Hãy tìm chi tiết so sánh màu xanh tươi của cốm với ngọc thạch và màu đỏ của hồng với ngọc lựu."],
+          "explanation": "Thạch Lam nhận định: Hồng và cốm là đôi bạn suốt đời. Màu xanh tươi của cốm như ngọc thạch quý bên màu đỏ chói của hồng như ngọc lựu. Một thứ thanh đạm, một thứ ngọt sắc, hai vị nâng đỡ nhau tạo nên sự hòa quyện tuyệt vời."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g7_ch2_1",
+      "sectionName": "Mùa xuân của tôi",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-7-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g7_Mùa_xuân_của_tôi.mp3",
+      "concepts": [
+        {
+          "name": "Bức tranh mùa xuân Bắc Bộ",
+          "theorem": "Vũ Bằng miêu tả mùa xuân miền Bắc với nét đẹp khí hậu đặc trưng: mưa riêu riêu, gió lành lạnh, tiếng nhạn kêu trong đêm xanh, kết hợp với hương trầm ấm áp tỏa ra từ bàn thờ gia tiên trong đêm trừ tịch.",
+          "imageUrls": ["Resources/LiteratureData/Images/mua_xuan_bac_bo.png"]
+        },
+        {
+          "name": "Sự hồi sinh kỳ diệu của lòng người",
+          "examples": [
+            "**Sức sống mãnh liệt**: Mùa xuân khơi dậy nhựa sống trong cỏ cây và cả trong tâm hồn con người, làm hồi sinh lòng yêu đời.",
+            "**Nỗi niềm xa xứ**: Nỗi nhớ da diết của nhà văn khi đang sống xa quê hương miền Bắc, hướng về Hà Nội thân yêu.",
+            "**Tình cảm gia đình sum họp**: Nhấn mạnh giá trị thiêng liêng của sự sum vầy quanh mâm cơm ấm cúng dịp đầu xuân."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p3",
+          "question": "Đặc trưng của mùa xuân Hà Nội và miền Bắc được Vũ Bằng miêu tả nổi bật qua những chi tiết nào?",
+          "difficulty": "Easy",
+          "options": [
+            "Mưa riêu riêu, gió lành lạnh, tiếng nhạn kêu trong đêm xanh, và không khí đoàn tụ ấm áp quanh bàn thờ ngày Tết",
+            "Những cơn bão cát mùa xuân nóng bức thổi từ sa mạc phía Tây Bắc bộ",
+            "Sự nhộn nhịp của các trung tâm mua sắm hiện đại và rực rỡ ánh đèn led",
+            "Cảnh tượng tuyết rơi trắng xóa bao phủ khắp các ngọn đồi của thủ đô Hà Nội"
+          ],
+          "answer": "Mưa riêu riêu, gió lành lạnh, tiếng nhạn kêu trong đêm xanh, và không khí đoàn tụ ấm áp quanh bàn thờ ngày Tết",
+          "hints": ["Hãy tìm những cảm nhận thời tiết quen thuộc của mùa xuân Bắc Bộ ở những dòng thơ/văn đầu tiên."],
+          "explanation": "Vũ Bằng vẽ nên bức tranh mùa xuân Bắc Bộ đặc trưng: 'mùa xuân có mưa riêu riêu, gió lành lạnh, có tiếng nhạn kêu trong đêm xanh...'. Nó đi kèm với cảm giác ấm áp của gia đình sum họp cúng Giao thừa và ngày Tết cổ truyền."
+        },
+        {
+          "id": "p4",
+          "question": "Nỗi niềm sâu kín nhất của tác giả Vũ Bằng gửi gắm qua bài tùy bút 'Mùa xuân của tôi' là gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Nỗi nhớ thương da diết quê hương miền Bắc và khát vọng thống nhất non sông của người con sống xa quê",
+            "Mong muốn được đi du lịch khám phá các danh lam thắng cảnh ở nước ngoài cùng gia đình",
+            "Sự nuối tiếc thời kỳ tuổi trẻ hào hùng đã qua đi không bao giờ trở lại",
+            "Lời khuyên mọi người nên bảo vệ môi trường thiên nhiên xanh sạch đẹp mỗi dịp xuân về"
+          ],
+          "answer": "Nỗi nhớ thương da diết quê hương miền Bắc và khát vọng thống nhất non sông của người con sống xa quê",
+          "hints": ["Chú ý bối cảnh tác giả sống ở Sài Gòn trong giai đoạn đất nước chia cắt hai miền Nam - Bắc."],
+          "explanation": "Viết tác phẩm này khi đang ở miền Nam trong bối cảnh đất nước chia cắt, nỗi nhớ mùa xuân Hà Nội của Vũ Bằng thực chất là nỗi lòng thương nhớ quê hương, nhớ người thân, và khát vọng hòa bình, sum họp gia đình, thống nhất đất nước."
+        }
+      ]
+    }
+  ]
+}

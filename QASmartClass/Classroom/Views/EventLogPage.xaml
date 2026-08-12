@@ -1,0 +1,117 @@
+﻿<Page x:Class="QASmartClass.Classroom.Views.EventLogPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Nhật ký" Background="#FAFAFA">
+    <Grid Margin="24,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,12">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="🔄 Làm mới" Padding="10,7" FontSize="12" Background="#F5F5F5" Foreground="#424242"
+                        BorderThickness="0" Cursor="Hand" Margin="0,0,6,0" Click="Refresh_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#EEEEEE"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="📥 Xuất log" Padding="10,7" FontSize="12" Background="#E8F5E9" Foreground="#2E7D32"
+                        BorderThickness="0" Cursor="Hand" Click="ExportLog_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#C8E6C9"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="📋 Nhật ký sự kiện" FontSize="18" FontWeight="Bold" Foreground="#212121"/>
+                <TextBlock Text="Lịch sử hoạt động lớp học — hôm nay" FontSize="12" Foreground="#757575" Margin="0,2,0,0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- 🔍 Search Bar -->
+        <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="12,8" Margin="0,0,0,12"
+                BorderBrush="#E0E0E0" BorderThickness="1">
+            <DockPanel>
+                <!-- Clear button -->
+                <Button DockPanel.Dock="Right" Content="✕ Xóa" Padding="10,6" FontSize="11"
+                        Background="#F5F5F5" Foreground="#757575" BorderThickness="0" Cursor="Hand"
+                        Margin="6,0,0,0" Click="ClearSearch_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#EEEEEE"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+                <!-- Date range -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Từ" FontSize="11" Foreground="#9E9E9E" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <DatePicker x:Name="dpFrom" FontSize="11" Width="120" SelectedDateChanged="DateFilter_Changed"/>
+                    <TextBlock Text="→" FontSize="11" Foreground="#9E9E9E" VerticalAlignment="Center" Margin="6,0,6,0"/>
+                    <DatePicker x:Name="dpTo" FontSize="11" Width="120" SelectedDateChanged="DateFilter_Changed"/>
+                </StackPanel>
+                <!-- Search input -->
+                <TextBlock Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox x:Name="txtSearch" FontSize="13" Padding="6,4" BorderThickness="0"
+                         Background="Transparent" Foreground="#333"
+                         TextChanged="Search_TextChanged"
+                         Tag="Tìm theo loại, người, chi tiết..."
+                         GotFocus="SearchBox_GotFocus" LostFocus="SearchBox_LostFocus"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Stats + Filter -->
+        <Grid Grid.Row="2" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <UniformGrid Columns="4" Margin="0,0,16,0">
+                <Border Background="White" CornerRadius="8" Padding="12,8" Margin="0,0,6,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel><TextBlock Text="📊 Tổng" FontSize="10" Foreground="#9E9E9E"/>
+                    <TextBlock x:Name="txtTotalEvents" Text="0" FontSize="22" FontWeight="Bold" Foreground="#212121"/></StackPanel>
+                </Border>
+                <Border Background="White" CornerRadius="8" Padding="12,8" Margin="0,0,6,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel><TextBlock Text="🎓 Session" FontSize="10" Foreground="#9E9E9E"/>
+                    <TextBlock x:Name="txtSessionEvents" Text="0" FontSize="22" FontWeight="Bold" Foreground="#1976D2"/></StackPanel>
+                </Border>
+                <Border Background="White" CornerRadius="8" Padding="12,8" Margin="0,0,6,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel><TextBlock Text="📝 Quiz" FontSize="10" Foreground="#9E9E9E"/>
+                    <TextBlock x:Name="txtQuizEvents" Text="0" FontSize="22" FontWeight="Bold" Foreground="#9C27B0"/></StackPanel>
+                </Border>
+                <Border Background="White" CornerRadius="8" Padding="12,8" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel><TextBlock Text="📁 File" FontSize="10" Foreground="#9E9E9E"/>
+                    <TextBlock x:Name="txtFileEvents" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FF9800"/></StackPanel>
+                </Border>
+            </UniformGrid>
+            <!-- Filter buttons -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="Tất cả" Tag="All" Padding="10,6" FontSize="11" Background="#1976D2" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="Filter_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="SESSION" Tag="SESSION" Padding="10,6" FontSize="11" Background="#E3F2FD" Foreground="#1976D2" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="Filter_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="QUIZ" Tag="QUIZ" Padding="10,6" FontSize="11" Background="#F3E5F5" Foreground="#7B1FA2" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="Filter_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="FILE" Tag="FILE" Padding="10,6" FontSize="11" Background="#FFF3E0" Foreground="#E65100" BorderThickness="0" Cursor="Hand" Click="Filter_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Log DataGrid -->
+        <Border Grid.Row="3" Background="White" CornerRadius="12" BorderBrush="#E0E0E0" BorderThickness="1">
+            <DataGrid x:Name="logGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                      BorderThickness="0" Background="White" RowBackground="White"
+                      AlternatingRowBackground="#FAFAFA" FontSize="12" RowHeight="38"
+                      CanUserResizeRows="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Thời gian" Binding="{Binding Timestamp, StringFormat={}{0:HH:mm:ss}}" Width="90"/>
+                    <DataGridTextColumn Header="Loại" Binding="{Binding EventType}" Width="90"/>
+                    <DataGridTextColumn Header="Người thực hiện" Binding="{Binding Actor}" Width="130"/>
+                    <DataGridTextColumn Header="Chi tiết" Binding="{Binding Details}" Width="*"/>
+                    <DataGridTextColumn Header="Địa chỉ MAC" Binding="{Binding MacAddress}" Width="130"/>
+                    <DataGridTextColumn Header="Địa chỉ IP" Binding="{Binding ClientIP}" Width="100"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</Page>

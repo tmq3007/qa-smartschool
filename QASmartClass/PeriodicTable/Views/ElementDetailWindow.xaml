@@ -1,0 +1,5068 @@
+﻿<Window FontFamily="Segoe UI" x:Class="QASmartTouch.PeriodicTable.Views.ElementDetailWindow"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        xmlns:converters="clr-namespace:QASmartTouch.PeriodicTable.Converters"
+
+        Title="Chi Tiết Nguyên Tố" 
+
+        Height="800" 
+
+        Width="1200"
+
+        ResizeMode="CanResize"
+
+        WindowStartupLocation="CenterScreen"
+
+        Background="#F5F5F5">
+
+
+
+    <Window.Resources>
+
+        <!-- Converters -->
+
+        <converters:StabilityColorConverter x:Key="StabilityColorConverter"/>
+
+        <converters:MultiplierToWidthConverter x:Key="MultiplierToWidthConverter"/>
+
+        <converters:ValueWithUnitConverter x:Key="ValueWithUnitConverter"/>
+
+        <!-- Tab Header Style -->
+
+        <Style x:Key="TabHeaderStyle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="16"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="Padding" Value="20,10"/>
+
+        </Style>
+
+
+
+        <!-- Section Title Style -->
+
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="20"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Setter Property="Foreground" Value="#333333"/>
+
+            <Setter Property="Margin" Value="0,0,0,15"/>
+
+        </Style>
+
+
+
+        <!-- Property Label Style -->
+
+        <Style x:Key="PropertyLabelStyle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="Foreground" Value="#666666"/>
+
+            <Setter Property="VerticalAlignment" Value="Center"/>
+
+        </Style>
+
+
+
+        <!-- Property Value Style -->
+
+        <Style x:Key="PropertyValueStyle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="15"/>
+
+            <Setter Property="Foreground" Value="#333333"/>
+
+            <Setter Property="VerticalAlignment" Value="Center"/>
+
+            <Setter Property="TextWrapping" Value="Wrap"/>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="150"/>
+
+            <!-- Header -->
+
+            <RowDefinition Height="*"/>
+
+            <!-- Content Tabs -->
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- HEADER SECTION -->
+
+        <Border Grid.Row="0">
+
+            <Border.Background>
+
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+
+                    <GradientStop Color="#667EEA" Offset="0"/>
+
+                    <GradientStop Color="#764BA2" Offset="1"/>
+
+                </LinearGradientBrush>
+
+            </Border.Background>
+
+            <Border.Effect>
+
+                <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.4"/>
+
+            </Border.Effect>
+
+
+
+            <Grid Margin="30,20">
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <!-- Element Card (Left) -->
+
+                <Border Grid.Column="0" 
+
+                        Background="White" 
+
+                        CornerRadius="12" 
+
+                        Padding="20"
+
+                        Width="110"
+
+                        Height="110"
+
+                        VerticalAlignment="Center">
+
+                    <Border.Effect>
+
+                        <DropShadowEffect BlurRadius="20" ShadowDepth="8" Opacity="0.3" Color="#667EEA"/>
+
+                    </Border.Effect>
+
+                    <Grid>
+
+                        <Grid.RowDefinitions>
+
+                            <RowDefinition Height="Auto"/>
+
+                            <RowDefinition Height="*"/>
+
+                            <RowDefinition Height="Auto"/>
+
+                        </Grid.RowDefinitions>
+
+
+
+                        <!-- Atomic Number -->
+
+                        <TextBlock Grid.Row="0" 
+
+                                   Text="{Binding CurrentElement.AtomicNumber, FallbackValue=1}"
+
+                                   FontSize="13"
+
+                                   FontWeight="Bold"
+
+                                   Foreground="#999999"
+
+                                   HorizontalAlignment="Left"
+
+                                   Margin="0,0,0,3"/>
+
+
+
+                        <!-- Symbol -->
+
+                        <TextBlock Grid.Row="1" 
+
+                                   Text="{Binding CurrentElement.Symbol, FallbackValue=H}"
+
+                                   FontSize="48"
+
+                                   FontWeight="Bold"
+
+                                   HorizontalAlignment="Center"
+
+                                   VerticalAlignment="Center">
+
+                            <TextBlock.Foreground>
+
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+
+                                    <GradientStop Color="#667EEA" Offset="0"/>
+
+                                    <GradientStop Color="#764BA2" Offset="1"/>
+
+                                </LinearGradientBrush>
+
+                            </TextBlock.Foreground>
+
+                        </TextBlock>
+
+
+
+                        <!-- Atomic Mass -->
+
+                        <TextBlock Grid.Row="2" 
+
+                                   Text="{Binding CurrentElement.AtomicMass, StringFormat={}{0:F3}, FallbackValue=1.008}"
+
+                                   FontSize="12"
+
+                                   Foreground="#666666"
+
+                                   HorizontalAlignment="Center"/>
+
+                    </Grid>
+
+                </Border>
+
+
+
+                <!-- Element Info (Center) -->
+
+                <StackPanel Grid.Column="1" 
+
+                            VerticalAlignment="Center" 
+
+                            Margin="25,0,0,0">
+
+                    <!-- Vietnamese Name -->
+
+                    <TextBlock Text="{Binding CurrentElement.Name, FallbackValue=Hydro}"
+
+                               FontSize="32"
+
+                               FontWeight="Bold"
+
+                               Foreground="White"
+
+                               Margin="0,0,0,5"/>
+
+
+
+                    <!-- English Name -->
+
+                    <TextBlock Text="{Binding CurrentElement.NameEn, FallbackValue=Hydrogen}"
+
+                               FontSize="16"
+
+                               Foreground="#E8E8E8"
+
+                               FontStyle="Italic"
+
+                               Margin="0,0,0,12"/>
+
+
+
+                    <!-- Quick Info Tags -->
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <!-- Category -->
+
+                        <Border Background="White" 
+
+                                CornerRadius="14" 
+
+                                Padding="12,5"
+
+                                Margin="0,0,8,0">
+
+                            <TextBlock Text="{Binding CurrentElement.Category, FallbackValue=Phi kim}"
+
+                                       FontSize="12"
+
+                                       FontWeight="SemiBold">
+
+                                <TextBlock.Foreground>
+
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                                        <GradientStop Color="#667EEA" Offset="0"/>
+
+                                        <GradientStop Color="#764BA2" Offset="1"/>
+
+                                    </LinearGradientBrush>
+
+                                </TextBlock.Foreground>
+
+                            </TextBlock>
+
+                        </Border>
+
+
+
+                        <!-- Phase -->
+
+                        <Border Background="White" 
+
+                                CornerRadius="14" 
+
+                                Padding="12,5"
+
+                                Margin="0,0,8,0">
+
+                            <TextBlock Text="{Binding CurrentElement.PhaseAtSTP, FallbackValue=Khí}"
+
+                                       FontSize="12"
+
+                                       FontWeight="SemiBold"
+
+                                       Foreground="#555555"/>
+
+                        </Border>
+
+
+
+                        <!-- Group & Period -->
+
+                        <Border Background="White" 
+
+                                CornerRadius="14" 
+
+                                Padding="12,5">
+
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#555555">
+
+                                <Run Text="Nhóm "/>
+
+                                <Run Text="{Binding CurrentElement.Group, FallbackValue=1}"/>
+
+                                <Run Text=", Chu kỳ "/>
+
+                                <Run Text="{Binding CurrentElement.Period, FallbackValue=1}"/>
+
+                            </TextBlock>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+
+
+                <!-- Navigation & Close Buttons (Right) -->
+
+                <StackPanel Grid.Column="2" 
+
+                           Orientation="Horizontal" 
+
+                           VerticalAlignment="Top"
+
+                           HorizontalAlignment="Right">
+
+                    
+
+                    <!-- Previous Button -->
+
+                    <Button x:Name="PrevButton"
+
+                            Content="◀"
+
+                            FontSize="18"
+
+                            FontWeight="Bold"
+
+                            Width="45"
+
+                            Height="45"
+
+                            Background="Transparent"
+
+                            Foreground="White"
+
+                            BorderThickness="0"
+
+                            Cursor="Hand"
+
+                            Click="PrevButton_Click"
+
+                            Margin="0,0,6,0"
+
+                            ToolTip="Nguyên tố trước">
+
+                        <Button.Style>
+
+                            <Style TargetType="Button">
+
+                                <Setter Property="Background" Value="Transparent"/>
+
+                                <Setter Property="Template">
+
+                                    <Setter.Value>
+
+                                        <ControlTemplate TargetType="Button">
+
+                                            <Border Background="{TemplateBinding Background}" 
+
+                                                    CornerRadius="22"
+
+                                                    BorderThickness="2"
+
+                                                    BorderBrush="#88FFFFFF">
+
+                                                <ContentPresenter HorizontalAlignment="Center" 
+
+                                                                VerticalAlignment="Center"/>
+
+                                            </Border>
+
+                                        </ControlTemplate>
+
+                                    </Setter.Value>
+
+                                </Setter>
+
+                                <Style.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter Property="Background" Value="#44FFFFFF"/>
+
+                                    </Trigger>
+
+                                    <Trigger Property="IsEnabled" Value="False">
+
+                                        <Setter Property="Opacity" Value="0.3"/>
+
+                                    </Trigger>
+
+                                </Style.Triggers>
+
+                            </Style>
+
+                        </Button.Style>
+
+                    </Button>
+
+
+
+                    <!-- Next Button -->
+
+                    <Button x:Name="NextButton"
+
+                            Content="▶"
+
+                            FontSize="18"
+
+                            FontWeight="Bold"
+
+                            Width="45"
+
+                            Height="45"
+
+                            Background="Transparent"
+
+                            Foreground="White"
+
+                            BorderThickness="0"
+
+                            Cursor="Hand"
+
+                            Click="NextButton_Click"
+
+                            Margin="0,0,6,0"
+
+                            ToolTip="Nguyên tố tiếp theo">
+
+                        <Button.Style>
+
+                            <Style TargetType="Button">
+
+                                <Setter Property="Background" Value="Transparent"/>
+
+                                <Setter Property="Template">
+
+                                    <Setter.Value>
+
+                                        <ControlTemplate TargetType="Button">
+
+                                            <Border Background="{TemplateBinding Background}" 
+
+                                                    CornerRadius="22"
+
+                                                    BorderThickness="2"
+
+                                                    BorderBrush="#88FFFFFF">
+
+                                                <ContentPresenter HorizontalAlignment="Center" 
+
+                                                                VerticalAlignment="Center"/>
+
+                                            </Border>
+
+                                        </ControlTemplate>
+
+                                    </Setter.Value>
+
+                                </Setter>
+
+                                <Style.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter Property="Background" Value="#44FFFFFF"/>
+
+                                    </Trigger>
+
+                                    <Trigger Property="IsEnabled" Value="False">
+
+                                        <Setter Property="Opacity" Value="0.3"/>
+
+                                    </Trigger>
+
+                                </Style.Triggers>
+
+                            </Style>
+
+                        </Button.Style>
+
+                    </Button>
+
+
+
+                    <!-- Close Button -->
+
+                    <Button Content="✕"
+
+                            FontSize="24"
+
+                            FontWeight="Bold"
+
+                            Width="45"
+
+                            Height="45"
+
+                            Background="Transparent"
+
+                            Foreground="White"
+
+                            BorderThickness="0"
+
+                            Cursor="Hand"
+
+                            Click="CloseButton_Click"
+
+                            ToolTip="Đóng">
+
+                        <Button.Style>
+
+                            <Style TargetType="Button">
+
+                                <Setter Property="Background" Value="Transparent"/>
+
+                                <Setter Property="Template">
+
+                                    <Setter.Value>
+
+                                        <ControlTemplate TargetType="Button">
+
+                                            <Border Background="{TemplateBinding Background}" 
+
+                                                    CornerRadius="22"
+
+                                                    BorderThickness="2"
+
+                                                    BorderBrush="Transparent">
+
+                                                <ContentPresenter HorizontalAlignment="Center" 
+
+                                                                VerticalAlignment="Center"/>
+
+                                            </Border>
+
+                                        </ControlTemplate>
+
+                                    </Setter.Value>
+
+                                </Setter>
+
+                                <Style.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter Property="Background" Value="#44FFFFFF"/>
+
+                                    </Trigger>
+
+                                </Style.Triggers>
+
+                            </Style>
+
+                        </Button.Style>
+
+                    </Button>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- TABS SECTION -->
+
+        <TabControl Grid.Row="1" 
+
+                    Margin="0"
+
+                    Background="#F5F5F5"
+
+                    BorderThickness="0">
+
+            <TabControl.Resources>
+
+                <Style TargetType="TabItem">
+
+                    <Setter Property="Template">
+
+                        <Setter.Value>
+
+                            <ControlTemplate TargetType="TabItem">
+
+                                <Border Name="Border" 
+
+                                        Background="White" 
+
+                                        BorderThickness="0,0,0,4"
+
+                                        BorderBrush="Transparent"
+
+                                        Padding="28,18"
+
+                                        Margin="0,0,2,0">
+
+                                    <ContentPresenter ContentSource="Header" 
+
+                                                    HorizontalAlignment="Center"
+
+                                                    VerticalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsSelected" Value="True">
+
+                                        <Setter TargetName="Border" Property="Background" Value="White"/>
+
+                                        <Setter TargetName="Border" Property="BorderBrush">
+
+                                            <Setter.Value>
+
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                                                    <GradientStop Color="#667EEA" Offset="0"/>
+
+                                                    <GradientStop Color="#764BA2" Offset="1"/>
+
+                                                </LinearGradientBrush>
+
+                                            </Setter.Value>
+
+                                        </Setter>
+
+                                    </Trigger>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="Border" Property="Background" Value="#F8F9FA"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Setter.Value>
+
+                    </Setter>
+
+                </Style>
+
+            </TabControl.Resources>
+
+
+
+            <!-- TAB 1: TỔNG QUAN -->
+
+            <TabItem>
+
+                <TabItem.Header>
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <TextBlock Text="📋" FontSize="18" Margin="0,0,8,0"/>
+
+                        <TextBlock Text="Tổng quan" Style="{StaticResource TabHeaderStyle}"/>
+
+                    </StackPanel>
+
+                </TabItem.Header>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,35" Background="White">
+
+                    <StackPanel>
+
+                        <!-- Description Box -->
+
+                        <Border Background="#F8F9FA" 
+
+                                CornerRadius="12" 
+
+                                Padding="25"
+
+                                Margin="0,0,0,30"
+
+                                BorderThickness="1"
+
+                                BorderBrush="#E0E0E0">
+
+                            <TextBlock Text="{Binding CurrentElement.Description, FallbackValue=Mô tả nguyên tố...}"
+
+                                       FontSize="16"
+
+                                       Foreground="#333333"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="28"/>
+
+                        </Border>
+
+
+
+                        <!-- Quick Facts Cards -->
+
+                        <Grid Margin="0,0,0,30">
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+
+
+                            <!-- Card 1: Trạng thái ở STP -->
+
+                            <Border Grid.Column="0" 
+
+                                    Background="#E3F2FD" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="18,15"
+
+                                    Margin="0,0,8,0">
+
+                                <StackPanel HorizontalAlignment="Center">
+
+                                    <TextBlock Text="Trạng thái ở STP" 
+
+                                               FontSize="11" 
+
+                                               Foreground="#1976D2"
+
+                                               HorizontalAlignment="Center"
+
+                                               Margin="0,0,0,5"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.PhaseAtSTP, FallbackValue=Khí}" 
+
+                                               FontSize="16" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#0D47A1"
+
+                                               HorizontalAlignment="Center"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Card 2: Màu sắc -->
+
+                            <Border Grid.Column="1" 
+
+                                    Background="#FFF3E0" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="18,15"
+
+                                    Margin="4,0,4,0">
+
+                                <StackPanel HorizontalAlignment="Center">
+
+                                    <TextBlock Text="Màu sắc" 
+
+                                               FontSize="11" 
+
+                                               Foreground="#F57C00"
+
+                                               HorizontalAlignment="Center"
+
+                                               Margin="0,0,0,5"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.Color, FallbackValue=Không màu}" 
+
+                                               FontSize="16" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#E65100"
+
+                                               HorizontalAlignment="Center"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Card 3: Độc/An toàn -->
+
+                            <Border Grid.Column="2" 
+
+                                    Background="#E8F5E9" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="18,15"
+
+                                    Margin="4,0,4,0">
+
+                                <StackPanel HorizontalAlignment="Center">
+
+                                    <TextBlock Text="Độc tính" 
+
+                                               FontSize="11" 
+
+                                               Foreground="#388E3C"
+
+                                               HorizontalAlignment="Center"
+
+                                               Margin="0,0,0,5"/>
+
+                                    <TextBlock Text="An toàn" 
+
+                                               FontSize="16" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#1B5E20"
+
+                                               HorizontalAlignment="Center"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Card 4: Độ phổ biến -->
+
+                            <Border Grid.Column="3" 
+
+                                    Background="#FCE4EC" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="18,15"
+
+                                    Margin="8,0,0,0">
+
+                                <StackPanel HorizontalAlignment="Center">
+
+                                    <TextBlock Text="Độ phổ biến" 
+
+                                               FontSize="11" 
+
+                                               Foreground="#C2185B"
+
+                                               HorizontalAlignment="Center"
+
+                                               Margin="0,0,0,5"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.Abundance, FallbackValue=Rất phổ biến}" 
+
+                                               FontSize="16" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#880E4F"
+
+                                               HorizontalAlignment="Center"
+
+                                               TextWrapping="Wrap"
+
+                                               TextAlignment="Center"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+                        </Grid>
+
+
+
+                        <!-- Section 1: Định danh (Identity) -->
+
+                        <TextBlock Text="🔖 Định danh (Identity)" Style="{StaticResource SectionTitleStyle}"/>
+
+
+
+                        <!-- Quick Facts Grid - 3 columns -->
+
+                        <Grid Margin="0,0,0,30">
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="Auto"/>
+
+                            </Grid.RowDefinitions>
+
+
+
+                            <!-- Row 0: Atomic Number, Mass, Category -->
+
+                            <Border Grid.Row="0" Grid.Column="0" 
+
+                                    Background="White" 
+
+                                    CornerRadius="10" 
+
+                                    Padding="20"
+
+                                    Margin="0,0,10,10"
+
+                                    BorderThickness="1"
+
+                                    BorderBrush="#E0E0E0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="⚛️ Số hiệu nguyên tử" Style="{StaticResource PropertyLabelStyle}" Foreground="#667EEA"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.AtomicNumber, FallbackValue=1}" 
+
+                                               FontSize="28" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#667EEA" 
+
+                                               Margin="0,8,0,0"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <Border Grid.Row="0" Grid.Column="1" 
+
+                                    Background="White" 
+
+                                    CornerRadius="10" 
+
+                                    Padding="20"
+
+                                    Margin="5,0,5,10"
+
+                                    BorderThickness="1"
+
+                                    BorderBrush="#E0E0E0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="⚖️ Khối lượng nguyên tử" Style="{StaticResource PropertyLabelStyle}" Foreground="#667EEA"/>
+
+                                    <TextBlock FontSize="28" FontWeight="Bold" Foreground="#667EEA" Margin="0,8,0,0">
+
+                                        <Run Text="{Binding CurrentElement.AtomicMass, StringFormat={}{0:F3}, FallbackValue=1.008}"/>
+
+                                        <Run Text=" u" FontSize="16" Foreground="#999999"/>
+
+                                    </TextBlock>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <Border Grid.Row="0" Grid.Column="2" 
+
+                                    Background="White" 
+
+                                    CornerRadius="10" 
+
+                                    Padding="20"
+
+                                    Margin="10,0,0,10"
+
+                                    BorderThickness="1"
+
+                                    BorderBrush="#E0E0E0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="🔬 Phân loại" Style="{StaticResource PropertyLabelStyle}" Foreground="#667EEA"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.Category, FallbackValue=Phi kim}" 
+
+                                               FontSize="20" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#667EEA" 
+
+                                               Margin="0,8,0,0"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+                        </Grid>
+
+
+
+                        <!-- Section 2: Vị trí bảng tuần hoàn (Position) -->
+
+                        <TextBlock Text="📍 Vị trí bảng tuần hoàn (Position)" Style="{StaticResource SectionTitleStyle}"/>
+
+
+
+                        <Grid Margin="0,0,0,30">
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="Auto"/>
+
+                            </Grid.RowDefinitions>
+
+
+
+                            <!-- Row 1: Group, Period, Block -->
+
+                            <Border Grid.Row="1" Grid.Column="0" 
+
+                                    Background="#F8F9FA" 
+
+                                    CornerRadius="10" 
+
+                                    Padding="20"
+
+                                    Margin="0,0,10,10">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Nhóm" Style="{StaticResource PropertyLabelStyle}"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.Group, FallbackValue=1}" 
+
+                                               FontSize="24" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#333333" 
+
+                                               Margin="0,5,0,0"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <Border Grid.Row="1" Grid.Column="1" 
+
+                                    Background="#F8F9FA" 
+
+                                    CornerRadius="10" 
+
+                                    Padding="20"
+
+                                    Margin="5,0,5,10">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Chu kỳ" Style="{StaticResource PropertyLabelStyle}"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.Period, FallbackValue=1}" 
+
+                                               FontSize="24" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#333333" 
+
+                                               Margin="0,5,0,0"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <Border Grid.Row="1" Grid.Column="2" 
+
+                                    Background="#F8F9FA" 
+
+                                    CornerRadius="10" 
+
+                                    Padding="20"
+
+                                    Margin="10,0,0,10">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Khối" Style="{StaticResource PropertyLabelStyle}"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.Block, FallbackValue=s}" 
+
+                                               FontSize="24" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#333333" 
+
+                                               Margin="0,5,0,0"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Row 2: Electron Config (Full width) -->
+
+                            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" 
+
+                                    Background="White" 
+
+                                    CornerRadius="10" 
+
+                                    Padding="20"
+
+                                    Margin="0,0,0,10"
+
+                                    BorderThickness="1"
+
+                                    BorderBrush="#E0E0E0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="⚛️ Cấu hình electron" Style="{StaticResource PropertyLabelStyle}" Foreground="#667EEA"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.ElectronConfig, FallbackValue=1s¹}" 
+
+                                               FontSize="20" 
+
+                                               FontWeight="SemiBold" 
+
+                                               Foreground="#333333" 
+
+                                               FontFamily="Cambria Math, Segoe UI"
+
+                                               Margin="0,8,0,0"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+                        </Grid>
+
+
+
+                        <!-- Natural State and Isotopes Box -->
+
+                        <Border Background="#F3E5F5" 
+
+                                BorderBrush="#9C27B0"
+
+                                BorderThickness="2"
+
+                                CornerRadius="12" 
+
+                                Padding="20"
+
+                                Margin="0,10,0,20">
+
+                            <StackPanel>
+
+                                <TextBlock Text="🔬 Trạng thái tự nhiên và đồng vị" 
+
+                                           FontSize="16"
+
+                                           FontWeight="Bold"
+
+                                           Foreground="#7B1FA2"
+
+                                           Margin="0,0,0,10"/>
+
+                                <TextBlock Text="{Binding CurrentElement.NaturalStateInfo}"
+
+                                           FontSize="15"
+
+                                           Foreground="#333333"
+
+                                           TextWrapping="Wrap"
+
+                                           LineHeight="24"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Etymology Box -->
+
+                        <Border Background="#E3F2FD" 
+
+                                BorderBrush="#2196F3"
+
+                                BorderThickness="2"
+
+                                CornerRadius="12" 
+
+                                Padding="20"
+
+                                Margin="0,0,0,0">
+
+                            <StackPanel>
+
+                                <TextBlock Text="📚 Nguồn gốc tên gọi" 
+
+                                           FontSize="16"
+
+                                           FontWeight="Bold"
+
+                                           Foreground="#1565C0"
+
+                                           Margin="0,0,0,10"/>
+
+                                <TextBlock Text="{Binding CurrentElement.Etymology, FallbackValue=Nguồn gốc tên gọi...}"
+
+                                           FontSize="15"
+
+                                           Foreground="#333333"
+
+                                           TextWrapping="Wrap"
+
+                                           LineHeight="24"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+            </TabItem>
+
+
+
+            <!-- TAB 2: CẤU TRÚC -->
+
+            <TabItem>
+
+                <TabItem.Header>
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <TextBlock Text="⚛️" FontSize="18" Margin="0,0,8,0"/>
+
+                        <TextBlock Text="Cấu trúc" Style="{StaticResource TabHeaderStyle}"/>
+
+                    </StackPanel>
+
+                </TabItem.Header>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,35" Background="White">
+
+                    <StackPanel>
+
+                        <TextBlock Text="⚛️ Cấu hình electron" Style="{StaticResource SectionTitleStyle}"/>
+
+
+
+                        <!-- Electron Configuration Box -->
+
+                        <Border Background="#EEF2FF" 
+
+                                CornerRadius="12" 
+
+                                Padding="25"
+
+                                Margin="0,0,0,25">
+
+                            <StackPanel>
+
+                                <TextBlock Text="Cấu hình đầy đủ" 
+
+                                           FontSize="16"
+
+                                           FontWeight="SemiBold"
+
+                                           Foreground="#667EEA"
+
+                                           Margin="0,0,0,12"/>
+
+                                <TextBlock Text="{Binding CurrentElement.ElectronConfig, FallbackValue=1s¹}"
+
+                                           FontSize="32"
+
+                                           FontWeight="Bold"
+
+                                           Foreground="#333333"
+
+                                           FontFamily="Cambria Math, Segoe UI"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Atomic Structure Visualization -->
+
+                        <TextBlock Text="🔬 Mô hình cấu trúc nguyên tử" 
+
+                                   FontSize="16"
+
+                                   FontWeight="SemiBold"
+
+                                   Foreground="#667EEA"
+
+                                   Margin="0,10,0,15"/>
+
+
+
+                        <Border Background="#F8F9FA" 
+
+                                BorderBrush="#667EEA"
+
+                                BorderThickness="2"
+
+                                CornerRadius="12" 
+
+                                Padding="40"
+
+                                Margin="0,0,0,30"
+
+                                HorizontalAlignment="Center">
+
+                            <StackPanel HorizontalAlignment="Center">
+
+                                <!-- Title -->
+
+                                <TextBlock Text="Phân bố electron theo lớp" 
+
+                                           FontSize="14"
+
+                                           FontWeight="SemiBold"
+
+                                           Foreground="#667EEA"
+
+                                           HorizontalAlignment="Center"
+
+                                           Margin="0,0,0,20"/>
+
+                                
+
+                                <!-- Nucleus -->
+
+                                <Border Background="#667EEA" 
+
+                                        CornerRadius="30" 
+
+                                        Width="60" 
+
+                                        Height="60"
+
+                                        HorizontalAlignment="Center"
+
+                                        Margin="0,0,0,20">
+
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                                        <TextBlock Text="⚛️" 
+
+                                                   FontSize="24" 
+
+                                                   HorizontalAlignment="Center"
+
+                                                   Foreground="White"/>
+
+                                        <TextBlock Text="Hạt nhân" 
+
+                                                   FontSize="10" 
+
+                                                   HorizontalAlignment="Center"
+
+                                                   Foreground="White"
+
+                                                   FontWeight="Bold"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+
+
+                                <!-- Electron Shells Visualization -->
+
+                                <StackPanel Name="ElectronShellsPanel" HorizontalAlignment="Center">
+
+                                    <!-- Dynamic content will be generated in code-behind -->
+
+                                </StackPanel>
+
+
+
+                                <!-- Legend -->
+
+                                <Border Background="#FFF3CD" 
+
+                                        CornerRadius="8" 
+
+                                        Padding="15,10"
+
+                                        Margin="0,20,0,0"
+
+                                        BorderBrush="#FFC107"
+
+                                        BorderThickness="1">
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="📌 Chú thích:" 
+
+                                                   FontSize="12" 
+
+                                                   FontWeight="Bold"
+
+                                                   Foreground="#856404"
+
+                                                   Margin="0,0,0,5"/>
+
+                                        <TextBlock FontSize="11" Foreground="#856404">
+
+                                            <Run Text="○ = Electron trên lớp vỏ"/>
+
+                                            <LineBreak/>
+
+                                            <Run Text="Vòng tròn đồng tâm K, L, M, N... biểu diễn các lớp electron"/>
+
+                                        </TextBlock>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Orbital Diagram Section -->
+
+                        <TextBlock Text="📦 Orbital Diagram (Sơ đồ hộp electron)" 
+
+                                   FontSize="16"
+
+                                   FontWeight="SemiBold"
+
+                                   Foreground="#667EEA"
+
+                                   Margin="0,10,0,15"/>
+
+
+
+                        <Border Background="White" 
+
+                                BorderBrush="#E0E0E0"
+
+                                BorderThickness="1"
+
+                                CornerRadius="12" 
+
+                                Padding="30"
+
+                                Margin="0,0,0,30">
+
+                            <StackPanel>
+
+                                <!-- Electron Config Breakdown -->
+
+                                <TextBlock Text="{Binding CurrentElement.ElectronConfig, FallbackValue=1s¹}"
+
+                                           FontSize="18"
+
+                                           FontWeight="Bold"
+
+                                           Foreground="#667EEA"
+
+                                           FontFamily="Cambria Math, Segoe UI"
+
+                                           HorizontalAlignment="Center"
+
+                                           Margin="0,0,0,20"/>
+
+
+
+                                <!-- Orbital Boxes Example -->
+
+                                <StackPanel Margin="0,0,0,15">
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+
+                                        <TextBlock Text="1s:" 
+
+                                                   FontSize="14" 
+
+                                                   FontWeight="Bold"
+
+                                                   Width="40"
+
+                                                   Foreground="#333333"
+
+                                                   VerticalAlignment="Center"/>
+
+                                        <Border BorderBrush="#667EEA" 
+
+                                                BorderThickness="2"
+
+                                                Width="50" 
+
+                                                Height="50"
+
+                                                Margin="5,0">
+
+                                            <TextBlock Text="↑↓" 
+
+                                                       FontSize="20"
+
+                                                       HorizontalAlignment="Center"
+
+                                                       VerticalAlignment="Center"
+
+                                                       Foreground="#667EEA"
+
+                                                       FontWeight="Bold"/>
+
+                                        </Border>
+
+                                    </StackPanel>
+
+
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+
+                                        <TextBlock Text="2s:" 
+
+                                                   FontSize="14" 
+
+                                                   FontWeight="Bold"
+
+                                                   Width="40"
+
+                                                   Foreground="#333333"
+
+                                                   VerticalAlignment="Center"/>
+
+                                        <Border BorderBrush="#667EEA" 
+
+                                                BorderThickness="2"
+
+                                                Width="50" 
+
+                                                Height="50"
+
+                                                Margin="5,0">
+
+                                            <TextBlock Text="↑↓" 
+
+                                                       FontSize="20"
+
+                                                       HorizontalAlignment="Center"
+
+                                                       VerticalAlignment="Center"
+
+                                                       Foreground="#667EEA"
+
+                                                       FontWeight="Bold"/>
+
+                                        </Border>
+
+                                    </StackPanel>
+
+
+
+                                    <StackPanel Orientation="Horizontal">
+
+                                        <TextBlock Text="2p:" 
+
+                                                   FontSize="14" 
+
+                                                   FontWeight="Bold"
+
+                                                   Width="40"
+
+                                                   Foreground="#333333"
+
+                                                   VerticalAlignment="Center"/>
+
+                                        <Border BorderBrush="#667EEA" 
+
+                                                BorderThickness="2"
+
+                                                Width="50" 
+
+                                                Height="50"
+
+                                                Margin="5,0">
+
+                                            <TextBlock Text="↑↓" 
+
+                                                       FontSize="20"
+
+                                                       HorizontalAlignment="Center"
+
+                                                       VerticalAlignment="Center"
+
+                                                       Foreground="#667EEA"
+
+                                                       FontWeight="Bold"/>
+
+                                        </Border>
+
+                                        <Border BorderBrush="#667EEA" 
+
+                                                BorderThickness="2"
+
+                                                Width="50" 
+
+                                                Height="50"
+
+                                                Margin="5,0">
+
+                                            <TextBlock Text="↑↓" 
+
+                                                       FontSize="20"
+
+                                                       HorizontalAlignment="Center"
+
+                                                       VerticalAlignment="Center"
+
+                                                       Foreground="#667EEA"
+
+                                                       FontWeight="Bold"/>
+
+                                        </Border>
+
+                                        <Border BorderBrush="#667EEA" 
+
+                                                BorderThickness="2"
+
+                                                Width="50" 
+
+                                                Height="50"
+
+                                                Margin="5,0">
+
+                                            <TextBlock Text="↑ " 
+
+                                                       FontSize="20"
+
+                                                       HorizontalAlignment="Center"
+
+                                                       VerticalAlignment="Center"
+
+                                                       Foreground="#667EEA"
+
+                                                       FontWeight="Bold"/>
+
+                                        </Border>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+
+
+                                <!-- Legend for arrows -->
+
+                                <Border Background="#E8F5E9" 
+
+                                        CornerRadius="8" 
+
+                                        Padding="15,10"
+
+                                        BorderBrush="#4CAF50"
+
+                                        BorderThickness="1">
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="🔑 Ký hiệu:" 
+
+                                                   FontSize="12" 
+
+                                                   FontWeight="Bold"
+
+                                                   Foreground="#2E7D32"
+
+                                                   Margin="0,0,0,5"/>
+
+                                        <TextBlock FontSize="11" Foreground="#2E7D32">
+
+                                            <Run Text="↑ = Electron spin lên"/>
+
+                                            <LineBreak/>
+
+                                            <Run Text="↓ = Electron spin xuống"/>
+
+                                            <LineBreak/>
+
+                                            <Run Text="↑↓ = Cặp electron (electron pairing)"/>
+
+                                            <LineBreak/>
+
+                                            <Run Text="□ = Orbital (mỗi orbital chứa tối đa 2 electron)"/>
+
+                                        </TextBlock>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Detailed Electron Distribution Table -->
+
+                        <TextBlock Text="📊 Bảng phân bố chi tiết" 
+
+                                   FontSize="16"
+
+                                   FontWeight="SemiBold"
+
+                                   Foreground="#667EEA"
+
+                                   Margin="0,0,0,15"/>
+
+
+
+                        <Border Background="White" 
+
+                                CornerRadius="12" 
+
+                                BorderThickness="1"
+
+                                BorderBrush="#E0E0E0"
+
+                                Margin="0,0,0,25">
+
+                            <Grid>
+
+                                <Grid.RowDefinitions>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                </Grid.RowDefinitions>
+
+
+
+                                <!-- Table Header -->
+
+                                <Border Grid.Row="0" 
+
+                                        Background="#667EEA" 
+
+                                        CornerRadius="12,12,0,0"
+
+                                        Padding="20,15">
+
+                                    <Grid>
+
+                                        <Grid.ColumnDefinitions>
+
+                                            <ColumnDefinition Width="1*"/>
+
+                                            <ColumnDefinition Width="1.5*"/>
+
+                                            <ColumnDefinition Width="1.5*"/>
+
+                                            <ColumnDefinition Width="1*"/>
+
+                                        </Grid.ColumnDefinitions>
+
+
+
+                                        <TextBlock Grid.Column="0" Text="Lớp" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
+
+                                        <TextBlock Grid.Column="1" Text="Phân lớp" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
+
+                                        <TextBlock Grid.Column="2" Text="Orbital" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
+
+                                        <TextBlock Grid.Column="3" Text="Electron" FontWeight="SemiBold" FontSize="14" Foreground="White" HorizontalAlignment="Center"/>
+
+                                    </Grid>
+
+                                </Border>
+
+
+
+                                <!-- Table Rows - Example data -->
+
+                                <StackPanel Grid.Row="1">
+
+                                    <!-- Row 1: K shell -->
+
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="#E0E0E0" Padding="20,15" Background="#F9FAFB">
+
+                                        <Grid>
+
+                                            <Grid.ColumnDefinitions>
+
+                                                <ColumnDefinition Width="1*"/>
+
+                                                <ColumnDefinition Width="1.5*"/>
+
+                                                <ColumnDefinition Width="1.5*"/>
+
+                                                <ColumnDefinition Width="1*"/>
+
+                                            </Grid.ColumnDefinitions>
+
+
+
+                                            <TextBlock Grid.Column="0" Text="K" FontSize="14" FontWeight="Bold" Foreground="#333333" VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="1" Text="1s" FontSize="14" Foreground="#333333" VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="2" Text="1s" FontSize="14" Foreground="#333333" VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="3" Text="2" FontSize="14" Foreground="#333333" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                                        </Grid>
+
+                                    </Border>
+
+
+
+                                    <!-- Row 2: L shell -->
+
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="#E0E0E0" Padding="20,15">
+
+                                        <Grid>
+
+                                            <Grid.ColumnDefinitions>
+
+                                                <ColumnDefinition Width="1*"/>
+
+                                                <ColumnDefinition Width="1.5*"/>
+
+                                                <ColumnDefinition Width="1.5*"/>
+
+                                                <ColumnDefinition Width="1*"/>
+
+                                            </Grid.ColumnDefinitions>
+
+
+
+                                            <TextBlock Grid.Column="0" Text="L" FontSize="14" FontWeight="Bold" Foreground="#333333" VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="1" Text="2s, 2p" FontSize="14" Foreground="#333333" VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="2" Text="..." FontSize="14" Foreground="#999999" VerticalAlignment="Center"/>
+
+                                            <TextBlock Grid.Column="3" Text="..." FontSize="14" Foreground="#999999" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                                        </Grid>
+
+                                    </Border>
+
+                                </StackPanel>
+
+                            </Grid>
+
+                        </Border>
+
+
+
+                        <!-- Info Box with Valence Electron Information -->
+
+                        <Border Background="#D1ECF1" 
+
+                                BorderBrush="#17A2B8"
+
+                                BorderThickness="0,0,0,4"
+
+                                CornerRadius="10" 
+
+                                Padding="25"
+
+                                Margin="0,0,0,0">
+
+                            <StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+
+                                    <TextBlock Text="💡" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+
+                                    <TextBlock Text="Giải thích" 
+
+                                               FontSize="18" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#0C5460"
+
+                                               VerticalAlignment="Center"/>
+
+                                </StackPanel>
+
+
+
+                                <StackPanel>
+
+                                    <TextBlock FontSize="15" 
+
+                                               Foreground="#0C5460" 
+
+                                               TextWrapping="Wrap"
+
+                                               LineHeight="24"
+
+                                               Margin="0,0,0,10">
+
+                                        <Run Text="Số electron hóa trị:" FontWeight="Bold"/>
+
+                                        <Run Text=" "/>
+
+                                        <Run Text="{Binding CurrentElement.Valence}"/>
+
+                                    </TextBlock>
+
+
+
+                                    <TextBlock FontSize="15" 
+
+                                               Foreground="#0C5460" 
+
+                                               TextWrapping="Wrap"
+
+                                               LineHeight="24"
+
+                                               Margin="0,0,0,15">
+
+                                        <Run Text="Hóa trị phổ biến:" FontWeight="Bold"/>
+
+                                        <Run Text=" "/>
+
+                                        <Run Text="{Binding CurrentElement.OxidationStates}"/>
+
+                                    </TextBlock>
+
+
+
+                                    <TextBlock Text="{Binding CurrentElement.ElectronBehaviorDescription}"
+
+                                               FontSize="15" 
+
+                                               Foreground="#0C5460" 
+
+                                               TextWrapping="Wrap"
+
+                                               LineHeight="24"/>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+            </TabItem>
+
+            
+
+            <!-- TAB 3: VẬT LÝ -->
+
+            <TabItem>
+
+                <TabItem.Header>
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <TextBlock Text="⚛️" FontSize="18" Margin="0,0,8,0"/>
+
+                        <TextBlock Text="Vật lý" Style="{StaticResource TabHeaderStyle}"/>
+
+                    </StackPanel>
+
+                </TabItem.Header>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,35" Background="White">
+
+                    <StackPanel>
+
+                        <TextBlock Text="📊 Tính chất vật lý" Style="{StaticResource SectionTitleStyle}"/>
+
+
+
+                        <!-- Physical Properties Grid - 3 columns × 2 rows -->
+
+                        <Grid Margin="0,0,0,0">
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="Auto"/>
+
+                            </Grid.RowDefinitions>
+
+
+
+                            <!-- Row 1: Melting Point -->
+
+                            <Border Grid.Row="0" Grid.Column="0" 
+
+                                    Background="#F3F4F6" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="25,20"
+
+                                    Margin="0,0,10,10">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Điểm nóng chảy" 
+
+                                               FontSize="14" 
+
+                                               Foreground="#6B7280"
+
+                                               Margin="0,0,0,10"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.MeltingPointDisplay}" 
+
+                                               FontSize="28" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#1F2937"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Row 1: Boiling Point -->
+
+                            <Border Grid.Row="0" Grid.Column="1" 
+
+                                    Background="#F3F4F6" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="25,20"
+
+                                    Margin="5,0,5,10">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Điểm sôi" 
+
+                                               FontSize="14" 
+
+                                               Foreground="#6B7280"
+
+                                               Margin="0,0,0,10"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.BoilingPointDisplay}" 
+
+                                               FontSize="28" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#1F2937"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Row 1: Density -->
+
+                            <Border Grid.Row="0" Grid.Column="2" 
+
+                                    Background="#F3F4F6" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="25,20"
+
+                                    Margin="10,0,0,10">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Khối lượng riêng" 
+
+                                               FontSize="14" 
+
+                                               Foreground="#6B7280"
+
+                                               Margin="0,0,0,10"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.DensityDisplay}" 
+
+                                               FontSize="28" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#1F2937"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Row 2: Electronegativity -->
+
+                            <Border Grid.Row="1" Grid.Column="0" 
+
+                                    Background="#F3F4F6" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="25,20"
+
+                                    Margin="0,0,10,0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Độ âm điện" 
+
+                                               FontSize="14" 
+
+                                               Foreground="#6B7280"
+
+                                               Margin="0,0,0,10"/>
+
+                                    <TextBlock FontSize="28" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#1F2937">
+
+                                        <Run Text="{Binding CurrentElement.Electronegativity, StringFormat={}{0:F2}, FallbackValue=2.20}"/>
+
+                                        <Run Text=" (Pauling)" FontSize="14" Foreground="#9CA3AF"/>
+
+                                    </TextBlock>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Row 2: Ionization Energy -->
+
+                            <Border Grid.Row="1" Grid.Column="1" 
+
+                                    Background="#F3F4F6" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="25,20"
+
+                                    Margin="5,0,5,0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Năng lượng ion hóa" 
+
+                                               FontSize="14" 
+
+                                               Foreground="#6B7280"
+
+                                               Margin="0,0,0,10"/>
+
+                                    <TextBlock FontSize="28" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#1F2937">
+
+                                        <Run Text="{Binding CurrentElement.IonizationEnergies[0], StringFormat={}{0:F0}, FallbackValue=1312}"/>
+
+                                        <Run Text=" kJ/mol" FontSize="14" Foreground="#9CA3AF"/>
+
+                                    </TextBlock>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Row 2: Atomic Radius -->
+
+                            <Border Grid.Row="1" Grid.Column="2" 
+
+                                    Background="#F3F4F6" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="25,20"
+
+                                    Margin="10,0,0,0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Bán kính nguyên tử" 
+
+                                               FontSize="14" 
+
+                                               Foreground="#6B7280"
+
+                                               Margin="0,0,0,10"/>
+
+                                    <TextBlock FontSize="28" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#1F2937">
+
+                                        <Run Text="{Binding CurrentElement.AtomicRadius, FallbackValue=53}"/>
+
+                                        <Run Text=" pm" FontSize="16" Foreground="#9CA3AF"/>
+
+                                    </TextBlock>
+
+                                </StackPanel>
+
+                            </Border>
+
+                        </Grid>
+
+
+
+                        <!-- Special Physical Properties Section -->
+
+                        <TextBlock Text="📌 Tính chất vật lý đặc biệt" 
+
+                                   Style="{StaticResource SectionTitleStyle}"
+
+                                   Margin="0,40,0,20"/>
+
+
+
+                        <ItemsControl ItemsSource="{Binding CurrentElement.SpecialPhysicalProperties}">
+
+                            <ItemsControl.ItemTemplate>
+
+                                <DataTemplate>
+
+                                    <Border Background="#F9FAFB" 
+
+                                            CornerRadius="12" 
+
+                                            Padding="20"
+
+                                            Margin="0,0,0,15">
+
+                                        <StackPanel Orientation="Horizontal">
+
+                                            <!-- Icon -->
+
+                                            <TextBlock Text="{Binding Icon}" 
+
+                                                       FontSize="40"
+
+                                                       VerticalAlignment="Top"
+
+                                                       Margin="0,0,20,0"/>
+
+                                            
+
+                                            <!-- Content -->
+
+                                            <StackPanel VerticalAlignment="Center">
+
+                                                <TextBlock Text="{Binding Title}" 
+
+                                                           FontSize="16" 
+
+                                                           FontWeight="Bold"
+
+                                                           Foreground="#1F2937"
+
+                                                           Margin="0,0,0,8"/>
+
+                                                <TextBlock Text="{Binding Description}" 
+
+                                                           FontSize="14" 
+
+                                                           Foreground="#4B5563"
+
+                                                           TextWrapping="Wrap"
+
+                                                           LineHeight="20"/>
+
+                                            </StackPanel>
+
+                                        </StackPanel>
+
+                                    </Border>
+
+                                </DataTemplate>
+
+                            </ItemsControl.ItemTemplate>
+
+                        </ItemsControl>
+
+
+
+                        <!-- Phase Diagram Section -->
+
+                        <TextBlock Text="🌡️ Biểu đồ pha (Phase Diagram)" 
+
+                                   Style="{StaticResource SectionTitleStyle}"
+
+                                   Margin="0,40,0,20"/>
+
+
+
+                        <Border Background="White" 
+
+                                BorderBrush="#E0E0E0"
+
+                                BorderThickness="1"
+
+                                CornerRadius="12" 
+
+                                Padding="40,30"
+
+                                Margin="0,0,0,30">
+
+                            <StackPanel>
+
+                                <!-- Temperature Scale -->
+
+                                <Grid Margin="0,0,0,20">
+
+                                    <Grid.ColumnDefinitions>
+
+                                        <ColumnDefinition Width="*"/>
+
+                                        <ColumnDefinition Width="Auto"/>
+
+                                        <ColumnDefinition Width="*"/>
+
+                                        <ColumnDefinition Width="Auto"/>
+
+                                        <ColumnDefinition Width="*"/>
+
+                                    </Grid.ColumnDefinitions>
+
+
+
+                                    <!-- Solid Phase -->
+
+                                    <Border Grid.Column="0" 
+
+                                            Background="#DBEAFE" 
+
+                                            CornerRadius="8,0,0,8"
+
+                                            Padding="20,15">
+
+                                        <TextBlock Text="❄️ RẮN" 
+
+                                                   FontSize="16" 
+
+                                                   FontWeight="Bold"
+
+                                                   Foreground="#1E40AF"
+
+                                                   HorizontalAlignment="Center"/>
+
+                                    </Border>
+
+
+
+                                    <!-- MP Arrow -->
+
+                                    <StackPanel Grid.Column="1" 
+
+                                               VerticalAlignment="Center"
+
+                                               Margin="5,0">
+
+                                        <TextBlock Text="→" 
+
+                                                   FontSize="20" 
+
+                                                   Foreground="#667EEA"
+
+                                                   HorizontalAlignment="Center"/>
+
+                                        <Border Background="#EEF2FF" 
+
+                                                CornerRadius="4" 
+
+                                                Padding="8,4"
+
+                                                BorderBrush="#667EEA"
+
+                                                BorderThickness="1">
+
+                                            <TextBlock HorizontalAlignment="Center">
+
+                                                <Run Text="MP:" FontSize="10" Foreground="#667EEA" FontWeight="Bold"/>
+
+                                                <LineBreak/>
+
+                                                <Run Text="{Binding CurrentElement.MeltingPoint, StringFormat={}{0:F0}}" FontSize="12" Foreground="#667EEA" FontWeight="Bold"/>
+
+                                                <Run Text="°C" FontSize="10" Foreground="#667EEA"/>
+
+                                            </TextBlock>
+
+                                        </Border>
+
+                                    </StackPanel>
+
+
+
+                                    <!-- Liquid Phase -->
+
+                                    <Border Grid.Column="2" 
+
+                                            Background="#FEF3C7" 
+
+                                            Padding="20,15">
+
+                                        <TextBlock Text="💧 LỎNG" 
+
+                                                   FontSize="16" 
+
+                                                   FontWeight="Bold"
+
+                                                   Foreground="#92400E"
+
+                                                   HorizontalAlignment="Center"/>
+
+                                    </Border>
+
+
+
+                                    <!-- BP Arrow -->
+
+                                    <StackPanel Grid.Column="3" 
+
+                                               VerticalAlignment="Center"
+
+                                               Margin="5,0">
+
+                                        <TextBlock Text="→" 
+
+                                                   FontSize="20" 
+
+                                                   Foreground="#667EEA"
+
+                                                   HorizontalAlignment="Center"/>
+
+                                        <Border Background="#EEF2FF" 
+
+                                                CornerRadius="4" 
+
+                                                Padding="8,4"
+
+                                                BorderBrush="#667EEA"
+
+                                                BorderThickness="1">
+
+                                            <StackPanel HorizontalAlignment="Center">
+
+                                                <TextBlock Text="BP:" FontSize="10" Foreground="#667EEA" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+                                                <TextBlock FontSize="12" Foreground="#667EEA" FontWeight="Bold" HorizontalAlignment="Center">
+
+                                                    <TextBlock.Text>
+
+                                                        <MultiBinding Converter="{StaticResource ValueWithUnitConverter}" ConverterParameter="F0">
+
+                                                            <Binding Path="CurrentElement.BoilingPoint"/>
+
+                                                            <Binding Path="CurrentElement.BoilingPointUnit"/>
+
+                                                            <Binding Path="CurrentElement.BoilingPointComparisonPrefix"/>
+
+                                                            <Binding Path="CurrentElement.BoilingPointStatus"/>
+
+                                                        </MultiBinding>
+
+                                                    </TextBlock.Text>
+
+                                                </TextBlock>
+
+                                            </StackPanel>
+
+                                        </Border>
+
+                                    </StackPanel>
+
+
+
+                                    <!-- Gas Phase -->
+
+                                    <Border Grid.Column="4" 
+
+                                            Background="#FEE2E2" 
+
+                                            CornerRadius="0,8,8,0"
+
+                                            Padding="20,15">
+
+                                        <TextBlock Text="☁️ KHÍ" 
+
+                                                   FontSize="16" 
+
+                                                   FontWeight="Bold"
+
+                                                   Foreground="#991B1B"
+
+                                                   HorizontalAlignment="Center"/>
+
+                                    </Border>
+
+                                </Grid>
+
+
+
+                                <!-- STP Indicator -->
+
+                                <Border Background="#F0FDF4" 
+
+                                        CornerRadius="8" 
+
+                                        Padding="15,10"
+
+                                        BorderBrush="#16A34A"
+
+                                        BorderThickness="1">
+
+                                    <StackPanel Orientation="Horizontal" 
+
+                                               HorizontalAlignment="Center">
+
+                                        <TextBlock Text="📍" FontSize="16" Margin="0,0,8,0"/>
+
+                                        <TextBlock FontSize="14" Foreground="#166534">
+
+                                            <Run Text="Ở điều kiện tiêu chuẩn (STP: 0°C, 1 atm):" FontWeight="Bold"/>
+
+                                            <Run Text=" "/>
+
+                                            <Run Text="{Binding CurrentElement.PhaseAtSTP, FallbackValue=Khí}" FontWeight="Bold" Foreground="#16A34A"/>
+
+                                        </TextBlock>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Color Visualization Section -->
+
+                        <TextBlock Text="🎨 Màu sắc nguyên tố" 
+
+                                   Style="{StaticResource SectionTitleStyle}"
+
+                                   Margin="0,0,0,20"/>
+
+
+
+                        <Border Background="White" 
+
+                                BorderBrush="#E0E0E0"
+
+                                BorderThickness="1"
+
+                                CornerRadius="12" 
+
+                                Padding="30"
+
+                                Margin="0,0,0,30"
+
+                                HorizontalAlignment="Center">
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                                <!-- Color Swatch -->
+
+                                <Border Width="100" 
+
+                                        Height="100"
+
+                                        CornerRadius="12"
+
+                                        BorderBrush="#999999"
+
+                                        BorderThickness="2"
+
+                                        Margin="0,0,20,0">
+
+                                    <Border.Background>
+
+                                        <SolidColorBrush Color="{Binding CurrentElement.ColorHex, FallbackValue=#FFFFFF}"/>
+
+                                    </Border.Background>
+
+                                    <TextBlock Text="💎" 
+
+                                               FontSize="40"
+
+                                               HorizontalAlignment="Center"
+
+                                               VerticalAlignment="Center"/>
+
+                                </Border>
+
+
+
+                                <!-- Color Info -->
+
+                                <StackPanel VerticalAlignment="Center">
+
+                                    <TextBlock Text="Màu sắc:" 
+
+                                               FontSize="14" 
+
+                                               Foreground="#666666"
+
+                                               Margin="0,0,0,8"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.Color, FallbackValue=Không màu}" 
+
+                                               FontSize="24" 
+
+                                               FontWeight="Bold"
+
+                                               Foreground="#333333"
+
+                                               Margin="0,0,0,15"/>
+
+                                    
+
+                                    <Border Background="#F3F4F6" 
+
+                                            CornerRadius="6" 
+
+                                            Padding="12,8">
+
+                                        <StackPanel>
+
+                                            <TextBlock FontSize="12" 
+
+                                                       Foreground="#666666"
+
+                                                       Margin="0,0,0,4">
+
+                                                <Run Text="💡 VD:"/>
+
+                                            </TextBlock>
+
+                                            <TextBlock FontSize="11" Foreground="#666666">
+
+                                                <Run Text="• Vàng → Lưu huỳnh (S)"/>
+
+                                                <LineBreak/>
+
+                                                <Run Text="• Đỏ nâu → Bromine (Br)"/>
+
+                                            </TextBlock>
+
+                                        </StackPanel>
+
+                                    </Border>
+
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Comparison Bar Chart Section -->
+
+                        <TextBlock Text="📊 So sánh với nguyên tố khác trong nhóm" 
+
+                                   Style="{StaticResource SectionTitleStyle}"
+
+                                   Margin="0,0,0,20"/>
+
+
+
+                        <Border Background="White" 
+
+                                BorderBrush="#E0E0E0"
+
+                                BorderThickness="1"
+
+                                CornerRadius="12" 
+
+                                Padding="30"
+
+                                Margin="0,0,0,30">
+
+                            <StackPanel>
+
+                                <!-- Chart Title -->
+
+                                <TextBlock Text="Biểu đồ so sánh tính chất vật lý" 
+
+                                           FontSize="16"
+
+                                           FontWeight="SemiBold"
+
+                                           Foreground="#667EEA"
+
+                                           HorizontalAlignment="Center"
+
+                                           Margin="0,0,0,25"/>
+
+
+
+                                <!-- Melting Point Comparison -->
+
+                                <StackPanel Margin="0,0,0,20">
+
+                                    <TextBlock Text="Điểm nóng chảy (°C)" 
+
+                                               FontSize="14"
+
+                                               FontWeight="SemiBold"
+
+                                               Foreground="#333333"
+
+                                               Margin="0,0,0,10"/>
+
+                                    
+
+                                    <Grid>
+
+                                        <Grid.ColumnDefinitions>
+
+                                            <ColumnDefinition Width="Auto"/>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                        </Grid.ColumnDefinitions>
+
+
+
+                                        <TextBlock Grid.Column="0" 
+
+                                                   Text="{Binding CurrentElement.Symbol}" 
+
+                                                   FontSize="14"
+
+                                                   FontWeight="Bold"
+
+                                                   Foreground="#667EEA"
+
+                                                   Width="40"
+
+                                                   VerticalAlignment="Center"/>
+
+
+
+                                        <Grid Grid.Column="1">
+
+                                            <Border Background="#F3F4F6" 
+
+                                                    Height="30" 
+
+                                                    CornerRadius="4"/>
+
+                                            <Border Background="#667EEA" 
+
+                                                    Height="30" 
+
+                                                    CornerRadius="4"
+
+                                                    HorizontalAlignment="Left"
+
+                                                    Width="200">
+
+                                                <TextBlock FontSize="12"
+
+                                                           FontWeight="Bold"
+
+                                                           Foreground="White"
+
+                                                           VerticalAlignment="Center"
+
+                                                           Margin="10,0">
+
+                                                    <TextBlock.Text>
+
+                                                        <MultiBinding Converter="{StaticResource ValueWithUnitConverter}" ConverterParameter="F1">
+
+                                                            <Binding Path="CurrentElement.MeltingPoint"/>
+
+                                                            <Binding Path="CurrentElement.MeltingPointUnit"/>
+
+                                                        </MultiBinding>
+
+                                                    </TextBlock.Text>
+
+                                                </TextBlock>
+
+                                            </Border>
+
+                                        </Grid>
+
+                                    </Grid>
+
+                                </StackPanel>
+
+
+
+                                <!-- Boiling Point Comparison -->
+
+                                <StackPanel Margin="0,0,0,20">
+
+                                    <TextBlock Text="Điểm sôi (°C)" 
+
+                                               FontSize="14"
+
+                                               FontWeight="SemiBold"
+
+                                               Foreground="#333333"
+
+                                               Margin="0,0,0,10"/>
+
+                                    
+
+                                    <Grid>
+
+                                        <Grid.ColumnDefinitions>
+
+                                            <ColumnDefinition Width="Auto"/>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                        </Grid.ColumnDefinitions>
+
+
+
+                                        <TextBlock Grid.Column="0" 
+
+                                                   Text="{Binding CurrentElement.Symbol}" 
+
+                                                   FontSize="14"
+
+                                                   FontWeight="Bold"
+
+                                                   Foreground="#667EEA"
+
+                                                   Width="40"
+
+                                                   VerticalAlignment="Center"/>
+
+
+
+                                        <Grid Grid.Column="1">
+
+                                            <Border Background="#F3F4F6" 
+
+                                                    Height="30" 
+
+                                                    CornerRadius="4"/>
+
+                                            <Border Background="#10B981" 
+
+                                                    Height="30" 
+
+                                                    CornerRadius="4"
+
+                                                    HorizontalAlignment="Left"
+
+                                                    Width="220">
+
+                                                <TextBlock FontSize="12"
+
+                                                           FontWeight="Bold"
+
+                                                           Foreground="White"
+
+                                                           VerticalAlignment="Center"
+
+                                                           Margin="10,0">
+
+                                                    <TextBlock.Text>
+
+                                                        <MultiBinding Converter="{StaticResource ValueWithUnitConverter}" ConverterParameter="F1">
+
+                                                            <Binding Path="CurrentElement.BoilingPoint"/>
+
+                                                            <Binding Path="CurrentElement.BoilingPointUnit"/>
+
+                                                            <Binding Path="CurrentElement.BoilingPointComparisonPrefix"/>
+
+                                                            <Binding Path="CurrentElement.BoilingPointStatus"/>
+
+                                                        </MultiBinding>
+
+                                                    </TextBlock.Text>
+
+                                                </TextBlock>
+
+                                            </Border>
+
+                                        </Grid>
+
+                                    </Grid>
+
+                                </StackPanel>
+
+
+
+                                <!-- Density Comparison -->
+
+                                <StackPanel>
+
+                                    <TextBlock Text="Khối lượng riêng (g/L)" 
+
+                                               FontSize="14"
+
+                                               FontWeight="SemiBold"
+
+                                               Foreground="#333333"
+
+                                               Margin="0,0,0,10"/>
+
+                                    
+
+                                    <Grid>
+
+                                        <Grid.ColumnDefinitions>
+
+                                            <ColumnDefinition Width="Auto"/>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                        </Grid.ColumnDefinitions>
+
+
+
+                                        <TextBlock Grid.Column="0" 
+
+                                                   Text="{Binding CurrentElement.Symbol}" 
+
+                                                   FontSize="14"
+
+                                                   FontWeight="Bold"
+
+                                                   Foreground="#667EEA"
+
+                                                   Width="40"
+
+                                                   VerticalAlignment="Center"/>
+
+
+
+                                        <Grid Grid.Column="1">
+
+                                            <Border Background="#F3F4F6" 
+
+                                                    Height="30" 
+
+                                                    CornerRadius="4"/>
+
+                                            <Border Background="#F59E0B" 
+
+                                                    Height="30" 
+
+                                                    CornerRadius="4"
+
+                                                    HorizontalAlignment="Left"
+
+                                                    Width="80">
+
+                                                <TextBlock FontSize="12"
+
+                                                           FontWeight="Bold"
+
+                                                           Foreground="White"
+
+                                                           VerticalAlignment="Center"
+
+                                                           Margin="10,0">
+
+                                                    <TextBlock.Text>
+
+                                                        <MultiBinding Converter="{StaticResource ValueWithUnitConverter}" ConverterParameter="F2">
+
+                                                            <Binding Path="CurrentElement.Density"/>
+
+                                                            <Binding Path="CurrentElement.DensityUnit"/>
+
+                                                        </MultiBinding>
+
+                                                    </TextBlock.Text>
+
+                                                </TextBlock>
+
+                                            </Border>
+
+                                        </Grid>
+
+                                    </Grid>
+
+                                </StackPanel>
+
+
+
+                                <!-- Note -->
+
+                                <Border Background="#FEF3C7" 
+
+                                        CornerRadius="8" 
+
+                                        Padding="15,10"
+
+                                        Margin="0,20,0,0"
+
+                                        BorderBrush="#F59E0B"
+
+                                        BorderThickness="1">
+
+                                    <TextBlock FontSize="12" Foreground="#92400E">
+
+                                        <Run Text="📌 Ghi chú:" FontWeight="Bold"/>
+
+                                        <Run Text=" Chiều dài thanh bar tương ứng với giá trị tuyệt đối của từng tính chất."/>
+
+                                    </TextBlock>
+
+                                </Border>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+            </TabItem>
+
+
+
+            <!-- TAB 4: HÓA HỌC -->
+
+            <TabItem>
+
+                <TabItem.Header>
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <TextBlock Text="🧪" FontSize="18" Margin="0,0,8,0"/>
+
+                        <TextBlock Text="Hóa học" Style="{StaticResource TabHeaderStyle}"/>
+
+                    </StackPanel>
+
+                </TabItem.Header>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,35" Background="White">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Thuộc tính hóa học" Style="{StaticResource SectionTitleStyle}"/>
+
+
+
+                        <!-- Chemical Properties Grid -->
+
+                        <Grid Margin="0,0,0,30">
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="Auto"/>
+
+                            </Grid.RowDefinitions>
+
+
+
+                            <!-- Electronegativity -->
+
+                            <Border Grid.Row="0" Grid.Column="0" 
+
+                                    Background="White" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="20"
+
+                                    Margin="0,0,10,10"
+
+                                    BorderThickness="1"
+
+                                    BorderBrush="#E0E0E0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="⚡ Độ âm điện" Style="{StaticResource PropertyLabelStyle}" Foreground="#667EEA"/>
+
+                                    <TextBlock FontSize="28" FontWeight="Bold" Foreground="#667EEA" Margin="0,8,0,0">
+
+                                        <Run Text="{Binding CurrentElement.Electronegativity, StringFormat={}{0:F2}, FallbackValue=N/A}"/>
+
+                                        <Run Text=" (Pauling)" FontSize="14" Foreground="#999999"/>
+
+                                    </TextBlock>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <Border Grid.Row="0" Grid.Column="1" 
+
+                                    Background="White" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="20"
+
+                                    Margin="5,0,5,10"
+
+                                    BorderThickness="1"
+
+                                    BorderBrush="#E0E0E0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="🔋 Ái lực electron" Style="{StaticResource PropertyLabelStyle}" Foreground="#667EEA"/>
+
+                                    <TextBlock FontSize="24" FontWeight="Bold" Foreground="#667EEA" Margin="0,8,0,0">
+
+                                        <Run Text="{Binding CurrentElement.ElectronAffinity, StringFormat={}{0:F1}, FallbackValue=N/A}"/>
+
+                                        <Run Text=" kJ/mol" FontSize="13" Foreground="#999999"/>
+
+                                    </TextBlock>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <Border Grid.Row="0" Grid.Column="2" 
+
+                                    Background="White" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="20"
+
+                                    Margin="10,0,0,10"
+
+                                    BorderThickness="1"
+
+                                    BorderBrush="#E0E0E0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="⚛️ Năng lượng ion hóa I₁" Style="{StaticResource PropertyLabelStyle}" Foreground="#667EEA"/>
+
+                                    <TextBlock FontSize="24" FontWeight="Bold" Foreground="#667EEA" Margin="0,8,0,0">
+
+                                        <Run Text="{Binding CurrentElement.IonizationEnergies[0], StringFormat={}{0:F0}, FallbackValue=N/A}"/>
+
+                                        <Run Text=" kJ/mol" FontSize="13" Foreground="#999999"/>
+
+                                    </TextBlock>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <!-- Radii & Oxidation States -->
+
+                            <Border Grid.Row="1" Grid.Column="0" 
+
+                                    Background="#F3E5F5" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="20"
+
+                                    Margin="0,0,10,0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="📏 Bán kính nguyên tử" Style="{StaticResource PropertyLabelStyle}" Foreground="#7B1FA2"/>
+
+                                    <TextBlock FontSize="26" FontWeight="Bold" Foreground="#333333" Margin="0,8,0,0">
+
+                                        <Run Text="{Binding CurrentElement.AtomicRadius, FallbackValue=N/A}"/>
+
+                                        <Run Text=" pm" FontSize="15" Foreground="#666666"/>
+
+                                    </TextBlock>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <Border Grid.Row="1" Grid.Column="1" 
+
+                                    Background="#E8F5E9" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="20"
+
+                                    Margin="5,0,5,0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="🔗 Bán kính cộng hóa trị" Style="{StaticResource PropertyLabelStyle}" Foreground="#388E3C"/>
+
+                                    <TextBlock FontSize="26" FontWeight="Bold" Foreground="#333333" Margin="0,8,0,0">
+
+                                        <Run Text="{Binding CurrentElement.CovalentRadius, FallbackValue=N/A}"/>
+
+                                        <Run Text=" pm" FontSize="15" Foreground="#666666"/>
+
+                                    </TextBlock>
+
+                                </StackPanel>
+
+                            </Border>
+
+
+
+                            <Border Grid.Row="1" Grid.Column="2" 
+
+                                    Background="#FFF3E0" 
+
+                                    CornerRadius="12" 
+
+                                    Padding="20"
+
+                                    Margin="10,0,0,0">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="💫 Số oxi hóa" Style="{StaticResource PropertyLabelStyle}" Foreground="#F57C00"/>
+
+                                    <TextBlock Text="{Binding CurrentElement.OxidationStates, FallbackValue=N/A}" 
+
+                                               FontSize="22" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#333333" 
+
+                                               TextWrapping="Wrap"
+
+                                               Margin="0,8,0,0"/>
+
+                                </StackPanel>
+
+                            </Border>
+
+                        </Grid>
+
+
+
+                        <!-- Chemical Highlights Box -->
+
+                        <Border Background="#E8F5E9" 
+
+                                BorderBrush="#4CAF50"
+
+                                BorderThickness="2"
+
+                                CornerRadius="12" 
+
+                                Padding="25"
+
+                                Margin="0,10,0,30">
+
+                            <StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+
+                                    <TextBlock Text="💡" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+
+                                    <TextBlock Text="Đặc điểm nổi bật" 
+
+                                               FontSize="18" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#2E7D32"
+
+                                               VerticalAlignment="Center"/>
+
+                                </StackPanel>
+
+                                
+
+                                <ItemsControl ItemsSource="{Binding CurrentElement.ChemicalHighlights}">
+
+                                    <ItemsControl.ItemTemplate>
+
+                                        <DataTemplate>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+
+                                                <TextBlock Text="• " 
+
+                                                           FontSize="18" 
+
+                                                           Foreground="#2E7D32"
+
+                                                           FontWeight="Bold"
+
+                                                           VerticalAlignment="Top"/>
+
+                                                <TextBlock Text="{Binding}" 
+
+                                                           FontSize="15" 
+
+                                                           Foreground="#1B5E20"
+
+                                                           TextWrapping="Wrap"
+
+                                                           LineHeight="24"/>
+
+                                            </StackPanel>
+
+                                        </DataTemplate>
+
+                                    </ItemsControl.ItemTemplate>
+
+                                </ItemsControl>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Electronegativity Scale Visualization -->
+
+                        <TextBlock Text="📈 Thang độ âm điện" Style="{StaticResource SectionTitleStyle}" Margin="0,10,0,10"/>
+
+                        <Border Background="#FFFFFF" CornerRadius="12" BorderBrush="#E0E0E0" BorderThickness="1" Padding="20" Margin="0,0,0,20">
+
+                            <StackPanel>
+
+                                <TextBlock Text="So sánh độ âm điện với vài nguyên tố tham chiếu" FontSize="14" Foreground="#374151" Margin="0,0,0,12"/>
+
+                                <ItemsControl ItemsSource="{Binding CurrentElement.ElectronegativityComparisons}">
+
+                                    <ItemsControl.ItemTemplate>
+
+                                        <DataTemplate>
+
+                                            <Grid Margin="0,4">
+
+                                                <Grid.ColumnDefinitions>
+
+                                                    <ColumnDefinition Width="80"/>
+
+                                                    <ColumnDefinition Width="*"/>
+
+                                                    <ColumnDefinition Width="80"/>
+
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontWeight="Bold" Foreground="#667EEA" VerticalAlignment="Center"/>
+
+                                                <Grid Grid.Column="1" VerticalAlignment="Center">
+
+                                                    <Border Background="#F3F4F6" Height="18" CornerRadius="4"/>
+
+                                                    <Border Background="#4F46E5" Height="18" CornerRadius="4" HorizontalAlignment="Left" Width="{Binding Value, Converter={StaticResource MultiplierToWidthConverter}, ConverterParameter=40}"/>
+
+                                                </Grid>
+
+                                                <TextBlock Grid.Column="2" Text="{Binding Value, StringFormat={}{0:F2}}" Foreground="#111827" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+
+                                            </Grid>
+
+                                        </DataTemplate>
+
+                                    </ItemsControl.ItemTemplate>
+
+                                </ItemsControl>
+
+
+
+                                <!-- Textual compact scale (fallback) -->
+
+                                <TextBlock FontSize="13" Foreground="#6B7280" Margin="0,12,0,0">
+
+                                    <Run Text="Ví dụ: "/>
+
+                                    <Run Text="F (3.98)  >>>>  H (2.20)  >>  Li (0.98)" FontWeight="Bold"/>
+
+                                </TextBlock>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Typical Reactions Section -->
+
+                        <TextBlock Text="⚗️ Phản ứng điển hình" Style="{StaticResource SectionTitleStyle}" Margin="0,10,0,8"/>
+
+                        <Border Background="#FEF7E0" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,20">
+
+                            <ItemsControl ItemsSource="{Binding CurrentElement.TypicalReactions}">
+
+                                <ItemsControl.ItemTemplate>
+
+                                    <DataTemplate>
+
+                                        <StackPanel Orientation="Horizontal" Margin="0,4">
+
+                                            <TextBlock Text="• " FontSize="16" Margin="0,0,8,0"/>
+
+                                            <TextBlock Text="{Binding}" FontSize="14" Foreground="#4B5563" TextWrapping="Wrap"/>
+
+                                        </StackPanel>
+
+                                    </DataTemplate>
+
+                                </ItemsControl.ItemTemplate>
+
+                            </ItemsControl>
+
+                        </Border>
+
+
+
+                        <!-- Isotopes Section -->
+
+                        <TextBlock Text="🔬 Các đồng vị" Style="{StaticResource SectionTitleStyle}" Margin="0,10,0,15"/>
+
+
+
+                        <!-- Isotopes Table -->
+
+                        <Border Background="White" 
+
+                                CornerRadius="15" 
+
+                                BorderThickness="1"
+
+                                BorderBrush="#E0E0E0"
+
+                                Margin="0,0,0,25">
+
+                            <Grid>
+
+                                <Grid.RowDefinitions>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                </Grid.RowDefinitions>
+
+
+
+                                <!-- Table Header -->
+
+                                <Border Grid.Row="0" 
+
+                                        Background="#667EEA" 
+
+                                        CornerRadius="15,15,0,0"
+
+                                        Padding="20,15">
+
+                                    <Grid>
+
+                                        <Grid.ColumnDefinitions>
+
+                                            <ColumnDefinition Width="0.3*"/>
+
+                                            <ColumnDefinition Width="1.5*"/>
+
+                                            <ColumnDefinition Width="1.2*"/>
+
+                                            <ColumnDefinition Width="1*"/>
+
+                                            <ColumnDefinition Width="1*"/>
+
+                                            <ColumnDefinition Width="1*"/>
+
+                                            <ColumnDefinition Width="1.3*"/>
+
+                                            <ColumnDefinition Width="1.5*"/>
+
+                                        </Grid.ColumnDefinitions>
+
+
+
+                                        <TextBlock Grid.Column="0" Text="" FontWeight="SemiBold" FontSize="14" Foreground="White" HorizontalAlignment="Center"/>
+
+                                        <TextBlock Grid.Column="1" Text="Tên" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
+
+                                        <TextBlock Grid.Column="2" Text="Ký hiệu" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
+
+                                        <TextBlock Grid.Column="3" Text="Số khối" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
+
+                                        <TextBlock Grid.Column="4" Text="Số neutron" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
+
+                                        <TextBlock Grid.Column="5" Text="Độ phổ biến" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
+
+                                        <TextBlock Grid.Column="6" Text="Ứng dụng" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
+
+                                        <TextBlock Grid.Column="7" Text="Chu kỳ bán rã" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
+
+                                    </Grid>
+
+                                </Border>
+
+
+
+                                <!-- Table Rows -->
+
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding CurrentElement.Isotopes}">
+
+                                    <ItemsControl.ItemTemplate>
+
+                                        <DataTemplate>
+
+                                            <Border BorderThickness="0,0,0,1" BorderBrush="#E0E0E0" Padding="20,15">
+
+                                                <Border.Style>
+
+                                                    <Style TargetType="Border">
+
+                                                        <Style.Triggers>
+
+                                                            <DataTrigger Binding="{Binding IsStable}" Value="True">
+
+                                                                <Setter Property="Background" Value="#F0F9FF"/>
+
+                                                            </DataTrigger>
+
+                                                            <DataTrigger Binding="{Binding IsStable}" Value="False">
+
+                                                                <Setter Property="Background" Value="#FEF2F2"/>
+
+                                                            </DataTrigger>
+
+                                                        </Style.Triggers>
+
+                                                    </Style>
+
+                                                </Border.Style>
+
+                                                <Grid>
+
+                                                    <Grid.ColumnDefinitions>
+
+                                                        <ColumnDefinition Width="0.3*"/>
+
+                                                        <ColumnDefinition Width="1.5*"/>
+
+                                                        <ColumnDefinition Width="1.2*"/>
+
+                                                        <ColumnDefinition Width="1*"/>
+
+                                                        <ColumnDefinition Width="1*"/>
+
+                                                        <ColumnDefinition Width="1*"/>
+
+                                                        <ColumnDefinition Width="1.3*"/>
+
+                                                        <ColumnDefinition Width="1.5*"/>
+
+                                                    </Grid.ColumnDefinitions>
+
+
+
+                                                    <!-- Stability Indicator -->
+
+                                                    <TextBlock Grid.Column="0" 
+
+                                                               FontSize="16"
+
+                                                               VerticalAlignment="Center"
+
+                                                               HorizontalAlignment="Center">
+
+                                                        <TextBlock.Style>
+
+                                                            <Style TargetType="TextBlock">
+
+                                                                <Style.Triggers>
+
+                                                                    <DataTrigger Binding="{Binding IsStable}" Value="True">
+
+                                                                        <Setter Property="Text" Value="🟢"/>
+
+                                                                        <Setter Property="ToolTip" Value="Đồng vị bền"/>
+
+                                                                    </DataTrigger>
+
+                                                                    <DataTrigger Binding="{Binding IsStable}" Value="False">
+
+                                                                        <Setter Property="Text" Value="🔴"/>
+
+                                                                        <Setter Property="ToolTip" Value="Phóng xạ"/>
+
+                                                                    </DataTrigger>
+
+                                                                </Style.Triggers>
+
+                                                            </Style>
+
+                                                        </TextBlock.Style>
+
+                                                    </TextBlock>
+
+
+
+                                                    <TextBlock Grid.Column="1" 
+
+                                                               Text="{Binding Name}" 
+
+                                                               FontWeight="Bold" 
+
+                                                               FontSize="14" 
+
+                                                               Foreground="#333333"
+
+                                                               VerticalAlignment="Center"/>
+
+                                                    
+
+                                                    <TextBlock Grid.Column="2" 
+
+                                                               Text="{Binding Symbol}" 
+
+                                                               FontSize="14" 
+
+                                                               Foreground="#333333"
+
+                                                               VerticalAlignment="Center"/>
+
+                                                    
+
+                                                    <TextBlock Grid.Column="3" 
+
+                                                               Text="{Binding MassNumber}" 
+
+                                                               FontSize="14" 
+
+                                                               Foreground="#333333"
+
+                                                               HorizontalAlignment="Center"
+
+                                                               VerticalAlignment="Center"/>
+
+                                                    
+
+                                                    <TextBlock Grid.Column="4" 
+
+                                                               Text="{Binding Neutrons}" 
+
+                                                               FontSize="14" 
+
+                                                               Foreground="#333333"
+
+                                                               HorizontalAlignment="Center"
+
+                                                               VerticalAlignment="Center"/>
+
+                                                    
+
+                                                    <TextBlock Grid.Column="5" 
+
+                                                               Text="{Binding AbundanceText}" 
+
+                                                               FontSize="14" 
+
+                                                               Foreground="#333333"
+
+                                                               VerticalAlignment="Center"/>
+
+
+
+                                                    <TextBlock Grid.Column="6"
+
+                                                               Text="{Binding Application}"
+
+                                                               FontSize="14"
+
+                                                               Foreground="#333333"
+
+                                                               VerticalAlignment="Center"
+
+                                                               TextWrapping="Wrap"/>
+
+                                                    
+
+                                                    <TextBlock Grid.Column="7" 
+
+                                                               Text="{Binding HalfLife}" 
+
+                                                               FontSize="14" 
+
+                                                               Foreground="#333333"
+
+                                                               VerticalAlignment="Center"/>
+
+                                                </Grid>
+
+                                            </Border>
+
+                                        </DataTemplate>
+
+                                    </ItemsControl.ItemTemplate>
+
+                                </ItemsControl>
+
+                            </Grid>
+
+                        </Border>
+
+
+
+                        <!-- Warning Box: An toàn -->
+
+                        <Border Background="#FFF3CD" 
+
+                                BorderBrush="#FFC107"
+
+                                BorderThickness="0,0,0,4"
+
+                                CornerRadius="10" 
+
+                                Padding="25"
+
+                                Margin="0,0,0,25">
+
+                            <StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+
+                                    <TextBlock Text="⚠️" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+
+                                    <TextBlock Text="An toàn" 
+
+                                               FontSize="18" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#856404"
+
+                                               VerticalAlignment="Center"/>
+
+                                </StackPanel>
+
+                                
+
+                                <TextBlock Text="{Binding CurrentElement.SafetyHazards, FallbackValue='Hydro là chất dễ cháy nổ cực kỳ nguy hiểm. Khi trộn với không khí (tỷ lệ 4-75%) có thể gây nổ mạnh. Cần bảo quản trong bình chịu áp lực, tránh xa nguồn lửa và tia lửa điện. Sử dụng trong phòng thí nghiệm cần có hệ thống thông gió tốt.'}"
+
+                                           FontSize="15" 
+
+                                           Foreground="#856404" 
+
+                                           TextWrapping="Wrap"
+
+                                           LineHeight="26"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Info Box with Isotope Details -->
+
+                        <Border Background="#D1ECF1" 
+
+                                BorderBrush="#17A2B8"
+
+                                BorderThickness="0,0,0,4"
+
+                                CornerRadius="10" 
+
+                                Padding="25"
+
+                                Margin="0,0,0,0">
+
+                            <StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+
+                                    <TextBlock Text="💡" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+
+                                    <TextBlock Text="Thông tin thêm" 
+
+                                               FontSize="18" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#0C5460"
+
+                                               VerticalAlignment="Center"/>
+
+                                </StackPanel>
+
+                                
+
+                                <ItemsControl ItemsSource="{Binding CurrentElement.Isotopes}">
+
+                                    <ItemsControl.ItemTemplate>
+
+                                        <DataTemplate>
+
+                                            <StackPanel Margin="0,0,0,15">
+
+                                                <TextBlock FontSize="15" 
+
+                                                           Foreground="#0C5460" 
+
+                                                           TextWrapping="Wrap"
+
+                                                           LineHeight="24">
+
+                                                    <Run Text="{Binding Name}" FontWeight="Bold"/>
+
+                                                    <Run Text=" "/>
+
+                                                    <Run Text="("/>
+
+                                                    <Run Text="{Binding Symbol}"/>
+
+                                                    <Run Text="):"/>
+
+                                                    <Run Text=" "/>
+
+                                                    <Run Text="{Binding Description}"/>
+
+                                                </TextBlock>
+
+                                            </StackPanel>
+
+                                        </DataTemplate>
+
+                                    </ItemsControl.ItemTemplate>
+
+                                </ItemsControl>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+            </TabItem>
+
+
+
+            <!-- TAB 5: ỨNG DỤNG -->
+
+            <TabItem>
+
+                <TabItem.Header>
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <TextBlock Text="🏭" FontSize="18" Margin="0,0,8,0"/>
+
+                        <TextBlock Text="Ứng dụng" Style="{StaticResource TabHeaderStyle}"/>
+
+                    </StackPanel>
+
+                </TabItem.Header>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,35" Background="White">
+
+                    <StackPanel>
+
+                        <TextBlock Text="💡 Ứng dụng thực tế" Style="{StaticResource SectionTitleStyle}"/>
+
+
+
+                        <!-- A. Applications by Category -->
+
+                        <ItemsControl ItemsSource="{Binding CurrentElement.ApplicationsByCategory}" Margin="0,0,0,30">
+
+                            <ItemsControl.ItemTemplate>
+
+                                <DataTemplate>
+
+                                    <StackPanel Margin="0,0,0,25">
+
+                                        <!-- Category Header -->
+
+                                        <Border Background="#F3F4F6" 
+
+                                                CornerRadius="8" 
+
+                                                Padding="15,10"
+
+                                                Margin="0,0,0,15">
+
+                                            <StackPanel Orientation="Horizontal">
+
+                                                <TextBlock Text="{Binding Icon}" 
+
+                                                           FontSize="24" 
+
+                                                           Margin="0,0,10,0"
+
+                                                           VerticalAlignment="Center"/>
+
+                                                <TextBlock Text="{Binding CategoryName}" 
+
+                                                           FontSize="18" 
+
+                                                           FontWeight="Bold"
+
+                                                           Foreground="#374151"
+
+                                                           VerticalAlignment="Center"/>
+
+                                            </StackPanel>
+
+                                        </Border>
+
+
+
+                                        <!-- Applications in this category -->
+
+                                        <ItemsControl ItemsSource="{Binding Applications}">
+
+                                            <ItemsControl.ItemsPanel>
+
+                                                <ItemsPanelTemplate>
+
+                                                    <UniformGrid Columns="3" HorizontalAlignment="Stretch"/>
+
+                                                </ItemsPanelTemplate>
+
+                                            </ItemsControl.ItemsPanel>
+
+                                            <ItemsControl.ItemTemplate>
+
+                                                <DataTemplate>
+
+                                                    <Border CornerRadius="12" 
+
+                                                            Padding="20,25"
+
+                                                            Margin="5"
+
+                                                            Background="White"
+
+                                                            BorderBrush="#E5E7EB"
+
+                                                            BorderThickness="1">
+
+                                                        <StackPanel>
+
+                                                            <TextBlock Text="{Binding Icon}" 
+
+                                                                       FontSize="36" 
+
+                                                                       HorizontalAlignment="Center" 
+
+                                                                       Margin="0,0,0,10"/>
+
+                                                            <TextBlock Text="{Binding Name}" 
+
+                                                                       FontSize="16" 
+
+                                                                       FontWeight="Bold" 
+
+                                                                       Foreground="#1F2937"
+
+                                                                       TextAlignment="Center"
+
+                                                                       Margin="0,0,0,8"
+
+                                                                       TextWrapping="Wrap"/>
+
+                                                            <TextBlock Text="{Binding Description}"
+
+                                                                       FontSize="13"
+
+                                                                       Foreground="#6B7280"
+
+                                                                       TextWrapping="Wrap"
+
+                                                                       TextAlignment="Center"
+
+                                                                       LineHeight="18"/>
+
+                                                        </StackPanel>
+
+                                                    </Border>
+
+                                                </DataTemplate>
+
+                                            </ItemsControl.ItemTemplate>
+
+                                        </ItemsControl>
+
+                                    </StackPanel>
+
+                                </DataTemplate>
+
+                            </ItemsControl.ItemTemplate>
+
+                        </ItemsControl>
+
+
+
+                        <!-- B. Global Production Stats -->
+
+                        <TextBlock Text="📊 Thống kê sản xuất toàn cầu" 
+
+                                   Style="{StaticResource SectionTitleStyle}"
+
+                                   Margin="0,10,0,15"/>
+
+                        
+
+                        <Border Background="White" 
+
+                                CornerRadius="12" 
+
+                                BorderThickness="1"
+
+                                BorderBrush="#E0E0E0"
+
+                                Padding="30"
+
+                                Margin="0,0,0,30">
+
+                            <Grid>
+
+                                <Grid.RowDefinitions>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                </Grid.RowDefinitions>
+
+
+
+                                <!-- Annual Production -->
+
+                                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+
+                                    <TextBlock Text="Sản lượng hàng năm:" 
+
+                                               FontSize="14" 
+
+                                               Foreground="#6B7280"
+
+                                               Margin="0,0,0,8"/>
+
+                                    <TextBlock FontSize="32" 
+
+                                               FontWeight="Bold" 
+
+                                               Foreground="#667EEA">
+
+                                        <Run Text="{Binding CurrentElement.ProductionStats.AnnualProduction, StringFormat={}{0:N0}}"/>
+
+                                        <Run Text=" " FontSize="18"/>
+
+                                        <Run Text="{Binding CurrentElement.ProductionStats.AnnualProductionUnit}" FontSize="18"/>
+
+                                    </TextBlock>
+
+                                </StackPanel>
+
+
+
+                                <!-- Top Producers -->
+
+                                <StackPanel Grid.Row="1" Margin="0,0,0,20">
+
+                                    <TextBlock Text="Quốc gia sản xuất lớn nhất:" 
+
+                                               FontSize="14" 
+
+                                               Foreground="#6B7280"
+
+                                               Margin="0,0,0,12"/>
+
+                                    <ItemsControl ItemsSource="{Binding CurrentElement.ProductionStats.TopProducers}">
+
+                                        <ItemsControl.ItemTemplate>
+
+                                            <DataTemplate>
+
+                                                <Grid Margin="0,0,0,8">
+
+                                                    <Grid.ColumnDefinitions>
+
+                                                        <ColumnDefinition Width="150"/>
+
+                                                        <ColumnDefinition Width="*"/>
+
+                                                        <ColumnDefinition Width="60"/>
+
+                                                    </Grid.ColumnDefinitions>
+
+
+
+                                                    <TextBlock Grid.Column="0" 
+
+                                                               Text="{Binding Country}" 
+
+                                                               FontSize="14" 
+
+                                                               FontWeight="SemiBold"
+
+                                                               Foreground="#374151"
+
+                                                               VerticalAlignment="Center"/>
+
+
+
+                                                    <Grid Grid.Column="1" VerticalAlignment="Center">
+
+                                                        <Border Background="#F3F4F6" 
+
+                                                                Height="20" 
+
+                                                                CornerRadius="4"/>
+
+                                                        <Border Background="#667EEA" 
+
+                                                                Height="20" 
+
+                                                                CornerRadius="4"
+
+                                                                HorizontalAlignment="Left"
+
+                                                                Width="{Binding Percentage, Converter={StaticResource MultiplierToWidthConverter}, ConverterParameter=3}"/>
+
+                                                    </Grid>
+
+
+
+                                                    <TextBlock Grid.Column="2" 
+
+                                                               FontSize="14" 
+
+                                                               FontWeight="Bold"
+
+                                                               Foreground="#667EEA"
+
+                                                               HorizontalAlignment="Right"
+
+                                                               VerticalAlignment="Center">
+
+                                                        <Run Text="{Binding Percentage, StringFormat={}{0:F0}}"/>
+
+                                                        <Run Text="%"/>
+
+                                                    </TextBlock>
+
+                                                </Grid>
+
+                                            </DataTemplate>
+
+                                        </ItemsControl.ItemTemplate>
+
+                                    </ItemsControl>
+
+                                </StackPanel>
+
+
+
+                                <!-- Market Price -->
+
+                                <Border Grid.Row="2" 
+
+                                        Background="#F0F9FF" 
+
+                                        CornerRadius="8" 
+
+                                        Padding="15">
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                                        <TextBlock Text="💰 Giá thị trường: " 
+
+                                                   FontSize="14" 
+
+                                                   Foreground="#0369A1"
+
+                                                   FontWeight="SemiBold"
+
+                                                   VerticalAlignment="Center"/>
+
+                                        <TextBlock Text="{Binding CurrentElement.ProductionStats.MarketPrice}" 
+
+                                                   FontSize="18" 
+
+                                                   FontWeight="Bold"
+
+                                                   Foreground="#0284C7"
+
+                                                   VerticalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </Grid>
+
+                        </Border>
+
+
+
+                        <!-- C. Future Trends -->
+
+                        <TextBlock Text="🔮 Xu hướng tương lai" 
+
+                                   Style="{StaticResource SectionTitleStyle}"
+
+                                   Margin="0,0,0,15"/>
+
+                        
+
+                        <Border Background="#FEF7E0" 
+
+                                BorderBrush="#F59E0B"
+
+                                BorderThickness="1"
+
+                                CornerRadius="12" 
+
+                                Padding="25"
+
+                                Margin="0,0,0,30">
+
+                            <ItemsControl ItemsSource="{Binding CurrentElement.FutureTrends}">
+
+                                <ItemsControl.ItemTemplate>
+
+                                    <DataTemplate>
+
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+
+                                            <TextBlock Text="• " 
+
+                                                       FontSize="18" 
+
+                                                       Foreground="#92400E"
+
+                                                       FontWeight="Bold"
+
+                                                       Margin="0,0,8,0"/>
+
+                                            <TextBlock Text="{Binding}" 
+
+                                                       FontSize="15" 
+
+                                                       Foreground="#78350F"
+
+                                                       TextWrapping="Wrap"
+
+                                                       LineHeight="22"/>
+
+                                        </StackPanel>
+
+                                    </DataTemplate>
+
+                                </ItemsControl.ItemTemplate>
+
+                            </ItemsControl>
+
+                        </Border>
+
+
+
+                        <!-- Importance Description Box -->
+
+                        <Border Background="#EEF2FF" 
+
+                                BorderBrush="#818CF8" 
+
+                                BorderThickness="2"
+
+                                CornerRadius="16" 
+
+                                Padding="30,25"
+
+                                Margin="0,10,0,0">
+
+                            <Border.Effect>
+
+                                <DropShadowEffect Color="#D1D5DB" 
+
+                                                  BlurRadius="15" 
+
+                                                  ShadowDepth="2" 
+
+                                                  Opacity="0.3"/>
+
+                            </Border.Effect>
+
+                            <StackPanel>
+
+                                <TextBlock FontSize="20" 
+
+                                           FontWeight="Bold" 
+
+                                           Foreground="#4338CA"
+
+                                           Margin="0,0,0,15">
+
+                                    <Run Text="⚡"/>
+
+                                    <Run Text="{Binding CurrentElement.ImportanceTitle, FallbackValue='Tầm quan trọng'}"/>
+
+                                </TextBlock>
+
+                                <TextBlock Text="{Binding CurrentElement.ImportanceDescription}" 
+
+                                           FontSize="15" 
+
+                                           Foreground="#374151"
+
+                                           TextWrapping="Wrap"
+
+                                           LineHeight="24"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+            </TabItem>
+
+          
+
+            <!-- TAB 6: LỊCH SỬ -->
+
+            <TabItem>
+
+                <TabItem.Header>
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <TextBlock Text="📜" FontSize="18" Margin="0,0,8,0"/>
+
+                        <TextBlock Text="Lịch sử" Style="{StaticResource TabHeaderStyle}"/>
+
+                    </StackPanel>
+
+                </TabItem.Header>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,35" Background="White">
+
+                    <StackPanel>
+
+                        <TextBlock Text="📜 Lịch sử khám phá" Style="{StaticResource SectionTitleStyle}"/>
+
+
+
+                        <!-- Timeline Events -->
+
+                        <ItemsControl ItemsSource="{Binding CurrentElement.HistoryEvents}">
+
+                            <ItemsControl.ItemTemplate>
+
+                                <DataTemplate>
+
+                                    <Grid Margin="0,0,0,30">
+
+                                        <Grid.ColumnDefinitions>
+
+                                            <ColumnDefinition Width="80"/>
+
+                                            <ColumnDefinition Width="40"/>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                        </Grid.ColumnDefinitions>
+
+
+
+                                        <!-- Year -->
+
+                                        <TextBlock Grid.Column="0" 
+
+                                                   Text="{Binding Year}" 
+
+                                                   FontSize="20" 
+
+                                                   FontWeight="Bold"
+
+                                                   Foreground="#3B82F6"
+
+                                                   VerticalAlignment="Top"
+
+                                                   Margin="0,5,0,0"/>
+
+
+
+                                        <!-- Timeline Circle and Line -->
+
+                                        <Canvas Grid.Column="1" Width="40" HorizontalAlignment="Center">
+
+                                            <!-- Vertical Line -->
+
+                                            <Rectangle Canvas.Left="18" 
+
+                                                       Canvas.Top="0"
+
+                                                       Width="4" 
+
+                                                       Height="1000"
+
+                                                       Fill="#E5E7EB"/>
+
+                                            
+
+                                            <!-- Circle -->
+
+                                            <Ellipse Canvas.Left="11" 
+
+                                                     Canvas.Top="5"
+
+                                                     Width="18" 
+
+                                                     Height="18" 
+
+                                                     Fill="#3B82F6"
+
+                                                     Stroke="White"
+
+                                                     StrokeThickness="3"/>
+
+                                        </Canvas>
+
+
+
+                                        <!-- Content -->
+
+                                        <Border Grid.Column="2" 
+
+                                                Background="#F9FAFB" 
+
+                                                CornerRadius="12" 
+
+                                                Padding="20">
+
+                                            <StackPanel>
+
+                                                <TextBlock Text="{Binding Title}" 
+
+                                                           FontSize="16" 
+
+                                                           FontWeight="Bold"
+
+                                                           Foreground="#1F2937"
+
+                                                           TextWrapping="Wrap"
+
+                                                           Margin="0,0,0,8"/>
+
+                                                <TextBlock Text="{Binding Description}" 
+
+                                                           FontSize="15" 
+
+                                                           Foreground="#4B5563"
+
+                                                           TextWrapping="Wrap"
+
+                                                           LineHeight="22"/>
+
+                                            </StackPanel>
+
+                                        </Border>
+
+                                    </Grid>
+
+                                </DataTemplate>
+
+                            </ItemsControl.ItemTemplate>
+
+                        </ItemsControl>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+            </TabItem>
+
+
+
+            <!-- TAB 7: LIÊN QUAN -->
+
+            <TabItem>
+
+                <TabItem.Header>
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <TextBlock Text="🔗" FontSize="18" Margin="0,0,8,0"/>
+
+                        <TextBlock Text="Liên quan" Style="{StaticResource TabHeaderStyle}"/>
+
+                    </StackPanel>
+
+                </TabItem.Header>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,35" Background="White">
+
+                    <StackPanel>
+
+                        <!-- A. Mini Periodic Table Visualization -->
+
+                        <TextBlock Text="🗺️ Bảng tuần hoàn mini" Style="{StaticResource SectionTitleStyle}"/>
+
+                        
+
+                        <Border Background="White" 
+
+                                CornerRadius="12" 
+
+                                BorderThickness="1"
+
+                                BorderBrush="#E0E0E0"
+
+                                Padding="20"
+
+                                Margin="0,0,0,30">
+
+                            <StackPanel>
+
+                                <TextBlock Text="[Mini periodic table]" 
+
+                                           FontSize="14" 
+
+                                           Foreground="#6B7280"
+
+                                           Margin="0,0,0,10"
+
+                                           FontFamily="Segoe UI"/>
+
+                                <ItemsControl ItemsSource="{Binding CurrentElement.RelatedElementSymbols}">
+
+                                    <ItemsControl.ItemsPanel>
+
+                                        <ItemsPanelTemplate>
+
+                                            <WrapPanel/>
+
+                                        </ItemsPanelTemplate>
+
+                                    </ItemsControl.ItemsPanel>
+
+                                    <ItemsControl.ItemTemplate>
+
+                                        <DataTemplate>
+
+                                            <Border Background="#667EEA" 
+
+                                                    CornerRadius="6" 
+
+                                                    Padding="10,8"
+
+                                                    Margin="0,0,5,5">
+
+                                                <TextBlock Text="{Binding}" 
+
+                                                           FontSize="14" 
+
+                                                           FontWeight="Bold"
+
+                                                           Foreground="White"/>
+
+                                            </Border>
+
+                                        </DataTemplate>
+
+                                    </ItemsControl.ItemTemplate>
+
+                                </ItemsControl>
+
+                                
+
+                                <TextBlock Margin="0,15,0,0" 
+
+                                           FontSize="13" 
+
+                                           Foreground="#6B7280">
+
+                                    <Run Text="• Highlight nguyên tố hiện tại"/>
+
+                                    <LineBreak/>
+
+                                    <Run Text="• Highlight các nguyên tố liên quan (cùng nhóm/chu kỳ)"/>
+
+                                    <LineBreak/>
+
+                                    <Run Text="• Click vào nguyên tố → Chuyển sang chi tiết nguyên tố đó"/>
+
+                                </TextBlock>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- B. Comparison Table (Dynamic) -->
+
+                        <TextBlock Text="📊 Bảng so sánh" Style="{StaticResource SectionTitleStyle}"/>
+
+                        
+
+                        <Border Background="White" 
+
+                                CornerRadius="12" 
+
+                                BorderThickness="1"
+
+                                BorderBrush="#E0E0E0"
+
+                                Margin="0,0,0,30">
+
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+
+                                <StackPanel Name="ComparisonTablePanel" Orientation="Vertical">
+
+                                    <!-- Dynamic content will be generated in code-behind -->
+
+                                </StackPanel>
+
+                            </ScrollViewer>
+
+                        </Border>
+
+
+
+                        <!-- C. Trend Explanation -->
+
+                        <TextBlock Text="📈 Giải thích xu hướng" Style="{StaticResource SectionTitleStyle}"/>
+
+                        
+
+                        <Border Background="#FEF7E0" 
+
+                                BorderBrush="#F59E0B"
+
+                                BorderThickness="1"
+
+                                CornerRadius="12" 
+
+                                Padding="25"
+
+                                Margin="0,0,0,30">
+
+                            <ItemsControl ItemsSource="{Binding CurrentElement.TrendExplanations}">
+
+                                <ItemsControl.ItemTemplate>
+
+                                    <DataTemplate>
+
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+
+                                            <TextBlock Text="• " 
+
+                                                       FontSize="18" 
+
+                                                       Foreground="#92400E"
+
+                                                       FontWeight="Bold"
+
+                                                       Margin="0,0,8,0"/>
+
+                                            <TextBlock Text="{Binding}" 
+
+                                                       FontSize="15" 
+
+                                                       Foreground="#78350F"
+
+                                                       TextWrapping="Wrap"
+
+                                                       LineHeight="22"/>
+
+                                        </StackPanel>
+
+                                    </DataTemplate>
+
+                                </ItemsControl.ItemTemplate>
+
+                            </ItemsControl>
+
+                        </Border>
+
+
+
+                        <!-- Related Element Groups -->
+
+                        <TextBlock Text="🔗 Nguyên tố liên quan" Style="{StaticResource SectionTitleStyle}"/>
+
+                        
+
+                        <ItemsControl ItemsSource="{Binding CurrentElement.RelatedElementGroups}">
+
+                            <ItemsControl.ItemTemplate>
+
+                                <DataTemplate>
+
+                                    <StackPanel Margin="0,0,0,25">
+
+                                        <!-- Group Title -->
+
+                                        <TextBlock Text="{Binding GroupName}" 
+
+                                         FontSize="16" 
+
+                                         FontWeight="Bold"
+
+                                         Foreground="#374151"
+
+                                         Margin="0,0,0,15"/>
+
+
+
+                                        <!-- Elements Grid -->
+
+                                        <ItemsControl ItemsSource="{Binding Elements}">
+
+                                            <ItemsControl.ItemsPanel>
+
+                                                <ItemsPanelTemplate>
+
+                                                    <UniformGrid Columns="4" HorizontalAlignment="Left"/>
+
+                                                </ItemsPanelTemplate>
+
+                                            </ItemsControl.ItemsPanel>
+
+                                            <ItemsControl.ItemTemplate>
+
+                                                <DataTemplate>
+
+                                                    <Border Background="#EEF2FF" 
+
+                                                  CornerRadius="12" 
+
+                                                  Padding="20,15"
+
+                                                  Margin="0,0,10,10"
+
+                                                  Width="200">
+
+                                                        <StackPanel HorizontalAlignment="Center">
+
+                                                            <TextBlock Text="{Binding Symbol}" 
+
+                                                             FontSize="32" 
+
+                                                             FontWeight="Bold"
+
+                                                             Foreground="#4F46E5"
+
+                                                             HorizontalAlignment="Center"
+
+                                                             Margin="0,0,0,5"/>
+
+                                                            <TextBlock Text="{Binding Name}" 
+
+                                                             FontSize="14" 
+
+                                                             Foreground="#6B7280"
+
+                                                             HorizontalAlignment="Center"/>
+
+                                                        </StackPanel>
+
+                                                    </Border>
+
+                                                </DataTemplate>
+
+                                            </ItemsControl.ItemTemplate>
+
+                                        </ItemsControl>
+
+                                    </StackPanel>
+
+                                </DataTemplate>
+
+                            </ItemsControl.ItemTemplate>
+
+                        </ItemsControl>
+
+
+
+                        <!-- Comparison Notes Box -->
+
+                        <Border Background="#DBEAFE" 
+
+                      BorderBrush="#3B82F6" 
+
+                      BorderThickness="2"
+
+                      CornerRadius="16" 
+
+                      Padding="30,25"
+
+                      Margin="0,10,0,0">
+
+                            <Border.Effect>
+
+                                <DropShadowEffect Color="#D1D5DB" 
+
+                                        BlurRadius="15" 
+
+                                        ShadowDepth="2" 
+
+                                        Opacity="0.3"/>
+
+                            </Border.Effect>
+
+                            <StackPanel>
+
+                                <TextBlock FontSize="20" 
+
+                                 FontWeight="Bold" 
+
+                                 Foreground="#1E40AF"
+
+                                 Margin="0,0,0,20">
+
+                          <Run Text="💡"/>
+
+                          <Run Text=" So sánh với các nguyên tố khác"/>
+
+                                </TextBlock>
+
+
+
+                                <!-- Comparison Items -->
+
+                                <ItemsControl ItemsSource="{Binding CurrentElement.ComparisonNotes}">
+
+                                    <ItemsControl.ItemTemplate>
+
+                                        <DataTemplate>
+
+                                            <StackPanel Margin="0,0,0,20">
+
+                                                <TextBlock Text="{Binding Title}" 
+
+                                                 FontSize="16" 
+
+                                                 FontWeight="Bold"
+
+                                                 Foreground="#1E40AF"
+
+                                                 Margin="0,0,0,8"/>
+
+                                                <TextBlock Text="{Binding Description}" 
+
+                                                 FontSize="15" 
+
+                                                 Foreground="#374151"
+
+                                                 TextWrapping="Wrap"
+
+                                                 LineHeight="24"/>
+
+                                            </StackPanel>
+
+                                        </DataTemplate>
+
+                                    </ItemsControl.ItemTemplate>
+
+                                </ItemsControl>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+            </TabItem>
+
+
+
+
+
+
+
+        </TabControl>
+
+    </Grid>
+
+</Window>
+
+
+
+
+

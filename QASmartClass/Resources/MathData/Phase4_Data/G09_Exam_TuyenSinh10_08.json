@@ -1,0 +1,84 @@
+﻿{
+  "metadata": {
+    "examId": "g09_tuyensinh10_08",
+    "title": "Đề thi Tuyển Sinh vào Lớp 10 - Đề số 08",
+    "totalQuestions": 5,
+    "timeLimit": 120,
+    "totalPoints": 10,
+    "pointsPerQuestion": 2,
+    "grade": 9,
+    "examType": "TuyenSinh10"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Hình vành khăn: R lớn=10, R nhỏ=6. S vành khăn = ? (π≈3,14)",
+      "options": [
+        "A) 100,48 cm²",
+        "B) 150,72 cm²",
+        "C) 200,96 cm²",
+        "D) 50,24 cm²"
+      ],
+      "answer": "C",
+      "solution": "S = π(R²-r²) = 3,14(100-36) = 3,14 × 64 = 200,96 cm²"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "sin(30°+60°) = sin 90° = ?",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) -1",
+        "D) 1/2"
+      ],
+      "answer": "B",
+      "solution": "sin90° = 1"
+    },
+    {
+      "id": 3,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Góc ở tâm chắn cung 80°. Góc nội tiếp chắn cùng cung đó bằng:",
+      "options": [
+        "A) 40°",
+        "B) 80°",
+        "C) 160°",
+        "D) 20°"
+      ],
+      "answer": "A",
+      "solution": "Góc nội tiếp = ½ × góc ở tâm = ½ × 80° = 40°"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Điểm kiểm tra 10 HS: 5,6,7,7,8,8,8,9,9,10. Tính trung bình, trung vị, mốt:",
+      "options": [
+        "A) TB=7.7, TV=8, M=8",
+        "B) TB=8, TV=7.5, M=7",
+        "C) TB=7.7, TV=7.5, M=8",
+        "D) TB=7.5, TV=8, M=8"
+      ],
+      "answer": "A",
+      "solution": "TB=(5+6+7+7+8+8+8+9+9+10)/10=77/10=7.7. TV=(8+8)/2=8. M=8 (3 lần)"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính: 2sin30° × cos60° + tan45°",
+      "options": [
+        "A) 1.5",
+        "B) 2",
+        "C) 1",
+        "D) 2.5"
+      ],
+      "answer": "A",
+      "solution": "2×(1/2)×(1/2) + 1 = 0.5 + 1 = 1.5"
+    }
+  ]
+}

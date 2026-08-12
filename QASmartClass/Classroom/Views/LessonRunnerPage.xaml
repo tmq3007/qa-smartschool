@@ -1,0 +1,1326 @@
+﻿<Page x:Class="QASmartClass.Classroom.Views.LessonRunnerPage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Tiến trình giảng dạy" Background="#F8F9FA">
+
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+
+            <ColumnDefinition Width="220"/>
+
+            <ColumnDefinition Width="*"/>
+
+        </Grid.ColumnDefinitions>
+
+
+
+        <!-- ═══ LEFT SIDEBAR — 6 giai đoạn ═══ -->
+
+        <Border Grid.Column="0" Background="#1A237E">
+
+            <DockPanel>
+
+                <!-- Header -->
+
+                <Border DockPanel.Dock="Top" Background="#0D47A1" Padding="16,14">
+
+                    <StackPanel>
+
+                        <TextBlock Text="🎬 BẮT ĐẦU TIẾT HỌC" FontSize="13" FontWeight="Bold"
+
+                                   Foreground="White" TextWrapping="Wrap"/>
+
+                        <TextBlock x:Name="txtLessonTitle" Text="Đang tải..." FontSize="11"
+
+                                   Foreground="#90CAF9" TextWrapping="Wrap" Margin="0,4,0,0"/>
+
+                        <TextBlock x:Name="txtLessonMeta" Text="" FontSize="10"
+
+                                   Foreground="#64B5F6" Margin="0,2,0,0"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- Timer -->
+
+                <Border DockPanel.Dock="Top" Background="#0D1B6E" Padding="16,10">
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                        <TextBlock Text="⏱ " FontSize="14" Foreground="#FFD740" VerticalAlignment="Center"/>
+
+                        <TextBlock x:Name="txtTimer" Text="45:00" FontSize="22" FontWeight="Bold"
+
+                                   Foreground="#FFD740" FontFamily="Segoe UI"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- Stage list -->
+
+                <StackPanel DockPanel.Dock="Top" Margin="0,8,0,0">
+
+                    <Border x:Name="stageBtn1" Tag="1" Background="#1976D2" CornerRadius="0" Padding="16,12"
+
+                            Cursor="Hand" MouseLeftButtonDown="Stage_Click" Margin="0,1,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="① CHUẨN BỊ" FontSize="12" FontWeight="Bold" Foreground="White"/>
+
+                            <TextBlock Text="2 phút • 3 click" FontSize="10" Foreground="#90CAF9" Margin="0,2,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <Border x:Name="stageBtn2" Tag="2" Background="Transparent" CornerRadius="0" Padding="16,12"
+
+                            Cursor="Hand" MouseLeftButtonDown="Stage_Click" Margin="0,1,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="② KHỞI ĐỘNG" FontSize="12" FontWeight="Bold" Foreground="#90CAF9"/>
+
+                            <TextBlock Text="10 phút • Kiểm tra bài cũ" FontSize="10" Foreground="#5C6BC0" Margin="0,2,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <Border x:Name="stageBtn3" Tag="3" Background="Transparent" CornerRadius="0" Padding="16,12"
+
+                            Cursor="Hand" MouseLeftButtonDown="Stage_Click" Margin="0,1,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="③ KHÁM PHÁ" FontSize="12" FontWeight="Bold" Foreground="#90CAF9"/>
+
+                            <TextBlock Text="15 phút • Giảng lý thuyết" FontSize="10" Foreground="#5C6BC0" Margin="0,2,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <Border x:Name="stageBtn4" Tag="4" Background="Transparent" CornerRadius="0" Padding="16,12"
+
+                            Cursor="Hand" MouseLeftButtonDown="Stage_Click" Margin="0,1,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="④ THỰC HÀNH" FontSize="12" FontWeight="Bold" Foreground="#90CAF9"/>
+
+                            <TextBlock Text="30 phút • Game / Nhóm" FontSize="10" Foreground="#5C6BC0" Margin="0,2,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <Border x:Name="stageBtn5" Tag="5" Background="Transparent" CornerRadius="0" Padding="16,12"
+
+                            Cursor="Hand" MouseLeftButtonDown="Stage_Click" Margin="0,1,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="⑤ ĐÁNH GIÁ" FontSize="12" FontWeight="Bold" Foreground="#90CAF9"/>
+
+                            <TextBlock Text="10 phút • Kết quả, điểm" FontSize="10" Foreground="#5C6BC0" Margin="0,2,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <Border x:Name="stageBtn6" Tag="6" Background="Transparent" CornerRadius="0" Padding="16,12"
+
+                            Cursor="Hand" MouseLeftButtonDown="Stage_Click" Margin="0,1,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="⑥ TỔNG KẾT" FontSize="12" FontWeight="Bold" Foreground="#90CAF9"/>
+
+                            <TextBlock Text="10 phút • Bài tập, kết thúc" FontSize="10" Foreground="#5C6BC0" Margin="0,2,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </StackPanel>
+
+
+
+                <!-- Bottom: End Lesson -->
+
+                <Border DockPanel.Dock="Bottom" Padding="12,10">
+
+                    <Button Content="⏹ KẾT THÚC TIẾT" Background="#C62828" Foreground="White"
+
+                            BorderThickness="0" Padding="0,10" FontSize="12" FontWeight="Bold"
+
+                            Cursor="Hand" Click="EndLesson_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="b" Property="Background" Value="#B71C1C"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                </Border>
+
+
+
+                <!-- Progress bar -->
+
+                <Border DockPanel.Dock="Bottom" Background="#0D1B6E" Padding="12,8">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Tiến độ tiết học" FontSize="10" Foreground="#64B5F6" Margin="0,0,0,4"/>
+
+                        <ProgressBar x:Name="lessonProgress" Value="0" Maximum="6" Height="6"
+
+                                     Background="#1A237E" Foreground="#4CAF50" BorderThickness="0"/>
+
+                        <TextBlock x:Name="txtStageLabel" Text="Giai đoạn 1/6" FontSize="10"
+
+                                   Foreground="#90CAF9" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+
+                    </StackPanel>
+
+                </Border>
+
+            </DockPanel>
+
+        </Border>
+
+
+
+        <!-- ═══ RIGHT CONTENT — Stage panels ═══ -->
+
+        <Grid Grid.Column="1">
+
+
+
+            <!-- STAGE 1: CHUẨN BỊ -->
+
+            <ScrollViewer x:Name="panel1" VerticalScrollBarVisibility="Auto">
+
+                <StackPanel Margin="30,24">
+
+                    <TextBlock Text="① CHUẨN BỊ TIẾT HỌC" FontSize="22" FontWeight="Bold"
+
+                               Foreground="#1A237E" Margin="0,0,0,4"/>
+
+                    <TextBlock Text="Thiết lập nhanh trước khi bắt đầu — 2 phút" FontSize="13"
+
+                               Foreground="#666" Margin="0,0,0,20"/>
+
+
+
+                    <!-- Lesson info card -->
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16"
+
+                            BorderBrush="#E0E0E0" BorderThickness="1">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+
+                            <StackPanel>
+
+                                <TextBlock Text="📚 Bài giảng đã tải" FontSize="11" Foreground="#999" FontWeight="SemiBold"/>
+
+                                <TextBlock x:Name="txtSetupTitle" Text="..." FontSize="18" FontWeight="Bold"
+
+                                           Foreground="#1A237E" Margin="0,4,0,2" TextWrapping="Wrap"/>
+
+                                <TextBlock x:Name="txtSetupMeta" Text="" FontSize="13" Foreground="#666"/>
+
+                            </StackPanel>
+
+                            <Border Grid.Column="1" Background="#E8F5E9" CornerRadius="8" Padding="14,8" VerticalAlignment="Center">
+
+                                <TextBlock x:Name="txtSetupStatus" Text="✅ Đã phê duyệt" FontSize="12"
+
+                                           Foreground="#2E7D32" FontWeight="SemiBold"/>
+
+                            </Border>
+
+                        </Grid>
+
+                    </Border>
+
+
+
+                    <!-- Lesson type selection -->
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16"
+
+                            BorderBrush="#E0E0E0" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <TextBlock Text="📋 Loại tiết hôm nay" FontSize="14" FontWeight="Bold"
+
+                                       Foreground="#333" Margin="0,0,0,12"/>
+
+                            <WrapPanel>
+
+                                <RadioButton x:Name="rbNormal" Content="🏫 Bình thường" GroupName="LessonType"
+
+                                             IsChecked="True" Margin="0,0,16,8" FontSize="13"/>
+
+                                <RadioButton x:Name="rbSTEAM" Content="🔬 STEAM" GroupName="LessonType"
+
+                                             Margin="0,0,16,8" FontSize="13"/>
+
+                                <RadioButton x:Name="rbWorkshop" Content="🛠 Workshop" GroupName="LessonType"
+
+                                             Margin="0,0,16,8" FontSize="13"/>
+
+                                <RadioButton x:Name="rbExam" Content="📝 Thi/Kiểm tra" GroupName="LessonType"
+
+                                             Margin="0,0,16,8" FontSize="13"/>
+
+                            </WrapPanel>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Quiz setup -->
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16"
+
+                            BorderBrush="#E0E0E0" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <TextBlock Text="❓ Có kiểm tra không?" FontSize="14" FontWeight="Bold"
+
+                                       Foreground="#333" Margin="0,0,0,12"/>
+
+                            <WrapPanel>
+
+                                <RadioButton x:Name="rbNoQuiz" Content="❌ Không" GroupName="QuizOpt"
+
+                                             IsChecked="True" Margin="0,0,16,8" FontSize="13"/>
+
+                                <RadioButton x:Name="rbQuizOld" Content="📖 Bài cũ (5 phút)" GroupName="QuizOpt"
+
+                                             Margin="0,0,16,8" FontSize="13"/>
+
+                                <RadioButton x:Name="rbQuiz15" Content="⏱ 15 phút" GroupName="QuizOpt"
+
+                                             Margin="0,0,16,8" FontSize="13"/>
+
+                                <RadioButton x:Name="rbQuiz30" Content="⏱ 30 phút" GroupName="QuizOpt"
+
+                                             Margin="0,0,16,8" FontSize="13"/>
+
+                            </WrapPanel>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Mini game -->
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16"
+
+                            BorderBrush="#E0E0E0" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <TextBlock Text="🎮 Mini Game?" FontSize="14" FontWeight="Bold"
+
+                                       Foreground="#333" Margin="0,0,0,12"/>
+
+                            <WrapPanel>
+
+                                <RadioButton x:Name="rbNoGame" Content="❌ Không" GroupName="GameOpt"
+
+                                             IsChecked="True" Margin="0,0,16,8" FontSize="13"/>
+
+                                <RadioButton x:Name="rbGameBattle" Content="⚔️ Quiz Thi Đua" GroupName="GameOpt"
+
+                                             Margin="0,0,16,8" FontSize="13"/>
+
+                                <RadioButton x:Name="rbGameGroup" Content="👥 Task Nhóm" GroupName="GameOpt"
+
+                                             Margin="0,0,16,8" FontSize="13"/>
+
+                                <RadioButton x:Name="rbGameChallenge" Content="🚀 Real Challenge" GroupName="GameOpt"
+
+                                             Margin="0,0,16,8" FontSize="13"/>
+
+                            </WrapPanel>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- START button -->
+
+                    <Button Content="🚀 BẮT ĐẦU TIẾT HỌC" Background="#1976D2" Foreground="White"
+
+                            BorderThickness="0" Padding="30,16" FontSize="16" FontWeight="Bold"
+
+                            HorizontalAlignment="Left" Cursor="Hand" Click="StartLesson_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10"
+
+                                        Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="b" Property="Background" Value="#0D47A1"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+            <!-- STAGE 2: KHỞI ĐỘNG -->
+
+            <ScrollViewer x:Name="panel2" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+
+                <StackPanel Margin="30,24">
+
+                    <TextBlock Text="② KHỞI ĐỘNG — Kiểm Tra Bài Cũ" FontSize="22" FontWeight="Bold"
+
+                               Foreground="#1A237E" Margin="0,0,0,4"/>
+
+                    <TextBlock Text="10 phút đầu tiết • Kích hoạt tiền kiến thức" FontSize="13"
+
+                               Foreground="#666" Margin="0,0,0,20"/>
+
+
+
+                    <WrapPanel>
+
+                        <!-- Option A: Quick Quiz -->
+
+                        <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="240"
+
+                                BorderBrush="#1976D2" BorderThickness="2">
+
+                            <StackPanel>
+
+                                <TextBlock Text="📝 Quick Quiz" FontSize="15" FontWeight="Bold" Foreground="#1A237E"/>
+
+                                <TextBlock Text="AI tự tạo 5 câu từ bài hôm qua" FontSize="12"
+
+                                           Foreground="#666" TextWrapping="Wrap" Margin="0,6,0,12"/>
+
+                                <Button Content="▶ Phát Quiz" Background="#1976D2" Foreground="White"
+
+                                        BorderThickness="0" Padding="12,8" FontSize="12" Cursor="Hand"
+
+                                        Click="LaunchQuickQuiz_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button">
+
+                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+
+                                        </Border>
+
+                                        <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger></ControlTemplate.Triggers>
+
+                                    </ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <!-- Option B: Poll -->
+
+                        <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="240"
+
+                                BorderBrush="#E0E0E0" BorderThickness="1">
+
+                            <StackPanel>
+
+                                <TextBlock Text="📊 Quick Poll" FontSize="15" FontWeight="Bold" Foreground="#333"/>
+
+                                <TextBlock Text="Câu hỏi nhanh — HS bình chọn" FontSize="12"
+
+                                           Foreground="#666" TextWrapping="Wrap" Margin="0,6,0,12"/>
+
+                                <Button Content="▶ Phát Poll" Background="#7B1FA2" Foreground="White"
+
+                                        BorderThickness="0" Padding="12,8" FontSize="12" Cursor="Hand"
+
+                                        Click="LaunchPoll_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button">
+
+                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <!-- Option C: Skip -->
+
+                        <Border Background="#F5F5F5" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="240"
+
+                                BorderBrush="#E0E0E0" BorderThickness="1">
+
+                            <StackPanel>
+
+                                <TextBlock Text="⏭ Bỏ Qua" FontSize="15" FontWeight="Bold" Foreground="#666"/>
+
+                                <TextBlock Text="Chuyển thẳng vào bài mới" FontSize="12"
+
+                                           Foreground="#999" TextWrapping="Wrap" Margin="0,6,0,12"/>
+
+                                <Button Content="→ Tiếp theo" Background="#757575" Foreground="White"
+
+                                        BorderThickness="0" Padding="12,8" FontSize="12" Cursor="Hand"
+
+                                        Click="NextStage_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button">
+
+                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </WrapPanel>
+
+
+
+                    <!-- Result zone -->
+
+                    <Border x:Name="quizResultZone" Visibility="Collapsed" Background="White"
+
+                            CornerRadius="12" Padding="20" Margin="0,12,0,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <TextBlock Text="📊 Kết Quả Quiz" FontSize="15" FontWeight="Bold" Foreground="#333"
+
+                                       Margin="0,0,0,12"/>
+
+                            <TextBlock x:Name="txtQuizResult" Text="" FontSize="13" Foreground="#555"
+
+                                       TextWrapping="Wrap"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+            <!-- STAGE 3: KHÁM PHÁ -->
+
+            <ScrollViewer x:Name="panel3" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+
+                <StackPanel Margin="30,24">
+
+                    <TextBlock Text="③ KHÁM PHÁ — Giảng Lý Thuyết" FontSize="22" FontWeight="Bold"
+
+                               Foreground="#1A237E" Margin="0,0,0,4"/>
+
+                    <TextBlock Text="15 phút • Giảng bài + Tương tác HS" FontSize="13"
+
+                               Foreground="#666" Margin="0,0,0,20"/>
+
+
+
+                    <WrapPanel>
+
+                        <Border Background="#E3F2FD" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="220"
+
+                                Cursor="Hand" MouseLeftButtonDown="OpenLessonOnCanvas_Click">
+
+                            <StackPanel>
+
+                                <TextBlock Text="🎨" FontSize="28" HorizontalAlignment="Center"/>
+
+                                <TextBlock Text="Mở trên Bảng vẽ" FontSize="14" FontWeight="Bold"
+
+                                           Foreground="#1565C0" HorizontalAlignment="Center" Margin="0,8,0,4"/>
+
+                                <TextBlock Text="Giảng bài có nội dung tự động load" FontSize="11"
+
+                                           Foreground="#1976D2" TextWrapping="Wrap" TextAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <Border Background="#E8F5E9" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="220"
+
+                                Cursor="Hand" MouseLeftButtonDown="LaunchPoll_Click">
+
+                            <StackPanel>
+
+                                <TextBlock Text="📊" FontSize="28" HorizontalAlignment="Center"/>
+
+                                <TextBlock Text="Quick Poll" FontSize="14" FontWeight="Bold"
+
+                                           Foreground="#2E7D32" HorizontalAlignment="Center" Margin="0,8,0,4"/>
+
+                                <TextBlock Text="Đặt câu hỏi, HS bình chọn nhanh" FontSize="11"
+
+                                           Foreground="#388E3C" TextWrapping="Wrap" TextAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <Border Background="#FFF3E0" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="220"
+
+                                Cursor="Hand" MouseLeftButtonDown="RandomPickStudent_Click">
+
+                            <StackPanel>
+
+                                <TextBlock Text="🎲" FontSize="28" HorizontalAlignment="Center"/>
+
+                                <TextBlock Text="Gọi HS Ngẫu Nhiên" FontSize="14" FontWeight="Bold"
+
+                                           Foreground="#E65100" HorizontalAlignment="Center" Margin="0,8,0,4"/>
+
+                                <TextBlock Text="AI chọn HS, đảm bảo công bằng" FontSize="11"
+
+                                           Foreground="#F57C00" TextWrapping="Wrap" TextAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <Border x:Name="broadcastCard" Background="#F3E5F5" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="220"
+
+                                Cursor="Hand" MouseLeftButtonDown="ToggleBroadcastScreen_Click">
+
+                            <StackPanel>
+
+                                <TextBlock x:Name="txtBroadcastIcon" Text="📺" FontSize="28" HorizontalAlignment="Center"/>
+
+                                <TextBlock x:Name="txtBroadcastTitle" Text="Phát Bảng cho HS" FontSize="14" FontWeight="Bold"
+
+                                           Foreground="#7B1FA2" HorizontalAlignment="Center" Margin="0,8,0,4"/>
+
+                                <TextBlock x:Name="txtBroadcastDesc" Text="Bật chế độ phát bảng trắng liên tục" FontSize="11"
+
+                                           Foreground="#9C27B0" TextWrapping="Wrap" TextAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </WrapPanel>
+
+
+
+                    <!-- Lesson content blocks with Focus buttons -->
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,12,0,0"
+
+                            BorderBrush="#E0E0E0" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <DockPanel Margin="0,0,0,12">
+
+                                <TextBlock Text="📖 Nội dung bài giảng" FontSize="14" FontWeight="Bold" Foreground="#333"/>
+
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+
+                                    <Button Content="📡 Phát tất cả cho HS" Background="#1976D2" Foreground="White"
+
+                                            BorderThickness="0" Padding="12,6" FontSize="11" Cursor="Hand"
+
+                                            Click="BroadcastAllContent_Click" Margin="0,0,8,0">
+
+                                        <Button.Template><ControlTemplate TargetType="Button">
+
+                                            <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                                <ContentPresenter HorizontalAlignment="Center"/>
+
+                                            </Border>
+
+                                            <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger></ControlTemplate.Triggers>
+
+                                        </ControlTemplate></Button.Template>
+
+                                    </Button>
+
+                                    <TextBlock x:Name="txtContentCount" Text="0 nội dung" FontSize="11"
+
+                                               Foreground="#999" VerticalAlignment="Center"/>
+
+                                </StackPanel>
+
+                            </DockPanel>
+
+                            <!-- Dynamic content blocks loaded from DB -->
+
+                            <StackPanel x:Name="lessonContentBlocks"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+            <!-- STAGE 4: THỰC HÀNH -->
+
+            <ScrollViewer x:Name="panel4" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+
+                <StackPanel Margin="30,24">
+
+                    <TextBlock Text="④ THỰC HÀNH &amp; MINI GAME" FontSize="22" FontWeight="Bold"
+
+                               Foreground="#1A237E" Margin="0,0,0,4"/>
+
+                    <TextBlock Text="30 phút • HS chủ động học — GV chỉ monitor" FontSize="13"
+
+                               Foreground="#666" Margin="0,0,0,20"/>
+
+
+
+                    <WrapPanel>
+
+                        <!-- Quiz Battle -->
+
+                        <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="260"
+
+                                BorderBrush="#E0E0E0" BorderThickness="1">
+
+                            <StackPanel>
+
+                                <TextBlock Text="⚔️ Quiz Thi Đua" FontSize="16" FontWeight="Bold" Foreground="#C62828"/>
+
+                                <TextBlock Text="4-5 nhóm thi đua nhau trả lời câu hỏi. Leaderboard real-time"
+
+                                           FontSize="12" Foreground="#666" TextWrapping="Wrap" Margin="0,6,0,4"/>
+
+                                <TextBlock Text="⏱ 15 phút" FontSize="11" Foreground="#999" Margin="0,0,0,12"/>
+
+                                <Button Content="▶ Bắt Đầu Quiz Battle" Background="#C62828" Foreground="White"
+
+                                        BorderThickness="0" Padding="12,8" FontSize="12" Cursor="Hand"
+
+                                        Click="LaunchQuizBattle_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button">
+
+                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+
+                                        </Border>
+
+                                        <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#B71C1C"/></Trigger></ControlTemplate.Triggers>
+
+                                    </ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <!-- Task Nhóm -->
+
+                        <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="260"
+
+                                BorderBrush="#E0E0E0" BorderThickness="1">
+
+                            <StackPanel>
+
+                                <TextBlock Text="👥 Task Nhóm" FontSize="16" FontWeight="Bold" Foreground="#1565C0"/>
+
+                                <TextBlock Text="AI chia nhóm cân bằng, giao task, countdown 20 phút"
+
+                                           FontSize="12" Foreground="#666" TextWrapping="Wrap" Margin="0,6,0,4"/>
+
+                                <TextBlock Text="⏱ 20 phút" FontSize="11" Foreground="#999" Margin="0,0,0,12"/>
+
+                                <Button Content="▶ Giao Task Nhóm" Background="#1565C0" Foreground="White"
+
+                                        BorderThickness="0" Padding="12,8" FontSize="12" Cursor="Hand"
+
+                                        Click="LaunchGroupTask_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button">
+
+                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+
+                                        </Border>
+
+                                        <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger></ControlTemplate.Triggers>
+
+                                    </ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <!-- Mô phỏng -->
+
+                        <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="260"
+
+                                BorderBrush="#E0E0E0" BorderThickness="1">
+
+                            <StackPanel>
+
+                                <TextBlock Text="🔬 Mô Phỏng PhET" FontSize="16" FontWeight="Bold" Foreground="#6A1B9A"/>
+
+                                <TextBlock Text="Mở simulation tương tác — HS khám phá khái niệm"
+
+                                           FontSize="12" Foreground="#666" TextWrapping="Wrap" Margin="0,6,0,4"/>
+
+                                <TextBlock Text="⏱ 15 phút" FontSize="11" Foreground="#999" Margin="0,0,0,12"/>
+
+                                <Button Content="▶ Mở Mô Phỏng" Background="#6A1B9A" Foreground="White"
+
+                                        BorderThickness="0" Padding="12,8" FontSize="12" Cursor="Hand"
+
+                                        Click="LaunchSimulation_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button">
+
+                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <!-- Real Challenge -->
+
+                        <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,12,12" Width="260"
+
+                                BorderBrush="#E0E0E0" BorderThickness="1">
+
+                            <StackPanel>
+
+                                <TextBlock Text="🚀 Real Challenge" FontSize="16" FontWeight="Bold" Foreground="#2E7D32"/>
+
+                                <TextBlock Text="Tình huống thực tế — HS brainstorm, thiết kế, báo cáo"
+
+                                           FontSize="12" Foreground="#666" TextWrapping="Wrap" Margin="0,6,0,4"/>
+
+                                <TextBlock Text="⏱ 25 phút" FontSize="11" Foreground="#999" Margin="0,0,0,12"/>
+
+                                <Button Content="▶ Phát Challenge" Background="#2E7D32" Foreground="White"
+
+                                        BorderThickness="0" Padding="12,8" FontSize="12" Cursor="Hand"
+
+                                        Click="LaunchChallenge_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button">
+
+                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </WrapPanel>
+
+
+
+                    <!-- Activity countdown -->
+
+                    <Border x:Name="activityPanel" Visibility="Collapsed" Background="White"
+
+                            CornerRadius="12" Padding="20" Margin="0,12,0,0" BorderBrush="#1976D2" BorderThickness="2">
+
+                        <StackPanel>
+
+                            <DockPanel>
+
+                                <TextBlock x:Name="txtActivityTitle" Text="⚔️ Quiz Battle đang diễn ra"
+
+                                           FontSize="15" FontWeight="Bold" Foreground="#1A237E"/>
+
+                                <Button Content="⏹ Dừng" Background="#757575" Foreground="White"
+
+                                        BorderThickness="0" Padding="12,6" FontSize="12" Cursor="Hand"
+
+                                        HorizontalAlignment="Right" DockPanel.Dock="Right"
+
+                                        Click="StopActivity_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button">
+
+                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </DockPanel>
+
+                            <TextBlock x:Name="txtActivityTimer" Text="⏱ 15:00" FontSize="32"
+
+                                       FontWeight="Bold" Foreground="#1976D2" FontFamily="Segoe UI"
+
+                                       HorizontalAlignment="Center" Margin="0,12,0,0"/>
+
+                            <ProgressBar x:Name="activityProgress" Value="100" Maximum="100" Height="8"
+
+                                         Background="#E0E0E0" Foreground="#1976D2" BorderThickness="0"
+
+                                         Margin="0,8,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+            <!-- STAGE 5: ĐÁNH GIÁ -->
+
+            <ScrollViewer x:Name="panel5" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+
+                <StackPanel Margin="30,24">
+
+                    <TextBlock Text="⑤ ĐÁNH GIÁ — Kết Quả &amp; Điểm" FontSize="22" FontWeight="Bold"
+
+                               Foreground="#1A237E" Margin="0,0,0,4"/>
+
+                    <TextBlock Text="10 phút • Tổng hợp kết quả, chấm điểm nhanh" FontSize="13"
+
+                               Foreground="#666" Margin="0,0,0,20"/>
+
+
+
+                    <!-- Leaderboard -->
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16"
+
+                            BorderBrush="#E0E0E0" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <DockPanel Margin="0,0,0,12">
+
+                                <TextBlock Text="🏆 Leaderboard" FontSize="15" FontWeight="Bold" Foreground="#333"/>
+
+                                <Button Content="🔄 Làm Mới" Background="#1976D2" Foreground="White"
+
+                                        BorderThickness="0" Padding="12,6" FontSize="11" Cursor="Hand"
+
+                                        DockPanel.Dock="Right" Click="RefreshLeaderboard_Click">
+
+                                    <Button.Template><ControlTemplate TargetType="Button">
+
+                                        <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate></Button.Template>
+
+                                </Button>
+
+                            </DockPanel>
+
+                            <!-- Podium -->
+
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition/><ColumnDefinition/><ColumnDefinition/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="1" Background="#FFF176" CornerRadius="8" Padding="12,10" Margin="4">
+
+                                    <StackPanel HorizontalAlignment="Center">
+
+                                        <TextBlock Text="🥇" FontSize="24" HorizontalAlignment="Center"/>
+
+                                        <TextBlock x:Name="txtGold" Text="Nhóm 1" FontSize="13" FontWeight="Bold"
+
+                                                   Foreground="#F57F17" HorizontalAlignment="Center"/>
+
+                                        <TextBlock x:Name="txtGoldScore" Text="95 điểm" FontSize="11"
+
+                                                   Foreground="#F9A825" HorizontalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                                <Border Grid.Column="0" Background="#F5F5F5" CornerRadius="8" Padding="12,10" Margin="4" VerticalAlignment="Bottom">
+
+                                    <StackPanel HorizontalAlignment="Center">
+
+                                        <TextBlock Text="🥈" FontSize="20" HorizontalAlignment="Center"/>
+
+                                        <TextBlock x:Name="txtSilver" Text="Nhóm 3" FontSize="12" FontWeight="SemiBold"
+
+                                                   Foreground="#616161" HorizontalAlignment="Center"/>
+
+                                        <TextBlock x:Name="txtSilverScore" Text="78 điểm" FontSize="11"
+
+                                                   Foreground="#9E9E9E" HorizontalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                                <Border Grid.Column="2" Background="#FFF8E1" CornerRadius="8" Padding="12,10" Margin="4" VerticalAlignment="Bottom">
+
+                                    <StackPanel HorizontalAlignment="Center">
+
+                                        <TextBlock Text="🥉" FontSize="20" HorizontalAlignment="Center"/>
+
+                                        <TextBlock x:Name="txtBronze" Text="Nhóm 2" FontSize="12" FontWeight="SemiBold"
+
+                                                   Foreground="#795548" HorizontalAlignment="Center"/>
+
+                                        <TextBlock x:Name="txtBronzeScore" Text="65 điểm" FontSize="11"
+
+                                                   Foreground="#A1887F" HorizontalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </Grid>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Auto grade -->
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16"
+
+                            BorderBrush="#E0E0E0" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <TextBlock Text="📋 Chấm Điểm Nhanh (Rubric)" FontSize="15" FontWeight="Bold"
+
+                                       Foreground="#333" Margin="0,0,0,12"/>
+
+                            <ItemsControl x:Name="gradingList"/>
+
+                            <Button Content="✅ Auto-Grade &amp; Lưu Điểm" Background="#2E7D32" Foreground="White"
+
+                                    BorderThickness="0" Padding="16,10" FontSize="13" FontWeight="SemiBold"
+
+                                    HorizontalAlignment="Left" Cursor="Hand" Margin="0,12,0,0"
+
+                                    Click="AutoGrade_Click">
+
+                                <Button.Template><ControlTemplate TargetType="Button">
+
+                                    <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+
+                                    </Border>
+
+                                    <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#1B5E20"/></Trigger></ControlTemplate.Triggers>
+
+                                </ControlTemplate></Button.Template>
+
+                            </Button>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+            <!-- STAGE 6: TỔNG KẾT -->
+
+            <ScrollViewer x:Name="panel6" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+
+                <StackPanel Margin="30,24">
+
+                    <TextBlock Text="⑥ TỔNG KẾT TIẾT HỌC" FontSize="22" FontWeight="Bold"
+
+                               Foreground="#1A237E" Margin="0,0,0,4"/>
+
+                    <TextBlock Text="10 phút cuối • Bài tập về nhà, lưu và kết thúc" FontSize="13"
+
+                               Foreground="#666" Margin="0,0,0,20"/>
+
+
+
+                    <!-- Summary stats -->
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16"
+
+                            BorderBrush="#E0E0E0" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <TextBlock Text="📊 Tổng Kết Tiết Học" FontSize="15" FontWeight="Bold"
+
+                                       Foreground="#333" Margin="0,0,0,14"/>
+
+                            <WrapPanel>
+
+                                <Border Background="#E8F5E9" CornerRadius="8" Padding="16,10" Margin="0,0,10,10">
+
+                                    <StackPanel HorizontalAlignment="Center">
+
+                                        <TextBlock x:Name="txtSumHsOnline" Text="35" FontSize="24" FontWeight="Bold"
+
+                                                   Foreground="#2E7D32" HorizontalAlignment="Center"/>
+
+                                        <TextBlock Text="HS tham gia" FontSize="11" Foreground="#4CAF50"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                                <Border Background="#E3F2FD" CornerRadius="8" Padding="16,10" Margin="0,0,10,10">
+
+                                    <StackPanel HorizontalAlignment="Center">
+
+                                        <TextBlock x:Name="txtSumAvgScore" Text="76%" FontSize="24" FontWeight="Bold"
+
+                                                   Foreground="#1565C0" HorizontalAlignment="Center"/>
+
+                                        <TextBlock Text="Điểm TB" FontSize="11" Foreground="#1976D2"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                                <Border Background="#FFF3E0" CornerRadius="8" Padding="16,10" Margin="0,0,10,10">
+
+                                    <StackPanel HorizontalAlignment="Center">
+
+                                        <TextBlock x:Name="txtSumDuration" Text="43'" FontSize="24" FontWeight="Bold"
+
+                                                   Foreground="#E65100" HorizontalAlignment="Center"/>
+
+                                        <TextBlock Text="Thời gian dạy" FontSize="11" Foreground="#F57C00"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </WrapPanel>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Homework -->
+
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16"
+
+                            BorderBrush="#E0E0E0" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <TextBlock Text="📝 Giao Bài Về Nhà" FontSize="15" FontWeight="Bold"
+
+                                       Foreground="#333" Margin="0,0,0,10"/>
+
+                            <TextBox x:Name="txtHomework" AcceptsReturn="True" TextWrapping="Wrap"
+
+                                     Height="80" Padding="10" FontSize="13" BorderBrush="#E0E0E0"
+
+                                     Text="Xem lại bài hôm nay và hoàn thành bài tập trong sách..."/>
+
+                            <Button Content="📤 Gửi Bài Về Nhà cho HS" Background="#7B1FA2" Foreground="White"
+
+                                    BorderThickness="0" Padding="14,8" FontSize="12" Cursor="Hand"
+
+                                    HorizontalAlignment="Left" Margin="0,10,0,0" Click="AssignHomework_Click">
+
+                                <Button.Template><ControlTemplate TargetType="Button">
+
+                                    <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+
+                                    </Border>
+
+                                </ControlTemplate></Button.Template>
+
+                            </Button>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- End lesson big button -->
+
+                    <Button Content="✅ KẾT THÚC VÀ LƯU TIẾT HỌC" Background="#1B5E20" Foreground="White"
+
+                            BorderThickness="0" Padding="30,18" FontSize="18" FontWeight="Bold"
+
+                            HorizontalAlignment="Stretch" Cursor="Hand" Click="EndLesson_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="12"
+
+                                        Padding="{TemplateBinding Padding}">
+
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+
+                                </Border>
+
+                                <ControlTemplate.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter TargetName="b" Property="Background" Value="#2E7D32"/>
+
+                                    </Trigger>
+
+                                </ControlTemplate.Triggers>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+        </Grid>
+
+    </Grid>
+
+</Page>
+

@@ -1,0 +1,376 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_OCRSettingsDialog"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Cài Đặt Google Cloud Vision OCR"
+
+        Width="600" Height="400"
+
+        WindowStartupLocation="CenterScreen"
+
+        Background="#F5F6FA"
+
+        ResizeMode="NoResize">
+
+
+
+    <Window.Resources>
+
+        <Style x:Key="ModernButton" TargetType="Button">
+
+            <Setter Property="Background" Value="#4CAF50"/>
+
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="Padding" Value="20,12"/>
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                                CornerRadius="8"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center"
+
+                                            VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#388E3C"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+
+            <TextBlock Text="⚙️ Cài Đặt Google Cloud Vision API"
+
+                       FontSize="18"
+
+                       FontWeight="Bold"
+
+                       Foreground="#2F3542"/>
+
+            <TextBlock Text="Nhập đường dẫn đến file JSON credentials"
+
+                       FontSize="12"
+
+                       Foreground="#747D8C"
+
+                       Margin="0,5,0,0"/>
+
+        </StackPanel>
+
+
+
+        <!-- Content -->
+
+        <Border Grid.Row="1"
+
+                Background="White"
+
+                BorderBrush="#E1E8ED"
+
+                BorderThickness="2"
+
+                CornerRadius="8"
+
+                Padding="20">
+
+            <StackPanel>
+
+                <!-- Instructions -->
+
+                <TextBlock Text="Hướng dẫn:"
+
+                           FontSize="14"
+
+                           FontWeight="Bold"
+
+                           Foreground="#2F3542"
+
+                           Margin="0,0,0,10"/>
+
+                
+
+                <TextBlock TextWrapping="Wrap"
+
+                           FontSize="12"
+
+                           Foreground="#747D8C"
+
+                           Margin="0,0,0,15">
+
+                    <Run Text="1. Truy cập "/>
+
+                    <Hyperlink NavigateUri="https://console.cloud.google.com/" RequestNavigate="Hyperlink_RequestNavigate">
+
+                        <Run Text="Google Cloud Console"/>
+
+                    </Hyperlink>
+
+                    <LineBreak/>
+
+                    <Run Text="2. Tạo project và enable Cloud Vision API"/>
+
+                    <LineBreak/>
+
+                    <Run Text="3. Tạo Service Account và download file JSON"/>
+
+                    <LineBreak/>
+
+                    <Run Text="4. Chọn file JSON bên dưới"/>
+
+                </TextBlock>
+
+
+
+                <!-- API Key Path -->
+
+                <TextBlock Text="Đường dẫn file credentials:"
+
+                           FontSize="12"
+
+                           FontWeight="Bold"
+
+                           Foreground="#2F3542"
+
+                           Margin="0,10,0,5"/>
+
+                
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    
+
+                    <TextBox x:Name="txtApiKeyPath"
+
+                             Grid.Column="0"
+
+                             Padding="10"
+
+                             FontSize="12"
+
+                             IsReadOnly="True"
+
+                             Background="#F8F9FA"
+
+                             BorderBrush="#DFE4EA"
+
+                             BorderThickness="1"
+
+                             VerticalContentAlignment="Center"/>
+
+                    
+
+                    <Button x:Name="btnBrowse"
+
+                            Grid.Column="1"
+
+                            Content="📂 Chọn file"
+
+                            Width="120"
+
+                            Margin="10,0,0,0"
+
+                            Click="btnBrowse_Click"
+
+                            Style="{StaticResource ModernButton}"/>
+
+                </Grid>
+
+
+
+                <!-- Status -->
+
+                <TextBlock x:Name="txtStatus"
+
+                           Text="⚠️ Chưa cấu hình API key"
+
+                           FontSize="12"
+
+                           Foreground="#E74C3C"
+
+                           Margin="0,10,0,0"/>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- Action Buttons -->
+
+        <Grid Grid.Row="2" Margin="0,20,0,0">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="Auto"/>
+
+                <ColumnDefinition Width="Auto"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Test Button -->
+
+            <Button x:Name="btnTest"
+
+                    Grid.Column="0"
+
+                    Content="🧪 Test kết nối"
+
+                    Width="140"
+
+                    HorizontalAlignment="Left"
+
+                    Click="btnTest_Click"
+
+                    IsEnabled="False">
+
+                <Button.Style>
+
+                    <Style TargetType="Button" BasedOn="{StaticResource ModernButton}">
+
+                        <Setter Property="Background" Value="#3498DB"/>
+
+                        <Style.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter Property="Background" Value="#2980B9"/>
+
+                            </Trigger>
+
+                        </Style.Triggers>
+
+                    </Style>
+
+                </Button.Style>
+
+            </Button>
+
+
+
+            <!-- Cancel Button -->
+
+            <Button x:Name="btnCancel"
+
+                    Grid.Column="1"
+
+                    Content="✕ Hủy"
+
+                    Width="100"
+
+                    Margin="0,0,10,0"
+
+                    Click="btnCancel_Click">
+
+                <Button.Style>
+
+                    <Style TargetType="Button" BasedOn="{StaticResource ModernButton}">
+
+                        <Setter Property="Background" Value="#F1F2F6"/>
+
+                        <Setter Property="Foreground" Value="#2F3542"/>
+
+                        <Style.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter Property="Background" Value="#DFE4EA"/>
+
+                            </Trigger>
+
+                        </Style.Triggers>
+
+                    </Style>
+
+                </Button.Style>
+
+            </Button>
+
+
+
+            <!-- Save Button -->
+
+            <Button x:Name="btnSave"
+
+                    Grid.Column="2"
+
+                    Content="✓ Lưu"
+
+                    Width="100"
+
+                    Click="btnSave_Click"
+
+                    Style="{StaticResource ModernButton}"
+
+                    IsEnabled="False"/>
+
+        </Grid>
+
+    </Grid>
+
+</Window>
+

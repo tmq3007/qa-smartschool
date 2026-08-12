@@ -1,0 +1,511 @@
+{
+  "metadata": {
+    "chapterId": "g08_ch01",
+    "chapterName": "Phương Trình Bậc Hai & Định Lý Vieta",
+    "grade": 8,
+    "totalSections": 3,
+    "totalConcepts": 7,
+    "totalProblems": 25,
+    "toolMapping": [
+      "QuadraticTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 20,
+    "prerequisites": [
+      "g07_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "ptb2_01",
+      "sectionName": "Phương trình bậc hai ax²+bx+c=0",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "ptb2_001",
+          "name": "Dạng tổng quát",
+          "definition": "ax² + bx + c = 0 (a ≠ 0). Biệt thức Δ = b² - 4ac"
+        },
+        {
+          "id": "ptb2_002",
+          "name": "Công thức nghiệm",
+          "definition": "Δ > 0: 2 nghiệm x = (-b ± √Δ)/(2a). Δ = 0: nghiệm kép x = -b/(2a). Δ < 0: vô nghiệm"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ptb2_prob_001",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Giải PT: x² - 5x + 6 = 0",
+          "options": [
+            "A) x=2, x=3",
+            "B) x=-2, x=-3",
+            "C) x=1, x=6",
+            "D) x=-1, x=-6"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ = 25-24 = 1. x = (5±1)/2 → x=3 hoặc x=2",
+          "points": 5
+        },
+        {
+          "problemId": "ptb2_prob_002",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Giải PT: x² - 9 = 0",
+          "options": [
+            "A) x = 3",
+            "B) x = -3",
+            "C) x = ±3",
+            "D) x = 9"
+          ],
+          "correctAnswer": "C",
+          "solution": "x² = 9 → x = ±3",
+          "points": 5
+        },
+        {
+          "problemId": "ptb2_prob_003",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Giải PT: 2x² + 3x - 5 = 0",
+          "options": [
+            "A) x=1, x=-5/2",
+            "B) x=-1, x=5/2",
+            "C) x=1, x=5/2",
+            "D) x=-1, x=-5/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ = 9+40 = 49. x = (-3±7)/4 → x=1 hoặc x=-5/2",
+          "points": 10
+        },
+        {
+          "problemId": "ptb2_prob_004",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "PT x² + 2x + 5 = 0 có bao nhiêu nghiệm?",
+          "options": [
+            "A) 0",
+            "B) 1",
+            "C) 2",
+            "D) Vô số"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ = 4-20 = -16 < 0 → vô nghiệm",
+          "points": 10
+        },
+        {
+          "problemId": "ptb2_prob_005",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Giải PT: x² - 4x + 4 = 0",
+          "options": [
+            "A) x = 2 (kép)",
+            "B) x = ±2",
+            "C) x = 4",
+            "D) x = -2 (kép)"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ = 16-16 = 0. x = 4/2 = 2 (nghiệm kép)",
+          "points": 15
+        },
+        {
+          "problemId": "ptb2_prob_006",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Giải PT: 3x² - 7x + 2 = 0",
+          "options": [
+            "A) x=1/3, x=2",
+            "B) x=3, x=2/3",
+            "C) x=-1/3, x=-2",
+            "D) x=1, x=2/3"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ = 49-24 = 25. x = (7±5)/6 → x=2 hoặc x=1/3",
+          "points": 15
+        },
+        {
+          "problemId": "ptb2_prob_007",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Tính Δ của PT x² - 6x + 9 = 0:",
+          "options": [
+            "A) 0",
+            "B) 36",
+            "C) -36",
+            "D) 72"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ = (-6)² - 4(1)(9) = 36 - 36 = 0",
+          "points": 5
+        },
+        {
+          "problemId": "ptb2_prob_008",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Giải PT: x² + x - 12 = 0",
+          "options": [
+            "A) x=3, x=-4",
+            "B) x=-3, x=4",
+            "C) x=2, x=-6",
+            "D) x=-2, x=6"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ = 1+48 = 49. x = (-1±7)/2 → x=3, x=-4",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "ptb2_02",
+      "sectionName": "Định lý Vieta & Ứng dụng",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "ptb2_003",
+          "name": "Định lý Vieta",
+          "definition": "PT ax²+bx+c=0 có 2 nghiệm x₁, x₂ thì: x₁+x₂ = -b/a, x₁×x₂ = c/a"
+        },
+        {
+          "id": "ptb2_004",
+          "name": "Lập PT khi biết 2 nghiệm",
+          "definition": "x² - Sx + P = 0 với S = x₁+x₂, P = x₁×x₂"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ptb2_prob_009",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "PT x²-5x+6=0 có x₁+x₂ = ?",
+          "options": [
+            "A) 5",
+            "B) -5",
+            "C) 6",
+            "D) -6"
+          ],
+          "correctAnswer": "A",
+          "solution": "Vieta: x₁+x₂ = -(-5)/1 = 5",
+          "points": 5
+        },
+        {
+          "problemId": "ptb2_prob_010",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "PT x²-5x+6=0 có x₁×x₂ = ?",
+          "options": [
+            "A) 5",
+            "B) -5",
+            "C) 6",
+            "D) -6"
+          ],
+          "correctAnswer": "C",
+          "solution": "Vieta: x₁×x₂ = 6/1 = 6",
+          "points": 5
+        },
+        {
+          "problemId": "ptb2_prob_011",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "PT 2x²-7x+3=0 có S = x₁+x₂ và P = x₁×x₂. Tính S+P:",
+          "options": [
+            "A) 5",
+            "B) 5/2",
+            "C) 7/2",
+            "D) 5"
+          ],
+          "correctAnswer": "A",
+          "solution": "S = 7/2, P = 3/2. S+P = 7/2+3/2 = 5",
+          "points": 10
+        },
+        {
+          "problemId": "ptb2_prob_012",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Lập PT bậc 2 có 2 nghiệm x₁=3, x₂=-2:",
+          "options": [
+            "A) x²-x-6=0",
+            "B) x²+x-6=0",
+            "C) x²-x+6=0",
+            "D) x²+x+6=0"
+          ],
+          "correctAnswer": "A",
+          "solution": "S=3+(-2)=1, P=3×(-2)=-6. PT: x²-x-6=0",
+          "points": 10
+        },
+        {
+          "problemId": "ptb2_prob_013",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "PT x²-4x+m=0 có 2 nghiệm. Tìm m để x₁²+x₂²=10:",
+          "options": [
+            "A) m=3",
+            "B) m=2",
+            "C) m=5",
+            "D) m=6"
+          ],
+          "correctAnswer": "A",
+          "solution": "x₁²+x₂² = (x₁+x₂)²-2x₁x₂ = 16-2m = 10 → m=3",
+          "points": 15
+        },
+        {
+          "problemId": "ptb2_prob_014",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tìm m để PT x²+2mx+m+2=0 có 2 nghiệm trái dấu:",
+          "options": [
+            "A) m<-2",
+            "B) m>-2",
+            "C) m<2",
+            "D) -2<m<2"
+          ],
+          "correctAnswer": "A",
+          "solution": "2 nghiệm trái dấu ⟺ P<0 → m+2<0 → m<-2",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "ptb2_03",
+      "sectionName": "Phương trình quy về bậc hai",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "ptb2_005",
+          "name": "PT chứa ẩn ở mẫu",
+          "definition": "Quy đồng, nhân chéo → PT bậc 2. Phải kiểm tra ĐK ẩn"
+        },
+        {
+          "id": "ptb2_006",
+          "name": "PT trùng phương",
+          "definition": "ax⁴+bx²+c=0. Đặt t=x² (t≥0) → at²+bt+c=0"
+        },
+        {
+          "id": "ptb2_007",
+          "name": "PT tích",
+          "definition": "A(x)×B(x)=0 ⟺ A(x)=0 hoặc B(x)=0"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ptb2_prob_015",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Giải PT: (x-1)(x+3) = 0",
+          "options": [
+            "A) x=1, x=-3",
+            "B) x=-1, x=3",
+            "C) x=1, x=3",
+            "D) x=-1, x=-3"
+          ],
+          "correctAnswer": "A",
+          "solution": "x-1=0 → x=1 hoặc x+3=0 → x=-3",
+          "points": 5
+        },
+        {
+          "problemId": "ptb2_prob_016",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Giải PT: x³ - 4x = 0",
+          "options": [
+            "A) x=0, x=±2",
+            "B) x=0, x=4",
+            "C) x=±2",
+            "D) x=0, x=2"
+          ],
+          "correctAnswer": "A",
+          "solution": "x(x²-4) = x(x-2)(x+2) = 0 → x=0, x=2, x=-2",
+          "points": 10
+        },
+        {
+          "problemId": "ptb2_prob_017",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Giải PT trùng phương: x⁴ - 5x² + 4 = 0",
+          "options": [
+            "A) x=±1, x=±2",
+            "B) x=1, x=4",
+            "C) x=±1, x=2",
+            "D) x=±2"
+          ],
+          "correctAnswer": "A",
+          "solution": "Đặt t=x²≥0: t²-5t+4=0 → t=1,t=4. x²=1→x=±1, x²=4→x=±2",
+          "points": 10
+        },
+        {
+          "problemId": "ptb2_prob_018",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Giải PT: x⁴ - 10x² + 9 = 0",
+          "options": [
+            "A) x=±1, x=±3",
+            "B) x=±3, x=±9",
+            "C) x=1, x=9",
+            "D) x=±1"
+          ],
+          "correctAnswer": "A",
+          "solution": "t²-10t+9=0 → t=1,t=9. x²=1→x=±1, x²=9→x=±3",
+          "points": 15
+        },
+        {
+          "problemId": "ptb2_prob_019",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Giải PT: (x²-1)(x²-4) = 0",
+          "options": [
+            "A) x=±1, x=±2",
+            "B) x=1, x=4",
+            "C) x=-1, x=-4",
+            "D) x=±1"
+          ],
+          "correctAnswer": "A",
+          "solution": "x²=1→x=±1 hoặc x²=4→x=±2",
+          "points": 15
+        },
+        {
+          "problemId": "ptb2_prob_020",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "PT x²-2x-3=0 phân tích thành:",
+          "options": [
+            "A) (x-3)(x+1)=0",
+            "B) (x+3)(x-1)=0",
+            "C) (x-3)(x-1)=0",
+            "D) (x+3)(x+1)=0"
+          ],
+          "correctAnswer": "A",
+          "solution": "Nghiệm 3,-1 → (x-3)(x+1)=0",
+          "points": 5
+        },
+        {
+          "problemId": "ptb2_prob_021",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Giải PT: |x² - 4| = 5",
+          "options": [
+            "A) x=±3, x=±i",
+            "B) x=±3",
+            "C) x=3, x=-3",
+            "D) x=±1"
+          ],
+          "correctAnswer": "B",
+          "solution": "x²-4=5→x²=9→x=±3 hoặc x²-4=-5→x²=-1 (loại)",
+          "points": 10
+        },
+        {
+          "problemId": "ptb2_prob_022",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Giải PT: x² = 16",
+          "options": [
+            "A) x = 4",
+            "B) x = -4",
+            "C) x = ±4",
+            "D) x = 8"
+          ],
+          "correctAnswer": "C",
+          "solution": "x = ±√16 = ±4",
+          "points": 5
+        },
+        {
+          "problemId": "ptb2_prob_023",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Tìm m để PT x²-2x+m=0 có nghiệm kép:",
+          "options": [
+            "A) m=1",
+            "B) m=-1",
+            "C) m=0",
+            "D) m=4"
+          ],
+          "correctAnswer": "A",
+          "solution": "Nghiệm kép: Δ=0 → 4-4m=0 → m=1",
+          "points": 10
+        },
+        {
+          "problemId": "ptb2_prob_024",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Giải PT: 2x² + x - 6 = 0",
+          "options": [
+            "A) x=3/2, x=-2",
+            "B) x=-3/2, x=2",
+            "C) x=2, x=3",
+            "D) x=-2, x=-3/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ=1+48=49. x=(-1±7)/4 → x=3/2, x=-2",
+          "points": 15
+        },
+        {
+          "problemId": "ptb2_prob_025",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "PT mx²-2(m+1)x+m+3=0 có 2 nghiệm dương khi:",
+          "options": [
+            "A) 0<m≤1",
+            "B) m>0",
+            "C) m<3",
+            "D) -3<m<0"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ'≥0, S>0, P>0 → m≤1, m+1/m>0→m>0, (m+3)/m>0→m>0. Kết hợp: 0<m≤1",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Quên kiểm tra Δ trước khi áp dụng công thức nghiệm",
+      "correction": "LUÔN tính Δ trước. Δ<0 → vô nghiệm"
+    },
+    {
+      "mistake": "Vieta: x₁+x₂ = b/a (thiếu dấu trừ)",
+      "correction": "x₁+x₂ = -b/a (có dấu TRỪ)"
+    },
+    {
+      "mistake": "PT trùng phương: quên ĐK t≥0",
+      "correction": "Đặt t=x², phải có t≥0"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "ptb2_quiz_01",
+      "title": "Kiểm tra: PT bậc hai & Vieta",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "ptb2_prob_001"
+        },
+        {
+          "ref": "ptb2_prob_003"
+        },
+        {
+          "ref": "ptb2_prob_009"
+        },
+        {
+          "ref": "ptb2_prob_015"
+        },
+        {
+          "ref": "ptb2_prob_017"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

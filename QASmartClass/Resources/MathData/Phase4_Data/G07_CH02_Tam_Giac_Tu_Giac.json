@@ -1,0 +1,366 @@
+{
+  "metadata": {
+    "chapterId": "g07_ch02",
+    "chapterName": "Tam Giác & Tứ Giác",
+    "grade": 7,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 15,
+    "toolMapping": [
+      "GeometryTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 16,
+    "prerequisites": [
+      "g06_ch02"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "tg7_01",
+      "sectionName": "Tam giác — Tính chất & Phân loại",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "tg7_001",
+          "name": "Tổng 3 góc = 180°",
+          "definition": "Trong mọi tam giác, tổng 3 góc luôn = 180°",
+          "examples": [
+            "Tam giác có 2 góc 60°, 70° → góc thứ 3 = 50°"
+          ]
+        },
+        {
+          "id": "tg7_002",
+          "name": "Phân loại tam giác",
+          "definition": "Đều (3 cạnh =), Cân (2 cạnh =), Vuông (1 góc 90°), Thường",
+          "examples": [
+            "Tam giác cạnh 5,5,5 = đều = cân"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tg7_p01",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Tam giác ABC: A=50°, B=70°. C = ?",
+          "options": [
+            "A) 50°",
+            "B) 60°",
+            "C) 70°",
+            "D) 80°"
+          ],
+          "correctAnswer": "B",
+          "solution": "C = 180 - 50 - 70 = 60°",
+          "points": 5
+        },
+        {
+          "problemId": "tg7_p02",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tam giác cân tại A, góc A = 40°. Góc B = ?",
+          "options": [
+            "A) 40°",
+            "B) 60°",
+            "C) 70°",
+            "D) 80°"
+          ],
+          "correctAnswer": "C",
+          "solution": "Cân tại A → B = C. B+C = 180-40 = 140. B = 70°",
+          "points": 10
+        },
+        {
+          "problemId": "tg7_p03",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tam giác vuông cân. Góc vuông = 90°. Mỗi góc nhọn = ?",
+          "options": [
+            "A) 30°",
+            "B) 45°",
+            "C) 60°",
+            "D) 90°"
+          ],
+          "correctAnswer": "B",
+          "solution": "Vuông cân: 2 góc nhọn bằng nhau. (180-90)/2 = 45°",
+          "points": 15
+        },
+        {
+          "problemId": "tg7_p04",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Tam giác đều có mỗi góc = ?",
+          "options": [
+            "A) 45°",
+            "B) 60°",
+            "C) 90°",
+            "D) 120°"
+          ],
+          "correctAnswer": "B",
+          "solution": "Đều: 3 góc bằng nhau = 180/3 = 60°",
+          "points": 5
+        },
+        {
+          "problemId": "tg7_p05",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Cạnh tam giác: 3, 4, 5. Tam giác thuộc loại?",
+          "options": [
+            "A) Đều",
+            "B) Cân",
+            "C) Vuông",
+            "D) Tù"
+          ],
+          "correctAnswer": "C",
+          "solution": "3²+4² = 9+16 = 25 = 5² → vuông (Pythagoras)",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "tg7_02",
+      "sectionName": "Trường hợp bằng nhau của tam giác",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "tg7_003",
+          "name": "c.c.c (cạnh-cạnh-cạnh)",
+          "definition": "2 tam giác bằng nhau khi 3 cạnh bằng nhau từng đôi",
+          "examples": [
+            "△ABC = △DEF khi AB=DE, BC=EF, CA=FD"
+          ]
+        },
+        {
+          "id": "tg7_004",
+          "name": "c.g.c & g.c.g",
+          "definition": "c.g.c: 2 cạnh kẹp góc bằng nhau. g.c.g: 2 góc kẹp cạnh bằng nhau",
+          "examples": [
+            "AB=DE, ∠B=∠E, BC=EF → △ABC = △DEF (c.g.c)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tg7_p06",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "2 tam giác có 3 cạnh: (3,4,5) và (3,4,5). Bằng nhau theo?",
+          "options": [
+            "A) c.c.c",
+            "B) c.g.c",
+            "C) g.c.g",
+            "D) Không bằng nhau"
+          ],
+          "correctAnswer": "A",
+          "solution": "3 cạnh bằng nhau từng đôi → c.c.c",
+          "points": 5
+        },
+        {
+          "problemId": "tg7_p07",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "△ABC: AB=5, ∠B=60°, BC=7. △DEF: DE=5, ∠E=60°, EF=7. Bằng nhau theo?",
+          "options": [
+            "A) c.c.c",
+            "B) c.g.c",
+            "C) g.c.g",
+            "D) Không đủ KĐ"
+          ],
+          "correctAnswer": "B",
+          "solution": "2 cạnh kẹp góc bằng nhau: AB=DE, ∠B=∠E, BC=EF → c.g.c",
+          "points": 10
+        },
+        {
+          "problemId": "tg7_p08",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "△ABC = △DEF (c.g.c). AB=DE=6, ∠A=∠D=50°, AC=DF=8. BC = ?",
+          "options": [
+            "A) BC = EF",
+            "B) BC ≠ EF",
+            "C) Không xác định",
+            "D) BC = 6"
+          ],
+          "correctAnswer": "A",
+          "solution": "2 tam giác bằng nhau → cạnh tương ứng bằng nhau: BC = EF",
+          "points": 15
+        },
+        {
+          "problemId": "tg7_p09",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "△ABC và △DEF: ∠A=∠D=40°, AB=DE=5, ∠B=∠E=70°. Bằng nhau theo?",
+          "options": [
+            "A) c.c.c",
+            "B) c.g.c",
+            "C) g.c.g",
+            "D) Không bằng nhau"
+          ],
+          "correctAnswer": "C",
+          "solution": "2 góc kẹp cạnh bằng nhau: ∠A=∠D, AB=DE, ∠B=∠E → g.c.g",
+          "points": 10
+        },
+        {
+          "problemId": "tg7_p10",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Cho △ABC vuông tại A, AB=6, AC=8. △DEF vuông tại D, DE=6, DF=8. CM △ABC = △DEF",
+          "options": [
+            "A) c.c.c",
+            "B) Cạnh huyền - cạnh góc vuông",
+            "C) c.g.c",
+            "D) Cả B và C đúng"
+          ],
+          "correctAnswer": "D",
+          "solution": "Vuông: ∠A=∠D=90°, AB=DE, AC=DF → c.g.c. Hoặc: BC=EF=10, AB=DE, AC=DF → c.c.c. Cả 2 đều đúng",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "tg7_03",
+      "sectionName": "Tứ giác đặc biệt",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "tg7_005",
+          "name": "Hình bình hành",
+          "definition": "Tứ giác có 2 cặp cạnh đối song song. S = đáy × cao",
+          "examples": [
+            "ABCD: AB // CD, AD // BC"
+          ]
+        },
+        {
+          "id": "tg7_006",
+          "name": "Hình thoi & Hình thang",
+          "definition": "Thoi: 4 cạnh bằng nhau. Thang: chỉ 1 cặp cạnh đối song song",
+          "examples": [
+            "Hình thoi: S = d₁×d₂/2 (d = đường chéo)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tg7_p11",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "HBH ABCD: AB = 8 cm, BC = 5 cm. CD = ?",
+          "options": [
+            "A) 5 cm",
+            "B) 8 cm",
+            "C) 10 cm",
+            "D) 13 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "HBH: cạnh đối bằng nhau. AB = CD = 8 cm",
+          "points": 5
+        },
+        {
+          "problemId": "tg7_p12",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Hình thoi có 2 đường chéo 6 cm và 8 cm. S = ?",
+          "options": [
+            "A) 14 cm²",
+            "B) 24 cm²",
+            "C) 48 cm²",
+            "D) 36 cm²"
+          ],
+          "correctAnswer": "B",
+          "solution": "S = d₁×d₂/2 = 6×8/2 = 24 cm²",
+          "points": 10
+        },
+        {
+          "problemId": "tg7_p13",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Hình thang có 2 đáy 5 cm, 9 cm, cao 6 cm. S = ?",
+          "options": [
+            "A) 30 cm²",
+            "B) 42 cm²",
+            "C) 54 cm²",
+            "D) 27 cm²"
+          ],
+          "correctAnswer": "B",
+          "solution": "S = (a+b)×h/2 = (5+9)×6/2 = 42 cm²",
+          "points": 10
+        },
+        {
+          "problemId": "tg7_p14",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "HBH có 1 góc = 60°. Góc đối diện = ?",
+          "options": [
+            "A) 60°",
+            "B) 90°",
+            "C) 120°",
+            "D) 180°"
+          ],
+          "correctAnswer": "A",
+          "solution": "HBH: góc đối bằng nhau. 2 góc kề bù: 60° + 120° = 180°",
+          "points": 15
+        },
+        {
+          "problemId": "tg7_p15",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tứ giác nào vừa là HBH vừa có 4 cạnh bằng nhau?",
+          "options": [
+            "A) Hình chữ nhật",
+            "B) Hình thoi",
+            "C) Hình vuông",
+            "D) Cả B và C"
+          ],
+          "correctAnswer": "D",
+          "solution": "Hình thoi = HBH + 4 cạnh bằng. Hình vuông = HBH + 4 cạnh bằng + 4 góc vuông",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm c.g.c: góc phải KẸP giữa 2 cạnh",
+      "correction": "c.g.c: góc phải nằm GIỮa 2 cạnh đã biết. Nếu góc ko kẹp → chưa đủ KĐ"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "tg7_quiz_01",
+      "title": "Kiểm tra: Tam giác & Tứ giác Lớp 7",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "tg7_p01"
+        },
+        {
+          "ref": "tg7_p06"
+        },
+        {
+          "ref": "tg7_p11"
+        },
+        {
+          "ref": "tg7_p05"
+        },
+        {
+          "ref": "tg7_p14"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

@@ -1,0 +1,98 @@
+﻿<Window x:Class="QASmartTouch.Controls.SystemDiagnosticsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Chẩn Đoán Hệ Thống — Diagnostics" 
+        Height="450" Width="600"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F5F5"
+        FontFamily="Segoe UI"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True">
+    
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,16">
+            <Button x:Name="btnRefresh" Content="🔄 Chạy Lại Chẩn Đoán" DockPanel.Dock="Right" Padding="12,6" 
+                    Background="#1976D2" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnRefresh_Click">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+            <StackPanel>
+                <TextBlock Text="🛠️ HỆ THỐNG CHẨN ĐOÁN LỖI NHANH" FontSize="16" FontWeight="Bold" Foreground="#0D1B2A"/>
+                <TextBlock Text="Thông tin tình trạng cơ sở dữ liệu, mạng LAN và tài nguyên phần mềm" FontSize="11" Foreground="#546E7A" Margin="0,2,0,0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Status Cards -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,16">
+            <StackPanel>
+                <!-- DB Status Card -->
+                <Border Background="White" CornerRadius="8" Padding="14,12" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10">
+                    <DockPanel>
+                        <TextBlock x:Name="txtDbIcon" Text="🟢" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock Text="Cơ Sở Dữ Liệu SQLite" FontWeight="Bold" FontSize="13" Foreground="#212121"/>
+                            <TextBlock x:Name="txtDbStatus" Text="Đang kiểm tra..." FontSize="11" Foreground="#757575" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <!-- Resources Status Card -->
+                <Border Background="White" CornerRadius="8" Padding="14,12" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10">
+                    <DockPanel>
+                        <TextBlock x:Name="txtResIcon" Text="🟢" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock Text="Học Liệu &amp; Tài Nguyên JSON" FontWeight="Bold" FontSize="13" Foreground="#212121"/>
+                            <TextBlock x:Name="txtResStatus" Text="Đang kiểm tra..." FontSize="11" Foreground="#757575" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <!-- Network Status Card -->
+                <Border Background="White" CornerRadius="8" Padding="14,12" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10">
+                    <DockPanel>
+                        <TextBlock x:Name="txtNetIcon" Text="🟢" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock Text="Kết Nối Mạng LAN &amp; IP" FontWeight="Bold" FontSize="13" Foreground="#212121"/>
+                            <TextBlock x:Name="txtNetStatus" Text="Đang kiểm tra..." FontSize="11" Foreground="#757575" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <!-- Fonts Status Card -->
+                <Border Background="White" CornerRadius="8" Padding="14,12" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10">
+                    <DockPanel>
+                        <TextBlock x:Name="txtFontIcon" Text="🟢" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock Text="Định Dạng Font Chữ Hệ Thống" FontWeight="Bold" FontSize="13" Foreground="#212121"/>
+                            <TextBlock x:Name="txtFontStatus" Text="Đang kiểm tra..." FontSize="11" Foreground="#757575" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0" Padding="0,12,0,0">
+            <DockPanel>
+                <Button Content="Đóng Cửa Sổ" DockPanel.Dock="Right" Padding="16,6" Background="#78909C" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnClose_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                <TextBlock Text="QA SmartClass Diagnostics Tool v1.0 • Unicode UTF-8 BOM" FontSize="10" Foreground="#90A4AE" VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

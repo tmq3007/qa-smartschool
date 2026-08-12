@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g05_cuoiki1",
+    "title": "Đề thi Cuối Kì 1 Toán Lớp 5",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 5,
+    "examType": "CuoiKi1"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "V hình hộp CN: dài 5, rộng 3, cao 4 (cm) = ?",
+      "options": [
+        "A) 12 cm³",
+        "B) 60 cm³",
+        "C) 20 cm³",
+        "D) 15 cm³"
+      ],
+      "answer": "B",
+      "solution": "V = 5 × 3 × 4 = 60 cm³"
+    },
+    {
+      "id": 2,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Làm tròn 8,45 đến 1 chữ số thập phân = ?",
+      "options": [
+        "A) 8,4",
+        "B) 8,5",
+        "C) 8,0",
+        "D) 9,0"
+      ],
+      "answer": "B",
+      "solution": "Chữ số sau vị trí = 5 ≥ 5 → tăng 1: 8,5"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Gửi tiết kiệm 10 triệu, lãi suất 6%/năm. Sau 1 năm có tổng cộng bao nhiêu?",
+      "options": [
+        "A) 10,06 triệu",
+        "B) 10,3 triệu",
+        "C) 10,6 triệu",
+        "D) 16 triệu"
+      ],
+      "answer": "C",
+      "solution": "Lãi = 10.000.000 × 6% = 600.000đ. Tổng = 10.600.000đ = 10,6 triệu"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Bể cá hình hộp CN: 60×30×40 cm. Chứa bao nhiêu lít nước (khi đầy)?",
+      "options": [
+        "A) 36 lít",
+        "B) 72 lít",
+        "C) 120 lít",
+        "D) 7200 lít"
+      ],
+      "answer": "B",
+      "solution": "V = 60×30×40 = 72.000 cm³. 1 lít = 1.000 cm³ → 72 lít"
+    },
+    {
+      "id": 5,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Hai thành phố cách nhau 300km. Ô tô đi với vận tốc 60km/h. Hỏi ô tô đi mất bao lâu?",
+      "options": [
+        "A) 4 giờ",
+        "B) 5 giờ",
+        "C) 6 giờ",
+        "D) 3 giờ"
+      ],
+      "answer": "B",
+      "solution": "t = S ÷ v = 300 ÷ 60 = 5 giờ"
+    },
+    {
+      "id": 6,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Chia 60 viên kẹo theo tỉ lệ 2:3 cho An và Bình. An được mấy viên?",
+      "options": [
+        "A) 20",
+        "B) 24",
+        "C) 30",
+        "D) 36"
+      ],
+      "answer": "B",
+      "solution": "Tổng phần = 2+3 = 5. An = 60 × 2/5 = 24 viên"
+    },
+    {
+      "id": 7,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Giá sau tăng 15% là 460.000đ. Giá gốc = ?",
+      "options": [
+        "A) 380.000đ",
+        "B) 391.000đ",
+        "C) 400.000đ",
+        "D) 410.000đ"
+      ],
+      "answer": "C",
+      "solution": "Giá gốc × 1,15 = 460.000. Giá gốc = 460.000 ÷ 1,15 = 400.000đ"
+    },
+    {
+      "id": 8,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tìm x: x + 25 = 61",
+      "options": [
+        "A) 36",
+        "B) 86",
+        "C) 46",
+        "D) 35"
+      ],
+      "answer": "A",
+      "solution": "x = 61 - 25 = 36. Kiểm tra: 36 + 25 = 61 ✓"
+    },
+    {
+      "id": 9,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Ô tô đi 150km trong 3 giờ. Vận tốc ô tô là:",
+      "options": [
+        "A) 50km/h",
+        "B) 45km/h",
+        "C) 60km/h",
+        "D) 30km/h"
+      ],
+      "answer": "A",
+      "solution": "v = S ÷ t = 150 ÷ 3 = 50km/h"
+    },
+    {
+      "id": 10,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Chia 45 viên bi cho 2 bạn theo tỉ lệ 2:3. Bạn nhận nhiều hơn có bao nhiêu viên?",
+      "options": [
+        "A) 18",
+        "B) 27",
+        "C) 20",
+        "D) 25"
+      ],
+      "answer": "B",
+      "solution": "Tổng tỉ lệ = 2+3=5. Bạn nhiều hơn = 45 × 3/5 = 27 viên bi"
+    },
+    {
+      "id": 11,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Ba bạn có tổng cộng 120 viên kẹo. Bạn A có số kẹo gấp đôi bạn B, bạn C có 30 viên. Hỏi bạn A có bao nhiêu viên?",
+      "options": [
+        "A) 50",
+        "B) 60",
+        "C) 45",
+        "D) 40"
+      ],
+      "answer": "B",
+      "solution": "A + B + 30 = 120 → A + B = 90. A = 2B → 2B + B = 90 → 3B = 90 → B = 30 → A = 60"
+    },
+    {
+      "id": 12,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Bản đồ tỉ lệ 1:200.000. Đoạn AB trên bản đồ = 3 cm. Thực tế = ? km",
+      "options": [
+        "A) 3 km",
+        "B) 6 km",
+        "C) 60 km",
+        "D) 600 km"
+      ],
+      "answer": "B",
+      "solution": "3 × 200.000 = 600.000 cm = 6 km"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Hình hộp CN V=120 cm³, đáy 6×5 cm. Chiều cao = ?",
+      "options": [
+        "A) 3 cm",
+        "B) 4 cm",
+        "C) 5 cm",
+        "D) 6 cm"
+      ],
+      "answer": "B",
+      "solution": "h = V ÷ (dài×rộng) = 120 ÷ 30 = 4 cm"
+    },
+    {
+      "id": 14,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Lớp 15 nam, 20 nữ. Tỉ số nam/nữ = ?",
+      "options": [
+        "A) 15/20 = 3/4",
+        "B) 20/15",
+        "C) 15/35",
+        "D) 20/35"
+      ],
+      "answer": "A",
+      "solution": "Tỉ số nam/nữ = 15/20 = 3/4"
+    },
+    {
+      "id": 15,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Lớp 40 HS, 15 HS nữ. % HS nữ = ?",
+      "options": [
+        "A) 25%",
+        "B) 37,5%",
+        "C) 40%",
+        "D) 60%"
+      ],
+      "answer": "B",
+      "solution": "15/40 × 100% = 37,5%"
+    },
+    {
+      "id": 16,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Hình nào KHÔNG có đỉnh?",
+      "options": [
+        "A) Hình hộp",
+        "B) Hình trụ",
+        "C) Hình chóp",
+        "D) Hình lập phương"
+      ],
+      "answer": "B",
+      "solution": "Hình trụ và hình cầu không có đỉnh (chỉ có mặt cong)"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Lon Coca Cola có dạng hình gì?",
+      "options": [
+        "A) Hình hộp",
+        "B) Hình trụ",
+        "C) Hình cầu",
+        "D) Hình nón"
+      ],
+      "answer": "B",
+      "solution": "Lon nước ngọt có dạng hình trụ tròn"
+    },
+    {
+      "id": 18,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Làm tròn 3,74 đến hàng đơn vị = ?",
+      "options": [
+        "A) 3",
+        "B) 3,7",
+        "C) 4",
+        "D) 3,8"
+      ],
+      "answer": "C",
+      "solution": "Chữ số sau hàng đơn vị là 7 ≥ 5 → tăng 1: 3 → 4"
+    },
+    {
+      "id": 19,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Tổng 2 số là 80, hiệu 2 số là 20. Tìm số lớn:",
+      "options": [
+        "A) 40",
+        "B) 50",
+        "C) 60",
+        "D) 30"
+      ],
+      "answer": "B",
+      "solution": "Số lớn = (80 + 20) ÷ 2 = 100 ÷ 2 = 50"
+    },
+    {
+      "id": 20,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Giảm giá 20%. Giá gốc 250.000đ. Giá sau giảm = ?",
+      "options": [
+        "A) 180.000đ",
+        "B) 200.000đ",
+        "C) 210.000đ",
+        "D) 230.000đ"
+      ],
+      "answer": "B",
+      "solution": "Giảm = 250.000 × 20% = 50.000. Sau: 250.000 - 50.000 = 200.000đ"
+    }
+  ]
+}

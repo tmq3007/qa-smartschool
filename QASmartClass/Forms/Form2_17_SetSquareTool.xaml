@@ -1,0 +1,580 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_17_SetSquareTool"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Set Square Tool - Thước Eke"
+
+        Width="1200" Height="1200"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        ResizeMode="NoResize"
+
+        Topmost="True"
+
+        ShowInTaskbar="False"
+
+        Loaded="Window_Loaded">
+
+
+
+    <!-- Button Style Resource -->
+
+    <Window.Resources>
+
+        <Style x:Key="SetSquareButtonStyle" TargetType="Button">
+
+            <Setter Property="Background" Value="#667EEA"/>
+
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}" 
+
+                                CornerRadius="3" Padding="0">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#5568D3"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Grid x:Name="MainGrid" ClipToBounds="False">
+
+
+
+        <Grid x:Name="SetSquareLayerRoot"
+
+              Width="860" Height="340"
+
+              HorizontalAlignment="Center"
+
+              VerticalAlignment="Center"
+
+              RenderTransformOrigin="0.5,0.5"
+
+              ClipToBounds="False">
+
+            <Grid.RenderTransform>
+
+                <TransformGroup>
+
+                    <ScaleTransform x:Name="SetSquareScale" ScaleX="1" ScaleY="1"/>
+
+                    <RotateTransform x:Name="SetSquareRotate" Angle="0"/>
+
+                    <TranslateTransform x:Name="SetSquareTranslate" X="0" Y="0"/>
+
+                </TransformGroup>
+
+            </Grid.RenderTransform>
+
+            <!-- Main Set Square Visual -->
+
+            <Grid x:Name="SetSquareVisual" Panel.ZIndex="0">
+
+                <!-- Triangle Polygon - BẮT ĐẦU TỪ (0,0) -->
+
+                <Polygon x:Name="TriangleBody"
+
+                         Points="0,0 660,0 660,240"
+
+                         Fill="#FFFFFF"
+
+                         Stroke="#E0E0E0"
+
+                         StrokeThickness="0.5"
+
+                         VerticalAlignment="Top"
+
+                         HorizontalAlignment="Left">
+
+                    <Polygon.Effect>
+
+                        <DropShadowEffect Color="Black" Opacity="0.08" ShadowDepth="2" BlurRadius="6"/>
+
+                    </Polygon.Effect>
+
+                </Polygon>
+
+
+
+                <!-- Canvas for Drawing Markings - ĐỒNG BỘ với Polygon -->
+
+                <Canvas x:Name="SetSquareCanvas" 
+
+                        Width="660" Height="240"
+
+                        HorizontalAlignment="Left"
+
+                        VerticalAlignment="Top"
+
+                        Background="Transparent"
+
+                        IsHitTestVisible="False">
+
+                    <!-- Handle Hole -->
+
+                    <Ellipse x:Name="HandleHole"
+
+                             Canvas.Left="615" Canvas.Top="24"
+
+                             Width="18" Height="18"
+
+                             Fill="Transparent"
+
+                             Stroke="#E0E0E0"
+
+                             StrokeThickness="2.5"
+
+                             IsHitTestVisible="False"/>
+
+
+
+                    <!-- Mode Label -->
+
+                    <Border x:Name="ModeDisplay"
+
+                            Canvas.Left="240" Canvas.Top="120"
+
+                            Background="#E0FFFFFF"
+
+                            BorderBrush="#E0E0E0"
+
+                            BorderThickness="2.5"
+
+                            CornerRadius="5"
+
+                            Padding="10,5"
+
+                            IsHitTestVisible="False">
+
+                        <TextBlock x:Name="ModeText" 
+
+                                   Text="30-60-90°"
+
+                                   FontSize="18"
+
+                                   FontWeight="Bold"
+
+                                   Foreground="#333333"
+
+                                   HorizontalAlignment="Center"/>
+
+                    </Border>
+
+                </Canvas>
+
+            </Grid>
+
+
+
+            <!-- Transparent Drawing Area Overlay - Cover toàn bộ tam giác với ZIndex cao nhất -->
+
+            <Polygon x:Name="DrawingAreaOverlay"
+
+                     Points="0,0 660,0 660,240"
+
+                     Fill="Transparent"
+
+                     Stroke="Transparent"
+
+                     VerticalAlignment="Top"
+
+                     HorizontalAlignment="Left"
+
+                     MouseDown="SetSquareCanvas_MouseDown"
+
+                     MouseMove="SetSquareCanvas_MouseMove"
+
+                     MouseUp="SetSquareCanvas_MouseUp"
+
+                     MouseLeave="SetSquareCanvas_MouseLeave"
+
+                     IsHitTestVisible="True"
+
+                     Panel.ZIndex="1"/>
+
+
+
+            <!-- Control Buttons Overlay - Horizontal Layout like RulerTool -->
+
+            <StackPanel x:Name="ButtonPanel"
+
+                        Orientation="Horizontal"
+
+                        HorizontalAlignment="Right"
+
+                        VerticalAlignment="Top"
+
+                        Margin="0,-2,-15,0"
+
+                        Background="#F0FFFFFF"
+
+                        Height="42"
+
+                        Panel.ZIndex="2">
+
+                <StackPanel.Effect>
+
+                    <DropShadowEffect Color="Black" Opacity="0.1" ShadowDepth="1" BlurRadius="4"/>
+
+                </StackPanel.Effect>
+
+
+
+                <!-- Move Button -->
+
+                <Button x:Name="btnMove"
+
+                        Content="✥"
+
+                        Width="32" Height="32"
+
+                        FontSize="14"
+
+                        FontWeight="Bold"
+
+                        ToolTip="Di chuyển"
+
+                        Margin="5,5,2,5"
+
+                        Cursor="SizeAll"
+
+                        PreviewMouseDown="btnMove_PreviewMouseDown"
+
+                        PreviewMouseMove="btnMove_PreviewMouseMove"
+
+                        PreviewMouseUp="btnMove_PreviewMouseUp"
+
+                        Style="{StaticResource SetSquareButtonStyle}"/>
+
+
+
+                <!-- Switch Mode Button -->
+
+                <Button x:Name="btnSwitch"
+
+                        Content="🔄"
+
+                        Width="32" Height="32"
+
+                        FontSize="11"
+
+                        FontWeight="Bold"
+
+                        ToolTip="Chuyển chế độ (30-60-90° ↔ 45-45-90°)"
+
+                        Margin="2,5"
+
+                        Click="btnSwitch_Click"
+
+                        Style="{StaticResource SetSquareButtonStyle}"/>
+
+
+
+                <!-- Rotate CW Button -->
+
+                <Button x:Name="btnRotate"
+
+                        Content="↻"
+
+                        Width="32" Height="32"
+
+                        FontSize="16"
+
+                        FontWeight="Bold"
+
+                        ToolTip="Xoay thuận 15°"
+
+                        Margin="2,5"
+
+                        Click="btnRotate_Click"
+
+                        Style="{StaticResource SetSquareButtonStyle}"/>
+
+
+
+                <!-- Rotate CCW Button -->
+
+                <Button x:Name="btnRotateBack"
+
+                        Content="↺"
+
+                        Width="32" Height="32"
+
+                        FontSize="16"
+
+                        FontWeight="Bold"
+
+                        ToolTip="Xoay ngược 15°"
+
+                        Margin="2,5"
+
+                        Click="btnRotateBack_Click"
+
+                        Style="{StaticResource SetSquareButtonStyle}"/>
+
+
+
+                <!-- Flip Button -->
+
+                <Button x:Name="btnFlip"
+
+                        Content="⇅"
+
+                        Width="32" Height="32"
+
+                        FontSize="14"
+
+                        FontWeight="Bold"
+
+                        ToolTip="Đảo vạch"
+
+                        Margin="2,5"
+
+                        Click="btnFlip_Click"
+
+                        Style="{StaticResource SetSquareButtonStyle}"/>
+
+
+
+                <!-- Close Button -->
+
+                <Button x:Name="btnClose"
+
+                        Content="✕"
+
+                        Width="32" Height="32"
+
+                        FontSize="13"
+
+                        Background="#FF6B6B"
+
+                        Foreground="White"
+
+                        ToolTip="Đóng (Close)"
+
+                        Margin="2,5,5,5"
+
+                        Click="btnClose_Click">
+
+                    <Button.Style>
+
+                        <Style TargetType="Button">
+
+                            <Setter Property="Template">
+
+                                <Setter.Value>
+
+                                    <ControlTemplate TargetType="Button">
+
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="3">
+
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate>
+
+                                </Setter.Value>
+
+                            </Setter>
+
+                            <Style.Triggers>
+
+                                <Trigger Property="IsMouseOver" Value="True">
+
+                                    <Setter Property="Background" Value="#E85454"/>
+
+                                </Trigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </Button.Style>
+
+                </Button>
+
+            </StackPanel>
+
+
+
+            <!-- Quick Draw Triangle Buttons Panel -->
+
+            <StackPanel x:Name="QuickDrawPanel"
+
+                        Orientation="Horizontal"
+
+                        HorizontalAlignment="Right"
+
+                        VerticalAlignment="Top"
+
+                        Margin="0,46,-15,0"
+
+                        Background="#F0FFFFFF"
+
+                        Height="42"
+
+                        Panel.ZIndex="2">
+
+                <StackPanel.Effect>
+
+                    <DropShadowEffect Color="Black" Opacity="0.1" ShadowDepth="1" BlurRadius="4"/>
+
+                </StackPanel.Effect>
+
+
+
+                <!-- Standard Triangle Button -->
+
+                <Button x:Name="btnDrawStandard"
+
+                        Content="△"
+
+                        Width="32" Height="32"
+
+                        FontSize="18"
+
+                        FontWeight="Bold"
+
+                        ToolTip="Vẽ tam giác 30-60-90° chuẩn"
+
+                        Margin="5,5,2,5"
+
+                        Click="BtnDrawStandard_Click"
+
+                        Style="{StaticResource SetSquareButtonStyle}"/>
+
+
+
+                <!-- Equilateral Triangle Button -->
+
+                <Button x:Name="btnDrawEquilateral"
+
+                        Content="▲"
+
+                        Width="32" Height="32"
+
+                        FontSize="16"
+
+                        FontWeight="Bold"
+
+                        ToolTip="Vẽ tam giác đều 60°-60°-60°"
+
+                        Margin="2,5"
+
+                        Click="BtnDrawEquilateral_Click"
+
+                        Style="{StaticResource SetSquareButtonStyle}"/>
+
+
+
+                <!-- Isosceles Right Triangle Button -->
+
+                <Button x:Name="btnDrawIsosceles"
+
+                        Content="◢"
+
+                        Width="32" Height="32"
+
+                        FontSize="18"
+
+                        FontWeight="Bold"
+
+                        ToolTip="Vẽ tam giác vuông cân 45-45-90°"
+
+                        Margin="2,5"
+
+                        Click="BtnDrawIsosceles_Click"
+
+                        Style="{StaticResource SetSquareButtonStyle}"/>
+
+
+
+                <!-- Inverted Triangle Button -->
+
+                <Button x:Name="btnDrawInverted"
+
+                        Content="▽"
+
+                        Width="32" Height="32"
+
+                        FontSize="16"
+
+                        FontWeight="Bold"
+
+                        ToolTip="Vẽ tam giác góc vuông ở đỉnh"
+
+                        Margin="2,5"
+
+                        Click="BtnDrawInverted_Click"
+
+                        Style="{StaticResource SetSquareButtonStyle}"/>
+
+
+
+                <!-- Triangle Grid Pattern Button -->
+
+                <Button x:Name="btnDrawPattern"
+
+                        Content="⬣"
+
+                        Width="32" Height="32"
+
+                        FontSize="16"
+
+                        FontWeight="Bold"
+
+                        ToolTip="Vẽ lưới tam giác (3x2)"
+
+                        Margin="2,5,5,5"
+
+                        Click="BtnDrawPattern_Click"
+
+                        Style="{StaticResource SetSquareButtonStyle}"/>
+
+            </StackPanel>
+
+        </Grid>
+
+    </Grid>
+
+</Window>
+

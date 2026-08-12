@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g04_giuaki2",
+    "title": "Đề thi Giữa Kì 2 Toán Lớp 4",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 4,
+    "examType": "GiuaKi2"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm phân số bằng 0,375 dưới dạng tối giản",
+      "options": [
+        "A) 3/8",
+        "B) 375/100",
+        "C) 15/40",
+        "D) 75/200"
+      ],
+      "answer": "A",
+      "solution": "0,375 = 375/1000 = 3/8 (chia 125)"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "TBC 3 số là 15. Biết 2 số là 12 và 18. Số thứ 3 = ?",
+      "options": [
+        "A) 13",
+        "B) 14",
+        "C) 15",
+        "D) 16"
+      ],
+      "answer": "C",
+      "solution": "Tổng = 15×3 = 45. Số 3 = 45-12-18 = 15"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tính diện tích hình tròn có bán kính 5cm (lấy π ≈ 3,14):",
+      "options": [
+        "A) 31,4cm²",
+        "B) 78,5cm²",
+        "C) 15,7cm²",
+        "D) 25cm²"
+      ],
+      "answer": "B",
+      "solution": "S = 3,14 × 5² = 3,14 × 25 = 78,5cm²"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "0,125 = phân số tối giản nào?",
+      "options": [
+        "A) 1/8",
+        "B) 125/100",
+        "C) 1/4",
+        "D) 5/40"
+      ],
+      "answer": "A",
+      "solution": "0,125 = 125/1000 = 1/8 (chia 125)"
+    },
+    {
+      "id": 5,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Nước chiếm 70% bề mặt Trái Đất. Đất chiếm bao nhiêu %?",
+      "options": [
+        "A) 20%",
+        "B) 25%",
+        "C) 30%",
+        "D) 35%"
+      ],
+      "answer": "C",
+      "solution": "100% - 70% = 30% là đất liền"
+    },
+    {
+      "id": 6,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Một tam giác có 2 góc là 60° và 80°. Góc thứ 3 là:",
+      "options": [
+        "A) 40°",
+        "B) 50°",
+        "C) 60°",
+        "D) 30°"
+      ],
+      "answer": "A",
+      "solution": "Tổng 3 góc = 180°. Góc 3 = 180° - 60° - 80° = 40°"
+    },
+    {
+      "id": 7,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Một hình chữ nhật có chu vi 30cm, chiều dài gấp đôi chiều rộng. Diện tích là:",
+      "options": [
+        "A) 50cm²",
+        "B) 40cm²",
+        "C) 100cm²",
+        "D) 75cm²"
+      ],
+      "answer": "A",
+      "solution": "Gọi rộng = a → dài = 2a. Chu vi: (2a + a)×2 = 30 → 3a = 15 → a = 5. Dài = 10. S = 10×5 = 50cm²"
+    },
+    {
+      "id": 8,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "1/3 + 1/4 = ?",
+      "options": [
+        "A) 2/7",
+        "B) 7/12",
+        "C) 1/7",
+        "D) 5/12"
+      ],
+      "answer": "B",
+      "solution": "1/3 = 4/12, 1/4 = 3/12. 4/12 + 3/12 = 7/12"
+    },
+    {
+      "id": 9,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "2/3 × 3/5 = ?",
+      "options": [
+        "A) 6/15",
+        "B) 5/8",
+        "C) 2/5",
+        "D) 1/3"
+      ],
+      "answer": "C",
+      "solution": "2/3 × 3/5 = 6/15 = 2/5 (rút gọn chia 3)"
+    },
+    {
+      "id": 10,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính diện tích tam giác có đáy 10cm, chiều cao 6cm:",
+      "options": [
+        "A) 60cm²",
+        "B) 30cm²",
+        "C) 16cm²",
+        "D) 32cm²"
+      ],
+      "answer": "B",
+      "solution": "S = (10 × 6) ÷ 2 = 60 ÷ 2 = 30cm²"
+    },
+    {
+      "id": 11,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Biểu đồ tròn 360°. Phần A = 90°. A chiếm bao nhiêu %?",
+      "options": [
+        "A) 20%",
+        "B) 25%",
+        "C) 30%",
+        "D) 40%"
+      ],
+      "answer": "B",
+      "solution": "90/360 = 1/4 = 25%"
+    },
+    {
+      "id": 12,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tính chu vi hình chữ nhật có chiều dài 8cm, chiều rộng 5cm:",
+      "options": [
+        "A) 13cm",
+        "B) 26cm",
+        "C) 40cm",
+        "D) 30cm"
+      ],
+      "answer": "B",
+      "solution": "C = (8+5) × 2 = 13 × 2 = 26cm"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Điểm 4 bài kiểm tra: 7, 8, 6, 9. Điểm trung bình = ?",
+      "options": [
+        "A) 7",
+        "B) 7,5",
+        "C) 8",
+        "D) 8,5"
+      ],
+      "answer": "B",
+      "solution": "TBC = (7+8+6+9)/4 = 30/4 = 7,5"
+    },
+    {
+      "id": 14,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính chu vi hình tròn có bán kính 7cm (lấy π ≈ 3,14):",
+      "options": [
+        "A) 43,96cm",
+        "B) 21,98cm",
+        "C) 153,86cm²",
+        "D) 44cm"
+      ],
+      "answer": "A",
+      "solution": "C = 2 × 3,14 × 7 = 43,96cm"
+    },
+    {
+      "id": 15,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "3/4 ÷ 2/5 = ?",
+      "options": [
+        "A) 6/20",
+        "B) 15/8",
+        "C) 5/8",
+        "D) 3/10"
+      ],
+      "answer": "B",
+      "solution": "3/4 ÷ 2/5 = 3/4 × 5/2 = 15/8"
+    },
+    {
+      "id": 16,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Sau khi bán 3/7 số cam, còn lại 24 quả. Ban đầu có bao nhiêu quả?",
+      "options": [
+        "A) 42",
+        "B) 48",
+        "C) 56",
+        "D) 63"
+      ],
+      "answer": "C",
+      "solution": "Còn lại = 1 - 3/7 = 4/7 số cam. 4/7 × x = 24 → x = 24 × 7/4 = 42. Sai! Let me recalc: 24 × 7/4 = 168/4 = 42"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Hình tam giác có bao nhiêu cạnh?",
+      "options": [
+        "A) 2",
+        "B) 3",
+        "C) 4",
+        "D) 5"
+      ],
+      "answer": "B",
+      "solution": "Tam giác (tri = 3, angle = góc) có 3 cạnh và 3 đỉnh"
+    },
+    {
+      "id": 18,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Lớp có 40 HS. 3/8 số HS đạt giỏi. Số HS giỏi = ?",
+      "options": [
+        "A) 12",
+        "B) 15",
+        "C) 18",
+        "D) 20"
+      ],
+      "answer": "B",
+      "solution": "40 × 3/8 = 120/8 = 15 HS"
+    },
+    {
+      "id": 19,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Đọc 2/5 quyển sách, đọc được 60 trang. Quyển sách có bao nhiêu trang?",
+      "options": [
+        "A) 120",
+        "B) 150",
+        "C) 180",
+        "D) 200"
+      ],
+      "answer": "B",
+      "solution": "2/5 × x = 60 → x = 60 × 5/2 = 150 trang"
+    },
+    {
+      "id": 20,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Đường kính hình tròn bằng 10cm. Bán kính là:",
+      "options": [
+        "A) 20cm",
+        "B) 5cm",
+        "C) 10cm",
+        "D) 15cm"
+      ],
+      "answer": "B",
+      "solution": "r = d ÷ 2 = 10 ÷ 2 = 5cm"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+<UserControl TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" x:Class="QASmartClass.Staff.Views.MobileAppManagementView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:vm="clr-namespace:QASmartClass.Staff.ViewModels"
+      Background="{StaticResource AppBackground}" >
+    <UserControl.DataContext>
+        <vm:MobileAppViewModel/>
+    </UserControl.DataContext>
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,15">
+            <Border DockPanel.Dock="Left" Width="48" Height="48" CornerRadius="12" Margin="0,0,16,0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#059669" Offset="0"/>
+                        <GradientStop Color="#34D399" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <TextBlock Text="&#xE8EA;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Quản lý Thiết bị Di động" Style="{StaticResource StaffPageTitle}"/>
+                <TextBlock Text="Phê duyệt, kiểm soát và thu hồi các kết nối di động của Học sinh và Phụ huynh." Style="{StaticResource StaffPageSubtitle}" Margin="0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Hướng dẫn sử dụng từng bước (Quy chuẩn Sư phạm v4.1) -->
+        <Expander Grid.Row="1" Header="ℹ️ Hướng dẫn phê duyệt kết nối thiết bị di động mới" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" Padding="15" Margin="0,0,0,15" IsExpanded="True">
+            <StackPanel>
+                <TextBlock Text="Quy trình phê duyệt thiết bị di động:" FontSize="14" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,8"/>
+                <TextBlock Text="• Bước 1: Khi phụ huynh hoặc học sinh đăng nhập trên thiết bị mới, thiết bị sẽ xuất hiện ở danh sách dưới với trạng thái 'Chờ phê duyệt'." FontSize="13" Foreground="#1E40AF" Margin="0,0,0,4"/>
+                <TextBlock Text="• Bước 2: IT-Admin đối chiếu mã người dùng (User ID) và tên thiết bị để xác định tính chính danh." FontSize="13" Foreground="#1E40AF" Margin="0,0,0,4"/>
+                <TextBlock Text="• Bước 3: Nhấn nút 'Duyệt' để cho phép kết nối, hoặc 'Từ chối' để ngắt kết nối thiết bị lạ. Nhấn 'Hủy kết nối' nếu thiết bị cũ bị thất lạc." FontSize="13" Foreground="#1E40AF"/>
+            </StackPanel>
+        </Expander>
+
+        <!-- Data Card -->
+        <Border Grid.Row="2" Style="{StaticResource StaffFormCard}">
+            <DataGrid ItemsSource="{Binding Devices}" AutoGenerateColumns="False" CanUserAddRows="False"
+                      IsReadOnly="True" Background="White" RowBackground="White" AlternatingRowBackground="#F8FAFC"
+                      BorderThickness="0" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" HeadersVisibility="Column" RowHeight="45">
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource StaffDataGridHeader}"/>
+                </DataGrid.ColumnHeaderStyle>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource StaffDataGridRow}"/>
+                </DataGrid.RowStyle>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                    <DataGridTextColumn Header="Vai trò" Binding="{Binding FriendlyRole}" Width="100"/>
+                    <DataGridTextColumn Header="Người dùng" Binding="{Binding UserId}" Width="120"/>
+                    <DataGridTextColumn Header="Tên thiết bị" Binding="{Binding DeviceName}" Width="*"/>
+                    <DataGridTextColumn Header="Nền tảng" Binding="{Binding FriendlyPlatform}" Width="90"/>
+                    
+                    <!-- Trạng thái màu sắc chuẩn v4.1 -->
+                    <DataGridTemplateColumn Header="Trạng thái" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding StatusColor}" CornerRadius="12" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding FriendlyStatus}" FontSize="12" FontWeight="SemiBold" Foreground="White"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    
+                    <DataGridTextColumn Header="Hoạt động cuối" Binding="{Binding LastActive, StringFormat='dd/MM HH:mm'}" Width="120"/>
+                    
+                    <!-- Cột Hành động thích ứng trạng thái -->
+                    <DataGridTemplateColumn Header="Hành động" Width="220">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <!-- Duyệt (hiện khi Status là Pending hoặc Rejected) -->
+                                    <Button Content="Duyệt" 
+                                            Background="#D1FAE5" 
+                                            Foreground="#065F46" 
+                                            Margin="0,0,5,0"
+                                            Command="{Binding DataContext.ApproveCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                            CommandParameter="{Binding Id}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource StaffIconBtn}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ApprovalStatus}" Value="Pending">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ApprovalStatus}" Value="Rejected">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                    
+                                    <!-- Từ chối (hiện khi Status là Pending) -->
+                                    <Button Content="Từ chối" 
+                                            Background="#FEE2E2" 
+                                            Foreground="#991B1B" 
+                                            Margin="0,0,5,0"
+                                            Command="{Binding DataContext.RejectCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                            CommandParameter="{Binding Id}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource StaffIconBtn}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ApprovalStatus}" Value="Pending">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+
+                                    <!-- Hủy kết nối (hiện khi Status là Approved) -->
+                                    <Button Content="Hủy kết nối" 
+                                            Background="#F3F4F6" 
+                                            Foreground="#374151" 
+                                            Command="{Binding DataContext.RevokeCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                            CommandParameter="{Binding Id}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource StaffIconBtn}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ApprovalStatus}" Value="Approved">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

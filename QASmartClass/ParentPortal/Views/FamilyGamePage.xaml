@@ -1,0 +1,179 @@
+<Page x:Class="QASmartClass.ParentPortal.Views.FamilyGamePage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Family Game" Background="#F0F9FF" FontFamily="Segoe UI">
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <TextBlock Text="🎮 Family Game: Hiểu Con Yêu" FontSize="26" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,20"/>
+
+
+
+        <Grid Grid.Row="1">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="2*"/>
+
+                <ColumnDefinition Width="1*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Quiz Section -->
+
+            <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="30" Margin="0,0,20,0">
+
+                <Border.Effect><DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+
+                <Grid>
+                    <!-- Welcome / Onboarding Panel -->
+                    <Grid x:Name="GridWelcome" Visibility="Visible">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="💡 Luật chơi &amp; Hướng dẫn" FontSize="22" FontWeight="Bold" Foreground="#1E3A5F" Margin="0,0,0,20"/>
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,0,0,20">
+                                <TextBlock Text="Chào mừng Phụ huynh tham gia Game 'Hiểu Con Yêu'!" FontSize="15" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,12" TextWrapping="Wrap"/>
+                                <TextBlock Text="Đây là trò chơi tương tác ngắn giúp cha mẹ hiểu thêm về các hoạt động, sở thích, thế mạnh và mong muốn của con tại trường học." FontSize="14" Foreground="#334155" Margin="0,0,0,16" TextWrapping="Wrap"/>
+
+                                <Border Background="#F0F9FF" CornerRadius="8" Padding="15" BorderBrush="#BAE6FD" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="Cách chơi rất đơn giản:" FontWeight="Bold" FontSize="14" Foreground="#0369A1" Margin="0,0,0,8"/>
+                                        <TextBlock Text="• Mỗi phiên chơi gồm 5 câu hỏi ngẫu nhiên." FontSize="13" Foreground="#334155" Margin="0,3"/>
+                                        <TextBlock Text="• Mỗi câu hỏi có 4 lựa chọn, hãy chọn đáp án đúng nhất về con mình." FontSize="13" Foreground="#334155" Margin="0,3"/>
+                                        <TextBlock Text="• Chọn đúng: +20 điểm. Chọn sai: Không bị trừ điểm." FontSize="13" Foreground="#334155" Margin="0,3"/>
+                                        <TextBlock Text="• Điểm tối đa có thể đạt được là 100 điểm." FontSize="13" Foreground="#334155" Margin="0,3"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <Button Grid.Row="2" x:Name="BtnStartGame" Content="Bắt đầu chơi" Click="BtnStartGame_Click" Background="#22C55E" Foreground="White" Padding="30,12" FontSize="16" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Actual Quiz Grid -->
+                    <Grid x:Name="GridQuiz" Visibility="Collapsed">
+
+                        <Grid.RowDefinitions>
+
+                            <RowDefinition Height="Auto"/>
+
+                            <RowDefinition Height="*"/>
+
+                            <RowDefinition Height="Auto"/>
+
+                        </Grid.RowDefinitions>
+
+                        
+
+                        <TextBlock x:Name="TxtQuestion" Text="Câu hỏi..." FontSize="22" FontWeight="Bold" Foreground="#334155" TextWrapping="Wrap" Margin="0,0,0,30"/>
+
+                        
+
+                        <StackPanel Grid.Row="1" x:Name="SpOptions" VerticalAlignment="Center">
+
+                            <!-- Options will be dynamically generated -->
+
+                        </StackPanel>
+
+                        
+
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,0">
+
+                            <TextBlock x:Name="TxtProgress" Text="Câu 1/5" FontSize="16" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,20,0"/>
+
+                            <Button x:Name="BtnNext" Content="Tiếp theo" Click="BtnNext_Click" Background="#3B82F6" Foreground="White" Padding="20,10" FontSize="16" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Visibility="Collapsed"/>
+
+                        </StackPanel>
+
+                    </Grid>
+                </Grid>
+
+            </Border>
+
+
+
+            <!-- Leaderboard Section -->
+
+            <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="20">
+
+                <Border.Effect><DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+
+                        <RowDefinition Height="Auto"/>
+
+                        <RowDefinition Height="*"/>
+
+                    </Grid.RowDefinitions>
+
+                    
+
+                    <TextBlock Text="🏆 Bảng Xếp Hạng" FontSize="18" FontWeight="Bold" Foreground="#F59E0B" Margin="0,0,0,15"/>
+
+                    <ListView Grid.Row="1" x:Name="LvLeaderboard" BorderThickness="0" Background="Transparent">
+
+                        <ListView.ItemTemplate>
+
+                            <DataTemplate>
+
+                                <Border Background="#FEF3C7" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+
+                                    <Grid>
+
+                                        <Grid.ColumnDefinitions>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                            <ColumnDefinition Width="Auto"/>
+
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Text="{Binding ParentName}" FontSize="14" FontWeight="SemiBold" Foreground="#92400E"/>
+
+                                        <TextBlock Grid.Column="1" Text="{Binding ScoreText}" FontSize="14" FontWeight="Bold" Foreground="#D97706"/>
+
+                                    </Grid>
+
+                                </Border>
+
+                            </DataTemplate>
+
+                        </ListView.ItemTemplate>
+
+                    </ListView>
+
+                </Grid>
+
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+</Page>
+
+
+

@@ -1,0 +1,335 @@
+{
+  "metadata": {
+    "chapterId": "g11_ch01",
+    "chapterName": "Lượng Giác Nâng Cao",
+    "grade": 11,
+    "totalSections": 4,
+    "totalConcepts": 12,
+    "totalProblems": 11,
+    "toolMapping": [
+      "TrigonometryTool",
+      "TrigEquationTool",
+      "IdentityTool"
+    ],
+    "thptWeight": "6%",
+    "estimatedHours": 20
+  },
+  "sections": [
+    {
+      "sectionId": "lg_01",
+      "sectionName": "Công thức lượng giác",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "lg_001",
+          "name": "Công thức cộng",
+          "formulas": [
+            "sin(a±b) = sina·cosb ± cosa·sinb",
+            "cos(a±b) = cosa·cosb ∓ sina·sinb",
+            "tan(a±b) = (tana ± tanb)/(1 ∓ tana·tanb)"
+          ]
+        },
+        {
+          "id": "lg_002",
+          "name": "Công thức nhân đôi",
+          "formulas": [
+            "sin2a = 2sina·cosa",
+            "cos2a = cos²a - sin²a = 2cos²a - 1 = 1 - 2sin²a",
+            "tan2a = 2tana/(1-tan²a)"
+          ]
+        },
+        {
+          "id": "lg_003",
+          "name": "Công thức hạ bậc",
+          "formulas": [
+            "sin²a = (1-cos2a)/2",
+            "cos²a = (1+cos2a)/2"
+          ]
+        },
+        {
+          "id": "lg_004",
+          "name": "Biến đổi tổng thành tích",
+          "formulas": [
+            "sinA+sinB = 2sin((A+B)/2)·cos((A-B)/2)",
+            "cosA+cosB = 2cos((A+B)/2)·cos((A-B)/2)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lg_prob_001",
+          "difficulty": "Easy",
+          "question": "Tính sin75° =",
+          "options": [
+            "A) (√6+√2)/4",
+            "B) (√6-√2)/4",
+            "C) √3/2",
+            "D) 1/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "sin75°=sin(45°+30°)=sin45°cos30°+cos45°sin30°=(√2/2)(√3/2)+(√2/2)(1/2)=(√6+√2)/4",
+          "points": 10
+        },
+        {
+          "problemId": "lg_prob_002",
+          "difficulty": "Medium",
+          "question": "Rút gọn: cos²x - sin²x =",
+          "options": [
+            "A) cos2x",
+            "B) sin2x",
+            "C) 1",
+            "D) -cos2x"
+          ],
+          "correctAnswer": "A",
+          "solution": "cos²x - sin²x = cos2x (công thức nhân đôi)",
+          "points": 10
+        },
+        {
+          "problemId": "lg_prob_003",
+          "difficulty": "Medium",
+          "question": "Cho sinx = 3/5, x∈(0;π/2). Tính sin2x.",
+          "options": [
+            "A) 24/25",
+            "B) 12/25",
+            "C) 6/5",
+            "D) 7/25"
+          ],
+          "correctAnswer": "A",
+          "solution": "cosx=4/5 (vì x góc phần tư I). sin2x=2sinx·cosx=2·3/5·4/5=24/25",
+          "points": 15
+        },
+        {
+          "problemId": "lg_prob_004",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Biểu thức (sinx+sin3x)/(cosx+cos3x) bằng:",
+          "options": [
+            "A) tan2x",
+            "B) sin2x",
+            "C) cos2x",
+            "D) tanx"
+          ],
+          "correctAnswer": "A",
+          "solution": "VT = 2sin2x·cosx / (2cos2x·cosx) = sin2x/cos2x = tan2x = VP",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "lg_02",
+      "sectionName": "Phương trình lượng giác cơ bản",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "lg_005",
+          "name": "PT sinx = a",
+          "formula": "x = α + k2π hoặc x = π-α + k2π (|a|≤1)"
+        },
+        {
+          "id": "lg_006",
+          "name": "PT cosx = a",
+          "formula": "x = ±α + k2π (|a|≤1)"
+        },
+        {
+          "id": "lg_007",
+          "name": "PT tanx = a",
+          "formula": "x = α + kπ"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lg_prob_005",
+          "difficulty": "Easy",
+          "question": "Giải: sinx = 1/2",
+          "options": [
+            "A) x=π/6+k2π, x=5π/6+k2π",
+            "B) x=π/3+k2π",
+            "C) x=π/6+kπ",
+            "D) x=kπ"
+          ],
+          "correctAnswer": "A",
+          "solution": "sinx=sin(π/6) → x=π/6+k2π hoặc x=π-π/6+k2π=5π/6+k2π",
+          "points": 10
+        },
+        {
+          "problemId": "lg_prob_006",
+          "difficulty": "Medium",
+          "question": "Số nghiệm của cosx=√2/2 trên [0;4π) là:",
+          "options": [
+            "A) 2",
+            "B) 4",
+            "C) 6",
+            "D) 8"
+          ],
+          "correctAnswer": "B",
+          "solution": "x=±π/4+k2π. Trên [0;4π): x=π/4, 7π/4, 9π/4, 15π/4. Tổng 4 nghiệm",
+          "points": 15
+        },
+        {
+          "problemId": "lg_prob_007",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Nghiệm của PT 2sin²x - 3sinx + 1 = 0 là:",
+          "options": [
+            "A) x=π/2+k2π, x=π/6+k2π, x=5π/6+k2π",
+            "B) x=π/6+kπ",
+            "C) x=π/2+kπ",
+            "D) x=kπ"
+          ],
+          "correctAnswer": "A",
+          "solution": "Đặt t=sinx. 2t²-3t+1=0→t=1,t=1/2.\nsinx=1→x=π/2+k2π.\nsinx=1/2→x=π/6+k2π, x=5π/6+k2π",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "lg_03",
+      "sectionName": "PT lượng giác nâng cao",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "lg_008",
+          "name": "PT asinx + bcosx = c",
+          "method": "Chia 2 vế cho √(a²+b²), đưa về dạng sin(x+φ)=c/√(a²+b²)"
+        },
+        {
+          "id": "lg_009",
+          "name": "PT đẳng cấp bậc 2",
+          "method": "Chia cos²x, đặt t=tanx"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lg_prob_008",
+          "difficulty": "Medium",
+          "question": "Giải: sinx + √3·cosx = 2",
+          "options": [
+            "A) x=π/6+k2π",
+            "B) x=π/3+k2π",
+            "C) x=-π/6+k2π",
+            "D) Vô nghiệm"
+          ],
+          "correctAnswer": "A",
+          "solution": "2sin(x+π/3)=2→sin(x+π/3)=1→x+π/3=π/2+k2π→x=π/6+k2π",
+          "points": 15
+        },
+        {
+          "problemId": "lg_prob_009",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Nghiệm của PT sin²x - 3sinx·cosx + 2cos²x = 0 là:",
+          "options": [
+            "A) x=π/4+kπ hoặc x=arctan2+kπ",
+            "B) x=π/4+k2π",
+            "C) x=kπ",
+            "D) x=π/3+kπ"
+          ],
+          "correctAnswer": "A",
+          "solution": "Chia cos²x: tan²x-3tanx+2=0→tanx=1,tanx=2.\nx=π/4+kπ hoặc x=arctan2+kπ",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "lg_04",
+      "sectionName": "Hàm số lượng giác",
+      "order": 4,
+      "concepts": [
+        {
+          "id": "lg_010",
+          "name": "Đồ thị hàm lượng giác",
+          "details": {
+            "sinx": "Chu kỳ 2π, biên độ 1",
+            "cosx": "Chu kỳ 2π, lệch pha π/2",
+            "tanx": "Chu kỳ π, TCĐ x=π/2+kπ"
+          }
+        },
+        {
+          "id": "lg_011",
+          "name": "Tìm GTLN-GTNN",
+          "formula": "y=asinx+bcosx → |y|≤√(a²+b²)"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lg_prob_010",
+          "difficulty": "Easy",
+          "question": "GTLN của y=3sinx-4cosx là:",
+          "options": [
+            "A) 7",
+            "B) 5",
+            "C) 1",
+            "D) 25"
+          ],
+          "correctAnswer": "B",
+          "solution": "y_max=√(9+16)=√25=5",
+          "points": 10
+        },
+        {
+          "problemId": "lg_prob_011",
+          "difficulty": "Medium",
+          "question": "Tìm GTNN của y=sin²x+2sinx+3:",
+          "options": [
+            "A) 2",
+            "B) 3",
+            "C) 6",
+            "D) 1"
+          ],
+          "correctAnswer": "A",
+          "solution": "y=(sinx+1)²+2. sinx=-1→y_min=0+2=2",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Quên nghiệm thứ 2 của PT sinx=a",
+      "correction": "sinx=a luôn có 2 họ nghiệm: α+k2π VÀ π-α+k2π"
+    },
+    {
+      "mistake": "Nhầm dấu cos(a-b) với cos(a+b)",
+      "correction": "cos(a-b)=cosa·cosb+sina·sinb (dấu +)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "lg_quiz_01",
+      "title": "Kiểm tra: Lượng giác",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "lg_prob_001"
+        },
+        {
+          "ref": "lg_prob_005"
+        },
+        {
+          "ref": "lg_prob_006"
+        },
+        {
+          "ref": "lg_prob_008"
+        },
+        {
+          "ref": "lg_prob_010"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

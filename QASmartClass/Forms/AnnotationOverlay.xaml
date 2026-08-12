@@ -1,0 +1,30 @@
+﻿<Window x:Class="QASmartTouch.Forms.AnnotationOverlay"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Annotation Overlay"
+        WindowStyle="None"
+        Background="#01000000"
+        AllowsTransparency="True"
+        Topmost="False"
+        WindowState="Maximized"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Cursor="Pen"
+        ForceCursor="True">
+
+    <!-- Drawing Canvas -->
+    <Canvas x:Name="DrawingCanvas"
+            Background="Transparent"
+            Cursor="Pen"
+            ForceCursor="True"
+            MouseDown="DrawingCanvas_MouseDown"
+            MouseMove="DrawingCanvas_MouseMove"
+            MouseUp="DrawingCanvas_MouseUp"
+            StylusDown="DrawingCanvas_StylusDown"
+            StylusMove="DrawingCanvas_StylusMove"
+            StylusUp="DrawingCanvas_StylusUp">
+        
+        <!-- All strokes will be added here dynamically -->
+        
+    </Canvas>
+</Window>

@@ -1,0 +1,876 @@
+<Window FontFamily="Segoe UI" x:Class="QASmartTouch.PeriodicTable.Views.ReactivityWindow"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="🧪 DÃY HOẠT ĐỘNG HÓA HỌC CỦA KIM LOẠI" 
+
+        Height="750" Width="1100"
+
+        WindowStartupLocation="CenterScreen"
+
+        Background="#F5F5F5"
+
+        ResizeMode="CanResize">
+
+    
+
+    <Window.Resources>
+
+        <!-- Reaction Cell Style -->
+
+        <Style x:Key="ReactionCellStyle" TargetType="Border">
+
+            <Setter Property="Padding" Value="10"/>
+
+            <Setter Property="Margin" Value="1"/>
+
+            <Setter Property="CornerRadius" Value="6"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="BorderThickness" Value="1"/>
+
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="BorderBrush" Value="#1976D2"/>
+
+                    <Setter Property="BorderThickness" Value="2"/>
+
+                    <Setter Property="Effect">
+
+                        <Setter.Value>
+
+                            <DropShadowEffect ShadowDepth="2" BlurRadius="6" Color="#1976D2" Opacity="0.3"/>
+
+                        </Setter.Value>
+
+                    </Setter>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+
+
+        <!-- Metal Name Style -->
+
+        <Style x:Key="MetalNameStyle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="13"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Setter Property="Foreground" Value="#424242"/>
+
+            <Setter Property="VerticalAlignment" Value="Center"/>
+
+        </Style>
+
+
+
+        <!-- Header Style -->
+
+        <Style x:Key="HeaderStyle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="15"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+
+            <Setter Property="VerticalAlignment" Value="Center"/>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <Border Grid.Row="0" Background="#5C6BC0" Padding="20,15">
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+                
+
+                <StackPanel Grid.Column="0">
+
+                    <TextBlock Text="🧪 DÃY HOẠT ĐỘNG HÓA HỌC CỦA KIM LOẠI" 
+
+                              FontSize="24" FontWeight="Bold" 
+
+                              Foreground="White"/>
+
+                    <TextBlock Text="Dãy hoạt động hóa học - Mức độ giảm dần từ trên xuống dưới" 
+
+                              FontSize="13" 
+
+                              Foreground="#E8EAF6"
+
+                              Margin="0,5,0,0"/>
+
+                </StackPanel>
+
+
+
+                <Button Grid.Column="1" 
+
+                        Content="❌ Đóng" 
+
+                        Width="80" Height="35"
+
+                        Background="#757575" 
+
+                        Foreground="White"
+
+                        FontWeight="Bold"
+
+                        BorderThickness="0"
+
+                        Cursor="Hand"
+
+                        Click="CloseButton_Click">
+
+                    <Button.Style>
+
+                        <Style TargetType="Button">
+
+                            <Setter Property="Template">
+
+                                <Setter.Value>
+
+                                    <ControlTemplate TargetType="Button">
+
+                                        <Border Background="{TemplateBinding Background}" 
+
+                                                CornerRadius="5">
+
+                                            <ContentPresenter HorizontalAlignment="Center" 
+
+                                                            VerticalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate>
+
+                                </Setter.Value>
+
+                            </Setter>
+
+                            <Style.Triggers>
+
+                                <Trigger Property="IsMouseOver" Value="True">
+
+                                    <Setter Property="Background" Value="#616161"/>
+
+                                </Trigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </Button.Style>
+
+                </Button>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- Toolbar -->
+
+        <Border Grid.Row="1" Background="White" Padding="15,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <!-- Search Box -->
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+
+                    <TextBlock Text="🔍" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+
+                    <TextBlock Text="Tìm kiếm:" FontSize="13" FontWeight="SemiBold" 
+
+                              VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                    <TextBox Name="SearchBox" 
+
+                            Width="250" Height="32"
+
+                            VerticalContentAlignment="Center"
+
+                            Padding="8,0"
+
+                            FontSize="13"
+
+                            TextChanged="SearchBox_TextChanged"/>
+
+                    <TextBlock Text="(Ví dụ: Na, Natri, dữ dội, mạnh...)" 
+
+                              FontSize="11" FontStyle="Italic" 
+
+                              Foreground="#757575"
+
+                              VerticalAlignment="Center"
+
+                              Margin="8,0,0,0"/>
+
+                </StackPanel>
+
+
+
+                <!-- Filter Combo -->
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="15,0">
+
+                    <TextBlock Text="📊" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+
+                    <TextBlock Text="Lọc:" FontSize="13" FontWeight="SemiBold" 
+
+                              VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                    <ComboBox Name="FilterCombo" 
+
+                             Width="180" Height="32"
+
+                             VerticalContentAlignment="Center"
+
+                             FontSize="13"
+
+                             SelectionChanged="FilterCombo_SelectionChanged">
+
+                        <ComboBoxItem Content="🔸 Tất cả kim loại" IsSelected="True"/>
+
+                        <ComboBoxItem Content="⚡ Phản ứng mạnh"/>
+
+                        <ComboBoxItem Content="💥 Phản ứng vừa phải"/>
+
+                        <ComboBoxItem Content="❌ Không phản ứng"/>
+
+                        <ComboBoxItem Content="🔵 Chỉ H (mốc)"/>
+
+                    </ComboBox>
+
+                </StackPanel>
+
+
+
+                <!-- Compare Button -->
+
+                <Button Grid.Column="2" 
+
+                        Content="⚖️ So sánh 2 kim loại" 
+
+                        Width="160" Height="35"
+
+                        Background="#4CAF50" 
+
+                        Foreground="White"
+
+                        FontWeight="Bold"
+
+                        FontSize="13"
+
+                        BorderThickness="0"
+
+                        Cursor="Hand"
+
+                        Click="CompareButton_Click">
+
+                    <Button.Style>
+
+                        <Style TargetType="Button">
+
+                            <Setter Property="Template">
+
+                                <Setter.Value>
+
+                                    <ControlTemplate TargetType="Button">
+
+                                        <Border Background="{TemplateBinding Background}" 
+
+                                                CornerRadius="5">
+
+                                            <ContentPresenter HorizontalAlignment="Center" 
+
+                                                            VerticalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate>
+
+                                </Setter.Value>
+
+                            </Setter>
+
+                            <Style.Triggers>
+
+                                <Trigger Property="IsMouseOver" Value="True">
+
+                                    <Setter Property="Background" Value="#388E3C"/>
+
+                                </Trigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </Button.Style>
+
+                </Button>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- Main Table -->
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+
+            <Grid Margin="15">
+
+                <Grid.RowDefinitions>
+
+                    <RowDefinition Height="Auto"/>
+
+                    <RowDefinition Height="*"/>
+
+                </Grid.RowDefinitions>
+
+
+
+                <!-- Table Header -->
+
+                <Grid Grid.Row="0" Margin="0,0,0,2">
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="120"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+
+
+                    <Border Grid.Column="0" Background="#424242" Padding="10">
+
+                        <TextBlock Text="Kim loại" Style="{StaticResource HeaderStyle}"/>
+
+                    </Border>
+
+
+
+                    <Border Grid.Column="1" Background="#64B5F6" Padding="10" Margin="2,0,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="💧 Nước lạnh" Style="{StaticResource HeaderStyle}"/>
+
+                            <TextBlock Text="(Click để xem PTHH)" 
+
+                                      FontSize="10" Foreground="White" 
+
+                                      HorizontalAlignment="Center" Margin="0,3,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <Border Grid.Column="2" Background="#81C784" Padding="10" Margin="2,0,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="💨 Hơi nước" Style="{StaticResource HeaderStyle}"/>
+
+                            <TextBlock Text="(Click để xem PTHH)" 
+
+                                      FontSize="10" Foreground="White" 
+
+                                      HorizontalAlignment="Center" Margin="0,3,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <Border Grid.Column="3" Background="#FFB74D" Padding="10" Margin="2,0,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="⚗️ Axit loãng" Style="{StaticResource HeaderStyle}"/>
+
+                            <TextBlock Text="(Click để xem PTHH)" 
+
+                                      FontSize="10" Foreground="White" 
+
+                                      HorizontalAlignment="Center" Margin="0,3,0,0"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </Grid>
+
+
+
+                <!-- Table Body (Data Binding) -->
+
+                <ItemsControl Grid.Row="1" Name="MetalsItemsControl" Margin="0,2,0,0">
+
+                    <ItemsControl.ItemTemplate>
+
+                        <DataTemplate>
+
+                            <Grid Margin="0,1">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="120"/>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                </Grid.ColumnDefinitions>
+
+
+
+                                <!-- Metal Name Column -->
+
+                                <Border Grid.Column="0" Background="#FAFAFA" Padding="10" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="{Binding Symbol}" 
+
+                                                  FontSize="18" FontWeight="Bold" 
+
+                                                  Foreground="#FF6B00"
+
+                                                  HorizontalAlignment="Center"/>
+
+                                        <TextBlock Text="{Binding Name}" 
+
+                                                  FontSize="12" 
+
+                                                  Foreground="#616161"
+
+                                                  HorizontalAlignment="Center"
+
+                                                  Margin="0,3,0,0"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+
+
+                                <!-- Cold Water Column -->
+
+                                <Border Grid.Column="1" 
+
+                                        Style="{StaticResource ReactionCellStyle}"
+
+                                        Background="{Binding ColdWaterColor}"
+
+                                        Margin="2,0,0,0"
+
+                                        MouseLeftButtonDown="ReactionCell_Click"
+
+                                        Tag="ColdWater">
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="{Binding ColdWaterIcon}" 
+
+                                                  FontSize="24" 
+
+                                                  HorizontalAlignment="Center"
+
+                                                  Foreground="{Binding ColdWaterTextColor}"/>
+
+                                        <TextBlock Text="{Binding ColdWater}" 
+
+                                                  FontSize="12" 
+
+                                                  FontWeight="SemiBold"
+
+                                                  TextWrapping="Wrap"
+
+                                                  TextAlignment="Center"
+
+                                                  Foreground="{Binding ColdWaterTextColor}"
+
+                                                  Margin="0,4,0,0"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+
+
+                                <!-- Hot Water Column -->
+
+                                <Border Grid.Column="2" 
+
+                                        Style="{StaticResource ReactionCellStyle}"
+
+                                        Background="{Binding HotWaterColor}"
+
+                                        Margin="2,0,0,0"
+
+                                        MouseLeftButtonDown="ReactionCell_Click"
+
+                                        Tag="HotWater">
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="{Binding HotWaterIcon}" 
+
+                                                  FontSize="24" 
+
+                                                  HorizontalAlignment="Center"
+
+                                                  Foreground="{Binding HotWaterTextColor}"/>
+
+                                        <TextBlock Text="{Binding HotWater}" 
+
+                                                  FontSize="12" 
+
+                                                  FontWeight="SemiBold"
+
+                                                  TextWrapping="Wrap"
+
+                                                  TextAlignment="Center"
+
+                                                  Foreground="{Binding HotWaterTextColor}"
+
+                                                  Margin="0,4,0,0"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+
+
+                                <!-- Acid Column -->
+
+                                <Border Grid.Column="3" 
+
+                                        Style="{StaticResource ReactionCellStyle}"
+
+                                        Background="{Binding AcidColor}"
+
+                                        Margin="2,0,0,0"
+
+                                        MouseLeftButtonDown="ReactionCell_Click"
+
+                                        Tag="Acid">
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="{Binding AcidIcon}" 
+
+                                                  FontSize="24" 
+
+                                                  HorizontalAlignment="Center"
+
+                                                  Foreground="{Binding AcidTextColor}"/>
+
+                                        <TextBlock Text="{Binding Acid}" 
+
+                                                  FontSize="12" 
+
+                                                  FontWeight="SemiBold"
+
+                                                  TextWrapping="Wrap"
+
+                                                  TextAlignment="Center"
+
+                                                  Foreground="{Binding AcidTextColor}"
+
+                                                  Margin="0,4,0,0"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </Grid>
+
+                        </DataTemplate>
+
+                    </ItemsControl.ItemTemplate>
+
+                </ItemsControl>
+
+            </Grid>
+
+        </ScrollViewer>
+
+
+
+        <!-- Legend -->
+
+        <Border Grid.Row="3" Background="White" Padding="15,10" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                <TextBlock Text="📌 Chú giải: " FontSize="13" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,15,0"/>
+
+                
+
+                <Border Background="#FFE5E5" Width="24" Height="24" CornerRadius="4" Margin="5,0" BorderBrush="#E0E0E0" BorderThickness="1"/>
+
+                <TextBlock Text="⚡ Dữ dội" FontSize="12" FontWeight="SemiBold" Foreground="#C62828" VerticalAlignment="Center" Margin="5,0,20,0"/>
+
+                
+
+                <Border Background="#FFF4E6" Width="24" Height="24" CornerRadius="4" Margin="5,0" BorderBrush="#E0E0E0" BorderThickness="1"/>
+
+                <TextBlock Text="🔥 Mạnh" FontSize="12" FontWeight="SemiBold" Foreground="#EF6C00" VerticalAlignment="Center" Margin="5,0,20,0"/>
+
+                
+
+                <Border Background="#FFFBEA" Width="24" Height="24" CornerRadius="4" Margin="5,0" BorderBrush="#E0E0E0" BorderThickness="1"/>
+
+                <TextBlock Text="💥 Vừa phải" FontSize="12" FontWeight="SemiBold" Foreground="#F9A825" VerticalAlignment="Center" Margin="5,0,20,0"/>
+
+                
+
+                <Border Background="#F5F0EB" Width="24" Height="24" CornerRadius="4" Margin="5,0" BorderBrush="#E0E0E0" BorderThickness="1"/>
+
+                <TextBlock Text="🌡️ Chậm" FontSize="12" FontWeight="SemiBold" Foreground="#6D4C41" VerticalAlignment="Center" Margin="5,0,20,0"/>
+
+                
+
+                <Border Background="#F5F5F5" Width="24" Height="24" CornerRadius="4" Margin="5,0" BorderBrush="#E0E0E0" BorderThickness="1"/>
+
+                <TextBlock Text="❌ Không" FontSize="12" FontWeight="SemiBold" Foreground="#616161" VerticalAlignment="Center" Margin="5,0,20,0"/>
+
+                
+
+                <Border Background="#E3F2FD" Width="24" Height="24" CornerRadius="4" Margin="5,0" BorderBrush="#E0E0E0" BorderThickness="1"/>
+
+                <TextBlock Text="⚛️ Mốc (H)" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" VerticalAlignment="Center" Margin="5,0"/>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- Detail Popup (Initially Hidden) -->
+
+        <Border Name="DetailPopup" 
+
+                Grid.RowSpan="4"
+
+                Background="#CC000000"
+
+                Visibility="Collapsed"
+
+                MouseLeftButtonDown="DetailPopup_Click">
+
+            <Border Background="White" 
+
+                    Width="900" Height="675"
+
+                    CornerRadius="10"
+
+                    Padding="0"
+
+                    VerticalAlignment="Center"
+
+                    HorizontalAlignment="Center">
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+
+                        <RowDefinition Height="Auto"/>
+
+                        <RowDefinition Height="*"/>
+
+                        <RowDefinition Height="Auto"/>
+
+                    </Grid.RowDefinitions>
+
+
+
+                    <!-- Popup Header -->
+
+                    <Border Grid.Row="0" Background="#5C6BC0" CornerRadius="10,10,0,0" Padding="30,20">
+
+                        <Grid>
+
+                            <TextBlock Name="PopupTitle" 
+
+                                      Text="⚛️ CHI TIẾT PHẢN ỨNG" 
+
+                                      FontSize="24" FontWeight="Bold" 
+
+                                      Foreground="White"
+
+                                      HorizontalAlignment="Center"/>
+
+                        </Grid>
+
+                    </Border>
+
+
+
+                    <!-- Popup Content -->
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="35">
+
+                        <StackPanel Name="PopupContent">
+
+                            <!-- Content will be dynamically populated -->
+
+                        </StackPanel>
+
+                    </ScrollViewer>
+
+
+
+                    <!-- Popup Footer -->
+
+                    <Border Grid.Row="2" Background="#F5F5F5" CornerRadius="0,0,10,10" Padding="30,20">
+
+                        <Button Content="✖️ Đóng" 
+
+                                Width="140" Height="45"
+
+                                Background="#757575" 
+
+                                Foreground="White"
+
+                                FontSize="16"
+
+                                FontWeight="Bold"
+
+                                BorderThickness="0"
+
+                                Cursor="Hand"
+
+                                HorizontalAlignment="Center"
+
+                                Click="ClosePopup_Click">
+
+                            <Button.Style>
+
+                                <Style TargetType="Button">
+
+                                    <Setter Property="Template">
+
+                                        <Setter.Value>
+
+                                            <ControlTemplate TargetType="Button">
+
+                                                <Border Background="{TemplateBinding Background}" 
+
+                                                        CornerRadius="5">
+
+                                                    <ContentPresenter HorizontalAlignment="Center" 
+
+                                                                    VerticalAlignment="Center"/>
+
+                                                </Border>
+
+                                            </ControlTemplate>
+
+                                        </Setter.Value>
+
+                                    </Setter>
+
+                                    <Style.Triggers>
+
+                                        <Trigger Property="IsMouseOver" Value="True">
+
+                                            <Setter Property="Background" Value="#616161"/>
+
+                                        </Trigger>
+
+                                    </Style.Triggers>
+
+                                </Style>
+
+                            </Button.Style>
+
+                        </Button>
+
+                    </Border>
+
+                </Grid>
+
+            </Border>
+
+        </Border>
+
+    </Grid>
+
+</Window>
+
+
+

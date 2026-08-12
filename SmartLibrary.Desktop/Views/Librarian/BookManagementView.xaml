@@ -1,0 +1,222 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Librarian.BookManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1000"
+             Loaded="UserControl_Loaded" Unloaded="UserControl_Unloaded"
+             KeyDown="UserControl_KeyDown" Focusable="True">
+    <Grid Background="{DynamicResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="📚 Danh mục sách và nhập kho" ActionButtonText="➕ Thêm mới" OnActionClick="TopBarControl_OnActionClick"/>
+
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Actions & Status -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Border Grid.Column="0" Background="{DynamicResource CardBrush}" CornerRadius="8" Padding="12,8">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" Opacity="0.05" BlurRadius="6" ShadowDepth="1"/>
+                    </Border.Effect>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="⬅️ Trở về Dashboard" Command="{Binding DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="📊 Dashboard" Style="{StaticResource SecondaryButton}" Margin="0,0,16,0" Padding="16,8" BorderThickness="0" FontWeight="SemiBold"/>
+                        
+                        <Rectangle Width="2" Fill="{DynamicResource BorderBrush}" Margin="0,4,16,4"/>
+                        
+                        <Button Content="🔄 Làm mới" Command="{Binding LoadBooksCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Padding="12,8"/>
+                        <Button Content="📥 Nhập từ CSV" Command="{Binding ImportCsvCommand}" Style="{StaticResource SuccessButton}" Margin="0,0,8,0" Padding="12,8"/>
+                        <Button Content="🖨️ In tem nhãn" Command="{Binding PrintBarcodeCommand}" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" Padding="12,8"/>
+
+                        <!-- Nút mô phỏng quét RFID -->
+                        <Button Content="📡 Quét 5 thẻ RFID" Command="{Binding SimulateRfidScanCommand}" Style="{StaticResource WarningButton}" Margin="0,0,0,0" Padding="16,8"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Grid.Column="1" Text="{Binding StatusMessage}" Foreground="{DynamicResource SuccessTextBrush}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            </Grid>
+
+            <!-- Search & ISBN Input Bar -->
+            <Grid Grid.Row="1" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="420"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Tìm kiếm & Lọc -->
+                <Grid Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="140"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Ô tìm kiếm -->
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Tìm kiếm nhanh" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <Grid>
+                            <TextBox x:Name="TxtSearch" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" 
+                                     Style="{StaticResource ModernInputStyle}" Height="38"
+                                     Padding="12,10" VerticalContentAlignment="Center" TabIndex="1" MaxLength="100"/>
+                            <TextBlock Text="🔍 Tìm kiếm tên sách, tác giả, ISBN..." 
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="14" IsHitTestVisible="False"
+                                       VerticalAlignment="Center" Margin="14,0,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=TxtSearch}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Lọc Thể Loại -->
+                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                        <TextBlock Text="Lọc thể loại" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <ComboBox x:Name="ComboCategory" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
+                                  Style="{StaticResource ModernComboBox}" VerticalContentAlignment="Center" Height="38" TabIndex="2" ToolTip="Nhấn Alt+C để mở nhanh"/>
+                    </StackPanel>
+
+                    <!-- Lọc Nhóm Tuổi -->
+                    <StackPanel Grid.Column="2" Margin="8,0,0,0">
+                        <TextBlock Text="Lọc lứa tuổi" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                        <ComboBox x:Name="ComboAgeGroup" ItemsSource="{Binding AgeGroups}" SelectedItem="{Binding SelectedAgeGroup}"
+                                  Style="{StaticResource ModernComboBox}" VerticalContentAlignment="Center" Height="38" TabIndex="3" ToolTip="Nhấn Alt+A để mở nhanh"/>
+                    </StackPanel>
+                </Grid>
+                
+                <!-- Biên mục tự động qua ISBN -->
+                <StackPanel Grid.Column="1" Margin="16,0,0,0">
+                    <TextBlock Text="Tự động biên mục qua ISBN" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="TxtIsbnInput" Text="{Binding IsbnInput, UpdateSourceTrigger=PropertyChanged}" 
+                                 Style="{StaticResource ModernInputStyle}" Height="38"
+                                 Padding="12,10" VerticalContentAlignment="Center" TabIndex="4" MaxLength="20"/>
+                        <TextBlock Text="📖 Nhập hoặc quét mã ISBN..." 
+                                   Foreground="{DynamicResource TextSecondaryBrush}" FontSize="14" IsHitTestVisible="False"
+                                   VerticalAlignment="Center" Margin="14,0,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=TxtIsbnInput}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <Button Grid.Column="1" Content="⚡ Tự động biên mục" 
+                                Command="{Binding LookupIsbnCommand}" 
+                                Style="{StaticResource SuccessButton}" 
+                                Height="38" Padding="12,0" Margin="8,0,0,0" TabIndex="5"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+
+            <!-- DataGrid -->
+            <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="8">
+                <Grid>
+                    <DataGrid Style="{StaticResource ModernDataGrid}" ItemsSource="{Binding Books}" 
+                              RowHeight="40"
+                              VirtualizingStackPanel.IsVirtualizing="True"
+                              VirtualizingStackPanel.VirtualizationMode="Recycling"
+                              ScrollViewer.CanContentScroll="True">
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="Chọn" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="60">
+                                <DataGridCheckBoxColumn.ElementStyle>
+                                    <Style TargetType="CheckBox">
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridCheckBoxColumn.ElementStyle>
+                            </DataGridCheckBoxColumn>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="ISBN" Binding="{Binding Isbn}" Width="150" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Tựa sách" Binding="{Binding Title}" Width="*" IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                        <Setter Property="ToolTip" Value="{Binding Title}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Tác giả" Binding="{Binding Author}" Width="200" IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                        <Setter Property="ToolTip" Value="{Binding Author}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Tổng số lượng" Binding="{Binding TotalCopies}" Width="80" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Còn lại" Binding="{Binding AvailableCopies}" Width="80" IsReadOnly="True"/>
+                            <DataGridTemplateColumn Header="Nghe thử" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="🎵 Nghe thử" 
+                                                Command="{Binding DataContext.PlayTeaserCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource InfoButton}" 
+                                                Height="28" Padding="6,2" FontSize="11" FontWeight="Bold"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Empty State Card -->
+                    <Border Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="400" Margin="24">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Books.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="📚" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <TextBlock Text="Không tìm thấy cuốn sách nào phù hợp!" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                            <TextBlock Text="Vui lòng thử tìm kiếm bằng từ khóa khác hoặc điều chỉnh lại bộ lọc." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Busy Overlay -->
+        <Grid Grid.Row="0" Grid.RowSpan="2" Background="{DynamicResource PopupOverlayBrush}" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="200" Height="14" Foreground="{DynamicResource SuccessBrush}" Background="{DynamicResource BorderBrush}" BorderBrush="{DynamicResource BorderBrush}" Margin="0,0,0,12"/>
+                <TextBlock Text="Đang xử lý dữ liệu..." Foreground="White" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

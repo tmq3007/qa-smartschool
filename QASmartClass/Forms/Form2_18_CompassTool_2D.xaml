@@ -1,0 +1,315 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_18_CompassTool_2D"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Compass Tool 2D - Compa Vẽ Hình Tròn"
+        Width="320" Height="400"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Loaded="Window_Loaded">
+
+    <Grid x:Name="MainGrid" RenderTransformOrigin="0.5,0.5" ClipToBounds="False">
+        <Grid.RenderTransform>
+            <TransformGroup>
+                <ScaleTransform x:Name="CompassScale" ScaleX="1" ScaleY="1"/>
+                <RotateTransform x:Name="CompassRotate" Angle="0"/>
+            </TransformGroup>
+        </Grid.RenderTransform>
+
+        <Grid x:Name="CompassLayerRoot" Margin="20">
+            <!-- Main Compass Visual -->
+            <Canvas x:Name="CompassCanvas" Width="280" Height="360">
+                
+                <!-- ========== CHÂN TRÁI - BÚT CHÌ (Pencil Leg) ========== -->
+                <Canvas x:Name="LeftLeg" Canvas.Left="100" Canvas.Top="80">
+                    <Canvas.RenderTransform>
+                        <RotateTransform x:Name="LeftLegRotate" Angle="-20" CenterX="10" CenterY="0"/>
+                    </Canvas.RenderTransform>
+                    
+                    <!-- Thân bút -->
+                    <Rectangle Width="20" Height="150" RadiusX="3" RadiusY="3">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#FFC107" Offset="0"/>
+                                <GradientStop Color="#FF9800" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    
+                    <!-- Viền kim loại trên -->
+                    <Rectangle Width="20" Height="8" Fill="#C0C0C0" Canvas.Top="0"/>
+                    
+                    <!-- Viền kim loại dưới -->
+                    <Rectangle Width="20" Height="8" Fill="#C0C0C0" Canvas.Top="142"/>
+                    
+                    <!-- Đầu nhọn -->
+                    <Polygon Points="0,150 10,165 20,150" Fill="#3E2723"/>
+                    
+                    <!-- Highlight -->
+                    <Rectangle Width="4" Height="130" Fill="#FFD54F" Opacity="0.6" Canvas.Left="3" Canvas.Top="10"/>
+                </Canvas>
+
+                <!-- ========== CHÂN PHẢI - KIM NHỌN (Needle Leg) ========== -->
+                <Canvas x:Name="RightLeg" Canvas.Left="160" Canvas.Top="80">
+                    <Canvas.RenderTransform>
+                        <RotateTransform x:Name="RightLegRotate" Angle="20" CenterX="7.5" CenterY="0"/>
+                    </Canvas.RenderTransform>
+                    
+                    <!-- Thân kim -->
+                    <Rectangle Width="15" Height="150" RadiusX="2" RadiusY="2">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#B0BEC5" Offset="0"/>
+                                <GradientStop Color="#78909C" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    
+                    <!-- Đầu nhọn -->
+                    <Polygon Points="0,150 7.5,162 15,150" Fill="#455A64"/>
+                    
+                    <!-- Metallic highlight -->
+                    <Rectangle Width="3" Height="130" Fill="#ECEFF1" Opacity="0.5" Canvas.Left="2" Canvas.Top="10"/>
+                </Canvas>
+
+                <!-- ========== KHỚP TRUNG TÂM (Center Joint) ========== -->
+                <Border x:Name="CenterJoint"
+                        Canvas.Left="120" Canvas.Top="30"
+                        Width="40" Height="50"
+                        Background="#9E9E9E"
+                        BorderBrush="#616161"
+                        BorderThickness="2"
+                        CornerRadius="5"
+                        Cursor="SizeAll"
+                        MouseLeftButtonDown="CenterJoint_MouseDown"
+                        MouseLeftButtonUp="CenterJoint_MouseUp"
+                        MouseMove="CenterJoint_MouseMove">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" Opacity="0.3" ShadowDepth="2" BlurRadius="4"/>
+                    </Border.Effect>
+                    
+                    <TextBlock Text="D"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Núm điều chỉnh -->
+                <Ellipse Canvas.Left="130" Canvas.Top="5"
+                         Width="20" Height="20"
+                         Fill="#BDBDBD"
+                         Stroke="#757575"
+                         StrokeThickness="1"/>
+
+                <!-- ========== THANH ĐIỀU CHỈNH (Adjustment Bar) ========== -->
+                <Line x:Name="AdjustmentBar"
+                      X1="110" Y1="80"
+                      X2="170" Y2="80"
+                      Stroke="#9E9E9E"
+                      StrokeThickness="8"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"/>
+
+                <!-- Khớp trái -->
+                <Ellipse Canvas.Left="104" Canvas.Top="74"
+                         Width="12" Height="12"
+                         Fill="#757575"
+                         Stroke="#424242"
+                         StrokeThickness="1"/>
+
+                <!-- Khớp phải -->
+                <Ellipse Canvas.Left="164" Canvas.Top="74"
+                         Width="12" Height="12"
+                         Fill="#757575"
+                         Stroke="#424242"
+                         StrokeThickness="1"/>
+
+                <!-- ========== INFO DISPLAY ========== -->
+                <Border x:Name="InfoDisplay"
+                        Canvas.Left="40" Canvas.Top="280"
+                        Background="#E0FFFFFF"
+                        BorderBrush="#2196F3"
+                        BorderThickness="2"
+                        CornerRadius="5"
+                        Padding="10,5">
+                    <StackPanel>
+                        <TextBlock x:Name="RadiusText"
+                                   Text="Bán kính: 50px"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="#2196F3"/>
+                        <TextBlock x:Name="DiameterText"
+                                   Text="Đường kính: 100px"
+                                   FontSize="10"
+                                   Foreground="#666"
+                                   Margin="0,2,0,0"/>
+                        <TextBlock x:Name="CircumferenceText"
+                                   Text="Chu vi: 314.16px"
+                                   FontSize="10"
+                                   Foreground="#666"/>
+                        <TextBlock x:Name="AreaText"
+                                   Text="Diện tích: 7853.98px²"
+                                   FontSize="10"
+                                   Foreground="#666"/>
+                    </StackPanel>
+                </Border>
+            </Canvas>
+
+            <!-- ========== CONTROL BUTTONS ========== -->
+            <StackPanel x:Name="ButtonPanel"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,-2,20,0"
+                        Background="#F0FFFFFF"
+                        Height="42">
+                <StackPanel.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.1" ShadowDepth="1" BlurRadius="4"/>
+                </StackPanel.Effect>
+
+                <!-- Radius Input -->
+                <TextBox x:Name="RadiusInput"
+                         Text="50"
+                         Width="50"
+                         Height="32"
+                         FontSize="12"
+                         VerticalContentAlignment="Center"
+                         TextAlignment="Center"
+                         Margin="5,5,2,5"
+                         ToolTip="Bán kính (px)"
+                         PreviewKeyDown="RadiusInput_KeyDown"
+                         GotFocus="RadiusInput_GotFocus"/>
+
+                <!-- Draw Button -->
+                <Button x:Name="btnDraw"
+                        Content="🎯"
+                        Width="32" Height="32"
+                        FontSize="12"
+                        ToolTip="Vẽ hình tròn"
+                        Margin="2,5"
+                        Click="btnDraw_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#E0FFFFFF"/>
+                            <Setter Property="BorderBrush" Value="#4CAF50"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#4CAF50"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <!-- Close Button -->
+                <Button x:Name="btnClose"
+                        Content="✕"
+                        Width="32" Height="32"
+                        FontSize="13"
+                        FontWeight="Bold"
+                        Background="#FF6B6B"
+                        Foreground="White"
+                        ToolTip="Đóng"
+                        Margin="2,5,5,5"
+                        Click="btnClose_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#FF6B6B"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#E85454"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+
+            <!-- ========== QUICK DRAW BUTTONS ========== -->
+            <StackPanel x:Name="QuickDrawPanel"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,46,20,0"
+                        Background="#F0FFFFFF"
+                        Height="42">
+                <StackPanel.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.1" ShadowDepth="1" BlurRadius="4"/>
+                </StackPanel.Effect>
+                <StackPanel.Resources>
+                    <Style TargetType="Button" x:Key="QuickDrawButtonStyle">
+                        <Setter Property="Background" Value="#E0FFFFFF"/>
+                        <Setter Property="BorderBrush" Value="#2196F3"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                        <Setter Property="Width" Value="40"/>
+                        <Setter Property="Height" Value="32"/>
+                        <Setter Property="FontSize" Value="10"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="Margin" Value="2,5"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="3">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Resources>
+
+                <Button Content="25px" ToolTip="Vẽ hình tròn 25px" Margin="5,5,2,5"
+                        Click="btnDraw25_Click" Style="{StaticResource QuickDrawButtonStyle}"/>
+                <Button Content="50px" ToolTip="Vẽ hình tròn 50px"
+                        Click="btnDraw50_Click" Style="{StaticResource QuickDrawButtonStyle}"/>
+                <Button Content="75px" ToolTip="Vẽ hình tròn 75px"
+                        Click="btnDraw75_Click" Style="{StaticResource QuickDrawButtonStyle}"/>
+                <Button Content="100px" ToolTip="Vẽ hình tròn 100px"
+                        Click="btnDraw100_Click" Style="{StaticResource QuickDrawButtonStyle}"/>
+                <Button Content="150px" ToolTip="Vẽ hình tròn 150px" Margin="2,5,5,5"
+                        Click="btnDraw150_Click" Style="{StaticResource QuickDrawButtonStyle}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

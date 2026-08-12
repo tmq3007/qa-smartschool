@@ -1,0 +1,402 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_22_Desmos3DGraph"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+
+        Title="Đồ thị hàm số 3D - Desmos"
+
+        Width="1400" Height="900"
+
+        WindowStartupLocation="CenterScreen"
+
+        Background="#F5F6FA">
+
+
+
+    <Window.Resources>
+
+        <!-- Modern Button Style -->
+
+        <Style x:Key="ModernButton" TargetType="Button">
+
+            <Setter Property="Background" Value="#2196F3"/>
+
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="Padding" Value="20,12"/>
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                                CornerRadius="8"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center"
+
+                                            VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#1976D2"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+
+
+        <!-- Cancel Button Style -->
+
+        <Style x:Key="CancelButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+
+            <Setter Property="Background" Value="#F1F2F6"/>
+
+            <Setter Property="Foreground" Value="#2F3542"/>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#DFE4EA"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <!-- Header -->
+
+            <RowDefinition Height="*"/>
+
+            <!-- WebView -->
+
+            <RowDefinition Height="Auto"/>
+
+            <!-- Footer -->
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <Border Grid.Row="0" Background="White" BorderBrush="#E1E8ED" BorderThickness="0,0,0,1">
+
+            <Grid Margin="20,15">
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <!-- Title -->
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+
+                    <TextBlock Text="📊" FontSize="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                    <StackPanel>
+
+                        <TextBlock Text="Đồ thị hàm số 3D - Desmos"
+
+                                   FontSize="18"
+
+                                   FontWeight="Bold"
+
+                                   Foreground="#2F3542"/>
+
+                        <TextBlock Text="Vẽ và khám phá đồ thị 3D tương tác"
+
+                                   FontSize="12"
+
+                                   Foreground="#747D8C"
+
+                                   Margin="0,2,0,0"/>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+
+
+                <!-- Close Button -->
+
+                <Button x:Name="btnClose"
+
+                        Grid.Column="1"
+
+                        Content="✕"
+
+                        Width="36" Height="36"
+
+                        FontSize="18"
+
+                        FontWeight="Bold"
+
+                        Background="#EE5A6F"
+
+                        Foreground="White"
+
+                        BorderThickness="0"
+
+                        Cursor="Hand"
+
+                        Click="btnClose_Click">
+
+                    <Button.Template>
+
+                        <ControlTemplate TargetType="Button">
+
+                            <Border Background="{TemplateBinding Background}"
+
+                                    CornerRadius="18">
+
+                                <ContentPresenter HorizontalAlignment="Center"
+
+                                                VerticalAlignment="Center"/>
+
+                            </Border>
+
+                        </ControlTemplate>
+
+                    </Button.Template>
+
+                    <Button.Style>
+
+                        <Style TargetType="Button">
+
+                            <Setter Property="Background" Value="#EE5A6F"/>
+
+                            <Style.Triggers>
+
+                                <Trigger Property="IsMouseOver" Value="True">
+
+                                    <Setter Property="Background" Value="#D63447"/>
+
+                                </Trigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </Button.Style>
+
+                </Button>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- WebView2 Container -->
+
+        <Border Grid.Row="1" Background="White" Margin="10">
+
+            <Grid>
+
+                <!-- Loading Indicator -->
+
+                <Border x:Name="LoadingPanel"
+
+                        Background="White"
+
+                        Visibility="Visible">
+
+                    <StackPanel HorizontalAlignment="Center"
+
+                                VerticalAlignment="Center">
+
+                        <TextBlock Text="⏳"
+
+                                   FontSize="48"
+
+                                   HorizontalAlignment="Center"
+
+                                   Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Đang tải Desmos 3D Calculator..."
+
+                                   FontSize="16"
+
+                                   Foreground="#747D8C"
+
+                                   HorizontalAlignment="Center"/>
+
+                        <ProgressBar IsIndeterminate="True"
+
+                                     Width="200"
+
+                                     Height="4"
+
+                                     Margin="0,15,0,0"
+
+                                     Foreground="#2196F3"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- WebView2 -->
+
+                <wv2:WebView2 x:Name="webView"
+
+                              Source="https://www.desmos.com/3d"
+
+                              NavigationCompleted="WebView_NavigationCompleted"/>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- Footer Actions -->
+
+        <Border Grid.Row="2" Background="White" BorderBrush="#E1E8ED" BorderThickness="0,1,0,0">
+
+            <Grid Margin="20,15">
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <!-- Info Text -->
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+
+                    <TextBlock Text="Mẹo: Sử dụng chuột để xoay, zoom đồ thị 3D"
+
+                               FontSize="12"
+
+                               Foreground="#747D8C"/>
+
+                    <TextBlock Text="Nhấn 'Chèn vào bảng' để thêm đồ thị vào canvas"
+
+                               FontSize="11"
+
+                               Foreground="#95A5A6"
+
+                               Margin="0,2,0,0"/>
+
+                </StackPanel>
+
+
+
+                <!-- Action Buttons -->
+
+                <StackPanel Grid.Column="1"
+
+                            Orientation="Horizontal"
+
+                            HorizontalAlignment="Right">
+
+                    <Button x:Name="btnCancel"
+
+                            Content="Hủy"
+
+                            Width="100"
+
+                            Style="{StaticResource CancelButton}"
+
+                            Margin="0,0,10,0"
+
+                            Click="btnCancel_Click"/>
+
+
+
+                    <Button x:Name="btnInsert"
+
+                            Content="✓ Chèn vào bảng"
+
+                            Width="150"
+
+                            Background="#4CAF50"
+
+                            Click="btnInsert_Click">
+
+                        <Button.Style>
+
+                            <Style TargetType="Button" BasedOn="{StaticResource ModernButton}">
+
+                                <Setter Property="Background" Value="#4CAF50"/>
+
+                                <Style.Triggers>
+
+                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                        <Setter Property="Background" Value="#388E3C"/>
+
+                                    </Trigger>
+
+                                </Style.Triggers>
+
+                            </Style>
+
+                        </Button.Style>
+
+                    </Button>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+</Window>
+

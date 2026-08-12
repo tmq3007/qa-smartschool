@@ -1,0 +1,294 @@
+{
+  "metadata": {
+    "chapterId": "g06_ch04",
+    "chapterName": "Thống Kê & Xác Suất (THCS)",
+    "grade": 6,
+    "totalSections": 2,
+    "totalConcepts": 4,
+    "totalProblems": 12,
+    "toolMapping": [
+      "StatisticsTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 10,
+    "prerequisites": []
+  },
+  "sections": [
+    {
+      "sectionId": "tk6_01",
+      "sectionName": "Thu thập & Trình bày dữ liệu",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "tk6_001",
+          "name": "Bảng tần số",
+          "definition": "Ghi lại số lần xuất hiện (tần số) của mỗi giá trị",
+          "examples": [
+            "Điểm 8 xuất hiện 5 lần → tần số = 5"
+          ]
+        },
+        {
+          "id": "tk6_002",
+          "name": "Biểu đồ tần số",
+          "definition": "Dùng cột để biểu diễn tần số",
+          "examples": [
+            "Cột cao nhất = giá trị xuất hiện nhiều nhất = Mốt"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tk6_p01",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Dữ liệu: 5,7,8,5,6,7,5,8,9,5. Tần số của 5 = ?",
+          "options": [
+            "A) 2",
+            "B) 3",
+            "C) 4",
+            "D) 5"
+          ],
+          "correctAnswer": "C",
+          "solution": "Đếm số lần xuất hiện: 5 xuất hiện 4 lần",
+          "points": 5
+        },
+        {
+          "problemId": "tk6_p02",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Cùng dữ liệu trên. Mốt (Mo) = ?",
+          "options": [
+            "A) 5",
+            "B) 7",
+            "C) 8",
+            "D) 9"
+          ],
+          "correctAnswer": "A",
+          "solution": "5 xuất hiện nhiều nhất (4 lần) → Mốt = 5",
+          "points": 10
+        },
+        {
+          "problemId": "tk6_p03",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Trung bình dữ liệu: 5,7,8,5,6,7,5,8,9,5 = ?",
+          "options": [
+            "A) 6,0",
+            "B) 6,5",
+            "C) 7,0",
+            "D) 7,5"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tổng = 5+7+8+5+6+7+5+8+9+5 = 65. TB = 65/10 = 6,5",
+          "points": 10
+        },
+        {
+          "problemId": "tk6_p04",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Trung vị (Me) của dữ liệu sắp xếp: 5,5,5,5,6,7,7,8,8,9 = ?",
+          "options": [
+            "A) 6",
+            "B) 6,5",
+            "C) 7",
+            "D) 5"
+          ],
+          "correctAnswer": "B",
+          "solution": "10 số → Me = TB(số thứ 5, thứ 6) = (6+7)/2 = 6,5",
+          "points": 15
+        },
+        {
+          "problemId": "tk6_p05",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Biểu đồ nào thể hiện tần số tốt nhất?",
+          "options": [
+            "A) Biểu đồ tròn",
+            "B) Biểu đồ cột",
+            "C) Biểu đồ đường",
+            "D) Bảng số liệu"
+          ],
+          "correctAnswer": "B",
+          "solution": "Biểu đồ cột (tần số) hiển thị rõ số lần xuất hiện của mỗi giá trị",
+          "points": 5
+        },
+        {
+          "problemId": "tk6_p06",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Lớp 30 HS. Điểm 7: 8 HS, điểm 8: 12 HS, điểm 9: 6 HS, điểm 10: 4 HS. Tần số tương đối điểm 8 = ?%",
+          "options": [
+            "A) 30%",
+            "B) 40%",
+            "C) 50%",
+            "D) 12%"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tần số tương đối = 12/30 = 0,4 = 40%",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "tk6_02",
+      "sectionName": "Xác suất cơ bản",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "tk6_003",
+          "name": "Xác suất thực nghiệm",
+          "definition": "P(A) = Số lần A xảy ra / Tổng số lần thử",
+          "examples": [
+            "Gieo xúc xắc 100 lần, mặt 6 xuất hiện 18 lần → P ≈ 18%"
+          ]
+        },
+        {
+          "id": "tk6_004",
+          "name": "Xác suất lý thuyết",
+          "definition": "P(A) = Số KQ thuận lợi / Tổng KQ có thể",
+          "examples": [
+            "Gieo xúc xắc: P(mặt 6) = 1/6"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tk6_p07",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Gieo xúc xắc. P(mặt chẵn) = ?",
+          "options": [
+            "A) 1/6",
+            "B) 1/3",
+            "C) 1/2",
+            "D) 2/3"
+          ],
+          "correctAnswer": "C",
+          "solution": "Mặt chẵn: 2,4,6 → 3 KQ / 6 tổng = 1/2",
+          "points": 5
+        },
+        {
+          "problemId": "tk6_p08",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Hộp có 3 bi đỏ, 5 bi xanh, 2 bi vàng. P(bi đỏ) = ?",
+          "options": [
+            "A) 1/3",
+            "B) 3/10",
+            "C) 3/8",
+            "D) 1/10"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tổng = 10 bi. P(đỏ) = 3/10",
+          "points": 10
+        },
+        {
+          "problemId": "tk6_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Gieo đồng xu 200 lần, mặt sấp 112 lần. P thực nghiệm (sấp) ≈ ?",
+          "options": [
+            "A) 50%",
+            "B) 56%",
+            "C) 44%",
+            "D) 60%"
+          ],
+          "correctAnswer": "B",
+          "solution": "P = 112/200 = 0,56 = 56%",
+          "points": 10
+        },
+        {
+          "problemId": "tk6_p10",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Gieo 2 xúc xắc. P(tổng = 7) = ?",
+          "options": [
+            "A) 1/6",
+            "B) 7/36",
+            "C) 1/12",
+            "D) 5/36"
+          ],
+          "correctAnswer": "A",
+          "solution": "KQ thuận lợi: (1,6),(2,5),(3,4),(4,3),(5,2),(6,1) = 6 KQ. Tổng: 36. P = 6/36 = 1/6",
+          "points": 15
+        },
+        {
+          "problemId": "tk6_p11",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Rút ngẫu nhiên 1 thẻ từ bộ 1→20. P(số chia hết cho 3) = ?",
+          "options": [
+            "A) 1/4",
+            "B) 1/3",
+            "C) 3/10",
+            "D) 7/20"
+          ],
+          "correctAnswer": "C",
+          "solution": "Chia hết cho 3: 3,6,9,12,15,18 = 6 số. P = 6/20 = 3/10",
+          "points": 15
+        },
+        {
+          "problemId": "tk6_p12",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "P(A) = 0. Điều gì đúng?",
+          "options": [
+            "A) A chắc chắn xảy ra",
+            "B) A không thể xảy ra",
+            "C) A có thể xảy ra",
+            "D) A xảy ra 50%"
+          ],
+          "correctAnswer": "B",
+          "solution": "P = 0 → sự kiện không bao giờ xảy ra (sự kiện bất khả)",
+          "points": 5
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm tần số với tần số tương đối",
+      "correction": "Tần số = đếm lần. Tần số tương đối = tần số / tổng (tỉ lệ %)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "tk6_quiz_01",
+      "title": "Kiểm tra: Thống kê & Xác suất Lớp 6",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "tk6_p01"
+        },
+        {
+          "ref": "tk6_p07"
+        },
+        {
+          "ref": "tk6_p04"
+        },
+        {
+          "ref": "tk6_p10"
+        },
+        {
+          "ref": "tk6_p06"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

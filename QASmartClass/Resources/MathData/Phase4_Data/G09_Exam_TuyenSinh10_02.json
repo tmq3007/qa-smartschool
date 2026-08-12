@@ -1,0 +1,84 @@
+﻿{
+  "metadata": {
+    "examId": "g09_tuyensinh10_02",
+    "title": "Đề thi Tuyển Sinh vào Lớp 10 - Đề số 02",
+    "totalQuestions": 5,
+    "timeLimit": 120,
+    "totalPoints": 10,
+    "pointsPerQuestion": 2,
+    "grade": 9,
+    "examType": "TuyenSinh10"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "sin 150° = ?",
+      "options": [
+        "A) 1/2",
+        "B) -1/2",
+        "C) √3/2",
+        "D) -√3/2"
+      ],
+      "answer": "A",
+      "solution": "sin150° = sin(180°-30°) = sin30° = 1/2 (góc phần tư II, sin > 0)"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Có bao nhiêu cách xếp 4 HS vào hàng?",
+      "options": [
+        "A) 24",
+        "B) 12",
+        "C) 16",
+        "D) 4"
+      ],
+      "answer": "A",
+      "solution": "A(4,4) = 4! = 24"
+    },
+    {
+      "id": 3,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "cos 0° = ?",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) -1",
+        "D) 1/2"
+      ],
+      "answer": "B",
+      "solution": "cos 0° = 1"
+    },
+    {
+      "id": 4,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "cos(2×60°) = cos120° = ?",
+      "options": [
+        "A) -1/2",
+        "B) 1/2",
+        "C) 0",
+        "D) -1"
+      ],
+      "answer": "A",
+      "solution": "cos120° = -cos60° = -1/2"
+    },
+    {
+      "id": 5,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "sin 90° = ?",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) -1",
+        "D) 1/2"
+      ],
+      "answer": "B",
+      "solution": "sin 90° = 1 (giá trị đặc biệt)"
+    }
+  ]
+}

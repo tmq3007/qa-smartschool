@@ -1,0 +1,84 @@
+﻿{
+  "metadata": {
+    "examId": "g09_tuyensinh10_06",
+    "title": "Đề thi Tuyển Sinh vào Lớp 10 - Đề số 06",
+    "totalQuestions": 5,
+    "timeLimit": 120,
+    "totalPoints": 10,
+    "pointsPerQuestion": 2,
+    "grade": 9,
+    "examType": "TuyenSinh10"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Từ điểm A bên ngoài (O;r), kẻ 2 tiếp tuyến AB, AC. Nếu OA=10, r=6 thì AB=?",
+      "options": [
+        "A) 8",
+        "B) 4",
+        "C) 12",
+        "D) √136"
+      ],
+      "answer": "A",
+      "solution": "OB⊥AB. Pytago: AB = √(OA²-OB²) = √(100-36) = √64 = 8"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Giải: x+y=10, 2x+y=14",
+      "options": [
+        "A) x=4, y=6",
+        "B) x=6, y=4",
+        "C) x=5, y=5",
+        "D) x=3, y=7"
+      ],
+      "answer": "A",
+      "solution": "Trừ: x=14-10=4. y=10-4=6"
+    },
+    {
+      "id": 3,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "sin 90° = ?",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) -1",
+        "D) 1/2"
+      ],
+      "answer": "B",
+      "solution": "sin 90° = 1 (giá trị đặc biệt)"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Từ đỉnh tháp cao 50m nhìn xuống 1 điểm A dưới đất với góc nhìn 30°. Khoảng cách từ A đến chân tháp:",
+      "options": [
+        "A) 50√3 m",
+        "B) 25√3 m",
+        "C) 100 m",
+        "D) 50 m"
+      ],
+      "answer": "A",
+      "solution": "tan30° = 50/d → d = 50/tan30° = 50/(√3/3) = 50√3 ≈ 86.6m"
+    },
+    {
+      "id": 5,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "sin 150° = ?",
+      "options": [
+        "A) 1/2",
+        "B) -1/2",
+        "C) √3/2",
+        "D) -√3/2"
+      ],
+      "answer": "A",
+      "solution": "sin150° = sin(180°-30°) = sin30° = 1/2 (góc phần tư II, sin > 0)"
+    }
+  ]
+}

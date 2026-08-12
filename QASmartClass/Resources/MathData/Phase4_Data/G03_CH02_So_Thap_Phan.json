@@ -1,0 +1,421 @@
+﻿{
+  "metadata": {
+    "chapterId": "g03_ch02",
+    "chapterName": "Số Thập Phân Cơ Bản",
+    "grade": 3,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 18,
+    "toolMapping": [
+      "basic_math"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 12,
+    "prerequisites": [
+      "g03_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "tp3_01",
+      "sectionName": "Khái niệm số thập phân",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "tp3_001",
+          "name": "Số thập phân",
+          "definition": "Số có phần nguyên và phần thập phân, ngăn cách bởi dấu phẩy",
+          "examples": [
+            "3,5 = 3 đơn vị và 5 phần mười",
+            "0,25 = 25 phần trăm"
+          ]
+        },
+        {
+          "id": "tp3_002",
+          "name": "Đọc và viết số thập phân",
+          "definition": "Đọc phần nguyên trước, rồi 'phẩy', rồi phần thập phân",
+          "examples": [
+            "12,7 đọc: mười hai phẩy bảy",
+            "0,05 đọc: không phẩy không năm"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tp3_p01",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Số 4,3 đọc là gì?",
+          "options": [
+            "A) Bốn mươi ba",
+            "B) Bốn phẩy ba",
+            "C) Bốn trăm ba",
+            "D) Bốn nghìn ba"
+          ],
+          "correctAnswer": "B",
+          "solution": "4,3 = 4 đơn vị + 3 phần mười → đọc: bốn phẩy ba",
+          "points": 5
+        },
+        {
+          "problemId": "tp3_p02",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Viết số: 'hai phẩy năm' = ?",
+          "options": [
+            "A) 25",
+            "B) 2,5",
+            "C) 0,25",
+            "D) 2,05"
+          ],
+          "correctAnswer": "B",
+          "solution": "Hai phẩy năm = 2,5",
+          "points": 5
+        },
+        {
+          "problemId": "tp3_p03",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "0,7 bằng bao nhiêu phần mười?",
+          "options": [
+            "A) 70 phần mười",
+            "B) 7 phần mười",
+            "C) 7 phần trăm",
+            "D) 70 phần trăm"
+          ],
+          "correctAnswer": "B",
+          "solution": "0,7 = 7/10 = 7 phần mười",
+          "points": 10
+        },
+        {
+          "problemId": "tp3_p04",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "So sánh: 0,9 ... 0,85",
+          "options": [
+            "A) 0,9 < 0,85",
+            "B) 0,9 > 0,85",
+            "C) 0,9 = 0,85",
+            "D) Không so sánh được"
+          ],
+          "correctAnswer": "B",
+          "solution": "0,9 = 0,90 > 0,85 (so phần thập phân: 90 > 85)",
+          "points": 10
+        },
+        {
+          "problemId": "tp3_p05",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Sắp xếp tăng dần: 1,5 ; 1,05 ; 1,50 ; 0,15",
+          "options": [
+            "A) 0,15 ; 1,05 ; 1,5 ; 1,50",
+            "B) 0,15 ; 1,5 ; 1,05 ; 1,50",
+            "C) 1,50 ; 1,5 ; 1,05 ; 0,15",
+            "D) 0,15 ; 1,05 ; 1,50 ; 1,5"
+          ],
+          "correctAnswer": "A",
+          "solution": "0,15 < 1,05 < 1,5 = 1,50. Lưu ý: 1,5 = 1,50",
+          "points": 15
+        },
+        {
+          "problemId": "tp3_p06",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Số thập phân nào bằng 3/4?",
+          "options": [
+            "A) 0,34",
+            "B) 0,75",
+            "C) 3,4",
+            "D) 0,43"
+          ],
+          "correctAnswer": "B",
+          "solution": "3/4 = 3 ÷ 4 = 0,75",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "tp3_02",
+      "sectionName": "Cộng trừ số thập phân",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "tp3_003",
+          "name": "Cộng số thập phân",
+          "definition": "Đặt thẳng cột dấu phẩy, cộng như số tự nhiên",
+          "examples": [
+            "3,5 + 2,8 = 6,3",
+            "1,25 + 0,75 = 2,00 = 2"
+          ]
+        },
+        {
+          "id": "tp3_004",
+          "name": "Trừ số thập phân",
+          "definition": "Đặt thẳng cột dấu phẩy, trừ như số tự nhiên",
+          "examples": [
+            "5,4 - 2,1 = 3,3",
+            "10 - 3,75 = 6,25"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tp3_p07",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "3,2 + 1,5 = ?",
+          "options": [
+            "A) 4,5",
+            "B) 4,7",
+            "C) 5,2",
+            "D) 3,7"
+          ],
+          "correctAnswer": "B",
+          "solution": "3,2 + 1,5 = 4,7",
+          "points": 5
+        },
+        {
+          "problemId": "tp3_p08",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "5,8 - 2,3 = ?",
+          "options": [
+            "A) 3,5",
+            "B) 3,1",
+            "C) 2,5",
+            "D) 8,1"
+          ],
+          "correctAnswer": "A",
+          "solution": "5,8 - 2,3 = 3,5",
+          "points": 5
+        },
+        {
+          "problemId": "tp3_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Mua sữa 12.500đ và bánh 8.750đ. Tổng = ? (viết bằng nghìn đồng)",
+          "options": [
+            "A) 20,25 nghìn",
+            "B) 21,25 nghìn",
+            "C) 21,50 nghìn",
+            "D) 20,75 nghìn"
+          ],
+          "correctAnswer": "B",
+          "solution": "12,5 + 8,75 = 21,25 nghìn đồng",
+          "points": 10
+        },
+        {
+          "problemId": "tp3_p10",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "10 - 3,45 = ?",
+          "options": [
+            "A) 6,55",
+            "B) 6,45",
+            "C) 7,55",
+            "D) 7,45"
+          ],
+          "correctAnswer": "A",
+          "solution": "10,00 - 3,45 = 6,55",
+          "points": 10
+        },
+        {
+          "problemId": "tp3_p11",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm x: x + 2,75 = 8,3",
+          "options": [
+            "A) 5,55",
+            "B) 5,45",
+            "C) 6,55",
+            "D) 11,05"
+          ],
+          "correctAnswer": "A",
+          "solution": "x = 8,3 - 2,75 = 8,30 - 2,75 = 5,55",
+          "points": 15
+        },
+        {
+          "problemId": "tp3_p12",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "3,14 + 2,86 + 1,5 = ?",
+          "options": [
+            "A) 7,0",
+            "B) 7,5",
+            "C) 6,5",
+            "D) 8,0"
+          ],
+          "correctAnswer": "B",
+          "solution": "3,14 + 2,86 = 6,00. 6,00 + 1,50 = 7,50 = 7,5",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "tp3_03",
+      "sectionName": "Nhân chia số thập phân đơn giản",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "tp3_005",
+          "name": "Nhân STP với số tự nhiên",
+          "definition": "Nhân như số tự nhiên, rồi đếm chữ số thập phân",
+          "examples": [
+            "2,5 × 4 = 10,0 = 10",
+            "1,2 × 3 = 3,6"
+          ]
+        },
+        {
+          "id": "tp3_006",
+          "name": "Chia STP cho số tự nhiên",
+          "definition": "Chia như thường, dấu phẩy đặt thẳng hàng",
+          "examples": [
+            "7,5 ÷ 3 = 2,5",
+            "12,6 ÷ 2 = 6,3"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tp3_p13",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "2,5 × 3 = ?",
+          "options": [
+            "A) 5,5",
+            "B) 7,5",
+            "C) 6,5",
+            "D) 8,0"
+          ],
+          "correctAnswer": "B",
+          "solution": "2,5 × 3 = 7,5",
+          "points": 5
+        },
+        {
+          "problemId": "tp3_p14",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "9,6 ÷ 2 = ?",
+          "options": [
+            "A) 4,3",
+            "B) 4,6",
+            "C) 4,8",
+            "D) 5,2"
+          ],
+          "correctAnswer": "C",
+          "solution": "9,6 ÷ 2 = 4,8",
+          "points": 5
+        },
+        {
+          "problemId": "tp3_p15",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Mỗi chai nước 1,5 lít. Mua 6 chai = ? lít",
+          "options": [
+            "A) 7,5 lít",
+            "B) 8 lít",
+            "C) 9 lít",
+            "D) 10,5 lít"
+          ],
+          "correctAnswer": "C",
+          "solution": "1,5 × 6 = 9 lít",
+          "points": 10
+        },
+        {
+          "problemId": "tp3_p16",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Chia đều 15,6 kg gạo vào 4 túi. Mỗi túi = ? kg",
+          "options": [
+            "A) 3,6 kg",
+            "B) 3,8 kg",
+            "C) 3,9 kg",
+            "D) 4,1 kg"
+          ],
+          "correctAnswer": "C",
+          "solution": "15,6 ÷ 4 = 3,9 kg",
+          "points": 10
+        },
+        {
+          "problemId": "tp3_p17",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "0,25 × 8 + 1,5 ÷ 3 = ?",
+          "options": [
+            "A) 2,0",
+            "B) 2,5",
+            "C) 3,0",
+            "D) 1,5"
+          ],
+          "correctAnswer": "B",
+          "solution": "0,25 × 8 = 2. 1,5 ÷ 3 = 0,5. 2 + 0,5 = 2,5",
+          "points": 15
+        },
+        {
+          "problemId": "tp3_p18",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tìm x: x × 5 = 12,5",
+          "options": [
+            "A) 2,0",
+            "B) 2,5",
+            "C) 3,0",
+            "D) 62,5"
+          ],
+          "correctAnswer": "B",
+          "solution": "x = 12,5 ÷ 5 = 2,5",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Đặt dấu phẩy sai khi cộng: 3,5 + 2,15 = 5,20",
+      "correction": "Phải thẳng cột: 3,50 + 2,15 = 5,65"
+    },
+    {
+      "mistake": "Nhầm 0,5 × 2 = 0,10 thay vì 1,0",
+      "correction": "0,5 × 2 = 1,0. Nhân phần thập phân: 5×2=10, nhớ 1"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "tp3_quiz_01",
+      "title": "Kiểm tra: Số thập phân Lớp 3",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "tp3_p01"
+        },
+        {
+          "ref": "tp3_p07"
+        },
+        {
+          "ref": "tp3_p13"
+        },
+        {
+          "ref": "tp3_p05"
+        },
+        {
+          "ref": "tp3_p17"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

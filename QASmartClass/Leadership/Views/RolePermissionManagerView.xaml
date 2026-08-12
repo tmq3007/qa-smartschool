@@ -1,0 +1,158 @@
+<Page x:Class="QASmartClass.Leadership.Views.RolePermissionManagerView"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Quản lý Vai trò và Phân quyền" Background="#F0F2F5"
+      FontFamily="Segoe UI">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+
+            <TextBlock Text="🔐 Phân quyền Nhân sự" FontSize="24" FontWeight="Bold" Foreground="#212121"/>
+
+            <TextBlock Text="Quản lý và cấp quyền truy cập hệ thống cho Giáo viên và Nhân viên." Foreground="#757575" Margin="0,5,0,0"/>
+
+        </StackPanel>
+
+
+
+        <Grid Grid.Row="1">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="2*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Roles List -->
+
+            <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="20" Margin="0,0,10,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock Text="Danh sách Vai trò" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                    <ListBox x:Name="lstRoles" BorderThickness="0" SelectionChanged="LstRoles_SelectionChanged">
+
+                        <ListBox.ItemTemplate>
+
+                            <DataTemplate>
+
+                                <Border Background="#F5F5F5" CornerRadius="4" Padding="10" Margin="0,0,0,10">
+
+                                    <StackPanel>
+
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="#1976D2" FontSize="16"/>
+
+                                        <TextBlock Text="{Binding Description}" Foreground="#757575" FontSize="12" Margin="0,5,0,0" TextWrapping="Wrap"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </DataTemplate>
+
+                        </ListBox.ItemTemplate>
+
+                    </ListBox>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Permission Config -->
+
+            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="20" Margin="10,0,0,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+                <StackPanel>
+
+                    <TextBlock x:Name="txtRoleTitle" Text="Cấu hình quyền:" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                    
+
+                    <!-- Module Permissions -->
+
+                    <Border Background="#FAFAFA" CornerRadius="6" Padding="15" Margin="0,0,0,15" BorderBrush="#EEEEEE" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Quyền Truy Cập Phân Hệ" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                            
+
+                            <CheckBox x:Name="chkTeacherHub" Content="Truy cập Phân hệ Giáo viên (Soạn bài, Chấm công, Tiết dạy)" Margin="0,5" ToolTip="Cho phép truy cập phân hệ Teacher Hub để giáo viên chuẩn bị bài giảng, chấm công, quản lý lớp học." Checked="OnPermissionChanged" Unchecked="OnPermissionChanged"/>
+
+                            <CheckBox x:Name="chkHealthRoom" Content="Truy cập Phân hệ Y tế (Theo dõi sức khỏe, Sơ cứu học đường)" Margin="0,5" ToolTip="Cho phép xem và cập nhật hồ sơ y tế học sinh, quản lý tủ thuốc và báo cáo khám bệnh định kỳ." Checked="OnPermissionChanged" Unchecked="OnPermissionChanged"/>
+
+                            <CheckBox x:Name="chkKitchen" Content="Truy cập Phân hệ Bếp ăn (Quản lý thực đơn, Suất ăn canteen)" Margin="0,5" ToolTip="Cho phép truy cập quản lý thực đơn dinh dưỡng hàng ngày và chấm công suất ăn của học sinh/giáo viên." Checked="OnPermissionChanged" Unchecked="OnPermissionChanged"/>
+
+                            <CheckBox x:Name="chkSecurity" Content="Truy cập Phân hệ Bảo vệ (Quản lý ra vào, Cổng trường)" Margin="0,5" ToolTip="Cho phép theo dõi camera giám sát cổng trường, thiết bị quét thẻ ra vào tự động." Checked="OnPermissionChanged" Unchecked="OnPermissionChanged"/>
+
+                            <CheckBox x:Name="chkLeadership" Content="Truy cập Dashboard Ban Giám Hiệu (Báo cáo KPI, Phân tích)" Margin="0,5" ToolTip="Quyền truy cập bảng số liệu KPI học tập toàn trường, phân tích kết quả dạy học và quản trị tổng thể." Checked="OnPermissionChanged" Unchecked="OnPermissionChanged"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Advanced Permissions -->
+
+                    <Border Background="#FAFAFA" CornerRadius="6" Padding="15" Margin="0,0,0,20" BorderBrush="#EEEEEE" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Quyền Hành Động Nâng Cao" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                            
+
+                            <CheckBox x:Name="chkAssignTasks" Content="Quyền phân công nhiệm vụ (Giao việc nhân sự)" Margin="0,5" ToolTip="Cho phép lập lịch và giao nhiệm vụ trực tiếp cho các giáo viên, nhân viên cấp dưới." Checked="OnPermissionChanged" Unchecked="OnPermissionChanged"/>
+                            <CheckBox x:Name="chkApproveLeave" Content="Quyền phê duyệt hành chính (Duyệt đơn nghỉ phép)" Margin="0,5" ToolTip="Cho phép phê duyệt đơn xin phép nghỉ giảng dạy, nghỉ làm việc của nhân sự nhà trường." Checked="OnPermissionChanged" Unchecked="OnPermissionChanged"/>
+                            <CheckBox x:Name="chkSendPush" Content="Quyền truyền thông (Gửi thông báo đẩy toàn trường)" Margin="0,5" ToolTip="Cho phép phát thông báo đẩy tức thời (Push Notification) đến ứng dụng di động của toàn bộ phụ huynh và giáo viên." Checked="OnPermissionChanged" Unchecked="OnPermissionChanged"/>
+                            <CheckBox x:Name="chkEditSystem" Content="⚠️ Quyền quản trị hệ thống cấp cao (Cấu hình &amp; Sao lưu CSDL)" Margin="0,5" Foreground="#991B1B" FontWeight="SemiBold" ToolTip="Quyền cấu hình hệ thống, thiết lập tham số mạng, sao lưu khôi phục cơ sở dữ liệu. Quyền này rất nhạy cảm." Checked="OnPermissionChanged" Unchecked="OnPermissionChanged"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <Button Content="💾 Lưu Phân Quyền" Height="45" Background="#1976D2" Foreground="White" 
+
+                            FontWeight="Bold" FontSize="14" Cursor="Hand" BorderThickness="0" Click="BtnSavePermissions_Click"/>
+
+                </StackPanel>
+
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+
+    </ScrollViewer>
+</Page>
+
+
+

@@ -1,0 +1,259 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Admin.LossReportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             KeyDown="UserControl_KeyDown" Focusable="True">
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="🛡️ Báo cáo thất thoát và hư hỏng" />
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24">
+            <StackPanel>
+                
+                <!-- Stat Cards -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <shared:StatCardControl Grid.Column="0" Icon="⚠️" Label="Sách báo mất/hỏng" Value="{Binding TotalLostBooks}" ChangeText="Tổng số lượng"/>
+                    <shared:StatCardControl Grid.Column="2" Icon="💸" Label="Ước lượng thiệt hại" Value="{Binding TotalReplacementCost}" ChangeText="Chi phí thay thế"/>
+                    <shared:StatCardControl Grid.Column="4" Icon="✅" Label="Tỉ lệ đã đền bù" Value="{Binding RecoveryRate}" ChangeText="Tỉ lệ thu hồi đền bù"/>
+                </Grid>
+
+                <!-- Alert and Export -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="{StaticResource WarningBgBrush}" BorderBrush="{StaticResource WarningTextBrush}" BorderThickness="4,0,0,0" Padding="16,12" CornerRadius="4">
+                        <TextBlock Text="{Binding LossAlertMessage}" Foreground="{StaticResource WarningTextBrush}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <Button Grid.Column="1" Content="📤 Xuất báo cáo Excel" 
+                            Command="{Binding ExportReportCommand}" 
+                            Style="{StaticResource SuccessButton}" 
+                            Padding="16,10" Margin="16,0,0,0" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Grid Details & Category Distribution -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="6.5*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="3.5*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Card: Grid Details -->
+                    <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="📋 Chi tiết sách báo mất và hư hỏng" Style="{StaticResource CardTitleText}" Margin="0,0,0,16"/>
+
+                            <DataGrid Grid.Row="1" Style="{StaticResource ModernDataGrid}" ItemsSource="{Binding LostRecords}" AutoGenerateColumns="False" IsReadOnly="True" Height="300"
+                                      VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã vạch" Binding="{Binding Barcode}" Width="100"/>
+                                    <DataGridTextColumn Header="Tên sách" Binding="{Binding Title}" Width="2*">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                                <Setter Property="ToolTip" Value="{Binding Title}"/>
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Header="Người mượn" Binding="{Binding BorrowerName}" Width="1.2*">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                                <Setter Property="ToolTip" Value="{Binding BorrowerName}"/>
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Header="Ngày báo" Binding="{Binding DateText}" Width="100"/>
+                                    <DataGridTextColumn Header="Thể loại" Binding="{Binding Category}" Width="1.2*">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                                <Setter Property="ToolTip" Value="{Binding Category}"/>
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Header="Giá trị đền" Binding="{Binding CostText}" Width="110">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource DangerTextBrush}"/>
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTemplateColumn Header="Trạng thái" Width="100">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Center">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Đã đền bù">
+                                                                    <Setter Property="Background" Value="{DynamicResource SuccessBgBrush}"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Đang xử lý">
+                                                                    <Setter Property="Background" Value="{DynamicResource DangerBgBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding Status}" FontSize="12" FontWeight="Bold">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Status}" Value="Đã đền bù">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Status}" Value="Đang xử lý">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource DangerTextBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Right Card: Category-wise Loss Distribution -->
+                    <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Text="📊 Thống kê thất thoát theo thể loại" Style="{StaticResource CardTitleText}" Margin="0,0,0,16"/>
+                            
+                            <ItemsControl Grid.Row="1" ItemsSource="{Binding CategoryStats}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,0,0,16">
+                                            <Grid Margin="0,0,0,6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding CategoryName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13"/>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding LostCount, StringFormat='{}{0} cuốn'}" Foreground="{DynamicResource DangerTextBrush}" FontWeight="SemiBold" FontSize="13"/>
+                                                    <TextBlock Text=" - " Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding Percentage, StringFormat='{}{0:0}%'}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13"/>
+                                                </StackPanel>
+                                            </Grid>
+                                            
+                                            <!-- Progress Bar (Grid-based, no custom converter needed!) -->
+                                            <Grid Height="10">
+                                                <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="5"/>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="{Binding ActiveWidth}"/>
+                                                        <ColumnDefinition Width="{Binding InactiveWidth}"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0" CornerRadius="5">
+                                                        <Border.Background>
+                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                                <GradientStop Color="#F87171" Offset="0"/>
+                                                                <GradientStop Color="#EF4444" Offset="1"/>
+                                                            </LinearGradientBrush>
+                                                        </Border.Background>
+                                                    </Border>
+                                                </Grid>
+                                            </Grid>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- ESG Green Carbon Reduction Metrics Section -->
+                <Border Style="{StaticResource CardBorder}" Padding="20" Margin="0,0,0,24" Background="{DynamicResource CardBrush}">
+                    <StackPanel>
+                        <TextBlock Text="🌱 Chỉ số bảo vệ môi trường thư viện số (ESG metrics)" Style="{StaticResource CardTitleText}" Foreground="{DynamicResource SuccessTextBrush}" Margin="0,0,0,8"/>
+                        <TextBlock Text="Thống kê đóng góp giảm thiểu carbon và tiết kiệm tài nguyên giấy nhờ chuyển đổi số tài liệu điện tử (eBook và sách nói)." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,20"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Ebook Read Card -->
+                            <Border Grid.Column="0" Background="{DynamicResource BackgroundBrush}" CornerRadius="12" Padding="15" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="📱" FontSize="28" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Ebook đã đọc" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding TotalEbooksRead, StringFormat='{}{0:N0} lượt'}" Foreground="{DynamicResource PrimaryBrush}" FontSize="22" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Audiobook Heard Card -->
+                            <Border Grid.Column="2" Background="{DynamicResource BackgroundBrush}" CornerRadius="12" Padding="15" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="🎧" FontSize="28" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Audiobook đã nghe" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding TotalAudiobooksHeard, StringFormat='{}{0:N0} lượt'}" Foreground="{DynamicResource SuccessTextBrush}" FontSize="22" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Paper Saved Card -->
+                            <Border Grid.Column="4" Background="{DynamicResource BackgroundBrush}" CornerRadius="12" Padding="15" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="📄" FontSize="28" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Giấy tiết kiệm" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding PaperSavedGrams, StringFormat='{}{0:N1} g'}" Foreground="{DynamicResource WarningTextBrush}" FontSize="22" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Trees Saved Card -->
+                            <Border Grid.Column="6" Background="{DynamicResource BackgroundBrush}" CornerRadius="12" Padding="15" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="🌳" FontSize="28" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Cây xanh bảo vệ" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding TreesSaved, StringFormat='{}{0:N3} cây'}" Foreground="{DynamicResource SuccessTextBrush}" FontSize="22" FontWeight="Bold" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

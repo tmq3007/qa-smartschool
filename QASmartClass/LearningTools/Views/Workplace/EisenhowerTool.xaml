@@ -1,0 +1,511 @@
+<UserControl x:Class="QASmartClass.LearningTools.Views.Workplace.EisenhowerTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             Background="White" xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <sys:Int32 x:Key="Int1">1</sys:Int32>
+        <sys:Int32 x:Key="Int2">2</sys:Int32>
+        <sys:Int32 x:Key="Int3">3</sys:Int32>
+        <sys:Int32 x:Key="Int4">4</sys:Int32>
+    </UserControl.Resources>
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <!-- Canvas overlay for confetti (covers everything) -->
+        <Canvas x:Name="confettiCanvas" Panel.ZIndex="999" IsHitTestVisible="False"/>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#F1F8E9">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#B2DFDB"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#00796B"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="Hướng dẫn &amp; Ghi chú" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⏰" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="Ma Trận Kế Hoạch" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📊" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="Thống Kê Hiệu Suất" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#E0E0E0"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 1: HƯỚNG DẪN & GHI CHÚ LẬP KẾ HOẠCH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+<Border Background="#E3F2FD" CornerRadius="6" Padding="12" Margin="0,0,0,12" BorderBrush="#BBDEFB" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="💡 NGUỒN GỐC &amp; Ý NGHĨA" FontSize="14" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="txtToolMeaning" TextWrapping="Wrap" FontSize="13" Foreground="#424242" Margin="0,0,0,10"/>
+                                <TextBlock Text="🌍 ÁP DỤNG THỰC TẾ" FontSize="14" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="txtToolApplication" TextWrapping="Wrap" FontSize="13" Foreground="#424242"/>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock TextWrapping="Wrap" FontSize="13" FontWeight="Normal" Foreground="#424242" LineHeight="20">
+                            <Run FontWeight="Bold" Text="Ma trận Eisenhower "/> giúp các bạn phân loại bài tập, công việc để biết cái nào nên làm trước, cái nào có thể bỏ qua. Rất hiệu quả khi mùa thi đến và bạn cảm thấy "quá tải"!<LineBreak/><LineBreak/>
+                            <Run FontWeight="Bold" Text="Cách phân loại 4 ô:"/><LineBreak/>
+                            • <Run FontWeight="SemiBold" Foreground="#C62828" Text="🔥 Ô 1: LÀM NGAY (Quan trọng + Khẩn cấp):"/> Deadline bài tập ngày mai, ôn thi môn chiều nay. (Không làm là bị phạt điểm kém).<LineBreak/>
+                            • <Run FontWeight="SemiBold" Foreground="#2E7D32" Text="📅 Ô 2: LÊN LỊCH (Quan trọng + Không khẩn):"/> Ôn thi học kỳ (còn 1 tháng nữa), luyện ngoại ngữ, tập thể dục. (Đây là ô quyết định sự phát triển lâu dài của bạn).<LineBreak/>
+                            • <Run FontWeight="SemiBold" Foreground="#E65100" Text="🤝 Ô 3: ỦY THÁC/NHỜ VẢ (Không quan trọng + Khẩn cấp):"/> Phân công việc thiết kế slide cho bạn khéo tay hơn, nhờ em quét nhà giúp. (Ủy quyền những việc người khác có thể làm tốt hơn bạn).<LineBreak/>
+                            • <Run FontWeight="SemiBold" Foreground="#616161" Text="🗑️ Ô 4: LOẠI BỎ (Không quan trọng + Không khẩn):"/> Lướt mạng vô bổ, chơi game quá giờ, cày phim thâu đêm. (Cần cắt giảm tối đa).<LineBreak/><LineBreak/>
+                            <Run FontWeight="Bold" Foreground="#00796B" Text="🎮 HƯỚNG DẪN THAO TÁC TỪNG BƯỚC CHO HỌC SINH &amp; GIÁO VIÊN:"/><LineBreak/>
+                            <Run FontWeight="Bold" Text="• Bước 1:"/> Nhập tên công việc/bài tập vào ô nhập liệu <Run FontWeight="SemiBold" Text="Thêm công việc"/> phía dưới.<LineBreak/>
+                            <Run FontWeight="Bold" Text="• Bước 2:"/> Nhấp nút <Run FontWeight="SemiBold" Text="➕ Thêm"/>, sau đó chọn ô phân loại tương ứng (từ Ô 1 đến Ô 4) trên menu thả xuống.<LineBreak/>
+                            <Run FontWeight="Bold" Text="• Bước 3:"/> Tự do điều chỉnh thời hạn hoàn thành của mỗi nhiệm vụ bằng cách click chọn ô chọn ngày lịch biểu (Hạn chót).<LineBreak/>
+                            <Run FontWeight="Bold" Text="• Bước 4:"/> Em có thể <Run FontWeight="SemiBold" Text="kéo và thả (Drag &amp; Drop)"/> nhiệm vụ trực tiếp giữa các ô để thay đổi phân loại nhanh chóng.<LineBreak/>
+                            <Run FontWeight="Bold" Text="• Bước 5:"/> Tích chọn ô CheckBox khi hoàn thành công việc. Khi hoàn thành toàn bộ việc khẩn cấp ở Ô 1, pháo hoa giấy chúc mừng 🥳 sẽ bùng nổ để khích lệ em!<LineBreak/>
+                            <Run FontWeight="Bold" Text="• Bước 6:"/> Chuyển qua thẻ <Run FontWeight="SemiBold" Text="📊 Thống Kê Hiệu Suất"/> để xem biểu đồ tròn phân bổ và bấm nút <Run FontWeight="SemiBold" Text="📷 Xuất ảnh PNG"/> để nộp báo cáo cho Giáo viên.<LineBreak/>
+                            <Run FontWeight="Bold" Text="• Bước 7:"/> Đối với Giáo viên, thầy cô có thể nhấp chọn <Run FontWeight="SemiBold" Text="🎯 Mẫu kế hoạch"/> ở góc phải để nạp nhanh kịch bản ôn thi mẫu cho học sinh thảo luận.
+                        </TextBlock>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 2: MA TRẬN KẾ HOẠCH -->
+                <Grid x:Name="viewPractice" Background="White" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- === HEADER === -->
+                    <Border Grid.Row="0" Background="#F8F9FA" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button x:Name="btnTemplate" Content="🎯 Mẫu kế hoạch ▼" Padding="12,8" Margin="0,0,8,0" FontSize="14" FontWeight="SemiBold" Cursor="Hand" Click="Template_Click"/>
+                                <Button x:Name="btnExport" Content="📷 Xuất ảnh PNG" Padding="12,8" Margin="0,0,8,0" FontSize="14" FontWeight="SemiBold" Cursor="Hand" Click="Export_Click"/>
+                                <Button x:Name="btnClear" Content="🗑️ Xóa tất cả" Padding="12,8" FontSize="14" FontWeight="SemiBold" Cursor="Hand" Command="{Binding ClearAllCommand}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="⏰ Ma Trận Eisenhower" FontSize="22" FontWeight="Bold" Foreground="#00796B"/>
+                                <TextBlock Text="Phân loại nhiệm vụ theo Khẩn cấp × Quan trọng để tối ưu hóa thời gian" FontSize="13" Foreground="#757575" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- === CONTENT === -->
+                    <ScrollViewer Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Padding="16">
+                        <StackPanel x:Name="mainPanel"  HorizontalAlignment="Center">
+                            <!-- Quick Add -->
+                            <Border Background="#E0F2F1" CornerRadius="8" Padding="12,8" Margin="0,0,0,16"
+                                    BorderBrush="#00796B" BorderThickness="1">
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" x:Name="btnAdd" Content="➕ Thêm" Padding="16,8"
+                                            FontSize="14" FontWeight="Bold" Cursor="Hand" Click="QuickAdd_Click" Margin="8,0,0,0"/>
+                                    <TextBox x:Name="txtQuickAdd" FontSize="15" Padding="10,8" MaxLength="150"
+                                             Text="{Binding QuickAddText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             BorderBrush="#B2DFDB" BorderThickness="1" Background="White"
+                                             ToolTip="Nhập công việc → chọn ô để phân loại"
+                                             KeyDown="QuickAdd_KeyDown"/>
+                                </DockPanel>
+                            </Border>
+
+                            <!-- Axis Labels (Horizontal) -->
+                            <Grid Margin="34,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="🔴 KHẨN CẤP" FontSize="14" FontWeight="Bold"
+                                           Foreground="#C62828" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="🔵 KHÔNG KHẨN CẤP" FontSize="14" FontWeight="Bold"
+                                           Foreground="#37474F" HorizontalAlignment="Center"/>
+                            </Grid>
+
+                            <!-- 2x2 Matrix Container -->
+                            <Grid x:Name="matrixGrid" Background="White" AllowDrop="True">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/> <!-- Vertical Axis Label -->
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Vertical Axis Labels -->
+                                <Border Grid.Row="0" Grid.Column="0" Width="30" VerticalAlignment="Stretch" Margin="0,0,4,2">
+                                    <TextBlock Text="⭐ QUAN TRỌNG" FontSize="14" FontWeight="Bold" Foreground="#1565C0"
+                                               TextAlignment="Center" Width="200" VerticalAlignment="Center">
+                                        <TextBlock.LayoutTransform>
+                                            <RotateTransform Angle="-90"/>
+                                        </TextBlock.LayoutTransform>
+                                    </TextBlock>
+                                </Border>
+
+                                <Border Grid.Row="1" Grid.Column="0" Width="30" VerticalAlignment="Stretch" Margin="0,2,4,0">
+                                    <TextBlock Text="💤 KHÔNG QUAN TRỌNG" FontSize="14" FontWeight="Bold" Foreground="#455A64"
+                                               TextAlignment="Center" Width="200" VerticalAlignment="Center">
+                                        <TextBlock.LayoutTransform>
+                                            <RotateTransform Angle="-90"/>
+                                        </TextBlock.LayoutTransform>
+                                    </TextBlock>
+                                </Border>
+
+                                <!-- Q1: DO NOW -->
+                                <Border Grid.Row="0" Grid.Column="1" Background="#FFEBEE" BorderBrush="#EF9A9A" BorderThickness="2"
+                                        CornerRadius="10,0,0,0" Margin="0,0,2,2" Padding="12" MinWidth="340" MinHeight="250"
+                                        Drop="Quadrant_Drop" Tag="1">
+                                    <StackPanel>
+                                        <TextBlock Text="🔥 Ô 1: LÀM NGAY" FontSize="16" FontWeight="Bold" Foreground="#C62828"/>
+                                        <TextBlock Text="Nhiệm vụ quan trọng, khẩn cấp nhất" FontSize="11" Foreground="#E57373" Margin="0,2,0,8"/>
+
+                                        <ItemsControl ItemsSource="{Binding Quadrant1Tasks}" HorizontalContentAlignment="Stretch">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,4" Background="White" 
+                                                          PreviewMouseLeftButtonDown="Task_PreviewMouseLeftButtonDown" 
+                                                          PreviewMouseMove="Task_PreviewMouseMove"
+                                                          Cursor="Hand" ToolTip="💡 Nhấn giữ để kéo thả chuyển ô" Tag="1">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <CheckBox IsChecked="{Binding IsCompleted, Mode=TwoWay}" Margin="6,0" VerticalAlignment="Center"
+                                                                  Command="{Binding DataContext.TaskCompletedChangedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"/>
+
+                                                        <TextBox Grid.Column="1" Text="{Binding Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                 FontSize="14" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"
+                                                                 Loaded="TaskTextBox_Loaded" Margin="4,0" TextWrapping="Wrap"/>
+
+                                                        <DatePicker Grid.Column="2" SelectedDate="{Binding DueDate, Mode=TwoWay}" Width="110" FontSize="12"
+                                                                    BorderThickness="0" Background="Transparent" VerticalAlignment="Center" Margin="4,0"/>
+
+                                                        <Button Grid.Column="3" Content="✕" Margin="4,0" VerticalAlignment="Center"
+                                                                Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding}" Foreground="#B0BEC5" Cursor="Hand">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Background" Value="Transparent"/>
+                                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                                    <Setter Property="Template">
+                                                                        <Setter.Value>
+                                                                            <ControlTemplate TargetType="Button">
+                                                                                <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}"/>
+                                                                            </ControlTemplate>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                    <Style.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter Property="Foreground" Value="#C62828"/>
+                                                                        </Trigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                        </Button>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <Button Content="➕ Thêm việc" FontSize="12" FontWeight="SemiBold" Padding="10,4" Margin="0,6,0,0"
+                                                HorizontalAlignment="Left" Cursor="Hand" Command="{Binding AddEmptyTaskCommand}" CommandParameter="{StaticResource Int1}"
+                                                Background="#FFCDD2" Foreground="#C62828" BorderThickness="0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Q2: PLAN / SCHEDULE -->
+                                <Border Grid.Row="0" Grid.Column="2" Background="#E8F5E9" BorderBrush="#A5D6A7" BorderThickness="2"
+                                        CornerRadius="0,10,0,0" Margin="2,0,0,2" Padding="12" MinWidth="340" MinHeight="250"
+                                        Drop="Quadrant_Drop" Tag="2">
+                                    <StackPanel>
+                                        <TextBlock Text="📅 Ô 2: LÊN LỊCH" FontSize="16" FontWeight="Bold" Foreground="#2E7D32"/>
+                                        <TextBlock Text="Quan trọng nhưng chưa cần làm ngay" FontSize="11" Foreground="#81C784" Margin="0,2,0,8"/>
+
+                                        <ItemsControl ItemsSource="{Binding Quadrant2Tasks}" HorizontalContentAlignment="Stretch">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,4" Background="White" 
+                                                          PreviewMouseLeftButtonDown="Task_PreviewMouseLeftButtonDown" 
+                                                          PreviewMouseMove="Task_PreviewMouseMove"
+                                                          Cursor="Hand" ToolTip="💡 Nhấn giữ để kéo thả chuyển ô" Tag="2">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <CheckBox IsChecked="{Binding IsCompleted, Mode=TwoWay}" Margin="6,0" VerticalAlignment="Center"
+                                                                  Command="{Binding DataContext.TaskCompletedChangedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"/>
+
+                                                        <TextBox Grid.Column="1" Text="{Binding Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                 FontSize="14" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"
+                                                                 Loaded="TaskTextBox_Loaded" Margin="4,0" TextWrapping="Wrap"/>
+
+                                                        <DatePicker Grid.Column="2" SelectedDate="{Binding DueDate, Mode=TwoWay}" Width="110" FontSize="12"
+                                                                    BorderThickness="0" Background="Transparent" VerticalAlignment="Center" Margin="4,0"/>
+
+                                                        <Button Grid.Column="3" Content="✕" Margin="4,0" VerticalAlignment="Center"
+                                                                Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding}" Foreground="#B0BEC5" Cursor="Hand">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Background" Value="Transparent"/>
+                                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                                    <Setter Property="Template">
+                                                                        <Setter.Value>
+                                                                            <ControlTemplate TargetType="Button">
+                                                                                <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}"/>
+                                                                            </ControlTemplate>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                    <Style.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter Property="Foreground" Value="#C62828"/>
+                                                                        </Trigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                        </Button>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <Button Content="➕ Thêm việc" FontSize="12" FontWeight="SemiBold" Padding="10,4" Margin="0,6,0,0"
+                                                HorizontalAlignment="Left" Cursor="Hand" Command="{Binding AddEmptyTaskCommand}" CommandParameter="{StaticResource Int2}"
+                                                Background="#C8E6C9" Foreground="#2E7D32" BorderThickness="0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Q3: DELEGATE -->
+                                <Border Grid.Row="1" Grid.Column="1" Background="#FFF3E0" BorderBrush="#FFCC80" BorderThickness="2"
+                                        CornerRadius="0,0,0,10" Margin="0,2,2,0" Padding="12" MinWidth="340" MinHeight="250"
+                                        Drop="Quadrant_Drop" Tag="3">
+                                    <StackPanel>
+                                        <TextBlock Text="🤝 Ô 3: ỦY THÁC" FontSize="16" FontWeight="Bold" Foreground="#E65100"/>
+                                        <TextBlock Text="Khẩn cấp nhưng không quá quan trọng" FontSize="11" Foreground="#FFB74D" Margin="0,2,0,8"/>
+
+                                        <ItemsControl ItemsSource="{Binding Quadrant3Tasks}" HorizontalContentAlignment="Stretch">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,4" Background="White" 
+                                                          PreviewMouseLeftButtonDown="Task_PreviewMouseLeftButtonDown" 
+                                                          PreviewMouseMove="Task_PreviewMouseMove"
+                                                          Cursor="Hand" ToolTip="💡 Nhấn giữ để kéo thả chuyển ô" Tag="3">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <CheckBox IsChecked="{Binding IsCompleted, Mode=TwoWay}" Margin="6,0" VerticalAlignment="Center"
+                                                                  Command="{Binding DataContext.TaskCompletedChangedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"/>
+
+                                                        <TextBox Grid.Column="1" Text="{Binding Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                 FontSize="14" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"
+                                                                 Loaded="TaskTextBox_Loaded" Margin="4,0" TextWrapping="Wrap"/>
+
+                                                        <DatePicker Grid.Column="2" SelectedDate="{Binding DueDate, Mode=TwoWay}" Width="110" FontSize="12"
+                                                                    BorderThickness="0" Background="Transparent" VerticalAlignment="Center" Margin="4,0"/>
+
+                                                        <Button Grid.Column="3" Content="✕" Margin="4,0" VerticalAlignment="Center"
+                                                                Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding}" Foreground="#B0BEC5" Cursor="Hand">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Background" Value="Transparent"/>
+                                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                                    <Setter Property="Template">
+                                                                        <Setter.Value>
+                                                                            <ControlTemplate TargetType="Button">
+                                                                                <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}"/>
+                                                                            </ControlTemplate>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                    <Style.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter Property="Foreground" Value="#C62828"/>
+                                                                        </Trigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                        </Button>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <Button Content="➕ Thêm việc" FontSize="12" FontWeight="SemiBold" Padding="10,4" Margin="0,6,0,0"
+                                                HorizontalAlignment="Left" Cursor="Hand" Command="{Binding AddEmptyTaskCommand}" CommandParameter="{StaticResource Int3}"
+                                                Background="#FFE0B2" Foreground="#E65100" BorderThickness="0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Q4: ELIMINATE / DELETE -->
+                                <Border Grid.Row="1" Grid.Column="2" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="2"
+                                        CornerRadius="0,0,10,0" Margin="2,2,0,0" Padding="12" MinWidth="340" MinHeight="250"
+                                        Drop="Quadrant_Drop" Tag="4">
+                                    <StackPanel>
+                                        <TextBlock Text="🗑️ Ô 4: LOẠI BỎ" FontSize="16" FontWeight="Bold" Foreground="#616161"/>
+                                        <TextBlock Text="Nhiệm vụ vô ích, gây lãng phí thời gian" FontSize="11" Foreground="#B0BEC5" Margin="0,2,0,8"/>
+
+                                        <ItemsControl ItemsSource="{Binding Quadrant4Tasks}" HorizontalContentAlignment="Stretch">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,4" Background="White" 
+                                                          PreviewMouseLeftButtonDown="Task_PreviewMouseLeftButtonDown" 
+                                                          PreviewMouseMove="Task_PreviewMouseMove"
+                                                          Cursor="Hand" ToolTip="💡 Nhấn giữ để kéo thả chuyển ô" Tag="4">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <CheckBox IsChecked="{Binding IsCompleted, Mode=TwoWay}" Margin="6,0" VerticalAlignment="Center"
+                                                                  Command="{Binding DataContext.TaskCompletedChangedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                  CommandParameter="{Binding}"/>
+
+                                                        <TextBox Grid.Column="1" Text="{Binding Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                 FontSize="14" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"
+                                                                 Loaded="TaskTextBox_Loaded" Margin="4,0" TextWrapping="Wrap"/>
+
+                                                        <DatePicker Grid.Column="2" SelectedDate="{Binding DueDate, Mode=TwoWay}" Width="110" FontSize="12"
+                                                                    BorderThickness="0" Background="Transparent" VerticalAlignment="Center" Margin="4,0"/>
+
+                                                        <Button Grid.Column="3" Content="✕" Margin="4,0" VerticalAlignment="Center"
+                                                                Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding}" Foreground="#B0BEC5" Cursor="Hand">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Background" Value="Transparent"/>
+                                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                                    <Setter Property="Template">
+                                                                        <Setter.Value>
+                                                                            <ControlTemplate TargetType="Button">
+                                                                                <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}"/>
+                                                                            </ControlTemplate>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                    <Style.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter Property="Foreground" Value="#616161"/>
+                                                                        </Trigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                        </Button>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <Button Content="➕ Thêm việc" FontSize="12" FontWeight="SemiBold" Padding="10,4" Margin="0,6,0,0"
+                                                HorizontalAlignment="Left" Cursor="Hand" Command="{Binding AddEmptyTaskCommand}" CommandParameter="{StaticResource Int4}"
+                                                Background="#E0E0E0" Foreground="#616161" BorderThickness="0"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- Insight (AI Advice) -->
+                            <Border x:Name="insightSection" Background="#FAFAFA" CornerRadius="10" Padding="16,12" Margin="0,16,0,0"
+                                    BorderBrush="#E0E0E0" BorderThickness="1" 
+                                    Visibility="{Binding IsInsightVisible, Converter={StaticResource BoolToVis}}">
+                                <StackPanel>
+                                    <TextBlock Text="💡 NHẬN XÉT CỦA GIÁO VIÊN AI" FontSize="14" FontWeight="Bold" Foreground="#00796B" Margin="0,0,0,8"/>
+                                    
+                                    <!-- Stat badges -->
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <Border Background="#FFCDD2" CornerRadius="6" Padding="10,4" Margin="0,0,6,4">
+                                            <TextBlock Text="{Binding Q1Count, StringFormat='🔥 Làm ngay: {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="#C62828"/>
+                                        </Border>
+                                        <Border Background="#C8E6C9" CornerRadius="6" Padding="10,4" Margin="0,0,6,4">
+                                            <TextBlock Text="{Binding Q2Count, StringFormat='📅 Lên lịch: {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                                        </Border>
+                                        <Border Background="#FFE0B2" CornerRadius="6" Padding="10,4" Margin="0,0,6,4">
+                                            <TextBlock Text="{Binding Q3Count, StringFormat='🤝 Ủy thác: {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="#E65100"/>
+                                        </Border>
+                                        <Border Background="#E0E0E0" CornerRadius="6" Padding="10,4" Margin="0,0,6,4">
+                                            <TextBlock Text="{Binding Q4Count, StringFormat='🗑️ Loại bỏ: {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="#616161"/>
+                                        </Border>
+                                    </WrapPanel>
+
+                                    <!-- Advice List -->
+                                    <ItemsControl ItemsSource="{Binding AdviceList}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" FontSize="13" Foreground="#212121" TextWrapping="Wrap" Margin="0,2,0,2"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- VIEW 3: THỐNG KÊ HIỆU SUẤT -->
+                <Border x:Name="viewStats" Background="White" Padding="24" Visibility="Collapsed">
+                    <Grid  HorizontalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                            <TextBlock Text="📊 BIỂU ĐỒ PHÂN BỔ NHIỆM VỤ" FontSize="18" FontWeight="Bold" Foreground="#00796B"/>
+                            <TextBlock Text="Xem lại tỷ lệ phân bổ công việc để cân bằng tốt giữa học tập và cuộc sống cá nhân" FontSize="13" Foreground="#757575" Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <!-- OxyPlot PlotView -->
+                        <oxy:PlotView Grid.Row="1" Model="{Binding PiePlotModel}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    </Grid>
+                </Border>
+
+                <!-- VIEW 4: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

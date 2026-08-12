@@ -1,0 +1,167 @@
+<!-- ============================================ -->
+<!-- PHASE 1: 20 SHAPES - COPY THIS INTO LINE 424 -->
+<!-- Replace from <StackPanel x:Name="panel2DShapes"> to first </StackPanel> -->
+<!-- ============================================ -->
+
+                            <!-- 2D SHAPES PANEL -->
+                            <StackPanel x:Name="panel2DShapes" Visibility="Visible">
+                            
+                                <!-- LINES PANEL (5 shapes) -->
+                                <StackPanel x:Name="panelLines" Visibility="Visible">
+                                    <UniformGrid Columns="5" Margin="0,0,0,20">
+                                        
+                                        <!-- 1. Straight Line -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="StraightLine" ToolTip="Đường thẳng">
+                                            <Line X1="10" Y1="35" X2="60" Y2="35" Stroke="#2F3542" StrokeThickness="3"/>
+                                        </Button>
+                                        
+                                        <!-- 2. Arrow Line -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="ArrowLine" ToolTip="Đường mũi tên">
+                                            <Canvas Width="70" Height="70">
+                                                <Line X1="10" Y1="35" X2="50" Y2="35" Stroke="#2F3542" StrokeThickness="3"/>
+                                                <Polygon Points="50,30 60,35 50,40" Fill="#2F3542"/>
+                                            </Canvas>
+                                        </Button>
+                                        
+                                        <!-- 3. Double Arrow Line -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="DoubleArrowLine" ToolTip="Đường mũi tên hai đầu">
+                                            <Canvas Width="70" Height="70">
+                                                <Line X1="15" Y1="35" X2="55" Y2="35" Stroke="#2F3542" StrokeThickness="3"/>
+                                                <Polygon Points="15,30 5,35 15,40" Fill="#2F3542"/>
+                                                <Polygon Points="55,30 65,35 55,40" Fill="#2F3542"/>
+                                            </Canvas>
+                                        </Button>
+                                        
+                                        <!-- 4. Elbow Connector -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="ElbowConnector" ToolTip="Đường nối góc vuông">
+                                            <Path Stroke="#2F3542" StrokeThickness="3" Fill="None"
+                                                 Data="M10,15 L35,15 L35,55 L60,55"/>
+                                        </Button>
+                                        
+                                        <!-- 5. Curved Connector -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="CurvedConnector" ToolTip="Đường nối cong">
+                                            <Path Stroke="#2F3542" StrokeThickness="3" Fill="None"
+                                                 Data="M10,30 Q35,10 60,30"/>
+                                        </Button>
+                                        
+                                    </UniformGrid>
+                                </StackPanel>
+                                
+                                <!-- RECTANGLES PANEL (5 shapes) -->
+                                <StackPanel x:Name="panelRectangles" Visibility="Collapsed">
+                                    <UniformGrid Columns="5" Margin="0,0,0,20">
+                                        
+                                        <!-- 1. Rectangle -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Rectangle" ToolTip="Hình chữ nhật">
+                                            <Rectangle Width="50" Height="35" Fill="#9C27B0"/>
+                                        </Button>
+                                        
+                                        <!-- 2. Rounded Rectangle -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="RoundedRectangle" ToolTip="Hình chữ nhật góc bo tròn">
+                                            <Rectangle Width="50" Height="35" Fill="#4CAF50" RadiusX="8" RadiusY="8"/>
+                                        </Button>
+                                        
+                                        <!-- 3. Snip Single Corner Rectangle -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="SnipSingleCornerRectangle" ToolTip="Hình chữ nhật cắt 1 góc">
+                                            <Path Fill="#FF9800" Data="M10,10 L55,10 L55,45 L10,45 Z M50,10 L50,15 L55,10 Z"/>
+                                        </Button>
+                                        
+                                        <!-- 4. Snip Diagonal Corner Rectangle -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="SnipDiagonalCornerRectangle" ToolTip="Hình chữ nhật cắt 2 góc chéo">
+                                            <Path Fill="#2E86DE" Data="M10,10 L55,10 L55,40 L15,45 L10,45 Z M50,10 L50,15 L55,10 Z M10,45 L15,40 L15,45 Z"/>
+                                        </Button>
+                                        
+                                        <!-- 5. Round Single Corner Rectangle -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="RoundSingleCornerRectangle" ToolTip="Hình chữ nhật bo 1 góc">
+                                            <Path Fill="#00BCD4" Data="M10,10 L50,10 Q60,10 60,20 L60,45 L10,45 Z"/>
+                                        </Button>
+                                        
+                                    </UniformGrid>
+                                </StackPanel>
+                                
+                                <!-- BASIC SHAPES PANEL (10 shapes) -->
+                                <StackPanel x:Name="panelBasicShapes" Visibility="Collapsed">
+                                    <UniformGrid Columns="5" Margin="0,0,0,20">
+                                        
+                                        <!-- 1. Circle -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Circle" ToolTip="Hình tròn">
+                                            <Ellipse Width="45" Height="45" Fill="#2E86DE"/>
+                                        </Button>
+                                        
+                                        <!-- 2. Triangle -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Triangle" ToolTip="Tam giác">
+                                            <Polygon Points="35,10 60,50 10,50" Fill="#FF9800"/>
+                                        </Button>
+                                        
+                                        <!-- 3. Pentagon -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Pentagon" ToolTip="Ngũ giác">
+                                            <Polygon Points="35,10 60,25 50,50 20,50 10,25" Fill="#E91E63"/>
+                                        </Button>
+                                        
+                                        <!-- 4. Hexagon -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Hexagon" ToolTip="Lục giác">
+                                            <Polygon Points="25,10 45,10 60,30 45,50 25,50 10,30" Fill="#00BCD4"/>
+                                        </Button>
+                                        
+                                        <!-- 5. Star -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Star" ToolTip="Ngôi sao">
+                                            <Path Fill="#FDD835" 
+                                                 Data="M35,10 L40,28 L60,28 L44,40 L50,58 L35,46 L20,58 L26,40 L10,28 L30,28 Z"/>
+                                        </Button>
+                                        
+                                        <!-- 6. Heart -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Heart" ToolTip="Trái tim">
+                                            <Path Fill="#EE5A6F" 
+                                                 Data="M35,55 L20,40 Q10,30 10,20 Q10,10 20,10 Q30,10 35,20 Q40,10 50,10 Q60,10 60,20 Q60,30 50,40 Z"/>
+                                        </Button>
+                                        
+                                        <!-- 7. Diamond -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Diamond" ToolTip="Hình thoi">
+                                            <Polygon Points="35,10 60,30 35,50 10,30" Fill="#9C27B0"/>
+                                        </Button>
+                                        
+                                        <!-- 8. Parallelogram -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Parallelogram" ToolTip="Hình bình hành">
+                                            <Polygon Points="20,15 60,15 50,45 10,45" Fill="#3F51B5"/>
+                                        </Button>
+                                        
+                                        <!-- 9. Cross -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Cross" ToolTip="Hình chữ thập">
+                                            <Path Fill="#F44336" 
+                                                 Data="M25,10 L45,10 L45,25 L60,25 L60,45 L45,45 L45,60 L25,60 L25,45 L10,45 L10,25 L25,25 Z"/>
+                                        </Button>
+                                        
+                                        <!-- 10. Cloud -->
+                                        <Button Width="70" Height="70" Margin="5" Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+                                               Click="btnShape_Click" Tag="Cloud" ToolTip="Đám mây">
+                                            <Path Fill="#64B5F6" 
+                                                 Data="M50,25 Q60,15 55,25 Q65,25 60,35 Q65,40 55,40 L20,40 Q10,40 15,30 Q10,20 20,20 Q20,15 30,15 Q35,10 45,15 Q50,15 50,25 Z"/>
+                                        </Button>
+                                        
+                                    </UniformGrid>
+                                </StackPanel>
+                            
+                            </StackPanel>
+
+<!-- ============================================ -->
+<!-- END OF PHASE 1 SNIPPET -->
+<!-- ============================================ -->

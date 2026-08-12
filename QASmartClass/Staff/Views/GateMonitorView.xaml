@@ -1,0 +1,432 @@
+<UserControl TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" x:Class="QASmartClass.Staff.Views.GateMonitorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="1000"
+             Background="{StaticResource AppBackground}">
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Margin="0,0,0,8">
+            <Border DockPanel.Dock="Left" Width="48" Height="48" CornerRadius="12" Margin="0,0,16,0">
+                <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#059669" Offset="0"/><GradientStop Color="#34D399" Offset="1"/></LinearGradientBrush></Border.Background>
+                <TextBlock Text="&#xEA18;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <Button DockPanel.Dock="Right" Content="🔄 Làm mới (10s)" Style="{StaticResource StaffOutlineBtn}" Height="44" Padding="14,6" Command="{Binding RefreshDataCommand}"/>
+            <TextBlock DockPanel.Dock="Right" Text="⏳ Đang cập nhật..." Foreground="#059669" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <StackPanel VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Cổng Trường C1 — Trực Tiếp" Style="{StaticResource StaffPageTitle}"/>
+                    <Ellipse Width="12" Height="12" Margin="10,0,0,0" VerticalAlignment="Center" ToolTip="Trạng thái kết nối phần cứng giám sát (Xanh: Đang kết nối, Đỏ: Lỗi)">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="#EF4444"/> <!-- Mặc định Đỏ -->
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsHardwareConnected}" Value="True">
+                                        <Setter Property="Fill" Value="#10B981"/> <!-- Xanh lá -->
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="🔴 MẤT KẾT NỐI PHẦN CỨNG"/>
+                                <Setter Property="Foreground" Value="#EF4444"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsHardwareConnected}" Value="True">
+                                        <Setter Property="Text" Value="🟢 PHẦN CỨNG HOẠT ĐỘNG"/>
+                                        <Setter Property="Foreground" Value="#10B981"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </DockPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="1.5*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Style="{StaticResource StaffFormCard}" Margin="0,0,20,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <!-- Stats Cards -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <Border CornerRadius="12" Padding="18" Width="190" Margin="0,0,15,0">
+                            <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#2563EB" Offset="0"/><GradientStop Color="#3B82F6" Offset="1"/></LinearGradientBrush></Border.Background>
+                            <StackPanel>
+                                <TextBlock Text="ĐANG TRONG TRƯỜNG" Foreground="White" Opacity="0.9" FontSize="11" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding StudentsInSchool}" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border CornerRadius="12" Padding="18" Width="190">
+                            <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#059669" Offset="0"/><GradientStop Color="#10B981" Offset="1"/></LinearGradientBrush></Border.Background>
+                            <StackPanel>
+                                <TextBlock Text="TỔNG SĨ SỐ" Foreground="White" Opacity="0.9" FontSize="11" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding TotalStudents}" Foreground="White" FontSize="36" FontWeight="Bold" Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    <TabControl Grid.Row="1" BorderThickness="0" Background="Transparent">
+                        <TabItem Header="📋 Nhật ký cổng hôm nay" Padding="12,6" FontSize="12" FontWeight="SemiBold">
+                            <ListView ItemsSource="{Binding GateLogs}" Style="{StaticResource StaffListView}" Margin="0,10,0,0">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Thời Gian" DisplayMemberBinding="{Binding Timestamp, StringFormat='HH:mm:ss'}" Width="80"/>
+                                        <GridViewColumn Header="Sự Kiện" DisplayMemberBinding="{Binding EventType}" Width="100"/>
+                                        <GridViewColumn Header="Học Sinh" DisplayMemberBinding="{Binding DisplayStudentInfo}" Width="150"/>
+                                        <GridViewColumn Header="Chi Tiết" DisplayMemberBinding="{Binding FriendlyDetails}" Width="200"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </TabItem>
+                        <TabItem Header="🗺️ Bản đồ định vị 2D" Padding="12,6" FontSize="12" FontWeight="SemiBold">
+                            <Grid Margin="0,10,0,0">
+                                <Border Background="#F8FAFC" CornerRadius="12" BorderBrush="#E2E8F0" BorderThickness="1">
+                                    <Grid>
+                                        <TextBlock Text="SƠ ĐỒ MẶT BẰNG KHUÔN VIÊN TRƯỜNG" Foreground="#94A3B8" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0"/>
+
+                                        <!-- Banner Cảnh báo Học sinh đi vào Vùng Cấm -->
+                                        <Border Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1.5" CornerRadius="8" Padding="10" Margin="10,25,10,0" VerticalAlignment="Top" Panel.ZIndex="10" HorizontalAlignment="Center">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasStudentInRestrictedArea}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <TextBlock Text="{Binding RestrictedWarningMessage}" Foreground="#B91C1C" FontWeight="Bold" FontSize="11" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Viewbox Margin="10,30,10,10" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Canvas Width="280" Height="200" Background="Transparent">
+                                                <!-- Static buildings outline -->
+                                                <Rectangle Canvas.Left="20" Canvas.Top="20" Width="80" Height="60" Stroke="#CBD5E1" StrokeThickness="1" Fill="#F1F5F9" RadiusX="4" RadiusY="4"/>
+                                                <TextBlock Canvas.Left="25" Canvas.Top="40" Text="Khu A (Học tập)" FontSize="13" Foreground="#64748B"/>
+
+                                                <Rectangle Canvas.Left="130" Canvas.Top="20" Width="100" Height="60" Stroke="#CBD5E1" StrokeThickness="1" Fill="#F1F5F9" RadiusX="4" RadiusY="4"/>
+                                                <TextBlock Canvas.Left="140" Canvas.Top="40" Text="Thư viện &amp; Lab" FontSize="13" Foreground="#64748B"/>
+
+                                                <Rectangle Canvas.Left="20" Canvas.Top="110" Width="120" Height="70" Stroke="#CBD5E1" StrokeThickness="1" Fill="#F1F5F9" RadiusX="4" RadiusY="4"/>
+                                                <TextBlock Canvas.Left="35" Canvas.Top="135" Text="Nhà ăn &amp; Thể chất" FontSize="13" Foreground="#64748B"/>
+
+                                                <Rectangle Canvas.Left="170" Canvas.Top="110" Width="80" Height="70" Stroke="#EF4444" StrokeThickness="1" Fill="#FEF2F2" RadiusX="4" RadiusY="4" StrokeDashArray="4,2"/>
+                                                <TextBlock Canvas.Left="175" Canvas.Top="135" Text="Khu kỹ thuật" FontSize="13" Foreground="#EF4444" FontWeight="Bold"/>
+
+                                                <!-- Dynamic Beacons indicators -->
+                                                <ItemsControl ItemsSource="{Binding MapNodes}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <Canvas/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemContainerStyle>
+                                                        <Style TargetType="ContentPresenter">
+                                                            <Setter Property="Canvas.Left" Value="{Binding CoordinateX}"/>
+                                                            <Setter Property="Canvas.Top" Value="{Binding CoordinateY}"/>
+                                                        </Style>
+                                                    </ItemsControl.ItemContainerStyle>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="-16,-16,0,0" ToolTip="{Binding LocationName}">
+                                                                <Ellipse Width="32" Height="32" Fill="{Binding StatusColor}" Opacity="0.15"/>
+                                                                <Ellipse Width="16" Height="16" Fill="{Binding StatusColor}" Stroke="White" StrokeThickness="1.5" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                <!-- Student count bubble -->
+                                                                <Border Background="#1E293B" CornerRadius="8" Padding="5,2" Margin="14,-10,0,0" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                                                    <TextBlock Text="{Binding StudentCount}" Foreground="White" FontSize="8" FontWeight="Bold"/>
+                                                                </Border>
+                                                                <TextBlock Text="{Binding LocationName}" FontSize="11" Foreground="#475569" Margin="0,32,0,0" HorizontalAlignment="Center"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Canvas>
+                                        </Viewbox>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </Border>
+            <!-- Sidebar Panel -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Bảng điều khiển phong tỏa -->
+                    <RowDefinition Height="Auto"/> <!-- Quét thẻ gần nhất -->
+                    <RowDefinition Height="*"/>    <!-- Alert danh sách -->
+                </Grid.RowDefinitions>
+
+                <!-- Bảng Điều Khiển Phong Tỏa Khẩn Cấp -->
+                <Border Grid.Row="0" CornerRadius="16" Padding="15" Margin="0,0,0,15" Background="White">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.05" Color="#1E293B"/>
+                    </Border.Effect>
+                    <Grid>
+                        <!-- Giao diện khi HỆ THỐNG BÌNH THƯỜNG -->
+                        <StackPanel Visibility="Collapsed">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLockdownActive}" Value="False">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <DockPanel Margin="0,0,0,10">
+                                <TextBlock Text="🛡️ Kiểm Soát Phong Tỏa" FontSize="14" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center"/>
+                                <Border Background="#DCFCE7" CornerRadius="6" Padding="6,2" HorizontalAlignment="Right">
+                                    <TextBlock Text="An Toàn" Foreground="#15803D" FontSize="10" FontWeight="Bold"/>
+                                </Border>
+                            </DockPanel>
+                            <TextBlock Text="Khi phát hiện đột nhập hoặc hỏa hoạn, vui lòng chọn loại sự cố và nhập mã PIN để phong tỏa toàn trường." FontSize="11" Foreground="#64748B" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="100"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox SelectedValue="{Binding LockdownType}" SelectedValuePath="Content" Style="{StaticResource StaffComboBox}" Height="32" Margin="0,0,5,0">
+                                    <ComboBoxItem Content="Kẻ xâm nhập"/>
+                                    <ComboBoxItem Content="Hỏa hoạn"/>
+                                    <ComboBoxItem Content="Khác"/>
+                                </ComboBox>
+                                <PasswordBox x:Name="PbLockdownPin" Grid.Column="1" Height="32" Padding="5,2" VerticalContentAlignment="Center" ToolTip="Nhập mã PIN bảo mật" PasswordChanged="PbLockdownPin_PasswordChanged"/>
+                            </Grid>
+                            <Button Content="⚠️ KÍCH HOẠT PHONG TỎA KHẨN CẤP" Background="#EF4444" Foreground="White" FontWeight="Bold" Padding="10,8" BorderThickness="0" Command="{Binding TriggerLockdownCommand}" Cursor="Hand"/>
+                        </StackPanel>
+
+                        <!-- Giao diện khi ĐANG PHONG TỎA -->
+                        <StackPanel Visibility="Collapsed">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLockdownActive}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <Border Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1.5" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="🚨 CẢNH BÁO PHONG TỎA 🚨" FontSize="13" FontWeight="Bold" Foreground="#B91C1C" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding LockdownStatusText}" FontSize="11" FontWeight="Bold" Foreground="#B91C1C" HorizontalAlignment="Center" Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Text="Nhập mã PIN và ghi chú lý do xử lý sự cố để giải tỏa toàn trường, khôi phục cổng và thông báo an toàn." FontSize="11" Foreground="#64748B" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            
+                            <TextBox Text="{Binding ResolutionNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StaffTextBox}" Height="50" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,0,8" ToolTip="Ghi chú kết quả xử lý sự cố"/>
+                            
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Mã PIN giải tỏa: " VerticalAlignment="Center" FontSize="11" Foreground="#475569" Margin="0,0,5,0"/>
+                                <PasswordBox x:Name="PbReleasePin" Grid.Column="1" Height="32" Padding="5,2" VerticalContentAlignment="Center" ToolTip="Nhập mã PIN bảo mật" PasswordChanged="PbReleasePin_PasswordChanged"/>
+                            </Grid>
+                            
+                            <Button Content="🟢 GIẢI TỎA PHONG TỎA" Background="#10B981" Foreground="White" FontWeight="Bold" Padding="10,8" BorderThickness="0" Command="{Binding ReleaseLockdownCommand}" Cursor="Hand"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Last Swiped Student Card -->
+                <Border Grid.Row="1" CornerRadius="16" Padding="15" Margin="0,0,0,15" Background="White">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.05" Color="#1E293B"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="QUÉT THẺ GẦN NHẤT" Foreground="{DynamicResource TextSecondary}" FontSize="11" FontWeight="Bold" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                        <Grid Width="90" Height="90" Margin="0,0,0,10">
+                            <!-- Fallback icon -->
+                            <Border Background="#F1F5F9" CornerRadius="45" BorderBrush="#E2E8F0" BorderThickness="1">
+                                <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="44" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <!-- Real Avatar Image -->
+                            <Border CornerRadius="45" ClipToBounds="True">
+                                <Image Source="{Binding LastSwipedStudent.AvatarPath}" Stretch="UniformToFill">
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Style.Triggers>
+                                                <Trigger Property="Source" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </Trigger>
+                                                <Trigger Property="Source" Value="">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                            </Border>
+                        </Grid>
+                        <TextBlock Text="{Binding LastSwipedStudent.StudentName}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding LastSwipedStudent.ClassName, StringFormat='Lớp: {0}'}" FontSize="12" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,2,0,5"/>
+                        <Border CornerRadius="10" Padding="10,4" HorizontalAlignment="Center" Margin="0,5,0,0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#FEF3C7"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding LastSwipedStudent.EventType}" Value="Vào trường">
+                                            <Setter Property="Background" Value="#DCFCE7"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding LastSwipedStudent.EventType}" Value="Ra trường">
+                                            <Setter Property="Background" Value="#FEE2E2"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock FontSize="11" FontWeight="Bold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="{Binding LastSwipedStudent.FriendlyDetails}"/>
+                                        <Setter Property="Foreground" Value="#D97706"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding LastSwipedStudent.EventType}" Value="Vào trường">
+                                                <Setter Property="Foreground" Value="#15803D"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding LastSwipedStudent.EventType}" Value="Ra trường">
+                                                <Setter Property="Foreground" Value="#B91C1C"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+                </Border>
+                <!-- Alert Sidebar - 3-column Layout for Chưa Check-out / Vắng hôm nay / Về sớm -->
+                <Border Grid.Row="2" CornerRadius="16" Padding="15" Background="White">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.05" Color="#1E293B" Direction="270"/>
+                    </Border.Effect>
+                    <Grid Margin="0,5,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Cột 1: Chưa Check-out -->
+                        <Border Grid.Column="0" BorderBrush="#F1F5F9" BorderThickness="0,0,1,0" Padding="0,0,10,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                                    <Border Width="24" Height="24" CornerRadius="6" DockPanel.Dock="Left" Margin="0,0,8,0" Background="{Binding MissingHeaderBgColor}">
+                                        <TextBlock Text="{Binding MissingHeaderIcon}" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{Binding MissingHeaderFgColor}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding MissingHeaderTitle}" FontSize="12" FontWeight="Bold" Foreground="{Binding MissingHeaderFgColor}" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <ListView Grid.Row="1" ItemsSource="{Binding MissingStudents}" Style="{StaticResource StaffListView}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="0,4">
+                                                <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="12"/>
+                                                <TextBlock Text="{Binding ClassName, StringFormat='Lớp: {0}'}" FontSize="10" Foreground="{DynamicResource TextSecondary}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Border>
+
+                        <!-- Cột 2: Vắng không phép -->
+                        <Border Grid.Column="1" BorderBrush="#F1F5F9" BorderThickness="0,0,1,0" Padding="10,0,10,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                                    <Border Width="24" Height="24" CornerRadius="6" DockPanel.Dock="Left" Margin="0,0,8,0" Background="{Binding AbsentHeaderBgColor}">
+                                        <TextBlock Text="&#xE7B3;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{Binding AbsentHeaderFgColor}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding AbsentHeaderTitle}" FontSize="12" FontWeight="Bold" Foreground="{Binding AbsentHeaderFgColor}" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <ListView Grid.Row="1" ItemsSource="{Binding AbsentStudents}" Style="{StaticResource StaffListView}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="0,4">
+                                                <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="12"/>
+                                                <TextBlock Text="{Binding ClassName, StringFormat='Lớp: {0}'}" FontSize="10" Foreground="{DynamicResource TextSecondary}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Border>
+
+                        <!-- Cột 3: Về sớm có phép -->
+                        <Border Grid.Column="2" Padding="10,0,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                                    <Border Width="24" Height="24" CornerRadius="6" DockPanel.Dock="Left" Margin="0,0,8,0" Background="#DBEAFE">
+                                        <TextBlock Text="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="#1D4ED8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="Về Sớm Có Phép" FontSize="12" FontWeight="Bold" Foreground="#1D4ED8" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <Grid Grid.Row="1" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox SpellCheck.IsEnabled="False" x:Name="txtScanInput" Grid.Column="0" Text="{Binding ScannedLeavePassCode, UpdateSourceTrigger=PropertyChanged}" Height="40" Padding="4" VerticalContentAlignment="Center" Style="{StaticResource StaffTextBox}"/>
+                                    <Button Grid.Column="1" Content="Xác nhận" Height="40" Margin="5,0,0,0" Padding="10,0" Command="{Binding ScanLeavePassCommand}" Style="{StaticResource StaffBtn}"/>
+                                </Grid>
+                                <TextBlock Grid.Row="2" Text="{Binding ScanFeedbackMessage}" Foreground="{Binding ScanFeedbackColor}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                                <ListView Grid.Row="3" ItemsSource="{Binding EarlyLeaveRequests}" Style="{StaticResource StaffListView}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="0,4">
+                                                <TextBlock Text="{Binding StudentName}" FontWeight="SemiBold" FontSize="12"/>
+                                                <TextBlock Text="{Binding ClassName, StringFormat='Lớp: {0}'}" FontSize="10" Foreground="{DynamicResource TextSecondary}"/>
+                                                <TextBlock Text="{Binding LeavePassCode, StringFormat='Mã: {0}'}" FontSize="10" Foreground="#0284C7" FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding Reason, StringFormat='Lý do: {0}'}" FontSize="10" Foreground="#EA580C" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

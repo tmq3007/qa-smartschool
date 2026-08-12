@@ -1,0 +1,157 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch04",
+    "chapterName": "Bài 4: Truyện Kiều — Nguyễn Du",
+    "grade": 10,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 4,
+    "thptWeight": "Tác phẩm kinh điển — Phân tích tâm lý và nhân vật"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g10_ch4_0",
+      "sectionName": "Trao duyên",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-10-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g10_Trao_duyên.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Nguyễn Du (1765–1820). Đoạn trích 'Trao duyên' nằm ở phần mở đầu bi kịch, khi Kiều quyết định bán mình cứu cha và nhờ Thúy Vân thay mình trả nghĩa cho Kim Trọng."
+        },
+        {
+          "name": "Lời nhờ cậy xót xa",
+          "definition": "Cậy em, em có chịu lời,\nNgồi lên cho chị lạy rồi sẽ thưa.\nGiữa đường đứt gánh tương tư,\nKeo loan chắp mối tơ thừa mặc em."
+        },
+        {
+          "name": "Trao kỷ vật và dặn dò",
+          "definition": "Chiếc vành với bức tờ mây,\nDuyên này thì giữ, vật này của chung.\nDù em nên vợ nên chồng,\nXót người mệnh bạc ắt lòng chẳng quên.\nMất người còn chút của tin,\nPhím đàn với mảnh hương nguyền ngày xưa."
+        },
+        {
+          "name": "Phân tích tâm lý",
+          "examples": [
+            "**Cậy, chịu, lạy, thưa**: Lời nhờ cậy mang tính ép buộc, hạ mình của Kiều vì đây là việc quá khó khăn với Vân.",
+            "**Duyên này thì giữ, vật này của chung**: Sự giằng xé nội tâm đau đớn. Trao kỷ vật nhưng lại níu kéo 'của chung' vì tình yêu dành cho Kim Trọng quá lớn.",
+            "**Từ ngữ chỉ cái chết**: 'Mệnh bạc', 'mất người', 'hồn', 'dạ đài' — Kiều coi như mình đã chết sau khi trao duyên."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Vì sao Thúy Kiều lại dùng các từ 'cậy', 'chịu', 'lạy', 'thưa' khi nói chuyện với em gái là Thúy Vân?",
+          "difficulty": "Medium",
+          "options": [
+            "Vì Kiều hiểu việc nhờ Vân thay mình lấy Kim Trọng là rất khó khăn, thiệt thòi cho Vân nên Kiều hạ mình, nài ép",
+            "Vì Kiều theo đúng lễ giáo phong kiến, kính trọng em gái",
+            "Vì Vân là người có quyền thế hơn Kiều trong gia đình",
+            "Vì Kiều đang có lỗi lớn với gia đình nên phải tạ tội"
+          ],
+          "answer": "Vì Kiều hiểu việc nhờ Vân thay mình lấy Kim Trọng là rất khó khăn, thiệt thòi cho Vân nên Kiều hạ mình, nài ép",
+          "hints": ["'Cậy' = nhờ + tin tưởng. 'Chịu' = ép nhận. Việc bắt em gái lấy người mình yêu có dễ dàng không?"],
+          "explanation": "Kiều dùng từ ngữ chính xác tuyệt đối. 'Cậy' là nhờ vả nhưng có hàm ý nài ép, tin tưởng. 'Lạy, thưa' là thái độ của kẻ bề dưới với bề trên hoặc với ân nhân. Kiều hiểu Vân phải chịu thiệt thòi khi kết hôn với người mình không yêu, nên Kiều coi Vân như ân nhân của mình."
+        },
+        {
+          "id": "p2",
+          "question": "Câu thơ 'Duyên này thì giữ vật này của chung' thể hiện mâu thuẫn nội tâm nào của Thúy Kiều?",
+          "difficulty": "Hard",
+          "options": [
+            "Mâu thuẫn giữa lý trí (trao duyên trả nghĩa) và tình cảm (không nỡ buông bỏ tình yêu, muốn giữ lại chút kỷ niệm)",
+            "Mâu thuẫn giữa tình yêu Kim Trọng và tình yêu Thúy Vân",
+            "Mâu thuẫn giữa việc muốn giữ lại kỷ vật nhưng lại sợ Kim Trọng trách mắng",
+            "Sự hào phóng của Kiều muốn chia sẻ đồ vật với em gái"
+          ],
+          "answer": "Mâu thuẫn giữa lý trí (trao duyên trả nghĩa) và tình cảm (không nỡ buông bỏ tình yêu, muốn giữ lại chút kỷ niệm)",
+          "hints": ["'Duyên' trao đi rồi, nhưng 'vật' lại là 'của chung'. Kiều có muốn mất hẳn tình yêu không?"],
+          "explanation": "Đây là đỉnh cao miêu tả tâm lý. Lý trí bảo Kiều phải dứt khoát trao duyên để Vân yên tâm làm vợ Kim Trọng. Nhưng trái tim lại rỉ máu, tình yêu quá lớn khiến Kiều không nỡ mất trắng. Từ 'của chung' là sự níu kéo vô vọng, đầy bi kịch của một người con gái đang mất đi tình yêu đẹp nhất."
+        },
+        {
+          "id": "p3",
+          "question": "Trong phần cuối đoạn trích, Kiều liên tục nhắc đến những từ ngữ nào và chúng có ý nghĩa gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Các từ chỉ cái chết (mệnh bạc, mất người, dạ đài, hồn) — cho thấy Kiều coi việc mất tình yêu cũng như cái chết của chính mình",
+            "Các từ chỉ thời gian (ngày mai, sau này) — thể hiện hy vọng tương lai",
+            "Các từ chỉ không gian xa xôi (góc bể, chân trời) — dự báo Kiều sẽ đi xa",
+            "Các từ chỉ tiền bạc — thể hiện sự lo lắng về khoản nợ của cha"
+          ],
+          "answer": "Các từ chỉ cái chết (mệnh bạc, mất người, dạ đài, hồn) — cho thấy Kiều coi việc mất tình yêu cũng như cái chết của chính mình",
+          "hints": ["'Mai sau dù có bao giờ...', 'Thấy hiu hiu gió thì hay chị về...'. Lời dặn này giống lời của ai?"],
+          "explanation": "Nửa cuối đoạn trích mang âm hưởng của lời trăng trối. Kiều tưởng tượng mình đã chết (hồn mang nặng lời thề, nát thân bồ liễu). Đối với Kiều, cuộc đời chỉ có ý nghĩa khi có tình yêu của Kim Trọng. Bán mình, mất tình, Kiều coi như sinh mệnh đã kết thúc."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g10_ch4_1",
+      "sectionName": "Chí khí anh hùng",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-10-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g10_Chí_khí_anh_hùng.mp3",
+      "concepts": [
+        {
+          "name": "Giới thiệu",
+          "theorem": "Đoạn trích miêu tả khoảnh khắc Từ Hải chia tay Thúy Kiều để lên đường lập nghiệp lớn, khắc họa vẻ đẹp phi thường của người anh hùng."
+        },
+        {
+          "name": "Khát vọng lên đường",
+          "definition": "Nửa năm hương lửa đương nồng,\nTrượng phu thoắt đã động lòng bốn phương.\nTrông vời trời bể mênh mang,\nThanh gươm yên ngựa lên đường thẳng rong."
+        },
+        {
+          "name": "Lời hứa của người anh hùng",
+          "definition": "Bao giờ mười vạn tinh binh,\nTiếng chiêng dậy đất bóng tinh rợp đường.\nLàm cho rõ mặt phi thường,\nBấy giờ ta sẽ rước nàng nghi gia."
+        },
+        {
+          "name": "Phân tích nghệ thuật",
+          "examples": [
+            "**Từ ngữ phi thường**: 'Trượng phu', 'động lòng bốn phương', 'trời bể mênh mang' — không gian rộng lớn xứng tầm anh hùng.",
+            "**Thái độ dứt khoát**: 'Thoắt', 'thẳng rong' — không chìm đắm trong hạnh phúc cá nhân, đặt chí lớn lên trên hết.",
+            "**Không gian**: Hình ảnh Từ Hải hòa làm một với không gian vũ trụ, đại diện cho khát vọng tự do và công lý."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Từ 'thoắt' trong câu 'Trượng phu thoắt đã động lòng bốn phương' thể hiện điều gì ở Từ Hải?",
+          "difficulty": "Easy",
+          "options": [
+            "Sự dứt khoát, mau lẹ, không để tình cảm cá nhân cản bước chí lớn anh hùng",
+            "Sự thay lòng đổi dạ nhanh chóng của Từ Hải",
+            "Phản xạ nhanh nhẹn khi phát hiện kẻ thù",
+            "Sự hối hận vì đã lấy Thúy Kiều làm vợ"
+          ],
+          "answer": "Sự dứt khoát, mau lẹ, không để tình cảm cá nhân cản bước chí lớn anh hùng",
+          "hints": ["Từ Hải đang sống hạnh phúc với Kiều (hương lửa đương nồng), nhưng bỗng 'thoắt' lên đường. Điều đó chứng tỏ điều gì?"],
+          "explanation": "'Thoắt' diễn tả sự chuyển biến tâm lý cực kỳ nhanh chóng và dứt khoát. Dù đang đắm chìm trong hạnh phúc lứa đôi ('hương lửa đương nồng'), khát vọng lập công danh của Từ Hải vẫn lớn hơn tất cả. Đây là nét tính cách điển hình của bậc trượng phu."
+        },
+        {
+          "id": "p2",
+          "question": "Từ Hải từ chối lời xin đi theo của Kiều bằng lý do gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Khuyên Kiều phải vượt qua thói nữ nhi thường tình để làm vợ một người anh hùng",
+            "Sợ Kiều phải chịu khổ nơi chiến trường ác liệt",
+            "Cho rằng phụ nữ chỉ đem lại xui xẻo cho việc cầm quân",
+            "Muốn đi một mình để dễ bề trốn thoát nếu thua trận"
+          ],
+          "answer": "Khuyên Kiều phải vượt qua thói nữ nhi thường tình để làm vợ một người anh hùng",
+          "hints": ["Từ Hải nói: 'Tâm phúc tương tri / Sao chưa thoát khỏi nữ nhi thường tình?'"],
+          "explanation": "Từ Hải coi Kiều là tri kỷ ('tâm phúc tương tri'). Ông không dùng lý lẽ thông thường mà trách yêu Kiều chưa thoát thói 'nữ nhi thường tình' (yếu đuối, bi lụy). Từ Hải muốn người vợ của mình cũng phải bản lĩnh, mạnh mẽ chờ đợi ngày ông mang vinh quang trở về."
+        },
+        {
+          "id": "p3",
+          "question": "Hình ảnh 'Mười vạn tinh binh / Tiếng chiêng dậy đất bóng tinh rợp đường' mang ý nghĩa gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Khát vọng vươn tới tầm vóc vũ trụ, niềm tin mãnh liệt vào tài năng và thành công của Từ Hải",
+            "Sự khoe khoang binh lực của Từ Hải với Thúy Kiều",
+            "Nỗi lo sợ quân triều đình sẽ mang quân đông đến đánh dẹp",
+            "Cảnh tượng thực tế mà Từ Hải đã từng trải qua trước đó"
+          ],
+          "answer": "Khát vọng vươn tới tầm vóc vũ trụ, niềm tin mãnh liệt vào tài năng và thành công của Từ Hải",
+          "hints": ["Hiện tại Từ Hải ra đi chỉ với 'thanh gươm yên ngựa'. Hình ảnh 'mười vạn tinh binh' là quá khứ, hiện tại hay tương lai?"],
+          "explanation": "Đó là lời hứa về một tương lai huy hoàng. Bằng ngôn ngữ tráng lệ, phóng đại (âm thanh dậy đất, bóng cờ rợp đường), Nguyễn Du đã khắc họa niềm tin sắt đá và khát vọng vĩ đại của Từ Hải. Đó không phải là lời khoác lác mà là ý chí của một người anh hùng thực thụ."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+<Window TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" x:Class="QASmartClass.Staff.Views.StaffLoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:properties="clr-namespace:QASmartClass.Properties"
+        Title="SmartSchool - Đăng nhập Nhân viên"
+        WindowState="Maximized"
+        WindowStyle="None"
+        Background="#F5F6FA">
+    
+    <Grid x:Name="MainGrid">
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#E8F4F8" Offset="0"/>
+                <GradientStop Color="#D6E9F5" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- Close Button -->
+        <Button x:Name="btnCloseWindow"
+                Content="✕"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,20,20,0"
+                Width="40"
+                Height="40"
+                FontSize="20"
+                FontWeight="Bold"
+                Background="#EE5A6F"
+                Foreground="White"
+                BorderThickness="0"
+                Cursor="Hand"
+                Click="btnCloseWindow_Click">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" 
+                            CornerRadius="20">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                        VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Background" Value="#EE5A6F"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#D63447"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+
+        <!-- Main Content Container -->
+        <Border Background="White" 
+                CornerRadius="15" 
+                Width="500" 
+                Padding="50,40"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center">
+            <Border.Effect>
+                <DropShadowEffect Color="#CCCCCC" 
+                                  Direction="270" 
+                                  ShadowDepth="3" 
+                                  BlurRadius="15" 
+                                  Opacity="0.3"/>
+            </Border.Effect>
+
+            <StackPanel>
+                <!-- Logo Section -->
+                <StackPanel Orientation="Horizontal" 
+                          HorizontalAlignment="Center" 
+                          Margin="0,0,0,20">
+                    <!-- Graduation Cap Icon -->
+                    <Viewbox Width="40" Height="40" Margin="0,0,10,0">
+                        <Canvas Width="24" Height="24">
+                            <Path x:Name="LoginIcon"
+                                  Fill="#2E86DE" 
+                                  Data="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
+                        </Canvas>
+                    </Viewbox>
+                    <!-- Logo Text -->
+                    <TextBlock x:Name="LoginAppName"
+                              Text="SmartSchool" 
+                              FontSize="32" 
+                              FontWeight="Bold" 
+                              Foreground="#2E86DE"
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Welcome Text -->
+                <TextBlock x:Name="txtWelcome"
+                          Text="Chào mừng đến với SmartSchool" 
+                          FontSize="18" 
+                          FontWeight="SemiBold"
+                          Foreground="#2F3542"
+                          HorizontalAlignment="Center" 
+                          Margin="0,0,0,5"/>
+                
+                <TextBlock Text="Cổng thông tin Nhân viên &amp; Giáo viên" 
+                          FontSize="13" 
+                          Foreground="#747D8C"
+                          HorizontalAlignment="Center" 
+                          Margin="0,0,0,20"/>
+
+                <!-- Error message -->
+                <TextBlock x:Name="txtError" 
+                           Foreground="#EE5A6F" 
+                           FontSize="12" 
+                           TextWrapping="Wrap" 
+                           Margin="0,0,0,12" 
+                           Visibility="Collapsed" 
+                           HorizontalAlignment="Center"/>
+
+                <!-- Test Account Selector (Only visible in Test mode) -->
+                <StackPanel x:Name="pnlTestAccounts" Visibility="Collapsed" Margin="0,0,0,15">
+                    <TextBlock Text="🔑 Chọn nhanh tài khoản Test (CSDL)" 
+                               Style="{StaticResource FormLabel}" Foreground="#2563EB" FontWeight="Bold"/>
+                    <ComboBox x:Name="cboTestAccounts" Height="40" FontSize="14" Padding="10,6"
+                              SelectionChanged="cboTestAccounts_SelectionChanged"/>
+                </StackPanel>
+
+                <!-- Username Input -->
+                <TextBlock Text="{x:Static properties:Resources.Login_StaffCode}" Style="{StaticResource FormLabel}"/>
+                <TextBox SpellCheck.IsEnabled="False" x:Name="txtUsername" Style="{StaticResource ModernTextBox}" Margin="0,0,0,15" FontSize="15"/>
+
+                <!-- Password Input -->
+                <TextBlock Text="{x:Static properties:Resources.Login_Password}" Style="{StaticResource FormLabel}"/>
+                <PasswordBox x:Name="txtPassword" Style="{StaticResource ModernPasswordBox}" Margin="0,0,0,25" FontSize="15"/>
+
+                <!-- Login Button -->
+                <Button Content="{x:Static properties:Resources.Login_Button}" Style="{StaticResource ModernButton}" Height="45" FontSize="15" FontWeight="SemiBold" Click="BtnLogin_Click" IsDefault="True" Margin="0,0,0,10"/>
+                
+                <!-- Exit Button -->
+                <Button x:Name="btnExit" 
+                        Content="Thoát" 
+                        Height="40"
+                        FontSize="13"
+                        Background="#EE5A6F"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Padding="20,10"
+                        FontWeight="SemiBold"
+                        Cursor="Hand"
+                        Click="btnExit_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" 
+                                    CornerRadius="5"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" 
+                                                VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#EE5A6F"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#D63447"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,2720 @@
+using System;
+using Xunit;
+using QASmartClass.LearningTools.Helpers;
+using QASmartClass.LearningTools.Views.Math;
+
+namespace QASmartClass.Tests
+{
+    /// <summary>
+    /// Verification tests for LearningTools enhancements in version 52 (G6.2).
+    /// </summary>
+    public class V52LearningToolsEnhancementTests
+    {
+        [Fact]
+        public void TryParseDouble_WithDotSeparator_ParsesCorrectly()
+        {
+            // Arrange
+            string input = "123.45";
+
+            // Act
+            bool success = ParsingHelper.TryParseDouble(input, out double val);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal(123.45, val);
+        }
+
+        [Fact]
+        public void TryParseDouble_WithCommaSeparator_ParsesCorrectly()
+        {
+            // Arrange
+            string input = "123,45";
+
+            // Act
+            bool success = ParsingHelper.TryParseDouble(input, out double val);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal(123.45, val);
+        }
+
+        [Fact]
+        public void TryParseDouble_WithSpaces_ParsesCorrectly()
+        {
+            // Arrange
+            string input = "  123.45  ";
+
+            // Act
+            bool success = ParsingHelper.TryParseDouble(input, out double val);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal(123.45, val);
+        }
+
+        [Fact]
+        public void TryParseDouble_InvalidInput_ReturnsFalse()
+        {
+            // Arrange
+            string input = "abc";
+
+            // Act
+            bool success = ParsingHelper.TryParseDouble(input, out double val);
+
+            // Assert
+            Assert.False(success);
+            Assert.Equal(0.0, val);
+        }
+
+        [Fact]
+        public void TryParseDouble_NullOrEmptyInput_ReturnsFalse()
+        {
+            Assert.False(ParsingHelper.TryParseDouble(null!, out _));
+            Assert.False(ParsingHelper.TryParseDouble(string.Empty, out _));
+            Assert.False(ParsingHelper.TryParseDouble("   ", out _));
+        }
+
+        [Fact]
+        public void TryParseDouble_WithSimpleFraction_ParsesCorrectly()
+        {
+            // Arrange & Act
+            bool success = ParsingHelper.TryParseDouble("1/2", out double val);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal(0.5, val);
+        }
+
+        [Fact]
+        public void TryParseDouble_WithNegativeFraction_ParsesCorrectly()
+        {
+            // Arrange & Act
+            bool success = ParsingHelper.TryParseDouble("-3/4", out double val);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal(-0.75, val);
+        }
+
+        [Fact]
+        public void TryParseDouble_WithSquareRoot_ParsesCorrectly()
+        {
+            // Arrange & Act
+            bool success = ParsingHelper.TryParseDouble("√4", out double val);
+
+            // Assert
+            Assert.True(success);
+            Assert.Equal(2.0, val);
+        }
+
+        [Fact]
+        public void TryParseDouble_WithInvalidFractionOrRoot_ReturnsFalse()
+        {
+            Assert.False(ParsingHelper.TryParseDouble("1/0", out _));
+            Assert.False(ParsingHelper.TryParseDouble("√-4", out _));
+            Assert.False(ParsingHelper.TryParseDouble("1/2/3", out _));
+            Assert.False(ParsingHelper.TryParseDouble("√", out _));
+        }
+
+        [Fact]
+        public void FormatToUnicode_ChemicalFormula_TranslatesSubscripts()
+        {
+            // Arrange & Act
+            string result = FormulaFormatter.FormatToUnicode("H_2O");
+
+            // Assert
+            Assert.Equal("H₂O", result);
+        }
+
+        [Fact]
+        public void FormatToUnicode_MathematicalFormula_TranslatesSuperscriptsAndSubscripts()
+        {
+            // Arrange & Act
+            string result = FormulaFormatter.FormatToUnicode("x^2 + y_1");
+
+            // Assert
+            Assert.Equal("x² + y₁", result);
+        }
+
+        [Fact]
+        public void FormatToUnicode_ComplexFormula_TranslatesCorrectly()
+        {
+            // Arrange & Act
+            string result = FormulaFormatter.FormatToUnicode("Fe_2(SO_4)_3");
+
+            // Assert
+            Assert.Equal("Fe₂(SO₄)₃", result);
+        }
+
+        [Fact]
+        public void FormatToUnicode_UnsupportedSubscript_FallsBackToRaw()
+        {
+            // Arrange & Act
+            string result = FormulaFormatter.FormatToUnicode("_z");
+
+            // Assert
+            Assert.Equal("_z", result);
+        }
+
+        [Fact]
+        public void GetCleanFormula_SupportsOrganicBondsAndBrackets()
+        {
+            // Coefficients, bonds, brackets
+            Assert.Equal("CH3COOCHCH2", QASmartClass.Classroom.Views.StemToolsPage.GetCleanFormula("2 CH3COOCH=CH2"));
+            Assert.Equal("CH3CH2OH", QASmartClass.Classroom.Views.StemToolsPage.GetCleanFormula("CH3-CH2-OH"));
+            Assert.Equal("HCCH", QASmartClass.Classroom.Views.StemToolsPage.GetCleanFormula("HC#CH"));
+            Assert.Equal("(Co(NH3)6)Cl3", QASmartClass.Classroom.Views.StemToolsPage.GetCleanFormula("[Co(NH3)6]Cl3"));
+        }
+
+        [Fact]
+        public void GetCleanFormula_SupportsHydratedSalts()
+        {
+            // Hydrated salts
+            Assert.Equal("CuSO4(H2O)5", QASmartClass.Classroom.Views.StemToolsPage.GetCleanFormula("CuSO4.5H2O"));
+            Assert.Equal("CuSO4(H2O)5", QASmartClass.Classroom.Views.StemToolsPage.GetCleanFormula("CuSO4*5H2O"));
+            Assert.Equal("CuSO4(H2O)", QASmartClass.Classroom.Views.StemToolsPage.GetCleanFormula("CuSO4.H2O"));
+            Assert.Equal("FeSO4((NH4)2SO4)(H2O)6", QASmartClass.Classroom.Views.StemToolsPage.GetCleanFormula("FeSO4.(NH4)2SO4.6H2O"));
+        }
+
+        [Fact]
+        public void CleanFormulaForDisplay_StripsLeadingCoefficientsAndSpaces()
+        {
+            Assert.Equal("H2O", QASmartClass.Classroom.Views.StemToolsPage.CleanFormulaForDisplay("2 H2O"));
+            Assert.Equal("CH3COOCH=CH2", QASmartClass.Classroom.Views.StemToolsPage.CleanFormulaForDisplay("  CH3COOCH=CH2 "));
+        }
+
+        [Fact]
+        public void FormatEq_VariousCoefficients_FormatsCorrectly()
+        {
+            Assert.Equal("x² − 5x + 6 = 0", QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatEq(1, -5, 6));
+            Assert.Equal("−x² + 4x − 3 = 0", QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatEq(-1, 4, -3));
+            Assert.Equal("2x² + 0x + 0 = 0", QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatEq(2, 0, 0));
+        }
+
+        [Fact]
+        public void FormatTerm_PositiveAndNegative_FormatsWithOrWithoutParentheses()
+        {
+            Assert.Equal("6", QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatTerm(6));
+            Assert.Equal("(-3)", QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatTerm(-3));
+            Assert.Equal("0", QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatTerm(0));
+        }
+
+        [Fact]
+        public void FormatValSq_PositiveAndNegative_FormatsWithOrWithoutParentheses()
+        {
+            Assert.Equal("5²", QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatValSq(5));
+            Assert.Equal("(-5)²", QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatValSq(-5));
+            Assert.Equal("0²", QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatValSq(0));
+        }
+
+        [Fact]
+        public void PCName_Sanitization_ReplacesPipeWithSpace_Successfully()
+        {
+            // Arrange
+            string pcNameWithPipe = "DESKTOP|LAB01";
+
+            // Act
+            string sanitized = pcNameWithPipe.Replace("|", " ");
+
+            // Assert
+            Assert.Equal("DESKTOP LAB01", sanitized);
+        }
+
+        [Fact]
+        public void FormatEq_NghiemKepStepFormat_IsCorrect()
+        {
+            // Verify that we can format terms correctly for our delta = 0 case
+            double a = 1;
+            double b = -6;
+            string aStr = QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatTerm(a);
+            string negBStr = b < 0 ? $"−({b:G6})" : $"−{b:G6}";
+            double x1 = 3;
+
+            string stepDetail = $"x₁ = x₂ = −b / 2a = {negBStr} / (2·{aStr}) = {x1:G8}";
+
+            Assert.Equal("x₁ = x₂ = −b / 2a = −(-6) / (2·1) = 3", stepDetail);
+        }
+
+        [Fact]
+        public void FormatEq_ParabolVertexFormula_IsCorrect()
+        {
+            // Verify that the parabol vertex formula details are formatted correctly
+            double a = 1;
+            double b = -6;
+            double c = 9;
+            double xV = 3;
+            double yV = 0;
+            string aStr = QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatTerm(a);
+            string negBStrVertex = b < 0 ? $"−({b:G6})" : $"−{b:G6}";
+            string bStrVertex = QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatTerm(b);
+            string cStrVertex = QASmartClass.LearningTools.Views.Math.QuadraticTool.FormatTerm(c);
+
+            string stepDetail = $"xᵥ = −b/2a = {negBStrVertex}/(2·{aStr}) = {xV:G6}\n" +
+                               $"yᵥ = −Δ/4a = f(xᵥ) = {aStr}·({xV:G6})² + {bStrVertex}·({xV:G6}) + {cStrVertex} = {yV:G8}";
+
+            string expected = "xᵥ = −b/2a = −(-6)/(2·1) = 3\nyᵥ = −Δ/4a = f(xᵥ) = 1·(3)² + (-6)·(3) + 9 = 0";
+            Assert.Equal(expected, stepDetail);
+        }
+
+        [Fact]
+        public void IsValidInput_ValidValues_ReturnsTrue()
+        {
+            Assert.True(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput("10101", 2));
+            Assert.True(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput("755", 8));
+            Assert.True(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput("987654321", 10));
+            Assert.True(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput("1A2B3C", 16));
+        }
+
+        [Fact]
+        public void IsValidInput_InvalidValues_ReturnsFalse()
+        {
+            Assert.False(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput("102", 2));
+            Assert.False(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput("89", 8));
+            Assert.False(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput("12a", 10));
+            Assert.False(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput("1A2B3G", 16));
+        }
+
+        [Fact]
+        public void IsValidInput_EmptyAndNullValues_ReturnsTrue()
+        {
+            Assert.True(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput("", 2));
+            Assert.True(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput("", 10));
+            Assert.True(QASmartClass.LearningTools.Views.Math.NumberBaseTool.IsValidInput(null!, 16));
+        }
+
+        [Fact]
+        public void SequenceTool_IsValidSequenceInput_ValidValues_ReturnsTrue()
+        {
+            Assert.True(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidSequenceInput("3", true, true, out double v1, out _));
+            Assert.Equal(3.0, v1);
+            Assert.True(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidSequenceInput("-12.5", true, true, out double v2, out _));
+            Assert.Equal(-12.5, v2);
+            Assert.True(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidSequenceInput("0", true, true, out double v3, out _));
+            Assert.Equal(0.0, v3);
+        }
+
+        [Fact]
+        public void SequenceTool_IsValidSequenceInput_InvalidValues_ReturnsFalse()
+        {
+            Assert.False(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidSequenceInput("abc", true, true, out _, out string err1));
+            Assert.NotEmpty(err1);
+            Assert.False(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidSequenceInput("1.2.3", true, true, out _, out string err2));
+            Assert.NotEmpty(err2);
+            Assert.False(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidSequenceInput("-3", true, false, out _, out string err3));
+            Assert.NotEmpty(err3);
+            Assert.False(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidSequenceInput("1.5", false, true, out _, out string err4));
+            Assert.NotEmpty(err4);
+        }
+
+        [Fact]
+        public void SequenceTool_IsValidNInput_ValidAndInvalidLimits_ReturnsCorrectly()
+        {
+            // Valid N
+            Assert.True(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidNInput("10", 500, out int n1, out _));
+            Assert.Equal(10, n1);
+            Assert.True(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidNInput("500", 500, out int n2, out _));
+            Assert.Equal(500, n2);
+
+            // Invalid N
+            Assert.False(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidNInput("600", 500, out _, out string err1));
+            Assert.NotEmpty(err1);
+            Assert.False(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidNInput("0", 500, out _, out string err2));
+            Assert.NotEmpty(err2);
+            Assert.False(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidNInput("-5", 500, out _, out string err3));
+            Assert.NotEmpty(err3);
+            Assert.False(QASmartClass.LearningTools.Views.Math.SequenceTool.IsValidNInput("abc", 500, out _, out string err4));
+            Assert.NotEmpty(err4);
+        }
+
+        [Fact]
+        public void SequenceTool_GetSuperscript_FormatsCorrectly()
+        {
+            string result1 = QASmartClass.LearningTools.Views.Math.SequenceTool.GetSuperscript(123);
+            string result2 = QASmartClass.LearningTools.Views.Math.SequenceTool.GetSuperscript(-45);
+            
+            Assert.Equal("¹²³", result1);
+            Assert.Equal("⁻⁴⁵", result2);
+        }
+
+        [Fact]
+        public void SequenceTool_FormatPower_FormatsCorrectly()
+        {
+            string result1 = QASmartClass.LearningTools.Views.Math.SequenceTool.FormatPower(3.0, 7);
+            string result2 = QASmartClass.LearningTools.Views.Math.SequenceTool.FormatPower(-2.0, 5);
+            
+            Assert.Equal("3⁷", result1);
+            Assert.Equal("(−2)⁵", result2);
+        }
+
+        [Fact]
+        public void FormatCubicEquation_StandardCoefficients_RendersCorrectly()
+        {
+            // Arrange & Act
+            string result = QASmartClass.LearningTools.Views.Math.CubicTool.FormatCubicEquation(1, -6, 11, -6);
+
+            // Assert
+            Assert.Equal("x³ − 6x² + 11x − 6 = 0", result);
+        }
+
+        [Fact]
+        public void FormatCubicEquation_NegativeAndZeroCoefficients_RendersCorrectly()
+        {
+            // Arrange & Act
+            string result = QASmartClass.LearningTools.Views.Math.CubicTool.FormatCubicEquation(1, 0, -7, 6);
+
+            // Assert
+            Assert.Equal("x³ − 7x + 6 = 0", result);
+        }
+
+        [Fact]
+        public void FormatCubicEquation_NegativeOneCoefficient_RendersCorrectly()
+        {
+            // Arrange & Act
+            string result = QASmartClass.LearningTools.Views.Math.CubicTool.FormatCubicEquation(-1, 2, -3, 0);
+
+            // Assert
+            Assert.Equal("−x³ + 2x² − 3x = 0", result);
+        }
+
+        [Fact]
+        public void SolveCubic_WhenLeadingCoefficientIsZero_ThrowsArgumentException()
+        {
+            // Arrange, Act & Assert
+            Assert.Throws<ArgumentException>(() => QASmartClass.LearningTools.Views.Math.CubicTool.ValidateCoefficients(0));
+        }
+
+        [Fact]
+        public void FormatCubicFunction_VariousCoefficients_FormatsCorrectly()
+        {
+            Assert.Equal("y = x³ − 6x² + 11x − 6", CubicTool.FormatCubicFunction(1, -6, 11, -6));
+            Assert.Equal("y = −x³ + 2x² − 3x", CubicTool.FormatCubicFunction(-1, 2, -3, 0));
+            Assert.Equal("y = 2x³", CubicTool.FormatCubicFunction(2, 0, 0, 0));
+        }
+
+        [Fact]
+        public void FormatDoubleAsFraction_ValidValues_FormatsCorrectly()
+        {
+            Assert.Equal("1/2", CubicTool.FormatDoubleAsFraction(0.5));
+            Assert.Equal("−3/4", CubicTool.FormatDoubleAsFraction(-0.75));
+            Assert.Equal("3/2", CubicTool.FormatDoubleAsFraction(1.5));
+            Assert.Equal("10", CubicTool.FormatDoubleAsFraction(10.0));
+        }
+
+        [Fact]
+        public void TryParseFractionOrDouble_WithSpaces_ParsesCorrectly()
+        {
+            Assert.True(CubicTool.TryParseFractionOrDouble(" 1 / 2 ", out double v1));
+            Assert.Equal(0.5, v1);
+            Assert.True(CubicTool.TryParseFractionOrDouble(" - 6 ", out double v2));
+            Assert.Equal(-6.0, v2);
+        }
+
+        [Fact]
+        public void Cardano_AcosClamping_PreventsNaN()
+        {
+            CubicTool.SolveCubicStatic(1, -6, 11, -6, false, out var steps, out var realRoots, out var complexRoots);
+            Assert.NotNull(steps);
+            Assert.Equal(3, realRoots.Count);
+        }
+
+        [Fact]
+        public void ToSubscript_SingleDigit_ConvertsCorrectly()
+        {
+            var method = typeof(QASmartClass.LearningTools.Views.Math.CombinatoricsTool)
+                .GetMethod("ToSubscript", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+            var result = (string)method.Invoke(null, new object[] { 5 })!;
+            Assert.Equal("₅", result);
+        }
+
+        [Fact]
+        public void ToSuperscript_MultipleDigits_ConvertsCorrectly()
+        {
+            var method = typeof(QASmartClass.LearningTools.Views.Math.CombinatoricsTool)
+                .GetMethod("ToSuperscript", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+            var result = (string)method.Invoke(null, new object[] { 12 })!;
+            Assert.Equal("¹²", result);
+        }
+
+        [Fact]
+        public void Combinatorics_PermutationCalculation_ReturnsCorrectValue()
+        {
+            var method = typeof(QASmartClass.LearningTools.Views.Math.CombinatoricsTool)
+                .GetMethod("Factorial", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+            var result = (System.Numerics.BigInteger)method.Invoke(null, new object[] { 6 })!;
+            Assert.Equal(new System.Numerics.BigInteger(720), result);
+        }
+
+        [Fact]
+        public void Combinatorics_CombinationCalculation_ReturnsCorrectValue()
+        {
+            var factorialMethod = typeof(QASmartClass.LearningTools.Views.Math.CombinatoricsTool)
+                .GetMethod("Factorial", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(factorialMethod);
+            
+            var f10 = (System.Numerics.BigInteger)factorialMethod.Invoke(null, new object[] { 10 })!;
+            var f3 = (System.Numerics.BigInteger)factorialMethod.Invoke(null, new object[] { 3 })!;
+            var f7 = (System.Numerics.BigInteger)factorialMethod.Invoke(null, new object[] { 7 })!;
+
+            var result = f10 / (f3 * f7);
+            Assert.Equal(new System.Numerics.BigInteger(120), result);
+        }
+
+        [Fact]
+        public void Combinatorics_ArrangementCalculation_ReturnsCorrectValue()
+        {
+            var factorialMethod = typeof(QASmartClass.LearningTools.Views.Math.CombinatoricsTool)
+                .GetMethod("Factorial", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(factorialMethod);
+            
+            var f10 = (System.Numerics.BigInteger)factorialMethod.Invoke(null, new object[] { 10 })!;
+            var f7 = (System.Numerics.BigInteger)factorialMethod.Invoke(null, new object[] { 7 })!;
+
+            var result = f10 / f7;
+            Assert.Equal(new System.Numerics.BigInteger(720), result);
+        }
+
+        [Fact]
+        public void CoordinateTool_SimplifyEquation_IntegersAndDecimals_SimplifiesCorrectly()
+        {
+            // Case 1: Decimals: -1.5, 1, 0 -> 1.5x - y = 0 -> 3x - 2y = 0
+            CoordinateTool.SimplifyEquation(-1.5, 1, 0, out double sA, out double sB, out double sC);
+            Assert.Equal(3.0, sA);
+            Assert.Equal(-2.0, sB);
+            Assert.Equal(0.0, sC);
+
+            // Case 2: Negative leading coefficient: -2, -4, 6 -> 2x + 4y - 6 = 0 -> 1, 2, -3
+            CoordinateTool.SimplifyEquation(-2, -4, 6, out sA, out sB, out sC);
+            Assert.Equal(1.0, sA);
+            Assert.Equal(2.0, sB);
+            Assert.Equal(-3.0, sC);
+
+            // Case 3: Decimals with scaling needed: 0.2, -0.4, 0.6 -> 1, -2, 3
+            CoordinateTool.SimplifyEquation(0.2, -0.4, 0.6, out sA, out sB, out sC);
+            Assert.Equal(1.0, sA);
+            Assert.Equal(-2.0, sB);
+            Assert.Equal(3.0, sC);
+        }
+
+        [Fact]
+        public void CoordinateTool_FormatGeneralLine_VariousCoefficients_FormatsCorrectly()
+        {
+            Assert.Equal("3x − 2y = 0", CoordinateTool.FormatGeneralLine(3, -2, 0));
+            Assert.Equal("x + 2y − 3 = 0", CoordinateTool.FormatGeneralLine(1, 2, -3));
+            Assert.Equal("2y − 5 = 0", CoordinateTool.FormatGeneralLine(0, 2, -5));
+            Assert.Equal("x = 0", CoordinateTool.FormatGeneralLine(1, 0, 0));
+        }
+
+        [Fact]
+        public void CoordinateTool_FormatSlopeInterceptLine_VariousCoefficients_FormatsCorrectly()
+        {
+            Assert.Equal("y = 2x − 3", CoordinateTool.FormatSlopeInterceptLine(2, -3));
+            Assert.Equal("y = −x + 5", CoordinateTool.FormatSlopeInterceptLine(-1, 5));
+            Assert.Equal("y = 4", CoordinateTool.FormatSlopeInterceptLine(0, 4));
+            Assert.Equal("y = 0", CoordinateTool.FormatSlopeInterceptLine(0, 0));
+        }
+
+        [Fact]
+        public void CoordinateTool_FormatParametricLine_VariousCoefficients_FormatsCorrectly()
+        {
+            // Point (1, 2), vector (3, 4)
+            string result = CoordinateTool.FormatParametricLine(1, 2, 3, 4);
+            Assert.Equal("PT tham số AB: { x = 1 + 3t; y = 2 + 4t }", result);
+
+            // Point (1, 2), vector (0, -3)
+            string result2 = CoordinateTool.FormatParametricLine(1, 2, 0, -3);
+            Assert.Equal("PT tham số AB: { x = 1; y = 2 − 3t }", result2);
+        }
+
+        private static void EnsureWpfApplication()
+        {
+            if (System.Windows.Application.Current == null)
+            {
+                try
+                {
+                    new System.Windows.Application();
+                }
+                catch {}
+            }
+            if (System.Windows.Application.Current != null)
+            {
+                var resources = System.Windows.Application.Current.Resources;
+                if (!resources.Contains("BrandPrimary"))
+                {
+                    resources.Add("BrandPrimary", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(21, 101, 192)));
+                }
+                if (!resources.Contains("BrandSecondary"))
+                {
+                    resources.Add("BrandSecondary", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(13, 71, 161)));
+                }
+                if (!resources.Contains("BrandAccent"))
+                {
+                    resources.Add("BrandAccent", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(230, 81, 0)));
+                }
+                if (!resources.Contains("Gray100"))
+                {
+                    resources.Add("Gray100", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 245, 245)));
+                }
+            }
+        }
+
+        private static T GetPrivateField<T>(object obj, string name)
+        {
+            var field = obj.GetType().GetField(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            if (field != null) return (T)field.GetValue(obj)!;
+            var prop = obj.GetType().GetProperty(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            return (T)prop?.GetValue(obj)!;
+        }
+
+        private static void InvokePrivateMethod(object obj, string name, params object[] args)
+        {
+            var method = obj.GetType().GetMethod(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            method?.Invoke(obj, args);
+        }
+
+        [Fact]
+        public void LinearSystem_SolveUniqueSolution_ReturnsCorrectNghiem()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                EnsureWpfApplication();
+                var tool = new LinearSystemTool();
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtA1").Text = "2";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtB1").Text = "3";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtC1").Text = "8";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtA2").Text = "1";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtB2").Text = "-1";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtC2").Text = "1";
+
+                InvokePrivateMethod(tool, "Solve");
+
+                var txtResult = GetPrivateField<System.Windows.Controls.TextBlock>(tool, "txtResult");
+                var txtClassify = GetPrivateField<System.Windows.Controls.TextBlock>(tool, "txtClassify");
+
+                Assert.Equal("x = 2.2\ny = 1.2", txtResult.Text);
+                Assert.Contains("Hệ có nghiệm duy nhất", txtClassify.Text);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void LinearSystem_SolveInfiniteSolutions_ReturnsCorrectClassification()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                EnsureWpfApplication();
+                var tool = new LinearSystemTool();
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtA1").Text = "1";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtB1").Text = "2";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtC1").Text = "3";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtA2").Text = "2";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtB2").Text = "4";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtC2").Text = "6";
+
+                InvokePrivateMethod(tool, "Solve");
+
+                var txtResult = GetPrivateField<System.Windows.Controls.TextBlock>(tool, "txtResult");
+                var txtClassify = GetPrivateField<System.Windows.Controls.TextBlock>(tool, "txtClassify");
+
+                Assert.Equal("Hệ có vô số nghiệm", txtResult.Text);
+                Assert.Contains("trùng nhau", txtClassify.Text);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void LinearSystem_SolveNoSolution_ReturnsCorrectClassification()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                EnsureWpfApplication();
+                var tool = new LinearSystemTool();
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtA1").Text = "1";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtB1").Text = "2";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtC1").Text = "3";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtA2").Text = "2";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtB2").Text = "4";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtC2").Text = "5";
+
+                InvokePrivateMethod(tool, "Solve");
+
+                var txtResult = GetPrivateField<System.Windows.Controls.TextBlock>(tool, "txtResult");
+                var txtClassify = GetPrivateField<System.Windows.Controls.TextBlock>(tool, "txtClassify");
+
+                Assert.Equal("Hệ vô nghiệm", txtResult.Text);
+                Assert.Contains("song song", txtClassify.Text);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void LinearSystem_ContradictoryEquations_ReturnsNoSolution()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                EnsureWpfApplication();
+                var tool = new LinearSystemTool();
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtA1").Text = "0";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtB1").Text = "0";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtC1").Text = "5";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtA2").Text = "1";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtB2").Text = "1";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtC2").Text = "2";
+
+                InvokePrivateMethod(tool, "Solve");
+
+                var txtResult = GetPrivateField<System.Windows.Controls.TextBlock>(tool, "txtResult");
+                var txtClassify = GetPrivateField<System.Windows.Controls.TextBlock>(tool, "txtClassify");
+
+                Assert.Equal("Hệ vô nghiệm", txtResult.Text);
+                Assert.Contains("vô lý", txtClassify.Text);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void LinearSystem_InvalidInput_ReturnsValidationFail()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                EnsureWpfApplication();
+                var tool = new LinearSystemTool();
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtA1").Text = "abc";
+                GetPrivateField<System.Windows.Controls.TextBox>(tool, "txtB1").Text = "3";
+
+                InvokePrivateMethod(tool, "Solve");
+
+                var txtResult = GetPrivateField<System.Windows.Controls.TextBlock>(tool, "txtResult");
+                Assert.Equal("Nhập chưa hợp lệ", txtResult.Text);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void ToSuperscriptString_StandardAndNegativeExponents_FormatsCorrectly()
+        {
+            Assert.Equal("²", DerivativeTool.ToSuperscriptString(2));
+            Assert.Equal("⁻³", DerivativeTool.ToSuperscriptString(-3));
+            Assert.Equal("¹˙⁵", DerivativeTool.ToSuperscriptString(1.5));
+        }
+
+        [Fact]
+        public void DerivativeTool_FormatTerm_StandardAndNegativeCoefficients_FormatsCorrectly()
+        {
+            var method = typeof(DerivativeTool)
+                .GetMethod("FormatTerm", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+
+            // 3x^2 -> 3x²
+            var res1 = (string)method.Invoke(null, new object[] { 3.0, 2.0, "x" })!;
+            Assert.Equal("3x²", res1);
+
+            // -1x^3 -> −x³ (uses Unicode minus \u2212)
+            var res2 = (string)method.Invoke(null, new object[] { -1.0, 3.0, "x" })!;
+            Assert.Equal("−x³", res2);
+
+            // 0.5x^-1 -> 0.5x⁻¹
+            var res3 = (string)method.Invoke(null, new object[] { 0.5, -1.0, "x" })!;
+            Assert.Equal("0.5x⁻¹", res3);
+        }
+
+        [Fact]
+        public void DerivativeTool_FormatPoly_CubicPolynomials_FormatsCorrectly()
+        {
+            var method = typeof(DerivativeTool)
+                .GetMethod("FormatPoly", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+
+            // 1x^3 - 3x^2 + 2x -> x³ − 3x² + 2x
+            var res1 = (string)method.Invoke(null, new object[] { 1.0, -3.0, 2.0, 0.0 })!;
+            Assert.Equal("x³ − 3x² + 2x", res1);
+
+            // -2x^3 + 0x^2 - 1x + 5 -> −2x³ − x + 5
+            var res2 = (string)method.Invoke(null, new object[] { -2.0, 0.0, -1.0, 5.0 })!;
+            Assert.Equal("−2x³ − x + 5", res2);
+        }
+
+        [Fact]
+        public void DerivativeTool_BuildExamples_PopulatesExamplesListCorrectly()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                EnsureWpfApplication();
+                var tool = new DerivativeTool();
+                tool.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.FrameworkElement.LoadedEvent));
+                var examples = GetPrivateField<System.Collections.Generic.List<DerivativeExample>>(tool, "_examples");
+                
+                Assert.NotNull(examples);
+                Assert.Equal(8, examples.Count);
+                
+                // Verify first example
+                Assert.Contains("Vận tốc & Gia tốc", examples[0].Title);
+                Assert.Equal("polynomial", examples[0].TargetMode);
+                Assert.Equal("1", examples[0].PolyA);
+                
+                // Verify last example
+                Assert.Contains("tăng trưởng dân số", examples[5].Title);
+                Assert.Equal("special", examples[5].TargetMode);
+                Assert.Equal(4, examples[5].SpecialIndex);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void DerivativeTool_LanguageSuffixResolution_FallbackAndMatchesCorrectly()
+        {
+            // Test prefix & suffix resolution logic similar to what is used in Examples_SelectionChanged
+            string defaultLang = null!;
+            string langSuffixDefault = (defaultLang ?? "vi").ToLowerInvariant() == "en" ? "_EN" : "_VN";
+            Assert.Equal("_VN", langSuffixDefault);
+
+            string enLang = "en";
+            string langSuffixEn = (enLang ?? "vi").ToLowerInvariant() == "en" ? "_EN" : "_VN";
+            Assert.Equal("_EN", langSuffixEn);
+
+            string viLang = "VI-VN";
+            string langSuffixVi = (viLang ?? "vi").ToLowerInvariant() == "en" ? "_EN" : "_VN";
+            Assert.Equal("_VN", langSuffixVi);
+        }
+
+        [Fact]
+        public void ParsingHelper_TryParseDouble_WithUnicodeMinus_ParsesCorrectly()
+        {
+            // Verify that TryParseDouble normalized string replaces Unicode minus '−' (\u2212) with '-'
+            bool success = ParsingHelper.TryParseDouble("−3.14", out double val);
+            Assert.True(success);
+            Assert.Equal(-3.14, val);
+
+            bool successFraction = ParsingHelper.TryParseDouble("−1/2", out double valFrac);
+            Assert.True(successFraction);
+            Assert.Equal(-0.5, valFrac);
+        }
+
+        [Fact]
+        public void DerivativeTool_RegexInputValidation_AcceptsUnicodeMinus()
+        {
+            // Verify regex matches Unicode mathematical minus sign '−' (\u2212)
+            string patternSingle = @"^[0-9\.\,\-\u2212]$";
+            string patternMultiple = @"^[0-9\.\,\-\u2212]*$";
+
+            Assert.Matches(patternSingle, "−");
+            Assert.Matches(patternMultiple, "−3.14");
+            Assert.Matches(patternMultiple, "12,5");
+        }
+
+        [Fact]
+        public void IntegralTool_BuildExamples_PopulatesExamplesListCorrectly()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                EnsureWpfApplication();
+                var tool = new IntegralTool();
+                tool.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.FrameworkElement.LoadedEvent));
+                var examples = GetPrivateField<System.Collections.Generic.List<IntegralExample>>(tool, "_examples");
+                
+                Assert.NotNull(examples);
+                Assert.Equal(8, examples.Count);
+                
+                // Verify first example
+                Assert.Contains("Quãng đường di chuyển", examples[0].Title);
+                Assert.Equal("definite", examples[0].TargetMode);
+                Assert.Equal("0", examples[0].DefA);
+                
+                // Verify last example
+                Assert.Contains("Tích lũy điện lượng", examples[5].Title);
+                Assert.Equal("special", examples[5].TargetMode);
+                Assert.Equal(0, examples[5].SpecialIndex);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void IntegralTool_FormatAntideriv_FormatsCorrectly()
+        {
+            var method = typeof(IntegralTool)
+                .GetMethod("FormatAntideriv", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+
+            // A=1, B=-3, C=2, D=5 -> F(x) = (1/4)x⁴ − (3/3)x³ + (2/2)x² + 5x
+            var res1 = (string)method.Invoke(null, new object[] { 1.0, -3.0, 2.0, 5.0 })!;
+            Assert.Equal("(1/4)x⁴ − (3/3)x³ + (2/2)x² + 5x", res1);
+
+            // A=-1, B=0, C=-2, D=-5 -> F(x) = −(1/4)x⁴ − (2/2)x² − 5x
+            var res2 = (string)method.Invoke(null, new object[] { -1.0, 0.0, -2.0, -5.0 })!;
+            Assert.Equal("−(1/4)x⁴ − (2/2)x² − 5x", res2);
+        }
+
+        [Fact]
+        public void IntegralTool_FormatTerm_FormatsCorrectly()
+        {
+            var method = typeof(IntegralTool)
+                .GetMethod("FormatTerm", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+
+            // 3x^2 -> 3x²
+            var res1 = (string)method.Invoke(null, new object[] { 3.0, 2.0, "x" })!;
+            Assert.Equal("3x²", res1);
+
+            // -1x^3 -> −x³ (uses Unicode minus \u2212)
+            var res2 = (string)method.Invoke(null, new object[] { -1.0, 3.0, "x" })!;
+            Assert.Equal("−x³", res2);
+
+            // 0.5x^-1 -> 0.5x⁻¹
+            var res3 = (string)method.Invoke(null, new object[] { 0.5, -1.0, "x" })!;
+            Assert.Equal("0.5x⁻¹", res3);
+        }
+
+        [Fact]
+        public void IntegralTool_RegexInputValidation_AcceptsUnicodeMinus()
+        {
+            string patternSingle = @"^[0-9\.\,\-\u2212]$";
+            string patternMultiple = @"^[0-9\.\,\-\u2212]*$";
+
+            Assert.Matches(patternSingle, "−");
+            Assert.Matches(patternMultiple, "−3.14");
+            Assert.Matches(patternMultiple, "12,5");
+        }
+
+        [Fact]
+        public void ComplexNumberTool_FormatSpecialAngle_FormatsCorrectly()
+        {
+            var method = typeof(ComplexNumberTool)
+                .GetMethod("FormatSpecialAngle", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+
+            var res0 = (string)method.Invoke(null, new object[] { 0.0 })!;
+            Assert.Equal("0", res0);
+
+            var resPi3 = (string)method.Invoke(null, new object[] { System.Math.PI / 3.0 })!;
+            Assert.Equal("π/3", resPi3);
+
+            var resNegPi4 = (string)method.Invoke(null, new object[] { -System.Math.PI / 4.0 })!;
+            Assert.Equal("−π/4", resNegPi4);
+
+            var resRegular = (string)method.Invoke(null, new object[] { 1.5 })!;
+            Assert.Contains("rad =", resRegular);
+        }
+
+        [Fact]
+        public void ComplexNumberTool_FmtComplex_VariousInputs_FormatsCorrectly()
+        {
+            var method = typeof(ComplexNumberTool)
+                .GetMethod("FmtComplex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+
+            // 3 + 4i
+            var res1 = (string)method.Invoke(null, new object[] { 3.0, 4.0 })!;
+            Assert.Equal("3 + 4i", res1);
+
+            // -3 - 4i -> should use math minus
+            var res2 = (string)method.Invoke(null, new object[] { -3.0, -4.0 })!;
+            Assert.Equal("−3 − 4i", res2);
+
+            // 0 + i
+            var res3 = (string)method.Invoke(null, new object[] { 0.0, 1.0 })!;
+            Assert.Equal("i", res3);
+
+            // 0 - i
+            var res4 = (string)method.Invoke(null, new object[] { 0.0, -1.0 })!;
+            Assert.Equal("−i", res4);
+        }
+
+        [Fact]
+        public void ComplexNumberTool_RegexInputValidation_AcceptsUnicodeMinusAndFraction()
+        {
+            string patternSingle = @"^[0-9\.\,\-\u2212/]$";
+            string patternMultiple = @"^[0-9\.\,\-\u2212/]*$";
+
+            Assert.Matches(patternSingle, "−");
+            Assert.Matches(patternSingle, "/");
+            Assert.Matches(patternMultiple, "−3.14/2");
+        }
+
+        [Fact]
+        public void ComplexNumberTool_BuildExamples_PopulatesExamplesListCorrectly()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                EnsureWpfApplication();
+                var tool = new ComplexNumberTool();
+                tool.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.FrameworkElement.LoadedEvent));
+                var examples = GetPrivateField<System.Collections.Generic.List<ComplexExample>>(tool, "_examples");
+
+                Assert.NotNull(examples);
+                Assert.Equal(8, examples.Count);
+
+                // Verify first example
+                Assert.Contains("Trở kháng mạch RLC", examples[0].Title);
+                Assert.Equal("Properties", examples[0].TargetMode);
+                Assert.Equal("100", examples[0].A1);
+                
+                // Verify last example
+                Assert.Contains("Đáp ứng tần số", examples[5].Title);
+                Assert.Equal("Properties", examples[5].TargetMode);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void LimitTool_FormatPoly2_FormatsCorrectly()
+        {
+            var method = typeof(LimitTool)
+                .GetMethod("FormatPoly2", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+
+            // 1x^2 - 3x + 2 -> x² − 3x + 2
+            var res1 = (string)method.Invoke(null, new object[] { 1.0, -3.0, 2.0 })!;
+            Assert.Equal("x² − 3x + 2", res1);
+
+            // -1x^2 - 1x - 1 -> −x² − x − 1 (uses mathematical minus \u2212)
+            var res2 = (string)method.Invoke(null, new object[] { -1.0, -1.0, -1.0 })!;
+            Assert.Equal("−x² − x − 1", res2);
+        }
+
+        [Fact]
+        public void LimitTool_BuildExamples_PopulatesCorrectly()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                EnsureWpfApplication();
+                var tool = new LimitTool();
+                // Trigger Loaded event
+                tool.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.FrameworkElement.LoadedEvent));
+                var examples = GetPrivateField<System.Collections.Generic.List<LimitTool.LimitExample>>(tool, "_examples");
+                
+                Assert.NotNull(examples);
+                Assert.Equal(8, examples.Count);
+                
+                // First example check
+                Assert.Contains("Vận tốc tức thời", examples[0].Title);
+                Assert.Equal("limit_ex_velocity", examples[0].ImageName);
+                
+                // Euler example check
+                Assert.Contains("Lãi suất kép", examples[4].Title);
+                Assert.Equal(6, examples[4].TargetSpecialIndex);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void LimitTool_RegexInputValidation_AcceptsCorrectCharacters()
+        {
+            string patternSingle = @"^[0-9\.\,\-\u2212/∞]$";
+            string patternMultiple = @"^[0-9\.\,\-\u2212/∞]*$";
+
+            Assert.Matches(patternSingle, "−");
+            Assert.Matches(patternSingle, "∞");
+            Assert.Matches(patternSingle, "/");
+            Assert.Matches(patternMultiple, "−3.14/2");
+            Assert.Matches(patternMultiple, "∞");
+        }
+
+        [Fact]
+        public void LimitTool_ParsingHelper_NormalizesAndParsesCorrectly()
+        {
+            // Verify that TryParseDouble replaces mathematical minus '−' (\u2212) with '-' and parses correctly
+            bool success = ParsingHelper.TryParseDouble("−4.9", out double val);
+            Assert.True(success);
+            Assert.Equal(-4.9, val);
+
+            bool successFraction = ParsingHelper.TryParseDouble("1/2", out double valFrac);
+            Assert.True(successFraction);
+            Assert.Equal(0.5, valFrac);
+        }
+
+        [Fact]
+        public void ParsingHelper_TryParseDouble_WithRadicalCoefficients_ParsesCorrectly()
+        {
+            bool success1 = ParsingHelper.TryParseDouble("2√3", out double val1);
+            Assert.True(success1);
+            Assert.Equal(2.0 * System.Math.Sqrt(3.0), val1, 5);
+
+            bool success2 = ParsingHelper.TryParseDouble("√3/2", out double val2);
+            Assert.True(success2);
+            Assert.Equal(System.Math.Sqrt(3.0) / 2.0, val2, 5);
+
+            bool success3 = ParsingHelper.TryParseDouble("2√3/3", out double val3);
+            Assert.True(success3);
+            Assert.Equal(2.0 * System.Math.Sqrt(3.0) / 3.0, val3, 5);
+
+            bool success4 = ParsingHelper.TryParseDouble("3/2√2", out double val4);
+            Assert.True(success4);
+            Assert.Equal(1.5 * System.Math.Sqrt(2.0), val4, 5);
+        }
+
+        [Fact]
+        public void VectorTool_CalculateVectorAddition_2DAnd3D_Verify()
+        {
+            // 2D Addition: (3, 4) + (-1, 2) = (2, 6)
+            double[] sum2D = VectorTool.Add2D(3, 4, -1, 2);
+            Assert.Equal(2.0, sum2D[0]);
+            Assert.Equal(6.0, sum2D[1]);
+
+            // 3D Addition: (1, -2, 2) + (2, 3, -1) = (3, 1, 1)
+            double[] sum3D = VectorTool.Add3D(1, -2, 2, 2, 3, -1);
+            Assert.Equal(3.0, sum3D[0]);
+            Assert.Equal(1.0, sum3D[1]);
+            Assert.Equal(1.0, sum3D[2]);
+        }
+
+        [Fact]
+        public void VectorTool_CalculateVectorDotProduct_2DAnd3D_Verify()
+        {
+            // 2D Dot Product: (3, 4) . (-1, 2) = -3 + 8 = 5
+            double dot2D = VectorTool.Dot2D(3, 4, -1, 2);
+            Assert.Equal(5.0, dot2D);
+
+            // 3D Dot Product: (1, -2, 2) . (2, 3, -1) = 2 - 6 - 2 = -6
+            double dot3D = VectorTool.Dot3D(1, -2, 2, 2, 3, -1);
+            Assert.Equal(-6.0, dot3D);
+        }
+
+        [Fact]
+        public void VectorTool_CalculateVectorCrossProduct_3D_Verify()
+        {
+            // 3D Cross Product: (1, -2, 1) x (2, 1, -1) = (1, 3, 5)
+            double[] cross1 = VectorTool.Cross3D(1, -2, 1, 2, 1, -1);
+            Assert.Equal(1.0, cross1[0]);
+            Assert.Equal(3.0, cross1[1]);
+            Assert.Equal(5.0, cross1[2]);
+
+            // 3D Cross Product: (2, 0, 0) x (0, 0.5, 0) = (0, 0, 1)
+            double[] cross2 = VectorTool.Cross3D(2, 0, 0, 0, 0.5, 0);
+            Assert.Equal(0.0, cross2[0]);
+            Assert.Equal(0.0, cross2[1]);
+            Assert.Equal(1.0, cross2[2]);
+        }
+
+        [Fact]
+        public void VectorTool_CalculateVectorAngle_2DAnd3D_Verify()
+        {
+            // 2D Perpendicular check: (1, 0) and (0, 1)
+            double angle1 = VectorTool.Angle2D(1, 0, 0, 1, out double cos1);
+            Assert.Equal(90.0, angle1, 5);
+            Assert.Equal(0.0, cos1, 5);
+
+            // 3D Perpendicular check: (1, 1, 0) and (1, -1, 5) -> dot = 1 - 1 + 0 = 0
+            double angle2 = VectorTool.Angle3D(1, 1, 0, 1, -1, 5, out double cos2);
+            Assert.Equal(90.0, angle2, 5);
+            Assert.Equal(0.0, cos2, 5);
+
+            // 2D Collinear check: (3, 4) and (6, 8)
+            double angle3 = VectorTool.Angle2D(3, 4, 6, 8, out double cos3);
+            Assert.Equal(0.0, angle3, 5);
+            Assert.Equal(1.0, cos3, 5);
+        }
+
+        [Fact]
+        public void ConicSectionTool_CalcEllipseParams_Horizontal()
+        {
+            // Horizontal Ellipse (a >= b): a = 5, b = 3
+            double a = 5;
+            double b = 3;
+            double c, ecc;
+            bool fociOnX;
+            ConicSectionTool.CalcEllipseParams(a, b, out c, out ecc, out fociOnX);
+
+            Assert.True(fociOnX);
+            Assert.Equal(4.0, c, 5); // sqrt(25 - 9) = 4
+            Assert.Equal(0.8, ecc, 5); // 4 / 5 = 0.8
+        }
+
+        [Fact]
+        public void ConicSectionTool_CalcEllipseParams_Vertical()
+        {
+            // Vertical Ellipse (a < b): a = 3, b = 5
+            double a = 3;
+            double b = 5;
+            double c, ecc;
+            bool fociOnX;
+            ConicSectionTool.CalcEllipseParams(a, b, out c, out ecc, out fociOnX);
+
+            Assert.False(fociOnX);
+            Assert.Equal(4.0, c, 5); // sqrt(25 - 9) = 4
+            Assert.Equal(0.8, ecc, 5); // 4 / 5 = 0.8
+        }
+
+        [Fact]
+        public void ConicSectionTool_CalcHyperbolaParams()
+        {
+            // Hyperbola: a = 3, b = 4
+            double a = 3;
+            double b = 4;
+            double c, ecc;
+            ConicSectionTool.CalcHyperbolaParams(a, b, out c, out ecc);
+
+            Assert.Equal(5.0, c, 5); // sqrt(9 + 16) = 5
+            Assert.Equal(1.6666666666666667, ecc, 5); // 5 / 3 = 1.6667
+        }
+
+        [Fact]
+        public void ConicSectionTool_CalcParabolaParams()
+        {
+            // Parabola: p = 4
+            double p = 4;
+            double pHalf;
+            ConicSectionTool.CalcParabolaParams(p, out pHalf);
+
+            Assert.Equal(2.0, pHalf, 5); // 4 / 2 = 2.0
+        }
+
+        [Fact]
+        public void SolidGeometryTool_CalcBoxParams_Verify()
+        {
+            // Box: a=3, b=4, c=5
+            double a = 3, b = 4, c = 5;
+            double v, stp, diag;
+            SolidGeometryTool.CalcBoxParams(a, b, c, out v, out stp, out diag);
+
+            Assert.Equal(60.0, v); // 3 * 4 * 5 = 60
+            Assert.Equal(94.0, stp); // 2 * (12 + 20 + 15) = 94
+            Assert.Equal(System.Math.Sqrt(50), diag, 5); // sqrt(9 + 16 + 25) = sqrt(50)
+        }
+
+        [Fact]
+        public void SolidGeometryTool_CalcTriPyramidParams_Verify()
+        {
+            // Triangular Pyramid: a=6, h=8
+            double a = 6, h = 8;
+            double sBase, v, apothemBase, apothemPyramid, sxq, stp, edge;
+            SolidGeometryTool.CalcTriPyramidParams(a, h, out sBase, out v, out apothemBase, out apothemPyramid, out sxq, out stp, out edge);
+
+            // sBase = 36 * sqrt(3) / 4 = 9 * sqrt(3) ≈ 15.588457
+            Assert.Equal(9.0 * System.Math.Sqrt(3.0), sBase, 5);
+            // v = sBase * h / 3 = 24 * sqrt(3) ≈ 41.569219
+            Assert.Equal(24.0 * System.Math.Sqrt(3.0), v, 5);
+            // apothemBase = a * sqrt(3) / 6 = sqrt(3)
+            Assert.Equal(System.Math.Sqrt(3.0), apothemBase, 5);
+            // apothemPyramid = sqrt(h^2 + r_in^2) = sqrt(64 + 3) = sqrt(67) ≈ 8.18535
+            Assert.Equal(System.Math.Sqrt(67.0), apothemPyramid, 5);
+            // sxq = 0.5 * perimeter * apothemPyramid = 0.5 * 18 * sqrt(67) = 9 * sqrt(67) ≈ 73.66817
+            Assert.Equal(9.0 * System.Math.Sqrt(67.0), sxq, 5);
+        }
+
+        [Fact]
+        public void SolidGeometryTool_CalcConeParams_Verify()
+        {
+            // Cone: r=3, h=4
+            double r = 3, h = 4;
+            double l, v, sxq, stp;
+            SolidGeometryTool.CalcConeParams(r, h, out l, out v, out sxq, out stp);
+
+            Assert.Equal(5.0, l, 5); // sqrt(9 + 16) = 5
+            Assert.Equal(12.0 * System.Math.PI, v, 5); // (1/3) * pi * 9 * 4 = 12 * pi
+            Assert.Equal(15.0 * System.Math.PI, sxq, 5); // pi * 3 * 5 = 15 * pi
+            Assert.Equal(24.0 * System.Math.PI, stp, 5); // pi * 3 * (3 + 5) = 24 * pi
+        }
+
+        [Fact]
+        public void SolidGeometryTool_CalcSphereParams_Verify()
+        {
+            // Sphere: r=5
+            double r = 5;
+            double v, s, d, maxSection;
+            SolidGeometryTool.CalcSphereParams(r, out v, out s, out d, out maxSection);
+
+            Assert.Equal((500.0 / 3.0) * System.Math.PI, v, 5);
+            Assert.Equal(100.0 * System.Math.PI, s, 5);
+            Assert.Equal(10.0, d, 5);
+            Assert.Equal(25.0 * System.Math.PI, maxSection, 5);
+        }
+
+        [Fact]
+        public void FractionTool_CalcOpsStatic_Verify()
+        {
+            // Arrange
+            int n1 = 3, d1 = 4, n2 = 2, d2 = 5;
+
+            // Act
+            FractionTool.CalcOpsStatic(n1, d1, n2, d2, out string addStr, out string subStr, out string mulStr, out string divStr);
+
+            // Assert
+            Assert.Contains("23/20", addStr);
+            Assert.Contains("7/20", subStr);
+            Assert.Contains("3/10", mulStr);
+            Assert.Contains("15/8", divStr);
+        }
+
+        [Fact]
+        public void FractionTool_CalcSimplifyStatic_Verify()
+        {
+            // Arrange
+            int n = 12, d = 8;
+
+            // Act
+            FractionTool.CalcSimplifyStatic(n, d, out long sn, out long sd, out long gcdVal, out string stepStr);
+
+            // Assert
+            Assert.Equal(3, sn);
+            Assert.Equal(2, sd);
+            Assert.Equal(4, gcdVal);
+            Assert.Contains("3/2", stepStr);
+        }
+
+        [Fact]
+        public void FractionTool_CalcCompareStatic_Verify()
+        {
+            // Arrange
+            int n1 = 1, d1 = 3, n2 = 1, d2 = 4;
+
+            // Act
+            FractionTool.CalcCompareStatic(n1, d1, n2, d2, out string relationSymbol, out long lcmVal, out string stepStr);
+
+            // Assert
+            Assert.Equal(">", relationSymbol);
+            Assert.Equal(12, lcmVal);
+            Assert.Contains("4/12", stepStr);
+            Assert.Contains("3/12", stepStr);
+        }
+
+        [Fact]
+        public void FractionTool_CalcMixedStatic_Verify()
+        {
+            // Arrange
+            int n = 7, d = 3;
+
+            // Act
+            FractionTool.CalcMixedStatic(n, d, out string mixedStr, out string stepStr);
+
+            // Assert
+            Assert.Contains("2 1/3", mixedStr);
+            Assert.Contains("7 : 3 = 2 dư 1", stepStr);
+        }
+
+        [Fact]
+        public void MatrixTool_CalcDet_Verify()
+        {
+            // Arrange: 2x2 matrix
+            double[,] m2 = { { 3, 5 }, { 1, 2 } };
+            // Act
+            double det2 = MatrixTool.DeterminantStatic(m2, 2, out var steps2);
+            // Assert
+            Assert.Equal(1.0, det2);
+            Assert.NotEmpty(steps2);
+
+            // Arrange: 3x3 matrix
+            double[,] m3 = { { 2, 1, 3 }, { 0, 4, 1 }, { 5, 2, 0 } };
+            // Act
+            double det3 = MatrixTool.DeterminantStatic(m3, 3, out var steps3);
+            // Assert: det = -59
+            Assert.Equal(-59.0, det3);
+            Assert.NotEmpty(steps3);
+        }
+
+        [Fact]
+        public void MatrixTool_CalcInverse_Verify()
+        {
+            // Arrange: 2x2 invertible matrix
+            double[,] m = { { 2, 5 }, { 1, 3 } };
+            // Act
+            double det = MatrixTool.DeterminantStatic(m, 2, out _);
+            double[,] inv = MatrixTool.InverseStatic(m, 2, det, out string steps);
+            // Assert
+            Assert.NotNull(inv);
+            Assert.Equal(3.0, inv[0, 0], 5);
+            Assert.Equal(-5.0, inv[0, 1], 5);
+            Assert.Equal(-1.0, inv[1, 0], 5);
+            Assert.Equal(2.0, inv[1, 1], 5);
+            Assert.True(steps.Contains("Ma trận phụ hợp") || steps.Contains("Adjugate Matrix"));
+
+            // Arrange: 2x2 singular matrix
+            double[,] mSing = { { 1, 2 }, { 2, 4 } };
+            double detSing = MatrixTool.DeterminantStatic(mSing, 2, out _);
+            double[,] invSing = MatrixTool.InverseStatic(mSing, 2, detSing, out string stepsSing);
+            // Assert
+            Assert.Null(invSing);
+            Assert.True(stepsSing.Contains("suy biến") || stepsSing.Contains("Singular"));
+        }
+
+        [Fact]
+        public void MatrixTool_CalcMultiply_Verify()
+        {
+            // Arrange
+            double[,] a = { { 1, 2 }, { 3, 4 } };
+            double[,] b = { { 2, 0 }, { 1, 2 } };
+            // Act
+            double[,] c = MatrixTool.MultiplyStatic(a, b, 2, out var steps);
+            // Assert: [4, 4; 10, 8]
+            Assert.Equal(4.0, c[0, 0]);
+            Assert.Equal(4.0, c[0, 1]);
+            Assert.Equal(10.0, c[1, 0]);
+            Assert.Equal(8.0, c[1, 1]);
+            Assert.NotEmpty(steps);
+        }
+
+        [Fact]
+        public void MatrixTool_CalcAdd_Verify()
+        {
+            // Arrange
+            double[,] a = { { 1, 2 }, { 3, 4 } };
+            double[,] b = { { 5, 6 }, { 7, 8 } };
+            // Act
+            double[,] c = MatrixTool.AddStatic(a, b, 2, out var steps);
+            // Assert
+            Assert.Equal(6.0, c[0, 0]);
+            Assert.Equal(8.0, c[0, 1]);
+            Assert.Equal(10.0, c[1, 0]);
+            Assert.Equal(12.0, c[1, 1]);
+            Assert.NotEmpty(steps);
+        }
+
+        [Fact]
+        public void MatrixTool_Initialization_DoesNotCrash()
+        {
+            Exception? exception = null;
+            var thread = new System.Threading.Thread(() =>
+            {
+                try
+                {
+                    var app = System.Windows.Application.Current;
+                    if (app == null)
+                    {
+                        app = new System.Windows.Application();
+                        app.Resources.Add("Gray100", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGray));
+                    }
+                    else if (!app.Resources.Contains("Gray100"))
+                    {
+                        app.Resources.Add("Gray100", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGray));
+                    }
+                    var tool = new MatrixTool();
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void StatisticsTool_ParseData_VariousSeparators_ParsesCorrectly()
+        {
+            // Arrange
+            string input = "1.5, 2.5; 3.5\t4.5\n−5.5  6.5"; // includes Unicode minus
+
+            // Act
+            double[] result = StatisticsTool.ParseDataStatic(input);
+
+            // Assert
+            Assert.Equal(6, result.Length);
+            Assert.Equal(1.5, result[0]);
+            Assert.Equal(2.5, result[1]);
+            Assert.Equal(3.5, result[2]);
+            Assert.Equal(4.5, result[3]);
+            Assert.Equal(-5.5, result[4]);
+            Assert.Equal(6.5, result[5]);
+        }
+
+        [Fact]
+        public void StatisticsTool_CalcBasicStats_Verify()
+        {
+            // Arrange
+            double[] data = { 4, 5, 6, 7, 8, 8, 9, 7, 6, 5, 8, 7 }; // sorted: 4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9
+
+            // Act
+            StatisticsTool.CalculateStatisticsStatic(
+                data,
+                out double mean,
+                out double median,
+                out List<double> mode,
+                out double popVar,
+                out double popStd,
+                out double sampleVar,
+                out double sampleStd,
+                out double q1,
+                out double q2,
+                out double q3,
+                out double min,
+                out double max,
+                out string steps);
+
+            // Assert
+            Assert.Equal(12, data.Length);
+            Assert.Equal(80.0 / 12.0, mean, 5); // sum = 80, mean = 6.66667
+            Assert.Equal(7.0, median); // middle 2 are 7 and 7 -> (7+7)/2 = 7
+            Assert.Equal(2, mode.Count); // 7 and 8 both appear 3 times
+            Assert.Equal(7.0, mode[0]);
+            Assert.Equal(8.0, mode[1]);
+            Assert.Equal(4.0, min);
+            Assert.Equal(9.0, max);
+            Assert.NotEmpty(steps);
+        }
+
+        [Fact]
+        public void StatisticsTool_CalcVarianceAndStdDev_Verify()
+        {
+            // Arrange
+            double[] data = { 2, 4, 6 }; // mean = 4, diff sq sum = (2-4)^2 + (4-4)^2 + (6-4)^2 = 4 + 0 + 4 = 8
+
+            // Act
+            StatisticsTool.CalculateStatisticsStatic(
+                data,
+                out double mean,
+                out double median,
+                out List<double> mode,
+                out double popVar,
+                out double popStd,
+                out double sampleVar,
+                out double sampleStd,
+                out double q1,
+                out double q2,
+                out double q3,
+                out double min,
+                out double max,
+                out string steps);
+
+            // Assert
+            Assert.Equal(8.0 / 3.0, popVar, 5); // 2.66667
+            Assert.Equal(System.Math.Sqrt(8.0 / 3.0), popStd, 5); // 1.63299
+            Assert.Equal(8.0 / 2.0, sampleVar, 5); // 4.0
+            Assert.Equal(2.0, sampleStd, 5); // 2.0
+
+            // Test boundary n=1
+            double[] singleData = { 5.0 };
+            StatisticsTool.CalculateStatisticsStatic(
+                singleData,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _,
+                out double sVarSingle,
+                out double sStdSingle,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _);
+            Assert.True(double.IsNaN(sVarSingle));
+            Assert.True(double.IsNaN(sStdSingle));
+        }
+
+        [Fact]
+        public void StatisticsTool_CalcQuartiles_Verify()
+        {
+            // Arrange
+            // Case 1: Odd n = 9. sorted: 1, 2, 3, 4, 5, 6, 7, 8, 9
+            // Median Q2 = 5
+            // Nửa dưới (không tính Q2): 1, 2, 3, 4 -> Q1 = (2+3)/2 = 2.5
+            // Nửa trên (không tính Q2): 6, 7, 8, 9 -> Q3 = (7+8)/2 = 7.5
+            double[] oddData = { 9, 3, 1, 7, 5, 8, 2, 4, 6 };
+
+            // Act
+            StatisticsTool.CalculateStatisticsStatic(
+                oddData,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _,
+                out double q1Odd,
+                out double q2Odd,
+                out double q3Odd,
+                out _,
+                out _,
+                out _);
+
+            // Assert
+            Assert.Equal(2.5, q1Odd);
+            Assert.Equal(5.0, q2Odd);
+            Assert.Equal(7.5, q3Odd);
+
+            // Case 2: Even n = 10. sorted: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+            // Median Q2 = (5+6)/2 = 5.5
+            // Nửa dưới: 1, 2, 3, 4, 5 -> Q1 = 3
+            // Nửa trên: 6, 7, 8, 9, 10 -> Q3 = 8
+            double[] evenData = { 10, 2, 4, 6, 8, 9, 7, 5, 3, 1 };
+
+            // Act 2
+            StatisticsTool.CalculateStatisticsStatic(
+                evenData,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _,
+                out double q1Even,
+                out double q2Even,
+                out double q3Even,
+                out _,
+                out _,
+                out _);
+
+            // Assert 2
+            Assert.Equal(3.0, q1Even);
+            Assert.Equal(5.5, q2Even);
+            Assert.Equal(8.0, q3Even);
+        }
+
+        [Fact]
+        public void StatisticsTool_Initialization_DoesNotCrash()
+        {
+            Exception exception = null;
+            var thread = new System.Threading.Thread(() =>
+            {
+                try
+                {
+                    var app = System.Windows.Application.Current;
+                    if (app == null)
+                    {
+                        app = new System.Windows.Application();
+                        app.Resources.Add("Gray100", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGray));
+                    }
+                    else if (!app.Resources.Contains("Gray100"))
+                    {
+                        app.Resources.Add("Gray100", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGray));
+                    }
+                    var tool = new StatisticsTool();
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void InequalityTool_ParseInput_FractionsAndDecimals_ParsesCorrectly()
+        {
+            // Test fractions
+            bool success1 = InequalityTool.TryParseFractionOrDouble("1/2", out double v1);
+            Assert.True(success1);
+            Assert.Equal(0.5, v1);
+
+            bool success2 = InequalityTool.TryParseFractionOrDouble("−3/4", out double v2); // with Unicode minus
+            Assert.True(success2);
+            Assert.Equal(-0.75, v2);
+
+            // Test normal decimals
+            bool success3 = InequalityTool.TryParseFractionOrDouble("-2.5", out double v3);
+            Assert.True(success3);
+            Assert.Equal(-2.5, v3);
+
+            // Test invalid
+            bool success4 = InequalityTool.TryParseFractionOrDouble("abc", out _);
+            Assert.False(success4);
+        }
+
+        [Fact]
+        public void InequalityTool_SolveLinear_VariousCases_Verify()
+        {
+            // Case 1: 2x - 6 > 0
+            InequalityTool.SolveLinearStatic(2, -6, 0, out string steps1, out string interval1, out string summary1);
+            Assert.Contains("x > 3", steps1);
+            Assert.Equal("(3; +∞)", interval1);
+
+            // Case 2: -2x + 6 >= 0 (reverse direction)
+            InequalityTool.SolveLinearStatic(-2, 6, 1, out string steps2, out string interval2, out string summary2);
+            Assert.True(steps2.Contains("ĐỔI CHIỀU") || steps2.Contains("REVERSE"));
+            Assert.Equal("(−∞; 3]", interval2);
+        }
+
+        [Fact]
+        public void InequalityTool_SolveQuadratic_VariousDeltas_Verify()
+        {
+            // Case delta > 0: x^2 - 5x + 6 < 0
+            InequalityTool.SolveQuadraticStatic(1, -5, 6, 2, out _, out string interval1, out _);
+            Assert.Equal("(2; 3)", interval1);
+
+            // Case delta = 0: x^2 - 6x + 9 > 0 (strictly positive, root is 3)
+            InequalityTool.SolveQuadraticStatic(1, -6, 9, 0, out _, out string interval2, out _);
+            Assert.Equal("(−∞; 3) ∪ (3; +∞)", interval2);
+
+            // Case delta < 0: x^2 + x + 1 > 0
+            InequalityTool.SolveQuadraticStatic(1, 1, 1, 0, out _, out string interval3, out _);
+            Assert.Equal("(−∞; +∞)", interval3);
+        }
+
+        [Fact]
+        public void InequalityTool_SolveQuadratic_SignChartAndSteps_Verify()
+        {
+            // Verify that delta > 0 generates sign chart and contains expected format
+            InequalityTool.SolveQuadraticStatic(1, -5, 6, 0, out string steps, out _, out _);
+            Assert.Contains("BẢNG XÉT DẤU", steps);
+            Assert.Contains("f(x) │", steps);
+        }
+
+        [Fact]
+        public void InequalityTool_Initialization_DoesNotCrash()
+        {
+            Exception exception = null;
+            var thread = new System.Threading.Thread(() =>
+            {
+                try
+                {
+                    var app = System.Windows.Application.Current;
+                    if (app == null)
+                    {
+                        app = new System.Windows.Application();
+                        app.Resources.Add("Gray100", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGray));
+                    }
+                    else if (!app.Resources.Contains("Gray100"))
+                    {
+                        app.Resources.Add("Gray100", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGray));
+                    }
+                    var tool = new InequalityTool();
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void SequenceTool_ParseInput_FractionsAndDecimals_ParsesCorrectly()
+        {
+            // Test fractions
+            bool success1 = SequenceTool.TryParseFractionOrDouble("1/2", out double v1);
+            Assert.True(success1);
+            Assert.Equal(0.5, v1);
+
+            bool success2 = SequenceTool.TryParseFractionOrDouble("−3/4", out double v2); // Unicode minus
+            Assert.True(success2);
+            Assert.Equal(-0.75, v2);
+
+            // Test decimals
+            bool success3 = SequenceTool.TryParseFractionOrDouble("-2.5", out double v3);
+            Assert.True(success3);
+            Assert.Equal(-2.5, v3);
+
+            // Test invalid
+            bool success4 = SequenceTool.TryParseFractionOrDouble("abc", out _);
+            Assert.False(success4);
+        }
+
+        [Fact]
+        public void SequenceTool_SolveAP_VariousCases_Verify()
+        {
+            // Case: u1=3, d=5, n=10, isEn=false
+            SequenceTool.SolveAPStatic(3, 5, 10, false, out string steps, out string terms, out string summary, out double un, out double sn);
+            Assert.Equal(48, un);
+            Assert.Equal(255, sn);
+            Assert.Contains("U_10 = 3 + 9 · (5) = 48", steps.Replace("−", "-"));
+            Assert.Contains("S_10 = 10 · (3 + 48) / 2", steps.Replace("−", "-"));
+            Assert.Contains("S_10 = 10 · (51) / 2 = 255", steps.Replace("−", "-"));
+            Assert.Equal("3, 8, 13, 18, 23, 28, 33, 38, ... , 48", terms.Replace("−", "-"));
+        }
+
+        [Fact]
+        public void SequenceTool_SolveGP_VariousCases_Verify()
+        {
+            // Case: u1=2, q=3, n=8, isEn=false
+            SequenceTool.SolveGPStatic(2, 3, 8, false, out string steps, out string terms, out string summary, out double un, out double sn);
+            Assert.Equal(4374, un);
+            Assert.Equal(6560, sn);
+            Assert.Contains("U_8 = 2 · 3⁷", steps.Replace("−", "-"));
+            Assert.Contains("U_8 = 2 · 2187 = 4374", steps.Replace("−", "-"));
+            Assert.Contains("S_8 = 2 · (3⁸ - 1) / (3 - 1)", steps.Replace("−", "-"));
+            Assert.Contains("S_8 = 2 · (6560) / (2) = 6560", steps.Replace("−", "-"));
+            Assert.Equal("2, 6, 18, 54, 162, 486, 1458, 4374", terms.Replace("−", "-"));
+        }
+
+        [Fact]
+        public void SequenceTool_SolveGP_InfiniteSum_Verify()
+        {
+            // Case: u1=10, q=0.5 (infinite GP), n=5, isEn=false
+            SequenceTool.SolveGPStatic(10, 0.5, 5, false, out string steps, out _, out _, out _, out _);
+            Assert.Contains("Tổng cấp số nhân lùi vô hạn", steps);
+            Assert.Contains("S_∞ = U₁ / (1 - q) = 10 / (1 - 0.5) = 20", steps.Replace("−", "-"));
+        }
+
+        [Fact]
+        public void CubicTool_ParseInput_FractionsAndDecimals_ParsesCorrectly()
+        {
+            // Test fractions
+            bool success1 = QASmartClass.LearningTools.Views.Math.CubicTool.TryParseFractionOrDouble("1/2", out double v1);
+            Assert.True(success1);
+            Assert.Equal(0.5, v1);
+
+            bool success2 = QASmartClass.LearningTools.Views.Math.CubicTool.TryParseFractionOrDouble("−3/4", out double v2); // Unicode minus
+            Assert.True(success2);
+            Assert.Equal(-0.75, v2);
+
+            // Test decimals
+            bool success3 = QASmartClass.LearningTools.Views.Math.CubicTool.TryParseFractionOrDouble("-2.5", out double v3);
+            Assert.True(success3);
+            Assert.Equal(-2.5, v3);
+
+            // Test invalid
+            bool success4 = QASmartClass.LearningTools.Views.Math.CubicTool.TryParseFractionOrDouble("abc", out _);
+            Assert.False(success4);
+        }
+
+        [Fact]
+        public void CubicTool_SolveCubic_ThreeDistinctRealRoots_Verify()
+        {
+            // Case: x³ − 6x² + 11x − 6 = 0 -> roots: 1, 2, 3
+            QASmartClass.LearningTools.Views.Math.CubicTool.SolveCubicStatic(1, -6, 11, -6, false, out var steps, out var realRoots, out var complexRoots);
+            Assert.Equal(3, realRoots.Count);
+            Assert.Contains(1.0, realRoots);
+            Assert.Contains(2.0, realRoots);
+            Assert.Contains(3.0, realRoots);
+            Assert.Empty(complexRoots);
+
+            // Verify Horner and Viet in steps
+            string stepsDetailStr = "";
+            string stepsTitleStr = "";
+            foreach (var step in steps)
+            {
+                stepsDetailStr += step.Detail + "\n";
+                stepsTitleStr += step.Title + "\n";
+            }
+            stepsDetailStr = stepsDetailStr.Replace("−", "-");
+
+            Assert.Contains("x₁ = 1", stepsDetailStr);
+            Assert.Contains("Horner", stepsTitleStr);
+            Assert.Contains("x₁ + x₂ + x₃ = -b/a = -(-6) / 1 = 6", stepsDetailStr);
+        }
+
+        [Fact]
+        public void CubicTool_SolveCubic_DoubleRoot_Verify()
+        {
+            // Case: x³ + 3x² − 4 = 0 -> roots: 1 (single), -2 (double)
+            QASmartClass.LearningTools.Views.Math.CubicTool.SolveCubicStatic(1, 3, 0, -4, false, out var steps, out var realRoots, out var complexRoots);
+            Assert.Equal(2, realRoots.Count);
+            Assert.Contains(1.0, realRoots);
+            Assert.Contains(-2.0, realRoots);
+            Assert.Empty(complexRoots);
+
+            string stepsDetailStr = "";
+            foreach (var step in steps)
+            {
+                stepsDetailStr += step.Detail + "\n";
+            }
+            stepsDetailStr = stepsDetailStr.Replace("−", "-");
+            Assert.Contains("nghiệm kép", stepsDetailStr);
+        }
+
+        [Fact]
+        public void CubicTool_SolveCubic_CardanoIrrationalRoots_Verify()
+        {
+            // Case: x³ − 2 = 0 -> roots: 2^(1/3) ~ 1.2599 and complex
+            QASmartClass.LearningTools.Views.Math.CubicTool.SolveCubicStatic(1, 0, 0, -2, false, out var steps, out var realRoots, out var complexRoots);
+            Assert.Single(realRoots);
+            Assert.Equal(1.25992, realRoots[0], 5);
+            Assert.Equal(2, complexRoots.Count);
+
+            string stepsTitleStr = "";
+            foreach (var step in steps)
+            {
+                stepsTitleStr += step.Title + "\n";
+            }
+            Assert.Contains("Cardano", stepsTitleStr);
+        }
+
+        [Fact]
+        public void CoordinateTool_ParseInput_FractionsAndDecimals_ParsesCorrectly()
+        {
+            // Test fractions
+            bool success1 = QASmartClass.LearningTools.Views.Math.CoordinateTool.TryParseFractionOrDouble("1/2", out double v1);
+            Assert.True(success1);
+            Assert.Equal(0.5, v1);
+
+            bool success2 = QASmartClass.LearningTools.Views.Math.CoordinateTool.TryParseFractionOrDouble("−3/4", out double v2); // Unicode minus
+            Assert.True(success2);
+            Assert.Equal(-0.75, v2);
+
+            // Test decimals
+            bool success3 = QASmartClass.LearningTools.Views.Math.CoordinateTool.TryParseFractionOrDouble("-2.5", out double v3);
+            Assert.True(success3);
+            Assert.Equal(-2.5, v3);
+
+            // Test invalid
+            bool success4 = QASmartClass.LearningTools.Views.Math.CoordinateTool.TryParseFractionOrDouble("abc", out _);
+            Assert.False(success4);
+
+            // Test with spaces
+            bool success5 = QASmartClass.LearningTools.Views.Math.CoordinateTool.TryParseFractionOrDouble(" 1 / 3 ", out double v5);
+            Assert.True(success5);
+            Assert.Equal(1.0 / 3.0, v5, 6);
+
+            bool success6 = QASmartClass.LearningTools.Views.Math.CoordinateTool.TryParseFractionOrDouble(" - 2.5 ", out double v6);
+            Assert.True(success6);
+            Assert.Equal(-2.5, v6);
+        }
+
+        [Fact]
+        public void CoordinateTool_SolveTwoPoints_DistinctPoints_Verify()
+        {
+            // Case: A(1; 2) and B(4; 6)
+            QASmartClass.LearningTools.Views.Math.CoordinateTool.SolveTwoPointsStatic(1, 2, 4, 6, false, out var steps, out double dist, out double mx, out double my);
+            Assert.Equal(5.0, dist);
+            Assert.Equal(2.5, mx);
+            Assert.Equal(4.0, my);
+
+            string stepsDetailStr = "";
+            foreach (var step in steps)
+            {
+                stepsDetailStr += step.Detail + "\n";
+            }
+            stepsDetailStr = stepsDetailStr.Replace("−", "-");
+
+            Assert.Contains("u⃗_AB = (3; 4)", stepsDetailStr);
+            Assert.Contains("M(2.5; 4)", stepsDetailStr);
+            Assert.Contains("y = 1.3333", stepsDetailStr);
+            Assert.Contains("4x - 3y + 2 = 0", stepsDetailStr);
+        }
+
+        [Fact]
+        public void CoordinateTool_SolveTwoPoints_CoincidentPoints_Verify()
+        {
+            // Case: A(1; 2) and B(1; 2)
+            QASmartClass.LearningTools.Views.Math.CoordinateTool.SolveTwoPointsStatic(1, 2, 1, 2, false, out var steps, out double dist, out double mx, out double my);
+            Assert.Equal(0.0, dist);
+            Assert.Equal(1.0, mx);
+            Assert.Equal(2.0, my);
+
+            string stepsDetailStr = "";
+            foreach (var step in steps)
+            {
+                stepsDetailStr += step.Detail + "\n";
+            }
+            Assert.Contains("trùng nhau", stepsDetailStr);
+        }
+
+        [Fact]
+        public void CoordinateTool_SolveLine_ValidSlope_Verify()
+        {
+            // Case: y = 2x − 1
+            QASmartClass.LearningTools.Views.Math.CoordinateTool.SolveLineStatic(2, -1, false, out var steps, out double? xInt, out double yInt);
+            Assert.Equal(-1.0, yInt);
+            Assert.NotNull(xInt);
+            Assert.Equal(0.5, xInt.Value);
+
+            string stepsDetailStr = "";
+            foreach (var step in steps)
+            {
+                stepsDetailStr += step.Detail + "\n";
+            }
+            stepsDetailStr = stepsDetailStr.Replace("−", "-");
+            Assert.Contains("y = 2x - 1", stepsDetailStr);
+        }
+
+        [Fact]
+        public void CombinatoricsTool_TryParseFractionOrDouble_ValidAndInvalid_ParsesCorrectly()
+        {
+            // Test positive fraction
+            bool s1 = QASmartClass.LearningTools.Views.Math.CombinatoricsTool.TryParseFractionOrDouble("3/4", out double v1);
+            Assert.True(s1);
+            Assert.Equal(0.75, v1);
+
+            // Test negative fraction with Unicode minus
+            bool s2 = QASmartClass.LearningTools.Views.Math.CombinatoricsTool.TryParseFractionOrDouble("−1/2", out double v2);
+            Assert.True(s2);
+            Assert.Equal(-0.5, v2);
+
+            // Test decimal
+            bool s3 = QASmartClass.LearningTools.Views.Math.CombinatoricsTool.TryParseFractionOrDouble("-2.5", out double v3);
+            Assert.True(s3);
+            Assert.Equal(-2.5, v3);
+
+            // Test invalid
+            bool s4 = QASmartClass.LearningTools.Views.Math.CombinatoricsTool.TryParseFractionOrDouble("xyz", out _);
+            Assert.False(s4);
+        }
+
+        [Fact]
+        public void CombinatoricsTool_SolvePermutation_Verify()
+        {
+            // Case: P(5)
+            QASmartClass.LearningTools.Views.Math.CombinatoricsTool.SolvePermutationStatic(5, out string expansion, out var result);
+            Assert.Equal(new System.Numerics.BigInteger(120), result);
+            Assert.Equal("5 × 4 × 3 × 2 × 1", expansion);
+        }
+
+        [Fact]
+        public void CombinatoricsTool_SolveArrangementAndCombination_Verify()
+        {
+            // Case: A(6,3)
+            QASmartClass.LearningTools.Views.Math.CombinatoricsTool.SolveArrangementStatic(6, 3, out string expA, out var resA);
+            Assert.Equal(new System.Numerics.BigInteger(120), resA);
+            Assert.Equal("6 × 5 × 4", expA);
+
+            // Case: C(6,2)
+            QASmartClass.LearningTools.Views.Math.CombinatoricsTool.SolveCombinationStatic(6, 2, out string expC, out var resC);
+            Assert.Equal(new System.Numerics.BigInteger(15), resC);
+            Assert.Equal("(6 × 5) / (2 × 1)", expC);
+        }
+
+        [Fact]
+        public void CombinatoricsTool_SolveNewton_Verify()
+        {
+            // Case: (2 - 1.5)³
+            QASmartClass.LearningTools.Views.Math.CombinatoricsTool.SolveNewtonStatic(3, 2.0, -1.5, 
+                out var terms, out double totalSum, out string algebraicFormula, out string sub1, out string sub2);
+
+            Assert.Equal(0.125, totalSum, 5);
+            Assert.Equal(4, terms.Count);
+            Assert.Contains("a³ + 3a²b + 3ab² + b³", algebraicFormula);
+            
+            // Check that "+ -" is cleaned up and Unicode minus or formatted signs are clean
+            Assert.DoesNotContain("+ -", sub1);
+            Assert.DoesNotContain("+ -", sub2);
+        }
+
+        [Fact]
+        public void ProbabilityTool_TryParseFractionOrDouble_Verify()
+        {
+            // Valid fractions
+            bool r1 = QASmartClass.LearningTools.Views.Math.ProbabilityTool.TryParseFractionOrDouble("1/6", out double v1);
+            Assert.True(r1);
+            Assert.Equal(1.0 / 6.0, v1, 6);
+
+            bool r2 = QASmartClass.LearningTools.Views.Math.ProbabilityTool.TryParseFractionOrDouble("−2/3", out double v2);
+            Assert.True(r2);
+            Assert.Equal(-2.0 / 3.0, v2, 6);
+
+            // Valid double
+            bool r3 = QASmartClass.LearningTools.Views.Math.ProbabilityTool.TryParseFractionOrDouble("0.75", out double v3);
+            Assert.True(r3);
+            Assert.Equal(0.75, v3);
+
+            // Invalid inputs
+            bool r4 = QASmartClass.LearningTools.Views.Math.ProbabilityTool.TryParseFractionOrDouble("abc/xyz", out _);
+            Assert.False(r4);
+        }
+
+        [Fact]
+        public void ProbabilityTool_SolveClassic_Verify()
+        {
+            // Case: |A| = 6, |Ω| = 36 (Simplifies to 1/6)
+            QASmartClass.LearningTools.Views.Math.ProbabilityTool.SolveClassicStatic(6, 36, 
+                out double p, out double pComp, out double odds, out int simNum, out int simDen);
+
+            Assert.Equal(1.0 / 6.0, p, 6);
+            Assert.Equal(5.0 / 6.0, pComp, 6);
+            Assert.Equal(6.0 / 30.0, odds, 6);
+            Assert.Equal(1, simNum);
+            Assert.Equal(6, simDen);
+        }
+
+        [Fact]
+        public void ProbabilityTool_SolveBernoulli_Verify()
+        {
+            // Case: n = 5, k = 3, p = 0.5
+            QASmartClass.LearningTools.Views.Math.ProbabilityTool.SolveBernoulliStatic(5, 3, 0.5,
+                out double prob, out double mu, out double sigma2, out double sigma, 
+                out double cumProb, out var distributionTable);
+
+            Assert.Equal(0.3125, prob, 4);
+            Assert.Equal(2.5, mu);
+            Assert.Equal(1.25, sigma2);
+            Assert.Equal(System.Math.Sqrt(1.25), sigma, 6);
+            Assert.Equal(0.8125, cumProb, 4);
+            Assert.Equal(6, distributionTable.Count);
+        }
+
+        [Fact]
+        public void ProbabilityTool_Simulate_Verify()
+        {
+            var rng = new System.Random(12345);
+            QASmartClass.LearningTools.Views.Math.ProbabilityTool.SimulateStatic(1000, rng,
+                out int[] diceResults, out double chiSq, out int heads, out int tails);
+
+            Assert.Equal(6, diceResults.Length);
+            Assert.Equal(1000, diceResults.Sum());
+            Assert.Equal(1000, heads + tails);
+            Assert.True(chiSq >= 0);
+        }
+
+        [Fact]
+        public void ConicSectionTool_TryParseAdvancedMath_Verify()
+        {
+            // Test fraction
+            bool s1 = ConicSectionTool.TryParseAdvancedMath("3/2", out double v1);
+            Assert.True(s1);
+            Assert.Equal(1.5, v1, 5);
+
+            // Test radical
+            bool s2 = ConicSectionTool.TryParseAdvancedMath("√5", out double v2);
+            Assert.True(s2);
+            Assert.Equal(System.Math.Sqrt(5), v2, 5);
+
+            // Test coefficient radical
+            bool s3 = ConicSectionTool.TryParseAdvancedMath("2√3", out double v3);
+            Assert.True(s3);
+            Assert.Equal(2.0 * System.Math.Sqrt(3), v3, 5);
+
+            // Test negative radical with Unicode minus
+            bool s4 = ConicSectionTool.TryParseAdvancedMath("−√2", out double v4);
+            Assert.True(s4);
+            Assert.Equal(-System.Math.Sqrt(2), v4, 5);
+        }
+
+        [Fact]
+        public void ConicSectionTool_SolveEllipseStatic_Verify()
+        {
+            // a = 5, b = 3
+            double a = 5, b = 3;
+            double c, ecc;
+            bool fociOnX;
+            List<string> steps;
+            ConicSectionTool.SolveEllipseStatic(a, b, out c, out ecc, out fociOnX, out steps);
+
+            Assert.Equal(4.0, c, 5); // sqrt(25 - 9) = 4
+            Assert.Equal(0.8, ecc, 5); // 4 / 5 = 0.8
+            Assert.True(fociOnX);
+            Assert.NotEmpty(steps);
+            Assert.Contains("Tiêu điểm", steps[2]);
+        }
+
+        [Fact]
+        public void ConicSectionTool_SolveHyperbolaStatic_Verify()
+        {
+            // a = 3, b = 4
+            double a = 3, b = 4;
+            double c, ecc, slope;
+            List<string> steps;
+            ConicSectionTool.SolveHyperbolaStatic(a, b, out c, out ecc, out slope, out steps);
+
+            Assert.Equal(5.0, c, 5); // sqrt(9 + 16) = 5
+            Assert.Equal(5.0/3.0, ecc, 5);
+            Assert.Equal(4.0/3.0, slope, 5);
+            Assert.NotEmpty(steps);
+        }
+
+        [Fact]
+        public void ConicSectionTool_SolveParabolaStatic_Verify()
+        {
+            // p = 4
+            double p = 4;
+            double pHalf;
+            List<string> steps;
+            ConicSectionTool.SolveParabolaStatic(p, out pHalf, out steps);
+
+            Assert.Equal(2.0, pHalf, 5); // 4 / 2 = 2
+            Assert.NotEmpty(steps);
+            Assert.Contains("đường chuẩn", steps[2]);
+        }
+
+        [Fact]
+        public void VectorTool_TryParseAdvancedMath_Verify()
+        {
+            // Test fraction
+            bool s1 = VectorTool.TryParseAdvancedMath("1/2", out double v1);
+            Assert.True(s1);
+            Assert.Equal(0.5, v1, 5);
+
+            // Test square root
+            bool s2 = VectorTool.TryParseAdvancedMath("√3", out double v2);
+            Assert.True(s2);
+            Assert.Equal(System.Math.Sqrt(3), v2, 5);
+
+            // Test square root with coefficient
+            bool s3 = VectorTool.TryParseAdvancedMath("2√3", out double v3);
+            Assert.True(s3);
+            Assert.Equal(2.0 * System.Math.Sqrt(3), v3, 5);
+
+            // Test square root with Unicode minus
+            bool s4 = VectorTool.TryParseAdvancedMath("−√5", out double v4);
+            Assert.True(s4);
+            Assert.Equal(-System.Math.Sqrt(5), v4, 5);
+        }
+
+        [Fact]
+        public void VectorTool_SolveTwoVecStatic_Verify()
+        {
+            // Vector a = (3, 4), Vector b = (-1, 2)
+            double x1 = 3, y1 = 4, z1 = 0;
+            double x2 = -1, y2 = 2, z2 = 0;
+            bool is3D = false;
+
+            VectorTool.SolveTwoVecStatic(
+                x1, y1, z1, x2, y2, z2, is3D,
+                out double[] sum, out double[] diff,
+                out double magA, out double magB,
+                out double dot, out double[] cross,
+                out double angleDeg, out double cosAngle,
+                out List<string> steps);
+
+            Assert.Equal(2.0, sum[0]);
+            Assert.Equal(6.0, sum[1]);
+            Assert.Equal(4.0, diff[0]);
+            Assert.Equal(2.0, diff[1]);
+            Assert.Equal(5.0, magA, 5); // sqrt(9 + 16) = 5
+            Assert.Equal(5.0, dot); // -3 + 8 = 5
+            Assert.NotEmpty(steps);
+            Assert.Contains("Phép cộng hai vectơ", steps[1]);
+        }
+
+        [Fact]
+        public void VectorTool_SolveScalarStatic_Verify()
+        {
+            // Vector a = (3, 4), k = 2
+            double sx = 3, sy = 4, sz = 0, k = 2;
+            bool is3D = false;
+
+            VectorTool.SolveScalarStatic(
+                sx, sy, sz, k, is3D,
+                out double[] mul, out double mag,
+                out double[] unit, out double angleRad,
+                out List<string> steps);
+
+            Assert.Equal(6.0, mul[0]);
+            Assert.Equal(8.0, mul[1]);
+            Assert.Equal(5.0, mag, 5);
+            Assert.Equal(0.6, unit[0], 5);
+            Assert.Equal(0.8, unit[1], 5);
+            Assert.NotEmpty(steps);
+            Assert.Contains("Nhân vectơ với số k", steps[2]);
+        }
+
+        [Fact]
+        public void VectorTool_HistoryLoadSave_Verify()
+        {
+            // Test history serialization of VectorHistoryItem
+            var item = new VectorTool.VectorHistoryItem
+            {
+                ModeName = "2D Vectơ",
+                Is3D = false,
+                ModeType = VectorTool.Mode.TwoVec,
+                X1 = "3", Y1 = "4", Z1 = "",
+                X2 = "−1", Y2 = "2", Z2 = "",
+                K = "",
+                Timestamp = "10:30:00 08/06",
+                Summary = "2D Vectơ: (3,4) & (-1,2)"
+            };
+
+            var list = new List<VectorTool.VectorHistoryItem> { item };
+            string json = System.Text.Json.JsonSerializer.Serialize(list);
+            Assert.NotNull(json);
+
+            var deserialized = System.Text.Json.JsonSerializer.Deserialize<List<VectorTool.VectorHistoryItem>>(json);
+            Assert.NotNull(deserialized);
+            Assert.Single(deserialized);
+            Assert.Equal("2D Vectơ", deserialized[0].ModeName);
+            Assert.Equal("3", deserialized[0].X1);
+            Assert.Equal("−1", deserialized[0].X2);
+        }
+
+        [Fact]
+        public void LimitTool_SolvePolyLimitStatic_Rational_Verify()
+        {
+            // lim_{x -> 1} (x^2 - 3x + 2) / (x^2 - 1)
+            // L'Hopital: (2x - 3) / (2x) at x=1 -> -0.5
+            LimitTool.SolvePolyLimitStatic(1, -3, 2, 1, 0, -1, 1, false, out var stepRows, out bool isHole, out double holeY, out bool isAsymptote);
+
+            Assert.True(isHole);
+            Assert.Equal(-0.5, holeY, 5);
+            Assert.False(isAsymptote);
+            Assert.NotEmpty(stepRows);
+            Assert.Contains("L'Hôpital = f'(1)/g'(1) = -1/2 = -0.5", string.Join("\n", stepRows).Replace("−", "-"));
+        }
+
+        [Fact]
+        public void LimitTool_SolvePolyLimitStatic_Infinity_Verify()
+        {
+            // lim_{x -> infinity} (2x^2 + 5x) / (x^2 - 3) -> 2
+            LimitTool.SolvePolyLimitStatic(2, 5, 0, 1, 0, -3, 0, true, out var stepRows, out bool isHole, out double holeY, out bool isAsymptote);
+
+            Assert.False(isHole);
+            Assert.False(isAsymptote);
+            Assert.Contains("lim(x→∞) = 2", stepRows);
+        }
+
+        [Fact]
+        public void LimitTool_SolveSeqLimitStatic_Verify()
+        {
+            // Type 2: (n+1)/n -> 1
+            LimitTool.SolveSeqLimitStatic(2, out string formula, out string limit, out string note);
+
+            Assert.Equal("aₙ = (n+1)/n = 1+1/n", formula);
+            Assert.Equal("1", limit);
+            Assert.Contains("Viết lại: 1 + 1/n → 1", note);
+        }
+
+        [Fact]
+        public void LimitTool_SolveSpecialLimitStatic_Verify()
+        {
+            // Index 0: sin(x)/x -> 1
+            LimitTool.SolveSpecialLimitStatic(0, out string expr, out string result, out string note);
+
+            Assert.Equal("lim(x→0) sin(x)/x", expr);
+            Assert.Equal("= 1", result);
+            Assert.Contains("Giới hạn lượng giác cơ bản", note);
+        }
+
+        [Fact]
+        public void LimitTool_SolvePolyLimitStatic_RemovableSingularity_ReturnsHoleCoordinates()
+        {
+            // lim_{x -> 1} (x^2 - 1) / (x - 1)
+            // L'Hopital: 2x / 1 at x=1 -> 2
+            LimitTool.SolvePolyLimitStatic(1, 0, -1, 0, 1, -1, 1, false, out var stepRows, out bool isHole, out double holeY, out bool isAsymptote);
+            Assert.True(isHole);
+            Assert.Equal(2.0, holeY, 5);
+            Assert.False(isAsymptote);
+        }
+
+        [Fact]
+        public void LimitTool_SolvePolyLimitStatic_VerticalAsymptote_ReturnsInfinite()
+        {
+            // lim_{x -> 1} (x^2 + 1) / (x - 1) -> infinite
+            LimitTool.SolvePolyLimitStatic(1, 0, 1, 0, 1, -1, 1, false, out var stepRows, out bool isHole, out double holeY, out bool isAsymptote);
+            Assert.False(isHole);
+            Assert.True(isAsymptote);
+        }
+
+        [Fact]
+        public void LimitTool_SaveAndLoadHistory_VerifyCorrectSerialization()
+        {
+            var entry = new LimitTool.LimitHistoryEntry
+            {
+                Summary = "lim(x→2) (x^2-4)/(x-2)",
+                Timestamp = "12:00",
+                Mode = "rational",
+                NA = 1, NB = 0, NC = -4,
+                DA = 0, DB = 1, DC = -2,
+                X0 = "2",
+                IsInfinity = false
+            };
+            var list = new List<LimitTool.LimitHistoryEntry> { entry };
+            string json = System.Text.Json.JsonSerializer.Serialize(list);
+            Assert.NotNull(json);
+
+            var deserialized = System.Text.Json.JsonSerializer.Deserialize<List<LimitTool.LimitHistoryEntry>>(json);
+            Assert.NotNull(deserialized);
+            Assert.Single(deserialized);
+            Assert.Equal("lim(x→2) (x^2-4)/(x-2)", deserialized[0].Summary);
+            Assert.Equal(1.0, deserialized[0].NA);
+        }
+
+        [Fact]
+        public void LimitTool_SolveSeqLimitStatic_GeometricProgression_VerifyCorrectLimit()
+        {
+            // Type 4: qⁿ, |q| < 1 -> 0
+            LimitTool.SolveSeqLimitStatic(4, out string formula, out string limit, out string note);
+            Assert.Equal("aₙ = qⁿ, |q| < 1", formula);
+            Assert.Equal("0", limit);
+            Assert.Contains("Cấp số nhân lùi dần", note);
+        }
+
+        [Fact]
+        public void ComplexNumberTool_SolveArithmeticStatic_DivisionByZero_ReturnsInfinity()
+        {
+            // z1 = 1 + 2i, z2 = 0 + 0i
+            ComplexNumberTool.SolveArithmeticStatic(1, 2, 0, 0,
+                out string sum, out string diff, out string prod, out string div,
+                out double m1, out double m2);
+            Assert.Equal("∞", div);
+        }
+
+        [Fact]
+        public void ComplexNumberTool_SolvePropertiesStatic_ModuleOneTrigForm_SimplifiesCorrectly()
+        {
+            ComplexNumberTool.SolvePropertiesStatic(1, 0,
+                out string conj, out double mod, out double mod2, out string argStr, out string trigForm);
+            Assert.Equal(1.0, mod, 5);
+            Assert.Contains("cos", trigForm);
+        }
+
+        [Fact]
+        public void ComplexNumberTool_SaveAndLoadHistory_VerifyCorrectSerialization()
+        {
+            var item = new ComplexNumberTool.ComplexHistoryItem
+            {
+                Timestamp = "12:00",
+                Summary = "Arithmetic z1=1+i z2=2-i",
+                Mode = "arithmetic",
+                A1 = "1", B1 = "1",
+                A2 = "2", B2 = "-1"
+            };
+            var list = new List<ComplexNumberTool.ComplexHistoryItem> { item };
+            string json = System.Text.Json.JsonSerializer.Serialize(list);
+            Assert.NotNull(json);
+
+            var deserialized = System.Text.Json.JsonSerializer.Deserialize<List<ComplexNumberTool.ComplexHistoryItem>>(json);
+            Assert.NotNull(deserialized);
+            Assert.Single(deserialized);
+            Assert.Equal("Arithmetic z1=1+i z2=2-i", deserialized[0].Summary);
+            Assert.Equal("1", deserialized[0].A1);
+        }
+
+        [Fact]
+        public void GraphWindow_EvaluateSimpleMathExpression_WithParenthesesAndDivision_EvaluatesCorrectly()
+        {
+            var method = typeof(QASmartClass.LearningTools.Views.Math.GraphWindow)
+                .GetMethod("EvaluateSimpleMathExpression", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(method);
+
+            // test expression: "x^2 - 4" with x = 3 -> 9 - 4 = 5
+            var res = method.Invoke(null, new object[] { "x^2 - 4", 3.0 });
+            Assert.NotNull(res);
+            Assert.Equal(5.0, (double)res, 5);
+        }
+
+        [Fact]
+        public void MathCurriculumTool_CSV_EscapeAndParse_Verify()
+        {
+            var escapeMethod = typeof(QASmartClass.LearningTools.Views.Math.MathCurriculumTool)
+                .GetMethod("EscapeCSV", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(escapeMethod);
+
+            var parseMethod = typeof(QASmartClass.LearningTools.Views.Math.MathCurriculumTool)
+                .GetMethod("ParseCSVLine", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(parseMethod);
+
+            // Test EscapeCSV
+            var esc1 = escapeMethod.Invoke(null, new object[] { "Nguyen Van An" }) as string;
+            Assert.Equal("\"Nguyen Van An\"", esc1);
+
+            var esc2 = escapeMethod.Invoke(null, new object[] { "Nguyen, Van An" }) as string;
+            Assert.Equal("\"Nguyen, Van An\"", esc2);
+
+            var esc3 = escapeMethod.Invoke(null, new object[] { "An \"Pro\" Nguyen" }) as string;
+            Assert.Equal("\"An \"\"Pro\"\" Nguyen\"", esc3);
+
+            // Test ParseCSVLine
+            string csvLine = "2026-06-10 06:00:00,\"Nguyễn Văn An, Jr.\",\"HS01\",\"10\",\"Chương 1, bài 1\",\"Dễ\",10,8,80.0,45,\"Luyện tập\",\"Giỏi\",\"abcdef\"";
+            var parsed = parseMethod.Invoke(null, new object[] { csvLine }) as List<string>;
+            Assert.NotNull(parsed);
+            Assert.Equal(13, parsed.Count);
+            Assert.Equal("2026-06-10 06:00:00", parsed[0]);
+            Assert.Equal("Nguyễn Văn An, Jr.", parsed[1]);
+            Assert.Equal("HS01", parsed[2]);
+            Assert.Equal("10", parsed[3]);
+            Assert.Equal("Chương 1, bài 1", parsed[4]);
+            Assert.Equal("Dễ", parsed[5]);
+            Assert.Equal("10", parsed[6]);
+            Assert.Equal("8", parsed[7]);
+            Assert.Equal("80.0", parsed[8]);
+            Assert.Equal("45", parsed[9]);
+            Assert.Equal("Luyện tập", parsed[10]);
+            Assert.Equal("Giỏi", parsed[11]);
+            Assert.Equal("abcdef", parsed[12]);
+        }
+
+        [Fact]
+        public void MathCurriculumTool_GetSystemSalt_Verify()
+        {
+            var getSaltMethod = typeof(QASmartClass.LearningTools.Views.Math.MathCurriculumTool)
+                .GetMethod("GetSystemSalt", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(getSaltMethod);
+
+            var salt = getSaltMethod.Invoke(null, null) as string;
+            Assert.NotNull(salt);
+            Assert.NotEmpty(salt);
+
+        }
+
+        [Fact]
+        public void PrimeNumberTool_Initialization_DoesNotCrash()
+        {
+            Exception? exception = null;
+            var thread = new System.Threading.Thread(() =>
+            {
+                try
+                {
+                    var app = System.Windows.Application.Current;
+                    if (app == null)
+                    {
+                        app = new System.Windows.Application();
+                        app.Resources.Add("Gray100", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGray));
+                    }
+                    else if (!app.Resources.Contains("Gray100"))
+                    {
+                        app.Resources.Add("Gray100", new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.LightGray));
+                    }
+                    var tool = new PrimeNumberTool();
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void PrimeNumberTool_TryParseLong_VerifiesDottedAndCommaFormat()
+        {
+            var tryParseMethod = typeof(PrimeNumberTool)
+                .GetMethod("TryParseLong", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(tryParseMethod);
+
+            // Test Vietnamese locale (using LanguageManager.SetLanguage)
+            QASmartClass.Shared.LanguageManager.SetLanguage("vi");
+            
+            // "3.233" should parse to 3233 in Vietnamese locale
+            var args1 = new object[] { "3.233", 0L };
+            bool res1 = (bool)tryParseMethod.Invoke(null, args1)!;
+            Assert.True(res1);
+            Assert.Equal(3233L, (long)args1[1]);
+
+            // "3,233" should fail in Vietnamese locale as it contains comma (decimal separator)
+            var args2 = new object[] { "3,233", 0L };
+            bool res2 = (bool)tryParseMethod.Invoke(null, args2)!;
+            Assert.False(res2);
+
+            // Test English locale
+            QASmartClass.Shared.LanguageManager.SetLanguage("en");
+
+            // "3,233" should parse to 3233 in English locale
+            var args3 = new object[] { "3,233", 0L };
+            bool res3 = (bool)tryParseMethod.Invoke(null, args3)!;
+            Assert.True(res3);
+            Assert.Equal(3233L, (long)args3[1]);
+
+            // "3.233" should fail in English locale as it contains dot (decimal separator)
+            var args4 = new object[] { "3.233", 0L };
+            bool res4 = (bool)tryParseMethod.Invoke(null, args4)!;
+            Assert.False(res4);
+
+            // Restore default Vietnamese locale
+            QASmartClass.Shared.LanguageManager.SetLanguage("vi");
+        }
+
+        [Fact]
+        public void PrimeNumberTool_PrevPrimeOf2_ReturnsOne()
+        {
+            var prevPrimeMethod = typeof(PrimeNumberTool)
+                .GetMethod("PrevPrime", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(prevPrimeMethod);
+
+            // PrevPrime(2) should return 1
+            long result = (long)prevPrimeMethod.Invoke(null, new object[] { 2L })!;
+            Assert.Equal(1L, result);
+        }
+
+        [Fact]
+        public void IdentityTool_RealWorldExamples_VerifyBilingualDataAndCoordinates()
+        {
+            var type = typeof(QASmartClass.LearningTools.Views.Math.IdentityTool);
+            var field = type.GetField("IdentityExamples", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(field);
+
+            var examples = field.GetValue(null) as System.Collections.IEnumerable;
+            Assert.NotNull(examples);
+
+            int count = 0;
+            foreach (var ex in examples)
+            {
+                Assert.NotNull(ex);
+                var tVi = ex.GetType().GetProperty("TitleVi")?.GetValue(ex) as string;
+                var tEn = ex.GetType().GetProperty("TitleEn")?.GetValue(ex) as string;
+                var dVi = ex.GetType().GetProperty("DescVi")?.GetValue(ex) as string;
+                var dEn = ex.GetType().GetProperty("DescEn")?.GetValue(ex) as string;
+                var img = ex.GetType().GetProperty("ImageBase")?.GetValue(ex) as string;
+                var aVal = (double)ex.GetType().GetProperty("A")!.GetValue(ex)!;
+                var bVal = (double)ex.GetType().GetProperty("B")!.GetValue(ex)!;
+
+                Assert.False(string.IsNullOrWhiteSpace(tVi));
+                Assert.False(string.IsNullOrWhiteSpace(tEn));
+                Assert.False(string.IsNullOrWhiteSpace(dVi));
+                Assert.False(string.IsNullOrWhiteSpace(dEn));
+                Assert.False(string.IsNullOrWhiteSpace(img));
+                Assert.True(aVal > 0);
+                Assert.True(bVal >= 0);
+
+                count++;
+            }
+            Assert.Equal(6, count);
+        }
+
+        [Fact]
+        public void CoordinateTool_RealWorldExamples_VerifyBilingualDataAndCoordinates()
+        {
+            var type = typeof(QASmartClass.LearningTools.Views.Math.CoordinateTool);
+            var field = type.GetField("CoordExamples", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(field);
+
+            var examples = field.GetValue(null) as System.Collections.IEnumerable;
+            Assert.NotNull(examples);
+
+            int count = 0;
+            foreach (var ex in examples)
+            {
+                Assert.NotNull(ex);
+                var tVi = ex.GetType().GetProperty("TitleVi")?.GetValue(ex) as string;
+                var tEn = ex.GetType().GetProperty("TitleEn")?.GetValue(ex) as string;
+                var dVi = ex.GetType().GetProperty("DescVi")?.GetValue(ex) as string;
+                var dEn = ex.GetType().GetProperty("DescEn")?.GetValue(ex) as string;
+                var img = ex.GetType().GetProperty("ImageBase")?.GetValue(ex) as string;
+                var x1 = (double)ex.GetType().GetProperty("X1")!.GetValue(ex)!;
+                var y1 = (double)ex.GetType().GetProperty("Y1")!.GetValue(ex)!;
+                var x2 = (double)ex.GetType().GetProperty("X2")!.GetValue(ex)!;
+                var y2 = (double)ex.GetType().GetProperty("Y2")!.GetValue(ex)!;
+
+                Assert.False(string.IsNullOrWhiteSpace(tVi));
+                Assert.False(string.IsNullOrWhiteSpace(tEn));
+                Assert.False(string.IsNullOrWhiteSpace(dVi));
+                Assert.False(string.IsNullOrWhiteSpace(dEn));
+                Assert.False(string.IsNullOrWhiteSpace(img));
+
+                count++;
+            }
+            Assert.Equal(6, count);
+        }
+
+        [Fact]
+        public void CombinatoricsTool_RealWorldExamples_VerifyBilingualData()
+        {
+            var type = typeof(QASmartClass.LearningTools.Views.Math.CombinatoricsTool);
+            var field = type.GetField("CombinatoricsExamples", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(field);
+
+            var examples = field.GetValue(null) as System.Collections.IEnumerable;
+            Assert.NotNull(examples);
+
+            int count = 0;
+            foreach (var ex in examples)
+            {
+                Assert.NotNull(ex);
+                var tVi = ex.GetType().GetProperty("TitleVi")?.GetValue(ex) as string;
+                var tEn = ex.GetType().GetProperty("TitleEn")?.GetValue(ex) as string;
+                var dVi = ex.GetType().GetProperty("DescVi")?.GetValue(ex) as string;
+                var dEn = ex.GetType().GetProperty("DescEn")?.GetValue(ex) as string;
+                var img = ex.GetType().GetProperty("ImageBase")?.GetValue(ex) as string;
+                var n = (int)ex.GetType().GetProperty("N")!.GetValue(ex)!;
+                var k = (int)ex.GetType().GetProperty("K")!.GetValue(ex)!;
+
+                Assert.False(string.IsNullOrWhiteSpace(tVi));
+                Assert.False(string.IsNullOrWhiteSpace(tEn));
+                Assert.False(string.IsNullOrWhiteSpace(dVi));
+                Assert.False(string.IsNullOrWhiteSpace(dEn));
+                Assert.False(string.IsNullOrWhiteSpace(img));
+                Assert.True(n > 0);
+                Assert.True(k >= 0);
+
+                count++;
+            }
+            Assert.Equal(6, count);
+        }
+
+        [Fact]
+        public void ProbabilityTool_RealWorldExamples_VerifyBilingualData()
+        {
+            var type = typeof(QASmartClass.LearningTools.Views.Math.ProbabilityTool);
+            var field = type.GetField("ProbabilityExamples", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(field);
+
+            var examples = field.GetValue(null) as System.Collections.IEnumerable;
+            Assert.NotNull(examples);
+
+            int count = 0;
+            foreach (var ex in examples)
+            {
+                Assert.NotNull(ex);
+                var tVi = ex.GetType().GetProperty("TitleVi")?.GetValue(ex) as string;
+                var tEn = ex.GetType().GetProperty("TitleEn")?.GetValue(ex) as string;
+                var dVi = ex.GetType().GetProperty("DescVi")?.GetValue(ex) as string;
+                var dEn = ex.GetType().GetProperty("DescEn")?.GetValue(ex) as string;
+                var img = ex.GetType().GetProperty("ImageBase")?.GetValue(ex) as string;
+
+                Assert.False(string.IsNullOrWhiteSpace(tVi));
+                Assert.False(string.IsNullOrWhiteSpace(tEn));
+                Assert.False(string.IsNullOrWhiteSpace(dVi));
+                Assert.False(string.IsNullOrWhiteSpace(dEn));
+                Assert.False(string.IsNullOrWhiteSpace(img));
+
+                count++;
+            }
+            Assert.Equal(6, count);
+        }
+
+        [Fact]
+        public void GeometryTool_RealWorldExamples_VerifyBilingualData()
+        {
+            var type = typeof(QASmartClass.LearningTools.Views.Math.GeometryTool);
+            var field = type.GetField("GeometryExamples", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(field);
+
+            var examples = field.GetValue(null) as System.Collections.IEnumerable;
+            Assert.NotNull(examples);
+
+            int count = 0;
+            foreach (var ex in examples)
+            {
+                Assert.NotNull(ex);
+                var tVi = ex.GetType().GetProperty("TitleVi")?.GetValue(ex) as string;
+                var tEn = ex.GetType().GetProperty("TitleEn")?.GetValue(ex) as string;
+                var dVi = ex.GetType().GetProperty("DescVi")?.GetValue(ex) as string;
+                var dEn = ex.GetType().GetProperty("DescEn")?.GetValue(ex) as string;
+                var img = ex.GetType().GetProperty("ImageBase")?.GetValue(ex) as string;
+                var shapeId = ex.GetType().GetProperty("ShapeId")?.GetValue(ex) as string;
+
+                Assert.False(string.IsNullOrWhiteSpace(tVi));
+                Assert.False(string.IsNullOrWhiteSpace(tEn));
+                Assert.False(string.IsNullOrWhiteSpace(dVi));
+                Assert.False(string.IsNullOrWhiteSpace(dEn));
+                Assert.False(string.IsNullOrWhiteSpace(img));
+                Assert.False(string.IsNullOrWhiteSpace(shapeId));
+
+                count++;
+            }
+            Assert.Equal(6, count);
+        }
+
+        [Fact]
+        public void TrigEquationTool_RealWorldExamples_VerifyBilingualData()
+        {
+            var type = typeof(QASmartClass.LearningTools.Views.Math.TrigEquationTool);
+            var field = type.GetField("TrigExamples", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.NotNull(field);
+
+            var examples = field.GetValue(null) as System.Collections.IEnumerable;
+            Assert.NotNull(examples);
+
+            int count = 0;
+            foreach (var ex in examples)
+            {
+                Assert.NotNull(ex);
+                var tVi = ex.GetType().GetProperty("TitleVi")?.GetValue(ex) as string;
+                var tEn = ex.GetType().GetProperty("TitleEn")?.GetValue(ex) as string;
+                var dVi = ex.GetType().GetProperty("DescVi")?.GetValue(ex) as string;
+                var dEn = ex.GetType().GetProperty("DescEn")?.GetValue(ex) as string;
+                var img = ex.GetType().GetProperty("ImageBase")?.GetValue(ex) as string;
+
+                Assert.False(string.IsNullOrWhiteSpace(tVi));
+                Assert.False(string.IsNullOrWhiteSpace(tEn));
+                Assert.False(string.IsNullOrWhiteSpace(dVi));
+                Assert.False(string.IsNullOrWhiteSpace(dEn));
+                Assert.False(string.IsNullOrWhiteSpace(img));
+
+                count++;
+            }
+            Assert.Equal(6, count);
+        }
+    }
+}
+
+

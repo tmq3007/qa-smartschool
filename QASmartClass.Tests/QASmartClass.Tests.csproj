@@ -1,0 +1,215 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <UseWPF>true</UseWPF>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.0" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QASmartClass\QASmartClass.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="MockUserInterfaceService.cs" />
+    <Compile Include="VocabularyToolTests.cs" />
+    <Compile Include="CountriesToolTests.cs" />
+    <Compile Include="PlanetsToolTests.cs" />
+    <Compile Include="TeacherDailyWorkflowsTests.cs" />
+    <Compile Include="StudentDailyWorkflowsTests.cs" />
+    <Compile Include="StaffDailyWorkflowsTests.cs" />
+    <Compile Include="V41QuizUpgradeTests.cs" />
+    <Compile Include="V43PhysicsSandboxTests.cs" />
+    <Compile Include="V44BrainstormFocusTests.cs" />
+    <Compile Include="V85MessagingUpgradesTests.cs" />
+    <Compile Include="V86QuestionBankUpgradeTests.cs" />
+    <Compile Include="Services\SurveyUpgradeTests.cs" />
+    <Compile Include="DerivativeToolTests.cs" />
+    <Compile Include="V54StudentConductHistoryTests.cs" />
+    <Compile Include="V87TimerUpgradeTests.cs" />
+    <Compile Include="V74LessonUpgradesPhase3Tests.cs" />
+    <Compile Include="V90StemToolsUpgradeTests.cs" />
+    <Compile Include="V91SystemUpgradeTests.cs" />
+    <Compile Include="V92StudentSecuritySpamTests.cs" />
+    <Compile Include="V91SequenceToolUpgradeTests.cs" />
+    <Compile Include="ConicSectionToolTests.cs" />
+    <Compile Include="VectorToolTests.cs" />
+    <Compile Include="CoordinateToolTests.cs" />
+    <Compile Include="InequalityToolTests.cs" />
+    <Compile Include="PrimeNumberToolTests.cs" />
+    <Compile Include="LinearSystemToolTests.cs" />
+    <Compile Include="IpaToolTests.cs" />
+    <Compile Include="Services\BookServiceTests.cs" />
+    <Compile Include="Services\QuadraticToolTests.cs" />
+    <Compile Include="FractionToolTests.cs" />
+    <Compile Include="BasicMathToolTests.cs" />
+    <Compile Include="ProbabilityToolTests.cs" />
+    <Compile Include="CombinatoricsToolTests.cs" />
+    <Compile Include="FormulasToolTests.cs" />
+    <Compile Include="NotebookToolTests.cs" />
+    <Compile Include="V53NoiseMonitorAndDbLockTests.cs" />
+    <Compile Include="LOI_VID_01_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_02_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_03_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_03_RecursiveMirrorAndBlackScreenTests.cs" />
+    <Compile Include="LOI_VID_04_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_05_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_06_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_07_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_08_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_09_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_10_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_11_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_12_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_13_HandRaiseVerificationTests.cs" />
+    <Compile Include="LOI_VID_14_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_15_OneHundredTimeIntervalTests.cs" />
+    <Compile Include="LOI_VID_15_ExpertPanelValidationTests.cs" />
+    <Compile Include="LOI_VID_16_to_20_ExpertBoardValidationTests.cs" />
+    <Compile Include="LOI_VID_26_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_33_39_ExpertVerificationTests.cs" />
+    <Compile Include="LOI_VID_40_ExpertVerificationTests.cs" />
+
+    <Compile Include="V46LiteratureMindmapTests.cs" />
+    <Compile Include="Services\LiteratureCurriculumToolTests.cs" />
+    <Compile Include="Services\MathCurriculumToolTests.cs" />
+    <Compile Include="V92ThinkingToolsPhase2Tests.cs" />
+    <Compile Include="V93ThinkingToolsPhase3Tests.cs" />
+    <Compile Include="ChessToolTests.cs" />
+    <Compile Include="V52LearningToolsEnhancementTests.cs" />
+    <Compile Include="V42MentalMathKeyboardTests.cs" />
+    <Compile Include="V42UndoRedoMasterStepsTests.cs" />
+    <Compile Include="V42EraserClearTests.cs" />
+    <Compile Include="V40FiveSToolTests.cs" />
+    <Compile Include="FiveWhyToolTests.cs" />
+    <Compile Include="EisenhowerToolTests.cs" />
+    <Compile Include="FishboneToolTests.cs" />
+    <Compile Include="ParetoToolTests.cs" />
+    <Compile Include="PdcaToolTests.cs" />
+    <Compile Include="KpiOkrToolTests.cs" />
+    <Compile Include="V71UpgradeTests.cs" />
+    <Compile Include="UnitConverterToolTests.cs" />
+    <Compile Include="QuadraticToolTests.cs" />
+    <Compile Include="WaveSpeedToolTests.cs" />
+    <Compile Include="PhScaleToolTests.cs" />
+    <Compile Include="Services\PhScaleToolTests.cs" />
+    <Compile Include="DensityToolTests.cs" />
+    <Compile Include="PeriodicTableToolTests.cs" />
+    <Compile Include="CircuitToolTests.cs" />
+    <Compile Include="V20BroadcastTests.cs" />
+    <Compile Include="VncBroadcastTests.cs" />
+    <Compile Include="V22IntegrationTests.cs" />
+    <Compile Include="BoilingFreezingToolTests.cs" />
+    <Compile Include="ElectronConfigToolTests.cs" />
+    <Compile Include="MolecularGeneticsToolTests.cs" />
+    <Compile Include="IrregularVerbsToolTests.cs" />
+    <Compile Include="Services\LensToolTests.cs" />
+    <Compile Include="V74LessonUpgradesTests.cs" />
+    <Compile Include="V75LessonUpgradesExtensionsTests.cs" />
+    <Compile Include="V14HandRaiseAndSecurityUpgradeTests.cs" />
+    <Compile Include="V73StudentIdentityTests.cs" />
+    <Compile Include="V73SecuritySanitizationTests.cs" />
+    <Compile Include="V88TeacherAccessibilityTests.cs" />
+    <Compile Include="V94SuddenNetworkLossTests.cs" />
+    <Compile Include="V47SolidGeometryTests.cs" />
+    <Compile Include="V45FocusTimerTests.cs" />
+    <Compile Include="AuditHelperTests.cs" />
+    <Compile Include="Services\CameraConfigTests.cs" />
+    <Compile Include="Services\AppConfigTests.cs" />
+    <Compile Include="V95SettingsUpgradeTests.cs" />
+    <Compile Include="V96HistoryTimelineToolTests.cs" />
+    <Compile Include="V97HistoricalDynastiesToolTests.cs" />
+    <Compile Include="Services\ElectronConfigToolTests.cs" />
+    <Compile Include="AssetCopyTests.cs" />
+    <Compile Include="V98SecuritySettingsTests.cs" />
+    <Compile Include="V99SecurityAndKitchenSettingsTests.cs" />
+    <Compile Include="V100ImportUpgradesTests.cs" />
+    <Compile Include="V100_SecurityAndHealthUpgradesTests.cs" />
+    <Compile Include="V49NetworkResilienceTests.cs" />
+    <Compile Include="V50NetworkOrderingTests.cs" />
+    <Compile Include="V81ClassroomPageRealTimeTests.cs" />
+    <Compile Include="V82MonitorPageRealTimeTests.cs" />
+    <Compile Include="DatabaseEncryptionTests.cs" />
+    <Compile Include="V7IntegrationTests.cs" />
+    <Compile Include="V93SystemIntegrityTests.cs" />
+    <Compile Include="TrigonometryToolTests.cs" />
+    <Compile Include="FileTransferTests.cs" />
+    <Compile Include="BroadcastPageTests.cs" />
+    <Compile Include="MessageGuardTests.cs" />
+    <Compile Include="V35IntegrationTests.cs" />
+    <Compile Include="V32DeduplicationTests.cs" />
+    <Compile Include="YouthUnionTests.cs" />
+    <Compile Include="LOI_VID_30_32_35_ExpertPanelVerificationTests.cs" />
+    <Compile Include="StudentMenuBarUpgradeTests.cs" />
+    <Compile Include="V100ITAdminSettingsTests.cs" />
+    <Compile Include="V101ITAdminMaintenanceTests.cs" />
+    <Compile Include="V102ITAdminOTATests.cs" />
+    <Compile Include="V103ITAdminDiagnosticsTests.cs" />
+    <Compile Include="V101_ITAdminAdaptationTests.cs" />
+    <Compile Include="V104TeacherHubUpgradesTests.cs" />
+    <Compile Include="V103_MobileDeviceAuthorizationTests.cs" />
+    <Compile Include="V105_AssetMaintenanceTests.cs" />
+    <Compile Include="V106_DocumentSlaTests.cs" />
+    <Compile Include="V107_IncidentNotificationTests.cs" />
+    <Compile Include="V108_AuditLogIntegrityTests.cs" />
+    <Compile Include="V105ITAdminComputerLabTests.cs" />
+    <Compile Include="V106ApprovalQueueTests.cs" />
+    <Compile Include="V109_SchoolCalendarTests.cs" />
+    <Compile Include="V110_RolePermissionTests.cs" />
+    <Compile Include="V111_BackupRestoreSecurityTests.cs" />
+    <Compile Include="Phase2OptimizationsTests.cs" />
+    <Compile Include="V112_FocusProtectionAndBroadcastConfirmTests.cs" />
+    <Compile Include="V112_Phase2UpgradeTests.cs" />
+    <Compile Include="LogarithmToolTests.cs" />
+    <Compile Include="MatrixToolTests.cs" />
+    <Compile Include="MultiplicationToolTests.cs" />
+    <Compile Include="NumberBaseToolTests.cs" />
+    <Compile Include="SolidGeometryToolTests.cs" />
+    <Compile Include="TrigEquationToolTests.cs" />
+    <Compile Include="BrainstormToolTests.cs" />
+    <Compile Include="CountriesToolTests.cs" />
+    <Compile Include="DynasToolTests.cs" />
+    <Compile Include="LiteratureCurriculumToolTests.cs" />
+    <Compile Include="MathCurriculumToolTests.cs" />
+    <Compile Include="IqQuizToolTests.cs" />
+    <Compile Include="MentalMathToolTests.cs" />
+    <Compile Include="SudokuToolTests.cs" />
+    <Compile Include="MemoryGameToolTests.cs" />
+    <Compile Include="EisenhowerToolTests.cs" />
+    <Compile Include="FishboneToolTests.cs" />
+    <Compile Include="FiveSToolTests.cs" />
+    <Compile Include="FiveWhyToolTests.cs" />
+    <Compile Include="KanbanToolTests.cs" />
+    <Compile Include="KpiOkrToolTests.cs" />
+    <Compile Include="ParetoToolTests.cs" />
+    <Compile Include="PdcaToolTests.cs" />
+    <Compile Include="SwotToolTests.cs" />
+    <Compile Include="MathSymbolsToolTests.cs" />
+    <Compile Include="LiteratureToolTests.cs" />
+    <Compile Include="TextbookToolTests.cs" />
+    <Compile Include="MindmapToolTests.cs" />
+    <Compile Include="StatusConstantsTests.cs" />
+    <Compile Include="V42CloseButtonUpgradesTests.cs" />
+    <Compile Include="ChessToolTests.cs" />
+    <Compile Include="CaroToolTests.cs" />
+  </ItemGroup>
+
+</Project>

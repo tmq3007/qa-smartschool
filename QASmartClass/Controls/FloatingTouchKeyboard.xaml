@@ -1,0 +1,248 @@
+<UserControl x:Class="QASmartTouch.Controls.FloatingTouchKeyboard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" 
+             d:DesignHeight="380" d:DesignWidth="460">
+
+    <UserControl.Resources>
+        <DropShadowEffect x:Key="KeyboardShadow" Color="Black" Opacity="0.35" BlurRadius="16" ShadowDepth="6"/>
+        
+        <!-- Touch Key Style — M2-FIX: Triggers inside ControlTemplate for proper Touch feedback -->
+        <Style x:Key="TouchKeyStyle" TargetType="Button">
+            <Setter Property="Background" Value="#F2F3F4"/>
+            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="KeyBorder" Background="{TemplateBinding Background}" CornerRadius="8" Padding="2">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="KeyBorder" Property="Background" Value="#E5E7E9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="KeyBorder" Property="Background" Value="#BDC3C7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Active Tab Style -->
+        <Style x:Key="TabButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#7F8C8D"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Main Container -->
+    <StackPanel Orientation="Vertical">
+        <!-- Floating Exit Tooltip Bar -->
+        <Border Background="#F9E79F" CornerRadius="12" Padding="10,4" HorizontalAlignment="Right" Margin="0,0,20,-6" Panel.ZIndex="10" Effect="{StaticResource KeyboardShadow}">
+            <Button x:Name="btnExit" Click="btnExit_Click" Background="Transparent" BorderThickness="0" Cursor="Hand">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="💡 Thoát khỏi bàn phím nổi" Foreground="#7D6608" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text=" ✕" Foreground="#7D6608" FontSize="12" FontWeight="Bold" Margin="4,0,0,0"/>
+                </StackPanel>
+            </Button>
+        </Border>
+
+        <!-- Keyboard Body -->
+        <Border x:Name="KeyboardContainer"
+                Background="#FAF9F6"
+                CornerRadius="16"
+                Padding="12"
+                Width="460"
+                Effect="{StaticResource KeyboardShadow}">
+            <StackPanel Orientation="Vertical">
+
+                <!-- Header Drag Handle Bar -->
+                <Grid x:Name="DragHeader" Background="Transparent" Margin="0,0,0,8" MouseLeftButtonDown="DragHeader_MouseLeftButtonDown">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="⠿ " Foreground="#BDC3C7" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Cursor="SizeAll"/>
+                        <TextBlock Text="Bàn phím nổi cảm ứng (Kéo để di chuyển)" Foreground="#7F8C8D" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Tab Selector -->
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
+                        <Button x:Name="tabQwerty" Content="Chữ" Style="{StaticResource TabButtonStyle}" Click="tabQwerty_Click" Foreground="#3498DB"/>
+                        <Button x:Name="tabMath" Content="Số &amp; Toán" Style="{StaticResource TabButtonStyle}" Click="tabMath_Click"/>
+                        <Button x:Name="tabScience" Content="Khoa học" Style="{StaticResource TabButtonStyle}" Click="tabScience_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Input Text Entry Bar & Confirm Button -->
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" CornerRadius="8" BorderBrush="#E5E7E9" BorderThickness="1" Padding="8,4" Margin="0,0,8,0">
+                        <TextBox x:Name="txtInput" FontSize="18" Foreground="#2C3E50" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <Button x:Name="btnConfirm" Grid.Column="1" Content="Xác nhận" Width="90" Height="36" Background="#3498DB" Foreground="White" FontSize="14" FontWeight="Bold" Click="btnConfirm_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+
+                <!-- TAB 1: QWERTY Keyboard Panel -->
+                <StackPanel x:Name="panelQwerty" Orientation="Vertical" Visibility="Visible">
+                    <!-- Row 1 -->
+                    <UniformGrid Columns="10" Rows="1">
+                        <Button Content="q" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="w" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="e" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="r" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="t" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="y" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="u" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="i" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="o" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="p" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                    </UniformGrid>
+                    <!-- Row 2 -->
+                    <UniformGrid Columns="9" Rows="1" Margin="15,2">
+                        <Button Content="a" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="s" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="d" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="f" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="g" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="h" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="j" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="k" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="l" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                    </UniformGrid>
+                    <!-- Row 3 -->
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="45"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="55"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="⇧" Style="{StaticResource TouchKeyStyle}" Click="btnShift_Click"/>
+                        <UniformGrid Grid.Column="1" Columns="7" Rows="1">
+                            <Button Content="z" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                            <Button Content="x" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                            <Button Content="c" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                            <Button Content="v" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                            <Button Content="b" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                            <Button Content="n" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                            <Button Content="m" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        </UniformGrid>
+                        <Button Grid.Column="2" Content="⌫" Style="{StaticResource TouchKeyStyle}" Click="btnBackspace_Click"/>
+                    </Grid>
+                    <!-- Row 4 -->
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="60"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="123" Style="{StaticResource TouchKeyStyle}" Click="tabMath_Click"/>
+                        <Button Grid.Column="1" Content="Space" Style="{StaticResource TouchKeyStyle}" Click="btnSpace_Click"/>
+                        <Button Grid.Column="2" Content="↵" Style="{StaticResource TouchKeyStyle}" Click="btnConfirm_Click" Background="#3498DB" Foreground="White"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- TAB 2: Math & Numbers Panel -->
+                <StackPanel x:Name="panelMath" Orientation="Vertical" Visibility="Collapsed">
+                    <UniformGrid Columns="10" Rows="1">
+                        <Button Content="1" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="2" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="3" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="4" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="5" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="6" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="7" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="8" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="9" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="0" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                    </UniformGrid>
+                    <UniformGrid Columns="8" Rows="1" Margin="0,2">
+                        <Button Content="+" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="-" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="×" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="÷" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="=" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="±" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="√" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="π" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                    </UniformGrid>
+                    <UniformGrid Columns="8" Rows="1" Margin="0,2">
+                        <Button Content="(" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content=")" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="." Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="," Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="%" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="x" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="y" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="⌫" Style="{StaticResource TouchKeyStyle}" Click="btnBackspace_Click"/>
+                    </UniformGrid>
+                </StackPanel>
+
+                <!-- TAB 3: Science Symbols Panel -->
+                <StackPanel x:Name="panelScience" Orientation="Vertical" Visibility="Collapsed">
+                    <UniformGrid Columns="8" Rows="1">
+                        <Button Content="α" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="β" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="γ" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="Δ" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="Ω" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="λ" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="μ" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="ρ" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                    </UniformGrid>
+                    <UniformGrid Columns="8" Rows="1" Margin="0,2">
+                        <Button Content="°C" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="kg" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="cm" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="m/s" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="H₂O" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="CO₂" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="∞" Style="{StaticResource TouchKeyStyle}" Click="Key_Click"/>
+                        <Button Content="⌫" Style="{StaticResource TouchKeyStyle}" Click="btnBackspace_Click"/>
+                    </UniformGrid>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,474 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form5_2_FileDialog"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Chọn tệp" 
+
+        Width="800" Height="600"
+
+        WindowStartupLocation="CenterScreen"
+
+        Background="#F5F7FA"
+
+        ResizeMode="CanResize"
+
+        MinWidth="700" MinHeight="500">
+
+
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="60"/>
+
+            <!-- Header -->
+
+            <RowDefinition Height="40"/>
+
+            <!-- Path bar -->
+
+            <RowDefinition Height="*"/>
+
+            <!-- Content -->
+
+            <RowDefinition Height="70"/>
+
+            <!-- Footer -->
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- HEADER -->
+
+        <Border Grid.Row="0" Background="White" BorderBrush="#E1E8ED" BorderThickness="0,0,0,1">
+
+            <Grid Margin="20,0">
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+
+                    <Path Fill="#FF9800" 
+
+                          Data="M20,6H12L10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6Z"
+
+                          Width="28" Height="28"
+
+                          Margin="0,0,12,0"/>
+
+                    <TextBlock x:Name="txtTitle" Text="Chọn tệp" 
+
+                              FontSize="20" 
+
+                              FontWeight="Bold" 
+
+                              Foreground="#2F3542"
+
+                              VerticalAlignment="Center"/>
+
+                </StackPanel>
+
+                <Button x:Name="btnClose" 
+
+                       Width="35" Height="35"
+
+                       HorizontalAlignment="Right"
+
+                       Background="#FEE2E2"
+
+                       BorderThickness="0"
+
+                       Cursor="Hand"
+
+                       Click="btnClose_Click">
+
+                    <Path Fill="#EE5A6F" 
+
+                         Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+
+                         Width="16" Height="16"/>
+
+                </Button>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- PATH BAR -->
+
+        <Border Grid.Row="1" Background="White" BorderBrush="#E1E8ED" BorderThickness="0,0,0,1" Padding="20,0">
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <!-- Navigation Buttons -->
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
+
+                    <Button x:Name="btnBack" Width="30" Height="30" Margin="0,0,5,0"
+
+                           Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+
+                           Click="btnBack_Click" ToolTip="Quay lại">
+
+                        <Path Fill="#57606F" Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Width="16" Height="16"/>
+
+                    </Button>
+
+                    <Button x:Name="btnUp" Width="30" Height="30"
+
+                           Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+
+                           Click="btnUp_Click" ToolTip="Lên thư mục cha">
+
+                        <Path Fill="#57606F" Data="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z" Width="16" Height="16"/>
+
+                    </Button>
+
+                </StackPanel>
+
+
+
+                <!-- Path TextBox -->
+
+                <TextBox Grid.Column="1" x:Name="txtPath" Height="30" FontSize="12"
+
+                        Text="C:\Users\Documents" VerticalContentAlignment="Center"
+
+                        KeyDown="txtPath_KeyDown"/>
+
+
+
+                <!-- Quick Access -->
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+
+                    <Button Width="30" Height="30" Margin="0,0,5,0"
+
+                           Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+
+                           Click="btnHome_Click" ToolTip="Thư mục chính">
+
+                        <Path Fill="#57606F" Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" Width="16" Height="16"/>
+
+                    </Button>
+
+                    <Button Width="30" Height="30"
+
+                           Background="#F1F2F6" BorderThickness="0" Cursor="Hand"
+
+                           Click="btnDesktop_Click" ToolTip="Desktop">
+
+                        <Path Fill="#57606F" Data="M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z" Width="16" Height="16"/>
+
+                    </Button>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- CONTENT -->
+
+        <Grid Grid.Row="2" Margin="20">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="200"/>
+
+                <ColumnDefinition Width="*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- LEFT PANEL: Tree View -->
+
+            <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="10" Margin="0,0,10,0"
+
+                   BorderBrush="#E1E8ED" BorderThickness="1">
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                    <TreeView x:Name="treeViewFolders" BorderThickness="0" Background="Transparent"
+
+                             SelectedItemChanged="treeViewFolders_SelectedItemChanged">
+
+                        <TreeViewItem Header="💻 Máy tính" IsExpanded="True">
+
+                            <TreeViewItem Header="📁 C:\" IsExpanded="True">
+
+                                <TreeViewItem Header="📂 Users">
+
+                                    <TreeViewItem Header="📂 Documents"/>
+
+                                    <TreeViewItem Header="📂 Downloads"/>
+
+                                    <TreeViewItem Header="📂 Pictures"/>
+
+                                    <TreeViewItem Header="📂 Videos"/>
+
+                                </TreeViewItem>
+
+                                <TreeViewItem Header="📂 Program Files"/>
+
+                                <TreeViewItem Header="📂 Windows"/>
+
+                            </TreeViewItem>
+
+                            <TreeViewItem Header="📁 D:\"/>
+
+                        </TreeViewItem>
+
+                    </TreeView>
+
+                </ScrollViewer>
+
+            </Border>
+
+
+
+            <!-- RIGHT PANEL: File List -->
+
+            <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="15"
+
+                   BorderBrush="#E1E8ED" BorderThickness="1">
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+
+                        <RowDefinition Height="Auto"/>
+
+                        <RowDefinition Height="*"/>
+
+                    </Grid.RowDefinitions>
+
+
+
+                    <!-- Toolbar -->
+
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <ComboBox x:Name="cmbFilter" Width="150" Height="30" FontSize="12" SelectedIndex="0"
+
+                                     SelectionChanged="cmbFilter_SelectionChanged">
+
+                                <ComboBoxItem Content="Tất cả (*.*)"/>
+
+                                <ComboBoxItem Content="Hình ảnh (*.png;*.jpg)"/>
+
+                                <ComboBoxItem Content="Video (*.mp4;*.avi)"/>
+
+                                <ComboBoxItem Content="Tài liệu (*.pdf;*.docx)"/>
+
+                            </ComboBox>
+
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+                            <RadioButton x:Name="rbListView" GroupName="ViewMode" Content="📋 Danh sách" FontSize="11" Margin="0,0,10,0" IsChecked="True" Checked="ViewMode_Changed"/>
+
+                            <RadioButton x:Name="rbGridView" GroupName="ViewMode" Content="🔲 Lưới" FontSize="11" Checked="ViewMode_Changed"/>
+
+                        </StackPanel>
+
+                    </Grid>
+
+
+
+                    <!-- File List -->
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+
+                        <StackPanel x:Name="panelFiles">
+
+                            <!-- Folder -->
+
+                            <Border Background="#F8F9FA" CornerRadius="6" Padding="10" Margin="0,0,0,5" Cursor="Hand" MouseDown="FileItem_Click" Tag="folder">
+
+                                <Grid>
+
+                                    <StackPanel Orientation="Horizontal">
+
+                                        <Path Fill="#FF9800" Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" Width="20" Height="20" Margin="0,0,10,0"/>
+
+                                        <TextBlock Text="Documents" FontSize="13" Foreground="#2F3542" VerticalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                    <TextBlock Text="Thư mục" FontSize="11" Foreground="#57606F" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+                                </Grid>
+
+                            </Border>
+
+
+
+                            <!-- File 1 -->
+
+                            <Border Background="White" CornerRadius="6" Padding="10" Margin="0,0,0,5" Cursor="Hand" 
+
+                                   BorderBrush="#E1E8ED" BorderThickness="1" MouseDown="FileItem_Click" Tag="presentation.pptx">
+
+                                <Grid>
+
+                                    <StackPanel Orientation="Horizontal">
+
+                                        <Path Fill="#E91E63" Data="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M9,17H7V10H9V17M13,17H11V7H13V17M17,17H15V13H17V17Z" Width="20" Height="20" Margin="0,0,10,0"/>
+
+                                        <TextBlock Text="Presentation.pptx" FontSize="13" Foreground="#2F3542" VerticalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                    <TextBlock Text="2.4 MB" FontSize="11" Foreground="#57606F" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+                                </Grid>
+
+                            </Border>
+
+
+
+                            <!-- File 2 -->
+
+                            <Border Background="White" CornerRadius="6" Padding="10" Margin="0,0,0,5" Cursor="Hand" 
+
+                                   BorderBrush="#E1E8ED" BorderThickness="1" MouseDown="FileItem_Click" Tag="image.png">
+
+                                <Grid>
+
+                                    <StackPanel Orientation="Horizontal">
+
+                                        <Path Fill="#2196F3" Data="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z" Width="20" Height="20" Margin="0,0,10,0"/>
+
+                                        <TextBlock Text="Image.png" FontSize="13" Foreground="#2F3542" VerticalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                    <TextBlock Text="850 KB" FontSize="11" Foreground="#57606F" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+                                </Grid>
+
+                            </Border>
+
+
+
+                            <!-- File 3 -->
+
+                            <Border Background="White" CornerRadius="6" Padding="10" Margin="0,0,0,5" Cursor="Hand" 
+
+                                   BorderBrush="#E1E8ED" BorderThickness="1" MouseDown="FileItem_Click" Tag="video.mp4">
+
+                                <Grid>
+
+                                    <StackPanel Orientation="Horizontal">
+
+                                        <Path Fill="#F44336" Data="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z" Width="20" Height="20" Margin="0,0,10,0"/>
+
+                                        <TextBlock Text="Video.mp4" FontSize="13" Foreground="#2F3542" VerticalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                    <TextBlock Text="15.2 MB" FontSize="11" Foreground="#57606F" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+                                </Grid>
+
+                            </Border>
+
+
+
+                            <!-- File 4 -->
+
+                            <Border Background="White" CornerRadius="6" Padding="10" Margin="0,0,0,5" Cursor="Hand" 
+
+                                   BorderBrush="#E1E8ED" BorderThickness="1" MouseDown="FileItem_Click" Tag="document.pdf">
+
+                                <Grid>
+
+                                    <StackPanel Orientation="Horizontal">
+
+                                        <Path Fill="#FF5722" Data="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" Width="20" Height="20" Margin="0,0,10,0"/>
+
+                                        <TextBlock Text="Document.pdf" FontSize="13" Foreground="#2F3542" VerticalAlignment="Center"/>
+
+                                    </StackPanel>
+
+                                    <TextBlock Text="1.1 MB" FontSize="11" Foreground="#57606F" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+                                </Grid>
+
+                            </Border>
+
+                        </StackPanel>
+
+                    </ScrollViewer>
+
+                </Grid>
+
+            </Border>
+
+        </Grid>
+
+
+
+        <!-- FOOTER -->
+
+        <Border Grid.Row="3" Background="White" BorderBrush="#E1E8ED" BorderThickness="0,1,0,0">
+
+            <Grid Margin="20,0">
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+
+                    <TextBlock Text="Tên tệp:" FontSize="12" Foreground="#57606F" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                    <TextBox x:Name="txtFileName" Width="300" Height="35" FontSize="13" VerticalContentAlignment="Center"/>
+
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+
+                    <Button x:Name="btnCancel" Content="Hủy" Height="40" Width="100" Margin="0,0,10,0"
+
+                           Background="#F1F2F6" Foreground="#2F3542" BorderThickness="0" Cursor="Hand"
+
+                           Click="btnCancel_Click"/>
+
+                    <Button x:Name="btnSelect" Content="Chọn" Height="40" Width="120"
+
+                           Background="#2E86DE" Foreground="White" BorderThickness="0" Cursor="Hand" FontWeight="Bold"
+
+                           Click="btnSelect_Click"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+
+
+    </Grid>
+
+</Window>
+

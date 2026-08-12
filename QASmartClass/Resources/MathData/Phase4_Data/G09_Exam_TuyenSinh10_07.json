@@ -1,0 +1,84 @@
+﻿{
+  "metadata": {
+    "examId": "g09_tuyensinh10_07",
+    "title": "Đề thi Tuyển Sinh vào Lớp 10 - Đề số 07",
+    "totalQuestions": 5,
+    "timeLimit": 120,
+    "totalPoints": 10,
+    "pointsPerQuestion": 2,
+    "grade": 9,
+    "examType": "TuyenSinh10"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "ΔABC vuông tại C, AB=10, AC=8. sin B = ?",
+      "options": [
+        "A) 4/5",
+        "B) 3/5",
+        "C) 8/10",
+        "D) 6/10"
+      ],
+      "answer": "A",
+      "solution": "BC=√(100-64)=6. sinB = AC/AB = 8/10 = 4/5"
+    },
+    {
+      "id": 2,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Đường tròn bán kính 5cm có chu vi:",
+      "options": [
+        "A) 31.4cm",
+        "B) 78.5cm²",
+        "C) 10cm",
+        "D) 25cm"
+      ],
+      "answer": "A",
+      "solution": "C = 2πr = 2×3.14×5 = 31.4cm"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tính C(5,2) = ?",
+      "options": [
+        "A) 10",
+        "B) 20",
+        "C) 25",
+        "D) 5"
+      ],
+      "answer": "A",
+      "solution": "C(5,2) = 5!/(2!×3!) = 120/(2×6) = 10"
+    },
+    {
+      "id": 4,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "cos 0° = ?",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) -1",
+        "D) 1/2"
+      ],
+      "answer": "B",
+      "solution": "cos 0° = 1"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tính 5! = ?",
+      "options": [
+        "A) 120",
+        "B) 25",
+        "C) 60",
+        "D) 24"
+      ],
+      "answer": "A",
+      "solution": "5! = 5×4×3×2×1 = 120"
+    }
+  ]
+}

@@ -1,0 +1,1423 @@
+[
+  {
+    "Flag": "🇦🇫",
+    "Name": "Afghanistan",
+    "Capital": "Kabul",
+    "Continent": "Châu Á",
+    "Area": "652.864"
+  },
+  {
+    "Flag": "🇦🇲",
+    "Name": "Armenia",
+    "Capital": "Yerevan",
+    "Continent": "Châu Á",
+    "Area": "29.743"
+  },
+  {
+    "Flag": "🇦🇿",
+    "Name": "Azerbaijan",
+    "Capital": "Baku",
+    "Continent": "Châu Á",
+    "Area": "86.600"
+  },
+  {
+    "Flag": "🇧🇭",
+    "Name": "Bahrain",
+    "Capital": "Manama",
+    "Continent": "Châu Á",
+    "Area": "765"
+  },
+  {
+    "Flag": "🇧🇩",
+    "Name": "Bangladesh",
+    "Capital": "Dhaka",
+    "Continent": "Châu Á",
+    "Area": "147.570"
+  },
+  {
+    "Flag": "🇧🇹",
+    "Name": "Bhutan",
+    "Capital": "Thimphu",
+    "Continent": "Châu Á",
+    "Area": "38.394"
+  },
+  {
+    "Flag": "🇧🇳",
+    "Name": "Brunei",
+    "Capital": "Bandar Seri Begawan",
+    "Continent": "Châu Á",
+    "Area": "5.765"
+  },
+  {
+    "Flag": "🇰🇭",
+    "Name": "Campuchia",
+    "Capital": "Phnom Penh",
+    "Continent": "Châu Á",
+    "Area": "181.035"
+  },
+  {
+    "Flag": "🇨🇾",
+    "Name": "Cyprus",
+    "Capital": "Nicosia",
+    "Continent": "Châu Á",
+    "Area": "9.251"
+  },
+  {
+    "Flag": "🇦🇪",
+    "Name": "Các Tiểu vương quốc Ả Rập Thống nhất",
+    "Capital": "Abu Dhabi",
+    "Continent": "Châu Á",
+    "Area": "83.600"
+  },
+  {
+    "Flag": "🇬🇪",
+    "Name": "Georgia",
+    "Capital": "Tbilisi",
+    "Continent": "Châu Á",
+    "Area": "69.700"
+  },
+  {
+    "Flag": "🇰🇷",
+    "Name": "Hàn Quốc",
+    "Capital": "Seoul",
+    "Continent": "Châu Á",
+    "Area": "100.210"
+  },
+  {
+    "Flag": "🇭🇰",
+    "Name": "Hồng Kông",
+    "Capital": "Hồng Kông",
+    "Continent": "Châu Á",
+    "Area": "1.106"
+  },
+  {
+    "Flag": "🇮🇩",
+    "Name": "Indonesia",
+    "Capital": "Jakarta",
+    "Continent": "Châu Á",
+    "Area": "1.904.569"
+  },
+  {
+    "Flag": "🇮🇷",
+    "Name": "Iran",
+    "Capital": "Tehran",
+    "Continent": "Châu Á",
+    "Area": "1.648.195"
+  },
+  {
+    "Flag": "🇮🇶",
+    "Name": "Iraq",
+    "Capital": "Baghdad",
+    "Continent": "Châu Á",
+    "Area": "438.317"
+  },
+  {
+    "Flag": "🇮🇱",
+    "Name": "Israel",
+    "Capital": "Jerusalem",
+    "Continent": "Châu Á",
+    "Area": "20.770"
+  },
+  {
+    "Flag": "🇯🇴",
+    "Name": "Jordan",
+    "Capital": "Amman",
+    "Continent": "Châu Á",
+    "Area": "89.342"
+  },
+  {
+    "Flag": "🇰🇿",
+    "Name": "Kazakhstan",
+    "Capital": "Astana",
+    "Continent": "Châu Á",
+    "Area": "2.724.900"
+  },
+  {
+    "Flag": "🇰🇼",
+    "Name": "Kuwait",
+    "Capital": "Kuwait City",
+    "Continent": "Châu Á",
+    "Area": "17.818"
+  },
+  {
+    "Flag": "🇰🇬",
+    "Name": "Kyrgyzstan",
+    "Capital": "Bishkek",
+    "Continent": "Châu Á",
+    "Area": "199.951"
+  },
+  {
+    "Flag": "🇱🇧",
+    "Name": "Lebanon",
+    "Capital": "Beirut",
+    "Continent": "Châu Á",
+    "Area": "10.452"
+  },
+  {
+    "Flag": "🇱🇦",
+    "Name": "Lào",
+    "Capital": "Vientiane",
+    "Continent": "Châu Á",
+    "Area": "236.800"
+  },
+  {
+    "Flag": "🇲🇴",
+    "Name": "Ma Cao",
+    "Capital": "Ma Cao",
+    "Continent": "Châu Á",
+    "Area": "30"
+  },
+  {
+    "Flag": "🇲🇾",
+    "Name": "Malaysia",
+    "Capital": "Kuala Lumpur",
+    "Continent": "Châu Á",
+    "Area": "330.803"
+  },
+  {
+    "Flag": "🇲🇻",
+    "Name": "Maldives",
+    "Capital": "Male",
+    "Continent": "Châu Á",
+    "Area": "298"
+  },
+  {
+    "Flag": "🇲🇲",
+    "Name": "Myanmar",
+    "Capital": "Naypyidaw",
+    "Continent": "Châu Á",
+    "Area": "676.578"
+  },
+  {
+    "Flag": "🇲🇳",
+    "Name": "Mông Cổ",
+    "Capital": "Ulaanbaatar",
+    "Continent": "Châu Á",
+    "Area": "1.564.116"
+  },
+  {
+    "Flag": "🇳🇵",
+    "Name": "Nepal",
+    "Capital": "Kathmandu",
+    "Continent": "Châu Á",
+    "Area": "147.181"
+  },
+  {
+    "Flag": "🇯🇵",
+    "Name": "Nhật Bản",
+    "Capital": "Tokyo",
+    "Continent": "Châu Á",
+    "Area": "377.975"
+  },
+  {
+    "Flag": "🇴🇲",
+    "Name": "Oman",
+    "Capital": "Muscat",
+    "Continent": "Châu Á",
+    "Area": "309.500"
+  },
+  {
+    "Flag": "🇵🇰",
+    "Name": "Pakistan",
+    "Capital": "Islamabad",
+    "Continent": "Châu Á",
+    "Area": "796.095"
+  },
+  {
+    "Flag": "🇵🇸",
+    "Name": "Palestine",
+    "Capital": "Ramallah",
+    "Continent": "Châu Á",
+    "Area": "6.020"
+  },
+  {
+    "Flag": "🇵🇭",
+    "Name": "Philippines",
+    "Capital": "Manila",
+    "Continent": "Châu Á",
+    "Area": "300.000"
+  },
+  {
+    "Flag": "🇶🇦",
+    "Name": "Qatar",
+    "Capital": "Doha",
+    "Continent": "Châu Á",
+    "Area": "11.586"
+  },
+  {
+    "Flag": "🇸🇬",
+    "Name": "Singapore",
+    "Capital": "Singapore",
+    "Continent": "Châu Á",
+    "Area": "733"
+  },
+  {
+    "Flag": "🇱🇰",
+    "Name": "Sri Lanka",
+    "Capital": "Sri Jayawardenepura Kotte",
+    "Continent": "Châu Á",
+    "Area": "65.610"
+  },
+  {
+    "Flag": "🇸🇾",
+    "Name": "Syria",
+    "Capital": "Damascus",
+    "Continent": "Châu Á",
+    "Area": "185.180"
+  },
+  {
+    "Flag": "🇹🇯",
+    "Name": "Tajikistan",
+    "Capital": "Dushanbe",
+    "Continent": "Châu Á",
+    "Area": "143.100"
+  },
+  {
+    "Flag": "🇹🇭",
+    "Name": "Thái Lan",
+    "Capital": "Bangkok",
+    "Continent": "Châu Á",
+    "Area": "513.120"
+  },
+  {
+    "Flag": "🇹🇷",
+    "Name": "Thổ Nhĩ Kỳ",
+    "Capital": "Ankara",
+    "Continent": "Châu Á",
+    "Area": "783.562"
+  },
+  {
+    "Flag": "🇹🇱",
+    "Name": "Timor-Leste",
+    "Capital": "Dili",
+    "Continent": "Châu Á",
+    "Area": "14.874"
+  },
+  {
+    "Flag": "🇰🇵",
+    "Name": "Triều Tiên",
+    "Capital": "Pyongyang",
+    "Continent": "Châu Á",
+    "Area": "120.538"
+  },
+  {
+    "Flag": "🇨🇳",
+    "Name": "Trung Quốc",
+    "Capital": "Bắc Kinh",
+    "Continent": "Châu Á",
+    "Area": "9.596.961"
+  },
+  {
+    "Flag": "🇹🇲",
+    "Name": "Turkmenistan",
+    "Capital": "Ashgabat",
+    "Continent": "Châu Á",
+    "Area": "488.100"
+  },
+  {
+    "Flag": "🇺🇿",
+    "Name": "Uzbekistan",
+    "Capital": "Tashkent",
+    "Continent": "Châu Á",
+    "Area": "447.400"
+  },
+  {
+    "Flag": "🇻🇳",
+    "Name": "Việt Nam",
+    "Capital": "Hà Nội",
+    "Continent": "Châu Á",
+    "Area": "331.212"
+  },
+  {
+    "Flag": "🇾🇪",
+    "Name": "Yemen",
+    "Capital": "Sanaa",
+    "Continent": "Châu Á",
+    "Area": "527.968"
+  },
+  {
+    "Flag": "🇹🇼",
+    "Name": "Đài Loan",
+    "Capital": "Taipei",
+    "Continent": "Châu Á",
+    "Area": "36.197"
+  },
+  {
+    "Flag": "🇸🇦",
+    "Name": "Ả Rập Xê-út",
+    "Capital": "Riyadh",
+    "Continent": "Châu Á",
+    "Area": "2.149.690"
+  },
+  {
+    "Flag": "🇮🇳",
+    "Name": "Ấn Độ",
+    "Capital": "New Delhi",
+    "Continent": "Châu Á",
+    "Area": "3.287.263"
+  },
+  {
+    "Flag": "🇦🇬",
+    "Name": "Antigua và Barbuda",
+    "Capital": "St. John's",
+    "Continent": "Châu Mỹ",
+    "Area": "442"
+  },
+  {
+    "Flag": "🇦🇷",
+    "Name": "Argentina",
+    "Capital": "Buenos Aires",
+    "Continent": "Châu Mỹ",
+    "Area": "2.780.400"
+  },
+  {
+    "Flag": "🇧🇸",
+    "Name": "Bahamas",
+    "Capital": "Nassau",
+    "Continent": "Châu Mỹ",
+    "Area": "13.878"
+  },
+  {
+    "Flag": "🇧🇧",
+    "Name": "Barbados",
+    "Capital": "Bridgetown",
+    "Continent": "Châu Mỹ",
+    "Area": "430"
+  },
+  {
+    "Flag": "🇧🇿",
+    "Name": "Belize",
+    "Capital": "Belmopan",
+    "Continent": "Châu Mỹ",
+    "Area": "22.966"
+  },
+  {
+    "Flag": "🇧🇴",
+    "Name": "Bolivia",
+    "Capital": "La Paz / Sucre",
+    "Continent": "Châu Mỹ",
+    "Area": "1.098.581"
+  },
+  {
+    "Flag": "🇧🇷",
+    "Name": "Brazil",
+    "Capital": "Brasilia",
+    "Continent": "Châu Mỹ",
+    "Area": "8.515.767"
+  },
+  {
+    "Flag": "🇨🇦",
+    "Name": "Canada",
+    "Capital": "Ottawa",
+    "Continent": "Châu Mỹ",
+    "Area": "9.984.670"
+  },
+  {
+    "Flag": "🇨🇱",
+    "Name": "Chile",
+    "Capital": "Santiago",
+    "Continent": "Châu Mỹ",
+    "Area": "756.102"
+  },
+  {
+    "Flag": "🇨🇴",
+    "Name": "Colombia",
+    "Capital": "Bogota",
+    "Continent": "Châu Mỹ",
+    "Area": "1.141.748"
+  },
+  {
+    "Flag": "🇨🇷",
+    "Name": "Costa Rica",
+    "Capital": "San Jose",
+    "Continent": "Châu Mỹ",
+    "Area": "51.100"
+  },
+  {
+    "Flag": "🇨🇺",
+    "Name": "Cuba",
+    "Capital": "Havana",
+    "Continent": "Châu Mỹ",
+    "Area": "109.884"
+  },
+  {
+    "Flag": "🇩🇴",
+    "Name": "Cộng hòa Dominica",
+    "Capital": "Santo Domingo",
+    "Continent": "Châu Mỹ",
+    "Area": "48.671"
+  },
+  {
+    "Flag": "🇩🇲",
+    "Name": "Dominica",
+    "Capital": "Roseau",
+    "Continent": "Châu Mỹ",
+    "Area": "751"
+  },
+  {
+    "Flag": "🇪🇨",
+    "Name": "Ecuador",
+    "Capital": "Quito",
+    "Continent": "Châu Mỹ",
+    "Area": "283.561"
+  },
+  {
+    "Flag": "🇸🇻",
+    "Name": "El Salvador",
+    "Capital": "San Salvador",
+    "Continent": "Châu Mỹ",
+    "Area": "21.041"
+  },
+  {
+    "Flag": "🇬🇱",
+    "Name": "Greenland",
+    "Capital": "Nuuk",
+    "Continent": "Châu Mỹ",
+    "Area": "2.166.086"
+  },
+  {
+    "Flag": "🇬🇩",
+    "Name": "Grenada",
+    "Capital": "St. George's",
+    "Continent": "Châu Mỹ",
+    "Area": "344"
+  },
+  {
+    "Flag": "🇬🇹",
+    "Name": "Guatemala",
+    "Capital": "Guatemala City",
+    "Continent": "Châu Mỹ",
+    "Area": "108.889"
+  },
+  {
+    "Flag": "🇬🇾",
+    "Name": "Guyana",
+    "Capital": "Georgetown",
+    "Continent": "Châu Mỹ",
+    "Area": "214.969"
+  },
+  {
+    "Flag": "🇭🇹",
+    "Name": "Haiti",
+    "Capital": "Port-au-Prince",
+    "Continent": "Châu Mỹ",
+    "Area": "27.750"
+  },
+  {
+    "Flag": "🇺🇸",
+    "Name": "Hoa Kỳ",
+    "Capital": "Washington D.C.",
+    "Continent": "Châu Mỹ",
+    "Area": "9.833.520"
+  },
+  {
+    "Flag": "🇭🇳",
+    "Name": "Honduras",
+    "Capital": "Tegucigalpa",
+    "Continent": "Châu Mỹ",
+    "Area": "112.492"
+  },
+  {
+    "Flag": "🇯🇲",
+    "Name": "Jamaica",
+    "Capital": "Kingston",
+    "Continent": "Châu Mỹ",
+    "Area": "10.991"
+  },
+  {
+    "Flag": "🇲🇽",
+    "Name": "Mexico",
+    "Capital": "Mexico City",
+    "Continent": "Châu Mỹ",
+    "Area": "1.964.375"
+  },
+  {
+    "Flag": "🇳🇮",
+    "Name": "Nicaragua",
+    "Capital": "Managua",
+    "Continent": "Châu Mỹ",
+    "Area": "130.370"
+  },
+  {
+    "Flag": "🇵🇦",
+    "Name": "Panama",
+    "Capital": "Panama City",
+    "Continent": "Châu Mỹ",
+    "Area": "75.417"
+  },
+  {
+    "Flag": "🇵🇾",
+    "Name": "Paraguay",
+    "Capital": "Asuncion",
+    "Continent": "Châu Mỹ",
+    "Area": "406.752"
+  },
+  {
+    "Flag": "🇵🇪",
+    "Name": "Peru",
+    "Capital": "Lima",
+    "Continent": "Châu Mỹ",
+    "Area": "1.285.216"
+  },
+  {
+    "Flag": "🇵🇷",
+    "Name": "Puerto Rico",
+    "Capital": "San Juan",
+    "Continent": "Châu Mỹ",
+    "Area": "9.104"
+  },
+  {
+    "Flag": "🇰🇳",
+    "Name": "Saint Kitts và Nevis",
+    "Capital": "Basseterre",
+    "Continent": "Châu Mỹ",
+    "Area": "261"
+  },
+  {
+    "Flag": "🇱🇨",
+    "Name": "Saint Lucia",
+    "Capital": "Castries",
+    "Continent": "Châu Mỹ",
+    "Area": "616"
+  },
+  {
+    "Flag": "🇻🇨",
+    "Name": "Saint Vincent và Grenadines",
+    "Capital": "Kingstown",
+    "Continent": "Châu Mỹ",
+    "Area": "389"
+  },
+  {
+    "Flag": "🇸🇷",
+    "Name": "Suriname",
+    "Capital": "Paramaribo",
+    "Continent": "Châu Mỹ",
+    "Area": "163.820"
+  },
+  {
+    "Flag": "🇹🇹",
+    "Name": "Trinidad và Tobago",
+    "Capital": "Port of Spain",
+    "Continent": "Châu Mỹ",
+    "Area": "5.130"
+  },
+  {
+    "Flag": "🇺🇾",
+    "Name": "Uruguay",
+    "Capital": "Montevideo",
+    "Continent": "Châu Mỹ",
+    "Area": "176.215"
+  },
+  {
+    "Flag": "🇻🇪",
+    "Name": "Venezuela",
+    "Capital": "Caracas",
+    "Continent": "Châu Mỹ",
+    "Area": "916.445"
+  },
+  {
+    "Flag": "🇦🇱",
+    "Name": "Albania",
+    "Capital": "Tirana",
+    "Continent": "Châu Âu",
+    "Area": "28.748"
+  },
+  {
+    "Flag": "🇦🇩",
+    "Name": "Andorra",
+    "Capital": "Andorra la Vella",
+    "Continent": "Châu Âu",
+    "Area": "468"
+  },
+  {
+    "Flag": "🇵🇱",
+    "Name": "Ba Lan",
+    "Capital": "Warsaw",
+    "Continent": "Châu Âu",
+    "Area": "312.696"
+  },
+  {
+    "Flag": "🇧🇾",
+    "Name": "Belarus",
+    "Capital": "Minsk",
+    "Continent": "Châu Âu",
+    "Area": "207.600"
+  },
+  {
+    "Flag": "🇧🇦",
+    "Name": "Bosnia và Herzegovina",
+    "Capital": "Sarajevo",
+    "Continent": "Châu Âu",
+    "Area": "51.197"
+  },
+  {
+    "Flag": "🇧🇬",
+    "Name": "Bulgaria",
+    "Capital": "Sofia",
+    "Continent": "Châu Âu",
+    "Area": "110.994"
+  },
+  {
+    "Flag": "🇲🇰",
+    "Name": "Bắc Macedonia",
+    "Capital": "Skopje",
+    "Continent": "Châu Âu",
+    "Area": "25.713"
+  },
+  {
+    "Flag": "🇧🇪",
+    "Name": "Bỉ",
+    "Capital": "Brussels",
+    "Continent": "Châu Âu",
+    "Area": "30.528"
+  },
+  {
+    "Flag": "🇵🇹",
+    "Name": "Bồ Đào Nha",
+    "Capital": "Lisbon",
+    "Continent": "Châu Âu",
+    "Area": "92.212"
+  },
+  {
+    "Flag": "🇭🇷",
+    "Name": "Croatia",
+    "Capital": "Zagreb",
+    "Continent": "Châu Âu",
+    "Area": "56.594"
+  },
+  {
+    "Flag": "🇨🇿",
+    "Name": "Cộng hòa Séc",
+    "Capital": "Prague",
+    "Continent": "Châu Âu",
+    "Area": "78.867"
+  },
+  {
+    "Flag": "🇪🇪",
+    "Name": "Estonia",
+    "Capital": "Tallinn",
+    "Continent": "Châu Âu",
+    "Area": "45.227"
+  },
+  {
+    "Flag": "🇭🇺",
+    "Name": "Hungary",
+    "Capital": "Budapest",
+    "Continent": "Châu Âu",
+    "Area": "93.030"
+  },
+  {
+    "Flag": "🇬🇷",
+    "Name": "Hy Lạp",
+    "Capital": "Athens",
+    "Continent": "Châu Âu",
+    "Area": "131.957"
+  },
+  {
+    "Flag": "🇳🇱",
+    "Name": "Hà Lan",
+    "Capital": "Amsterdam",
+    "Continent": "Châu Âu",
+    "Area": "41.543"
+  },
+  {
+    "Flag": "🇮🇸",
+    "Name": "Iceland",
+    "Capital": "Reykjavik",
+    "Continent": "Châu Âu",
+    "Area": "103.000"
+  },
+  {
+    "Flag": "🇮🇪",
+    "Name": "Ireland",
+    "Capital": "Dublin",
+    "Continent": "Châu Âu",
+    "Area": "70.273"
+  },
+  {
+    "Flag": "🇽🇰",
+    "Name": "Kosovo",
+    "Capital": "Pristina",
+    "Continent": "Châu Âu",
+    "Area": "10.887"
+  },
+  {
+    "Flag": "🇱🇻",
+    "Name": "Latvia",
+    "Capital": "Riga",
+    "Continent": "Châu Âu",
+    "Area": "64.589"
+  },
+  {
+    "Flag": "🇱🇮",
+    "Name": "Liechtenstein",
+    "Capital": "Vaduz",
+    "Continent": "Châu Âu",
+    "Area": "160"
+  },
+  {
+    "Flag": "🇱🇹",
+    "Name": "Lithuania",
+    "Capital": "Vilnius",
+    "Continent": "Châu Âu",
+    "Area": "65.300"
+  },
+  {
+    "Flag": "🇱🇺",
+    "Name": "Luxembourg",
+    "Capital": "Luxembourg City",
+    "Continent": "Châu Âu",
+    "Area": "2.586"
+  },
+  {
+    "Flag": "🇲🇹",
+    "Name": "Malta",
+    "Capital": "Valletta",
+    "Continent": "Châu Âu",
+    "Area": "316"
+  },
+  {
+    "Flag": "🇲🇩",
+    "Name": "Moldova",
+    "Capital": "Chisinau",
+    "Continent": "Châu Âu",
+    "Area": "33.846"
+  },
+  {
+    "Flag": "🇲🇨",
+    "Name": "Monaco",
+    "Capital": "Monaco",
+    "Continent": "Châu Âu",
+    "Area": "2"
+  },
+  {
+    "Flag": "🇲🇪",
+    "Name": "Montenegro",
+    "Capital": "Podgorica",
+    "Continent": "Châu Âu",
+    "Area": "13.812"
+  },
+  {
+    "Flag": "🇳🇴",
+    "Name": "Na Uy",
+    "Capital": "Oslo",
+    "Continent": "Châu Âu",
+    "Area": "385.207"
+  },
+  {
+    "Flag": "🇷🇺",
+    "Name": "Nga",
+    "Capital": "Moscow",
+    "Continent": "Châu Âu",
+    "Area": "17.098.242"
+  },
+  {
+    "Flag": "🇫🇷",
+    "Name": "Pháp",
+    "Capital": "Paris",
+    "Continent": "Châu Âu",
+    "Area": "640.679"
+  },
+  {
+    "Flag": "🇫🇮",
+    "Name": "Phần Lan",
+    "Capital": "Helsinki",
+    "Continent": "Châu Âu",
+    "Area": "338.424"
+  },
+  {
+    "Flag": "🇷🇴",
+    "Name": "Romania",
+    "Capital": "Bucharest",
+    "Continent": "Châu Âu",
+    "Area": "238.397"
+  },
+  {
+    "Flag": "🇸🇲",
+    "Name": "San Marino",
+    "Capital": "San Marino",
+    "Continent": "Châu Âu",
+    "Area": "61"
+  },
+  {
+    "Flag": "🇷🇸",
+    "Name": "Serbia",
+    "Capital": "Belgrade",
+    "Continent": "Châu Âu",
+    "Area": "88.361"
+  },
+  {
+    "Flag": "🇸🇰",
+    "Name": "Slovakia",
+    "Capital": "Bratislava",
+    "Continent": "Châu Âu",
+    "Area": "49.035"
+  },
+  {
+    "Flag": "🇸🇮",
+    "Name": "Slovenia",
+    "Capital": "Ljubljana",
+    "Continent": "Châu Âu",
+    "Area": "20.273"
+  },
+  {
+    "Flag": "🇨🇭",
+    "Name": "Thụy Sĩ",
+    "Capital": "Bern",
+    "Continent": "Châu Âu",
+    "Area": "41.285"
+  },
+  {
+    "Flag": "🇸🇪",
+    "Name": "Thụy Điển",
+    "Capital": "Stockholm",
+    "Continent": "Châu Âu",
+    "Area": "450.295"
+  },
+  {
+    "Flag": "🇪🇸",
+    "Name": "Tây Ban Nha",
+    "Capital": "Madrid",
+    "Continent": "Châu Âu",
+    "Area": "505.990"
+  },
+  {
+    "Flag": "🇺🇦",
+    "Name": "Ukraine",
+    "Capital": "Kyiv",
+    "Continent": "Châu Âu",
+    "Area": "603.628"
+  },
+  {
+    "Flag": "🇻🇦",
+    "Name": "Vatican",
+    "Capital": "Vatican City",
+    "Continent": "Châu Âu",
+    "Area": "0.49"
+  },
+  {
+    "Flag": "🇬🇧",
+    "Name": "Vương quốc Anh",
+    "Capital": "London",
+    "Continent": "Châu Âu",
+    "Area": "243.610"
+  },
+  {
+    "Flag": "🇦🇹",
+    "Name": "Áo",
+    "Capital": "Vienna",
+    "Continent": "Châu Âu",
+    "Area": "83.871"
+  },
+  {
+    "Flag": "🇮🇹",
+    "Name": "Ý",
+    "Capital": "Rome",
+    "Continent": "Châu Âu",
+    "Area": "301.340"
+  },
+  {
+    "Flag": "🇩🇰",
+    "Name": "Đan Mạch",
+    "Capital": "Copenhagen",
+    "Continent": "Châu Âu",
+    "Area": "43.094"
+  },
+  {
+    "Flag": "🇩🇪",
+    "Name": "Đức",
+    "Capital": "Berlin",
+    "Continent": "Châu Âu",
+    "Area": "357.022"
+  },
+  {
+    "Flag": "🇫🇯",
+    "Name": "Fiji",
+    "Capital": "Suva",
+    "Continent": "Châu Đại Dương",
+    "Area": "18.274"
+  },
+  {
+    "Flag": "🇬🇺",
+    "Name": "Guam",
+    "Capital": "Hagåtña",
+    "Continent": "Châu Đại Dương",
+    "Area": "544"
+  },
+  {
+    "Flag": "🇰🇮",
+    "Name": "Kiribati",
+    "Capital": "South Tarawa",
+    "Continent": "Châu Đại Dương",
+    "Area": "811"
+  },
+  {
+    "Flag": "🇲🇭",
+    "Name": "Marshall Islands",
+    "Capital": "Majuro",
+    "Continent": "Châu Đại Dương",
+    "Area": "181"
+  },
+  {
+    "Flag": "🇫🇲",
+    "Name": "Micronesia",
+    "Capital": "Palikir",
+    "Continent": "Châu Đại Dương",
+    "Area": "702"
+  },
+  {
+    "Flag": "🇳🇷",
+    "Name": "Nauru",
+    "Capital": "Yaren",
+    "Continent": "Châu Đại Dương",
+    "Area": "21"
+  },
+  {
+    "Flag": "🇳🇿",
+    "Name": "New Zealand",
+    "Capital": "Wellington",
+    "Continent": "Châu Đại Dương",
+    "Area": "268.021"
+  },
+  {
+    "Flag": "🇵🇼",
+    "Name": "Palau",
+    "Capital": "Ngerulmud",
+    "Continent": "Châu Đại Dương",
+    "Area": "459"
+  },
+  {
+    "Flag": "🇵🇬",
+    "Name": "Papua New Guinea",
+    "Capital": "Port Moresby",
+    "Continent": "Châu Đại Dương",
+    "Area": "462.840"
+  },
+  {
+    "Flag": "🇼🇸",
+    "Name": "Samoa",
+    "Capital": "Apia",
+    "Continent": "Châu Đại Dương",
+    "Area": "2.831"
+  },
+  {
+    "Flag": "🇸🇧",
+    "Name": "Solomon Islands",
+    "Capital": "Honiara",
+    "Continent": "Châu Đại Dương",
+    "Area": "28.896"
+  },
+  {
+    "Flag": "🇹🇴",
+    "Name": "Tonga",
+    "Capital": "Nuku'alofa",
+    "Continent": "Châu Đại Dương",
+    "Area": "747"
+  },
+  {
+    "Flag": "🇹🇻",
+    "Name": "Tuvalu",
+    "Capital": "Funafuti",
+    "Continent": "Châu Đại Dương",
+    "Area": "26"
+  },
+  {
+    "Flag": "🇻🇺",
+    "Name": "Vanuatu",
+    "Capital": "Port Vila",
+    "Continent": "Châu Đại Dương",
+    "Area": "12.189"
+  },
+  {
+    "Flag": "🇦🇺",
+    "Name": "Úc",
+    "Capital": "Canberra",
+    "Continent": "Châu Đại Dương",
+    "Area": "7.692.024"
+  },
+  {
+    "Flag": "🇪🇬",
+    "Name": "Ai Cập",
+    "Capital": "Cairo",
+    "Continent": "Châu Phi",
+    "Area": "1.002.450"
+  },
+  {
+    "Flag": "🇩🇿",
+    "Name": "Algérie",
+    "Capital": "Algiers",
+    "Continent": "Châu Phi",
+    "Area": "2.381.741"
+  },
+  {
+    "Flag": "🇦🇴",
+    "Name": "Angola",
+    "Capital": "Luanda",
+    "Continent": "Châu Phi",
+    "Area": "1.246.700"
+  },
+  {
+    "Flag": "🇧🇯",
+    "Name": "Benin",
+    "Capital": "Porto-Novo",
+    "Continent": "Châu Phi",
+    "Area": "114.763"
+  },
+  {
+    "Flag": "🇧🇼",
+    "Name": "Botswana",
+    "Capital": "Gaborone",
+    "Continent": "Châu Phi",
+    "Area": "581.730"
+  },
+  {
+    "Flag": "🇧🇫",
+    "Name": "Burkina Faso",
+    "Capital": "Ouagadougou",
+    "Continent": "Châu Phi",
+    "Area": "274.200"
+  },
+  {
+    "Flag": "🇧🇮",
+    "Name": "Burundi",
+    "Capital": "Gitega",
+    "Continent": "Châu Phi",
+    "Area": "27.834"
+  },
+  {
+    "Flag": "🇨🇮",
+    "Name": "Bờ Biển Ngà",
+    "Capital": "Yamoussoukro",
+    "Continent": "Châu Phi",
+    "Area": "322.463"
+  },
+  {
+    "Flag": "🇨🇲",
+    "Name": "Cameroon",
+    "Capital": "Yaounde",
+    "Continent": "Châu Phi",
+    "Area": "475.440"
+  },
+  {
+    "Flag": "🇨🇻",
+    "Name": "Cape Verde",
+    "Capital": "Praia",
+    "Continent": "Châu Phi",
+    "Area": "4.033"
+  },
+  {
+    "Flag": "🇹🇩",
+    "Name": "Chad",
+    "Capital": "N'Djamena",
+    "Continent": "Châu Phi",
+    "Area": "1.284.000"
+  },
+  {
+    "Flag": "🇰🇲",
+    "Name": "Comoros",
+    "Capital": "Moroni",
+    "Continent": "Châu Phi",
+    "Area": "2.235"
+  },
+  {
+    "Flag": "🇨🇬",
+    "Name": "Congo",
+    "Capital": "Brazzaville",
+    "Continent": "Châu Phi",
+    "Area": "342.000"
+  },
+  {
+    "Flag": "🇨🇩",
+    "Name": "Cộng hòa Dân chủ Congo",
+    "Capital": "Kinshasa",
+    "Continent": "Châu Phi",
+    "Area": "2.344.858"
+  },
+  {
+    "Flag": "🇨🇫",
+    "Name": "Cộng hòa Trung Phi",
+    "Capital": "Bangui",
+    "Continent": "Châu Phi",
+    "Area": "622.984"
+  },
+  {
+    "Flag": "🇩🇯",
+    "Name": "Djibouti",
+    "Capital": "Djibouti",
+    "Continent": "Châu Phi",
+    "Area": "23.200"
+  },
+  {
+    "Flag": "🇬🇶",
+    "Name": "Equatorial Guinea",
+    "Capital": "Malabo",
+    "Continent": "Châu Phi",
+    "Area": "28.051"
+  },
+  {
+    "Flag": "🇪🇷",
+    "Name": "Eritrea",
+    "Capital": "Asmara",
+    "Continent": "Châu Phi",
+    "Area": "117.600"
+  },
+  {
+    "Flag": "🇸🇿",
+    "Name": "Eswatini",
+    "Capital": "Mbabane / Lobamba",
+    "Continent": "Châu Phi",
+    "Area": "17.364"
+  },
+  {
+    "Flag": "🇪🇹",
+    "Name": "Ethiopia",
+    "Capital": "Addis Ababa",
+    "Continent": "Châu Phi",
+    "Area": "1.104.300"
+  },
+  {
+    "Flag": "🇬🇦",
+    "Name": "Gabon",
+    "Capital": "Libreville",
+    "Continent": "Châu Phi",
+    "Area": "267.667"
+  },
+  {
+    "Flag": "🇬🇲",
+    "Name": "Gambia",
+    "Capital": "Banjul",
+    "Continent": "Châu Phi",
+    "Area": "11.300"
+  },
+  {
+    "Flag": "🇬🇭",
+    "Name": "Ghana",
+    "Capital": "Accra",
+    "Continent": "Châu Phi",
+    "Area": "238.533"
+  },
+  {
+    "Flag": "🇬🇳",
+    "Name": "Guinea",
+    "Capital": "Conakry",
+    "Continent": "Châu Phi",
+    "Area": "245.857"
+  },
+  {
+    "Flag": "🇬🇼",
+    "Name": "Guinea-Bissau",
+    "Capital": "Bissau",
+    "Continent": "Châu Phi",
+    "Area": "36.125"
+  },
+  {
+    "Flag": "🇰🇪",
+    "Name": "Kenya",
+    "Capital": "Nairobi",
+    "Continent": "Châu Phi",
+    "Area": "580.367"
+  },
+  {
+    "Flag": "🇱🇸",
+    "Name": "Lesotho",
+    "Capital": "Maseru",
+    "Continent": "Châu Phi",
+    "Area": "30.355"
+  },
+  {
+    "Flag": "🇱🇷",
+    "Name": "Liberia",
+    "Capital": "Monrovia",
+    "Continent": "Châu Phi",
+    "Area": "111.369"
+  },
+  {
+    "Flag": "🇱🇾",
+    "Name": "Libya",
+    "Capital": "Tripoli",
+    "Continent": "Châu Phi",
+    "Area": "1.759.540"
+  },
+  {
+    "Flag": "🇲🇦",
+    "Name": "Ma-rốc",
+    "Capital": "Rabat",
+    "Continent": "Châu Phi",
+    "Area": "446.550"
+  },
+  {
+    "Flag": "🇲🇬",
+    "Name": "Madagascar",
+    "Capital": "Antananarivo",
+    "Continent": "Châu Phi",
+    "Area": "587.041"
+  },
+  {
+    "Flag": "🇲🇼",
+    "Name": "Malawi",
+    "Capital": "Lilongwe",
+    "Continent": "Châu Phi",
+    "Area": "118.484"
+  },
+  {
+    "Flag": "🇲🇱",
+    "Name": "Mali",
+    "Capital": "Bamako",
+    "Continent": "Châu Phi",
+    "Area": "1.240.192"
+  },
+  {
+    "Flag": "🇲🇷",
+    "Name": "Mauritania",
+    "Capital": "Nouakchott",
+    "Continent": "Châu Phi",
+    "Area": "1.030.700"
+  },
+  {
+    "Flag": "🇲🇺",
+    "Name": "Mauritius",
+    "Capital": "Port Louis",
+    "Continent": "Châu Phi",
+    "Area": "2.040"
+  },
+  {
+    "Flag": "🇲🇿",
+    "Name": "Mozambique",
+    "Capital": "Maputo",
+    "Continent": "Châu Phi",
+    "Area": "801.590"
+  },
+  {
+    "Flag": "🇿🇦",
+    "Name": "Nam Phi",
+    "Capital": "Pretoria, Cape Town, Bloemfontein",
+    "Continent": "Châu Phi",
+    "Area": "1.221.037"
+  },
+  {
+    "Flag": "🇳🇦",
+    "Name": "Namibia",
+    "Capital": "Windhoek",
+    "Continent": "Châu Phi",
+    "Area": "825.615"
+  },
+  {
+    "Flag": "🇳🇪",
+    "Name": "Niger",
+    "Capital": "Niamey",
+    "Continent": "Châu Phi",
+    "Area": "1.267.000"
+  },
+  {
+    "Flag": "🇳🇬",
+    "Name": "Nigeria",
+    "Capital": "Abuja",
+    "Continent": "Châu Phi",
+    "Area": "923.768"
+  },
+  {
+    "Flag": "🇷🇼",
+    "Name": "Rwanda",
+    "Capital": "Kigali",
+    "Continent": "Châu Phi",
+    "Area": "26.338"
+  },
+  {
+    "Flag": "🇸🇹",
+    "Name": "Sao Tome và Principe",
+    "Capital": "Sao Tome",
+    "Continent": "Châu Phi",
+    "Area": "964"
+  },
+  {
+    "Flag": "🇸🇳",
+    "Name": "Senegal",
+    "Capital": "Dakar",
+    "Continent": "Châu Phi",
+    "Area": "196.722"
+  },
+  {
+    "Flag": "🇸🇨",
+    "Name": "Seychelles",
+    "Capital": "Victoria",
+    "Continent": "Châu Phi",
+    "Area": "455"
+  },
+  {
+    "Flag": "🇸🇱",
+    "Name": "Sierra Leone",
+    "Capital": "Freetown",
+    "Continent": "Châu Phi",
+    "Area": "71.740"
+  },
+  {
+    "Flag": "🇸🇴",
+    "Name": "Somalia",
+    "Capital": "Mogadishu",
+    "Continent": "Châu Phi",
+    "Area": "637.657"
+  },
+  {
+    "Flag": "🇸🇸",
+    "Name": "South Sudan",
+    "Capital": "Juba",
+    "Continent": "Châu Phi",
+    "Area": "644.329"
+  },
+  {
+    "Flag": "🇸🇩",
+    "Name": "Sudan",
+    "Capital": "Khartoum",
+    "Continent": "Châu Phi",
+    "Area": "1.861.484"
+  },
+  {
+    "Flag": "🇹🇿",
+    "Name": "Tanzania",
+    "Capital": "Dodoma",
+    "Continent": "Châu Phi",
+    "Area": "947.303"
+  },
+  {
+    "Flag": "🇹🇬",
+    "Name": "Togo",
+    "Capital": "Lomé",
+    "Continent": "Châu Phi",
+    "Area": "56.785"
+  },
+  {
+    "Flag": "🇹🇳",
+    "Name": "Tunisia",
+    "Capital": "Tunis",
+    "Continent": "Châu Phi",
+    "Area": "163.610"
+  },
+  {
+    "Flag": "🇪🇭",
+    "Name": "Tây Sahara",
+    "Capital": "El Aaiún",
+    "Continent": "Châu Phi",
+    "Area": "266.000"
+  },
+  {
+    "Flag": "🇺🇬",
+    "Name": "Uganda",
+    "Capital": "Kampala",
+    "Continent": "Châu Phi",
+    "Area": "241.038"
+  },
+  {
+    "Flag": "🇿🇲",
+    "Name": "Zambia",
+    "Capital": "Lusaka",
+    "Continent": "Châu Phi",
+    "Area": "752.618"
+  },
+  {
+    "Flag": "🇿🇼",
+    "Name": "Zimbabwe",
+    "Capital": "Harare",
+    "Continent": "Châu Phi",
+    "Area": "390.757"
+  }
+]

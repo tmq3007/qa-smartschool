@@ -1,0 +1,456 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_9_SubMenuSelectionRecognition"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Chọn và Nhận dạng" 
+
+        Width="320" Height="450"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        ResizeMode="NoResize"
+
+        Topmost="True"
+
+        ShowInTaskbar="False">
+
+
+
+    <Border Background="White" 
+
+            CornerRadius="15" 
+
+            BorderBrush="#E1E8ED" 
+
+            BorderThickness="1">
+
+        <Border.Effect>
+
+            <DropShadowEffect Color="#CCCCCC" 
+
+                            Direction="270" 
+
+                            ShadowDepth="3" 
+
+                            BlurRadius="15" 
+
+                            Opacity="0.3"/>
+
+        </Border.Effect>
+
+
+
+        <Grid Margin="15">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Header -->
+
+                <RowDefinition Height="*"/>
+
+                <!-- Functions -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Footer -->
+
+            </Grid.RowDefinitions>
+
+
+
+            <!-- HEADER -->
+
+            <Grid Grid.Row="0" Margin="0,0,0,15">
+
+                <StackPanel Orientation="Horizontal">
+
+                    <Path Fill="#2E86DE" 
+
+                          Data="M12,2C17.52,2 22,6.48 22,12C22,17.52 17.52,22 12,22C6.48,22 2,17.52 2,12C2,6.48 6.48,2 12,2M10,16.5L16,11L10,5.5V16.5Z"
+
+                          Width="18" Height="18"
+
+                          Stretch="Uniform"
+
+                          VerticalAlignment="Center"
+
+                          Margin="0,0,8,0"/>
+
+                    <TextBlock Text="Chọn và Nhận dạng" 
+
+                              FontSize="16" 
+
+                              FontWeight="Bold" 
+
+                              Foreground="#2F3542"
+
+                              VerticalAlignment="Center"/>
+
+                </StackPanel>
+
+                <Button x:Name="btnClose" 
+
+                       Style="{StaticResource CloseButton}"
+
+                       Click="btnClose_Click"/>
+
+            </Grid>
+
+
+
+            <!-- FUNCTIONS -->
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+
+                <StackPanel>
+
+                    
+
+                    <!-- OCR Text Recognition -->
+
+                    <Button x:Name="btnOCR" 
+
+                           Height="60" 
+
+                           Margin="0,0,0,8"
+
+                           Background="#E8F5E9"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnOCR_Click">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" 
+
+                                   Width="40" Height="40" 
+
+                                   Background="#4CAF50" 
+
+                                   CornerRadius="8">
+
+                                <TextBlock Text="Aa" 
+
+                                          FontSize="18" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="White"
+
+                                          HorizontalAlignment="Center" 
+
+                                          VerticalAlignment="Center"/>
+
+                            </Border>
+
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+
+                                <TextBlock Text="Chuyển thành chữ" FontSize="13" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="OCR nhận dạng chữ viết tay" FontSize="10" Foreground="#666"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+                    </Button>
+
+
+
+                    <!-- Translate -->
+
+                    <Button x:Name="btnTranslate" 
+
+                           Height="60" 
+
+                           Margin="0,0,0,8"
+
+                           Background="#E3F2FD"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnTranslate_Click">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" 
+
+                                   Width="40" Height="40" 
+
+                                   Background="#2196F3" 
+
+                                   CornerRadius="8">
+
+                                <TextBlock Text="⇄" 
+
+                                          FontSize="20" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="White"
+
+                                          HorizontalAlignment="Center" 
+
+                                          VerticalAlignment="Center"/>
+
+                            </Border>
+
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+
+                                <TextBlock Text="Dịch văn bản" FontSize="13" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="Dịch sang Tiếng Việt/Anh" FontSize="10" Foreground="#666"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+                    </Button>
+
+
+
+                    <!-- Text to Speech -->
+
+                    <Button x:Name="btnTTS" 
+
+                           Height="60" 
+
+                           Margin="0,0,0,8"
+
+                           Background="#FFF3E0"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnTTS_Click">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" 
+
+                                   Width="40" Height="40" 
+
+                                   Background="#FF9800" 
+
+                                   CornerRadius="8">
+
+                                <TextBlock Text="🔊" 
+
+                                          FontSize="18" 
+
+                                          Foreground="White"
+
+                                          HorizontalAlignment="Center" 
+
+                                          VerticalAlignment="Center"/>
+
+                            </Border>
+
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+
+                                <TextBlock Text="Phát âm" FontSize="13" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="Đọc văn bản thành giọng nói" FontSize="10" Foreground="#666"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+                    </Button>
+
+
+
+                    <!-- Search Google -->
+
+                    <Button x:Name="btnSearchGoogle" 
+
+                           Height="60" 
+
+                           Margin="0,0,0,8"
+
+                           Background="#FCE4EC"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnSearchGoogle_Click">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" 
+
+                                   Width="40" Height="40" 
+
+                                   Background="#E91E63" 
+
+                                   CornerRadius="8">
+
+                                <TextBlock Text="G" 
+
+                                          FontSize="20" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="White"
+
+                                          HorizontalAlignment="Center" 
+
+                                          VerticalAlignment="Center"/>
+
+                            </Border>
+
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+
+                                <TextBlock Text="Tìm kiếm Google" FontSize="13" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="Tìm kiếm nội dung đã chọn" FontSize="10" Foreground="#666"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+                    </Button>
+
+
+
+                    <!-- AI Chat -->
+
+                    <Button x:Name="btnAIChat" 
+
+                           Height="60" 
+
+                           Background="#F3E5F5"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnAIChat_Click">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" 
+
+                                   Width="40" Height="40" 
+
+                                   Background="#9C27B0" 
+
+                                   CornerRadius="8">
+
+                                <TextBlock Text="AI" 
+
+                                          FontSize="16" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="White"
+
+                                          HorizontalAlignment="Center" 
+
+                                          VerticalAlignment="Center"/>
+
+                            </Border>
+
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+
+                                <TextBlock Text="Chat với AI" FontSize="13" FontWeight="SemiBold"/>
+
+                                <TextBlock Text="Hỏi đáp với AI về nội dung" FontSize="10" Foreground="#666"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+                    </Button>
+
+
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+            <!-- FOOTER INFO -->
+
+            <Border Grid.Row="2" 
+
+                   Background="#F8F9FA"
+
+                   CornerRadius="8"
+
+                   Padding="10"
+
+                   Margin="0,15,0,0">
+
+                <TextBlock Text="Khoanh vùng trên bảng để sử dụng" 
+
+                          FontSize="10" 
+
+                          Foreground="#57606F"
+
+                          TextAlignment="Center"/>
+
+            </Border>
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

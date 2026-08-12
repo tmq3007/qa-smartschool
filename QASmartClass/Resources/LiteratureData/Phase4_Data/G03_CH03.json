@@ -1,0 +1,60 @@
+﻿{
+  "metadata": {
+    "chapterId": "g03_ch03",
+    "chapterName": "Bài 3: Luyện từ và câu Lớp 3",
+    "grade": 3,
+    "totalProblems": 2,
+    "totalSections": 1,
+    "estimatedHours": 2,
+    "thptWeight": "Kiến thức nền tảng Tiếng Việt Tiểu Học"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g3_ch3_0",
+      "sectionName": "Luyện từ và câu",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/tieng-viet-3-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g3_Luyện_từ_và_câu.mp3",
+      "concepts": [
+        {
+          "name": "Mục tiêu bài học",
+          "theorem": "Nắm vững kiến thức cơ bản về phân môn Luyện từ và câu theo chương trình GDPT 2018.",
+          "definition": "Bên bờ rào, con mèo mun đang nằm ngủ lơ mơ. Bầu trời ban đêm cao rộng và xanh thẳm."
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Từ nào là danh từ trong câu: 'Con mèo đang ngủ'?",
+          "difficulty": "Easy",
+          "options": [
+            "Con mèo",
+            "Đang",
+            "Ngủ",
+            "Không có danh từ"
+          ],
+          "answer": "Con mèo",
+          "hints": [
+            "Danh từ chỉ con vật"
+          ],
+          "explanation": "'Con mèo' là danh từ chỉ con vật."
+        },
+        {
+          "id": "p2",
+          "question": "Câu 'Bầu trời xanh thẳm' thuộc kiểu câu gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Ai thế nào?",
+            "Ai làm gì?",
+            "Ai là gì?",
+            "Câu cảm thán"
+          ],
+          "answer": "Ai thế nào?",
+          "hints": [
+            "Câu miêu tả tính chất"
+          ],
+          "explanation": "Đây là kiểu câu 'Ai thế nào?' dùng để miêu tả đặc điểm của sự vật (bầu trời)."
+        }
+      ]
+    }
+  ]
+}

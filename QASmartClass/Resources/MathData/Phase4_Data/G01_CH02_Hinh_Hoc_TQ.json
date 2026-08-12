@@ -1,0 +1,423 @@
+{
+  "metadata": {
+    "chapterId": "g01_ch02",
+    "chapterName": "Hình Học Trực Quan",
+    "grade": 1,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 18,
+    "toolMapping": [
+      "GeometryTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 12,
+    "prerequisites": []
+  },
+  "sections": [
+    {
+      "sectionId": "hh1_01",
+      "sectionName": "Nhận dạng hình cơ bản",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "hh1_001",
+          "name": "Hình vuông",
+          "definition": "Hình có 4 cạnh bằng nhau, 4 góc vuông",
+          "examples": [
+            "Ô gạch lát sàn",
+            "Mặt xúc xắc"
+          ]
+        },
+        {
+          "id": "hh1_002",
+          "name": "Hình tròn",
+          "definition": "Hình cong khép kín, mọi điểm cách đều tâm",
+          "examples": [
+            "Mặt đồng hồ",
+            "Bánh xe"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh1_p01",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Hình nào có 4 cạnh bằng nhau?",
+          "options": [
+            "A) Hình tròn",
+            "B) Hình vuông",
+            "C) Hình tam giác",
+            "D) Hình chữ nhật"
+          ],
+          "correctAnswer": "B",
+          "solution": "Hình vuông có 4 cạnh bằng nhau và 4 góc vuông",
+          "points": 5
+        },
+        {
+          "problemId": "hh1_p02",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Bánh xe ô tô có hình gì?",
+          "options": [
+            "A) Hình vuông",
+            "B) Hình tam giác",
+            "C) Hình tròn",
+            "D) Hình chữ nhật"
+          ],
+          "correctAnswer": "C",
+          "solution": "Bánh xe có dạng hình tròn",
+          "points": 5
+        },
+        {
+          "problemId": "hh1_p03",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Hình tam giác có mấy cạnh?",
+          "options": [
+            "A) 2",
+            "B) 3",
+            "C) 4",
+            "D) 5"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tam giác = 3 cạnh, 3 đỉnh, 3 góc",
+          "points": 5
+        },
+        {
+          "problemId": "hh1_p04",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Mặt bàn học thường có hình gì?",
+          "options": [
+            "A) Hình tròn",
+            "B) Hình tam giác",
+            "C) Hình chữ nhật",
+            "D) Hình thoi"
+          ],
+          "correctAnswer": "C",
+          "solution": "Mặt bàn thường là hình chữ nhật (2 cạnh dài bằng nhau, 2 cạnh ngắn bằng nhau)",
+          "points": 10
+        },
+        {
+          "problemId": "hh1_p05",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Đếm số hình tam giác trong hình: một tam giác lớn chia bởi 1 đường từ đỉnh xuống đáy",
+          "options": [
+            "A) 1",
+            "B) 2",
+            "C) 3",
+            "D) 4"
+          ],
+          "correctAnswer": "C",
+          "solution": "2 tam giác nhỏ + 1 tam giác lớn = 3 tam giác",
+          "points": 10
+        },
+        {
+          "problemId": "hh1_p06",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Ghép 2 hình tam giác vuông giống nhau, ta được hình gì?",
+          "options": [
+            "A) Hình tròn",
+            "B) Hình vuông hoặc chữ nhật",
+            "C) Hình tam giác lớn hơn",
+            "D) Hình lục giác"
+          ],
+          "correctAnswer": "B",
+          "solution": "2 tam giác vuông ghép cạnh huyền tạo hình chữ nhật hoặc vuông",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hh1_02",
+      "sectionName": "Vị trí & Phương hướng",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "hh1_003",
+          "name": "Trên - Dưới - Trái - Phải",
+          "definition": "Xác định vị trí tương đối của đồ vật",
+          "examples": [
+            "Quả bóng ở TRÊN bàn",
+            "Bút ở BÊN PHẢI vở"
+          ]
+        },
+        {
+          "id": "hh1_004",
+          "name": "Trong - Ngoài",
+          "definition": "Xác định đồ vật nằm bên trong hoặc bên ngoài một vùng",
+          "examples": [
+            "Mèo TRONG hộp",
+            "Chim ở NGOÀI lồng"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh1_p07",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Quả bóng nằm dưới bàn. Vị trí của quả bóng là?",
+          "options": [
+            "A) Trên bàn",
+            "B) Bên phải bàn",
+            "C) Dưới bàn",
+            "D) Trong bàn"
+          ],
+          "correctAnswer": "C",
+          "solution": "Quả bóng nằm ở phía dưới mặt bàn → vị trí: dưới bàn",
+          "points": 5
+        },
+        {
+          "problemId": "hh1_p08",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Tay phải cầm bút, bút ở bên nào?",
+          "options": [
+            "A) Bên trái",
+            "B) Bên phải",
+            "C) Phía trên",
+            "D) Phía dưới"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tay phải cầm → bút ở bên phải",
+          "points": 5
+        },
+        {
+          "problemId": "hh1_p09",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Có 5 bạn xếp hàng. Bạn An đứng thứ 3 từ trái. An đứng thứ mấy từ phải?",
+          "options": [
+            "A) 2",
+            "B) 3",
+            "C) 4",
+            "D) 1"
+          ],
+          "correctAnswer": "B",
+          "solution": "5 bạn, An thứ 3 từ trái → từ phải: 5 - 3 + 1 = 3",
+          "points": 10
+        },
+        {
+          "problemId": "hh1_p10",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Trong rổ có 8 quả cam. Lấy ra 3 quả. Số quả cam TRONG rổ còn lại là?",
+          "options": [
+            "A) 3",
+            "B) 11",
+            "C) 5",
+            "D) 8"
+          ],
+          "correctAnswer": "C",
+          "solution": "8 - 3 = 5 quả cam còn trong rổ",
+          "points": 10
+        },
+        {
+          "problemId": "hh1_p11",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Bạn Bình quay mặt về hướng Bắc. Tay phải Bình chỉ hướng nào?",
+          "options": [
+            "A) Nam",
+            "B) Đông",
+            "C) Tây",
+            "D) Bắc"
+          ],
+          "correctAnswer": "B",
+          "solution": "Quay mặt về Bắc → tay phải chỉ Đông, tay trái chỉ Tây",
+          "points": 15
+        },
+        {
+          "problemId": "hh1_p12",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Nhà An ở giữa nhà Bình (bên trái) và nhà Châu (bên phải). Nhà Dũng ở bên phải nhà Châu. Thứ tự từ trái sang phải là?",
+          "options": [
+            "A) Bình - An - Châu - Dũng",
+            "B) An - Bình - Châu - Dũng",
+            "C) Dũng - Châu - An - Bình",
+            "D) Bình - Châu - An - Dũng"
+          ],
+          "correctAnswer": "A",
+          "solution": "Từ trái: Bình → An (giữa) → Châu → Dũng (phải Châu)",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hh1_03",
+      "sectionName": "Đối xứng & Hoa văn",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "hh1_005",
+          "name": "Đối xứng trục",
+          "definition": "Hai nửa hình giống nhau khi gấp theo đường thẳng",
+          "examples": [
+            "Bướm gấp đôi cánh",
+            "Mặt người chia đôi"
+          ]
+        },
+        {
+          "id": "hh1_006",
+          "name": "Hoa văn lặp lại",
+          "definition": "Mẫu hình lặp đi lặp lại theo quy luật",
+          "examples": [
+            "🔴🔵🔴🔵🔴🔵",
+            "△○□△○□△○□"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh1_p13",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Hình nào có đối xứng: Bướm, Cái cây, Chiếc lá, Tất cả?",
+          "options": [
+            "A) Chỉ bướm",
+            "B) Bướm và chiếc lá",
+            "C) Tất cả",
+            "D) Không có hình nào"
+          ],
+          "correctAnswer": "C",
+          "solution": "Bướm, cây, lá đều có trục đối xứng chia đôi",
+          "points": 5
+        },
+        {
+          "problemId": "hh1_p14",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Quy luật: 🔴🔵🔴🔵🔴? Hình tiếp theo là?",
+          "options": [
+            "A) 🔴",
+            "B) 🔵",
+            "C) 🟢",
+            "D) 🟡"
+          ],
+          "correctAnswer": "B",
+          "solution": "Quy luật xen kẽ đỏ-xanh → tiếp theo là 🔵",
+          "points": 5
+        },
+        {
+          "problemId": "hh1_p15",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Quy luật: 1, 3, 5, 7, ? Số tiếp theo là?",
+          "options": [
+            "A) 8",
+            "B) 9",
+            "C) 10",
+            "D) 11"
+          ],
+          "correctAnswer": "B",
+          "solution": "Dãy số lẻ, mỗi số cách nhau 2: 7 + 2 = 9",
+          "points": 10
+        },
+        {
+          "problemId": "hh1_p16",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Chữ cái nào KHÔNG có trục đối xứng? A, B, F, M",
+          "options": [
+            "A) A",
+            "B) B",
+            "C) F",
+            "D) M"
+          ],
+          "correctAnswer": "C",
+          "solution": "F không có trục đối xứng. A, B, M đều có ít nhất 1 trục",
+          "points": 10
+        },
+        {
+          "problemId": "hh1_p17",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Quy luật: △, ○, □, △, ○, □, △, ?, ?",
+          "options": [
+            "A) △, ○",
+            "B) ○, □",
+            "C) □, △",
+            "D) ○, △"
+          ],
+          "correctAnswer": "B",
+          "solution": "Chu kỳ 3: △○□ lặp lại → sau △ là ○, □",
+          "points": 15
+        },
+        {
+          "problemId": "hh1_p18",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Hình vuông có bao nhiêu trục đối xứng?",
+          "options": [
+            "A) 1",
+            "B) 2",
+            "C) 4",
+            "D) 8"
+          ],
+          "correctAnswer": "C",
+          "solution": "Hình vuông có 4 trục: 2 đường chéo + 2 đường qua trung điểm các cạnh",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm hình vuông với hình chữ nhật",
+      "correction": "Hình vuông là trường hợp đặc biệt của hình chữ nhật (4 cạnh bằng nhau)"
+    },
+    {
+      "mistake": "Nhầm trái/phải khi quay ngược",
+      "correction": "Luôn xác định từ vị trí của người/vật đang nói tới"
+    },
+    {
+      "mistake": "Đếm thiếu hình khi ghép",
+      "correction": "Đếm cả hình nhỏ lẫn hình lớn được tạo thành"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "hh1_quiz_01",
+      "title": "Kiểm tra: Hình học trực quan Lớp 1",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "hh1_p01"
+        },
+        {
+          "ref": "hh1_p07"
+        },
+        {
+          "ref": "hh1_p13"
+        },
+        {
+          "ref": "hh1_p09"
+        },
+        {
+          "ref": "hh1_p17"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

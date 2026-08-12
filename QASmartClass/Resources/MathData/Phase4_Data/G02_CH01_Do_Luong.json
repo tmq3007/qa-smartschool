@@ -1,0 +1,314 @@
+{
+  "metadata": {
+    "chapterId": "g02_ch01",
+    "chapterName": "Đo Lường: Độ Dài, Khối Lượng & Thời Gian",
+    "grade": 2,
+    "totalSections": 3,
+    "totalConcepts": 7,
+    "totalProblems": 10,
+    "toolMapping": [],
+    "thptWeight": "0%",
+    "estimatedHours": 8,
+    "prerequisites": [
+      "g01_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "dl_01",
+      "sectionName": "Đo độ dài",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "dl_001",
+          "name": "Đơn vị đo độ dài",
+          "definition": "cm (xăng-ti-mét), m (mét), km (ki-lô-mét). 1m = 100cm, 1km = 1000m",
+          "examples": [
+            "Cây bút dài khoảng 15cm",
+            "Sân trường dài khoảng 50m",
+            "Từ nhà đến trường khoảng 2km"
+          ]
+        },
+        {
+          "id": "dl_002",
+          "name": "Đổi đơn vị độ dài",
+          "definition": "Nhân hoặc chia cho 10, 100, 1000 để đổi đơn vị",
+          "examples": [
+            "3m = 300cm",
+            "2500m = 2km 500m",
+            "1m 50cm = 150cm"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dl_prob_001",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "1 mét bằng bao nhiêu xăng-ti-mét?",
+          "options": [
+            "A) 10cm",
+            "B) 100cm",
+            "C) 1000cm",
+            "D) 50cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "1m = 100cm. Mỗi mét chia thành 100 phần bằng nhau, mỗi phần là 1cm",
+          "points": 5
+        },
+        {
+          "problemId": "dl_prob_002",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Đổi: 3m 25cm = ? cm",
+          "options": [
+            "A) 325cm",
+            "B) 352cm",
+            "C) 3025cm",
+            "D) 32cm"
+          ],
+          "correctAnswer": "A",
+          "solution": "3m = 300cm. 300cm + 25cm = 325cm",
+          "points": 10
+        },
+        {
+          "problemId": "dl_prob_003",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Một sợi dây dài 2m 40cm. Cắt đi 75cm. Sợi dây còn lại dài bao nhiêu?",
+          "options": [
+            "A) 1m 65cm",
+            "B) 1m 75cm",
+            "C) 2m 65cm",
+            "D) 1m 55cm"
+          ],
+          "correctAnswer": "A",
+          "solution": "2m 40cm = 240cm. 240cm - 75cm = 165cm = 1m 65cm",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "dl_02",
+      "sectionName": "Đo khối lượng",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "dl_003",
+          "name": "Đơn vị đo khối lượng",
+          "definition": "g (gam), kg (ki-lô-gam), tấn. 1kg = 1000g, 1 tấn = 1000kg",
+          "examples": [
+            "Quả trứng nặng khoảng 60g",
+            "Cặp sách nặng khoảng 3kg",
+            "Xe ô tô nặng khoảng 2 tấn"
+          ]
+        },
+        {
+          "id": "dl_004",
+          "name": "So sánh & đổi khối lượng",
+          "definition": "Quy về cùng đơn vị rồi so sánh",
+          "examples": [
+            "2kg 500g = 2500g",
+            "1500g = 1kg 500g"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dl_prob_004",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "1kg bằng bao nhiêu gam?",
+          "options": [
+            "A) 100g",
+            "B) 500g",
+            "C) 1000g",
+            "D) 10g"
+          ],
+          "correctAnswer": "C",
+          "solution": "1kg = 1000g",
+          "points": 5
+        },
+        {
+          "problemId": "dl_prob_005",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Mẹ mua 2kg 300g gạo và 1kg 700g đường. Tổng cộng nặng bao nhiêu?",
+          "options": [
+            "A) 3kg",
+            "B) 4kg",
+            "C) 3kg 900g",
+            "D) 4kg 100g"
+          ],
+          "correctAnswer": "B",
+          "solution": "2kg 300g + 1kg 700g = 3kg 1000g = 4kg",
+          "points": 10
+        },
+        {
+          "problemId": "dl_prob_006",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Một bao gạo nặng 50kg. Đã dùng hết 12kg 500g. Còn lại bao nhiêu?",
+          "options": [
+            "A) 37kg 500g",
+            "B) 38kg 500g",
+            "C) 37kg",
+            "D) 47kg 500g"
+          ],
+          "correctAnswer": "A",
+          "solution": "50kg - 12kg 500g = 49kg 1000g - 12kg 500g = 37kg 500g",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "dl_03",
+      "sectionName": "Đo thời gian",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "dl_005",
+          "name": "Đơn vị thời gian",
+          "definition": "1 giờ = 60 phút, 1 phút = 60 giây, 1 ngày = 24 giờ, 1 tuần = 7 ngày",
+          "examples": [
+            "Tiết học = 45 phút",
+            "Bữa ăn trưa khoảng 30 phút"
+          ]
+        },
+        {
+          "id": "dl_006",
+          "name": "Xem đồng hồ",
+          "definition": "Kim giờ ngắn chỉ giờ, kim phút dài chỉ phút",
+          "examples": [
+            "Kim giờ chỉ 3, kim phút chỉ 12 → 3 giờ đúng",
+            "Kim giờ chỉ giữa 7 và 8, kim phút chỉ 6 → 7 giờ 30 phút"
+          ]
+        },
+        {
+          "id": "dl_007",
+          "name": "Tính thời gian",
+          "definition": "Thời gian = Giờ kết thúc - Giờ bắt đầu",
+          "examples": [
+            "Học từ 7:30 đến 11:00 → 3 giờ 30 phút"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dl_prob_007",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "1 giờ bằng bao nhiêu phút?",
+          "options": [
+            "A) 30 phút",
+            "B) 45 phút",
+            "C) 60 phút",
+            "D) 100 phút"
+          ],
+          "correctAnswer": "C",
+          "solution": "1 giờ = 60 phút",
+          "points": 5
+        },
+        {
+          "problemId": "dl_prob_008",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Kim giờ chỉ số 9, kim phút chỉ số 12. Đồng hồ chỉ mấy giờ?",
+          "options": [
+            "A) 12 giờ",
+            "B) 9 giờ",
+            "C) 9 giờ 12 phút",
+            "D) 12 giờ 9 phút"
+          ],
+          "correctAnswer": "B",
+          "solution": "Kim giờ chỉ 9, kim phút chỉ 12 (vị trí 0 phút) → 9 giờ đúng",
+          "points": 5
+        },
+        {
+          "problemId": "dl_prob_009",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Bạn An bắt đầu làm bài tập lúc 14:30 và kết thúc lúc 16:00. Bạn An làm bài trong bao lâu?",
+          "options": [
+            "A) 1 giờ",
+            "B) 1 giờ 30 phút",
+            "C) 2 giờ",
+            "D) 2 giờ 30 phút"
+          ],
+          "correctAnswer": "B",
+          "solution": "16:00 - 14:30 = 1 giờ 30 phút",
+          "points": 10
+        },
+        {
+          "problemId": "dl_prob_010",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Một chuyến xe khởi hành lúc 7:45 sáng, chạy trong 2 giờ 35 phút. Xe đến nơi lúc mấy giờ?",
+          "options": [
+            "A) 10:10",
+            "B) 10:20",
+            "C) 9:20",
+            "D) 10:00"
+          ],
+          "correctAnswer": "B",
+          "solution": "7:45 + 2 giờ = 9:45. 9:45 + 35 phút = 10:20",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm: 1m = 10cm",
+      "correction": "1m = 100cm (1 mét = 100 xăng-ti-mét)"
+    },
+    {
+      "mistake": "Nhầm: 1 giờ = 100 phút",
+      "correction": "1 giờ = 60 phút (hệ 60, không phải hệ 10)"
+    },
+    {
+      "mistake": "Quên nhớ khi cộng đơn vị: 700g + 500g = 200g",
+      "correction": "700g + 500g = 1200g = 1kg 200g (nhớ đổi khi vượt 1000)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "dl_quiz_01",
+      "title": "Kiểm tra: Đo lường",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "dl_prob_001"
+        },
+        {
+          "ref": "dl_prob_004"
+        },
+        {
+          "ref": "dl_prob_007"
+        },
+        {
+          "ref": "dl_prob_009"
+        },
+        {
+          "ref": "dl_prob_005"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

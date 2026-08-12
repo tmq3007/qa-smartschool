@@ -1,0 +1,325 @@
+<UserControl x:Class="QASmartClass.LearningTools.Views.Workplace.FishboneTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="White" xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls">
+
+    <UserControl.Resources>
+        <!-- Style hỗ trợ hiệu ứng hiển thị đường viền khi hover/focus cho TextBox tiêu đề nhóm -->
+        <Style x:Key="CategoryHeaderTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="Transparent" 
+                                BorderThickness="1" 
+                                CornerRadius="4">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#B2DFDB"/>
+                                <Setter TargetName="border" Property="Background" Value="#F5F5F5"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00796B"/>
+                                <Setter TargetName="border" Property="Background" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- === HEADER === -->
+        <Border Grid.Row="0" Background="#F8F9FA" Padding="16,10" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnTemplate" Content="🎯 Template ▼" Padding="10,6" Margin="0,0,6,0" FontSize="13" Cursor="Hand" Click="Template_Click"/>
+                    <Button x:Name="btnExport" Content="📷 Export PNG" Padding="10,6" Margin="0,0,6,0" FontSize="13" Cursor="Hand" Click="Export_Click"/>
+                    <Button x:Name="btnClear" Content="🗑️ Xóa tất cả" Padding="10,6" FontSize="13" Cursor="Hand" Click="Clear_Click"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="🐟 Biểu Đồ Xương Cá (Ishikawa)" FontSize="20" FontWeight="Bold" Foreground="#00796B"/>
+                    <TextBlock Text="Phân tích và phân loại các nguyên nhân gốc rễ của vấn đề (Mô hình 6M học đường)" FontSize="13" Foreground="#555555" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#F1F8E9">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#B2DFDB"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#00796B"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🐟" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextWorkspace" Text="Bảng vẽ phân tích" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#E0E0E0"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 1: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#B2DFDB" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#00796B" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#B2DFDB" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+<!-- Guide for Students -->
+                        <Expander x:Name="expGuide" Header="📖 Hướng dẫn sử dụng &amp; Ghi chú sư phạm" FontSize="14" FontWeight="SemiBold" Foreground="#00796B" Margin="0,0,0,16" Background="#F1F8E9" BorderBrush="#C5E1A5" BorderThickness="1" IsExpanded="True">
+                            <StackPanel Background="White" Margin="12">
+                                <Border Background="#E3F2FD" CornerRadius="6" Padding="10" Margin="0,0,0,12" BorderBrush="#BBDEFB" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock x:Name="lblOriginTitle" Text="💡 NGUỒN GỐC &amp; Ý NGHĨA" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,4" FontSize="13"/>
+                                        <TextBlock x:Name="txtToolMeaning" TextWrapping="Wrap" FontSize="13" Foreground="#424242" Margin="0,0,0,8"/>
+                                        <TextBlock x:Name="lblAppTitle" Text="🌍 ÁP DỤNG THỰC TẾ TRONG HỌC TẬP &amp; QUẢN LÝ" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,4" FontSize="13"/>
+                                        <TextBlock x:Name="txtToolApplication" TextWrapping="Wrap" FontSize="13" Foreground="#424242"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Ví dụ mẫu chi tiết hơn -->
+                                <Border Background="#E8F5E9" CornerRadius="6" Padding="12" Margin="0,0,0,12" BorderBrush="#A5D6A7" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock x:Name="lblGuideExampleTitle" Text="📝 VÍ DỤ PHÂN TÍCH MẪU TRỰC QUAN (HỌC TẬP)" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,8" FontSize="13"/>
+                                        <TextBlock x:Name="lblGuideExampleProblem" Text="Vấn đề đầu cá: Kết quả thi Học kỳ môn Hóa học bị sa sút" FontWeight="Bold" Foreground="#C62828" Margin="0,0,0,8" FontSize="13"/>
+                                        <Grid Margin="0,4,0,0" Grid.IsSharedSizeScope="True">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="GuideLabelGroup"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="0" x:Name="gManLabel" Text="• Con người (Man):" FontWeight="Bold" Foreground="#6A1B9A" Margin="0,0,10,6" FontSize="13"/>
+                                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="gManVal" Text="Học sinh thiếu tập trung trong giờ lý thuyết, lười tự làm bài tập về nhà." Foreground="#212121" Margin="0,0,0,6" FontSize="13" TextWrapping="Wrap"/>
+
+                                            <TextBlock Grid.Row="1" Grid.Column="0" x:Name="gMethodLabel" Text="• Phương pháp (Method):" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,10,6" FontSize="13"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="gMethodVal" Text="Học vẹt công thức, chưa biết cách liên hệ giữa lý thuyết và các thí nghiệm thực tế." Foreground="#212121" Margin="0,0,0,6" FontSize="13" TextWrapping="Wrap"/>
+
+                                            <TextBlock Grid.Row="2" Grid.Column="0" x:Name="gMachineLabel" Text="• Công cụ / Máy móc (Machine):" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,10,6" FontSize="13"/>
+                                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="gMachineVal" Text="Máy tính cầm tay bị kẹt phím bấm; thiếu thiết bị thí nghiệm ảo để học trực quan." Foreground="#212121" Margin="0,0,0,6" FontSize="13" TextWrapping="Wrap"/>
+
+                                            <TextBlock Grid.Row="3" Grid.Column="0" x:Name="gMaterialLabel" Text="• Tài liệu / Học liệu (Material):" FontWeight="Bold" Foreground="#E65100" Margin="0,0,10,6" FontSize="13"/>
+                                            <TextBlock Grid.Row="3" Grid.Column="1" x:Name="gMaterialVal" Text="Sách bài tập thiếu lời giải chi tiết; chưa tự lập đề cương tóm tắt các phản ứng." Foreground="#212121" Margin="0,0,0,6" FontSize="13" TextWrapping="Wrap"/>
+
+                                            <TextBlock Grid.Row="4" Grid.Column="0" x:Name="gMeasurementLabel" Text="• Đánh giá / Kiểm tra (Measurement):" FontWeight="Bold" Foreground="#AD1457" Margin="0,0,10,6" FontSize="13"/>
+                                            <TextBlock Grid.Row="4" Grid.Column="1" x:Name="gMeasurementVal" Text="Bài kiểm tra trắc nghiệm yêu cầu phản xạ nhanh, học sinh phân bổ thời gian chưa tốt." Foreground="#212121" Margin="0,0,0,6" FontSize="13" TextWrapping="Wrap"/>
+
+                                            <TextBlock Grid.Row="5" Grid.Column="0" x:Name="gEnvironmentLabel" Text="• Môi trường (Environment):" FontWeight="Bold" Foreground="#455A64" Margin="0,0,10,0" FontSize="13"/>
+                                            <TextBlock Grid.Row="5" Grid.Column="1" x:Name="gEnvironmentVal" Text="Góc tự học ở nhà bị ồn ào do gần đường lộ, ánh sáng đèn bàn bị mờ." Foreground="#212121" FontSize="13" TextWrapping="Wrap"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Quy trình thực hiện trực quan -->
+                                <TextBlock x:Name="lblWorkflowTitle" Text="🛠️ QUY TRÌNH THỰC HIỆN TRỰC QUAN" FontWeight="Bold" Foreground="#2E7D32" Margin="0,4,0,8" FontSize="13"/>
+                                <UniformGrid Columns="4" Margin="0,0,0,8">
+                                    <!-- Step 1 -->
+                                    <Border Background="#FFEBEE" BorderBrush="#EF9A9A" BorderThickness="1" CornerRadius="8" Padding="10" Margin="4">
+                                        <StackPanel>
+                                            <TextBlock x:Name="step1Header" Text="Bước 1" FontWeight="Bold" Foreground="#C62828" FontSize="11"/>
+                                            <TextBlock x:Name="step1Title" Text="📋 Vấn Đề" FontWeight="Bold" Foreground="#C62828" FontSize="14" Margin="0,2,0,4"/>
+                                            <TextBlock x:Name="step1Desc" Text="Xác định và nhập vấn đề cốt lõi cần giải quyết vào ô 'Đầu cá' bên phải." FontSize="12" Foreground="#37474F" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Step 2 -->
+                                    <Border Background="#FFF3E0" BorderBrush="#FFCC80" BorderThickness="1" CornerRadius="8" Padding="10" Margin="4">
+                                        <StackPanel>
+                                            <TextBlock x:Name="step2Header" Text="Bước 2" FontWeight="Bold" Foreground="#EF6C00" FontSize="11"/>
+                                            <TextBlock x:Name="step2Title" Text="🏷️ Phân Loại 6M" FontWeight="Bold" Foreground="#EF6C00" FontSize="14" Margin="0,2,0,4"/>
+                                            <TextBlock x:Name="step2Desc" Text="Nhấp đúp vào nhãn 6 nhóm xương để chỉnh sửa tiêu đề phân loại phù hợp." FontSize="12" Foreground="#37474F" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Step 3 -->
+                                    <Border Background="#E0F2F1" BorderBrush="#80CBC4" BorderThickness="1" CornerRadius="8" Padding="10" Margin="4">
+                                        <StackPanel>
+                                            <TextBlock x:Name="step3Header" Text="Bước 3" FontWeight="Bold" Foreground="#00695C" FontSize="11"/>
+                                            <TextBlock x:Name="step3Title" Text="✍️ Thêm Nguyên Nhân" FontWeight="Bold" Foreground="#00695C" FontSize="14" Margin="0,2,0,4"/>
+                                            <TextBlock x:Name="step3Desc" Text="Nhấn nút '+ Thêm' để ghi lại các nguyên nhân cụ thể trong từng nhóm." FontSize="12" Foreground="#37474F" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Step 4 -->
+                                    <Border Background="#E8F5E9" BorderBrush="#A5D6A7" BorderThickness="1" CornerRadius="8" Padding="10" Margin="4">
+                                        <StackPanel>
+                                            <TextBlock x:Name="step4Header" Text="Bước 4" FontWeight="Bold" Foreground="#2E7D32" FontSize="11"/>
+                                            <TextBlock x:Name="step4Title" Text="📷 Xuất &amp; Đánh Giá" FontWeight="Bold" Foreground="#2E7D32" FontSize="14" Margin="0,2,0,4"/>
+                                            <TextBlock x:Name="step4Desc" Text="Nhận diện nguyên nhân gốc rễ và xuất ảnh PNG để lưu trữ học tập." FontSize="12" Foreground="#37474F" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 2: BẢNG VẼ PHÂN TÍCH -->
+                <ScrollViewer x:Name="viewWorkspace" HorizontalContentAlignment="Stretch" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" Padding="16">
+                    <StackPanel HorizontalAlignment="Center">
+                        <!-- DRAWING BOARD (mainPanel) -->
+                        <Border x:Name="mainPanel" Background="#FAFAFA" CornerRadius="12" Padding="20" BorderBrush="#E0E0E0" BorderThickness="1" MinWidth="1000" MinHeight="500">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="20"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Backbone Line -->
+                                <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Background="#00796B" Height="4" VerticalAlignment="Center" Margin="0,0,-10,0"/>
+                                
+                                <!-- Arrow Head -->
+                                <Path Grid.Row="1" Grid.Column="3" Fill="#00796B" Data="M 0,-10 L 20,0 L 0,10 Z" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-10,0,0,0"/>
+
+                                <!-- Problem Area (Head) -->
+                                <Border Grid.Row="0" Grid.RowSpan="3" Grid.Column="3" Background="#E0F2F1" BorderBrush="#00796B" BorderThickness="2" CornerRadius="8" Padding="12" Margin="10,20,0,20" VerticalAlignment="Center">
+                                    <StackPanel>
+                                        <TextBlock Text="🎯 VẤN ĐỀ" FontSize="14" FontWeight="Bold" Foreground="#00796B" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                        <TextBox x:Name="txtProblem" FontSize="16" Padding="8" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="80" BorderBrush="#B2DFDB" Background="White" ToolTip="Nhập vấn đề cần phân tích" MaxLength="200"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Top Branches -->
+                                <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Bottom" Margin="10,0,10,10">
+                                    <Border BorderBrush="#1565C0" BorderThickness="0,0,0,2" Margin="0,0,0,8">
+                                        <TextBox x:Name="txtCat1" Text="Công cụ / Máy móc (Machine)" Style="{StaticResource CategoryHeaderTextBoxStyle}" Foreground="#1565C0" Margin="0,0,0,4" ToolTip="Nhấp đúp để chỉnh sửa tiêu đề nhóm" MaxLength="50"/>
+                                    </Border>
+                                    <StackPanel x:Name="panelCat1"/>
+                                    <Button Content="+ Thêm" FontSize="11" Padding="4,2" HorizontalAlignment="Left" Cursor="Hand" Click="AddCat1_Click" Background="Transparent" Foreground="#1565C0" BorderThickness="0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Bottom" Margin="10,0,10,10">
+                                    <Border BorderBrush="#2E7D32" BorderThickness="0,0,0,2" Margin="0,0,0,8">
+                                        <TextBox x:Name="txtCat2" Text="Phương pháp (Method)" Style="{StaticResource CategoryHeaderTextBoxStyle}" Foreground="#2E7D32" Margin="0,0,0,4" ToolTip="Nhấp đúp để chỉnh sửa tiêu đề nhóm" MaxLength="50"/>
+                                    </Border>
+                                    <StackPanel x:Name="panelCat2"/>
+                                    <Button Content="+ Thêm" FontSize="11" Padding="4,2" HorizontalAlignment="Left" Cursor="Hand" Click="AddCat2_Click" Background="Transparent" Foreground="#2E7D32" BorderThickness="0"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="0" Grid.Column="2" VerticalAlignment="Bottom" Margin="10,0,10,10">
+                                    <Border BorderBrush="#E65100" BorderThickness="0,0,0,2" Margin="0,0,0,8">
+                                        <TextBox x:Name="txtCat3" Text="Tài liệu / Học liệu (Material)" Style="{StaticResource CategoryHeaderTextBoxStyle}" Foreground="#E65100" Margin="0,0,0,4" ToolTip="Nhấp đúp để chỉnh sửa tiêu đề nhóm" MaxLength="50"/>
+                                    </Border>
+                                    <StackPanel x:Name="panelCat3"/>
+                                    <Button Content="+ Thêm" FontSize="11" Padding="4,2" HorizontalAlignment="Left" Cursor="Hand" Click="AddCat3_Click" Background="Transparent" Foreground="#E65100" BorderThickness="0"/>
+                                </StackPanel>
+
+                                <!-- Bottom Branches (Đảo ngược bố cục để tạo tính đối xứng sư phạm hướng về xương sống) -->
+                                <StackPanel Grid.Row="2" Grid.Column="0" VerticalAlignment="Top" Margin="10,10,10,0">
+                                    <Button Content="+ Thêm" FontSize="11" Padding="4,2" HorizontalAlignment="Left" Cursor="Hand" Click="AddCat4_Click" Background="Transparent" Foreground="#6A1B9A" BorderThickness="0" Margin="0,0,0,8"/>
+                                    <StackPanel x:Name="panelCat4"/>
+                                    <Border BorderBrush="#6A1B9A" BorderThickness="0,2,0,0" Margin="0,8,0,0">
+                                        <TextBox x:Name="txtCat4" Text="Con người (Man)" Style="{StaticResource CategoryHeaderTextBoxStyle}" Foreground="#6A1B9A" Margin="0,4,0,0" ToolTip="Nhấp đúp để chỉnh sửa tiêu đề nhóm" MaxLength="50"/>
+                                    </Border>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="2" Grid.Column="1" VerticalAlignment="Top" Margin="10,10,10,0">
+                                    <Button Content="+ Thêm" FontSize="11" Padding="4,2" HorizontalAlignment="Left" Cursor="Hand" Click="AddCat5_Click" Background="Transparent" Foreground="#AD1457" BorderThickness="0" Margin="0,0,0,8"/>
+                                    <StackPanel x:Name="panelCat5"/>
+                                    <Border BorderBrush="#AD1457" BorderThickness="0,2,0,0" Margin="0,8,0,0">
+                                        <TextBox x:Name="txtCat5" Text="Đánh giá / Kiểm tra (Measurement)" Style="{StaticResource CategoryHeaderTextBoxStyle}" Foreground="#AD1457" Margin="0,4,0,0" ToolTip="Nhấp đúp để chỉnh sửa tiêu đề nhóm" MaxLength="50"/>
+                                    </Border>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="2" Grid.Column="2" VerticalAlignment="Top" Margin="10,10,10,0">
+                                    <Button Content="+ Thêm" FontSize="11" Padding="4,2" HorizontalAlignment="Left" Cursor="Hand" Click="AddCat6_Click" Background="Transparent" Foreground="#455A64" BorderThickness="0" Margin="0,0,0,8"/>
+                                    <StackPanel x:Name="panelCat6"/>
+                                    <Border BorderBrush="#455A64" BorderThickness="0,2,0,0" Margin="0,8,0,0">
+                                        <TextBox x:Name="txtCat6" Text="Môi trường (Environment)" Style="{StaticResource CategoryHeaderTextBoxStyle}" Foreground="#455A64" Margin="0,4,0,0" ToolTip="Nhấp đúp để chỉnh sửa tiêu đề nhóm" MaxLength="50"/>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 3: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

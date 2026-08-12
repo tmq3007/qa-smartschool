@@ -1,0 +1,346 @@
+<UserControl TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" x:Class="QASmartClass.Staff.Views.SchoolAssetManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:QASmartClass.Staff.ViewModels"
+              Background="{StaticResource AppBackground}">
+    <UserControl.DataContext>
+        <vm:SchoolAssetManagementViewModel/>
+    </UserControl.DataContext>
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Margin="0,0,0,16">
+            <Border DockPanel.Dock="Left" Width="48" Height="48" CornerRadius="12" Margin="0,0,16,0">
+                <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#2563EB" Offset="0"/><GradientStop Color="#60A5FA" Offset="1"/></LinearGradientBrush></Border.Background>
+                <TextBlock Text="&#xE74C;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Quản Lý Tài Sản &amp; Thiết Bị" Style="{StaticResource StaffPageTitle}" Margin="0"/>
+                <TextBlock Text="Đăng ký, kiểm kê và bảo trì cơ sở vật chất nhà trường." Style="{StaticResource StaffPageSubtitle}" Margin="0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <Border Grid.Row="1" Style="{StaticResource StaffFormCard}" Padding="15" Margin="0,0,0,15">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Trạng thái:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource TextSecondary}"/>
+                <ComboBox SelectedValue="{Binding SelectedStatus}" SelectedValuePath="Content" Style="{StaticResource StaffComboBox}" Width="150" Margin="0,0,30,0">
+                    <ComboBoxItem Content="Tất cả"/>
+                    <ComboBoxItem Content="Active"/>
+                    <ComboBoxItem Content="NeedsRepair"/>
+                    <ComboBoxItem Content="Broken"/>
+                </ComboBox>
+
+                <TextBlock Text="Tìm kiếm thiết bị:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{StaticResource TextSecondary}"/>
+                <TextBox SpellCheck.IsEnabled="False" x:Name="SearchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="250" Height="32" VerticalContentAlignment="Center" Style="{StaticResource StaffTextBox}"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="340"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Left Panel: Tabs for Add Asset or Book Asset -->
+            <Border Grid.Column="0" Style="{StaticResource StaffFormCard}" Margin="0,0,20,0" Padding="15">
+                <TabControl Background="Transparent" BorderThickness="0" SelectionChanged="LeftTabControl_SelectionChanged">
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem">
+                            <Setter Property="HeaderTemplate">
+                                <Setter.Value>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" FontSize="14" FontWeight="SemiBold"/>
+                                    </DataTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <Border x:Name="Border" BorderThickness="0,0,0,2" BorderBrush="Transparent" Padding="10,6" Margin="0,0,15,5" Cursor="Hand">
+                                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
+                                                <Setter Property="Foreground" Value="#2563EB"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="False">
+                                                <Setter Property="Foreground" Value="#64748B"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.Resources>
+
+                    <TabItem Header="Thêm Thiết Bị">
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Text="Tên thiết bị:" Style="{StaticResource StaffFormLabel}"/>
+                            <TextBox x:Name="NewAssetNameBox" SpellCheck.IsEnabled="False" Text="{Binding NewAssetName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StaffTextBox}"/>
+                            
+                            <TextBlock Text="Phân loại thiết bị:" Style="{StaticResource StaffFormLabel}" Margin="0,8,0,0"/>
+                            <ComboBox SelectedValue="{Binding NewAssetCategory}" SelectedValuePath="Content" Style="{StaticResource StaffComboBox}">
+                                <ComboBoxItem Content="Bảng tương tác"/>
+                                <ComboBoxItem Content="Máy chiếu"/>
+                                <ComboBoxItem Content="Máy tính bảng"/>
+                                <ComboBoxItem Content="Thiết bị điện tử"/>
+                                <ComboBoxItem Content="Bàn ghế / Nội thất"/>
+                            </ComboBox>
+                            
+                            <TextBlock Text="Vị trí phòng học:" Style="{StaticResource StaffFormLabel}" Margin="0,8,0,0"/>
+                            <TextBox SpellCheck.IsEnabled="False" Text="{Binding NewAssetLocation, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StaffTextBox}"/>
+                            
+                            <Button Content="➕ Thêm Thiết Bị" Command="{Binding AddAssetCommand}" Margin="0,15,0,0">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource StaffSuccessBtn}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsProcessing}" Value="True">
+                                                <Setter Property="IsEnabled" Value="False"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <!-- Khung Hướng dẫn nghiệp vụ thêm thiết bị chuẩn sư phạm v4.2 -->
+                            <Border Margin="0,15,0,0" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="10">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Hướng dẫn thêm thiết bị mới:" FontWeight="Bold" Foreground="#1E40AF" Margin="0,0,0,5" FontSize="12"/>
+                                    <TextBlock Text="1. Nhập tên thiết bị cụ thể (ví dụ: Epson EB-X51)." FontSize="11" Foreground="#1E40AF" Margin="0,0,0,2" TextWrapping="Wrap"/>
+                                    <TextBlock Text="2. Chọn phân loại thiết bị phù hợp từ danh sách." FontSize="11" Foreground="#1E40AF" Margin="0,0,0,2" TextWrapping="Wrap"/>
+                                    <TextBlock Text="3. Nhập vị trí lắp đặt/phòng học (ví dụ: Phòng 10A1)." FontSize="11" Foreground="#1E40AF" Margin="0,0,0,2" TextWrapping="Wrap"/>
+                                    <TextBlock Text="4. Bấm [Thêm Thiết Bị] để lưu trữ vào cơ sở dữ liệu." FontSize="11" Foreground="#1E40AF" Margin="0,0,0,2" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+
+                    <TabItem Header="Đăng Ký Mượn">
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Text="Chọn Thiết Bị:" Style="{StaticResource StaffFormLabel}"/>
+                            <ComboBox ItemsSource="{Binding BookableAssets}" 
+                                      SelectedValue="{Binding BookingAssetId}" 
+                                      SelectedValuePath="Id" 
+                                      DisplayMemberPath="AssetName" 
+                                      Style="{StaticResource StaffComboBox}"/>
+
+                            <TextBlock Text="Ngày Mượn:" Style="{StaticResource StaffFormLabel}" Margin="0,8,0,0"/>
+                            <DatePicker SelectedDate="{Binding BookingDate, UpdateSourceTrigger=PropertyChanged}" 
+                                        Style="{StaticResource StaffDatePicker}"/>
+
+                            <TextBlock Text="Tiết Học (1-10):" Style="{StaticResource StaffFormLabel}" Margin="0,8,0,0"/>
+                            <ComboBox SelectedValue="{Binding BookingTimeSlot}" SelectedValuePath="Content" Style="{StaticResource StaffComboBox}">
+                                <ComboBoxItem Content="1"/>
+                                <ComboBoxItem Content="2"/>
+                                <ComboBoxItem Content="3"/>
+                                <ComboBoxItem Content="4"/>
+                                <ComboBoxItem Content="5"/>
+                                <ComboBoxItem Content="6"/>
+                                <ComboBoxItem Content="7"/>
+                                <ComboBoxItem Content="8"/>
+                                <ComboBoxItem Content="9"/>
+                                <ComboBoxItem Content="10"/>
+                            </ComboBox>
+
+                            <TextBlock Text="Mã Giáo Viên:" Style="{StaticResource StaffFormLabel}" Margin="0,8,0,0"/>
+                            <TextBox x:Name="BookedByBox" SpellCheck.IsEnabled="False" Text="{Binding BookedBy, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource StaffTextBox}"/>
+                            <TextBlock Text="{Binding BookedByTeacherName}" FontSize="12" Margin="0,-10,0,10" FontWeight="SemiBold" Foreground="#4B5563"/>
+
+                            <CheckBox Content="Mượn lặp lại hàng tuần" IsChecked="{Binding IsRecurring}" Margin="0,8,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
+
+                            <StackPanel Margin="0,8,0,0">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRecurring}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <TextBlock Text="Số tuần lặp lại (Tối đa 10):" Style="{StaticResource StaffFormLabel}"/>
+                                <ComboBox SelectedValue="{Binding RecurringWeeks}" SelectedValuePath="Content" Style="{StaticResource StaffComboBox}">
+                                    <ComboBoxItem Content="1"/>
+                                    <ComboBoxItem Content="2"/>
+                                    <ComboBoxItem Content="3"/>
+                                    <ComboBoxItem Content="4"/>
+                                    <ComboBoxItem Content="5"/>
+                                    <ComboBoxItem Content="6"/>
+                                    <ComboBoxItem Content="7"/>
+                                    <ComboBoxItem Content="8"/>
+                                    <ComboBoxItem Content="9"/>
+                                    <ComboBoxItem Content="10"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <Button Content="📅 Đăng Ký Mượn" Command="{Binding SaveBookingCommand}" Margin="0,15,0,0" Style="{StaticResource StaffSuccessBtn}"/>
+
+                            <!-- Khung Hướng dẫn nghiệp vụ mượn thiết bị chuẩn sư phạm v4.2 -->
+                            <Border Margin="0,15,0,0" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="10">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Hướng dẫn đăng ký mượn thiết bị:" FontWeight="Bold" Foreground="#1E40AF" Margin="0,0,0,5" FontSize="12"/>
+                                    <TextBlock Text="1. Chọn thiết bị có trạng thái Đang hoạt động." FontSize="11" Foreground="#1E40AF" Margin="0,0,0,2" TextWrapping="Wrap"/>
+                                    <TextBlock Text="2. Chọn ngày mượn (không chọn ngày trong quá khứ)." FontSize="11" Foreground="#1E40AF" Margin="0,0,0,2" TextWrapping="Wrap"/>
+                                    <TextBlock Text="3. Chọn tiết học muốn đăng ký (từ tiết 1 đến 10)." FontSize="11" Foreground="#1E40AF" Margin="0,0,0,2" TextWrapping="Wrap"/>
+                                    <TextBlock Text="4. Nhập mã số giáo viên sử dụng thiết bị." FontSize="11" Foreground="#1E40AF" Margin="0,0,0,2" TextWrapping="Wrap"/>
+                                    <TextBlock Text="5. Tích chọn mượn lặp lại hàng tuần nếu cần mượn dài hạn (tối đa 10 tuần)." FontSize="11" Foreground="#1E40AF" Margin="0,0,0,2" TextWrapping="Wrap"/>
+                                    <TextBlock Text="6. Bấm [Đăng Ký Mượn] để lưu lịch mượn." FontSize="11" Foreground="#1E40AF" Margin="0,0,0,2" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
+            </Border>
+
+            <!-- Right Panel: DataGrid List & Bookings Tab -->
+            <Border Grid.Column="1" Style="{StaticResource StaffFormCard}" Padding="15">
+                <TabControl Background="Transparent" BorderThickness="0">
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem">
+                            <Setter Property="HeaderTemplate">
+                                <Setter.Value>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" FontSize="14" FontWeight="SemiBold"/>
+                                    </DataTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <Border x:Name="Border" BorderThickness="0,0,0,2" BorderBrush="Transparent" Padding="10,6" Margin="0,0,15,5" Cursor="Hand">
+                                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
+                                                <Setter Property="Foreground" Value="#2563EB"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="False">
+                                                <Setter Property="Foreground" Value="#64748B"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.Resources>
+
+                    <TabItem Header="Danh Sách Thiết Bị">
+                        <DataGrid ItemsSource="{Binding Assets}" AutoGenerateColumns="False"
+                                  CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True"
+                                  RowHeight="42" Background="White" RowBackground="White" AlternatingRowBackground="#F8FAFC"
+                                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" BorderThickness="0" HeadersVisibility="Column"
+                                  Margin="0,10,0,0">
+                            <DataGrid.ColumnHeaderStyle><Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource StaffDataGridHeader}"/></DataGrid.ColumnHeaderStyle>
+                            <DataGrid.RowStyle><Style TargetType="DataGridRow" BasedOn="{StaticResource StaffDataGridRow}"/></DataGrid.RowStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Mã thiết bị" Binding="{Binding AssetCode}" Width="140"/>
+                                <DataGridTextColumn Header="Tên thiết bị" Binding="{Binding AssetName}" Width="*"/>
+                                <DataGridTextColumn Header="Phân loại" Binding="{Binding Category}" Width="140"/>
+                                <DataGridTextColumn Header="Vị trí / Phòng học" Binding="{Binding AssignedRoom}" Width="140"/>
+                                <DataGridTemplateColumn Header="Trạng thái" Width="120">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{Binding StatusBg}" CornerRadius="4" Padding="5,2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
+                                                <TextBlock Text="{Binding FriendlyStatus}" Foreground="{Binding StatusFg}" FontSize="12" FontWeight="SemiBold"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Hạn bảo trì" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding MaintenanceStatusText}" Foreground="{Binding MaintenanceStatusColor}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Hành động" Width="240">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                                                <Button Content="Báo hỏng" Command="{Binding DataContext.ReportCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding Id}" Background="#FEE2E2" Foreground="#DC2626" Margin="0,0,4,0">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource StaffIconBtn}">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding StatusText}" Value="NeedsRepair">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding StatusText}" Value="Broken">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                                <Button Content="Bảo trì" Command="{Binding DataContext.MaintenanceCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding Id}" Background="#DBEAFE" Foreground="#1E40AF" Margin="0,0,4,0">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource StaffIconBtn}">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding StatusText}" Value="Broken">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                                <Button Content="Hoàn tất sửa" Command="{Binding DataContext.FixCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding Id}" Background="#DCFCE7" Foreground="#16A34A" Margin="0,0,4,0">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource StaffIconBtn}">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding StatusText}" Value="NeedsRepair">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                                 <Button Content="Thanh lý" Command="{Binding DataContext.DecommissionAssetCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding Id}" Background="#F3F4F6" Foreground="#374151">
+                                                     <Button.Style>
+                                                         <Style TargetType="Button" BasedOn="{StaticResource StaffIconBtn}">
+                                                             <Setter Property="Visibility" Value="Visible"/>
+                                                             <Style.Triggers>
+                                                                 <DataTrigger Binding="{Binding StatusText}" Value="Broken">
+                                                                     <Setter Property="Visibility" Value="Collapsed"/>
+                                                                 </DataTrigger>
+                                                             </Style.Triggers>
+                                                         </Style>
+                                                     </Button.Style>
+                                                 </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+
+                    <TabItem Header="Lịch Sử Mượn">
+                        <DataGrid ItemsSource="{Binding Bookings}" AutoGenerateColumns="False"
+                                  CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True"
+                                  RowHeight="42" Background="White" RowBackground="White" AlternatingRowBackground="#F8FAFC"
+                                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" BorderThickness="0" HeadersVisibility="Column"
+                                  Margin="0,10,0,0">
+                            <DataGrid.ColumnHeaderStyle><Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource StaffDataGridHeader}"/></DataGrid.ColumnHeaderStyle>
+                            <DataGrid.RowStyle><Style TargetType="DataGridRow" BasedOn="{StaticResource StaffDataGridRow}"/></DataGrid.RowStyle>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Mã Yêu Cầu" Binding="{Binding Id}" Width="100"/>
+                                <DataGridTextColumn Header="Mã Thiết Bị (ID)" Binding="{Binding AssetId}" Width="120"/>
+                                <DataGridTextColumn Header="Người Mượn" Binding="{Binding BookedBy}" Width="150"/>
+                                <DataGridTextColumn Header="Ngày Mượn" Binding="{Binding BookingDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="150"/>
+                                <DataGridTextColumn Header="Tiết Học" Binding="{Binding TimeSlot}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,43 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Premium Font Families with standard Windows/WPF system fallbacks -->
+    <FontFamily x:Key="InterFont">pack://application:,,,/QASmartClass;component/Resources/Fonts/#Inter, Segoe UI, Arial</FontFamily>
+    <FontFamily x:Key="OutfitFont">pack://application:,,,/QASmartClass;component/Resources/Fonts/#Outfit, Century Gothic, Segoe UI Semibold</FontFamily>
+
+    <!-- Base Styles for Common Controls to ensure premium typography -->
+    <Style TargetType="Control">
+        <Setter Property="FontFamily" Value="{StaticResource InterFont}"/>
+    </Style>
+
+    <Style TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource InterFont}"/>
+    </Style>
+
+    <Style TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource InterFont}"/>
+        <Setter Property="Foreground" Value="#212121"/>
+    </Style>
+
+    <Style TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource InterFont}"/>
+    </Style>
+
+    <Style TargetType="Label">
+        <Setter Property="FontFamily" Value="{StaticResource InterFont}"/>
+    </Style>
+
+    <Style TargetType="ComboBox">
+        <Setter Property="FontFamily" Value="{StaticResource InterFont}"/>
+        <Setter Property="Foreground" Value="#212121"/>
+    </Style>
+
+    <Style TargetType="ComboBoxItem">
+        <Setter Property="FontFamily" Value="{StaticResource InterFont}"/>
+        <Setter Property="Foreground" Value="#212121"/>
+    </Style>
+
+    <Style TargetType="TabItem">
+        <Setter Property="FontFamily" Value="{StaticResource OutfitFont}"/>
+    </Style>
+</ResourceDictionary>

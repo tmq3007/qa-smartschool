@@ -1,0 +1,212 @@
+<Window x:Class="QASmartClass.Shared.FloatingModeBar"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+
+        Topmost="True" ShowInTaskbar="False"
+
+        Width="640" Height="50"
+
+        ResizeMode="NoResize"
+
+        WindowStartupLocation="Manual">
+
+
+
+    <Border CornerRadius="10" Margin="4"
+
+            Background="#E8EAF6" BorderBrush="#5C6BC0" BorderThickness="1.5">
+
+        <Border.Effect>
+
+            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.3"/>
+
+        </Border.Effect>
+
+
+
+        <DockPanel Margin="3,2">
+
+            <!-- Drag handle (right) -->
+
+            <Border DockPanel.Dock="Right" Width="20" Cursor="SizeAll" Background="Transparent"
+
+                    MouseLeftButtonDown="OnDragBar">
+
+                <TextBlock Text="⋮" FontSize="16" Foreground="#90A4AE" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+            </Border>
+
+
+
+            <!-- Separator before quick tools -->
+
+            <Border DockPanel.Dock="Right" Width="1" Background="#C5CAE9" Margin="3,6"/>
+
+
+
+            <!-- Quick Tools (right side) -->
+
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="2,0">
+
+                <!-- Show/Hide main window -->
+
+                <Border x:Name="btnShowHide" Width="36" Height="36" CornerRadius="8" Background="Transparent" Cursor="Hand"
+
+                        MouseLeftButtonDown="OnShowHideClick" ToolTip="Hiển thị / Ẩn cửa sổ chính">
+
+                    <TextBlock x:Name="txtShowHide" Text="🔲" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                </Border>
+
+                <!-- Voice broadcast -->
+
+                <Border x:Name="btnVoice" Width="36" Height="36" CornerRadius="8" Background="Transparent" Cursor="Hand"
+
+                        MouseLeftButtonDown="OnVoiceClick" ToolTip="Bắt đầu / Ngừng phát giọng nói">
+
+                    <TextBlock x:Name="txtVoice" Text="🎤" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                </Border>
+
+                <!-- Pen annotation -->
+
+                <Border x:Name="btnPen" Width="36" Height="36" CornerRadius="8" Background="Transparent" Cursor="Hand"
+
+                        MouseLeftButtonDown="OnPenClick" ToolTip="Mở bút chú thích trên màn hình">
+
+                    <TextBlock Text="✏️" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                </Border>
+
+                <!-- Screen recording -->
+
+                <Border x:Name="btnRecord" Width="36" Height="36" CornerRadius="8" Background="Transparent" Cursor="Hand"
+
+                        MouseLeftButtonDown="OnRecordClick" ToolTip="Ghi lại hoạt động trình chiếu">
+
+                    <TextBlock x:Name="txtRecord" Text="⏺️" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                </Border>
+
+                <!-- Screen broadcast -->
+
+                <Border x:Name="btnBroadcast" Width="36" Height="36" CornerRadius="8" Background="Transparent" Cursor="Hand"
+
+                        MouseLeftButtonDown="OnBroadcastClick" ToolTip="Quảng bá màn hình GV cho HS">
+
+                    <TextBlock x:Name="txtBroadcast" Text="📺" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                </Border>
+
+                <!-- Close/disconnect -->
+
+                <Border Width="36" Height="36" CornerRadius="8" Background="Transparent" Cursor="Hand"
+
+                        MouseLeftButtonDown="OnCloseClick" ToolTip="Thoát thanh công cụ">
+
+                    <Viewbox Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                        <Canvas Width="24" Height="24">
+
+                            <Path Fill="#D32F2F" Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+
+                        </Canvas>
+
+                    </Viewbox>
+
+                </Border>
+
+            </StackPanel>
+
+
+
+            <Border DockPanel.Dock="Right" Width="1" Background="#C5CAE9" Margin="3,6"/>
+
+
+
+            <!-- Mode Buttons (left side, fills remaining space) -->
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <!-- 📚 Smart Class Button -->
+
+                <Border x:Name="btnClass" Grid.Column="0" CornerRadius="8,0,0,8" Margin="1"
+
+                        Background="#1976D2" Cursor="Hand" MouseLeftButtonDown="OnClassClick">
+
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                        <TextBlock Text="📚 SMART CLASS" FontSize="10" FontWeight="Bold" 
+
+                                   Foreground="White" HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="Quản lý lớp" FontSize="8" Foreground="#BBDEFB" HorizontalAlignment="Center"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- 🖊️ Smart Touch Button -->
+
+                <Border x:Name="btnScreen" Grid.Column="1" Margin="1"
+
+                        Background="Transparent" Cursor="Hand" MouseLeftButtonDown="OnScreenClick">
+
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                        <TextBlock Text="🖊️ SMART TOUCH" FontSize="10" FontWeight="Bold" 
+
+                                   Foreground="#37474F" HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="Bảng trắng" FontSize="8" Foreground="#78909C" HorizontalAlignment="Center"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- 🔲 Desktop Button -->
+
+                <Border x:Name="btnDesktop" Grid.Column="2" CornerRadius="0,8,8,0" Margin="1"
+
+                        Background="Transparent" Cursor="Hand" MouseLeftButtonDown="OnDesktopClick">
+
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                        <TextBlock Text="🔲 DESKTOP" FontSize="10" FontWeight="Bold"
+
+                                   Foreground="#37474F" HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="Windows" FontSize="8" Foreground="#78909C" HorizontalAlignment="Center"/>
+
+                    </StackPanel>
+
+                </Border>
+
+            </Grid>
+
+        </DockPanel>
+
+    </Border>
+
+</Window>
+

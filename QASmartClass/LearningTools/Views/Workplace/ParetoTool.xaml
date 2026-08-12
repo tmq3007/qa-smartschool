@@ -1,0 +1,348 @@
+<UserControl x:Class="QASmartClass.LearningTools.Views.Workplace.ParetoTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:QASmartClass.LearningTools"
+             Background="White" xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls">
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- === HEADER === -->
+        <Border Grid.Row="0" Background="#F8F9FA" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnTemplate" Content="🎯 Mẫu biểu đồ ▼" Padding="12,8" Margin="0,0,8,0" FontSize="13" Cursor="Hand" Click="Template_Click" MinWidth="110" MinHeight="{x:Static local:DS.TouchMinHeight}" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                    <Button x:Name="btnExport" Content="📷 Export PNG" Padding="12,8" Margin="0,0,8,0" FontSize="13" Cursor="Hand" Click="Export_Click" MinWidth="110" MinHeight="{x:Static local:DS.TouchMinHeight}" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                    <Button x:Name="btnClear" Content="🗑️ Xóa tất cả" Padding="12,8" FontSize="13" Cursor="Hand" Click="Clear_Click" MinWidth="100" MinHeight="{x:Static local:DS.TouchMinHeight}" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="📊 Biểu Đồ Pareto" FontSize="{x:Static local:DS.FontTitle}" FontWeight="Bold" Foreground="#00796B" FontFamily="{x:Static local:DS.FontBold}"/>
+                    <TextBlock Text="Nguyên tắc 80/20 — Tập trung giải quyết 20% nguyên nhân gây ra 80% vấn đề" FontSize="{x:Static local:DS.FontSubtitle}" Foreground="#757575" Margin="0,4,0,0" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#F1F8E9">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#B2DFDB"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#00796B"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextWorkspace" Text="Biểu đồ Pareto" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#E0E0E0"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 1: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#B2DFDB" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#00796B" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#B2DFDB" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+<Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Left: Visual Step-by-Step Guide -->
+                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                <TextBlock Text="💡 NGUỒN GỐC &amp; NGUYÊN LÝ 80/20" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,6" FontSize="13" FontFamily="{x:Static local:DS.FontBold}"/>
+                                <TextBlock x:Name="txtToolMeaning" TextWrapping="Wrap" FontSize="13" Foreground="#424242" Margin="0,0,0,12" LineHeight="18" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                
+                                <TextBlock Text="🛠️ CÁC BƯỚC THỰC HIỆN TRỰC QUAN" FontWeight="Bold" Foreground="#00796B" Margin="0,0,0,8" FontSize="13" FontFamily="{x:Static local:DS.FontBold}"/>
+                                
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#00796B" Width="22" Height="22" CornerRadius="11" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                        <TextBlock Text="1" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="13" Foreground="#333333" LineHeight="18" FontFamily="{x:Static local:DS.FontPrimary}">
+                                        <Run FontWeight="SemiBold" Text="Nhập Tên Vấn Đề:"/> Đặt tên ở ô <Run FontStyle="Italic" Text="&quot;Tiêu đề biểu đồ / Vấn đề phân tích&quot;"/> (ví dụ: Lỗi sai trong bài thi Toán).
+                                    </TextBlock>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#00796B" Width="22" Height="22" CornerRadius="11" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                        <TextBlock Text="2" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="13" Foreground="#333333" LineHeight="18" FontFamily="{x:Static local:DS.FontPrimary}">
+                                        <Run FontWeight="SemiBold" Text="Liệt Kê Nguyên Nhân &amp; Tần Suất:"/> Nhập tên danh mục lỗi ở cột trái và số lần lặp lại ở cột phải. Nhấn <Run FontWeight="SemiBold" Foreground="#00796B" Text="➕ Thêm dòng mới"/> nếu cần.
+                                    </TextBlock>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#00796B" Width="22" Height="22" CornerRadius="11" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                        <TextBlock Text="3" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="13" Foreground="#333333" LineHeight="18" FontFamily="{x:Static local:DS.FontPrimary}">
+                                        <Run FontWeight="SemiBold" Text="Vẽ Biểu Đồ:"/> Nhấn <Run FontWeight="Bold" Foreground="#00796B" Text="📈 VẼ BIỂU ĐỒ PARETO"/>. Hệ thống sẽ tự động sắp xếp giảm dần và tính toán đường phần trăm tích lũy màu cam.
+                                    </TextBlock>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#E65100" Width="22" Height="22" CornerRadius="11" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                        <TextBlock Text="🔑" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="13" Foreground="#333333" LineHeight="18" FontFamily="{x:Static local:DS.FontPrimary}">
+                                        <Run FontWeight="Bold" Foreground="#E65100" Text="Nguyên lý Đọc Biểu Đồ:"/> Tập trung giải quyết các nguyên nhân nằm <Run FontWeight="Bold" Text="bên trái"/> đường nét đứt <Run FontWeight="Bold" Foreground="#E65100" Text="80%"/>. Giải quyết các nguyên nhân này sẽ giúp khắc phục 80% vấn đề tổng thể!
+                                    </TextBlock>
+                                </Grid>
+                            </StackPanel>
+                            
+                            <!-- Right: Practical Sample Data Table -->
+                            <Border Grid.Column="1" Background="#F5F5F5" CornerRadius="8" Padding="12" BorderBrush="#E0E0E0" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="📊 VÍ DỤ DỮ LIỆU MẪU CỤ THỂ" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,8" FontSize="13" FontFamily="{x:Static local:DS.FontBold}"/>
+                                    <TextBlock Text="Chủ đề: Lỗi Sai Trong Bài Thi Toán" FontSize="12" FontWeight="SemiBold" Foreground="#424242" Margin="0,0,0,6" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                    
+                                    <!-- Simple mock table of sample data -->
+                                    <Grid Margin="0,0,0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="70"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Nguyên Nhân Lỗi" FontSize="11" FontWeight="Bold" Foreground="#757575" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        <TextBlock Grid.Column="1" Text="Số Lần Sai" FontSize="11" FontWeight="Bold" Foreground="#757575" HorizontalAlignment="Center" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                    </Grid>
+                                    
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="#E0E0E0" Padding="0,4"/>
+                                    
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="70"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="1. Tính nhầm dấu (+, -)" FontSize="12" Foreground="#424242" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        <TextBlock Grid.Column="1" Text="40 lần" FontSize="12" Foreground="#424242" HorizontalAlignment="Center" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                    </Grid>
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="70"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="2. Đọc sai đề bài" FontSize="12" Foreground="#424242" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        <TextBlock Grid.Column="1" Text="25 lần" FontSize="12" Foreground="#424242" HorizontalAlignment="Center" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                    </Grid>
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="70"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="3. Vẽ hình sai/thiếu nét" FontSize="12" Foreground="#424242" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        <TextBlock Grid.Column="1" Text="15 lần" FontSize="12" Foreground="#424242" HorizontalAlignment="Center" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                    </Grid>
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="70"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="4. Bỏ quên câu hỏi phụ" FontSize="12" Foreground="#424242" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        <TextBlock Grid.Column="1" Text="7 lần" FontSize="12" Foreground="#424242" HorizontalAlignment="Center" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                    </Grid>
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="70"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="5. Tô nhầm đáp án trắc nghiệm" FontSize="12" Foreground="#424242" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        <TextBlock Grid.Column="1" Text="3 lần" FontSize="12" Foreground="#424242" HorizontalAlignment="Center" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                    </Grid>
+                                    
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="#E0E0E0" Padding="0,4"/>
+                                    
+                                    <TextBlock Text="💡 Nhận xét: 2 lỗi đầu tiên (Tính nhầm dấu &amp; Đọc sai đề) chiếm tới 72% tổng số lỗi. Chỉ cần sửa hai lỗi này điểm số sẽ cải thiện đáng kể!" FontSize="11" FontStyle="Italic" Foreground="#D32F2F" Margin="0,8,0,0" TextWrapping="Wrap" LineHeight="15" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 2: KHU VỰC THAO TÁC / PARETO WORKSPACE -->
+                <Grid x:Name="viewWorkspace" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="380"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- LEFT: Data Entry -->
+                    <Border Grid.Column="0" Background="#FAFAFA" CornerRadius="10" Padding="16" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,16,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="📋 BẢNG DỮ LIỆU" FontSize="15" FontWeight="Bold" Foreground="#00796B" Margin="0,0,0,12" FontFamily="{x:Static local:DS.FontBold}"/>
+
+                            <!-- Chart Title & Threshold Slider Input -->
+                            <StackPanel Grid.Row="1" Margin="0,0,0,12">
+                                <TextBlock Text="Tiêu đề biểu đồ / Vấn đề phân tích:" FontSize="12" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,4" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                <TextBox x:Name="txtInputTitle" Text="Lỗi sai trong bài thi Toán" FontSize="14" Padding="8,6" BorderBrush="#E0E0E0" FontFamily="{x:Static local:DS.FontPrimary}" Margin="0,0,0,8"/>
+                                
+                                <DockPanel LastChildFill="True">
+                                    <TextBlock DockPanel.Dock="Left" Text="Ngưỡng phân tích Pareto:" FontSize="12" FontWeight="SemiBold" Foreground="#616161" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                    <TextBlock x:Name="lblThresholdVal" DockPanel.Dock="Right" Text="80%" FontSize="12" FontWeight="Bold" Foreground="#E65100" HorizontalAlignment="Right" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                    <TextBlock Text="" />
+                                </DockPanel>
+                                <Slider x:Name="sliderThreshold" Minimum="50" Maximum="100" Value="80" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,4,0,0" ValueChanged="Threshold_ValueChanged"/>
+                            </StackPanel>
+
+                            <!-- Header Row -->
+                            <Grid Grid.Row="2" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="35"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Danh mục (Nguyên nhân/Vấn đề)" FontSize="13" FontWeight="SemiBold" Foreground="#616161" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                <TextBlock Grid.Column="1" Text="Tần suất" FontSize="13" FontWeight="SemiBold" Foreground="#616161" HorizontalAlignment="Center" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                            </Grid>
+
+                            <!-- Data Rows -->
+                            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
+                                <StackPanel x:Name="dataPanel"/>
+                            </ScrollViewer>
+
+                            <!-- Action buttons -->
+                            <Grid Grid.Row="4" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="➕ Thêm dòng" Padding="10" FontSize="13" FontWeight="SemiBold" Cursor="Hand" Click="AddRow_Click" Background="#E0F2F1" Foreground="#00796B" BorderThickness="0" Margin="0,0,8,0" MinHeight="40" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                <Button Grid.Column="1" Content="💾 Lưu" Padding="10" FontSize="13" FontWeight="SemiBold" Cursor="Hand" Click="SaveData_Click" Background="#E8F5E9" Foreground="#2E7D32" BorderThickness="0" Margin="0,0,8,0" MinHeight="40" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                <Button Grid.Column="2" Content="📂 Mở" Padding="10" FontSize="13" FontWeight="SemiBold" Cursor="Hand" Click="LoadData_Click" Background="#FFF3E0" Foreground="#E65100" BorderThickness="0" MinHeight="40" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                            </Grid>
+
+                            <!-- Action -->
+                            <Button Grid.Row="5" x:Name="btnDraw" Content="📈 VẼ BIỂU ĐỒ PARETO" Padding="12" FontSize="15" FontWeight="Bold" Cursor="Hand" Click="Draw_Click" Background="#00796B" Foreground="White" BorderThickness="0" MinHeight="{x:Static local:DS.TouchMinHeight}" FontFamily="{x:Static local:DS.FontBold}"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- RIGHT: Chart Area -->
+                    <Border x:Name="chartBorder" Grid.Column="1" Background="White" CornerRadius="10" Padding="20" BorderBrush="#E0E0E0" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock x:Name="txtChartTitle" Grid.Row="0" Text="BIỂU ĐỒ PARETO: LỖI SAI TRONG BÀI THI TOÁN" FontSize="16" FontWeight="Bold" Foreground="#212121" HorizontalAlignment="Center" Margin="0,0,0,16" FontFamily="{x:Static local:DS.FontBold}"/>
+
+                            <Border Grid.Row="1" ClipToBounds="True">
+                                <Canvas x:Name="chartCanvas" Background="Transparent" SizeChanged="Canvas_SizeChanged">
+                                    <!-- Custom Hover Card -->
+                                    <Border x:Name="hoverCard" Background="#E0F2F1" BorderBrush="#004D40" BorderThickness="1.5" CornerRadius="8" Padding="10,8" Visibility="Collapsed" Panel.ZIndex="100">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#000000" BlurRadius="6" ShadowDepth="2" Opacity="0.15"/>
+                                        </Border.Effect>
+                                        <StackPanel>
+                                            <TextBlock x:Name="lblHoverTitle" Text="Danh mục" FontSize="12" FontWeight="Bold" Foreground="#004D40" FontFamily="{x:Static local:DS.FontBold}" Margin="0,0,0,4"/>
+                                            <TextBlock x:Name="lblHoverVal" Text="Tần suất: 0" FontSize="11" Foreground="#212121" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            <TextBlock x:Name="lblHoverCum" Text="Tích lũy: 0%" FontSize="11" Foreground="#E65100" FontWeight="SemiBold" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Canvas>
+                            </Border>
+
+                            <!-- Conclusion -->
+                            <Border x:Name="conclusionBorder" Grid.Row="2" Background="#FFF8E1" BorderBrush="#FFC107" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,16,0,0" Visibility="Collapsed">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Kết luận 80/20:" FontSize="13" FontWeight="Bold" Foreground="#F57F17" Margin="0,0,0,4" FontFamily="{x:Static local:DS.FontBold}"/>
+                                    <TextBlock x:Name="txtConclusion" Text="" FontSize="13" Foreground="#212121" TextWrapping="Wrap" LineHeight="18" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- VIEW 3: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

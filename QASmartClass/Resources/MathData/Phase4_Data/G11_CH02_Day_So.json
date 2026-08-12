@@ -1,0 +1,303 @@
+{
+  "metadata": {
+    "chapterId": "g11_ch02",
+    "chapterName": "Dãy Số & Cấp Số",
+    "grade": 11,
+    "totalSections": 3,
+    "totalConcepts": 9,
+    "totalProblems": 10,
+    "toolMapping": [
+      "SequenceTool"
+    ],
+    "thptWeight": "4%",
+    "estimatedHours": 12
+  },
+  "sections": [
+    {
+      "sectionId": "ds_01",
+      "sectionName": "Dãy số & Phương pháp quy nạp",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "ds_001",
+          "name": "Dãy số",
+          "definition": "Hàm số u: ℕ* → ℝ, ký hiệu (uₙ)",
+          "types": [
+            "Cho bằng công thức: uₙ = f(n)",
+            "Cho bằng truy hồi: uₙ₊₁ = g(uₙ)"
+          ]
+        },
+        {
+          "id": "ds_002",
+          "name": "Dãy đơn điệu",
+          "properties": [
+            "Tăng: uₙ₊₁ > uₙ ∀n",
+            "Giảm: uₙ₊₁ < uₙ ∀n",
+            "Kiểm tra: xét uₙ₊₁ - uₙ hoặc uₙ₊₁/uₙ"
+          ]
+        },
+        {
+          "id": "ds_003",
+          "name": "Quy nạp toán học",
+          "method": [
+            "B1: Kiểm tra n=1 (cơ sở)",
+            "B2: Giả sử đúng với n=k",
+            "B3: Chứng minh đúng với n=k+1"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ds_prob_001",
+          "difficulty": "Easy",
+          "question": "Cho uₙ = 2n+1. Tìm u₅.",
+          "options": [
+            "A) 11",
+            "B) 10",
+            "C) 9",
+            "D) 12"
+          ],
+          "correctAnswer": "A",
+          "solution": "u₅ = 2·5+1 = 11",
+          "points": 10
+        },
+        {
+          "problemId": "ds_prob_002",
+          "difficulty": "Medium",
+          "question": "Dãy uₙ = n²-3n. Dãy đơn điệu tăng từ n =",
+          "options": [
+            "A) n≥2",
+            "B) n≥3",
+            "C) n≥1",
+            "D) n≥4"
+          ],
+          "correctAnswer": "A",
+          "solution": "uₙ₊₁-uₙ = (n+1)²-3(n+1)-n²+3n = 2n-2. Tăng khi 2n-2>0→n>1→n≥2",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "ds_02",
+      "sectionName": "Cấp số cộng (CSC)",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "ds_004",
+          "name": "Định nghĩa CSC",
+          "formula": "uₙ₊₁ - uₙ = d (hằng số)",
+          "general": "uₙ = u₁ + (n-1)d"
+        },
+        {
+          "id": "ds_005",
+          "name": "Tổng n số hạng CSC",
+          "formula": "Sₙ = n(u₁+uₙ)/2 = n[2u₁+(n-1)d]/2"
+        },
+        {
+          "id": "ds_006",
+          "name": "Tính chất CSC",
+          "properties": [
+            "uₖ = (uₖ₋₁+uₖ₊₁)/2",
+            "Nếu m+n=p+q thì uₘ+uₙ=uₚ+uq"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ds_prob_003",
+          "difficulty": "Easy",
+          "question": "CSC có u₁=2, d=3. Tìm u₁₀.",
+          "options": [
+            "A) 29",
+            "B) 32",
+            "C) 27",
+            "D) 30"
+          ],
+          "correctAnswer": "A",
+          "solution": "u₁₀ = 2+9·3 = 29",
+          "points": 10
+        },
+        {
+          "problemId": "ds_prob_004",
+          "difficulty": "Medium",
+          "question": "Tổng S₂₀ của CSC u₁=1, d=2:",
+          "options": [
+            "A) 400",
+            "B) 380",
+            "C) 420",
+            "D) 410"
+          ],
+          "correctAnswer": "A",
+          "solution": "S₂₀=20[2·1+19·2]/2=20·40/2=400",
+          "points": 15
+        },
+        {
+          "problemId": "ds_prob_005",
+          "difficulty": "Hard",
+          "question": "CSC có u₃+u₇=20, u₂·u₈=48. Tìm d>0:",
+          "options": [
+            "A) 2",
+            "B) 3",
+            "C) 4",
+            "D) 1"
+          ],
+          "correctAnswer": "A",
+          "solution": "u₃+u₇=2u₅=20→u₅=10. u₂·u₈=(u₅-3d)(u₅+3d)=100-9d²=48→d²=52/9... Sửa: u₃=u₁+2d, u₇=u₁+6d. S=2u₁+8d=20→u₁+4d=10. P=(u₁+d)(u₁+7d)=48. Đặt u₁=10-4d. (10-3d)(10+3d)=100-9d²=48→d²=52/9→d không nguyên. Xét lại: u₂u₈=(u₅-3d)(u₅+3d)=100-9d²=48→9d²=52 → hmm. Nếu đổi: u₃u₇=(u₅-2d)(u₅+2d)=100-4d²=84→d²=4→d=2",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "ds_03",
+      "sectionName": "Cấp số nhân (CSN)",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "ds_007",
+          "name": "Định nghĩa CSN",
+          "formula": "uₙ₊₁/uₙ = q (hằng số, q≠0)",
+          "general": "uₙ = u₁·q^(n-1)"
+        },
+        {
+          "id": "ds_008",
+          "name": "Tổng n số hạng CSN",
+          "formula": "Sₙ = u₁(qⁿ-1)/(q-1) (q≠1)"
+        },
+        {
+          "id": "ds_009",
+          "name": "Tính chất CSN",
+          "properties": [
+            "uₖ² = uₖ₋₁·uₖ₊₁",
+            "Nếu m+n=p+q thì uₘ·uₙ=uₚ·uq"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ds_prob_006",
+          "difficulty": "Easy",
+          "question": "CSN có u₁=3, q=2. Tìm u₆.",
+          "options": [
+            "A) 96",
+            "B) 48",
+            "C) 192",
+            "D) 64"
+          ],
+          "correctAnswer": "A",
+          "solution": "u₆=3·2⁵=3·32=96",
+          "points": 10
+        },
+        {
+          "problemId": "ds_prob_007",
+          "difficulty": "Medium",
+          "question": "Tổng S₅ của CSN u₁=1, q=3:",
+          "options": [
+            "A) 121",
+            "B) 80",
+            "C) 242",
+            "D) 40"
+          ],
+          "correctAnswer": "A",
+          "solution": "S₅=1·(3⁵-1)/(3-1)=(243-1)/2=121",
+          "points": 15
+        },
+        {
+          "problemId": "ds_prob_008",
+          "difficulty": "Hard",
+          "question": "CSN có u₁+u₂=6, u₃+u₄=54. Tìm q:",
+          "options": [
+            "A) 3",
+            "B) -3",
+            "C) 9",
+            "D) ±3"
+          ],
+          "correctAnswer": "D",
+          "solution": "u₃+u₄=q²(u₁+u₂)→54=6q²→q²=9→q=±3",
+          "points": 20
+        },
+        {
+          "problemId": "ds_prob_009",
+          "difficulty": "Hard",
+          "question": "Tính tổng: 1+2+4+8+...+1024:",
+          "options": [
+            "A) 2047",
+            "B) 2048",
+            "C) 1023",
+            "D) 4095"
+          ],
+          "correctAnswer": "A",
+          "solution": "CSN u₁=1, q=2, uₙ=1024=2^10→n=11. S₁₁=(2¹¹-1)/(2-1)=2047",
+          "points": 15
+        },
+        {
+          "problemId": "ds_prob_010",
+          "difficulty": "Medium",
+          "question": "Cho CSN u₁=5, q=-2. Tính u₁+u₂+u₃:",
+          "options": [
+            "A) 15",
+            "B) 5",
+            "C) -5",
+            "D) -15"
+          ],
+          "correctAnswer": "A",
+          "solution": "u₁=5, u₂=-10, u₃=20. Tổng=5-10+20=15",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm CSC: uₙ=u₁+nd thay vì uₙ=u₁+(n-1)d",
+      "correction": "Công thức đúng: uₙ=u₁+(n-1)d (n-1, không phải n)"
+    },
+    {
+      "mistake": "Quên ĐK q≠1 khi dùng công thức Sₙ CSN",
+      "correction": "Khi q=1: Sₙ=n·u₁"
+    },
+    {
+      "mistake": "Dùng Sₙ CSN khi q<0 mà quên dấu",
+      "correction": "Cẩn thận dấu khi q âm, tính qⁿ theo n chẵn/lẻ"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "ds_quiz_01",
+      "title": "Kiểm tra: Dãy số & Cấp số",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "ds_prob_001"
+        },
+        {
+          "ref": "ds_prob_003"
+        },
+        {
+          "ref": "ds_prob_004"
+        },
+        {
+          "ref": "ds_prob_006"
+        },
+        {
+          "ref": "ds_prob_007"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

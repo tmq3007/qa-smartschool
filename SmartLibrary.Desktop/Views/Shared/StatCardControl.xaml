@@ -1,0 +1,23 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Shared.StatCardControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="150" d:DesignWidth="250"
+             Name="root">
+    <Border Style="{StaticResource CardBorder}" Cursor="Hand">
+        <Border.InputBindings>
+            <MouseBinding MouseAction="LeftClick" Command="{Binding ElementName=root, Path=ClickCommand}" CommandParameter="{Binding ElementName=root, Path=ClickCommandParameter}"/>
+        </Border.InputBindings>
+        <StackPanel>
+            <TextBlock Text="{Binding ElementName=root, Path=Icon}" FontSize="32" Margin="0,0,0,8"/>
+            <TextBlock Text="{Binding ElementName=root, Path=Value}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,0,0,4"/>
+            <TextBlock Text="{Binding ElementName=root, Path=Label}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+            
+            <Border BorderThickness="0,1,0,0" BorderBrush="{StaticResource BorderBrush}" Margin="0,8,0,0" Padding="0,8,0,0">
+                <TextBlock Text="{Binding ElementName=root, Path=ChangeText}" FontSize="11" Foreground="{Binding ElementName=root, Path=ChangeBrush}"/>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

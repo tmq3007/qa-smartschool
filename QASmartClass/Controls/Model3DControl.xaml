@@ -1,0 +1,436 @@
+﻿<UserControl x:Class="QASmartTouch.Controls.Model3DControl"
+
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+             xmlns:helix="http://helix-toolkit.org/wpf"
+
+             Width="900" Height="700"
+
+             Background="Transparent">
+
+    
+
+    <UserControl.Resources>
+
+        <!-- View Button Style -->
+
+        <Style x:Key="ViewButtonStyle" TargetType="Button">
+
+            <Setter Property="Background" Value="#2196F3"/>
+
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Padding" Value="12,8"/>
+
+            <Setter Property="Margin" Value="5,0"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="FontSize" Value="13"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                                CornerRadius="6"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#1976D2"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+        
+
+        <!-- Delete Button Style -->
+
+        <Style x:Key="DeleteButtonStyle" TargetType="Button">
+
+            <Setter Property="Background" Value="#F44336"/>
+
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Padding" Value="15,10"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                                CornerRadius="8"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#D32F2F"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </UserControl.Resources>
+
+    
+
+    <Grid>
+
+        <!-- Main Border -->
+
+        <Border x:Name="mainBorder"
+
+                BorderBrush="#2196F3"
+
+                BorderThickness="2"
+
+                CornerRadius="12"
+
+                Background="White">
+
+            <Border.Effect>
+
+                <DropShadowEffect Color="#000" BlurRadius="15" ShadowDepth="3" Opacity="0.3"/>
+
+            </Border.Effect>
+
+        </Border>
+
+        
+
+        <Grid Margin="10">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/>
+
+                <RowDefinition Height="*"/>
+
+                <RowDefinition Height="Auto"/>
+
+                <RowDefinition Height="Auto"/>
+
+            </Grid.RowDefinitions>
+
+            
+
+            <!-- Title Bar -->
+
+            <Border x:Name="titleBar"
+
+                    Grid.Row="0" 
+
+                    CornerRadius="8,8,0,0"
+
+                    Padding="15,10"
+
+                    Margin="0,0,0,10"
+
+                    Cursor="SizeAll">
+
+                <Border.Background>
+
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+
+                        <GradientStop Color="#667EEA" Offset="0"/>
+
+                        <GradientStop Color="#764BA2" Offset="1"/>
+
+                    </LinearGradientBrush>
+
+                </Border.Background>
+
+                <Grid>
+
+                    <TextBlock x:Name="txtTitle"
+
+                               Text="📦 3D Model Viewer" 
+
+                               FontSize="18" 
+
+                               FontWeight="Bold" 
+
+                               Foreground="White"
+
+                               VerticalAlignment="Center"/>
+
+                    <Button x:Name="btnDelete"
+
+                            Content="🗑️ Xóa"
+
+                            Click="btnDelete_Click"
+
+                            Style="{StaticResource DeleteButtonStyle}"
+
+                            HorizontalAlignment="Right"
+
+                            Padding="10,6"
+
+                            FontSize="12"/>
+
+                </Grid>
+
+            </Border>
+
+            
+
+            <!-- 3D Viewport -->
+
+            <Border Grid.Row="1" 
+
+                    CornerRadius="8" 
+
+                    BorderBrush="#E0E0E0" 
+
+                    BorderThickness="1">
+
+                <helix:HelixViewport3D x:Name="viewport3D"
+
+                                       Background="#F9FAFB"
+
+                                       CameraRotationMode="Trackball"
+
+                                       ShowCoordinateSystem="True"
+
+                                       ShowViewCube="True"
+
+                                       ZoomExtentsWhenLoaded="True">
+
+                    
+
+                    <!-- Camera -->
+
+                    <helix:HelixViewport3D.Camera>
+
+                        <PerspectiveCamera Position="10,10,10" 
+
+                                          LookDirection="-10,-10,-10" 
+
+                                          UpDirection="0,0,1"
+
+                                          FieldOfView="45"/>
+
+                    </helix:HelixViewport3D.Camera>
+
+                    
+
+                    <!-- Lights -->
+
+                    <helix:DefaultLights/>
+
+                    
+
+                    <!-- Coordinate System with Arrows -->
+
+                    <helix:CoordinateSystemVisual3D ArrowLengths="5"/>
+
+                    
+
+                    <!-- Model Container -->
+
+                    <ModelVisual3D x:Name="modelVisual"/>
+
+                    
+
+                </helix:HelixViewport3D>
+
+            </Border>
+
+            
+
+            <!-- Camera View Presets -->
+
+            <Border Grid.Row="2" 
+
+                    Background="#F9FAFB" 
+
+                    Padding="15" 
+
+                    Margin="0,10,0,0" 
+
+                    CornerRadius="8">
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                    <Button Content="🔼 Top View" 
+
+                            Click="BtnTopView_Click" 
+
+                            Style="{StaticResource ViewButtonStyle}"/>
+
+                    <Button Content="👁️ Front View" 
+
+                            Click="BtnFrontView_Click" 
+
+                            Style="{StaticResource ViewButtonStyle}"/>
+
+                    <Button Content="➡️ Side View" 
+
+                            Click="BtnSideView_Click" 
+
+                            Style="{StaticResource ViewButtonStyle}"/>
+
+                    <Button Content="🔄 Reset" 
+
+                            Click="BtnResetView_Click" 
+
+                            Style="{StaticResource ViewButtonStyle}"/>
+
+                </StackPanel>
+
+            </Border>
+
+            
+
+            <!-- Help Guide -->
+
+            <Border Grid.Row="3" 
+
+                    Background="#FFF3E0" 
+
+                    BorderBrush="#FF9800" 
+
+                    BorderThickness="1"
+
+                    CornerRadius="8" 
+
+                    Padding="12" 
+
+                    Margin="0,10,0,0">
+
+                <StackPanel>
+
+                    <TextBlock Text="💡 Hướng dẫn điều khiển:" 
+
+                               FontWeight="Bold" 
+
+                               FontSize="13"
+
+                               Foreground="#E65100"
+
+                               Margin="0,0,0,8"/>
+
+                    <TextBlock TextWrapping="Wrap" 
+
+                               FontSize="11" 
+
+                               Foreground="#5D4037"
+
+                               LineHeight="18">
+
+                        • <Bold>Chuột trái + kéo:</Bold> Xoay camera quanh mô hình<LineBreak/>
+
+                        • <Bold>Chuột phải + kéo:</Bold> Pan (di chuyển view)<LineBreak/>
+
+                        • <Bold>Cuộn chuột:</Bold> Zoom in/out<LineBreak/>
+
+                        • <Bold>View Cube:</Bold> Click để chuyển góc nhìn nhanh<LineBreak/>
+
+                        • <Bold>View Presets:</Bold> Chuyển sang các góc nhìn chuẩn
+
+                    </TextBlock>
+
+                </StackPanel>
+
+            </Border>
+
+        </Grid>
+
+        
+
+        <!-- Resize Handle (bottom-right corner) -->
+
+        <Thumb x:Name="resizeThumb" 
+
+               Width="20" Height="20"
+
+               HorizontalAlignment="Right"
+
+               VerticalAlignment="Bottom"
+
+               Cursor="SizeNWSE"
+
+               Margin="0,0,8,8"
+
+               DragDelta="resizeThumb_DragDelta">
+
+            <Thumb.Template>
+
+                <ControlTemplate>
+
+                    <Border Background="#2196F3" CornerRadius="3">
+
+                        <Path Fill="White" 
+
+                              Data="M0,10 L10,0 M5,10 L10,5 M10,10 L10,10"
+
+                              Stroke="White"
+
+                              StrokeThickness="1.5"
+
+                              Margin="5"/>
+
+                    </Border>
+
+                </ControlTemplate>
+
+            </Thumb.Template>
+
+        </Thumb>
+
+    </Grid>
+
+</UserControl>
+

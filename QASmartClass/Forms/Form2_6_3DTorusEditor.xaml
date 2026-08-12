@@ -1,0 +1,930 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_6_3DTorusEditor"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Vẽ Hình Xuyến 3D (Torus)" 
+
+        Height="700" 
+
+        Width="1100"
+
+        WindowStartupLocation="CenterScreen"
+
+        ResizeMode="CanMinimize"
+
+        Background="#F5F7FA">
+
+
+
+    <Window.Resources>
+
+        <Style x:Key="LabelText" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="11"/>
+
+            <Setter Property="FontWeight" Value="Medium"/>
+
+            <Setter Property="Foreground" Value="#555"/>
+
+        </Style>
+
+
+
+        <Style x:Key="PanelTitle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="13"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Setter Property="Foreground" Value="#2C3E50"/>
+
+            <Setter Property="Margin" Value="0,0,0,10"/>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="60"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <Border Grid.Row="0" Background="#667eea">
+
+            <Grid Margin="20,0">
+
+                <StackPanel VerticalAlignment="Center">
+
+                    <TextBlock Text="Chức năng vẽ Hình Xuyến 3D (Torus)" 
+
+                               FontSize="18" 
+
+                               FontWeight="Bold" 
+
+                               Foreground="White"/>
+
+                    <TextBlock Text="Công cụ hỗ trợ giảng dạy hình học không gian - Hình xuyến (Donut)" 
+
+                               FontSize="11" 
+
+                               Foreground="White" 
+
+                               Opacity="0.95"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- Main Content -->
+
+        <Grid Grid.Row="1">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="380"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Canvas Area -->
+
+            <Border Grid.Column="0" Background="White" Padding="20">
+
+                <Grid>
+
+                    <Border Background="White" 
+
+                            BorderBrush="#DDD" 
+
+                            BorderThickness="2" 
+
+                            CornerRadius="10"
+
+                            HorizontalAlignment="Center"
+
+                            VerticalAlignment="Center">
+
+                        <Canvas x:Name="TorusCanvas" 
+
+                                Width="600" 
+
+                                Height="500" 
+
+                                Background="White"/>
+
+                    </Border>
+
+
+
+                    <!-- Info Overlay -->
+
+                    <Border Background="White" 
+
+                            Padding="15" 
+
+                            CornerRadius="8"
+
+                            HorizontalAlignment="Left"
+
+                            VerticalAlignment="Top"
+
+                            Margin="20">
+
+                        <Border.Effect>
+
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
+
+                        </Border.Effect>
+
+                        <StackPanel>
+
+                            <TextBlock Text="Hướng dẫn sử dụng" 
+
+                                       FontWeight="Bold" 
+
+                                       Foreground="#667eea" 
+
+                                       FontSize="11" 
+
+                                       Margin="0,0,0,5"/>
+
+                            <TextBlock Text="• Chọn preset hoặc tùy chỉnh R và r" FontSize="10"/>
+
+                            <TextBlock Text="• Kéo thanh trượt để xoay 3D" FontSize="10"/>
+
+                            <TextBlock Text="• Điều kiện: R > r" FontSize="10"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </Grid>
+
+            </Border>
+
+
+
+            <!-- Control Panel -->
+
+            <ScrollViewer Grid.Column="1" 
+
+                          Background="#F0F2F5" 
+
+                          VerticalScrollBarVisibility="Auto">
+
+                <StackPanel Margin="15">
+
+
+
+                    <!-- Info Panel -->
+
+                    <Border Background="#E8EAF6" 
+
+                            BorderBrush="#5C6BC0" 
+
+                            BorderThickness="0,0,0,4" 
+
+                            CornerRadius="8" 
+
+                            Padding="15" 
+
+                            Margin="0,0,0,15">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Thông số hiện tại" Style="{StaticResource PanelTitle}"/>
+
+                            
+
+                            <Grid Margin="0,0,0,5">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Preset:" Style="{StaticResource LabelText}"/>
+
+                                <TextBlock x:Name="txtPreset" Text="Donut chuẩn" 
+
+                                          Grid.Column="1" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="#667eea" 
+
+                                          FontSize="11"/>
+
+                            </Grid>
+
+
+
+                            <Grid Margin="0,0,0,5">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Bán kính chính (R):" Style="{StaticResource LabelText}"/>
+
+                                <TextBlock x:Name="txtMajorRadius" Text="100 đơn vị" 
+
+                                          Grid.Column="1" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="#667eea" 
+
+                                          FontSize="11"/>
+
+                            </Grid>
+
+
+
+                            <Grid Margin="0,0,0,5">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Bán kính ống (r):" Style="{StaticResource LabelText}"/>
+
+                                <TextBlock x:Name="txtMinorRadius" Text="40 đơn vị" 
+
+                                          Grid.Column="1" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="#667eea" 
+
+                                          FontSize="11"/>
+
+                            </Grid>
+
+
+
+                            <Separator Margin="0,8"/>
+
+
+
+                            <Grid Margin="0,0,0,5">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Diện tích bề mặt:" Style="{StaticResource LabelText}"/>
+
+                                <TextBlock x:Name="txtSurfaceArea" Text="0 đvdt" 
+
+                                          Grid.Column="1" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="#667eea" 
+
+                                          FontSize="11"/>
+
+                            </Grid>
+
+
+
+                            <Grid Margin="0,0,0,5">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Thể tích:" Style="{StaticResource LabelText}"/>
+
+                                <TextBlock x:Name="txtVolume" Text="0 đvtt" 
+
+                                          Grid.Column="1" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="#667eea" 
+
+                                          FontSize="11"/>
+
+                            </Grid>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Preset Panel -->
+
+                    <Border Background="White" 
+
+                            BorderBrush="#667eea" 
+
+                            BorderThickness="0,0,0,4" 
+
+                            CornerRadius="8" 
+
+                            Padding="15" 
+
+                            Margin="0,0,0,15">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Preset (Mẫu có sẵn)" Style="{StaticResource PanelTitle}"/>
+
+                            <UniformGrid Columns="2" Rows="3">
+
+                                <Button Content="Donut chuẩn&#x0a;R:100, r:40" 
+
+                                        Tag="donut" 
+
+                                        Click="PresetButton_Click" 
+
+                                        Margin="2" 
+
+                                        Padding="8" 
+
+                                        FontSize="10"/>
+
+                                <Button Content="Vòng cổ&#x0a;R:120, r:20" 
+
+                                        Tag="necklace" 
+
+                                        Click="PresetButton_Click" 
+
+                                        Margin="2" 
+
+                                        Padding="8" 
+
+                                        FontSize="10"/>
+
+                                <Button Content="Lốp xe&#x0a;R:80, r:60" 
+
+                                        Tag="tire" 
+
+                                        Click="PresetButton_Click" 
+
+                                        Margin="2" 
+
+                                        Padding="8" 
+
+                                        FontSize="10"/>
+
+                                <Button Content="Nhẫn mỏng&#x0a;R:150, r:30" 
+
+                                        Tag="ring" 
+
+                                        Click="PresetButton_Click" 
+
+                                        Margin="2" 
+
+                                        Padding="8" 
+
+                                        FontSize="10"/>
+
+                                <Button Content="Bong bóng&#x0a;R:90, r:85" 
+
+                                        Tag="bubble" 
+
+                                        Click="PresetButton_Click" 
+
+                                        Margin="2" 
+
+                                        Padding="8" 
+
+                                        FontSize="10"/>
+
+                                <Button Content="Tùy chỉnh&#x0a;Custom" 
+
+                                        Tag="custom" 
+
+                                        Click="PresetButton_Click" 
+
+                                        Margin="2" 
+
+                                        Padding="8" 
+
+                                        FontSize="10"/>
+
+                            </UniformGrid>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Size Panel -->
+
+                    <Border Background="White" 
+
+                            BorderBrush="#667eea" 
+
+                            BorderThickness="0,0,0,4" 
+
+                            CornerRadius="8" 
+
+                            Padding="15" 
+
+                            Margin="0,0,0,15">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Kích thước" Style="{StaticResource PanelTitle}"/>
+
+                            
+
+                            <TextBlock Text="Bán kính chính (R):" Style="{StaticResource LabelText}"/>
+
+                            <Grid Margin="0,5,0,10">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="60"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <Slider x:Name="MajorRadiusSlider" 
+
+                                        Minimum="50" 
+
+                                        Maximum="150" 
+
+                                        Value="100" 
+
+                                        TickFrequency="5" 
+
+                                        IsSnapToTickEnabled="True"
+
+                                        ValueChanged="SizeSlider_ValueChanged"/>
+
+                                <TextBlock x:Name="MajorRadiusValue" 
+
+                                          Text="100" 
+
+                                          Grid.Column="1" 
+
+                                          TextAlignment="Right" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="#667eea" 
+
+                                          VerticalAlignment="Center"/>
+
+                            </Grid>
+
+
+
+                            <TextBlock Text="Bán kính ống (r):" Style="{StaticResource LabelText}"/>
+
+                            <Grid Margin="0,5,0,10">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="60"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <Slider x:Name="MinorRadiusSlider" 
+
+                                        Minimum="10" 
+
+                                        Maximum="80" 
+
+                                        Value="40" 
+
+                                        TickFrequency="5" 
+
+                                        IsSnapToTickEnabled="True"
+
+                                        ValueChanged="SizeSlider_ValueChanged"/>
+
+                                <TextBlock x:Name="MinorRadiusValue" 
+
+                                          Text="40" 
+
+                                          Grid.Column="1" 
+
+                                          TextAlignment="Right" 
+
+                                          FontWeight="Bold" 
+
+                                          Foreground="#667eea" 
+
+                                          VerticalAlignment="Center"/>
+
+                            </Grid>
+
+
+
+                            <Border x:Name="WarningPanel" 
+
+                                    Background="#FFF3CD" 
+
+                                    BorderBrush="#FFC107" 
+
+                                    BorderThickness="3,0,0,0" 
+
+                                    Padding="10" 
+
+                                    CornerRadius="4"
+
+                                    Visibility="Collapsed">
+
+                                <TextBlock Text="⚠️ Cảnh báo: r phải nhỏ hơn R để tránh tự cắt!" 
+
+                                          FontSize="10" 
+
+                                          Foreground="#856404"/>
+
+                            </Border>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Display Panel -->
+
+                    <Border Background="White" 
+
+                            BorderBrush="#667eea" 
+
+                            BorderThickness="0,0,0,4" 
+
+                            CornerRadius="8" 
+
+                            Padding="15" 
+
+                            Margin="0,0,0,15">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Kiểu hiển thị" Style="{StaticResource PanelTitle}"/>
+
+                            
+
+                            <TextBlock Text="Chế độ hiển thị:" Style="{StaticResource LabelText}" Margin="0,0,0,5"/>
+
+                            <ComboBox x:Name="DrawModeComboBox" 
+
+                                     SelectionChanged="DrawModeComboBox_SelectionChanged"
+
+                                     Margin="0,0,0,10">
+
+                                <ComboBoxItem Content="Wireframe (Khung dây)"/>
+
+                                <ComboBoxItem Content="Solid (Tô màu)"/>
+
+                                <ComboBoxItem Content="Cả hai (Solid + Wireframe)" IsSelected="True"/>
+
+                            </ComboBox>
+
+
+
+                            <TextBlock Text="Màu viền (Edge):" Style="{StaticResource LabelText}" Margin="0,5,0,5"/>
+
+                            <ComboBox x:Name="cmbEdgeColor" SelectionChanged="OnEdgeColorChanged" SelectedIndex="0">
+
+                                <ComboBox.ItemTemplate>
+
+                                    <DataTemplate>
+
+                                        <StackPanel Orientation="Horizontal">
+
+                                            <Border Width="16" Height="16" CornerRadius="2" Margin="0,0,8,0"
+
+                                                    Background="{Binding Tag, RelativeSource={RelativeSource AncestorType=ComboBoxItem}}"
+
+                                                    BorderBrush="#999" BorderThickness="1"/>
+
+                                            <TextBlock Text="{Binding Content, RelativeSource={RelativeSource AncestorType=ComboBoxItem}}" 
+
+                                                       VerticalAlignment="Center"/>
+
+                                        </StackPanel>
+
+                                    </DataTemplate>
+
+                                </ComboBox.ItemTemplate>
+
+                                <ComboBoxItem Content="Đen (Black)" Tag="Black"/>
+
+                                <ComboBoxItem Content="Trắng (White)" Tag="White"/>
+
+                                <ComboBoxItem Content="Đỏ (Red)" Tag="Red"/>
+
+                                <ComboBoxItem Content="Xanh lá (Green)" Tag="Green"/>
+
+                                <ComboBoxItem Content="Xanh dương (Blue)" Tag="Blue"/>
+
+                                <ComboBoxItem Content="Vàng (Yellow)" Tag="Yellow"/>
+
+                                <ComboBoxItem Content="Tím (Purple)" Tag="Purple"/>
+
+                                <ComboBoxItem Content="Cam (Orange)" Tag="Orange"/>
+
+                            </ComboBox>
+
+
+
+                            <TextBlock Text="Màu mặt (Face):" Style="{StaticResource LabelText}" Margin="0,10,0,5"/>
+
+                            <ComboBox x:Name="cmbFaceColor" SelectionChanged="OnFaceColorChanged" SelectedIndex="0">
+
+                                <ComboBox.ItemTemplate>
+
+                                    <DataTemplate>
+
+                                        <StackPanel Orientation="Horizontal">
+
+                                            <Border Width="16" Height="16" CornerRadius="2" Margin="0,0,8,0"
+
+                                                    Background="{Binding Tag, RelativeSource={RelativeSource AncestorType=ComboBoxItem}}"
+
+                                                    BorderBrush="#999" BorderThickness="1"/>
+
+                                            <TextBlock Text="{Binding Content, RelativeSource={RelativeSource AncestorType=ComboBoxItem}}" 
+
+                                                       VerticalAlignment="Center"/>
+
+                                        </StackPanel>
+
+                                    </DataTemplate>
+
+                                </ComboBox.ItemTemplate>
+
+                                <ComboBoxItem Content="Trong suốt (Transparent)" Tag="Transparent"/>
+
+                                <ComboBoxItem Content="Trắng (White)" Tag="White"/>
+
+                                <ComboBoxItem Content="Đỏ (Red)" Tag="Red"/>
+
+                                <ComboBoxItem Content="Xanh lá (Green)" Tag="Green"/>
+
+                                <ComboBoxItem Content="Xanh dương (Blue)" Tag="Blue"/>
+
+                                <ComboBoxItem Content="Vàng (Yellow)" Tag="Yellow"/>
+
+                                <ComboBoxItem Content="Tím (Purple)" Tag="Purple"/>
+
+                                <ComboBoxItem Content="Cam (Orange)" Tag="Orange"/>
+
+                                <ComboBoxItem Content="Nâu (Brown)" Tag="Brown"/>
+
+                            </ComboBox>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Rotation Panel -->
+
+                    <Border Background="White" 
+
+                            BorderBrush="#667eea" 
+
+                            BorderThickness="0,0,0,4" 
+
+                            CornerRadius="8" 
+
+                            Padding="15" 
+
+                            Margin="0,0,0,15">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Điều khiển xoay" Style="{StaticResource PanelTitle}"/>
+
+                            
+
+                            <CheckBox x:Name="chkAutoRotate" 
+
+                                     Content="🔄 Tự động xoay" 
+
+                                     FontSize="12" 
+
+                                     Margin="0,0,0,10"
+
+                                     Checked="OnAutoRotateChanged"
+
+                                     Unchecked="OnAutoRotateChanged"/>
+
+                            
+
+                            <Grid Margin="0,5">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="50"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Xoay X:" Style="{StaticResource LabelText}"/>
+
+                                <TextBlock x:Name="RotXValue" Text="20°" Grid.Column="1" TextAlignment="Right" FontWeight="Bold" Foreground="#667eea"/>
+
+                            </Grid>
+
+                            <Slider x:Name="RotXSlider" Minimum="-180" Maximum="180" Value="20" ValueChanged="RotationSlider_ValueChanged" Margin="0,0,0,10"/>
+
+
+
+                            <Grid Margin="0,5">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="50"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Xoay Y:" Style="{StaticResource LabelText}"/>
+
+                                <TextBlock x:Name="RotYValue" Text="45°" Grid.Column="1" TextAlignment="Right" FontWeight="Bold" Foreground="#667eea"/>
+
+                            </Grid>
+
+                            <Slider x:Name="RotYSlider" Minimum="-180" Maximum="180" Value="45" ValueChanged="RotationSlider_ValueChanged" Margin="0,0,0,10"/>
+
+
+
+                            <Grid Margin="0,5">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="50"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Xoay Z:" Style="{StaticResource LabelText}"/>
+
+                                <TextBlock x:Name="RotZValue" Text="0°" Grid.Column="1" TextAlignment="Right" FontWeight="Bold" Foreground="#667eea"/>
+
+                            </Grid>
+
+                            <Slider x:Name="RotZSlider" Minimum="-180" Maximum="180" Value="0" ValueChanged="RotationSlider_ValueChanged" Margin="0,0,0,10"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Action Buttons -->
+
+                    <StackPanel>
+
+                        <Button Content="✅ Xác nhận hoàn thành" 
+
+                                Height="40" 
+
+                                Background="#4CAF50" 
+
+                                Foreground="White" 
+
+                                FontWeight="Bold" 
+
+                                FontSize="13"
+
+                                Click="ConfirmButton_Click" 
+
+                                Margin="0,0,0,8"/>
+
+                        
+
+                        <Button Content="💾 Tải ảnh xuống máy" 
+
+                                Height="35" 
+
+                                Background="#2196F3" 
+
+                                Foreground="White" 
+
+                                FontWeight="SemiBold" 
+
+                                FontSize="12"
+
+                                Click="ConfirmButton_Click" 
+
+                                Margin="0,0,0,8"/>
+
+                        
+
+                        <Button Content="🔄 Đặt lại mặc định" 
+
+                                Height="35" 
+
+                                Background="#FF9800" 
+
+                                Foreground="White" 
+
+                                FontWeight="SemiBold" 
+
+                                FontSize="12"
+
+                                Click="ConfirmButton_Click" 
+
+                                Margin="0,0,0,8"/>
+
+                        
+
+                        <Button Content="📋 Hiển thị thông số lên màn hình" 
+
+                                Height="35" 
+
+                                Background="#03A9F4" 
+
+                                Foreground="White" 
+
+                                FontWeight="SemiBold" 
+
+                                FontSize="12"
+
+                                Click="btnCopyStats_Click" 
+
+                                Margin="0,0,0,8"/>
+
+                        
+
+                        <Button Content="❌ Thoát" 
+
+                                Height="35" 
+
+                                Background="#F44336" 
+
+                                Foreground="White" 
+
+                                FontWeight="SemiBold" 
+
+                                FontSize="12"
+
+                                Click="ConfirmButton_Click" 
+
+                                Margin="0,5,0,0"/>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+        </Grid>
+
+    </Grid>
+
+</Window>
+

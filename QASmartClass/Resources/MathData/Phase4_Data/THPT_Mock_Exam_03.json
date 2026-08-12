@@ -1,0 +1,720 @@
+﻿{
+  "metadata": {
+    "examId": "thpt_mock_03",
+    "title": "Đề Thi Thử THPT - Đề 03",
+    "totalQuestions": 50,
+    "timeLimit": 90,
+    "difficulty": {
+      "easy": 20,
+      "medium": 20,
+      "hard": 10
+    },
+    "focusTopics": [
+      "Lượng giác",
+      "Số phức",
+      "Tổ hợp-XS"
+    ]
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "menh_de",
+      "d": "Easy",
+      "q": "Phủ định '∃x: x²<0'",
+      "o": [
+        "A) ∀x: x²>0",
+        "B) ∃x: x²≥0",
+        "C) ∃x: x²=0",
+        "D) ∀x: x²≥0"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 2,
+      "topic": "tap_hop",
+      "d": "Easy",
+      "q": "A∩B=Ø khi",
+      "o": [
+        "A) A=B",
+        "B) A∪B=Ø",
+        "C) A⊂B",
+        "D) A,B ko chung pt"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 3,
+      "topic": "ham_so",
+      "d": "Easy",
+      "q": "y=2x-x² max tại",
+      "o": [
+        "A) x=1",
+        "B) x=-1",
+        "C) x=0",
+        "D) x=2"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 4,
+      "topic": "ham_so",
+      "d": "Medium",
+      "q": "y=x/(x²+1) là hàm",
+      "o": [
+        "A) Lẻ",
+        "B) Chẵn",
+        "C) Ko chẵn ko lẻ",
+        "D) Vừa chẵn vừa lẻ"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 5,
+      "topic": "ham_so",
+      "d": "Hard",
+      "q": "Số TCĐ y=(x²-4)/(x³-x)",
+      "o": [
+        "A) 2",
+        "B) 1",
+        "C) 0",
+        "D) 3"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 6,
+      "topic": "dao_ham",
+      "d": "Easy",
+      "q": "(sin²x)'=",
+      "o": [
+        "A) cos²x",
+        "B) 2sinx",
+        "C) sin2x",
+        "D) 2cosx"
+      ],
+      "a": "C",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 7,
+      "topic": "dao_ham",
+      "d": "Easy",
+      "q": "y=√(2x+1)→y'=",
+      "o": [
+        "A) 2/√(2x+1)",
+        "B) √(2x+1)",
+        "C) 1/√(2x+1)",
+        "D) 1/(2√(2x+1))"
+      ],
+      "a": "C",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 8,
+      "topic": "dao_ham",
+      "d": "Medium",
+      "q": "y=x-2sinx đbiến trên [0;π] khi",
+      "o": [
+        "A) x>π/3",
+        "B) Sai",
+        "C) Luôn đúng",
+        "D) x<π/3"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 9,
+      "topic": "dao_ham",
+      "d": "Medium",
+      "q": "PT TT y=x² song song y=4x-1",
+      "o": [
+        "A) y=4x-1",
+        "B) y=4x",
+        "C) y=4x+4",
+        "D) y=4x-4"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 10,
+      "topic": "dao_ham",
+      "d": "Hard",
+      "q": "Min(CĐ+CT) y=x³-3x+m",
+      "o": [
+        "A) Ko phụ thuộc m",
+        "B) 2m",
+        "C) 2m+4",
+        "D) m"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 11,
+      "topic": "luong_giac",
+      "d": "Easy",
+      "q": "tan(π/4)=",
+      "o": [
+        "A) 1",
+        "B) √3",
+        "C) ∞",
+        "D) 0"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 12,
+      "topic": "luong_giac",
+      "d": "Easy",
+      "q": "sin(π-x)=",
+      "o": [
+        "A) sinx",
+        "B) cosx",
+        "C) -cosx",
+        "D) -sinx"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 13,
+      "topic": "luong_giac",
+      "d": "Medium",
+      "q": "sin2x=sinx→nghiệm",
+      "o": [
+        "A) x=k2π",
+        "B) x=kπ",
+        "C) x=kπ, x=±π/3+k2π",
+        "D) x=π/3+kπ"
+      ],
+      "a": "C",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 14,
+      "topic": "luong_giac",
+      "d": "Hard",
+      "q": "Max y=2sinx+3cosx",
+      "o": [
+        "A) √5",
+        "B) 5",
+        "C) √13",
+        "D) 3"
+      ],
+      "a": "C",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 15,
+      "topic": "mu_log",
+      "d": "Easy",
+      "q": "2⁵·2³/2⁶=",
+      "o": [
+        "A) 16",
+        "B) 2",
+        "C) 4",
+        "D) 8"
+      ],
+      "a": "C",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 16,
+      "topic": "mu_log",
+      "d": "Medium",
+      "q": "log₃(x-2)=2→x=",
+      "o": [
+        "A) 7",
+        "B) 11",
+        "C) 5",
+        "D) 9"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 17,
+      "topic": "mu_log",
+      "d": "Medium",
+      "q": "ln(e³)=",
+      "o": [
+        "A) 1/3",
+        "B) 3",
+        "C) e³",
+        "D) 3e"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 18,
+      "topic": "mu_log",
+      "d": "Hard",
+      "q": "2ˣ+2¹⁻ˣ=3→x=",
+      "o": [
+        "A) 1",
+        "B) 0",
+        "C) 2",
+        "D) 0 hoặc 1"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 19,
+      "topic": "tich_phan",
+      "d": "Easy",
+      "q": "∫₋₁¹ x³dx=",
+      "o": [
+        "A) 2",
+        "B) -1",
+        "C) 1",
+        "D) 0"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 20,
+      "topic": "tich_phan",
+      "d": "Easy",
+      "q": "∫ cos2xdx=",
+      "o": [
+        "A) sin2x+C",
+        "B) -sin2x/2+C",
+        "C) sin2x/2+C",
+        "D) 2sin2x+C"
+      ],
+      "a": "C",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 21,
+      "topic": "tich_phan",
+      "d": "Medium",
+      "q": "∫₀² |x-1|dx=",
+      "o": [
+        "A) 2",
+        "B) 1/2",
+        "C) 0",
+        "D) 1"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 22,
+      "topic": "tich_phan",
+      "d": "Hard",
+      "q": "∫₀¹ x²eˣdx=",
+      "o": [
+        "A) e-2",
+        "B) 1",
+        "C) e",
+        "D) e-1"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 23,
+      "topic": "so_phuc",
+      "d": "Easy",
+      "q": "(2+3i)+(1-i)=",
+      "o": [
+        "A) 3+2i",
+        "B) 3-2i",
+        "C) 1+4i",
+        "D) 3+4i"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 24,
+      "topic": "so_phuc",
+      "d": "Easy",
+      "q": "|3+4i|=",
+      "o": [
+        "A) 7",
+        "B) 1",
+        "C) 25",
+        "D) 5"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 25,
+      "topic": "so_phuc",
+      "d": "Medium",
+      "q": "z²=−9→z=",
+      "o": [
+        "A) ±3i",
+        "B) 3±i",
+        "C) ±9i",
+        "D) ±3"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 26,
+      "topic": "so_phuc",
+      "d": "Medium",
+      "q": "(1+i)⁴=",
+      "o": [
+        "A) 4",
+        "B) -4i",
+        "C) 4i",
+        "D) -4"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 27,
+      "topic": "so_phuc",
+      "d": "Hard",
+      "q": "z³=1, z≠1→z=",
+      "o": [
+        "A) i",
+        "B) (-1±i√3)/2",
+        "C) (1±i)/2",
+        "D) -1"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 28,
+      "topic": "to_hop",
+      "d": "Easy",
+      "q": "A(5,2)=",
+      "o": [
+        "A) 20",
+        "B) 25",
+        "C) 10",
+        "D) 60"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 29,
+      "topic": "to_hop",
+      "d": "Medium",
+      "q": "5 nam 3 nữ xếp hàng, 2 nữ ko kề",
+      "o": [
+        "A) 4320",
+        "B) 2160",
+        "C) 14400",
+        "D) 36000"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 30,
+      "topic": "xs",
+      "d": "Easy",
+      "q": "P(A)=0.3, P(Ā)=",
+      "o": [
+        "A) 1",
+        "B) 0.7",
+        "C) 0.3",
+        "D) 0"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 31,
+      "topic": "xs",
+      "d": "Medium",
+      "q": "Ném xu 5 lần, P(đúng 3 sấp)=",
+      "o": [
+        "A) 5/16",
+        "B) 3/8",
+        "C) 10/32",
+        "D) 1/4"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 32,
+      "topic": "xs",
+      "d": "Hard",
+      "q": "Hộp 5 đỏ 3 xanh, rút 2. P(cùng màu)=",
+      "o": [
+        "A) 3/7",
+        "B) 15/28",
+        "C) 1/2",
+        "D) 13/28"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 33,
+      "topic": "hinh_hoc",
+      "d": "Easy",
+      "q": "AB với A(1,2,3) B(4,6,3)",
+      "o": [
+        "A) √34",
+        "B) 5",
+        "C) 3",
+        "D) 7"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 34,
+      "topic": "hinh_hoc",
+      "d": "Medium",
+      "q": "d(M(1,1,1), mp x+y+z-6=0)=",
+      "o": [
+        "A) 3",
+        "B) √3",
+        "C) 3/√3",
+        "D) 1"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 35,
+      "topic": "hinh_hoc",
+      "d": "Medium",
+      "q": "V chóp S.ABC, SA⊥(ABC), SA=3, △ABC đều a=2",
+      "o": [
+        "A) 3",
+        "B) 3√3",
+        "C) 2√3",
+        "D) √3"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 36,
+      "topic": "hinh_hoc",
+      "d": "Hard",
+      "q": "V khối cầu R=3",
+      "o": [
+        "A) 27π",
+        "B) 12π",
+        "C) 108π",
+        "D) 36π"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 37,
+      "topic": "day_so",
+      "d": "Easy",
+      "q": "u₁=1,u(n+1)=uₙ+3→u₅=",
+      "o": [
+        "A) 10",
+        "B) 16",
+        "C) 15",
+        "D) 13"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 38,
+      "topic": "day_so",
+      "d": "Medium",
+      "q": "CSC S₁₅=450→u₈=",
+      "o": [
+        "A) 45",
+        "B) 30",
+        "C) 60",
+        "D) 15"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 39,
+      "topic": "gioi_han",
+      "d": "Easy",
+      "q": "lim(5n-1)/(3n+2)=",
+      "o": [
+        "A) 5/3",
+        "B) 0",
+        "C) -1/2",
+        "D) ∞"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 40,
+      "topic": "gioi_han",
+      "d": "Medium",
+      "q": "lim[x→0](1-cosx)/x²=",
+      "o": [
+        "A) 1",
+        "B) ∞",
+        "C) 0",
+        "D) 1/2"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 41,
+      "topic": "ham_so",
+      "d": "Medium",
+      "q": "y=x³+3x²-9x+5 giảm trên",
+      "o": [
+        "A) (1;+∞)",
+        "B) (-3;1)",
+        "C) ℝ",
+        "D) (-∞;-3)"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 42,
+      "topic": "dao_ham",
+      "d": "Medium",
+      "q": "(x²lnx)'=",
+      "o": [
+        "A) 2xlnx",
+        "B) x(2lnx+1)",
+        "C) x²/x",
+        "D) 2x+lnx"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 43,
+      "topic": "tich_phan",
+      "d": "Medium",
+      "q": "∫₀^(π/4) tanxdx=",
+      "o": [
+        "A) 1",
+        "B) 0",
+        "C) ln√2",
+        "D) ln2"
+      ],
+      "a": "C",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 44,
+      "topic": "mu_log",
+      "d": "Medium",
+      "q": "log₂3·log₃8=",
+      "o": [
+        "A) log₂8",
+        "B) A&C đúng",
+        "C) 3",
+        "D) 8"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 45,
+      "topic": "luong_giac",
+      "d": "Medium",
+      "q": "Số nghiệm sinx=1/2 trên [0;2π]",
+      "o": [
+        "A) 1",
+        "B) 4",
+        "C) 3",
+        "D) 2"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 46,
+      "topic": "so_phuc",
+      "d": "Hard",
+      "q": "Tập hợp |z-2|=3 là",
+      "o": [
+        "A) Đường thẳng",
+        "B) Điểm",
+        "C) Elip",
+        "D) Đường tròn tâm (2,0) R=3"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 47,
+      "topic": "dao_ham",
+      "d": "Hard",
+      "q": "y=e^(sinx)→y'=",
+      "o": [
+        "A) e^sinx",
+        "B) e^cosx",
+        "C) sinx·eˣ",
+        "D) cosx·e^sinx"
+      ],
+      "a": "D",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 48,
+      "topic": "hinh_hoc",
+      "d": "Hard",
+      "q": "Diện tích tam giác A(1,0,0),B(0,1,0),C(0,0,1)",
+      "o": [
+        "A) √3",
+        "B) √3/2",
+        "C) 1",
+        "D) 1/2"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 49,
+      "topic": "to_hop",
+      "d": "Hard",
+      "q": "Số cách chia 10 HS thành 2 nhóm 5",
+      "o": [
+        "A) 126",
+        "B) 120",
+        "C) 252",
+        "D) 210"
+      ],
+      "a": "A",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    },
+    {
+      "id": 50,
+      "topic": "gioi_han",
+      "d": "Hard",
+      "q": "lim[x→+∞](√(x²+x)-x)=",
+      "o": [
+        "A) 0",
+        "B) 1/2",
+        "C) 1",
+        "D) ∞"
+      ],
+      "a": "B",
+      "solution": "Theo dữ kiện bài toán, ta tính toán và đối chiếu các phương án. Đáp án đúng là A. Giải thích: Phép biến đổi toán học thỏa mãn điều kiện đề bài.."
+    }
+  ]
+}

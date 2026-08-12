@@ -1,0 +1,206 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-05-04",
+  "description": "Mapping giữa Learning Tools và chủ đề/chương Lớp 1-12 (G{grade}_CH{order} convention)",
+  
+  "mappings": [
+    {
+      "tool": "ComplexNumberTool",
+      "chapters": ["g12_ch04"],
+      "topics": ["Số phức", "Mô-đun", "PT bậc 2 nghiệm phức"],
+      "grades": [12],
+      "dataFile": "G12_CH04_So_Phuc.json"
+    },
+    {
+      "tool": "CombinatoricsTool",
+      "chapters": ["g12_ch05", "g11_ch05"],
+      "topics": ["Hoán vị", "Chỉnh hợp", "Tổ hợp", "Nhị thức Newton"],
+      "grades": [11, 12],
+      "dataFile": "G12_CH05_To_Hop_XS.json"
+    },
+    {
+      "tool": "ProbabilityTool",
+      "chapters": ["g12_ch05", "g11_ch05", "g11_ch06"],
+      "topics": ["Xác suất cổ điển", "Bernoulli", "Biến cố độc lập"],
+      "grades": [10, 11, 12],
+      "dataFile": "G12_CH05_To_Hop_XS.json"
+    },
+    {
+      "tool": "SolidGeometryTool",
+      "chapters": ["g12_ch06"],
+      "topics": ["Mặt phẳng", "Đường thẳng KG", "Mặt cầu", "Thể tích"],
+      "grades": [11, 12],
+      "dataFile": "G12_CH06_Hinh_Hoc_KG.json"
+    },
+    {
+      "tool": "VectorTool",
+      "chapters": ["g10_ch06", "g12_ch06"],
+      "topics": ["Vectơ 2D/3D", "Tích vô hướng", "Tích có hướng"],
+      "grades": [10, 12],
+      "dataFile": "G10_CH06_Vecto_Toa_Do.json"
+    },
+    {
+      "tool": "CoordinateTool",
+      "chapters": ["g10_ch06", "g12_ch06", "g08_ch02"],
+      "topics": ["Tọa độ mặt phẳng", "Tọa độ không gian", "Desmos đồ thị", "Hàm số bậc 1 & 2"],
+      "grades": [8, 10, 12],
+      "dataFiles": ["G10_CH06_Vecto_Toa_Do.json", "G08_CH02_Ham_So.json"]
+    },
+    {
+      "tool": "DerivativeTool",
+      "chapters": ["g12_ch01", "g11_ch04"],
+      "topics": ["Đạo hàm", "Cực trị", "Tiếp tuyến", "BBT"],
+      "grades": [11, 12],
+      "dataFile": "G12_CH01_Dao_Ham.json"
+    },
+    {
+      "tool": "IntegralTool",
+      "chapters": ["g12_ch03"],
+      "topics": ["Nguyên hàm", "Tích phân xác định", "Diện tích", "Thể tích tròn xoay"],
+      "grades": [12],
+      "dataFile": "G12_CH03_Tich_Phan.json"
+    },
+    {
+      "tool": "LogarithmTool",
+      "chapters": ["g12_ch02"],
+      "topics": ["Lũy thừa", "Hàm mũ", "Logarit", "PT mũ & logarit"],
+      "grades": [12],
+      "dataFile": "G12_CH02_Mu_Logarit.json"
+    },
+    {
+      "tool": "TrigonometryTool",
+      "chapters": ["g11_ch01", "g10_ch04", "g09_ch02"],
+      "topics": ["Góc lượng giác", "Bảng lượng giác", "Đường tròn lượng giác", "TSLG tam giác vuông"],
+      "grades": [9, 10, 11],
+      "dataFiles": ["G11_CH01_Luong_Giac_NC.json", "G09_CH02_Luong_Giac_CB.json"]
+    },
+    {
+      "tool": "TrigEquationTool",
+      "chapters": ["g11_ch01"],
+      "topics": ["PT sin", "PT cos", "PT tan", "PT lượng giác nâng cao"],
+      "grades": [11],
+      "dataFile": "G11_CH01_Luong_Giac_NC.json"
+    },
+    {
+      "tool": "IdentityTool",
+      "chapters": ["g11_ch01", "g10_ch04"],
+      "topics": ["Công thức cộng", "Công thức nhân đôi", "Biến đổi lượng giác"],
+      "grades": [10, 11],
+      "dataFile": "G11_CH01_Luong_Giac_NC.json"
+    },
+    {
+      "tool": "QuadraticTool",
+      "chapters": ["g10_ch03", "g10_ch02", "g08_ch01"],
+      "topics": ["PT bậc 2", "Hàm bậc 2", "Vieta", "Parabol"],
+      "grades": [8, 9, 10],
+      "dataFiles": ["G10_CH03_PT_BPT.json", "G08_CH01_PT_Bac_Hai.json"]
+    },
+    {
+      "tool": "CubicTool",
+      "chapters": ["g12_ch01"],
+      "topics": ["PT bậc 3", "Đồ thị hàm bậc 3"],
+      "grades": [10, 12],
+      "dataFile": "G12_CH01_Dao_Ham.json"
+    },
+    {
+      "tool": "InequalityTool",
+      "chapters": ["g10_ch03"],
+      "topics": ["BPT bậc 1", "BPT bậc 2", "BPT chứa ẩn dưới mẫu"],
+      "grades": [9, 10],
+      "dataFile": "G10_CH03_PT_BPT.json"
+    },
+    {
+      "tool": "LinearSystemTool",
+      "chapters": ["g10_ch03", "g07_ch01"],
+      "topics": ["Hệ PT bậc nhất 2 ẩn", "Hệ PT bậc nhất 3 ẩn", "Biểu thức đại số"],
+      "grades": [7, 8, 10],
+      "dataFiles": ["G10_CH03_PT_BPT.json", "G07_CH01_Dai_So_PT.json"]
+    },
+    {
+      "tool": "SequenceTool",
+      "chapters": ["g11_ch02"],
+      "topics": ["Dãy số", "Cấp số cộng", "Cấp số nhân"],
+      "grades": [11],
+      "dataFile": "G11_CH02_Day_So.json"
+    },
+    {
+      "tool": "LimitTool",
+      "chapters": ["g11_ch03"],
+      "topics": ["Giới hạn dãy số", "Giới hạn hàm số", "Hàm liên tục"],
+      "grades": [11],
+      "dataFile": "G11_CH03_Gioi_Han.json"
+    },
+    {
+      "tool": "ConicSectionTool",
+      "chapters": ["g10_ch06"],
+      "topics": ["Elip", "Hyperbol", "Parabol"],
+      "grades": [10],
+      "dataFile": "G10_CH06_Vecto_Toa_Do.json"
+    },
+    {
+      "tool": "StatisticsTool",
+      "chapters": ["g10_ch05", "g11_ch06", "g09_ch03"],
+      "topics": ["Trung bình", "Phương sai", "Độ lệch chuẩn", "Biểu đồ", "Xác suất CB"],
+      "grades": [9, 10, 12],
+      "dataFiles": ["G10_CH05_Thong_Ke.json", "G09_CH03_Thong_Ke_XS.json"]
+    },
+    {
+      "tool": "GeometryTool",
+      "chapters": ["g10_ch06", "g04_ch01", "g09_ch01"],
+      "topics": ["Hình học phẳng", "Tam giác", "Đường tròn", "Hình học cơ bản", "Đồng dạng"],
+      "grades": [4, 5, 6, 7, 8, 9, 10],
+      "dataFiles": ["G10_CH06_Vecto_Toa_Do.json", "G04_CH01_Hinh_Hoc_CB.json", "G09_CH01_Hinh_Hoc_Phang.json"]
+    },
+    {
+      "tool": "FractionTool",
+      "chapters": ["g03_ch01", "g06_ch01"],
+      "topics": ["Phân số", "Số thập phân", "Số hữu tỉ", "ƯCLN", "BCNN"],
+      "grades": [3, 4, 5, 6],
+      "dataFiles": ["G03_CH01_Phan_So.json", "G06_CH01_So_Huu_Ti.json"]
+    },
+    {
+      "tool": "PrimeNumberTool",
+      "chapters": ["g06_ch01"],
+      "topics": ["Số nguyên tố", "Phân tích TSNT", "ƯCLN", "BCNN"],
+      "grades": [6],
+      "dataFile": "G06_CH01_So_Huu_Ti.json"
+    },
+    {
+      "tool": "BasicArithmeticTool",
+      "chapters": ["g01_ch01", "g02_ch01", "g05_ch01"],
+      "topics": ["Số tự nhiên", "Phép cộng trừ nhân chia", "Đo lường", "Toán có lời văn"],
+      "grades": [1, 2, 3, 4, 5],
+      "dataFiles": ["G01_CH01_So_Tu_Nhien.json", "G02_CH01_Do_Luong.json", "G05_CH01_Toan_Loi_Van.json"]
+    },
+    {
+      "tool": "ProbabilityTool_THCS",
+      "chapters": ["g09_ch03"],
+      "topics": ["Xác suất cổ điển", "Tổ hợp CB", "Chỉnh hợp CB"],
+      "grades": [9],
+      "dataFile": "G09_CH03_Thong_Ke_XS.json"
+    }
+  ],
+
+  "examMapping": {
+    "thpt_mock_01": {
+      "file": "THPT_Mock_Exam_01.json",
+      "tools": ["DerivativeTool","IntegralTool","LogarithmTool","ComplexNumberTool","SolidGeometryTool","CombinatoricsTool","ProbabilityTool","TrigonometryTool","QuadraticTool","SequenceTool"]
+    },
+    "thpt_mock_02": {
+      "file": "THPT_Mock_Exam_02.json",
+      "tools": ["DerivativeTool","IntegralTool","LogarithmTool","ComplexNumberTool","CombinatoricsTool","ProbabilityTool","SolidGeometryTool","TrigonometryTool","SequenceTool","LimitTool"]
+    },
+    "thpt_mock_03": {
+      "file": "THPT_Mock_Exam_03.json",
+      "tools": ["TrigonometryTool","TrigEquationTool","ComplexNumberTool","CombinatoricsTool","ProbabilityTool","SolidGeometryTool","DerivativeTool","IntegralTool","LogarithmTool","LimitTool"]
+    },
+    "thpt_mock_04": {
+      "file": "THPT_Mock_Exam_04.json",
+      "tools": ["IntegralTool","LogarithmTool","SolidGeometryTool","DerivativeTool","ComplexNumberTool","TrigonometryTool","CombinatoricsTool","ProbabilityTool","SequenceTool","LimitTool"]
+    },
+    "thpt_mock_05": {
+      "file": "THPT_Mock_Exam_05.json",
+      "tools": ["DerivativeTool","IntegralTool","LogarithmTool","TrigonometryTool","ComplexNumberTool","CombinatoricsTool","ProbabilityTool","SolidGeometryTool","SequenceTool","LimitTool","QuadraticTool"]
+    }
+  }
+}

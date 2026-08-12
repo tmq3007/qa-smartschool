@@ -1,0 +1,206 @@
+﻿<Page x:Class="QASmartClass.Dashboard.Views.SchoolCalendarPage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+
+      mc:Ignorable="d" 
+
+      d:DesignHeight="720" d:DesignWidth="1280"
+
+      Title="SchoolCalendarPage" FontFamily="Segoe UI" Background="#F0F2F5">
+
+
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- HEADER -->
+
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16">
+
+            <Border.Effect>
+
+                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04"/>
+
+            </Border.Effect>
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+
+                    <Button x:Name="BtnPrevWeek" Content="◀" Width="40" Height="40" FontSize="16" Click="BtnPrevWeek_Click" Margin="0,0,10,0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
+
+                    <TextBlock x:Name="TxtWeekHeader" Text="Tuần 19/05 – 25/05/2026" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="#1E3A5F"/>
+
+                    <Button x:Name="BtnNextWeek" Content="▶" Width="40" Height="40" FontSize="16" Click="BtnNextWeek_Click" Margin="10,0,0,0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
+
+                </StackPanel>
+
+
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+
+                    <TextBlock Text="Bộ phận:" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="16"/>
+
+                    <ComboBox x:Name="CbDepartment" Width="200" Height="36" FontSize="16" SelectionChanged="CbDepartment_SelectionChanged">
+
+                        <ComboBoxItem Content="Tất cả" IsSelected="True" Tag="All"/>
+
+                        <ComboBoxItem Content="Toán-Tin" Tag="ToanTin"/>
+
+                        <ComboBoxItem Content="Văn-Sử-Địa" Tag="VanSuDia"/>
+
+                        <ComboBoxItem Content="Đoàn-Đội" Tag="DoanDoi"/>
+
+                        <ComboBoxItem Content="Văn phòng" Tag="VanPhong"/>
+
+                    </ComboBox>
+
+                    <Button x:Name="BtnAddEvent" Content="➕ Thêm Mới" Width="120" Height="36" Margin="20,0,0,0" Click="BtnAddEvent_Click" Background="#10B981" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- MAIN CALENDAR VIEW -->
+
+        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="20">
+
+            <Border.Effect>
+
+                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04"/>
+
+            </Border.Effect>
+
+            <Grid>
+
+                <ListView x:Name="LvEvents" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+                    <ListView.ItemTemplate>
+
+                        <DataTemplate>
+
+                            <Border BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="10,15">
+
+                                <Grid>
+
+                                    <Grid.ColumnDefinitions>
+
+                                        <ColumnDefinition Width="150"/>
+
+                                        <ColumnDefinition Width="*"/>
+
+                                        <ColumnDefinition Width="200"/>
+
+                                        <ColumnDefinition Width="150"/>
+
+                                    </Grid.ColumnDefinitions>
+
+
+
+                                    <!-- Thoi gian -->
+
+                                    <StackPanel Grid.Column="0">
+
+                                        <TextBlock Text="{Binding StartTime, StringFormat='HH:mm'}" FontSize="18" FontWeight="Bold" Foreground="#1E3A5F"/>
+
+                                        <TextBlock Text="{Binding StartTime, StringFormat='dd/MM/yyyy'}" FontSize="14" Foreground="#64748B"/>
+
+                                    </StackPanel>
+
+
+
+                                    <!-- Noi dung -->
+
+                                    <StackPanel Grid.Column="1" Margin="10,0">
+
+                                        <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+
+                                        <TextBlock Text="{Binding Organizer}" FontSize="14" Foreground="#64748B" Margin="0,5,0,0"/>
+
+                                    </StackPanel>
+
+
+
+                                    <!-- Dia diem -->
+
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+
+                                        <TextBlock Text="📍 Địa điểm" FontSize="12" Foreground="#64748B"/>
+
+                                        <TextBlock Text="{Binding Location}" FontSize="16" FontWeight="Medium"/>
+
+                                    </StackPanel>
+
+
+
+                                    <!-- Trang thai -->
+
+                                    <Border Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" Padding="15,8" CornerRadius="20" Background="{Binding StatusColor}">
+
+                                        <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusTextColor}" FontWeight="Bold" FontSize="14"/>
+
+                                    </Border>
+
+                                </Grid>
+
+                            </Border>
+
+                        </DataTemplate>
+
+                    </ListView.ItemTemplate>
+
+                </ListView>
+
+
+
+                <!-- Empty State -->
+
+                <StackPanel x:Name="SpEmptyState" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                    <TextBlock Text="📅" FontSize="60" TextAlignment="Center" Margin="0,0,0,20"/>
+
+                    <TextBlock Text="Không có sự kiện nào trong tuần này" FontSize="20" FontWeight="SemiBold" Foreground="#64748B" TextAlignment="Center"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+</Page>
+
+
+

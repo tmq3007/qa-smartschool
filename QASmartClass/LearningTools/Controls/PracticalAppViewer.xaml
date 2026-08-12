@@ -1,0 +1,281 @@
+<UserControl x:Class="QASmartClass.LearningTools.Controls.PracticalAppViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:QASmartClass.LearningTools"
+             FontFamily="{x:Static local:DS.FontPrimary}"
+             mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="900">
+    <Grid Background="{DynamicResource WindowBackgroundBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="2"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- CỘT TRÁI: SIDEBAR -->
+        <Grid Grid.Column="0" Background="{DynamicResource SidebarBackground}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Tiêu đề Header của phân hệ -->
+            <Border Grid.Row="0" Background="{DynamicResource SidebarHeaderBackground}" Padding="16,12" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
+                <StackPanel>
+                    <TextBlock x:Name="txtSidebarHeader" Text="💡 Ứng dụng thực tế" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Chọn đề mục để xem chi tiết" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Danh sách đề mục -->
+            <ListBox x:Name="lstPracticalItems" Grid.Row="1" BorderThickness="0" Background="Transparent"
+                      Foreground="{DynamicResource TextPrimary}"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      SelectionChanged="LstPracticalItems_SelectionChanged" Margin="4">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="12,14"/>
+                        <Setter Property="Margin" Value="2,4"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border CornerRadius="8" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter />
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource SidebarHeaderBackground}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource BrandPrimary}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Icon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+
+        <!-- ĐƯỜNG PHÂN TÁCH -->
+        <Border Grid.Column="1" Background="{DynamicResource BorderBrush}"/>
+
+        <!-- CỘT PHẢI: PREVIEW KHU VỰC ẢNH TO & CHI TIẾT (Bố cục Side-by-Side song song) -->
+        <Grid Grid.Column="2" Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.8*"/>
+                <ColumnDefinition Width="1.2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI PREVIEW: Ảnh & Thẻ công thức cốt lõi bên dưới -->
+            <Grid Grid.Column="0" Margin="0,0,20,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Khung ảnh lớn -->
+                <Border Grid.Row="0" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource SurfaceBackground}" ClipToBounds="True" Margin="0,0,0,12">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06"/>
+                    </Border.Effect>
+                    <Grid>
+                        <!-- Ảnh hiển thị lớn -->
+                        <Image x:Name="imgLargePreview" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        
+                        <!-- Nút phóng to ảnh -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="12">
+                            <Button x:Name="btnZoomImage" Content="🔍 Xem rộng" 
+                                    Padding="10,6" Margin="0,0,8,0"
+                                    Background="#B0000000" Foreground="White" 
+                                    BorderThickness="0" Cursor="Hand" Click="BtnZoomImage_Click"
+                                    FontSize="12" FontWeight="SemiBold"
+                                    Visibility="Collapsed">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                            
+                            <Button x:Name="btnFullscreenImage" Content="⛶ Toàn màn hình" 
+                                    Padding="10,6"
+                                    Background="#B0000000" Foreground="White" 
+                                    BorderThickness="0" Cursor="Hand" Click="BtnFullscreenImage_Click"
+                                    FontSize="12" FontWeight="SemiBold"
+                                    Visibility="Collapsed">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                        </StackPanel>
+                        
+                        <!-- Trạng thái chờ load ảnh -->
+                        <TextBlock x:Name="txtLoadingPlaceholder" Text="⏳ Đang tải hình ảnh..." FontSize="14" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                        <!-- Thẻ Fallback Card thông minh -->
+                        <Border x:Name="borderFallbackCard" Visibility="Collapsed" CornerRadius="12" Margin="12" Padding="24">
+                            <Border.Background>
+                                <LinearGradientBrush x:Name="fallbackGradient" StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#1A2980" Offset="0"/>
+                                    <GradientStop Color="#26D0CE" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <!-- Họa tiết Vector chìm -->
+                                <Viewbox Opacity="0.08" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Grid x:Name="gridFallbackPattern" Width="200" Height="200">
+                                        <Path Stroke="White" StrokeThickness="1" Data="M 0,20 L 200,20 M 0,40 L 200,40 M 0,60 L 200,60 M 0,80 L 200,80 M 0,100 L 200,100 M 0,120 L 200,120 M 0,140 L 200,140 M 0,160 L 200,160 M 0,180 L 200,180"/>
+                                        <Path Stroke="White" StrokeThickness="1" Data="M 20,0 L 20,200 M 40,0 L 40,200 M 60,0 L 60,200 M 80,0 L 80,200 M 100,0 L 100,200 M 120,0 L 120,200 M 140,0 L 140,200 M 160,0 L 160,200 M 180,0 L 180,200"/>
+                                    </Grid>
+                                </Viewbox>
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="txtFallbackIcon" Text="🌍" FontSize="80" HorizontalAlignment="Center" Margin="0,0,0,16">
+                                        <TextBlock.Effect>
+                                            <DropShadowEffect BlurRadius="10" ShadowDepth="4" Opacity="0.3"/>
+                                        </TextBlock.Effect>
+                                    </TextBlock>
+                                    <TextBlock x:Name="txtFallbackTitle" Text="Ứng dụng thực tế" FontSize="22" FontWeight="ExtraBold" Foreground="White" HorizontalAlignment="Center" TextAlignment="Center">
+                                        <TextBlock.Effect>
+                                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.2"/>
+                                        </TextBlock.Effect>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Thẻ khái niệm toán học trực quan (Lấp đầy khoảng trống đứng dưới ảnh) -->
+                <Border x:Name="panelMathFormula" Grid.Row="1" CornerRadius="12" BorderThickness="1" BorderBrush="#FFE082" Background="#FFFDE7" Padding="16,12" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Text="🔑 Khái niệm sư phạm cốt lõi" FontSize="13" FontWeight="Bold" Foreground="#F57C00" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="txtMathFormula" Text="" FontSize="15" FontWeight="SemiBold" Foreground="#37474F" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- CỘT PHẢI PREVIEW: Nội dung đa tầng cuộn độc lập -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Name="txtDetailTitle" Grid.Row="0" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12" HorizontalAlignment="Left" TextWrapping="Wrap"/>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,4,0">
+                        <TextBlock x:Name="txtDetailDesc" FontSize="18" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" LineHeight="26" Margin="0,0,0,16"/>
+
+                        <!-- Khối Phân tích toán học (Xanh lam) -->
+                        <Border x:Name="panelMathAnalysis" CornerRadius="10" Background="#E3F2FD" BorderBrush="#90CAF9" BorderThickness="1" Padding="14,12" Margin="0,0,0,12" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="📊 Phân tích Toán học" FontSize="16" FontWeight="Bold" Foreground="#0D47A1" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="txtMathAnalysis" FontSize="16" Foreground="#1565C0" TextWrapping="Wrap" LineHeight="22"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Khối Câu hỏi thảo luận (Cam nhạt) -->
+                        <Border x:Name="panelDiscussionQuestion" CornerRadius="10" Background="#FFF3E0" BorderBrush="#FFB74D" BorderThickness="1" Padding="14,12" Margin="0,0,0,12" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="💬 Câu hỏi gợi mở &amp; Thảo luận" FontSize="16" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="txtDiscussionQuestion" FontSize="16" Foreground="#D84315" TextWrapping="Wrap" LineHeight="22"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Khối Nhiệm vụ thực hành (Xanh lá) -->
+                        <Border x:Name="panelPracticeTask" CornerRadius="10" Background="#E8F5E9" BorderBrush="#A5D6A7" BorderThickness="1" Padding="14,12" Margin="0,0,0,12" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="✍️ Nhiệm vụ thực hành học sinh" FontSize="16" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="txtPracticeTask" FontSize="16" Foreground="#1B5E20" TextWrapping="Wrap" LineHeight="22"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+        <!-- LỚP PHỦ PHÓNG TO TOÀN MÀN HÌNH (Full-screen overlay/LightBox) -->
+        <Grid x:Name="gridFullscreenOverlay" Grid.Column="0" Grid.ColumnSpan="3" 
+              Background="#E6000000" Visibility="Collapsed" Panel.ZIndex="999">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Thanh tiêu đề phía trên overlay -->
+            <Border Grid.Row="0" Padding="24,18" Background="#33000000" BorderThickness="0,0,0,1" BorderBrush="#22FFFFFF">
+                <DockPanel>
+                    <!-- Nút Đóng bên phải -->
+                    <Button x:Name="btnCloseFullscreen" Content="✕ Đóng" DockPanel.Dock="Right"
+                            Background="#33FFFFFF" Foreground="White" BorderThickness="0" Padding="20,10"
+                            Cursor="Hand" Click="BtnCloseFullscreen_Click" FontSize="14" FontWeight="Bold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                    <!-- Tiêu đề bên trái -->
+                    <TextBlock x:Name="txtFullscreenTitle" Text="Ứng dụng thực tế" FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                </DockPanel>
+            </Border>
+            
+            <!-- Khung ảnh zoom cực đại -->
+            <Border Grid.Row="1" Margin="40,20,40,90" Background="Transparent" CornerRadius="12" ClipToBounds="True">
+                <Grid x:Name="imgContainer" Background="#10FFFFFF" ClipToBounds="True"
+                      MouseWheel="ImgContainer_MouseWheel"
+                      MouseDown="ImgContainer_MouseDown"
+                      MouseMove="ImgContainer_MouseMove"
+                      MouseUp="ImgContainer_MouseUp"
+                      Cursor="SizeAll"
+                      ToolTip="Cuộn chuột để Phóng to/Thu nhỏ • Kéo chuột để Di chuyển">
+                    <Image x:Name="imgFullscreen" Stretch="Uniform" 
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform x:Name="fullscreenScale" ScaleX="1" ScaleY="1"/>
+                                <TranslateTransform x:Name="fullscreenTranslate" X="0" Y="0"/>
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                </Grid>
+            </Border>
+
+            <!-- Thanh công cụ zoom nổi (Căn giữa phía dưới) -->
+            <Border Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" 
+                    Margin="0,0,0,24" CornerRadius="20" Background="#B0000000" Padding="16,8" Panel.ZIndex="1000">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.3"/>
+                </Border.Effect>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="➕ Phóng to" Background="Transparent" Foreground="White" BorderThickness="0" Padding="10,6" Cursor="Hand" Click="ZoomIn_Click" FontSize="13" FontWeight="Bold"/>
+                    <Border Width="1" Background="#40FFFFFF" Margin="8,4"/>
+                    <Button Content="➖ Thu nhỏ" Background="Transparent" Foreground="White" BorderThickness="0" Padding="10,6" Cursor="Hand" Click="ZoomOut_Click" FontSize="13" FontWeight="Bold"/>
+                    <Border Width="1" Background="#40FFFFFF" Margin="8,4"/>
+                    <Button Content="⟲ Reset" Background="Transparent" Foreground="White" BorderThickness="0" Padding="10,6" Cursor="Hand" Click="ZoomReset_Click" FontSize="13" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

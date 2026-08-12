@@ -1,0 +1,119 @@
+{
+  "metadata": {
+    "chapterId": "g06_ch04",
+    "chapterName": "Bài 4: Quê hương yêu dấu",
+    "grade": 6,
+    "totalProblems": 4,
+    "totalSections": 2,
+    "estimatedHours": 3
+  },
+  "sections": [
+    {
+      "sectionId": "s_g6_ch3_0",
+      "sectionName": "Đêm nay Bác không ngủ",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g6_Đêm_nay_Bác_không_ngủ.mp3",
+      "concepts": [
+        {
+          "name": "Hoàn cảnh sáng tác và thể thơ",
+          "theorem": "Bài thơ của Minh Huệ được viết vào năm 1951 dựa trên sự kiện chiến dịch Biên giới thu đông 1950. Tác phẩm sử dụng thể thơ 5 chữ (ngũ ngôn) giản dị, giàu nhạc điệu, thích hợp kể chuyện kết hợp biểu cảm.",
+          "imageUrls": ["Resources/LiteratureData/Images/dem_nay_bac_khong_ngu.png"]
+        },
+        {
+          "name": "Sự chăm sóc ân cần của Bác Hồ",
+          "definition": "Bác Hồ đốt lửa sưởi ấm cho các chiến sĩ nằm ngủ. Bác nhẹ nhàng đi tém chăn (đắp chăn) cho từng người một, 'nhè nhẹ bàn chân bước' vì sợ các chiến sĩ giật mình thức giấc. Tấm lòng Bác ấm áp hơn cả ngọn lửa hồng hồng đêm đông."
+        },
+        {
+          "name": "Tâm tư anh đội viên và Bác",
+          "examples": [
+            "**Thức dậy lần 1**: Anh đội viên ngạc nhiên thấy Bác chưa ngủ, lặng lẽ ngắm nhìn Bác đốt lửa, tém chăn, cảm thấy Bác ấm áp như người cha.",
+            "**Thức dậy lần 3**: Thấy Bác vẫn ngồi đinh ninh, chòm râu im phăng phắc. Anh lo lắng khẩn khoản xin Bác đi ngủ: 'Bác ơi, Bác ngủ đi thôi... Lòng cháu cứ bề bộn.'",
+            "**Lý do Bác không ngủ**: Bác không ngủ vì Bác thương đoàn dân công phải ngủ ngoài rừng dưới trời mưa lạnh, rải lá cây làm chiếu, manh áo phủ làm chăn."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hành động đi 'dém chăn' cho từng chiến sĩ của Bác Hồ trong bài thơ thể hiện phẩm chất gì của Người?",
+          "difficulty": "Easy",
+          "options": [
+            "Sự quan tâm ân cần, tỉ mỉ và tình yêu thương bao la như người cha lo lắng cho các con",
+            "Thói quen mất ngủ kinh niên của người lớn tuổi trong những đêm mưa lạnh ở núi rừng",
+            "Sự nghiêm khắc của một người chỉ huy quân sự muốn kiểm tra kỷ luật của doanh trại trong đêm",
+            "Việc rèn luyện thể lực, giữ ấm cơ thể bằng cách đi lại nhiều lần trong đêm chiến dịch"
+          ],
+          "answer": "Sự quan tâm ân cần, tỉ mỉ và tình yêu thương bao la như người cha lo lắng cho các con",
+          "hints": ["Chú ý cử chỉ 'nhè nhẹ bàn chân bước' vì sợ các chiến sĩ giật mình."],
+          "explanation": "Hành động 'dém chăn' (đắp chăn) rất nhẹ nhàng vì sợ chiến sĩ giật mình thức giấc là chi tiết đắt giá thể hiện sự chăm sóc ân cần, tỉ mỉ của Bác. Người dành trọn tình yêu thương lớn lao như cha mẹ chăm sóc con cái đối với các chiến sĩ ngoài mặt trận."
+        },
+        {
+          "id": "p2",
+          "question": "Vì sao Bác Hồ 'đêm nay không ngủ' theo lý giải ở khổ thơ cuối cùng của tác phẩm?",
+          "difficulty": "Medium",
+          "options": [
+            "Vì 'Bác là Hồ Chí Minh' — một lẽ sống tự nhiên của cuộc đời Bác là cống hiến, lo nghĩ cho dân, cho nước",
+            "Vì Bác đang bận lập kế hoạch tác chiến cho trận đánh lớn sắp tới vào sáng mai",
+            "Vì tiếng mưa rừng quá lớn kết hợp với gió lạnh luồn vào mái lều dột nát làm Bác tỉnh giấc",
+            "Vì Bác muốn trò chuyện cùng anh đội viên để vơi đi nỗi buồn xa nhà xa quê hương"
+          ],
+          "answer": "Vì 'Bác là Hồ Chí Minh' — một lẽ sống tự nhiên của cuộc đời Bác là cống hiến, lo nghĩ cho dân, cho nước",
+          "hints": ["Xem hai câu kết: 'Một lẽ thường tình / Bác là Hồ Chí Minh'."],
+          "explanation": "Khổ thơ cuối khẳng định: 'Đêm nay Bác không ngủ / Một lẽ thường tình / Bác là Hồ Chí Minh'. Không ngủ để lo cho nước, cho dân là lẽ sống tự nhiên, thường trực của Người. Cuộc đời Người là chuỗi những đêm không ngủ vì đại nghiệp giải phóng dân tộc."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g6_ch3_1",
+      "sectionName": "Việt Nam quê hương ta",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g6_Việt_Nam_quê_hương_ta.mp3",
+      "concepts": [
+        {
+          "name": "Bức tranh thiên nhiên Việt Nam",
+          "theorem": "Nguyễn Đình Thi phác họa thiên nhiên đất nước trù phú với những nét đẹp mộc mạc, bình dị: cánh cò bay lả dập dờn trên nền lúa vàng rực, bầu trời trong xanh bao la, và dãy Trường Sơn mây phủ mờ sương khói.",
+          "imageUrls": ["Resources/LiteratureData/Images/viet_nam_que_huong_ta.png"]
+        },
+        {
+          "name": "Con người Việt Nam",
+          "examples": [
+            "**Cần cù, chịu khó**: 'Đất nghèo nuôi chí anh hùng' — con người Việt Nam quen gian khổ, vượt qua thử thách.",
+            "**Kiên cường chống ngoại xâm**: 'Chìm trong máu lửa lại vùng đứng lên' — dũng cảm, bất khuất đấu tranh.",
+            "**Thủy chung, hiền lành**: 'Yêu ai yêu trọn tấm lòng' — thủy chung sâu sắc, hiền hòa trong cuộc sống bình thường.",
+            "**Khéo léo, nghệ thuật**: 'Đất trăm nghề của trăm vùng' — hoa tay khéo léo, kiến tạo nên những tác phẩm tuyệt vời."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p3",
+          "question": "Hình ảnh 'Việt Nam đất nước ta ơi / Mênh mông biển lúa đâu trời đẹp hơn' gợi tả vẻ đẹp nào của quê hương?",
+          "difficulty": "Easy",
+          "options": [
+            "Vẻ đẹp trù phú, thanh bình, bao la và đậm đà bản sắc nông nghiệp truyền thống của đất nước",
+            "Sự phát triển công nghiệp hóa hiện đại của các khu kinh tế mới ven biển",
+            "Vẻ đẹp của những bãi biển cát trắng trải dài dọc theo miền Trung đất nước",
+            "Sự phong phú của các tài nguyên khoáng sản kim loại quý sâu trong lòng đất"
+          ],
+          "answer": "Vẻ đẹp trù phú, thanh bình, bao la và đậm đà bản sắc nông nghiệp truyền thống của đất nước",
+          "hints": ["'Biển lúa' là hình ảnh nông nghiệp quen thuộc của đồng ruộng quê hương."],
+          "explanation": "Hình ảnh 'mênh mông biển lúa' gợi tả một bức tranh đồng quê thanh bình, no ấm, bao la trải dài vô tận. Đây là biểu tượng của nền văn minh lúa nước lâu đời và vẻ đẹp tự nhiên, yên ả của làng quê Việt Nam."
+        },
+        {
+          "id": "p4",
+          "question": "Tác giả muốn khẳng định những phẩm chất tốt đẹp nào của con người Việt Nam qua câu 'Đất nghèo nuôi chí anh hùng / Chìm trong máu lửa lại vùng đứng lên'?",
+          "difficulty": "Medium",
+          "options": [
+            "Sự kiên cường, bất khuất, ý chí sắt đá vượt lên mọi nghịch cảnh gian khổ và chiến tranh để bảo vệ đất nước",
+            "Khả năng thích nghi nhanh chóng với sự thay đổi của thời tiết và khí hậu khắc nghiệt vùng nhiệt đới",
+            "Tinh thần hiếu học, đỗ đạt cao trong các kỳ thi khoa bảng và các trường học quốc tế",
+            "Sự khéo léo, tài hoa của các nghệ nhân thủ công làm ra các tác phẩm mỹ nghệ"
+          ],
+          "answer": "Sự kiên cường, bất khuất, ý chí sắt đá vượt lên mọi nghịch cảnh gian khổ và chiến tranh để bảo vệ đất nước",
+          "hints": ["'Chìm trong máu lửa lại vùng đứng lên' thể hiện tinh thần gì trước quân thù?"],
+          "explanation": "Hai câu thơ thể hiện phẩm chất đặc trưng nhất của dân tộc Việt Nam: dù hoàn cảnh nghèo khó, dù chịu bao đau thương mất mát của chiến tranh ('chìm trong máu lửa') vẫn giữ vững ý chí quật khởi, vùng lên đấu tranh để giành lại độc lập tự do."
+        }
+      ]
+    }
+  ]
+}

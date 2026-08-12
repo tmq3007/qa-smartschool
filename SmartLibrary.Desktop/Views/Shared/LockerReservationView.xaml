@@ -1,0 +1,191 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Shared.LockerReservationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             xmlns:converters="clr-namespace:SmartLibrary.Desktop.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Bar -->
+        <shared:TopBarControl Title="📦 Tủ nhận sách Locker thông minh 24/7" ActionButtonText=""/>
+
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Guide and Legend -->
+            <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="16" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="HƯỚNG DẪN GIAO NHẬN SÁCH TỰ ĐỘNG" FontSize="14" FontWeight="Bold" Foreground="#F8FAFC"/>
+                        <TextBlock Text="Học sinh đặt mượn sách trực tuyến sẽ được thủ thư xếp vào các ô tủ Locker. Hãy click vào ô tủ của bạn và nhập mã PIN để lấy sách." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <!-- Chú giải màu sắc -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Trống -->
+                        <Border Background="#475569" CornerRadius="4" Width="14" Height="14" Margin="16,0,6,0"/>
+                        <TextBlock Text="Trống" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+
+                        <!-- Chờ nhận -->
+                        <Border Background="#F59E0B" CornerRadius="4" Width="14" Height="14" Margin="16,0,6,0"/>
+                        <TextBlock Text="Có sách chờ nhận" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+
+                        <!-- Đã mở -->
+                        <Border Background="{DynamicResource StateSuccess}" CornerRadius="4" Width="14" Height="14" Margin="16,0,6,0"/>
+                        <TextBlock Text="Mở thành công" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Grid Lockers -->
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding Lockers}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4" Rows="3"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Ô tủ -->
+                        <Button Command="{Binding DataContext.SelectLockerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Margin="8" Padding="0" BorderThickness="0" Background="Transparent" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border CornerRadius="12" BorderThickness="2" Padding="16">
+                                        <!-- Dynamic Border Styles based on status -->
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#1E293B"/>
+                                                <Setter Property="BorderBrush" Value="#334155"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Empty">
+                                                        <Setter Property="Background" Value="#1E293B"/>
+                                                        <Setter Property="BorderBrush" Value="#475569"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Reserved">
+                                                        <Setter Property="Background" Value="#292524"/>
+                                                        <Setter Property="BorderBrush" Value="#F59E0B"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Opened">
+                                                        <Setter Property="Background" Value="#064E3B"/>
+                                                        <Setter Property="BorderBrush" Value="#10B981"/>
+                                                    </DataTrigger>
+                                                    <!-- Error Flashing -->
+                                                    <DataTrigger Binding="{Binding IsErrorState}" Value="True">
+                                                        <Setter Property="Background" Value="#7F1D1D"/>
+                                                        <Setter Property="BorderBrush" Value="#EF4444"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Locker number -->
+                                            <TextBlock Grid.Row="0" Text="{Binding LockerNumber}" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" HorizontalAlignment="Left"/>
+                                            
+                                            <!-- Locker Icon -->
+                                            <Viewbox Grid.Row="1" Width="48" Height="48" Margin="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock>
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="🔒"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Opened">
+                                                                    <Setter Property="Text" Value="🔓"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Viewbox>
+
+                                            <!-- Info Footer -->
+                                            <StackPanel Grid.Row="2">
+                                                <TextBlock Text="{Binding StatusText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="#94A3B8"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Reserved">
+                                                                    <Setter Property="Foreground" Value="#F59E0B"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="Opened">
+                                                                    <Setter Property="Foreground" Value="#10B981"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <!-- Book Title if reserved -->
+                                                <TextBlock Text="{Binding BookTitle}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,4,0,0" Visibility="{Binding BookTitle, Converter={StaticResource StringToVisibilityConverter}}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <!-- OVERLAY: PIN ENTER DIALOG -->
+        <Grid Grid.RowSpan="2" Background="#80000000" Visibility="{Binding IsPinDialogOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border Background="#1E293B" CornerRadius="16" BorderBrush="#334155" BorderThickness="1.5" Width="360" Height="280" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="24">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="20" ShadowDepth="4"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="🔓 NHẬP MÃ MỞ TỦ LOCKER" FontSize="15" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock x:Name="TxtLockerTitle" Text="{Binding SelectedLocker.LockerNumber, StringFormat='Mở ô tủ {0}'}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+
+                    <!-- Inputs & Messages -->
+                    <TextBox x:Name="TxtPin" Text="{Binding InputPin, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" FontSize="24" FontWeight="Bold" TextAlignment="Center" MaxLength="4" Width="160" Height="48" Margin="0,0,0,8" VerticalContentAlignment="Center" Background="#0F172A" Foreground="#F8FAFC" BorderBrush="#475569"/>
+                    
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource StateError}" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,8" Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+                        <Button Content="Mở tủ" Command="{Binding SubmitPinCommand}" Style="{StaticResource SuccessButton}" Width="100" Height="36" IsDefault="True" Cursor="Hand"/>
+                        <Button Content="Hủy" Command="{Binding CloseDialogCommand}" Style="{StaticResource SecondaryButton}" Width="80" Height="36" Margin="12,0,0,0" Cursor="Hand"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- DYNAMIC NOTIFICATION OVERLAY (SUCCESS ONLY) -->
+        <Grid Grid.RowSpan="2" Background="#B0000000" Visibility="{Binding SuccessMessage, Converter={StaticResource StringToVisibilityConverter}}">
+            <Border Background="#064E3B" CornerRadius="16" BorderBrush="#10B981" BorderThickness="2" Width="400" Height="220" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="24">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="🎉 LẤY SÁCH THÀNH CÔNG! 🎉" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource StateSuccess}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                    <TextBlock Text="{Binding SuccessMessage}" Foreground="#E2E8F0" FontSize="13" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,20"/>
+                    <Button Content="Đóng" Command="{Binding DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource SuccessButton}" Width="100" Height="36" HorizontalAlignment="Center" Cursor="Hand"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

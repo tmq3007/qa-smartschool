@@ -1,0 +1,472 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_18_ScreenCurtain"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Screen Curtain"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        Topmost="True"
+
+        WindowState="Maximized"
+
+        ResizeMode="NoResize"
+
+        ShowInTaskbar="False"
+
+        Loaded="Window_Loaded">
+
+    
+
+    <Grid x:Name="MainGrid">
+
+        <!-- ✨ CURTAIN OVERLAY -->
+
+        <Rectangle x:Name="CurtainOverlay"
+
+                   Fill="Black"
+
+                   Opacity="0.9">
+
+            <Rectangle.Effect>
+
+                <BlurEffect Radius="0"/>
+
+            </Rectangle.Effect>
+
+        </Rectangle>
+
+        
+
+        <!-- ✨ REVEAL CANVAS (for clipping) -->
+
+        <Canvas x:Name="RevealCanvas"
+
+                Background="Transparent"
+
+                IsHitTestVisible="False"/>
+
+        
+
+        <!-- ✨ CONTROL PANEL -->
+
+        <Border x:Name="ControlPanel"
+
+                Background="#F5FFFFFF"
+
+                BorderBrush="#667EEA"
+
+                BorderThickness="2"
+
+                CornerRadius="10"
+
+                Padding="20"
+
+                Width="300"
+
+                HorizontalAlignment="Right"
+
+                VerticalAlignment="Bottom"
+
+                Margin="30"
+
+                MouseDown="ControlPanel_MouseDown"
+
+                MouseMove="ControlPanel_MouseMove"
+
+                MouseUp="ControlPanel_MouseUp">
+
+            
+
+            <Border.Effect>
+
+                <DropShadowEffect Color="Black" Opacity="0.3" ShadowDepth="5" BlurRadius="15"/>
+
+            </Border.Effect>
+
+            
+
+            <StackPanel>
+
+                <!-- Title Bar -->
+
+                <Grid Margin="0,0,0,15">
+
+                    <TextBlock Text="Màn Che Bảng"
+
+                              FontSize="18"
+
+                              FontWeight="Bold"
+
+                              Foreground="#667EEA"
+
+                              VerticalAlignment="Center"/>
+
+                    <Button x:Name="btnMinimize"
+
+                           Content="−"
+
+                           Width="25" Height="25"
+
+                           HorizontalAlignment="Right"
+
+                           Margin="0,0,35,0"
+
+                           Click="btnMinimize_Click"
+
+                           ToolTip="Thu gọn"/>
+
+                    <Button x:Name="btnClosePanel"
+
+                           Content="✕"
+
+                           Width="25" Height="25"
+
+                           HorizontalAlignment="Right"
+
+                           Click="btnClosePanel_Click"
+
+                           ToolTip="Đóng"/>
+
+                </Grid>
+
+                
+
+                <Separator Margin="0,0,0,15"/>
+
+                
+
+                <!-- Opacity Control -->
+
+                <TextBlock Text="Độ mờ"
+
+                          FontWeight="SemiBold"
+
+                          Margin="0,0,0,5"/>
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <Slider x:Name="OpacitySlider"
+
+                           Grid.Column="0"
+
+                           Minimum="0" Maximum="1"
+
+                           Value="0.9"
+
+                           TickFrequency="0.1"
+
+                           IsSnapToTickEnabled="True"
+
+                           ValueChanged="OpacitySlider_ValueChanged"
+
+                           Margin="0,0,10,0"/>
+
+                    <TextBlock x:Name="txtOpacity"
+
+                              Grid.Column="1"
+
+                              Text="90%"
+
+                              FontWeight="Bold"
+
+                              VerticalAlignment="Center"
+
+                              Width="40"/>
+
+                </Grid>
+
+                
+
+                <Separator Margin="0,15,0,15"/>
+
+                
+
+                <!-- Reveal Mode -->
+
+                <TextBlock Text="Chế độ hiện"
+
+                          FontWeight="SemiBold"
+
+                          Margin="0,0,0,5"/>
+
+                <ComboBox x:Name="RevealModeCombo"
+
+                         SelectionChanged="RevealMode_Changed"
+
+                         Margin="0,0,0,10">
+
+                    <ComboBoxItem Content="🔽 Dọc" IsSelected="True"/>
+
+                    <ComboBoxItem Content="↔️ Ngang"/>
+
+                    <ComboBoxItem Content="🔦 Đèn rọi"/>
+
+                    <ComboBoxItem Content="✏️ Tùy chỉnh"/>
+
+                </ComboBox>
+
+                
+
+                <!-- Reveal Amount -->
+
+                <TextBlock x:Name="RevealLabel"
+
+                          Text="Hiện: 20%/100%"
+
+                          FontWeight="SemiBold"
+
+                          Margin="0,10,0,5"/>
+
+                <Slider x:Name="RevealSlider"
+
+                       Minimum="0" Maximum="1"
+
+                       Value="0.2"
+
+                       TickFrequency="0.01"
+
+                       IsSnapToTickEnabled="True"
+
+                       ValueChanged="RevealSlider_ValueChanged"/>
+
+                
+
+                <!-- ✨ PHASE 2: Direction Control (for Vertical/Horizontal) -->
+
+                <StackPanel x:Name="DirectionPanel" 
+
+                           Visibility="Visible"
+
+                           Margin="0,10,0,0">
+
+                    <TextBlock Text="Hướng"
+
+                              FontWeight="SemiBold"
+
+                              Margin="0,0,0,5"/>
+
+                    <ComboBox x:Name="DirectionCombo"
+
+                             SelectionChanged="Direction_Changed">
+
+                        <ComboBoxItem Content="⬇️ Từ trên" IsSelected="True"/>
+
+                        <ComboBoxItem Content="⬆️ Từ dưới"/>
+
+                        <ComboBoxItem Content="➡️ Từ trái"/>
+
+                        <ComboBoxItem Content="⬅️ Từ phải"/>
+
+                    </ComboBox>
+
+                </StackPanel>
+
+                
+
+                <!-- ✨ PHASE 2: Spotlight Options -->
+
+                <StackPanel x:Name="SpotlightPanel"
+
+                           Visibility="Collapsed"
+
+                           Margin="0,10,0,0">
+
+                    <CheckBox x:Name="chkFollowMouse"
+
+                             Content="🖱️ Theo chuột"
+
+                             Checked="FollowMouse_Changed"
+
+                             Unchecked="FollowMouse_Changed"
+
+                             Margin="0,0,0,5"/>
+
+                    <TextBlock x:Name="txtSpotlightPos"
+
+                              Text="Vị trí: Giữa"
+
+                              FontSize="10"
+
+                              Foreground="#666"/>
+
+                </StackPanel>
+
+                
+
+                <Separator Margin="0,15,0,15"/>
+
+                
+
+                <!-- Quick Actions -->
+
+                <TextBlock Text="Thao tác nhanh"
+
+                          FontWeight="SemiBold"
+
+                          Margin="0,0,0,10"/>
+
+                <UniformGrid Rows="2" Columns="2" Margin="0,0,0,10">
+
+                    <Button Content="🔄 Đặt lại"
+
+                           Margin="2"
+
+                           Padding="8,5"
+
+                           Click="Reset_Click"
+
+                           ToolTip="Đặt lại về mặc định"/>
+
+                    <Button Content="👁️ Hiện hết"
+
+                           Margin="2"
+
+                           Padding="8,5"
+
+                           Click="ShowAll_Click"
+
+                           ToolTip="Hiện toàn bộ"/>
+
+                    <Button Content="🚫 Ẩn hết"
+
+                           Margin="2"
+
+                           Padding="8,5"
+
+                           Click="HideAll_Click"
+
+                           ToolTip="Ẩn toàn bộ"/>
+
+                    <Button Content="✕ Đóng"
+
+                           Margin="2"
+
+                           Padding="8,5"
+
+                           Click="Close_Click"
+
+                           ToolTip="Đóng màn che"
+
+                           Background="#DC3545"
+
+                           Foreground="White"/>
+
+                </UniformGrid>
+
+                
+
+                <!-- Keyboard Shortcuts Info -->
+
+                <Border Background="#F0F8FF"
+
+                       BorderBrush="#667EEA"
+
+                       BorderThickness="1"
+
+                       CornerRadius="5"
+
+                       Padding="10"
+
+                       Margin="0,10,0,0">
+
+                    <TextBlock TextWrapping="Wrap"
+
+                              FontSize="10"
+
+                              Foreground="#666">
+
+                        <Run Text="Phím tắt:"/>
+
+                        <LineBreak/>
+
+                        <Run Text="Esc - Đóng màn che"/>
+
+                        <LineBreak/>
+
+                        <Run Text="Space - Hiện/Ẩn hết"/>
+
+                        <LineBreak/>
+
+                        <Run Text="↑↓ - Điều chỉnh"/>
+
+                    </TextBlock>
+
+                </Border>
+
+            </StackPanel>
+
+        </Border>
+
+        
+
+        <!-- ✨ MINIMIZED PANEL (when minimized) -->
+
+        <Border x:Name="MinimizedPanel"
+
+                Background="#667EEA"
+
+                CornerRadius="20"
+
+                Padding="15,10"
+
+                HorizontalAlignment="Right"
+
+                VerticalAlignment="Top"
+
+                Margin="30"
+
+                Visibility="Collapsed"
+
+                MouseDown="MinimizedPanel_MouseDown">
+
+            <Border.Effect>
+
+                <DropShadowEffect Color="Black" Opacity="0.3" ShadowDepth="3" BlurRadius="10"/>
+
+            </Border.Effect>
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="📺"
+
+                          FontSize="16"
+
+                          VerticalAlignment="Center"
+
+                          Margin="0,0,5,0"/>
+
+                <TextBlock x:Name="txtMinimizedInfo"
+
+                          Text="90%"
+
+                          FontSize="14"
+
+                          FontWeight="Bold"
+
+                          Foreground="White"
+
+                          VerticalAlignment="Center"/>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</Window>
+

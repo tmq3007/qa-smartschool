@@ -1,0 +1,366 @@
+{
+  "metadata": {
+    "chapterId": "g06_ch02",
+    "chapterName": "Hình Học Phẳng — Góc & Đường Thẳng",
+    "grade": 6,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 15,
+    "toolMapping": [
+      "GeometryTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 14,
+    "prerequisites": []
+  },
+  "sections": [
+    {
+      "sectionId": "hh6_01",
+      "sectionName": "Góc & Đo góc",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "hh6_001",
+          "name": "Góc — Phân loại",
+          "definition": "Góc nhọn (0°<α<90°), Vuông (=90°), Tù (90°<α<180°), Bẹt (=180°)",
+          "examples": [
+            "Góc bàn = 90° (vuông)",
+            "Kim đồng hồ 3h = 90°"
+          ]
+        },
+        {
+          "id": "hh6_002",
+          "name": "Tia phân giác",
+          "definition": "Chia góc thành 2 phần bằng nhau",
+          "examples": [
+            "Tia phân giác góc 60° → 2 góc 30°"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh6_p01",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Góc 120° thuộc loại nào?",
+          "options": [
+            "A) Nhọn",
+            "B) Vuông",
+            "C) Tù",
+            "D) Bẹt"
+          ],
+          "correctAnswer": "C",
+          "solution": "90° < 120° < 180° → góc tù",
+          "points": 5
+        },
+        {
+          "problemId": "hh6_p02",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Hai góc kề bù, góc A = 65°. Góc B = ?",
+          "options": [
+            "A) 105°",
+            "B) 115°",
+            "C) 125°",
+            "D) 95°"
+          ],
+          "correctAnswer": "B",
+          "solution": "Kề bù → A + B = 180°. B = 180 - 65 = 115°",
+          "points": 10
+        },
+        {
+          "problemId": "hh6_p03",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tia phân giác góc 80°. Mỗi nửa = ?",
+          "options": [
+            "A) 20°",
+            "B) 30°",
+            "C) 40°",
+            "D) 45°"
+          ],
+          "correctAnswer": "C",
+          "solution": "80° ÷ 2 = 40° mỗi nửa",
+          "points": 15
+        },
+        {
+          "problemId": "hh6_p04",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Kim phút và kim giờ lúc 6:00 tạo góc bao nhiêu độ?",
+          "options": [
+            "A) 90°",
+            "B) 120°",
+            "C) 150°",
+            "D) 180°"
+          ],
+          "correctAnswer": "D",
+          "solution": "6:00 → kim thẳng hàng đối nhau = 180° (góc bẹt)",
+          "points": 5
+        },
+        {
+          "problemId": "hh6_p05",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Hai góc đối đỉnh, một góc = 47°. Góc kia = ?",
+          "options": [
+            "A) 43°",
+            "B) 47°",
+            "C) 90°",
+            "D) 133°"
+          ],
+          "correctAnswer": "B",
+          "solution": "Góc đối đỉnh bằng nhau = 47°",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "hh6_02",
+      "sectionName": "Đường thẳng song song & cắt nhau",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "hh6_003",
+          "name": "Đường thẳng song song",
+          "definition": "2 đường thẳng không cắt nhau, cách đều",
+          "examples": [
+            "2 cạnh đối HCN",
+            "2 đường ray xe lửa"
+          ]
+        },
+        {
+          "id": "hh6_004",
+          "name": "Đường thẳng vuông góc",
+          "definition": "2 đường thẳng cắt nhau tạo góc 90°",
+          "examples": [
+            "Cạnh bàn vuông góc nhau"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh6_p06",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Ký hiệu 2 đường thẳng song song là?",
+          "options": [
+            "A) a ⊥ b",
+            "B) a // b",
+            "C) a = b",
+            "D) a ∩ b"
+          ],
+          "correctAnswer": "B",
+          "solution": "// = song song, ⊥ = vuông góc",
+          "points": 5
+        },
+        {
+          "problemId": "hh6_p07",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "a // b, đường cắt c tạo góc sole = 55° với a. Góc sole với b = ?",
+          "options": [
+            "A) 35°",
+            "B) 55°",
+            "C) 125°",
+            "D) 90°"
+          ],
+          "correctAnswer": "B",
+          "solution": "Hai đường song song bị cắt bởi cát tuyến → góc sole trong bằng nhau = 55°",
+          "points": 10
+        },
+        {
+          "problemId": "hh6_p08",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "a // b. Góc đồng vị với a = 72°. Góc kề bù ở phía b = ?",
+          "options": [
+            "A) 72°",
+            "B) 108°",
+            "C) 118°",
+            "D) 90°"
+          ],
+          "correctAnswer": "B",
+          "solution": "Góc đồng vị = 72°. Kề bù = 180° - 72° = 108°",
+          "points": 15
+        },
+        {
+          "problemId": "hh6_p09",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Chữ L trong bảng chữ cái chứa cặp đoạn thẳng nào?",
+          "options": [
+            "A) Song song",
+            "B) Vuông góc",
+            "C) Cắt nhau không vuông góc",
+            "D) Trùng nhau"
+          ],
+          "correctAnswer": "B",
+          "solution": "Chữ L: 2 nét vuông góc nhau tại gốc",
+          "points": 5
+        },
+        {
+          "problemId": "hh6_p10",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Qua 1 điểm ngoài đường thẳng, vẽ được mấy đường thẳng song song?",
+          "options": [
+            "A) 0",
+            "B) 1",
+            "C) 2",
+            "D) Vô số"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tiên đề Euclid: qua 1 điểm ngoài đường thẳng có đúng 1 đường song song",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "hh6_03",
+      "sectionName": "Trung điểm & Đường trung trực",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "hh6_005",
+          "name": "Trung điểm đoạn thẳng",
+          "definition": "Điểm M là trung điểm AB khi MA = MB = AB/2",
+          "examples": [
+            "AB = 10 cm → M: MA = MB = 5 cm"
+          ]
+        },
+        {
+          "id": "hh6_006",
+          "name": "Đường trung trực",
+          "definition": "Đường thẳng vuông góc với đoạn thẳng tại trung điểm",
+          "examples": [
+            "Trung trực AB → đi qua M (trung điểm) và ⊥ AB"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh6_p11",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "AB = 14 cm. M là trung điểm. MA = ?",
+          "options": [
+            "A) 5 cm",
+            "B) 7 cm",
+            "C) 10 cm",
+            "D) 14 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "MA = AB/2 = 14/2 = 7 cm",
+          "points": 5
+        },
+        {
+          "problemId": "hh6_p12",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "A, B, C thẳng hàng. AB = 6, BC = 10. M trung điểm AC. AM = ?",
+          "options": [
+            "A) 6",
+            "B) 7",
+            "C) 8",
+            "D) 10"
+          ],
+          "correctAnswer": "C",
+          "solution": "AC = AB + BC = 6 + 10 = 16. AM = AC/2 = 8",
+          "points": 10
+        },
+        {
+          "problemId": "hh6_p13",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Điểm P nằm trên đường trung trực của AB. PA = 8 cm. PB = ?",
+          "options": [
+            "A) 4 cm",
+            "B) 8 cm",
+            "C) 16 cm",
+            "D) Không xác định"
+          ],
+          "correctAnswer": "B",
+          "solution": "Điểm trên đường trung trực cách đều 2 đầu: PA = PB = 8 cm",
+          "points": 15
+        },
+        {
+          "problemId": "hh6_p14",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "M trung điểm AB, N trung điểm MB. AB = 12. MN = ?",
+          "options": [
+            "A) 2",
+            "B) 3",
+            "C) 4",
+            "D) 6"
+          ],
+          "correctAnswer": "B",
+          "solution": "MB = 12/2 = 6. MN = MB/2 = 3",
+          "points": 10
+        },
+        {
+          "problemId": "hh6_p15",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tam giác ABC cân tại A. Đường trung trực BC cắt AB tại D, cắt AC tại E. BD = CE?",
+          "options": [
+            "A) Luôn đúng",
+            "B) Chỉ đúng khi tam giác đều",
+            "C) Sai",
+            "D) Không xác định"
+          ],
+          "correctAnswer": "A",
+          "solution": "Tam giác cân → trung trực BC là trục đối xứng → BD = CE luôn đúng",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm góc kề bù với góc đối đỉnh",
+      "correction": "Kề bù: chung 1 cạnh, tổng = 180°. Đối đỉnh: đối nhau qua giao, bằng nhau"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "hh6_quiz_01",
+      "title": "Kiểm tra: Hình học phẳng Lớp 6",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "hh6_p01"
+        },
+        {
+          "ref": "hh6_p06"
+        },
+        {
+          "ref": "hh6_p11"
+        },
+        {
+          "ref": "hh6_p03"
+        },
+        {
+          "ref": "hh6_p13"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

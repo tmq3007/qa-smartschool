@@ -1,0 +1,133 @@
+<Page x:Class="QASmartClass.HealthRoom.Views.HealthRecordView"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Ho so Suc khoe" Background="#F8FAFC" FontFamily="Segoe UI">
+
+    <Grid Margin="20">
+
+        <Grid.ColumnDefinitions>
+
+            <ColumnDefinition Width="3*"/>
+
+            <ColumnDefinition Width="2*"/>
+
+        </Grid.ColumnDefinitions>
+
+
+
+        <!-- Danh sách Hồ sơ -->
+
+        <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="20" Margin="0,0,10,0">
+
+            <Border.Effect><DropShadowEffect BlurRadius="5" ShadowDepth="1" Opacity="0.05"/></Border.Effect>
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+
+                    <RowDefinition Height="Auto"/>
+
+                    <RowDefinition Height="*"/>
+
+                </Grid.RowDefinitions>
+
+                <DockPanel Margin="0,0,0,15">
+
+                    <TextBlock Text="🏥 Hồ sơ Sức khỏe Học sinh" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
+
+                    <Button x:Name="BtnAdd" Content="＋ Khám mới" Click="BtnAdd_Click" HorizontalAlignment="Right" Background="#10B981" Foreground="White" Padding="12,6" BorderThickness="0"/>
+
+                </DockPanel>
+
+
+
+                <DataGrid Grid.Row="1" x:Name="DgRecords" AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="1" BorderBrush="#E2E8F0" Background="White" SelectionChanged="DgRecords_SelectionChanged">
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Ngày khám" Binding="{Binding ExamDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+
+                        <DataGridTextColumn Header="Học sinh" Binding="{Binding StudentName}" Width="150"/>
+
+                        <DataGridTextColumn Header="Lớp" Binding="{Binding ClassName}" Width="80"/>
+
+                        <DataGridTextColumn Header="Chiều cao (cm)" Binding="{Binding Height}" Width="100"/>
+
+                        <DataGridTextColumn Header="Cân nặng (kg)" Binding="{Binding Weight}" Width="100"/>
+
+                        <DataGridTextColumn Header="Bệnh mãn tính" Binding="{Binding ChronicConditions}" Width="*"/>
+
+                    </DataGrid.Columns>
+
+                </DataGrid>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- Chi tiết và Biểu đồ -->
+
+        <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="20" Margin="10,0,0,0">
+
+            <Border.Effect><DropShadowEffect BlurRadius="5" ShadowDepth="1" Opacity="0.05"/></Border.Effect>
+
+            <Grid>
+                <!-- Bảng hướng dẫn khi chưa chọn học sinh (Placeholder) -->
+                <StackPanel x:Name="PanelPlaceholder" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10">
+                    <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                    <TextBlock Text="Vui lòng chọn học sinh từ danh sách bên trái" FontSize="14" FontWeight="SemiBold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                    <TextBlock Text="để xem thông tin chi tiết sức khỏe và biểu đồ tăng trưởng WHO." FontSize="12" Foreground="#94A3B8" TextAlignment="Center" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <StackPanel x:Name="PanelDetails" Visibility="Collapsed">
+                    <!-- Banner Cảnh Báo Dị Ứng -->
+                    <Border x:Name="BorderAllergyAlert" Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,15" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚠️ CẢNH BÁO DỊ ỨNG:" FontWeight="Bold" Foreground="#B91C1C" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="TxtAllergyAlert" Text="Không có" FontWeight="Bold" Foreground="#B91C1C" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock x:Name="TxtDetailName" FontSize="18" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="TxtDetailClass" FontSize="14" Foreground="#64748B" Margin="0,0,0,20"/>
+
+                    <UniformGrid Columns="2" Margin="0,0,0,20">
+                        <StackPanel Margin="0,0,10,10">
+                            <TextBlock Text="Thị lực (Trái/Phải):" Foreground="#94A3B8" FontSize="13"/>
+                            <TextBlock x:Name="TxtVision" FontSize="16" FontWeight="SemiBold" Foreground="#3B82F6"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="BMI:" Foreground="#94A3B8" FontSize="13"/>
+                            <TextBlock x:Name="TxtBmi" FontSize="16" FontWeight="SemiBold" Foreground="#10B981"/>
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <TextBlock Text="Bệnh mãn tính / Chú ý:" Foreground="#94A3B8" FontSize="13" Margin="0,0,0,4"/>
+                    <Border Background="#FEF2F2" CornerRadius="6" Padding="10" Margin="0,0,0,20">
+                        <TextBlock x:Name="TxtChronic" TextWrapping="Wrap" FontSize="14" Foreground="#EF4444" FontWeight="SemiBold"/>
+                    </Border>
+
+                    <!-- Biểu đồ tăng trưởng đường chuẩn WHO -->
+                    <TextBlock Text="Biểu đồ tăng trưởng chiều cao (WHO)" FontSize="14" FontWeight="Bold" Foreground="#334155" Margin="0,0,0,10"/>
+                    <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Background="#F8FAFC" Padding="5" Margin="0,0,0,15">
+                        <Canvas x:Name="CvGrowthChart" Height="170" ClipToBounds="True" SizeChanged="CvGrowthChart_SizeChanged"/>
+                    </Border>
+
+                    <Button x:Name="BtnExport" Content="📄 Xuất báo cáo PDF" Background="#8B5CF6" Foreground="White" Padding="10" BorderThickness="0" Click="BtnExport_Click"/>
+
+                </StackPanel>
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+</Page>
+
+
+

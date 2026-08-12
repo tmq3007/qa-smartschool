@@ -1,0 +1,255 @@
+<UserControl x:Class="QASmartClass.LearningTools.Views.Workplace.PdcaTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:QASmartClass.LearningTools"
+             Background="White" xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls">
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- === HEADER === -->
+        <Border Grid.Row="0" Background="#F8F9FA" Padding="16,10" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="lblCycleNum" Text="Chu kỳ số:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#616161" FontSize="{x:Static local:DS.FontNote}" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                    <Button x:Name="btnPrevCycle" Content="◀" Padding="8,4" MinWidth="36" MinHeight="36" Cursor="Hand" Click="PrevCycle_Click"/>
+                    <TextBlock x:Name="txtCycle" Text="{Binding CurrentCycle}" FontWeight="Bold" FontSize="16" FontFamily="{x:Static local:DS.FontPrimary}" VerticalAlignment="Center" Margin="10,0" Foreground="#00796B"/>
+                    <Button x:Name="btnNextCycle" Content="▶" Padding="8,4" MinWidth="36" MinHeight="36" Cursor="Hand" Click="NextCycle_Click" Margin="0,0,16,0"/>
+
+                    <Button x:Name="btnTemplate" Content="🎯 Template mẫu ▼" Padding="12,8" Margin="0,0,6,0" FontSize="13" MinHeight="{x:Static local:DS.TouchMinHeight}" FontFamily="{x:Static local:DS.FontPrimary}" Cursor="Hand" Click="Template_Click"/>
+                    <Button x:Name="btnExport" Content="📷 Export PNG" Padding="12,8" Margin="0,0,6,0" FontSize="13" MinHeight="{x:Static local:DS.TouchMinHeight}" FontFamily="{x:Static local:DS.FontPrimary}" Cursor="Hand" Click="Export_Click"/>
+                    <Button x:Name="btnClear" Content="🗑️ Xóa" Padding="12,8" FontSize="13" MinHeight="{x:Static local:DS.TouchMinHeight}" FontFamily="{x:Static local:DS.FontPrimary}" Cursor="Hand" Click="Clear_Click"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Vertical">
+                    <TextBlock x:Name="lblHeaderTitle" Text="🔄 Chu Trình PDCA" FontSize="{x:Static local:DS.FontTitle}" FontFamily="{x:Static local:DS.FontPrimary}" FontWeight="Bold" Foreground="#00796B"/>
+                    <TextBlock x:Name="lblHeaderSubtitle" Text="Plan - Do - Check - Act (Bánh xe Deming) để cải tiến liên tục" FontSize="{x:Static local:DS.FontSubtitle}" FontFamily="{x:Static local:DS.FontPrimary}" Foreground="#757575" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#F1F8E9">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#B2DFDB"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#00796B"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextWorkspace" Text="Vòng lặp PDCA" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#E0E0E0"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 1: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12" x:Name="mainPanel">
+<!-- Guide for Students -->
+                        <Expander x:Name="expGuide" Header="📖 Hướng dẫn sử dụng &amp; Ghi chú" FontSize="14" FontWeight="SemiBold" Foreground="#00796B" Margin="0,0,0,16" Background="#F1F8E9" BorderBrush="#C5E1A5" BorderThickness="1">
+                            <StackPanel Background="White" Margin="12">
+                                <Border Background="#E3F2FD" CornerRadius="6" Padding="10" Margin="0,0,0,10" BorderBrush="#BBDEFB" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock x:Name="lblOriginTitle" Text="💡 NGUỒN GỐC &amp; Ý NGHĨA" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,4" FontSize="{x:Static local:DS.FontNote}" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        <TextBlock x:Name="txtToolMeaning" TextWrapping="Wrap" FontSize="13.5" FontFamily="{x:Static local:DS.FontPrimary}" Foreground="#424242" Margin="0,0,0,8"/>
+                                        <TextBlock x:Name="lblAppTitle" Text="🌍 ÁP DỤNG THỰC TẾ" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,4" FontSize="{x:Static local:DS.FontNote}" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        <TextBlock x:Name="txtToolApplication" TextWrapping="Wrap" FontSize="13.5" FontFamily="{x:Static local:DS.FontPrimary}" Foreground="#424242"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock x:Name="lblIntro" TextWrapping="Wrap" FontSize="13.5" FontFamily="{x:Static local:DS.FontPrimary}" FontWeight="Normal" Foreground="#424242">
+                                    <Run FontWeight="Bold" Text="Chu trình PDCA "/> giúp các bạn liên tục tự đánh giá và cải thiện kết quả học tập hoặc thói quen của mình qua 4 bước khép kín.<LineBreak/><LineBreak/>
+                                    <Run FontWeight="Bold" Text="Cách thực hiện 1 vòng lặp:"/><LineBreak/>
+                                    • <Run FontWeight="SemiBold" Text="📝 PLAN (Kế hoạch):"/> Đặt mục tiêu rõ ràng và ghi chi tiết cách thực hiện (VD: Mục tiêu đạt 8 điểm Toán tuần tới bằng cách giải 5 bài tập/ngày).<LineBreak/>
+                                    • <Run FontWeight="SemiBold" Text="⚡ DO (Thực hiện):"/> Bắt tay vào làm đúng theo Kế hoạch đã đề ra ở bước Plan. (Ghi lại những gì bạn thực sự đã làm).<LineBreak/>
+                                    • <Run FontWeight="SemiBold" Text="🔍 CHECK (Kiểm tra):"/> Cuối tuần nhìn lại xem có làm đúng kế hoạch không? Kết quả bài kiểm tra thực tế được mấy điểm?<LineBreak/>
+                                    • <Run FontWeight="SemiBold" Text="🎯 ACT (Hành động):"/> Rút kinh nghiệm. Nếu chưa đạt, điều chỉnh lại cách học (VD: đổi giờ học). Nếu đã đạt, duy trì thói quen đó. Sau đó bấm nút "▶" phía trên để sang "Chu kỳ tiếp theo".
+                                </TextBlock>
+
+                                <!-- Visual Step-by-Step Instructions -->
+                                <Border Background="#FFF3E0" CornerRadius="6" Padding="12,10" Margin="0,10,0,0" BorderBrush="#FFE0B2" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock x:Name="lblOpTitle" Text="🎯 QUY TRÌNH THAO TÁC TRỰC QUAN (4 BƯỚC CHO GIÁO VIÊN &amp; HỌC SINH)" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,6" FontSize="{x:Static local:DS.FontNote}" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        <TextBlock x:Name="lblOpContent" TextWrapping="Wrap" FontSize="13.5" FontFamily="{x:Static local:DS.FontPrimary}" Foreground="#424242">
+                                            <Run FontWeight="Bold" Foreground="#1565C0" Text="Bước 1: Xác định mục tiêu."/> Nhập mục tiêu cải tiến vào ô <Run FontWeight="SemiBold" Text="📋 Mục tiêu cải tiến"/> (VD: "Tập trung học tiếng Anh", "Giảm ăn vặt").<LineBreak/>
+                                            <Run FontWeight="Bold" Foreground="#1565C0" Text="Bước 2: Lập kế hoạch &amp; Thực hành."/> Viết chi tiết vào ô <Run FontWeight="SemiBold" Text="📝 PLAN"/> và <Run FontWeight="SemiBold" Text="⚡ DO"/>. Bạn có thể bấm <Run FontWeight="SemiBold" Text="🎯 Template ▼"/> để xem mẫu hướng dẫn.<LineBreak/>
+                                            <Run FontWeight="Bold" Foreground="#1565C0" Text="Bước 3: Đánh giá &amp; Sửa đổi."/> Sau thời gian thử nghiệm, ghi lại kết quả kiểm tra vào ô <Run FontWeight="SemiBold" Text="🔍 CHECK"/> và hành động cải tiến tiếp theo ở <Run FontWeight="SemiBold" Text="🎯 ACT"/>.<LineBreak/>
+                                            <Run FontWeight="Bold" Foreground="#1565C0" Text="Bước 4: Sang chu kỳ tiếp theo."/> Bấm nút <Run FontWeight="SemiBold" Text="▶"/> ở góc phải. Chọn <Run FontWeight="SemiBold" Text="[No]"/> để copy nội dung cũ làm nền tảng phát triển, hoặc <Run FontWeight="SemiBold" Text="[Yes]"/> để xóa sạch và bắt đầu kế hoạch mới. Bấm <Run FontWeight="SemiBold" Text="📷 Export PNG"/> để lưu trữ bài làm nộp cho Thầy Cô.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Example Progression Grid -->
+                                <Border Background="#E8F5E9" CornerRadius="6" Padding="12,10" Margin="0,10,0,0" BorderBrush="#C5E1A5" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock x:Name="lblExTitle" Text="💡 VÍ DỤ MINH HỌA TIẾN TRÌNH CẢI TIẾN LIÊN TỤC (2 CHU KỲ)" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,8" FontSize="{x:Static local:DS.FontNote}" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="100"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Table Header Backgrounds -->
+                                            <Border Grid.Row="0" Grid.Column="1" Background="#E3F2FD" CornerRadius="4" Margin="2" Padding="4">
+                                                <TextBlock x:Name="lblExCol1" Text="Chu kỳ 1 (Thử nghiệm ban đầu)" FontWeight="Bold" Foreground="#1565C0" HorizontalAlignment="Center" FontSize="11" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            </Border>
+                                            <Border Grid.Row="0" Grid.Column="2" Background="#E8F5E9" CornerRadius="4" Margin="2" Padding="4">
+                                                <TextBlock x:Name="lblExCol2" Text="Chu kỳ 2 (Cải tiến sau phản tư)" FontWeight="Bold" Foreground="#2E7D32" HorizontalAlignment="Center" FontSize="11" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            </Border>
+
+                                            <!-- Row 1: Plan & Do -->
+                                            <Border Grid.Row="1" Grid.Column="0" Background="#F5F5F5" CornerRadius="4" Margin="2" Padding="4" VerticalAlignment="Stretch">
+                                                <TextBlock x:Name="lblExRow1" Text="📝 PLAN &amp; DO" FontWeight="Bold" Foreground="#424242" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            </Border>
+                                            <Border Grid.Row="1" Grid.Column="1" Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="2" Padding="6">
+                                                <TextBlock x:Name="lblExRow1Col1" Text="• Plan: Đặt chuông báo thức 5:30 sáng&#x0a;• Do: Đi ngủ muộn (12h đêm), chuông reo tắt đi ngủ tiếp" TextWrapping="Wrap" FontSize="11.5" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            </Border>
+                                            <Border Grid.Row="1" Grid.Column="2" Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="2" Padding="6">
+                                                <TextBlock x:Name="lblExRow1Col2" Text="• Plan: Đi ngủ từ 10:45 tối, để báo thức xa giường 3 mét&#x0a;• Do: Báo chuông dậy đi tắt, uống nước ấm tỉnh ngủ" TextWrapping="Wrap" FontSize="11.5" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            </Border>
+
+                                            <!-- Row 2: Check & Act -->
+                                            <Border Grid.Row="2" Grid.Column="0" Background="#F5F5F5" CornerRadius="4" Margin="2" Padding="4" VerticalAlignment="Stretch">
+                                                <TextBlock x:Name="lblExRow2" Text="🔍 CHECK &amp; ACT" FontWeight="Bold" Foreground="#424242" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            </Border>
+                                            <Border Grid.Row="2" Grid.Column="1" Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="2" Padding="6">
+                                                <TextBlock x:Name="lblExRow2Col1" Text="• Check: Chỉ dậy được 1/7 ngày, người mệt mỏi&#x0a;• Act: Rút kinh nghiệm, đổi sang ngủ sớm hơn và để chuông xa tay" TextWrapping="Wrap" FontSize="11.5" Foreground="#C62828" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            </Border>
+                                            <Border Grid.Row="2" Grid.Column="2" Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="2" Padding="6">
+                                                <TextBlock x:Name="lblExRow2Col2" Text="• Check: Dậy sớm được 6/7 ngày, cơ thể tỉnh táo học tốt&#x0a;• Act: Tiếp tục duy trì thói quen tốt và nâng mục tiêu dậy lúc 5:15" TextWrapping="Wrap" FontSize="11.5" Foreground="#2E7D32" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            </Border>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 2: KHU VỰC THAO TÁC / PDCA WORKSPACE -->
+                <ScrollViewer x:Name="viewWorkspace" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <!-- Area to be exported -->
+                    <Border x:Name="exportArea" Background="White" Padding="8" MaxWidth="1600" HorizontalAlignment="Center">
+                        <StackPanel>
+                            <!-- Subject input -->
+                            <Border Background="#E0F2F1" CornerRadius="8" Padding="12,8" Margin="0,0,0,16" BorderBrush="#00796B" BorderThickness="1">
+                                <DockPanel>
+                                    <TextBlock x:Name="lblSubject" Text="📋 Mục tiêu cải tiến:" FontSize="{x:Static local:DS.FontLabel}" FontFamily="{x:Static local:DS.FontPrimary}" FontWeight="SemiBold" Foreground="#00796B" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBox x:Name="txtSubject" Text="{Binding Subject, UpdateSourceTrigger=PropertyChanged}" FontSize="15" Padding="8,6" BorderBrush="#B2DFDB" BorderThickness="1" Background="White" ToolTip="Nhập mục tiêu cụ thể bạn muốn cải thiện (Ví dụ: Tăng điểm thi học kỳ môn Toán)"/>
+                                </DockPanel>
+                            </Border>
+
+                            <!-- PDCA Layout Container (Centers the central icon perfectly) -->
+                            <Grid Margin="0,0,0,16">
+                                <!-- PDCA Grid 2x2 -->
+                                <Grid x:Name="pdcaGrid">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- P - Plan -->
+                                    <Border Grid.Row="0" Grid.Column="0" CornerRadius="12,0,0,0" Margin="0,0,2,2"
+                                            Background="#E3F2FD" BorderBrush="#1976D2" BorderThickness="3,3,1,1" Padding="16" MinHeight="250">
+                                        <StackPanel>
+                                            <TextBlock x:Name="lblPlanTitle" Text="Plan" FontSize="15" FontWeight="Bold" Foreground="#1565C0" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            <TextBlock x:Name="lblPlanSub" Text="Xác định vấn đề, nguyên nhân và đặt mục tiêu cụ thể" FontSize="12" Foreground="#1976D2" Margin="0,0,0,8" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            <TextBox x:Name="txtPlan" Text="{Binding PlanText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="170" Padding="8" FontSize="14" FontFamily="{x:Static local:DS.FontPrimary}" BorderBrush="#90CAF9" Background="White"
+                                                     ToolTip="Đặt mục tiêu cụ thể (Bạn muốn đạt kết quả gì? Làm cách nào để đạt được?)"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- D - Do -->
+                                    <Border Grid.Row="0" Grid.Column="1" CornerRadius="0,12,0,0" Margin="2,0,0,2"
+                                            Background="#E8F5E9" BorderBrush="#388E3C" BorderThickness="1,3,3,1" Padding="16" MinHeight="250">
+                                        <StackPanel>
+                                            <TextBlock x:Name="lblDoTitle" Text="Do" FontSize="15" FontWeight="Bold" Foreground="#2E7D32" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            <TextBlock x:Name="lblDoSub" Text="Triển khai kế hoạch thực tế và ghi chép nhật ký" FontSize="12" Foreground="#388E3C" Margin="0,0,0,8" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            <TextBox x:Name="txtDo" Text="{Binding DoText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="170" Padding="8" FontSize="14" FontFamily="{x:Static local:DS.FontPrimary}" BorderBrush="#A5D6A7" Background="White"
+                                                     ToolTip="Ghi chép các hành động thực tế bạn đã làm theo kế hoạch"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- C - Check -->
+                                    <Border Grid.Row="1" Grid.Column="0" CornerRadius="0,0,0,12" Margin="0,2,2,0"
+                                            Background="#FFF8E1" BorderBrush="#FBC02D" BorderThickness="3,1,1,3" Padding="16" MinHeight="250">
+                                        <StackPanel>
+                                            <TextBlock x:Name="lblCheckTitle" Text="Check" FontSize="15" FontWeight="Bold" Foreground="#F57F17" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            <TextBlock x:Name="lblCheckSub" Text="Đo lường kết quả thực tế so với mục tiêu đề ra" FontSize="12" Foreground="#FBC02D" Margin="0,0,0,8" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            <TextBox x:Name="txtCheck" Text="{Binding CheckText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="170" Padding="8" FontSize="14" FontFamily="{x:Static local:DS.FontPrimary}" BorderBrush="#FFE082" Background="White"
+                                                     ToolTip="Đánh giá kết quả đạt được so với mục tiêu (Có đạt không? Có vấn đề gì phát sinh?)"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- A - Act -->
+                                    <Border Grid.Row="1" Grid.Column="1" CornerRadius="0,0,12,0" Margin="2,2,0,0"
+                                            Background="#FFEBEE" BorderBrush="#D32F2F" BorderThickness="1,1,3,3" Padding="16" MinHeight="250">
+                                        <StackPanel>
+                                            <TextBlock x:Name="lblActTitle" Text="Act" FontSize="15" FontWeight="Bold" Foreground="#C62828" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            <TextBlock x:Name="lblActSub" Text="Rút kinh nghiệm, điều chỉnh phương án hoặc chuẩn hóa" FontSize="12" Foreground="#D32F2F" Margin="0,0,0,8" FontFamily="{x:Static local:DS.FontPrimary}"/>
+                                            <TextBox x:Name="txtAct" Text="{Binding ActText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="170" Padding="8" FontSize="14" FontFamily="{x:Static local:DS.FontPrimary}" BorderBrush="#EF9A9A" Background="White"
+                                                     ToolTip="Rút kinh nghiệm (Duy trì thói quen tốt hoặc đổi phương pháp nếu chưa đạt)"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Central Icon Overlay (Centered perfectly via Grid overlay instead of negative margin) -->
+                                <Border Width="60" Height="60" CornerRadius="30" Background="White" BorderBrush="#E0E0E0" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="🔄" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#757575"/>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </ScrollViewer>
+
+                <!-- VIEW 3: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

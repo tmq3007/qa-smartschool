@@ -1,0 +1,331 @@
+{
+  "metadata": {
+    "chapterId": "g12_ch05",
+    "chapterName": "Tổ Hợp & Xác Suất",
+    "grade": 12,
+    "totalSections": 4,
+    "totalConcepts": 14,
+    "totalProblems": 10,
+    "toolMapping": [
+      "CombinatoricsTool",
+      "ProbabilityTool"
+    ],
+    "thptWeight": "10%",
+    "estimatedHours": 18,
+    "prerequisites": [
+      "alg_10_01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "calc_12_05_01",
+      "sectionName": "Quy tắc đếm & Hoán vị",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "th_001",
+          "name": "Quy tắc cộng",
+          "definition": "Nếu việc A có m cách, việc B có n cách, và 2 việc không đồng thời xảy ra, thì có m + n cách thực hiện 1 trong 2 việc"
+        },
+        {
+          "id": "th_002",
+          "name": "Quy tắc nhân",
+          "definition": "Nếu việc A có m cách, việc B có n cách, và cần làm cả A lẫn B, thì có m × n cách thực hiện"
+        },
+        {
+          "id": "th_003",
+          "name": "Hoán vị",
+          "formula": "P(n) = n!",
+          "definition": "Sắp xếp n phần tử khác nhau theo thứ tự",
+          "example": "P(5) = 5! = 120 cách xếp 5 HS vào 5 ghế"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "th_prob_001",
+          "difficulty": "Easy",
+          "question": "Có bao nhiêu cách xếp 4 bạn vào 4 ghế?",
+          "options": [
+            "A) 4",
+            "B) 16",
+            "C) 24",
+            "D) 256"
+          ],
+          "correctAnswer": "C",
+          "solution": "P(4) = 4! = 24",
+          "points": 10
+        },
+        {
+          "problemId": "th_prob_002",
+          "difficulty": "Medium",
+          "question": "Có 3 đường từ A đến B, 4 đường từ B đến C. Hỏi có bao nhiêu cách đi từ A đến C qua B?",
+          "options": [
+            "A) 7",
+            "B) 12",
+            "C) 24",
+            "D) 64"
+          ],
+          "correctAnswer": "B",
+          "solution": "Quy tắc nhân: 3 × 4 = 12 cách",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_05_02",
+      "sectionName": "Chỉnh hợp & Tổ hợp",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "th_004",
+          "name": "Chỉnh hợp",
+          "formula": "A(n,k) = n! / (n-k)!",
+          "definition": "Chọn k phần tử từ n phần tử, có phân biệt thứ tự",
+          "example": "A(10,3) = 10!/(10-3)! = 720"
+        },
+        {
+          "id": "th_005",
+          "name": "Tổ hợp",
+          "formula": "C(n,k) = n! / [k!(n-k)!]",
+          "definition": "Chọn k phần tử từ n phần tử, không phân biệt thứ tự",
+          "example": "C(10,3) = 10!/(3!·7!) = 120",
+          "properties": [
+            "C(n,0) = C(n,n) = 1",
+            "C(n,k) = C(n,n-k)",
+            "C(n,k) = C(n-1,k-1) + C(n-1,k)"
+          ]
+        },
+        {
+          "id": "th_006",
+          "name": "Nhị thức Newton",
+          "formula": "(a+b)ⁿ = Σ C(n,k)·aⁿ⁻ᵏ·bᵏ (k=0→n)",
+          "example": "(x+1)³ = x³ + 3x² + 3x + 1"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "th_prob_003",
+          "difficulty": "Easy",
+          "question": "Chọn 3 HS từ nhóm 8 HS thành 1 tổ. Có bao nhiêu cách?",
+          "options": [
+            "A) 24",
+            "B) 56",
+            "C) 336",
+            "D) 512"
+          ],
+          "correctAnswer": "B",
+          "solution": "Không phân biệt thứ tự → C(8,3) = 8!/(3!·5!) = 56",
+          "points": 10
+        },
+        {
+          "problemId": "th_prob_004",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Từ các chữ số 0,1,2,3,4 lập số có 3 chữ số khác nhau. Có bao nhiêu số?",
+          "options": [
+            "A) 48",
+            "B) 60",
+            "C) 36",
+            "D) 120"
+          ],
+          "correctAnswer": "A",
+          "solution": "Chữ số hàng trăm ≠ 0: 4 cách\nChữ số hàng chục: 4 cách (còn lại)\nChữ số hàng đơn vị: 3 cách\nTổng: 4 × 4 × 3 = 48",
+          "points": 15
+        },
+        {
+          "problemId": "th_prob_005",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm hệ số của x⁵ trong khai triển (2x - 1)¹⁰",
+          "options": [
+            "A) -8064",
+            "B) 8064",
+            "C) -252",
+            "D) 252"
+          ],
+          "correctAnswer": "A",
+          "solution": "Số hạng tổng quát: C(10,k)·(2x)¹⁰⁻ᵏ·(-1)ᵏ\nCần 10-k = 5 → k = 5\nHệ số = C(10,5)·2⁵·(-1)⁵ = 252·32·(-1) = -8064",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_05_03",
+      "sectionName": "Xác suất",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "th_007",
+          "name": "Xác suất cổ điển",
+          "formula": "P(A) = |A| / |Ω|",
+          "definition": "Số kết quả thuận lợi / Tổng số kết quả có thể"
+        },
+        {
+          "id": "th_008",
+          "name": "Biến cố đối",
+          "formula": "P(Ā) = 1 - P(A)"
+        },
+        {
+          "id": "th_009",
+          "name": "Quy tắc cộng xác suất",
+          "formula": "P(A ∪ B) = P(A) + P(B) - P(A ∩ B)",
+          "specialCase": "A, B xung khắc: P(A ∪ B) = P(A) + P(B)"
+        },
+        {
+          "id": "th_010",
+          "name": "Biến cố độc lập",
+          "formula": "P(A ∩ B) = P(A) · P(B)"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "th_prob_006",
+          "difficulty": "Easy",
+          "question": "Gieo xúc xắc 1 lần. Xác suất ra mặt chẵn là:",
+          "options": [
+            "A) 1/6",
+            "B) 1/3",
+            "C) 1/2",
+            "D) 2/3"
+          ],
+          "correctAnswer": "C",
+          "solution": "Mặt chẵn: {2,4,6} → 3/6 = 1/2",
+          "points": 10
+        },
+        {
+          "problemId": "th_prob_007",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Rút 2 quân bài từ bộ 52 lá. Tính XS cả 2 đều đỏ (26 lá đỏ).",
+          "options": [
+            "A) 25/102",
+            "B) 1/4",
+            "C) 1/2",
+            "D) 13/51"
+          ],
+          "correctAnswer": "A",
+          "solution": "C(26,2)/C(52,2) = 325/1326 = 25/102 ≈ 0.245",
+          "points": 15
+        },
+        {
+          "problemId": "th_prob_008",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Hộp có 5 bi đỏ, 3 bi xanh. Lấy ngẫu nhiên 3 bi. Tính XS có ít nhất 1 bi đỏ.",
+          "options": [
+            "A) 55/56",
+            "B) 5/8",
+            "C) 15/56",
+            "D) 1/56"
+          ],
+          "correctAnswer": "A",
+          "solution": "P(≥1 đỏ) = 1 - P(0 đỏ) = 1 - C(3,3)/C(8,3) = 1 - 1/56 = 55/56",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_05_04",
+      "sectionName": "Công thức Bernoulli & Ứng dụng",
+      "order": 4,
+      "concepts": [
+        {
+          "id": "th_011",
+          "name": "Công thức Bernoulli",
+          "formula": "P(X = k) = C(n,k) · pᵏ · (1-p)ⁿ⁻ᵏ",
+          "variables": {
+            "n": "Số lần thử",
+            "k": "Số lần thành công",
+            "p": "Xác suất thành công mỗi lần"
+          }
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "th_prob_009",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Ném đồng xu 5 lần. Tính XS được đúng 3 lần sấp.",
+          "options": [
+            "A) 5/16",
+            "B) 3/5",
+            "C) 10/32",
+            "D) 1/4"
+          ],
+          "correctAnswer": "A",
+          "solution": "P(X=3) = C(5,3)·(1/2)³·(1/2)² = 10·1/32 = 10/32 = 5/16",
+          "points": 15
+        },
+        {
+          "problemId": "th_prob_010",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tỉ lệ sản phẩm lỗi 5%. Lấy 10 SP kiểm tra. Tính XS có nhiều nhất 1 SP lỗi.",
+          "options": [
+            "A) ≈ 0.914",
+            "B) ≈ 0.599",
+            "C) ≈ 0.315",
+            "D) ≈ 0.500"
+          ],
+          "correctAnswer": "A",
+          "solution": "P(X≤1) = P(X=0) + P(X=1)\nP(0) = C(10,0)·0.05⁰·0.95¹⁰ = 0.5987\nP(1) = C(10,1)·0.05¹·0.95⁹ = 10·0.05·0.6302 = 0.3151\nP(X≤1) = 0.5987 + 0.3151 = 0.9138",
+          "points": 20
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm tổ hợp và chỉnh hợp",
+      "correction": "Tổ hợp: không thứ tự (chọn nhóm). Chỉnh hợp: có thứ tự (xếp hàng)"
+    },
+    {
+      "mistake": "Quên trường hợp chữ số đầu ≠ 0 khi lập số",
+      "correction": "Chữ số hàng cao nhất không thể là 0"
+    },
+    {
+      "mistake": "Dùng P(A∪B) = P(A)+P(B) khi A,B không xung khắc",
+      "correction": "Phải trừ P(A∩B) nếu A,B không xung khắc"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "th_quiz_01",
+      "title": "Kiểm tra: Tổ hợp - Xác suất",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "th_prob_001"
+        },
+        {
+          "ref": "th_prob_003"
+        },
+        {
+          "ref": "th_prob_006"
+        },
+        {
+          "ref": "th_prob_007"
+        },
+        {
+          "ref": "th_prob_009"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

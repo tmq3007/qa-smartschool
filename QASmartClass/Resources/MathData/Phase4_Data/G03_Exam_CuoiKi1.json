@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g03_cuoiki1",
+    "title": "Đề thi Cuối Kì 1 Toán Lớp 3",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 3,
+    "examType": "CuoiKi1"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1 giờ = bao nhiêu phút?",
+      "options": [
+        "A) 30 phút",
+        "B) 50 phút",
+        "C) 60 phút",
+        "D) 100 phút"
+      ],
+      "answer": "C",
+      "solution": "1 giờ = 60 phút"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "1,5 giờ = bao nhiêu phút?",
+      "options": [
+        "A) 75 phút",
+        "B) 80 phút",
+        "C) 90 phút",
+        "D) 150 phút"
+      ],
+      "answer": "C",
+      "solution": "1,5 giờ = 1 giờ 30 phút = 60 + 30 = 90 phút"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Chia đều 15,6 kg gạo vào 4 túi. Mỗi túi = ? kg",
+      "options": [
+        "A) 3,6 kg",
+        "B) 3,8 kg",
+        "C) 3,9 kg",
+        "D) 4,1 kg"
+      ],
+      "answer": "C",
+      "solution": "15,6 ÷ 4 = 3,9 kg"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Buổi học bắt đầu 7:30, kết thúc 11:00. Học bao lâu?",
+      "options": [
+        "A) 3 giờ",
+        "B) 3 giờ 30 phút",
+        "C) 4 giờ",
+        "D) 4 giờ 30 phút"
+      ],
+      "answer": "B",
+      "solution": "Từ 7:30 → 11:00 = 3 giờ 30 phút"
+    },
+    {
+      "id": 5,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Số thập phân nào bằng 3/4?",
+      "options": [
+        "A) 0,34",
+        "B) 0,75",
+        "C) 3,4",
+        "D) 0,43"
+      ],
+      "answer": "B",
+      "solution": "3/4 = 3 ÷ 4 = 0,75"
+    },
+    {
+      "id": 6,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Tìm x: x × 5 = 12,5",
+      "options": [
+        "A) 2,0",
+        "B) 2,5",
+        "C) 3,0",
+        "D) 62,5"
+      ],
+      "answer": "B",
+      "solution": "x = 12,5 ÷ 5 = 2,5"
+    },
+    {
+      "id": 7,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Bạn An có 2 tờ 20.000đ và 1 tờ 5.000đ. An có tổng cộng bao nhiêu?",
+      "options": [
+        "A) 25.000đ",
+        "B) 40.000đ",
+        "C) 45.000đ",
+        "D) 50.000đ"
+      ],
+      "answer": "C",
+      "solution": "2 × 20.000 + 5.000 = 40.000 + 5.000 = 45.000đ"
+    },
+    {
+      "id": 8,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "3,2 + 1,5 = ?",
+      "options": [
+        "A) 4,5",
+        "B) 4,7",
+        "C) 5,2",
+        "D) 3,7"
+      ],
+      "answer": "B",
+      "solution": "3,2 + 1,5 = 4,7"
+    },
+    {
+      "id": 9,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "3,14 + 2,86 + 1,5 = ?",
+      "options": [
+        "A) 7,0",
+        "B) 7,5",
+        "C) 6,5",
+        "D) 8,0"
+      ],
+      "answer": "B",
+      "solution": "3,14 + 2,86 = 6,00. 6,00 + 1,50 = 7,50 = 7,5"
+    },
+    {
+      "id": 10,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính: 1/3 + 1/6 = ?",
+      "options": [
+        "A) 2/9",
+        "B) 1/2",
+        "C) 2/6",
+        "D) 1/9"
+      ],
+      "answer": "B",
+      "solution": "Quy đồng: 1/3 = 2/6. 2/6 + 1/6 = 3/6 = 1/2"
+    },
+    {
+      "id": 11,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "0,7 bằng bao nhiêu phần mười?",
+      "options": [
+        "A) 70 phần mười",
+        "B) 7 phần mười",
+        "C) 7 phần trăm",
+        "D) 70 phần trăm"
+      ],
+      "answer": "B",
+      "solution": "0,7 = 7/10 = 7 phần mười"
+    },
+    {
+      "id": 12,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Kim ngắn chỉ số 3, kim dài chỉ số 12. Mấy giờ?",
+      "options": [
+        "A) 12:03",
+        "B) 3:00",
+        "C) 3:12",
+        "D) 12:15"
+      ],
+      "answer": "B",
+      "solution": "Kim ngắn = giờ (3), kim dài ở 12 = 0 phút → 3:00"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tàu đi lúc 8:45, tới nơi lúc 13:20. Tàu chạy bao lâu?",
+      "options": [
+        "A) 4 giờ 25 phút",
+        "B) 4 giờ 35 phút",
+        "C) 5 giờ 25 phút",
+        "D) 5 giờ 35 phút"
+      ],
+      "answer": "B",
+      "solution": "8:45 → 13:20. Giờ: 13-8=5. Phút: 20-45=-25 → mượn 1 giờ: 4 giờ 35 phút"
+    },
+    {
+      "id": 14,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Năm 2024 là năm nhuận. Tháng 2 năm 2024 có mấy ngày?",
+      "options": [
+        "A) 28",
+        "B) 29",
+        "C) 30",
+        "D) 31"
+      ],
+      "answer": "B",
+      "solution": "Năm nhuận → tháng 2 có 29 ngày. Năm chia hết cho 4 (trừ chia hết 100 nhưng không chia hết 400)"
+    },
+    {
+      "id": 15,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Sắp xếp từ bé đến lớn: 1/2, 1/3, 1/4",
+      "options": [
+        "A) 1/4, 1/3, 1/2",
+        "B) 1/2, 1/3, 1/4",
+        "C) 1/3, 1/2, 1/4",
+        "D) 1/4, 1/2, 1/3"
+      ],
+      "answer": "A",
+      "solution": "Cùng tử = 1, mẫu càng lớn → phân số càng bé: 1/4 < 1/3 < 1/2"
+    },
+    {
+      "id": 16,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính: 7,2 - 3,8 = ?",
+      "options": [
+        "A) 3,4",
+        "B) 4,4",
+        "C) 3,6",
+        "D) 4,6"
+      ],
+      "answer": "A",
+      "solution": "7,2 - 3,8: 2-8 không đủ, mượn: 12-8=4. 6-3=3. Kết quả: 3,4"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1 năm có bao nhiêu tháng?",
+      "options": [
+        "A) 10",
+        "B) 11",
+        "C) 12",
+        "D) 13"
+      ],
+      "answer": "C",
+      "solution": "1 năm = 12 tháng"
+    },
+    {
+      "id": 18,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Bạn sinh ngày 15/8/2016. Đến ngày 15/8/2026 bạn bao nhiêu tuổi?",
+      "options": [
+        "A) 9 tuổi",
+        "B) 10 tuổi",
+        "C) 11 tuổi",
+        "D) 8 tuổi"
+      ],
+      "answer": "B",
+      "solution": "2026 - 2016 = 10 tuổi"
+    },
+    {
+      "id": 19,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Tờ tiền polymer màu xanh lá, giá trị 100.000đ. Đổi được mấy tờ 10.000đ?",
+      "options": [
+        "A) 5",
+        "B) 10",
+        "C) 50",
+        "D) 100"
+      ],
+      "answer": "B",
+      "solution": "100.000 ÷ 10.000 = 10 tờ"
+    },
+    {
+      "id": 20,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Viết số: 'hai phẩy năm' = ?",
+      "options": [
+        "A) 25",
+        "B) 2,5",
+        "C) 0,25",
+        "D) 2,05"
+      ],
+      "answer": "B",
+      "solution": "Hai phẩy năm = 2,5"
+    }
+  ]
+}

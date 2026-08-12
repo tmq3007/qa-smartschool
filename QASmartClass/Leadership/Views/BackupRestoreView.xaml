@@ -1,0 +1,142 @@
+<Page x:Class="QASmartClass.Leadership.Views.BackupRestoreView"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Sao lưu và Khôi phục CSDL" Background="#F0F2F5" FontFamily="Segoe UI">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+
+
+    <Grid Margin="20">
+
+        <Grid.ColumnDefinitions>
+
+            <ColumnDefinition Width="*"/>
+
+            <ColumnDefinition Width="2*"/>
+
+        </Grid.ColumnDefinitions>
+
+
+
+        <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="20" Margin="0,0,10,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+            <StackPanel>
+
+                <TextBlock Text="💽 Quản lý Sao lưu Dữ liệu" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+
+                
+
+                <TextBlock Text="Tạo bản sao lưu hiện tại của toàn bộ cơ sở dữ liệu SQLite để đảm bảo an toàn." Foreground="#757575" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+
+
+                <Button Content="💾 Tạo Bản Sao Lưu" Height="45" Background="#4CAF50" Foreground="White" 
+
+                        FontWeight="Bold" FontSize="14" Cursor="Hand" BorderThickness="0" Click="BtnBackup_Click"/>
+
+
+
+                <Border Background="#FEF9C3" BorderBrush="#FDE047" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,20,0,10">
+
+                    <StackPanel>
+
+                        <TextBlock Text="⚠️ HƯỚNG DẪN KHÔI PHỤC AN TOÀN:" FontWeight="Bold" Foreground="#854D0E" FontSize="12" Margin="0,0,0,5"/>
+
+                        <TextBlock Text="• Bước 1: Chọn bản sao lưu trong danh sách lịch sử bên phải." Foreground="#854D0E" FontSize="11" TextWrapping="Wrap"/>
+
+                        <TextBlock Text="• Bước 2: Bấm nút 'Khôi Phục Dữ Liệu' bên dưới." Foreground="#854D0E" FontSize="11" TextWrapping="Wrap"/>
+
+                        <TextBlock Text="• Bước 3: Xác nhận mật khẩu quản trị viên để hoàn tất." Foreground="#854D0E" FontSize="11" TextWrapping="Wrap"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <TextBlock Text="⚠️ Chú ý: Việc khôi phục sẽ ghi đè toàn bộ dữ liệu hiện tại." Foreground="#D32F2F" TextWrapping="Wrap" Margin="0,10,0,15" FontWeight="SemiBold"/>
+
+
+
+                <Button Content="🔄 Khôi Phục Dữ Liệu" Height="45" Background="#F44336" Foreground="White" 
+
+                        FontWeight="Bold" FontSize="14" Cursor="Hand" BorderThickness="0" Click="BtnRestore_Click"/>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="20" Margin="10,0,0,0" BorderBrush="#E0E0E0" BorderThickness="1">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+
+                    <RowDefinition Height="Auto"/>
+
+                    <RowDefinition Height="*"/>
+
+                </Grid.RowDefinitions>
+
+
+
+                <TextBlock Grid.Row="0" Text="📜 Lịch sử Sao lưu CSDL" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+
+
+                <DataGrid Grid.Row="1" x:Name="dgBackupLogs" AutoGenerateColumns="False" CanUserAddRows="False" 
+
+                          BorderBrush="#E0E0E0" BorderThickness="1" Background="White" RowHeight="45"
+
+                          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE" HeadersVisibility="Column">
+
+                    <DataGrid.Resources>
+
+                        <Style TargetType="DataGridColumnHeader">
+
+                            <Setter Property="Background" Value="#F5F5F5"/>
+
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+
+                            <Setter Property="Padding" Value="10,0"/>
+
+                            <Setter Property="Height" Value="40"/>
+
+                        </Style>
+
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Mã" Binding="{Binding Id}" Width="50" IsReadOnly="True"/>
+
+                        <DataGridTextColumn Header="Tên File" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
+
+                        <DataGridTextColumn Header="Dung lượng (Bytes)" Binding="{Binding FileSizeBytes}" Width="150" IsReadOnly="True"/>
+
+                        <DataGridTextColumn Header="Thời gian" Binding="{Binding CreatedAt, StringFormat='dd/MM/yyyy HH:mm'}" Width="150" IsReadOnly="True"/>
+
+                        <DataGridTextColumn Header="Loại" Binding="{Binding TriggeredBy}" Width="100" IsReadOnly="True"/>
+
+                        <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="100" IsReadOnly="True"/>
+
+                    </DataGrid.Columns>
+
+                </DataGrid>
+
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+
+    </ScrollViewer>
+</Page>
+
+
+

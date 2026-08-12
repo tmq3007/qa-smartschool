@@ -1,0 +1,926 @@
+<Window x:Class="QASmartTouch.Forms.Form2_1_SubMenuPen"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Công cụ Bút viết" 
+
+        Width="350" Height="700"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        ResizeMode="NoResize"
+
+        Topmost="True"
+
+        ShowInTaskbar="False">
+
+
+
+    <Border Background="White" 
+
+            CornerRadius="15" 
+
+            BorderBrush="#E1E8ED" 
+
+            BorderThickness="1">
+
+        <Border.Effect>
+
+            <DropShadowEffect Color="#CCCCCC" 
+
+                            Direction="270" 
+
+                            ShadowDepth="3" 
+
+                            BlurRadius="15" 
+
+                            Opacity="0.3"/>
+
+        </Border.Effect>
+
+
+
+        <Grid Margin="15">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Header -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Brush Types -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Pen Size -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Colors -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Preview -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Footer Buttons -->
+
+            </Grid.RowDefinitions>
+
+
+
+            <!-- HEADER -->
+
+            <Grid Grid.Row="0" Margin="0,0,0,15">
+
+                <StackPanel Orientation="Horizontal">
+
+                    <Path Fill="#2E86DE" 
+
+                          Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"
+
+                          Width="18" Height="18"
+
+                          Stretch="Uniform"
+
+                          VerticalAlignment="Center"
+
+                          Margin="0,0,8,0"/>
+
+                    <TextBlock Text="1. Công cụ Bút viết" 
+
+                              FontSize="16" 
+
+                              FontWeight="Bold" 
+
+                              Foreground="#2F3542"
+
+                              VerticalAlignment="Center"/>
+
+                </StackPanel>
+
+                <Button x:Name="btnClose" 
+
+                       Style="{StaticResource CloseButton}"
+
+                       Click="btnClose_Click"/>
+
+            </Grid>
+
+
+
+            <!-- BRUSH TYPES -->
+
+            <StackPanel Grid.Row="1" Margin="0,0,0,15">
+
+                <TextBlock Text="🖊️ Chọn loại bút" 
+
+                          FontSize="13" 
+
+                          FontWeight="SemiBold" 
+
+                          Foreground="#57606F"
+
+                          Margin="0,0,0,10"/>
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+
+                        <RowDefinition Height="Auto"/>
+
+                        <RowDefinition Height="Auto"/>
+
+                    </Grid.RowDefinitions>
+
+
+
+                    <!-- Brush Type 1: Bút thường -->
+
+                    <Button x:Name="btnBrushNormal" 
+
+                           Grid.Column="0" Grid.Row="0"
+
+                           Width="90" Height="70"
+
+                           Margin="3"
+
+                           Background="#FFF4E6"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnBrushType_Click"
+
+                           MouseDoubleClick="btnBrushType_DoubleClick"
+
+                           Tag="Normal">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="{TemplateBinding Background}" 
+
+                                       CornerRadius="10"
+
+                                       Padding="8">
+
+                                    <StackPanel>
+
+                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
+
+                                            <Canvas Width="24" Height="24">
+
+                                                <Path Fill="#FFA500" 
+
+                                                     Data="M4.5,8.5L6,10l6.5-6.5L11,2L4.5,8.5M12,12c-1.11,0-2,0.89-2,2s0.89,2,2,2s2-0.89,2-2S13.11,12,12,12z"/>
+
+                                            </Canvas>
+
+                                        </Viewbox>
+
+                                        <TextBlock Text="Bút thường" 
+
+                                                  FontSize="12" 
+
+                                                  FontWeight="SemiBold"
+
+                                                  Foreground="#2F3542"
+
+                                                  TextAlignment="Center"
+
+                                                  TextWrapping="Wrap"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <!-- Brush Type 2: Bút học -->
+
+                    <Button x:Name="btnBrushHoc" 
+
+                           Grid.Column="1" Grid.Row="0"
+
+                           Width="90" Height="70"
+
+                           Margin="3"
+
+                           Background="#E8F5E9"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnBrushType_Click"
+
+                           MouseDoubleClick="btnBrushType_DoubleClick"
+
+                           Tag="Hoc">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="{TemplateBinding Background}" 
+
+                                       CornerRadius="10"
+
+                                       Padding="8">
+
+                                    <StackPanel>
+
+                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
+
+                                            <Canvas Width="24" Height="24">
+
+                                                <Path Fill="#4CAF50" 
+
+                                                     Data="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
+
+                                            </Canvas>
+
+                                        </Viewbox>
+
+                                        <TextBlock Text="Bút học" 
+
+                                                  FontSize="12" 
+
+                                                  FontWeight="SemiBold"
+
+                                                  Foreground="#2F3542"
+
+                                                  TextAlignment="Center"
+
+                                                  TextWrapping="Wrap"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <Button x:Name="btnBrushAI" 
+
+                           Grid.Column="2" Grid.Row="0"
+
+                           Width="90" Height="70"
+
+                           Margin="3"
+
+                           Background="#E3F2FD"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnBrushType_Click"
+
+                           MouseDoubleClick="btnBrushType_DoubleClick"
+
+                           Tag="AI">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="{TemplateBinding Background}" 
+
+                                       CornerRadius="10"
+
+                                       Padding="8">
+
+                                    <StackPanel>
+
+                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
+
+                                            <Canvas Width="24" Height="24">
+
+                                                <!-- Pen icon with transparency effect -->
+
+                                                <Path Fill="#2196F3" 
+
+                                                      Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"
+
+                                                      Opacity="0.6"/>
+
+                                            </Canvas>
+
+                                        </Viewbox>
+
+                                        <TextBlock Text="Bút AI" 
+
+                                                  FontSize="12" 
+
+                                                  FontWeight="SemiBold"
+
+                                                  Foreground="#2F3542"
+
+                                                  TextAlignment="Center"
+
+                                                  TextWrapping="Wrap"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <!-- Brush Type 4: Bút đơn giản -->
+
+                    <Button x:Name="btnBrushSimple" 
+
+                           Grid.Column="0" Grid.Row="1"
+
+                           Width="90" Height="70"
+
+                           Margin="3"
+
+                           Background="#F3E5F5"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnBrushType_Click"
+
+                           MouseDoubleClick="btnBrushType_DoubleClick"
+
+                           Tag="Simple">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="{TemplateBinding Background}" 
+
+                                       CornerRadius="10"
+
+                                       Padding="8">
+
+                                    <StackPanel>
+
+                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
+
+                                            <Canvas Width="24" Height="24">
+
+                                                <Path Fill="#9C27B0" 
+
+                                                     Data="M20.71,4.63L19.37,3.29C19,2.9 18.35,2.9 17.96,3.29L9,12.25L11.75,15L20.71,6.04C21.1,5.65 21.1,5 20.71,4.63M7,14A3,3 0 0,0 4,17C4,18.31 2.84,19 2,19C2.92,20.22 4.5,21 6,21A4,4 0 0,0 10,17A3,3 0 0,0 7,14Z"/>
+
+                                            </Canvas>
+
+                                        </Viewbox>
+
+                                        <TextBlock Text="Bút đơn giản" 
+
+                                                  FontSize="12" 
+
+                                                  FontWeight="SemiBold"
+
+                                                  Foreground="#2F3542"
+
+                                                  TextAlignment="Center"
+
+                                                  TextWrapping="Wrap"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <!-- Brush Type 5: Marker -->
+
+                    <Button x:Name="btnMarker" 
+
+                           Grid.Column="1" Grid.Row="1"
+
+                           Width="90" Height="70"
+
+                           Margin="3"
+
+                           Background="#FCE4EC"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnBrushType_Click"
+
+                           MouseDoubleClick="btnBrushType_DoubleClick"
+
+                           Tag="Marker">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="{TemplateBinding Background}" 
+
+                                       CornerRadius="10"
+
+                                       Padding="8">
+
+                                    <StackPanel>
+
+                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
+
+                                            <Canvas Width="24" Height="24">
+
+                                                <Path Fill="#E91E63" 
+
+                                                     Data="M9.75,20.85C11.53,20.15 11.14,18.22 10.24,17C9.35,15.75 8.12,14.89 6.88,14.06C6,13.5 5.19,12.8 4.54,12C4.26,11.67 3.69,11.06 4.27,10.94C4.86,10.82 5.88,11.4 6.4,11.62C7.31,12 8.21,12.44 9.05,12.96L10.06,11.26C8.5,10.23 6.5,9.32 4.64,9.05C3.58,8.89 2.46,9.11 2.1,10.26C1.78,11.25 2.29,12.25 2.87,13.03C4.24,14.86 6.37,15.74 7.96,17.32C8.3,17.65 8.71,18.04 8.91,18.5C9.12,18.94 9.07,18.97 8.6,18.97C7.36,18.97 5.81,18 4.8,17.36L3.79,19.06C5.32,20 7.88,21.47 9.75,20.85M20.84,5.25C21.06,5.03 21.06,4.67 20.84,4.46L19.54,3.16C19.33,2.95 18.97,2.95 18.76,3.16L17.74,4.18L19.82,6.26M11,10.92V13H13.08L19.23,6.85L17.15,4.77L11,10.92Z"/>
+
+                                            </Canvas>
+
+                                        </Viewbox>
+
+                                        <TextBlock Text="Marker" 
+
+                                                  FontSize="12" 
+
+                                                  FontWeight="SemiBold"
+
+                                                  Foreground="#2F3542"
+
+                                                  TextAlignment="Center"
+
+                                                  TextWrapping="Wrap"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+
+
+                    <!-- Brush Type 6: Mask Pen -->
+
+                    <Button x:Name="btnMaskPen" 
+
+                           Grid.Column="2" Grid.Row="1"
+
+                           Width="90" Height="70"
+
+                           Margin="3"
+
+                           Background="#FFF9C4"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnBrushType_Click"
+
+                           MouseDoubleClick="btnBrushType_DoubleClick"
+
+                           Tag="Mask">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="{TemplateBinding Background}" 
+
+                                       CornerRadius="10"
+
+                                       Padding="8">
+
+                                    <StackPanel>
+
+                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
+
+                                            <Canvas Width="24" Height="24">
+
+                                                <Path Fill="#FDD835" 
+
+                                                     Data="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M16.59,7.58L10,14.17L7.41,11.59L6,13L10,17L18,9L16.59,7.58Z"/>
+
+                                            </Canvas>
+
+                                        </Viewbox>
+
+                                        <TextBlock Text="Mask Pen" 
+
+                                                  FontSize="12" 
+
+                                                  FontWeight="SemiBold"
+
+                                                  Foreground="#2F3542"
+
+                                                  TextAlignment="Center"
+
+                                                  TextWrapping="Wrap"/>
+
+                                    </StackPanel>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                </Grid>
+
+            </StackPanel>
+
+
+
+            <!-- PEN SIZE -->
+
+            <StackPanel Grid.Row="2" Margin="0,0,0,15">
+
+                <TextBlock Text="Kích thước nét bút" 
+
+                          FontSize="12" 
+
+                          FontWeight="SemiBold" 
+
+                          Foreground="#57606F"
+
+                          Margin="0,0,0,10"/>
+
+                <Slider x:Name="sliderPenSize" 
+
+                       Minimum="1" Maximum="16" 
+
+                       Value="4"
+
+                       TickFrequency="1"
+
+                       IsSnapToTickEnabled="True"
+
+                       ValueChanged="sliderPenSize_ValueChanged"
+
+                       Margin="0,0,0,8"/>
+
+                <UniformGrid x:Name="panelSizeIndicators" 
+
+                            Rows="1" Columns="16"
+
+                            Height="20">
+
+                    <!-- Size indicators will be generated in code-behind -->
+
+                </UniformGrid>
+
+            </StackPanel>
+
+
+
+            <!-- PEN COLOR -->
+
+            <StackPanel Grid.Row="3" Margin="0,0,0,15">
+
+                <TextBlock Text="Màu bút" 
+
+                          FontSize="12" 
+
+                          FontWeight="SemiBold" 
+
+                          Foreground="#57606F"
+
+                          Margin="0,0,0,10"/>
+
+                <UniformGrid Rows="4" Columns="4" 
+
+                            Height="120">
+
+                    <!-- Row 1 -->
+
+                    <Button Background="#FFB7B2" Click="btnColor_Click" Tag="#FFB7B2" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#FFDAC1" Click="btnColor_Click" Tag="#FFDAC1" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#E2F0CB" Click="btnColor_Click" Tag="#E2F0CB" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#B5EAD7" Click="btnColor_Click" Tag="#B5EAD7" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <!-- Row 2 -->
+
+                    <Button Background="#C7CEEA" Click="btnColor_Click" Tag="#C7CEEA" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#F4CCCC" Click="btnColor_Click" Tag="#F4CCCC" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#FCE5CD" Click="btnColor_Click" Tag="#FCE5CD" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#D9EAD3" Click="btnColor_Click" Tag="#D9EAD3" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <!-- Row 3 -->
+
+                    <Button Background="#D0E0E3" Click="btnColor_Click" Tag="#D0E0E3" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#CFE2F3" Click="btnColor_Click" Tag="#CFE2F3" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#D9D2E9" Click="btnColor_Click" Tag="#D9D2E9" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#F4D8F3" Click="btnColor_Click" Tag="#F4D8F3" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <!-- Row 4 -->
+
+                    <Button Background="#EAD1DC" Click="btnColor_Click" Tag="#EAD1DC" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#FFF2CC" Click="btnColor_Click" Tag="#FFF2CC" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#D0F0C0" Click="btnColor_Click" Tag="#D0F0C0" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                    <Button Background="#AEEEEE" Click="btnColor_Click" Tag="#AEEEEE" Margin="3" BorderThickness="0" Cursor="Hand"/>
+
+                </UniformGrid>
+
+
+
+                <!-- Custom Color -->
+
+                <Grid Margin="0,10,0,0">
+
+                    <Border Background="#6C7EAA" 
+
+                           Height="35"
+
+                           CornerRadius="8"
+
+                           Margin="0,0,125,0">
+
+                        <TextBlock x:Name="txtCustomColorHex" 
+
+                                  Text="#6C7EAA" 
+
+                                  FontSize="12"
+
+                                  FontWeight="SemiBold"
+
+                                  Foreground="White"
+
+                                  VerticalAlignment="Center"
+
+                                  HorizontalAlignment="Center"/>
+
+                    </Border>
+
+                    <Button Content="Chọn màu khác" 
+
+                           MinWidth="115"
+
+                           Height="35"
+
+                           HorizontalAlignment="Right"
+
+                           Background="#F1F2F6"
+
+                           Foreground="#2F3542"
+
+                           BorderThickness="0"
+
+                           FontSize="11"
+
+                           FontWeight="SemiBold"
+
+                           Cursor="Hand"
+
+                           Click="btnColorPicker_Click">
+
+                        <Button.Template>
+
+                            <ControlTemplate TargetType="Button">
+
+                                <Border Background="{TemplateBinding Background}" 
+
+                                       CornerRadius="8"
+
+                                       Padding="8">
+
+                                    <TextBlock Text="{TemplateBinding Content}" 
+
+                                              Foreground="{TemplateBinding Foreground}"
+
+                                              FontSize="{TemplateBinding FontSize}"
+
+                                              FontWeight="{TemplateBinding FontWeight}"
+
+                                              HorizontalAlignment="Center"
+
+                                              VerticalAlignment="Center"/>
+
+                                </Border>
+
+                            </ControlTemplate>
+
+                        </Button.Template>
+
+                    </Button>
+
+                </Grid>
+
+            </StackPanel>
+
+
+
+            <!-- PREVIEW -->
+
+            <StackPanel Grid.Row="4" Margin="0,0,0,15">
+
+                <TextBlock Text="👁️ Xem trước nét vẽ" 
+
+                          FontSize="13" 
+
+                          FontWeight="SemiBold" 
+
+                          Foreground="#57606F"
+
+                          Margin="0,0,0,10"/>
+
+                <Border Background="#F8F9FA" 
+
+                       Height="50"
+
+                       CornerRadius="8"
+
+                       BorderBrush="#E1E8ED"
+
+                       BorderThickness="1">
+
+                    <Rectangle x:Name="rectStrokePreview" 
+
+                              Fill="#000000"
+
+                              Height="4"
+
+                              VerticalAlignment="Center"
+
+                              HorizontalAlignment="Stretch"
+
+                              Margin="20,0"/>
+
+                </Border>
+
+            </StackPanel>
+
+
+
+            <!-- FOOTER BUTTONS -->
+
+            <Grid Grid.Row="5">
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <Button x:Name="btnReset" 
+
+                       Grid.Column="0"
+
+                       Height="40"
+
+                       Margin="0,0,5,0"
+
+                       Background="#F1F2F6"
+
+                       BorderThickness="0"
+
+                       Cursor="Hand"
+
+                       Click="btnReset_Click">
+
+                    <Button.Template>
+
+                        <ControlTemplate TargetType="Button">
+
+                            <Border Background="{TemplateBinding Background}" 
+
+                                   CornerRadius="10">
+
+                                <TextBlock Text="Đặt lại" 
+
+                                          FontSize="13"
+
+                                          FontWeight="SemiBold"
+
+                                          Foreground="#57606F"
+
+                                          HorizontalAlignment="Center"
+
+                                          VerticalAlignment="Center"/>
+
+                            </Border>
+
+                        </ControlTemplate>
+
+                    </Button.Template>
+
+                </Button>
+
+
+
+                <Button x:Name="btnApply" 
+
+                       Grid.Column="1"
+
+                       Height="40"
+
+                       Margin="5,0,0,0"
+
+                       Background="#2E86DE"
+
+                       BorderThickness="0"
+
+                       Cursor="Hand"
+
+                       Click="btnApply_Click">
+
+                    <Button.Template>
+
+                        <ControlTemplate TargetType="Button">
+
+                            <Border Background="{TemplateBinding Background}" 
+
+                                   CornerRadius="10">
+
+                                <TextBlock Text="Áp dụng" 
+
+                                          FontSize="13"
+
+                                          FontWeight="SemiBold"
+
+                                          Foreground="White"
+
+                                          HorizontalAlignment="Center"
+
+                                          VerticalAlignment="Center"/>
+
+                            </Border>
+
+                        </ControlTemplate>
+
+                    </Button.Template>
+
+                </Button>
+
+            </Grid>
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

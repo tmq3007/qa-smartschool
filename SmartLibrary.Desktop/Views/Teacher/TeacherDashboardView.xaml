@@ -1,0 +1,339 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Teacher.TeacherDashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1000"
+             KeyDown="UserControl_KeyDown" Focusable="True">
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="🏫 Sách tự học lớp học" />
+
+        <TabControl x:Name="MainTabControl" Grid.Row="1" Margin="24" Background="Transparent" BorderThickness="0" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="HeaderTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <ContentPresenter Content="{TemplateBinding Content}"/>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="Padding" Value="16,8"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border x:Name="Border" BorderThickness="0,0,0,2" BorderBrush="Transparent" SnapsToDevicePixels="True">
+                                    <ContentPresenter x:Name="ContentSite"
+                                                      ContentSource="Header"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.Resources>
+
+            <TabItem Header="📋 Tổng quan và giỏ sách" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+                    <StackPanel>
+                        
+                        <!-- Bộ lọc lớp học -->
+                        <Border Style="{StaticResource CardBorder}" Padding="16" Margin="0,0,0,16">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🏫 Chọn lớp học:" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <ComboBox ItemsSource="{Binding AvailableClasses}" SelectedItem="{Binding ClassName}" Style="{StaticResource ModernComboBox}" Width="150" Height="36" VerticalContentAlignment="Center" Padding="8,4" FontSize="13"/>
+                                
+                                <CheckBox Content="Hỗ trợ học sinh chưa mượn sách tháng này 📚" 
+                                          IsChecked="{Binding ShowOnlyUnreadStudents, Mode=TwoWay}"
+                                          VerticalAlignment="Center" Margin="24,0,0,0" FontSize="13" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Stat Cards -->
+                        <Grid Margin="0,0,0,24">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <shared:StatCardControl Grid.Column="0" Icon="📚" Label="Tổng sách lớp mượn" Value="{Binding TotalBorrowed}" ChangeText="Tính từ đầu tháng"/>
+                            <shared:StatCardControl Grid.Column="2" Icon="⚠️" Label="Học sinh chưa mượn" Value="{Binding NotBorrowedCount}" ChangeText="Cần nhắc nhở đọc sách"/>
+                            <shared:StatCardControl Grid.Column="4" Icon="🏆" Label="Top Độc giả của Lớp" Value="{Binding TopReader}" ChangeText="Độc giả tiêu biểu"/>
+                        </Grid>
+
+                        <!-- Alert Banner & Export Button -->
+                        <Grid Margin="0,0,0,24">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Border Grid.Column="0" Background="{StaticResource WarningBgBrush}" BorderBrush="{StaticResource WarningTextBrush}" BorderThickness="4,0,0,0" Padding="16,12" CornerRadius="4">
+                                <TextBlock Text="{Binding AlertMessage}" Foreground="{StaticResource WarningTextBrush}" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                            </Border>
+                            
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
+                                <Button Content="📤 Xuất danh sách nhắc nhở Excel" 
+                                        Command="{Binding ExportAlertListCommand}" 
+                                        Style="{StaticResource SuccessButton}" 
+                                        Padding="16,10"/>
+                                <Button Content="📋 Sao chép nhanh Zalo/Viber" 
+                                        Command="{Binding CopyAlertTextCommand}" 
+                                        Style="{StaticResource SecondaryButton}" 
+                                        Margin="8,0,0,0" Padding="16,10"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Bar Chart: Books Read per Student -->
+                        <Border Style="{StaticResource CardBorder}" Height="400">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Text="📊 Thống kê mượn sách chi tiết học sinh" Style="{StaticResource CardTitleText}"/>
+                                
+                                <!-- Simple WPF Bar Chart for Students -->
+                                <Grid Grid.Row="1" Margin="0,16,0,0">
+                                    <!-- ItemsControl shown when there is data -->
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                                                  Visibility="{Binding IsChartEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                        <ItemsControl ItemsSource="{Binding StudentStats}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,16"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid VerticalAlignment="Bottom" Margin="16,0" Width="80">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="*"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
+                                                        
+                                                        <!-- Cột biểu đồ -->
+                                                        <Border Grid.Row="0" Width="50" CornerRadius="4,4,0,0" Height="{Binding HeightPct}" MaxHeight="220" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+                                                            <Border.Background>
+                                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                                    <GradientStop Color="#34D399" Offset="0"/>
+                                                                    <GradientStop Color="#059669" Offset="1"/>
+                                                                </LinearGradientBrush>
+                                                            </Border.Background>
+                                                            <Border.ToolTip>
+                                                                <ToolTip Content="{Binding BooksRead, StringFormat='{}{0} cuốn sách'}"/>
+                                                            </Border.ToolTip>
+                                                        </Border>
+                                                        
+                                                        <!-- Giá trị số lượng -->
+                                                        <TextBlock Grid.Row="1" Text="{Binding BooksRead, StringFormat='{}{0} cuốn'}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource SuccessTextBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                                        <!-- Tên học sinh -->
+                                                        <TextBlock Grid.Row="2" Text="{Binding StudentName}" ToolTip="{Binding StudentName}" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,16"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+
+                                    <!-- Friendly message shown when chart is empty -->
+                                    <TextBlock Text="✨ Tháng này lớp chưa có hoạt động đọc sách nào. Thầy cô hãy phát động tuần lễ đọc sách và hướng dẫn các em mượn sách ngay nhé! 📖" 
+                                               FontSize="16" FontStyle="Italic" Foreground="{StaticResource TextSecondaryBrush}" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Margin="24"
+                                               TextWrapping="Wrap"
+                                               Visibility="{Binding IsChartEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <!-- Danh sách học sinh chưa mượn sách để gửi tin riêng -->
+                        <Border Style="{StaticResource CardBorder}" Margin="0,16,0,0" 
+                                Visibility="{Binding HasUnreadStudents, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock Text="💬 Danh sách học sinh chưa mượn sách (Nhắc nhở riêng phụ huynh)" Style="{StaticResource CardTitleText}" Margin="0,0,0,12"/>
+                                <ItemsControl ItemsSource="{Binding UnreadStudentStats}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,10" Background="Transparent">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <TextBlock Text="👤 " FontSize="14" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding StudentName}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource DangerTextBrush}" VerticalAlignment="Center"/>
+                                                        <TextBlock Text=" (Chưa mượn sách trong tháng)" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1" Content="📋 Sao chép tin nhắn riêng" 
+                                                            Command="{Binding DataContext.CopyIndividualAlertTextCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                            CommandParameter="{Binding StudentName}"
+                                                            Style="{StaticResource SecondaryButton}" 
+                                                            Height="28" Padding="12,0" FontSize="12"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Tạo giỏ sách đề xuất cho lớp -->
+                        <Border Style="{StaticResource CardBorder}" Margin="0,16,0,0">
+                            <StackPanel>
+                                <TextBlock Text="📁 Tạo Giỏ Sách Đề Xuất Cho Lớp (Giáo Viên)" Style="{StaticResource CardTitleText}" Margin="0,0,0,16"/>
+                                
+                                <!-- Bộ chọn mẫu nhiệm vụ soạn sẵn -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="📋 Chọn mẫu soạn sẵn:" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="0,0,12,0"/>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding QuestTemplates}" SelectedItem="{Binding SelectedQuestTemplate}" DisplayMemberPath="DisplayName" Style="{StaticResource ModernComboBox}" Height="36" VerticalContentAlignment="Center" Padding="8,4" FontSize="13"/>
+                                </Grid>
+                                
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Tiêu đề giỏ sách:" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,12,0"/>
+                                    <TextBox Grid.Column="1" Text="{Binding NewBagTitle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Height="36" VerticalContentAlignment="Center" Padding="8,4" FontSize="13"/>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="24"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBlock Grid.Column="0" Text="📅 Hạn chót (Deadline):" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,12,0"/>
+                                    <DatePicker Grid.Column="1" SelectedDate="{Binding NewBagDeadline}" Height="36" VerticalContentAlignment="Center"/>
+                                    
+                                    <TextBlock Grid.Column="3" Text="🎯 Tỉ lệ đúng tối thiểu (%):" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,12,0"/>
+                                    <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Slider Minimum="50" Maximum="100" TickFrequency="10" IsSnapToTickEnabled="True" Width="120" VerticalAlignment="Center" Value="{Binding NewBagRequiredPassRate}"/>
+                                        <TextBlock Text="{Binding NewBagRequiredPassRate, StringFormat='{}{0}%'}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <TextBlock Text="Chọn các cuốn sách đề xuất:" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                
+                                <!-- Ô lọc tìm kiếm nhanh sách -->
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="🔍 Tìm nhanh sách:" VerticalAlignment="Center" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"/>
+                                    <TextBox x:Name="TxtBookSearch" Grid.Column="1" Text="{Binding BookSearchKeyword, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Height="32" FontSize="13" VerticalContentAlignment="Center" ToolTip="Nhấn Ctrl+F để tìm kiếm nhanh"/>
+                                </Grid>
+                                
+                                <!-- Bảng chọn sách bằng Checkbox -->
+                                <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Background="{StaticResource CardBrush}" Height="250" Margin="0,0,0,16">
+                                    <DataGrid ItemsSource="{Binding AvailableBooks}" Style="{StaticResource ModernDataGrid}" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single" AutoGenerateColumns="False" CanUserAddRows="False">
+                                        <DataGrid.Columns>
+                                            <!-- Cột Checkbox -->
+                                            <DataGridTemplateColumn Width="60">
+                                                <DataGridTemplateColumn.HeaderTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="Chọn" HorizontalAlignment="Center"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.HeaderTemplate>
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            
+                                            <!-- Cột ID Sách -->
+                                            <DataGridTextColumn Header="Mã ID" Binding="{Binding BookId}" Width="80" IsReadOnly="True"/>
+                                            
+                                            <!-- Cột Tên Sách -->
+                                            <DataGridTextColumn Header="Tên Sách" Binding="{Binding Title}" Width="*" IsReadOnly="True"/>
+                                            
+                                            <!-- Cột Tác Giả -->
+                                            <DataGridTextColumn Header="Tác Giả" Binding="{Binding Author}" Width="250" IsReadOnly="True"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
+                                
+                                <Button Content="➕ Tạo Giỏ Sách Đề Xuất" 
+                                        Command="{Binding CreateClassReadingBagCommand}" 
+                                        Style="{StaticResource PrimaryButton}" 
+                                        HorizontalAlignment="Right" Padding="20,10"/>
+                            </StackPanel>
+                        </Border>
+                        
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- THÊM TAB ITEM BÁO CÁO HỌC TẬP VÀO TAB CONTROL -->
+            <TabItem Header="📊 Báo cáo học tập lớp" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="{Binding ClassName, StringFormat='📊 Thống kê chi tiết kết quả tự đọc của học sinh lớp {0}'}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                    
+                    <!-- Lọc tìm kiếm học sinh -->
+                    <Grid Grid.Row="1" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="🔍 Tìm nhanh học sinh:" VerticalAlignment="Center" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"/>
+                        <TextBox x:Name="TxtStudentSearch" Grid.Column="1" Text="{Binding StudentSearchKeyword, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernInputStyle}" Height="32" FontSize="13" VerticalContentAlignment="Center" ToolTip="Nhấn Ctrl+F để tìm kiếm nhanh"/>
+                    </Grid>
+
+                    <DataGrid Grid.Row="2" ItemsSource="{Binding ClassProgressRecords}" Style="{StaticResource ModernDataGrid}" AutoGenerateColumns="False" IsReadOnly="True" Background="Transparent" BorderThickness="0" RowHeaderWidth="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Học Sinh" Binding="{Binding StudentName}" Width="150"/>
+                            <DataGridTextColumn Header="Mã Học Sinh" Binding="{Binding StudentSso}" Width="100"/>
+                            <DataGridTextColumn Header="Sách Đã Mượn" Binding="{Binding TotalLoans}" Width="110"/>
+                            <DataGridTextColumn Header="Điểm Quiz TB" Binding="{Binding AverageQuizScore, StringFormat='{}{0}%'}" Width="100"/>
+                            <DataGridTextColumn Header="Số Bài Đỗ" Binding="{Binding QuizzesPassed}" Width="90"/>
+                            <DataGridTextColumn Header="Nghe Sách Nói" Binding="{Binding AudiobooksListened}" Width="110"/>
+                            <DataGridTextColumn Header="Điểm XP" Binding="{Binding XpPoints}" Width="90"/>
+                            <DataGridTextColumn Header="Hạng Độc Giả" Binding="{Binding ReadingLevel}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

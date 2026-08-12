@@ -1,0 +1,416 @@
+{
+  "metadata": {
+    "chapterId": "g03_ch03",
+    "chapterName": "Thời Gian & Tiền Tệ",
+    "grade": 3,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 18,
+    "toolMapping": [
+      "unit_converter"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 10,
+    "prerequisites": [
+      "g03_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "tt3_01",
+      "sectionName": "Đọc giờ & Tính thời gian",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "tt3_001",
+          "name": "Giờ và phút",
+          "definition": "1 giờ = 60 phút. Kim dài chỉ phút, kim ngắn chỉ giờ",
+          "examples": [
+            "8 giờ 30 phút = 8:30",
+            "2 giờ 15 phút chiều = 14:15"
+          ]
+        },
+        {
+          "id": "tt3_002",
+          "name": "Tính khoảng thời gian",
+          "definition": "Lấy thời điểm sau trừ thời điểm trước",
+          "examples": [
+            "Từ 7:30 đến 9:00 = 1 giờ 30 phút"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tt3_p01",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "1 giờ = bao nhiêu phút?",
+          "options": [
+            "A) 30 phút",
+            "B) 50 phút",
+            "C) 60 phút",
+            "D) 100 phút"
+          ],
+          "correctAnswer": "C",
+          "solution": "1 giờ = 60 phút",
+          "points": 5
+        },
+        {
+          "problemId": "tt3_p02",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Kim ngắn chỉ số 3, kim dài chỉ số 12. Mấy giờ?",
+          "options": [
+            "A) 12:03",
+            "B) 3:00",
+            "C) 3:12",
+            "D) 12:15"
+          ],
+          "correctAnswer": "B",
+          "solution": "Kim ngắn = giờ (3), kim dài ở 12 = 0 phút → 3:00",
+          "points": 5
+        },
+        {
+          "problemId": "tt3_p03",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Buổi học bắt đầu 7:30, kết thúc 11:00. Học bao lâu?",
+          "options": [
+            "A) 3 giờ",
+            "B) 3 giờ 30 phút",
+            "C) 4 giờ",
+            "D) 4 giờ 30 phút"
+          ],
+          "correctAnswer": "B",
+          "solution": "Từ 7:30 → 11:00 = 3 giờ 30 phút",
+          "points": 10
+        },
+        {
+          "problemId": "tt3_p04",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Bạn An đi ngủ lúc 21:00, thức dậy lúc 6:30. An ngủ bao lâu?",
+          "options": [
+            "A) 8 giờ 30 phút",
+            "B) 9 giờ",
+            "C) 9 giờ 30 phút",
+            "D) 10 giờ"
+          ],
+          "correctAnswer": "C",
+          "solution": "21:00 → 6:30 hôm sau = 9 giờ 30 phút",
+          "points": 10
+        },
+        {
+          "problemId": "tt3_p05",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "1,5 giờ = bao nhiêu phút?",
+          "options": [
+            "A) 75 phút",
+            "B) 80 phút",
+            "C) 90 phút",
+            "D) 150 phút"
+          ],
+          "correctAnswer": "C",
+          "solution": "1,5 giờ = 1 giờ 30 phút = 60 + 30 = 90 phút",
+          "points": 15
+        },
+        {
+          "problemId": "tt3_p06",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tàu đi lúc 8:45, tới nơi lúc 13:20. Tàu chạy bao lâu?",
+          "options": [
+            "A) 4 giờ 25 phút",
+            "B) 4 giờ 35 phút",
+            "C) 5 giờ 25 phút",
+            "D) 5 giờ 35 phút"
+          ],
+          "correctAnswer": "B",
+          "solution": "8:45 → 13:20. Giờ: 13-8=5. Phút: 20-45=-25 → mượn 1 giờ: 4 giờ 35 phút",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "tt3_02",
+      "sectionName": "Tiền Việt Nam (VNĐ)",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "tt3_003",
+          "name": "Các mệnh giá tiền",
+          "definition": "Tiền xu: 200đ, 500đ, 1.000đ, 2.000đ. Tiền giấy: 5.000đ → 500.000đ",
+          "examples": [
+            "Mệnh giá 50.000đ → tờ tiền polymer màu hồng"
+          ]
+        },
+        {
+          "id": "tt3_004",
+          "name": "Tính tiền mua hàng",
+          "definition": "Tổng tiền = giá × số lượng. Tiền thừa = tiền đưa - tổng tiền",
+          "examples": [
+            "Mua 3 quyển vở 8.000đ → 3 × 8.000 = 24.000đ"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tt3_p07",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Tờ tiền polymer màu xanh lá, giá trị 100.000đ. Đổi được mấy tờ 10.000đ?",
+          "options": [
+            "A) 5",
+            "B) 10",
+            "C) 50",
+            "D) 100"
+          ],
+          "correctAnswer": "B",
+          "solution": "100.000 ÷ 10.000 = 10 tờ",
+          "points": 5
+        },
+        {
+          "problemId": "tt3_p08",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Mua bút 5.000đ, vở 8.000đ. Tổng = ?",
+          "options": [
+            "A) 12.000đ",
+            "B) 13.000đ",
+            "C) 15.000đ",
+            "D) 10.000đ"
+          ],
+          "correctAnswer": "B",
+          "solution": "5.000 + 8.000 = 13.000đ",
+          "points": 5
+        },
+        {
+          "problemId": "tt3_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Mua 4 cái bánh, mỗi cái 7.500đ. Đưa 50.000đ. Tiền thừa = ?",
+          "options": [
+            "A) 15.000đ",
+            "B) 20.000đ",
+            "C) 22.500đ",
+            "D) 10.000đ"
+          ],
+          "correctAnswer": "B",
+          "solution": "4 × 7.500 = 30.000đ. 50.000 - 30.000 = 20.000đ thừa",
+          "points": 10
+        },
+        {
+          "problemId": "tt3_p10",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Bạn An có 2 tờ 20.000đ và 1 tờ 5.000đ. An có tổng cộng bao nhiêu?",
+          "options": [
+            "A) 25.000đ",
+            "B) 40.000đ",
+            "C) 45.000đ",
+            "D) 50.000đ"
+          ],
+          "correctAnswer": "C",
+          "solution": "2 × 20.000 + 5.000 = 40.000 + 5.000 = 45.000đ",
+          "points": 10
+        },
+        {
+          "problemId": "tt3_p11",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Sách giá 120.000đ giảm 25%. Giá sau giảm = ?",
+          "options": [
+            "A) 80.000đ",
+            "B) 90.000đ",
+            "C) 95.000đ",
+            "D) 100.000đ"
+          ],
+          "correctAnswer": "B",
+          "solution": "Giảm 25% = giảm 1/4 = 120.000 ÷ 4 = 30.000đ. Còn: 120.000 - 30.000 = 90.000đ",
+          "points": 15
+        },
+        {
+          "problemId": "tt3_p12",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Mua 3 quyển sách giá 45.000đ/quyển và 2 cây bút 12.000đ/cây. Đưa 200.000đ. Thừa?",
+          "options": [
+            "A) 31.000đ",
+            "B) 41.000đ",
+            "C) 51.000đ",
+            "D) 61.000đ"
+          ],
+          "correctAnswer": "A",
+          "solution": "3×45.000=135.000. 2×12.000=24.000. Tổng=159.000. Thừa=200.000-159.000=41.000",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "tt3_03",
+      "sectionName": "Lịch & Ngày tháng",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "tt3_005",
+          "name": "Năm, tháng, tuần, ngày",
+          "definition": "1 năm = 12 tháng = 365/366 ngày. 1 tuần = 7 ngày",
+          "examples": [
+            "Tháng 2 có 28 hoặc 29 ngày (năm nhuận)"
+          ]
+        },
+        {
+          "id": "tt3_006",
+          "name": "Đọc lịch",
+          "definition": "Xem ngày trong tuần, ngày trong tháng trên lịch",
+          "examples": [
+            "Nếu 1/1 là Chủ nhật thì 8/1 cũng là Chủ nhật"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tt3_p13",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "1 năm có bao nhiêu tháng?",
+          "options": [
+            "A) 10",
+            "B) 11",
+            "C) 12",
+            "D) 13"
+          ],
+          "correctAnswer": "C",
+          "solution": "1 năm = 12 tháng",
+          "points": 5
+        },
+        {
+          "problemId": "tt3_p14",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Tháng 4 có bao nhiêu ngày?",
+          "options": [
+            "A) 28",
+            "B) 29",
+            "C) 30",
+            "D) 31"
+          ],
+          "correctAnswer": "C",
+          "solution": "Tháng 4 có 30 ngày. Mẹo: 4, 6, 9, 11 có 30 ngày",
+          "points": 5
+        },
+        {
+          "problemId": "tt3_p15",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Từ 15/3 đến 15/5 có bao nhiêu ngày?",
+          "options": [
+            "A) 60 ngày",
+            "B) 61 ngày",
+            "C) 62 ngày",
+            "D) 59 ngày"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tháng 3 còn 16 ngày + tháng 4: 30 ngày + 15 ngày đầu tháng 5 = 61",
+          "points": 10
+        },
+        {
+          "problemId": "tt3_p16",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Hôm nay thứ 4. 10 ngày nữa là thứ mấy?",
+          "options": [
+            "A) Thứ 6",
+            "B) Thứ 7",
+            "C) Chủ nhật",
+            "D) Thứ 2"
+          ],
+          "correctAnswer": "B",
+          "solution": "10 ÷ 7 = 1 tuần dư 3. Thứ 4 + 3 = Thứ 7",
+          "points": 10
+        },
+        {
+          "problemId": "tt3_p17",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Năm 2024 là năm nhuận. Tháng 2 năm 2024 có mấy ngày?",
+          "options": [
+            "A) 28",
+            "B) 29",
+            "C) 30",
+            "D) 31"
+          ],
+          "correctAnswer": "B",
+          "solution": "Năm nhuận → tháng 2 có 29 ngày. Năm chia hết cho 4 (trừ chia hết 100 nhưng không chia hết 400)",
+          "points": 15
+        },
+        {
+          "problemId": "tt3_p18",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Bạn sinh ngày 15/8/2016. Đến ngày 15/8/2026 bạn bao nhiêu tuổi?",
+          "options": [
+            "A) 9 tuổi",
+            "B) 10 tuổi",
+            "C) 11 tuổi",
+            "D) 8 tuổi"
+          ],
+          "correctAnswer": "B",
+          "solution": "2026 - 2016 = 10 tuổi",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Quên tháng 2 có 28/29 ngày",
+      "correction": "Mẹo: T4, T6, T9, T11 = 30 ngày. T2 = 28/29. Còn lại = 31"
+    },
+    {
+      "mistake": "Nhầm 1,5 giờ = 1 giờ 50 phút",
+      "correction": "0,5 giờ = 30 phút (không phải 50 phút)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "tt3_quiz_01",
+      "title": "Kiểm tra: Thời gian & Tiền tệ Lớp 3",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "tt3_p01"
+        },
+        {
+          "ref": "tt3_p07"
+        },
+        {
+          "ref": "tt3_p13"
+        },
+        {
+          "ref": "tt3_p09"
+        },
+        {
+          "ref": "tt3_p17"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

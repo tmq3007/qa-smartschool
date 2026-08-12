@@ -1,0 +1,46 @@
+<Window x:Class="SmartLibrary.Desktop.Views.Shared.XpRulesDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Quy tắc tích lũy điểm thưởng XP" Width="420" Height="300"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    <Border Background="{DynamicResource CardBrush}" CornerRadius="16" Padding="24" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+        <StackPanel>
+            <TextBlock Text="⚡ QUY TẮC TÍCH LŨY ĐIỂM ĐỌC SÁCH" Foreground="{DynamicResource StateSuccess}" FontSize="16" FontWeight="Bold" Margin="0,0,0,16" HorizontalAlignment="Center"/>
+            <StackPanel Margin="8,0">
+                <TextBlock TextWrapping="Wrap" FontSize="13" Margin="0,6">
+                    <Run Text="🥇 Đồng hành cùng tri thức:" FontWeight="SemiBold" Foreground="#F59E0B"/>
+                    <Run Text=" Mượn và trả sách đúng hạn để nhận ngay " Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <Run Text="+10 XP" FontWeight="Bold" Foreground="{DynamicResource StateSuccess}"/>
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" FontSize="13" Margin="0,6">
+                    <Run Text="🥈 Khám phá chân trời mới:" FontWeight="SemiBold" Foreground="#94A3B8"/>
+                    <Run Text=" Đọc một cuốn sách hoàn toàn mới trong tháng để nhận " Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <Run Text="+15 XP" FontWeight="Bold" Foreground="{DynamicResource StateSuccess}"/>
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" FontSize="13" Margin="0,6">
+                    <Run Text="🥉 Độc giả kiên trì:" FontWeight="SemiBold" Foreground="#B45309"/>
+                    <Run Text=" Đọc đủ 5 cuốn sách mỗi tháng để được tặng thêm " Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <Run Text="+30 XP" FontWeight="Bold" Foreground="{DynamicResource StateSuccess}"/>
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" FontSize="13" Margin="0,6">
+                    <Run Text="🏆 Lan tỏa văn hóa đọc:" FontWeight="SemiBold" Foreground="#EC4899"/>
+                    <Run Text=" Viết đánh giá, chia sẻ cảm xúc về cuốn sách hay để nhận " Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <Run Text="+20 XP" FontWeight="Bold" Foreground="{DynamicResource StateSuccess}"/>
+                </TextBlock>
+            </StackPanel>
+            <TextBlock Text="🌟 Mỗi cuốn sách bạn mở ra là một chân trời tri thức mới được thắp sáng! 🌟" 
+                       Foreground="#F59E0B" FontSize="11" FontStyle="Italic" HorizontalAlignment="Center" Margin="0,16,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
+            <Button Content="Đã hiểu" Width="100" Height="36" Margin="0,20,0,0" Background="{DynamicResource StateSuccess}" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="Close_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+    </Border>
+</Window>

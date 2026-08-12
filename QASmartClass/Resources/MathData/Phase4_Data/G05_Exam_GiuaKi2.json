@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g05_giuaki2",
+    "title": "Đề thi Giữa Kì 2 Toán Lớp 5",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 5,
+    "examType": "GiuaKi2"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Ô tô đi 150km trong 3 giờ. Vận tốc ô tô là:",
+      "options": [
+        "A) 50km/h",
+        "B) 45km/h",
+        "C) 60km/h",
+        "D) 30km/h"
+      ],
+      "answer": "A",
+      "solution": "v = S ÷ t = 150 ÷ 3 = 50km/h"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Giá sau tăng 15% là 460.000đ. Giá gốc = ?",
+      "options": [
+        "A) 380.000đ",
+        "B) 391.000đ",
+        "C) 400.000đ",
+        "D) 410.000đ"
+      ],
+      "answer": "C",
+      "solution": "Giá gốc × 1,15 = 460.000. Giá gốc = 460.000 ÷ 1,15 = 400.000đ"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Ước lượng: 3,14 × 7² ≈ ?",
+      "options": [
+        "A) 140",
+        "B) 150",
+        "C) 155",
+        "D) 160"
+      ],
+      "answer": "C",
+      "solution": "3,14 ≈ 3. 7² = 49 ≈ 50. 3 × 50 = 150. Chính xác: 153,86 ≈ 155"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Xe máy đi với vận tốc 40km/h trong 2 giờ 30 phút. Quãng đường đi được là:",
+      "options": [
+        "A) 80km",
+        "B) 100km",
+        "C) 90km",
+        "D) 120km"
+      ],
+      "answer": "B",
+      "solution": "2 giờ 30 phút = 2,5 giờ. S = 40 × 2,5 = 100km"
+    },
+    {
+      "id": 5,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Hai ô tô xuất phát cùng lúc từ A và B cách nhau 200km, đi ngược chiều nhau. Xe từ A đi 50km/h, xe từ B đi 30km/h. Sau bao lâu 2 xe gặp nhau?",
+      "options": [
+        "A) 2 giờ",
+        "B) 2,5 giờ",
+        "C) 3 giờ",
+        "D) 4 giờ"
+      ],
+      "answer": "B",
+      "solution": "Vận tốc tiến lại gần = 50 + 30 = 80km/h. t = 200 ÷ 80 = 2,5 giờ"
+    },
+    {
+      "id": 6,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Làm tròn 4.567 đến hàng trăm = ?",
+      "options": [
+        "A) 4.500",
+        "B) 4.600",
+        "C) 4.570",
+        "D) 5.000"
+      ],
+      "answer": "B",
+      "solution": "Hàng chục = 6 ≥ 5 → hàng trăm tăng 1: 4.600"
+    },
+    {
+      "id": 7,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Diện tích toàn phần hình lập phương cạnh 5 cm = ?",
+      "options": [
+        "A) 100 cm²",
+        "B) 125 cm²",
+        "C) 150 cm²",
+        "D) 200 cm²"
+      ],
+      "answer": "C",
+      "solution": "Stp = 6 × 5² = 6 × 25 = 150 cm²"
+    },
+    {
+      "id": 8,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Tuổi mẹ và tuổi con cộng lại được 48 tuổi. Tuổi mẹ gấp 3 lần tuổi con. Tuổi con là:",
+      "options": [
+        "A) 10",
+        "B) 12",
+        "C) 14",
+        "D) 16"
+      ],
+      "answer": "B",
+      "solution": "Gọi tuổi con = x → tuổi mẹ = 3x. x + 3x = 48 → 4x = 48 → x = 12"
+    },
+    {
+      "id": 9,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Chia 45 viên bi cho 2 bạn theo tỉ lệ 2:3. Bạn nhận nhiều hơn có bao nhiêu viên?",
+      "options": [
+        "A) 18",
+        "B) 27",
+        "C) 20",
+        "D) 25"
+      ],
+      "answer": "B",
+      "solution": "Tổng tỉ lệ = 2+3=5. Bạn nhiều hơn = 45 × 3/5 = 27 viên bi"
+    },
+    {
+      "id": 10,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Ba bạn có tổng cộng 120 viên kẹo. Bạn A có số kẹo gấp đôi bạn B, bạn C có 30 viên. Hỏi bạn A có bao nhiêu viên?",
+      "options": [
+        "A) 50",
+        "B) 60",
+        "C) 45",
+        "D) 40"
+      ],
+      "answer": "B",
+      "solution": "A + B + 30 = 120 → A + B = 90. A = 2B → 2B + B = 90 → 3B = 90 → B = 30 → A = 60"
+    },
+    {
+      "id": 11,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Bản đồ tỉ lệ 1:200.000. Đoạn AB trên bản đồ = 3 cm. Thực tế = ? km",
+      "options": [
+        "A) 3 km",
+        "B) 6 km",
+        "C) 60 km",
+        "D) 600 km"
+      ],
+      "answer": "B",
+      "solution": "3 × 200.000 = 600.000 cm = 6 km"
+    },
+    {
+      "id": 12,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Tổng 2 số là 80, hiệu 2 số là 20. Tìm số lớn:",
+      "options": [
+        "A) 40",
+        "B) 50",
+        "C) 60",
+        "D) 30"
+      ],
+      "answer": "B",
+      "solution": "Số lớn = (80 + 20) ÷ 2 = 100 ÷ 2 = 50"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "V hình hộp CN: dài 5, rộng 3, cao 4 (cm) = ?",
+      "options": [
+        "A) 12 cm³",
+        "B) 60 cm³",
+        "C) 20 cm³",
+        "D) 15 cm³"
+      ],
+      "answer": "B",
+      "solution": "V = 5 × 3 × 4 = 60 cm³"
+    },
+    {
+      "id": 14,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Tỉ lệ 1:100. 5 cm trên giấy = ? cm thực tế",
+      "options": [
+        "A) 100 cm",
+        "B) 500 cm",
+        "C) 50 cm",
+        "D) 5000 cm"
+      ],
+      "answer": "B",
+      "solution": "5 × 100 = 500 cm = 5 m"
+    },
+    {
+      "id": 15,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Sai số khi làm tròn 2,345 thành 2,35 = ?",
+      "options": [
+        "A) 0,05",
+        "B) 0,005",
+        "C) 0,5",
+        "D) 0,0005"
+      ],
+      "answer": "B",
+      "solution": "2,35 - 2,345 = 0,005"
+    },
+    {
+      "id": 16,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Làm tròn 3,74 đến hàng đơn vị = ?",
+      "options": [
+        "A) 3",
+        "B) 3,7",
+        "C) 4",
+        "D) 3,8"
+      ],
+      "answer": "C",
+      "solution": "Chữ số sau hàng đơn vị là 7 ≥ 5 → tăng 1: 3 → 4"
+    },
+    {
+      "id": 17,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Gửi tiết kiệm 10 triệu, lãi suất 6%/năm. Sau 1 năm có tổng cộng bao nhiêu?",
+      "options": [
+        "A) 10,06 triệu",
+        "B) 10,3 triệu",
+        "C) 10,6 triệu",
+        "D) 16 triệu"
+      ],
+      "answer": "C",
+      "solution": "Lãi = 10.000.000 × 6% = 600.000đ. Tổng = 10.600.000đ = 10,6 triệu"
+    },
+    {
+      "id": 18,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Lon Coca Cola có dạng hình gì?",
+      "options": [
+        "A) Hình hộp",
+        "B) Hình trụ",
+        "C) Hình cầu",
+        "D) Hình nón"
+      ],
+      "answer": "B",
+      "solution": "Lon nước ngọt có dạng hình trụ tròn"
+    },
+    {
+      "id": 19,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Hai lớp có tổng cộng 72 học sinh. Lớp 5A nhiều hơn lớp 5B là 8 học sinh. Hỏi mỗi lớp có bao nhiêu học sinh?",
+      "options": [
+        "A) 5A: 40, 5B: 32",
+        "B) 5A: 38, 5B: 34",
+        "C) 5A: 44, 5B: 28",
+        "D) 5A: 36, 5B: 36"
+      ],
+      "answer": "A",
+      "solution": "Lớp 5A (lớn) = (72+8)÷2 = 40. Lớp 5B = 72 - 40 = 32"
+    },
+    {
+      "id": 20,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Quả bóng bán kính 7 cm. V ≈ ? cm³ (π≈22/7)",
+      "options": [
+        "A) 718 cm³",
+        "B) 1078 cm³",
+        "C) 1437 cm³",
+        "D) 1796 cm³"
+      ],
+      "answer": "C",
+      "solution": "V = 4/3 × 22/7 × 7³ = 4/3 × 22/7 × 343 = 4/3 × 1078 ≈ 1437 cm³"
+    }
+  ]
+}

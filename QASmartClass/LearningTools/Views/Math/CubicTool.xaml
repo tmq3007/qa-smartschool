@@ -1,0 +1,286 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Math.CubicTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="{StaticResource Gray100}">
+ 
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+ 
+        <!-- MAIN LAYOUT (Master-Detail) -->
+        <Grid Grid.Row="0" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU (Cubic themed) -->
+            <Grid Grid.Column="0" Background="#FCE4EC">
+                <!-- Math Category: Blue hover/selected -->
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#C5CAE9"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="{StaticResource BrandPrimaryColor}"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🧮" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractice" Text="Tính toán &amp; Ví dụ" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#F8BBD0"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="0">
+                <!-- VIEW 0: HƯỚNG DẪN CHI TIẾT -->
+                <ScrollViewer x:Name="contentGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" Padding="20">
+                    <StackPanel>
+                        <!-- Header Card -->
+                        <Border Background="#FCE4EC" CornerRadius="12" Padding="20,16" Margin="0,0,0,16" BorderBrush="#F48FB1" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="📖 Hướng Dẫn Sử Dụng Chi Tiết" FontSize="18" FontWeight="Bold" Foreground="#880E4F"/>
+                                <TextBlock Text="Các bước thực hiện giải phương trình bậc 3 cùng dữ liệu mẫu trực quan." FontSize="13" Foreground="#AD1457" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+ 
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+ 
+                            <!-- Left: Steps (Timeline layout) -->
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <!-- Step 1 -->
+                                <Border Background="#FDF4F7" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#FCE4EC" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="28" Height="28" CornerRadius="14" Background="#880E4F" VerticalAlignment="Top" Margin="0,0,12,0">
+                                            <TextBlock Text="1" Foreground="White" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Nhập hệ số a, b, c, d" FontWeight="Bold" FontSize="14" Foreground="#880E4F" Margin="0,0,0,4"/>
+                                            <TextBlock Text="Nhập các số thực vào ô tương ứng. Hệ số a phải khác 0. Bạn có thể sử dụng bàn phím ảo đi kèm." FontSize="13" Foreground="#424242" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+ 
+                                <!-- Step 2 -->
+                                <Border Background="#FDF4F7" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#FCE4EC" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="28" Height="28" CornerRadius="14" Background="#880E4F" VerticalAlignment="Top" Margin="0,0,12,0">
+                                            <TextBlock Text="2" Foreground="White" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Quan sát các bước phân tích" FontWeight="Bold" FontSize="14" Foreground="#880E4F" Margin="0,0,0,4"/>
+                                            <TextBlock Text="Hệ thống tự động chạy sơ đồ Horner chia đa thức nếu có nghiệm hữu tỉ, hoặc sử dụng công thức lượng giác Cardano chi tiết." FontSize="13.5" Foreground="#424242" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+ 
+                                <!-- Step 3 -->
+                                <Border Background="#FDF4F7" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#FCE4EC" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="28" Height="28" CornerRadius="14" Background="#880E4F" VerticalAlignment="Top" Margin="0,0,12,0">
+                                            <TextBlock Text="3" Foreground="White" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Phân tích hình học đồ thị" FontWeight="Bold" FontSize="14" Foreground="#880E4F" Margin="0,0,0,4"/>
+                                            <TextBlock Text="Click nút 'Xem đồ thị' để quan sát trực quan vị trí nghiệm (Ox) và các điểm cực trị đỉnh và thung lũng." FontSize="13.5" Foreground="#424242" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+ 
+                            <!-- Right: Examples and Sample Data -->
+                            <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                <Border Background="White" CornerRadius="10" Padding="16" BorderBrush="#E0E0E0" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="💡 Dữ liệu mẫu &amp; Ví dụ" FontSize="15" FontWeight="Bold" Foreground="#880E4F" Margin="0,0,0,12"/>
+ 
+                                        <Border Background="#FCE4EC" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="Ví dụ 1: 3 nghiệm thực phân biệt" FontWeight="Bold" FontSize="13" Foreground="#880E4F"/>
+                                                <TextBlock Text="Phương trình: x³ − 6x² + 11x − 6 = 0" FontSize="12.5" Foreground="#424242" Margin="0,2,0,0"/>
+                                                <TextBlock Text="Hệ số: a=1, b=-6, c=11, d=-6 -> Nghiệm: x = 1, x = 2, x = 3" FontSize="12.5" Foreground="#757575" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+ 
+                                        <Border Background="#FCE4EC" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="Ví dụ 2: Có nghiệm kép" FontWeight="Bold" FontSize="13" Foreground="#880E4F"/>
+                                                <TextBlock Text="Phương trình: x³ + 3x² − 4 = 0" FontSize="12.5" Foreground="#424242" Margin="0,2,0,0"/>
+                                                <TextBlock Text="Hệ số: a=1, b=3, c=0, d=-4 -> Nghiệm đơn x = 1, nghiệm kép x = -2" FontSize="12.5" Foreground="#757575" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+ 
+                                        <Border Background="#FCE4EC" CornerRadius="6" Padding="10">
+                                            <StackPanel>
+                                                <TextBlock Text="Ví dụ 3: Nghiệm lẻ vô tỉ (Cardano lượng giác)" FontWeight="Bold" FontSize="13" Foreground="#880E4F"/>
+                                                <TextBlock Text="Phương trình: x³ − 3x − 1 = 0" FontSize="12.5" Foreground="#424242" Margin="0,2,0,0"/>
+                                                <TextBlock Text="Nghiệm lẻ: x₁ ≈ 1.879, x₂ ≈ -1.532, x₃ ≈ -0.347" FontSize="12.5" Foreground="#757575" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+ 
+                <!-- VIEW 1: TÍNH TOÁN CHÍNH -->
+                <ScrollViewer x:Name="contentCalc" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Padding="20" Visibility="Visible">
+                    <StackPanel>
+                        <!-- HEADER inside contentCalc ScrollViewer -->
+                        <Border CornerRadius="10" Padding="16,12" Margin="0,0,0,16">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#FCE4EC" Offset="0"/>
+                                    <GradientStop Color="#F8BBD0" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <StackPanel>
+                                <TextBlock Text="📐 Giải Phương Trình Bậc 3" FontSize="20" FontWeight="Bold" Foreground="#880E4F"/>
+                                <TextBlock Text="Lớp 12 • ax³ + bx² + cx + d = 0 • Horner, nghiệm hữu tỉ, Graph" FontSize="12" Foreground="#AD1457" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+ 
+                            <!-- LEFT COLUMN: Input -->
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <!-- Formula -->
+                                <Border Background="White" CornerRadius="14" Padding="20,16" Margin="0,0,0,16"
+                                        BorderBrush="#F48FB1" BorderThickness="1">
+                                    <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                    <TextBlock FontSize="24" FontWeight="Bold" Foreground="#880E4F" HorizontalAlignment="Center">
+                                        <Run Text="ax³ + bx² + cx + d = 0"/>
+                                    </TextBlock>
+                                </Border>
+ 
+                                <!-- Inputs -->
+                                <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16"
+                                        BorderBrush="#E0E0E0" BorderThickness="1">
+                                    <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                    <StackPanel>
+                                        <TextBlock Text="📝 Nhập hệ số a, b, c, d" FontSize="14" FontWeight="SemiBold" Foreground="#757575" Margin="0,0,0,16"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+ 
+                                            <Border Grid.Column="0" Background="#FCE4EC" CornerRadius="10" Padding="12,10" Margin="0,0,8,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="a" FontSize="16" FontWeight="Bold" Foreground="#880E4F"/>
+                                                    <TextBox x:Name="txtA" FontSize="20" Padding="8,6" FontWeight="SemiBold"
+                                                             BorderThickness="0" Background="Transparent" TextChanged="Solve_Changed" Text="1"/>
+                                                </StackPanel>
+                                            </Border>
+ 
+                                            <Border Grid.Column="1" Background="#FCE4EC" CornerRadius="10" Padding="12,10" Margin="0,0,8,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="b" FontSize="16" FontWeight="Bold" Foreground="#AD1457"/>
+                                                    <TextBox x:Name="txtB" FontSize="20" Padding="8,6" FontWeight="SemiBold"
+                                                             BorderThickness="0" Background="Transparent" TextChanged="Solve_Changed" Text="-6"/>
+                                                </StackPanel>
+                                            </Border>
+ 
+                                            <Border Grid.Column="2" Background="#FCE4EC" CornerRadius="10" Padding="12,10" Margin="0,0,8,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="c" FontSize="16" FontWeight="Bold" Foreground="#C2185B"/>
+                                                    <TextBox x:Name="txtC" FontSize="20" Padding="8,6" FontWeight="SemiBold"
+                                                             BorderThickness="0" Background="Transparent" TextChanged="Solve_Changed" Text="11"/>
+                                                </StackPanel>
+                                            </Border>
+ 
+                                            <Border Grid.Column="3" Background="#FCE4EC" CornerRadius="10" Padding="12,10">
+                                                <StackPanel>
+                                                    <TextBlock Text="d" FontSize="16" FontWeight="Bold" Foreground="#E91E63"/>
+                                                    <TextBox x:Name="txtD" FontSize="20" Padding="8,6" FontWeight="SemiBold"
+                                                             BorderThickness="0" Background="Transparent" TextChanged="Solve_Changed" Text="-6"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+ 
+                                <!-- Presets -->
+                                <Border Background="White" CornerRadius="14" Padding="20,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                                    <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                    <StackPanel>
+                                        <TextBlock Text="⚡ Ví dụ nhanh" FontSize="14" FontWeight="SemiBold" Foreground="#424242" Margin="0,0,0,12"/>
+                                        <WrapPanel x:Name="presetPanel"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+ 
+                            <!-- RIGHT COLUMN: Results -->
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                <!-- Results -->
+                                <StackPanel x:Name="resultPanel"/>
+ 
+                                <!-- Graph -->
+                                <Border Background="#FCE4EC" CornerRadius="14" Padding="16,12" Margin="0,12,0,0" Cursor="Hand"
+                                        MouseLeftButtonDown="OpenGraph_Click" BorderBrush="#F48FB1" BorderThickness="1">
+                                    <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <TextBlock Text="📈" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <StackPanel>
+                                            <TextBlock Text="Xem đồ thị" FontSize="14" FontWeight="Bold" Foreground="#880E4F"/>
+                                            <TextBlock Text="y = ax³ + bx² + cx + d – nghiệm = giao Ox" FontSize="12" Foreground="#AD1457"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+ 
+                <!-- VIEW 2: ỨNG DỤNG THỰC TẾ -->
+                <Grid x:Name="gridApp" MaxWidth="1600" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="contentApp" Margin="0"/>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

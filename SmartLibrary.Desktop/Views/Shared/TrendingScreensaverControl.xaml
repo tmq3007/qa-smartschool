@@ -1,0 +1,51 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Shared.TrendingScreensaverControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="768" d:DesignWidth="1366">
+    <UserControl.InputBindings>
+        <MouseBinding MouseAction="LeftClick" Command="{Binding StartCommand}"/>
+    </UserControl.InputBindings>
+    <Grid Background="#1E293B" MouseDown="Border_MouseDown">
+        
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="📚 SÁCH ĐƯỢC YÊU THÍCH TRONG TUẦN" FontSize="48" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,40"/>
+            
+            <!-- Dynamic Trending List -->
+            <ItemsControl ItemsSource="{Binding ScreensaverTrendingBooks}" Margin="0,0,0,60">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#334155" CornerRadius="12" Padding="24" Margin="0,0,24,0" Width="220">
+                            <StackPanel>
+                                <Border Background="#475569" Height="200" CornerRadius="8" Margin="0,0,0,16">
+                                    <TextBlock Text="{Binding Title}" Foreground="#CBD5E1" FontWeight="Bold" FontSize="18" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Margin="16"/>
+                                </Border>
+                                <TextBlock Text="{Binding Author}" Foreground="#94A3B8" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="🔥 Sách thịnh hành" Foreground="#F59E0B" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            
+            <TextBlock Text="(Chạm vào màn hình để bắt đầu mượn sách)" FontSize="24" Foreground="#94A3B8" HorizontalAlignment="Center">
+                <TextBlock.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.2" To="1" Duration="0:0:1" AutoReverse="True" RepeatBehavior="Forever"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </TextBlock.Triggers>
+            </TextBlock>
+        </StackPanel>
+    </Grid>
+</UserControl>

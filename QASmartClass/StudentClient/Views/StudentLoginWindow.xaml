@@ -1,0 +1,136 @@
+<Window x:Class="QASmartClass.StudentClient.Views.StudentLoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Đăng Nhập Học Sinh - QA SmartClass"
+        WindowState="Maximized" WindowStyle="None"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        AllowsTransparency="False">
+
+    <Window.Resources>
+        <!-- Glassmorphism Container -->
+        <Style x:Key="GlassContainer" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#475569" Opacity="0.15" BlurRadius="25" ShadowDepth="5"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="InputBox" TargetType="TextBox">
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#059669"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#059669"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="0,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="#047857"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bg" Property="Background" Value="#065F46"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid x:Name="MainGrid">
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#D1FAE5" Offset="0"/>
+                <GradientStop Color="#A7F3D0" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Border x:Name="windowBorder" Style="{StaticResource GlassContainer}"
+                Width="420" Height="620" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid>
+                <!-- Nút Close Góc phải -->
+                <Button HorizontalAlignment="Right" VerticalAlignment="Top" Margin="12" 
+                        Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                        FontSize="18" Foreground="#64748B" Cursor="Hand" Click="Close_Click"
+                        Panel.ZIndex="1">
+                    <TextBlock Text="✕" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Button>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="32,20,32,24">
+                        <!-- Logo / Header -->
+                        <Viewbox Width="48" Height="48" Margin="0,5,0,5">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="#059669" Data="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="QA SmartClass" FontSize="24" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Cổng Đăng Nhập Học Sinh" FontSize="14" FontWeight="SemiBold" Foreground="#059669" HorizontalAlignment="Center" Margin="0,4,0,20"/>
+
+                        <!-- Test Account Selector (Only visible in Test mode) -->
+                        <StackPanel x:Name="pnlTestAccounts" Visibility="Collapsed" Margin="0,0,0,12">
+                            <TextBlock Text="🔑 Chọn nhanh tài khoản thử nghiệm" FontSize="14" FontWeight="Bold" Foreground="#059669" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="cboTestAccounts" Height="38" FontSize="15" Padding="10,6"
+                                      SelectionChanged="cboTestAccounts_SelectionChanged"/>
+                        </StackPanel>
+
+                        <!-- Form Inputs -->
+                        <TextBlock Text="Mã học sinh (Bắt buộc)" FontSize="14" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                        <TextBox x:Name="txtStudentCode" Style="{StaticResource InputBox}" Margin="0,0,0,12" ToolTip="Ví dụ: HS001" LostFocus="txtStudentCode_LostFocus"/>
+
+                        <TextBlock Text="Tên hiển thị" FontSize="14" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                        <TextBox x:Name="txtStudentName" Style="{StaticResource InputBox}" Margin="0,0,0,12" ToolTip="Ví dụ: Tuấn Minh"/>
+
+                        <TextBlock Text="Địa chỉ kết nối lớp học (Tùy chọn)" FontSize="14" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                        <TextBox x:Name="txtTeacherIP" Style="{StaticResource InputBox}" Margin="0,0,0,8" ToolTip="Để trống để tự động tìm kiếm"/>
+
+                        <!-- Remember Me -->
+                        <CheckBox x:Name="chkRemember" Content="Ghi nhớ tài khoản trên thiết bị này" FontSize="14" Foreground="#475569" Margin="0,0,0,16" IsChecked="True"/>
+
+                        <!-- Error Message -->
+                        <TextBlock x:Name="txtError" Text="" Foreground="#EF4444" FontSize="14" HorizontalAlignment="Center" Margin="0,0,0,8" Visibility="Collapsed"/>
+
+                        <!-- Login Button -->
+                        <Button Style="{StaticResource PrimaryButton}" Height="46" Content="VÀO LỚP HỌC" Click="Login_Click" IsDefault="True"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

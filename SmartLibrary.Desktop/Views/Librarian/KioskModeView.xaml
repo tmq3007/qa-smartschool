@@ -1,0 +1,321 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Librarian.KioskModeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="1080" d:DesignWidth="1920"
+             Loaded="UserControl_Loaded" Unloaded="UserControl_Unloaded">
+    
+    <Viewbox Stretch="Uniform">
+        <Grid Width="1920" Height="1080" Background="{DynamicResource BackgroundBrush}">
+            <Grid.RowDefinitions>
+            <RowDefinition Height="120"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}">
+            <Grid>
+                <TextBlock Text="{Binding CurrentStudentName, StringFormat='Xin chào: {0}'}" FontSize="28" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="32,0,0,0"
+                           Visibility="{Binding KioskState, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='SCANNING_BOOKS'}"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,32,0">
+                    <Button Content="🔍 TRA CỨU SÁCH (OPAC)" Command="{Binding ToggleSearchPanelCommand}" 
+                            Background="{DynamicResource SuccessBrush}" Foreground="White" FontSize="20" FontWeight="Bold" Padding="20,10" BorderThickness="0" Cursor="Hand" Margin="0,0,32,0"
+                            Visibility="{Binding KioskState, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='IDLE'}"/>
+                    
+                    <TextBlock Text="{Binding ScannedBooksCountText}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource SuccessTextBrush}" Margin="0,0,32,0"
+                               Visibility="{Binding KioskState, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='SCANNING_BOOKS'}"/>
+                    <TextBlock Text="{Binding TimeRemainingText}" FontSize="24" Foreground="{DynamicResource DangerTextBrush}" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <shared:InstructionControl Grid.Row="1" Margin="32,24,32,0" 
+                                   Title="📖 Hướng dẫn học sinh tự mượn sách tại Kiosk"
+                                   CardBackground="{DynamicResource WarningBgBrush}" CardBorderBrush="{DynamicResource BorderBrush}" TitleForeground="{DynamicResource WarningTextBrush}">
+            <shared:InstructionControl.InnerContent>
+                <StackPanel Margin="4,0">
+                    <TextBlock Text="● Bước 1: Đặt các cuốn sách cần mượn lên khay quét nhận diện RFID ở góc bàn." Foreground="{DynamicResource WarningTextBrush}" FontSize="18" Margin="0,4"/>
+                    <TextBlock Text="● Bước 2: Quét mã QR thẻ học sinh (trên điện thoại hoặc thẻ cứng) trước camera quét phía trước." Foreground="{DynamicResource WarningTextBrush}" FontSize="18" Margin="0,4"/>
+                    <TextBlock Text="● Bước 3: Kiểm tra thông tin danh mục hiện trên màn hình Kiosk đúng với sách cầm trên tay." Foreground="{DynamicResource WarningTextBrush}" FontSize="18" Margin="0,4"/>
+                    <TextBlock Text="● Bước 4: Bấm HOÀN TẤT VÀ IN PHIẾU để hoàn thành và nhận biên lai xác nhận từ máy." FontWeight="Bold" Foreground="{DynamicResource WarningTextBrush}" FontSize="18" Margin="0,4"/>
+                </StackPanel>
+            </shared:InstructionControl.InnerContent>
+        </shared:InstructionControl>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="2">
+            <!-- IDLE State (Big Button) -->
+            <Button Command="{Binding StartCommand}" Background="Transparent" BorderThickness="0"
+                    Visibility="{Binding KioskState, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='IDLE'}">
+                <Border Background="{DynamicResource SuccessBrush}" CornerRadius="64" Padding="80,40">
+                    <TextBlock Text="{Binding MainInstruction}" FontSize="72" FontWeight="Bold" Foreground="White" TextAlignment="Center"/>
+                </Border>
+            </Button>
+
+            <!-- SCANNING QR State -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Visibility="{Binding KioskState, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='SCANNING_QR'}">
+                <TextBlock Text="{Binding MainInstruction}" FontSize="48" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" TextAlignment="Center" Margin="0,0,0,48"/>
+                <Border Width="400" Height="400" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="8" CornerRadius="32" Background="{DynamicResource CardBrush}">
+                    <TextBlock Text="📷 [CAMERA FEED]" FontSize="32" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="{Binding StatusMessage}" FontSize="24" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Center" Margin="0,48,0,0"/>
+                <CheckBox Content="Tôi đồng ý sử dụng dữ liệu sinh trắc học FaceID (Nghị định 13/2023/NĐ-CP)" 
+                          IsChecked="{Binding IsFaceIdConsentGiven, Mode=TwoWay}"
+                          Foreground="{DynamicResource TextSecondaryBrush}" FontSize="18" HorizontalAlignment="Center" Margin="0,24,0,0" Cursor="Hand"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,24,0,0">
+                    <Button Content="Hủy bỏ" Command="{Binding CancelCommand}" Style="{StaticResource DangerButton}" FontSize="28" Padding="32,12" Margin="0,0,24,0"/>
+                    <Button Content="🧑‍💼 Đăng nhập FaceID (Giả lập)" Command="{Binding FaceIdLoginCommand}" Style="{StaticResource SuccessButton}" FontSize="28" Padding="32,12"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- SCANNING BOOKS State -->
+            <Grid Visibility="{Binding KioskState, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='SCANNING_BOOKS'}" Margin="64">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="64"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{Binding StudentInfo}" FontSize="40" FontWeight="Bold" Foreground="{DynamicResource SuccessTextBrush}" Margin="0,0,0,16"/>
+                    
+                    <!-- Penalty Masking -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,32">
+                        <TextBlock Text="Phí phát sinh:" FontSize="28" Foreground="{DynamicResource WarningTextBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding FineAmountText}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource DangerTextBrush}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                        <Button Content="👁️" Command="{Binding ToggleFineVisibilityCommand}" IsEnabled="{Binding IsFineButtonEnabled}" Background="Transparent" BorderThickness="0" FontSize="28" Cursor="Hand" VerticalAlignment="Center" ToolTip="Nhấn để hiện/ẩn phí phát sinh"/>
+                        <Button Content="🙈 Ẩn ngay" Command="{Binding HideFineImmediatelyCommand}" 
+                                Visibility="{Binding IsFineVisible, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                Background="{DynamicResource PrimaryDarkBrush}" Foreground="White" FontSize="18" Padding="8,4" Margin="8,0,0,0" Cursor="Hand" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding MainInstruction}" FontSize="36" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,64"/>
+                    
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="24" Foreground="{DynamicResource WarningTextBrush}" Margin="0,0,0,64"/>
+
+                    <!-- Adjusted Buttons Distance -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="HỦY BỎ" Command="{Binding CancelCommand}" Style="{StaticResource DangerButton}" FontSize="40" Padding="48,24" Margin="0,0,120,0"/>
+                        <Button Content="HOÀN TẤT VÀ IN PHIẾU" Command="{Binding FinishCommand}" Style="{StaticResource PrimaryButton}" FontSize="40" Padding="48,24" />
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Grid.Column="2" Background="{DynamicResource CardBrush}" CornerRadius="24" Padding="32">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="📚 DANH SÁCH SÁCH MƯỢN" FontSize="36" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,32"/>
+                        <!-- Data Grid cho màn hình cảm ứng -->
+                        <DataGrid ItemsSource="{Binding PendingBooks}" AutoGenerateColumns="False" CanUserAddRows="False" 
+                                  HeadersVisibility="Column" Background="{DynamicResource CardBrush}" RowHeight="80" 
+                                  ScrollViewer.PanningMode="Both" ScrollViewer.CanContentScroll="False"
+                                  IsReadOnly="True" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource BorderBrush}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Mã vạch của sách (Barcode)" Binding="{Binding Barcode}" Width="200" FontSize="24"/>
+                                <DataGridTextColumn Header="Tựa đề sách" Binding="{Binding Title}" Width="*" FontSize="24" FontWeight="SemiBold"/>
+                                <DataGridTemplateColumn Width="150" Header="Thao tác">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="Xóa ❌" 
+                                                    Command="{Binding DataContext.RemoveBookCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                                    CommandParameter="{Binding}" 
+                                                    Background="{DynamicResource DangerBrush}" Foreground="White" FontSize="18" FontWeight="Bold" Padding="12,6" BorderThickness="0" Cursor="Hand"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- SUCCESS State -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Visibility="{Binding KioskState, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter='SUCCESS'}">
+                <TextBlock Text="✅" FontSize="120" HorizontalAlignment="Center" Margin="0,0,0,32"/>
+                <TextBlock Text="{Binding MainInstruction}" FontSize="64" FontWeight="Bold" Foreground="{DynamicResource SuccessTextBrush}" TextAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Rating Panel -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Visibility="{Binding KioskState, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=RATING}">
+                <Button Content="😊" FontSize="60" Width="120" Height="120" Margin="16"
+                        Background="{DynamicResource SuccessBrush}" Foreground="White" Cursor="Hand"
+                        Command="{Binding SubmitRatingCommand}" CommandParameter="Rất hài lòng"
+                        ToolTip="Rất hài lòng">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="60">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button Content="😐" FontSize="60" Width="120" Height="120" Margin="16"
+                        Background="{DynamicResource WarningBrush}" Foreground="White" Cursor="Hand"
+                        Command="{Binding SubmitRatingCommand}" CommandParameter="Bình thường"
+                        ToolTip="Bình thường">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="60">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button Content="😞" FontSize="60" Width="120" Height="120" Margin="16"
+                        Background="{DynamicResource DangerBrush}" Foreground="White" Cursor="Hand"
+                        Command="{Binding SubmitRatingCommand}" CommandParameter="Không hài lòng"
+                        ToolTip="Không hài lòng">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="60">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+
+            <!-- Lớp phủ QR Scanner -->
+            <Border Background="{DynamicResource PopupOverlayBrush}" Visibility="{Binding IsScanningQr, Converter={StaticResource BooleanToVisibilityConverter}}" Panel.ZIndex="100">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Đưa thẻ QR/Smart Card vào camera" FontSize="36" FontWeight="Bold" Foreground="White" TextAlignment="Center" Margin="0,0,0,32"/>
+                    <TextBlock Text="Nếu máy không nhận, hãy đưa thẻ xa ra 15cm" FontSize="18" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Center" Margin="0,0,0,16"/>
+                    
+                    <Border Width="400" Height="400" BorderBrush="#00BCD4" BorderThickness="4" CornerRadius="16" Background="{DynamicResource Gray900}" ClipToBounds="True">
+                        <Grid>
+                            <TextBlock Text="[ CAMERA FEED ]" Foreground="#00BCD4" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.5"/>
+                            <Rectangle Height="4" Fill="#00BCD4" VerticalAlignment="Top" Margin="0,-4,0,0">
+                                <Rectangle.Triggers>
+                                    <EventTrigger RoutedEvent="Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ThicknessAnimation Storyboard.TargetProperty="Margin" From="0,-4,0,0" To="0,400,0,0" Duration="0:0:1.5" AutoReverse="True" RepeatBehavior="Forever"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Rectangle.Triggers>
+                            </Rectangle>
+                        </Grid>
+                    </Border>
+                    
+                    <TextBlock Text="Hệ thống đang quét..." FontSize="24" Foreground="{DynamicResource TextSecondaryBrush}" TextAlignment="Center" Margin="0,32,0,0"/>
+
+                    <Button Content="Hủy bỏ" Command="{Binding CancelQrCommand}" Style="{StaticResource DangerButton}" FontSize="24" Padding="32,16" Margin="0,48,0,0" HorizontalAlignment="Right"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Lớp phủ Xin lỗi (Lỗi/Cảnh báo) -->
+            <Border Background="{DynamicResource PopupOverlayBrush}" Visibility="{Binding KioskErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" Panel.ZIndex="200">
+                <Border Background="{DynamicResource DangerBrush}" CornerRadius="16" Padding="48" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="600">
+                    <StackPanel>
+                        <TextBlock Text="{Binding KioskErrorMessage}" FontSize="32" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,24"/>
+                        <Button Content="Đồng ý" Command="{Binding DismissErrorCommand}" Style="{StaticResource PrimaryButton}" Background="White" Foreground="{DynamicResource DangerBrush}" FontSize="20" Padding="24,12" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+            <!-- Lớp phủ Xác nhận HỦY MƯỢN -->
+            <Border Background="{DynamicResource PopupOverlayBrush}" Visibility="{Binding IsConfirmingCancel, Converter={StaticResource BooleanToVisibilityConverter}}" Panel.ZIndex="150">
+                <Border Background="{DynamicResource CardBrush}" CornerRadius="16" Padding="48" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock Text="⚠️ Bạn có chắc chắn muốn dừng phiên mượn sách không?" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource WarningTextBrush}" TextAlignment="Center" Margin="0,0,0,32"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="32"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="Tiếp tục mượn" Command="{Binding AbortCancelCommand}" Style="{StaticResource PrimaryButton}" FontSize="24" Padding="32,24"/>
+                            <Button Grid.Column="2" Content="Tôi muốn hủy" Command="{Binding ConfirmCancelCommand}" Style="{StaticResource DangerButton}" Background="{DynamicResource WarningBrush}" BorderThickness="0" FontSize="24" Padding="32,24"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+            <!-- Lớp phủ Tra cứu Sách (OPAC Search Panel) -->
+            <Border Background="{DynamicResource BackgroundBrush}" Visibility="{Binding IsSearchPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Panel.ZIndex="180">
+                <Grid Margin="64">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Title & Close -->
+                        <RowDefinition Height="Auto"/> <!-- Search Box -->
+                        <RowDefinition Height="*"/>    <!-- Results Grid -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Title & Close -->
+                    <Grid Grid.Row="0" Margin="0,0,0,24">
+                        <TextBlock Text="🔍 Tra cứu sách thư viện (OPAC)" FontSize="36" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <Button Content="Đóng tra cứu ❌" Command="{Binding CloseSearchPanelCommand}" Background="{DynamicResource DangerBrush}" Foreground="White" FontSize="20" FontWeight="Bold" Padding="16,8" HorizontalAlignment="Right" VerticalAlignment="Center" BorderThickness="0" Cursor="Hand"/>
+                    </Grid>
+
+                    <!-- Search Input Box -->
+                    <Grid Grid.Row="1" Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="200"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" MaxLength="100"
+                                 FontSize="28" Padding="16" Background="{DynamicResource CardBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="2" VerticalContentAlignment="Center">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        <Button Grid.Column="1" Content="Tìm kiếm" Command="{Binding SearchCommand}" Background="{DynamicResource SuccessBrush}" Foreground="White" FontSize="24" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Margin="16,0,0,0"/>
+                    </Grid>
+
+                    <!-- Results Area -->
+                    <Grid Grid.Row="2">
+                        <!-- No results message -->
+                        <TextBlock Text="Không tìm thấy cuốn sách nào phù hợp với từ khóa." FontSize="24" Foreground="{DynamicResource DangerTextBrush}" FontWeight="Medium" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Visibility="{Binding IsNoResultsFound, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                        <!-- Data Grid Results bọc trong Border bo góc, kích hoạt cuộn -->
+                        <Border CornerRadius="8" Background="{DynamicResource CardBrush}" ClipToBounds="True"
+                                Visibility="{Binding IsNoResultsFound, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                            <DataGrid ItemsSource="{Binding OpacSearchResults}" AutoGenerateColumns="False" CanUserAddRows="False" 
+                                      HeadersVisibility="Column" Background="{DynamicResource CardBrush}" RowHeight="80" 
+                                      ScrollViewer.PanningMode="Both" ScrollViewer.CanContentScroll="False"
+                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                      IsReadOnly="True" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource BorderBrush}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã vạch quốc tế (ISBN)" Binding="{Binding Isbn}" Width="200" FontSize="22"/>
+                                    <DataGridTextColumn Header="Tên sách" Binding="{Binding Title}" Width="*" FontSize="22" FontWeight="SemiBold"/>
+                                    <DataGridTextColumn Header="Tác giả" Binding="{Binding Author}" Width="300" FontSize="22"/>
+                                    <DataGridTextColumn Header="Số bản có sẵn" Binding="{Binding AvailableCopies, StringFormat='Còn {0} cuốn'}" Width="200" FontSize="22"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- Lớp phủ Cảnh báo hết giờ (Timeout Warning) -->
+            <Border Background="{DynamicResource PopupOverlayBrush}" Visibility="{Binding IsTimeoutWarningVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Panel.ZIndex="170">
+                <Border Background="{DynamicResource CardBrush}" CornerRadius="16" Padding="48" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock Text="⏰ Bạn có cần thêm thời gian không?" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource WarningTextBrush}" TextAlignment="Center" Margin="0,0,0,32"/>
+                        <Button Content="Có, tôi cần thêm thời gian!" Command="{Binding ExtendSessionCommand}" Style="{StaticResource PrimaryButton}" FontSize="24" Padding="32,24" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Border>
+        </Grid>
+
+        <!-- Footer -->
+        <TextBlock Grid.Row="3" Text="Chạm vào màn hình để tương tác. Gọi hỗ trợ: 1900-1234" FontSize="24" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        
+        <!-- Screensaver Overlay -->
+        <shared:TrendingScreensaverControl Grid.RowSpan="4" Panel.ZIndex="999" Visibility="{Binding IsScreensaverVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+    </Grid>
+  </Viewbox>
+</UserControl>

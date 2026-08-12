@@ -1,0 +1,447 @@
+{
+  "metadata": {
+    "chapterId": "g11_ch05",
+    "chapterName": "Tổ Hợp & Xác Suất",
+    "grade": 11,
+    "totalSections": 4,
+    "totalConcepts": 12,
+    "totalProblems": 17,
+    "toolMapping": [
+      "CombinatoricsTool",
+      "ProbabilityTool"
+    ],
+    "thptWeight": "12%",
+    "estimatedHours": 16
+  },
+  "sections": [
+    {
+      "sectionId": "cb_01",
+      "sectionName": "Quy tắc đếm",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "cb_001",
+          "name": "Quy tắc cộng",
+          "definition": "Nếu công việc được thực hiện bằng 1 trong k cách, mỗi cách có nᵢ phương án thì tổng = n₁+n₂+...+nₖ",
+          "properties": [
+            "Áp dụng khi các cách loại trừ nhau (HOẶC)"
+          ]
+        },
+        {
+          "id": "cb_002",
+          "name": "Quy tắc nhân",
+          "definition": "Nếu công việc gồm k bước, bước i có nᵢ cách thì tổng = n₁×n₂×...×nₖ",
+          "properties": [
+            "Áp dụng khi các bước liên tiếp (VÀ)"
+          ]
+        },
+        {
+          "id": "cb_003",
+          "name": "Giai thừa",
+          "formula": "n! = 1×2×3×...×n",
+          "properties": [
+            "0! = 1",
+            "n! = n×(n-1)!"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "cb_prob_001",
+          "difficulty": "Easy",
+          "question": "Có 3 đường từ A→B, 4 đường từ B→C. Số đường từ A→C qua B là:",
+          "options": [
+            "A) 12",
+            "B) 7",
+            "C) 3",
+            "D) 4"
+          ],
+          "correctAnswer": "A",
+          "solution": "Quy tắc nhân: 3×4 = 12",
+          "points": 10
+        },
+        {
+          "problemId": "cb_prob_002",
+          "difficulty": "Easy",
+          "question": "Giá trị 5! bằng:",
+          "options": [
+            "A) 120",
+            "B) 25",
+            "C) 60",
+            "D) 720"
+          ],
+          "correctAnswer": "A",
+          "solution": "5! = 1×2×3×4×5 = 120",
+          "points": 10
+        },
+        {
+          "problemId": "cb_prob_003",
+          "difficulty": "Medium",
+          "question": "Từ chữ số {1,2,3,4,5} lập được bao nhiêu số có 3 chữ số khác nhau?",
+          "options": [
+            "A) 60",
+            "B) 125",
+            "C) 120",
+            "D) 20"
+          ],
+          "correctAnswer": "A",
+          "solution": "Chọn CS1: 5 cách, CS2: 4 cách, CS3: 3 cách. 5×4×3 = 60",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "cb_02",
+      "sectionName": "Hoán vị, Chỉnh hợp, Tổ hợp",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "cb_004",
+          "name": "Hoán vị",
+          "formula": "Pₙ = n!",
+          "definition": "Mỗi cách sắp xếp n phần tử theo 1 thứ tự"
+        },
+        {
+          "id": "cb_005",
+          "name": "Chỉnh hợp",
+          "formula": "Aₙᵏ = n!/(n-k)!",
+          "definition": "Mỗi cách chọn k phần tử từ n phần tử CÓ thứ tự"
+        },
+        {
+          "id": "cb_006",
+          "name": "Tổ hợp",
+          "formula": "Cₙᵏ = n!/[k!(n-k)!]",
+          "definition": "Mỗi cách chọn k phần tử từ n phần tử KHÔNG thứ tự",
+          "properties": [
+            "Cₙᵏ = Cₙⁿ⁻ᵏ",
+            "Cₙ⁰ = Cₙⁿ = 1",
+            "Cₙᵏ = Cₙ₋₁ᵏ⁻¹ + Cₙ₋₁ᵏ"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "cb_prob_004",
+          "difficulty": "Easy",
+          "question": "C₅² bằng:",
+          "options": [
+            "A) 10",
+            "B) 20",
+            "C) 5",
+            "D) 25"
+          ],
+          "correctAnswer": "A",
+          "solution": "C₅² = 5!/(2!·3!) = 120/(2·6) = 10",
+          "points": 10
+        },
+        {
+          "problemId": "cb_prob_005",
+          "difficulty": "Easy",
+          "question": "A₄² bằng:",
+          "options": [
+            "A) 12",
+            "B) 6",
+            "C) 8",
+            "D) 24"
+          ],
+          "correctAnswer": "A",
+          "solution": "A₄² = 4!/2! = 24/2 = 12",
+          "points": 10
+        },
+        {
+          "problemId": "cb_prob_006",
+          "difficulty": "Medium",
+          "question": "Từ 8 HS, chọn 3 HS trực nhật. Có bao nhiêu cách?",
+          "options": [
+            "A) 56",
+            "B) 336",
+            "C) 24",
+            "D) 120"
+          ],
+          "correctAnswer": "A",
+          "solution": "Không phân biệt thứ tự → C₈³ = 8!/(3!·5!) = 56",
+          "points": 15
+        },
+        {
+          "problemId": "cb_prob_007",
+          "difficulty": "Medium",
+          "question": "Lớp có 20 HS, chọn 1 lớp trưởng và 1 lớp phó. Có bao nhiêu cách?",
+          "options": [
+            "A) 380",
+            "B) 190",
+            "C) 400",
+            "D) 40"
+          ],
+          "correctAnswer": "A",
+          "solution": "Có thứ tự (LT≠LP) → A₂₀² = 20×19 = 380",
+          "points": 15
+        },
+        {
+          "problemId": "cb_prob_008",
+          "difficulty": "Hard",
+          "question": "Từ {0,1,2,...,9} lập số chẵn 4 chữ số khác nhau. Có bao nhiêu số?",
+          "options": [
+            "A) 2296",
+            "B) 2520",
+            "C) 5040",
+            "D) 1680"
+          ],
+          "correctAnswer": "A",
+          "solution": "Xét CS cuối chẵn (0,2,4,6,8). TH1: cuối=0: 9×8×7=504. TH2: cuối≠0: chọn cuối(4 cách)×CS đầu(8, trừ 0 và cuối)×CS2(8)×CS3(7)=4×8×8×7=1792. Tổng=2296",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "cb_03",
+      "sectionName": "Nhị thức Newton",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "cb_007",
+          "name": "Nhị thức Newton",
+          "formula": "(a+b)ⁿ = Σₖ₌₀ⁿ Cₙᵏ aⁿ⁻ᵏ bᵏ",
+          "properties": [
+            "Số hạng tổng quát: Tₖ₊₁ = Cₙᵏ aⁿ⁻ᵏ bᵏ",
+            "Có n+1 số hạng"
+          ]
+        },
+        {
+          "id": "cb_008",
+          "name": "Tam giác Pascal",
+          "properties": [
+            "Hàng n: Cₙ⁰, Cₙ¹, ..., Cₙⁿ",
+            "Mỗi số = tổng 2 số phía trên"
+          ]
+        },
+        {
+          "id": "cb_009",
+          "name": "Hệ quả đặc biệt",
+          "formulas": [
+            "a=b=1: 2ⁿ = Σ Cₙᵏ",
+            "a=1,b=-1: 0 = Σ (-1)ᵏ Cₙᵏ"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "cb_prob_009",
+          "difficulty": "Easy",
+          "question": "Khai triển (1+x)⁴ có hệ số của x² là:",
+          "options": [
+            "A) 6",
+            "B) 4",
+            "C) 1",
+            "D) 12"
+          ],
+          "correctAnswer": "A",
+          "solution": "Hệ số x² = C₄² = 6",
+          "points": 10
+        },
+        {
+          "problemId": "cb_prob_010",
+          "difficulty": "Medium",
+          "question": "Số hạng chứa x³ trong (2+x)⁵ là:",
+          "options": [
+            "A) 40x³",
+            "B) 80x³",
+            "C) 10x³",
+            "D) 20x³"
+          ],
+          "correctAnswer": "A",
+          "solution": "Tₖ₊₁=C₅ᵏ·2⁵⁻ᵏ·xᵏ. k=3: C₅³·2²·x³=10·4·x³=40x³",
+          "points": 15
+        },
+        {
+          "problemId": "cb_prob_011",
+          "difficulty": "Hard",
+          "question": "Tổng C₁₀⁰ + C₁₀¹ + ... + C₁₀¹⁰ bằng:",
+          "options": [
+            "A) 1024",
+            "B) 512",
+            "C) 2048",
+            "D) 100"
+          ],
+          "correctAnswer": "A",
+          "solution": "Σ Cₙᵏ = 2ⁿ. n=10: 2¹⁰ = 1024",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "cb_04",
+      "sectionName": "Xác suất",
+      "order": 4,
+      "concepts": [
+        {
+          "id": "cb_010",
+          "name": "Xác suất cổ điển",
+          "formula": "P(A) = |A|/|Ω| = số KQ thuận lợi / tổng số KQ",
+          "properties": [
+            "0 ≤ P(A) ≤ 1",
+            "P(Ω)=1, P(∅)=0"
+          ]
+        },
+        {
+          "id": "cb_011",
+          "name": "Quy tắc cộng XS",
+          "formula": "P(A∪B) = P(A) + P(B) - P(A∩B)",
+          "properties": [
+            "Nếu A,B xung khắc: P(A∪B) = P(A) + P(B)"
+          ]
+        },
+        {
+          "id": "cb_012",
+          "name": "Biến cố đối",
+          "formula": "P(Ā) = 1 - P(A)",
+          "properties": [
+            "Dùng khi tính P(A) phức tạp, tính P(Ā) dễ hơn"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "cb_prob_012",
+          "difficulty": "Easy",
+          "question": "Gieo xúc xắc 1 lần. XS được mặt chẵn:",
+          "options": [
+            "A) 1/2",
+            "B) 1/3",
+            "C) 1/6",
+            "D) 2/3"
+          ],
+          "correctAnswer": "A",
+          "solution": "Ω={1,2,3,4,5,6}, A={2,4,6}. P(A)=3/6=1/2",
+          "points": 10
+        },
+        {
+          "problemId": "cb_prob_013",
+          "difficulty": "Easy",
+          "question": "Rút 1 lá bài từ bộ 52 lá. XS được lá Át:",
+          "options": [
+            "A) 1/13",
+            "B) 1/52",
+            "C) 4/13",
+            "D) 1/4"
+          ],
+          "correctAnswer": "A",
+          "solution": "Có 4 lá Át. P = 4/52 = 1/13",
+          "points": 10
+        },
+        {
+          "problemId": "cb_prob_014",
+          "difficulty": "Medium",
+          "question": "Gieo 2 xúc xắc. XS tổng = 7:",
+          "options": [
+            "A) 1/6",
+            "B) 1/12",
+            "C) 5/36",
+            "D) 7/36"
+          ],
+          "correctAnswer": "A",
+          "solution": "Ω=36. A={(1,6),(2,5),(3,4),(4,3),(5,2),(6,1)}. P=6/36=1/6",
+          "points": 15
+        },
+        {
+          "problemId": "cb_prob_015",
+          "difficulty": "Medium",
+          "question": "Từ 3 nam, 5 nữ, chọn 2 người. XS cả 2 đều nữ:",
+          "options": [
+            "A) 5/14",
+            "B) 10/28",
+            "C) 1/4",
+            "D) 25/64"
+          ],
+          "correctAnswer": "A",
+          "solution": "C₈²=28, C₅²=10. P=10/28=5/14",
+          "points": 15
+        },
+        {
+          "problemId": "cb_prob_016",
+          "difficulty": "Hard",
+          "question": "Gieo đồng xu 4 lần. XS có ÍT NHẤT 1 mặt sấp:",
+          "options": [
+            "A) 15/16",
+            "B) 1/16",
+            "C) 1/2",
+            "D) 4/16"
+          ],
+          "correctAnswer": "A",
+          "solution": "P(≥1S) = 1 - P(0S) = 1 - (1/2)⁴ = 1 - 1/16 = 15/16",
+          "points": 20
+        },
+        {
+          "problemId": "cb_prob_017",
+          "difficulty": "Hard",
+          "question": "Hộp có 4 bi đỏ, 6 bi xanh. Lấy 3 bi. XS có đúng 2 bi đỏ:",
+          "options": [
+            "A) 3/10",
+            "B) 36/120",
+            "C) 1/3",
+            "D) 2/5"
+          ],
+          "correctAnswer": "A",
+          "solution": "C₁₀³=120. C₄²·C₆¹=6·6=36. P=36/120=3/10",
+          "points": 20
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm Chỉnh hợp và Tổ hợp",
+      "correction": "Chỉnh hợp: CÓ thứ tự (xếp hàng). Tổ hợp: KHÔNG thứ tự (chọn nhóm)"
+    },
+    {
+      "mistake": "Quên điều kiện số đầu ≠ 0",
+      "correction": "Khi lập số N chữ số: chữ số hàng đầu ∈ {1,...,9}"
+    },
+    {
+      "mistake": "Dùng XS cộng khi cần XS nhân",
+      "correction": "A HOẶC B: cộng. A VÀ B (độc lập): nhân"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "cb_quiz_01",
+      "title": "Kiểm tra: Tổ hợp & Xác suất",
+      "timeLimit": 900,
+      "questions": [
+        {
+          "ref": "cb_prob_001"
+        },
+        {
+          "ref": "cb_prob_004"
+        },
+        {
+          "ref": "cb_prob_009"
+        },
+        {
+          "ref": "cb_prob_012"
+        },
+        {
+          "ref": "cb_prob_015"
+        },
+        {
+          "ref": "cb_prob_016"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

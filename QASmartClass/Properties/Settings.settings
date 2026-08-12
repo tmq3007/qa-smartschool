@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" 
+              CurrentProfile="(Default)" 
+              GeneratedClassNamespace="QASmartClass.Properties" 
+              GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="DefaultBackgroundColor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">#3D6D64</Value>
+    </Setting>
+    <Setting Name="DefaultBackgroundPattern" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Grid</Value>
+    </Setting>
+    <Setting Name="GoogleCloudVisionApiKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">AIzaSyCm7keaPB5_wVyk2uaxsj4HlkX8UeFBds8</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

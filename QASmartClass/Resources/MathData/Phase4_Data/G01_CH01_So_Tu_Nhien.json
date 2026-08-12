@@ -1,0 +1,481 @@
+﻿{
+  "metadata": {
+    "chapterId": "g01_ch01",
+    "chapterName": "Số Tự Nhiên & Phép Tính Cơ Bản",
+    "grade": 1,
+    "totalSections": 4,
+    "totalConcepts": 8,
+    "totalProblems": 20,
+    "toolMapping": [
+      "basic_math"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 14,
+    "prerequisites": []
+  },
+  "sections": [
+    {
+      "sectionId": "stn_01",
+      "sectionName": "Đếm & Nhận dạng số (1-100)",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "stn_001",
+          "name": "Đếm từ 1 đến 10",
+          "definition": "Đếm số lượng đồ vật, liên kết số với hình ảnh thực tế",
+          "examples": [
+            "1 quả táo = số 1",
+            "5 ngón tay = số 5",
+            "10 viên bi = số 10"
+          ]
+        },
+        {
+          "id": "stn_002",
+          "name": "Số hàng chục (10-100)",
+          "definition": "Số có 2 chữ số gồm hàng chục và hàng đơn vị",
+          "examples": [
+            "23 = 2 chục + 3 đơn vị",
+            "50 = 5 chục + 0 đơn vị"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "stn_prob_001",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Có bao nhiêu ngón tay trên 2 bàn tay?",
+          "options": [
+            "A) 8",
+            "B) 10",
+            "C) 12",
+            "D) 5"
+          ],
+          "correctAnswer": "B",
+          "solution": "Mỗi bàn tay có 5 ngón. 5 + 5 = 10 ngón tay",
+          "points": 5
+        },
+        {
+          "problemId": "stn_prob_002",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Số nào đứng sau số 7?",
+          "options": [
+            "A) 6",
+            "B) 9",
+            "C) 8",
+            "D) 5"
+          ],
+          "correctAnswer": "C",
+          "solution": "Dãy số tự nhiên: ...6, 7, 8, 9... Số đứng sau 7 là 8",
+          "points": 5
+        },
+        {
+          "problemId": "stn_prob_003",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Số 35 có mấy chục, mấy đơn vị?",
+          "options": [
+            "A) 3 chục 5 đơn vị",
+            "B) 5 chục 3 đơn vị",
+            "C) 35 đơn vị",
+            "D) 30 chục 5 đơn vị"
+          ],
+          "correctAnswer": "A",
+          "solution": "35 = 30 + 5 = 3 chục + 5 đơn vị",
+          "points": 5
+        },
+        {
+          "problemId": "stn_prob_004",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Sắp xếp các số sau theo thứ tự từ bé đến lớn: 15, 8, 23, 11",
+          "options": [
+            "A) 8, 11, 15, 23",
+            "B) 23, 15, 11, 8",
+            "C) 8, 15, 11, 23",
+            "D) 11, 8, 15, 23"
+          ],
+          "correctAnswer": "A",
+          "solution": "So sánh: 8 < 11 < 15 < 23",
+          "points": 10
+        },
+        {
+          "problemId": "stn_prob_005",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Số lớn nhất có 2 chữ số là:",
+          "options": [
+            "A) 100",
+            "B) 99",
+            "C) 90",
+            "D) 98"
+          ],
+          "correctAnswer": "B",
+          "solution": "Số có 2 chữ số lớn nhất: 99 (hàng chục là 9, hàng đơn vị là 9)",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "stn_02",
+      "sectionName": "Phép Cộng",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "stn_003",
+          "name": "Phép cộng trong phạm vi 10",
+          "definition": "Gộp hai nhóm đồ vật lại và đếm tổng",
+          "examples": [
+            "3 + 2 = 5 (3 quả táo + 2 quả = 5 quả)",
+            "7 + 3 = 10"
+          ]
+        },
+        {
+          "id": "stn_004",
+          "name": "Phép cộng có nhớ",
+          "definition": "Khi cộng hàng đơn vị vượt 10, nhớ 1 sang hàng chục",
+          "examples": [
+            "17 + 5 = 22 (7+5=12, viết 2 nhớ 1)",
+            "28 + 14 = 42"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "stn_prob_006",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Tính: 4 + 5 = ?",
+          "options": [
+            "A) 8",
+            "B) 9",
+            "C) 10",
+            "D) 7"
+          ],
+          "correctAnswer": "B",
+          "solution": "4 + 5 = 9. Dùng ngón tay: duỗi 4 ngón, thêm 5 ngón, đếm được 9",
+          "points": 5
+        },
+        {
+          "problemId": "stn_prob_007",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Tính: 6 + 4 = ?",
+          "options": [
+            "A) 10",
+            "B) 9",
+            "C) 11",
+            "D) 8"
+          ],
+          "correctAnswer": "A",
+          "solution": "6 + 4 = 10",
+          "points": 5
+        },
+        {
+          "problemId": "stn_prob_008",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính: 17 + 8 = ?",
+          "options": [
+            "A) 24",
+            "B) 25",
+            "C) 26",
+            "D) 23"
+          ],
+          "correctAnswer": "B",
+          "solution": "17 + 8: 7 + 8 = 15, viết 5 nhớ 1. 1 + 1 = 2. Kết quả: 25",
+          "points": 10
+        },
+        {
+          "problemId": "stn_prob_009",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính: 36 + 27 = ?",
+          "options": [
+            "A) 53",
+            "B) 63",
+            "C) 62",
+            "D) 73"
+          ],
+          "correctAnswer": "B",
+          "solution": "36 + 27: 6+7=13, viết 3 nhớ 1. 3+2+1=6. Kết quả: 63",
+          "points": 10
+        },
+        {
+          "problemId": "stn_prob_010",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm x: x + 15 = 42",
+          "options": [
+            "A) 27",
+            "B) 57",
+            "C) 37",
+            "D) 28"
+          ],
+          "correctAnswer": "A",
+          "solution": "x = 42 - 15 = 27. Kiểm tra: 27 + 15 = 42 ✓",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "stn_03",
+      "sectionName": "Phép Trừ",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "stn_005",
+          "name": "Phép trừ trong phạm vi 10",
+          "definition": "Bớt đi một số lượng từ nhóm đồ vật",
+          "examples": [
+            "8 - 3 = 5 (có 8 quả, ăn 3, còn 5)",
+            "10 - 7 = 3"
+          ]
+        },
+        {
+          "id": "stn_006",
+          "name": "Phép trừ có nhớ",
+          "definition": "Khi trừ hàng đơn vị không đủ, mượn 1 từ hàng chục",
+          "examples": [
+            "42 - 15 = 27 (2-5 không đủ, mượn 1: 12-5=7, 3-1=2)",
+            "50 - 23 = 27"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "stn_prob_011",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Tính: 9 - 4 = ?",
+          "options": [
+            "A) 4",
+            "B) 5",
+            "C) 6",
+            "D) 3"
+          ],
+          "correctAnswer": "B",
+          "solution": "9 - 4 = 5. Duỗi 9 ngón tay, gập 4 ngón, còn 5 ngón",
+          "points": 5
+        },
+        {
+          "problemId": "stn_prob_012",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Mẹ cho bạn 10 cái kẹo. Bạn ăn 3 cái. Còn lại mấy cái?",
+          "options": [
+            "A) 6",
+            "B) 8",
+            "C) 7",
+            "D) 13"
+          ],
+          "correctAnswer": "C",
+          "solution": "10 - 3 = 7 cái kẹo",
+          "points": 5
+        },
+        {
+          "problemId": "stn_prob_013",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính: 53 - 28 = ?",
+          "options": [
+            "A) 25",
+            "B) 35",
+            "C) 15",
+            "D) 31"
+          ],
+          "correctAnswer": "A",
+          "solution": "53 - 28: 3-8 không đủ, mượn 1: 13-8=5. 4-2=2. Kết quả: 25",
+          "points": 10
+        },
+        {
+          "problemId": "stn_prob_014",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tìm x: 70 - x = 35",
+          "options": [
+            "A) 25",
+            "B) 35",
+            "C) 45",
+            "D) 105"
+          ],
+          "correctAnswer": "B",
+          "solution": "x = 70 - 35 = 35. Kiểm tra: 70 - 35 = 35 ✓",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "stn_04",
+      "sectionName": "Phép Nhân & Chia cơ bản",
+      "order": 4,
+      "concepts": [
+        {
+          "id": "stn_007",
+          "name": "Phép nhân là cộng lặp lại",
+          "definition": "3 × 4 nghĩa là '3 nhóm, mỗi nhóm 4' = 4 + 4 + 4 = 12",
+          "examples": [
+            "2 × 5 = 5 + 5 = 10",
+            "4 × 3 = 3 + 3 + 3 + 3 = 12"
+          ]
+        },
+        {
+          "id": "stn_008",
+          "name": "Phép chia là tách đều",
+          "definition": "12 ÷ 3 = 4 nghĩa là '12 đồ vật chia đều cho 3 nhóm, mỗi nhóm 4'",
+          "examples": [
+            "10 ÷ 2 = 5",
+            "15 ÷ 5 = 3"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "stn_prob_015",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Tính: 3 × 4 = ?",
+          "options": [
+            "A) 7",
+            "B) 12",
+            "C) 10",
+            "D) 14"
+          ],
+          "correctAnswer": "B",
+          "solution": "3 × 4 = 4 + 4 + 4 = 12. Hoặc tra bảng cửu chương: 3 × 4 = 12",
+          "points": 5
+        },
+        {
+          "problemId": "stn_prob_016",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Có 5 hộp, mỗi hộp 2 cái bánh. Tổng cộng có bao nhiêu cái bánh?",
+          "options": [
+            "A) 7",
+            "B) 10",
+            "C) 8",
+            "D) 12"
+          ],
+          "correctAnswer": "B",
+          "solution": "5 × 2 = 10 cái bánh",
+          "points": 5
+        },
+        {
+          "problemId": "stn_prob_017",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính: 12 ÷ 4 = ?",
+          "options": [
+            "A) 2",
+            "B) 3",
+            "C) 4",
+            "D) 8"
+          ],
+          "correctAnswer": "B",
+          "solution": "12 ÷ 4 = 3. Vì 4 × 3 = 12",
+          "points": 10
+        },
+        {
+          "problemId": "stn_prob_018",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Có 20 viên kẹo chia đều cho 5 bạn. Mỗi bạn được mấy viên?",
+          "options": [
+            "A) 3",
+            "B) 4",
+            "C) 5",
+            "D) 10"
+          ],
+          "correctAnswer": "B",
+          "solution": "20 ÷ 5 = 4 viên kẹo mỗi bạn",
+          "points": 10
+        },
+        {
+          "problemId": "stn_prob_019",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tính: 7 × 8 = ?",
+          "options": [
+            "A) 54",
+            "B) 56",
+            "C) 58",
+            "D) 48"
+          ],
+          "correctAnswer": "B",
+          "solution": "7 × 8 = 56 (bảng cửu chương 7)",
+          "points": 15
+        },
+        {
+          "problemId": "stn_prob_020",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tìm x: x × 6 = 42",
+          "options": [
+            "A) 6",
+            "B) 7",
+            "C) 8",
+            "D) 36"
+          ],
+          "correctAnswer": "B",
+          "solution": "x = 42 ÷ 6 = 7. Kiểm tra: 7 × 6 = 42 ✓",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm phép cộng có nhớ: quên cộng phần nhớ",
+      "correction": "Luôn viết số nhớ nhỏ bên trên hàng chục"
+    },
+    {
+      "mistake": "Nhầm phép nhân với phép cộng: 3 × 4 = 7",
+      "correction": "Nhân là CỘNG LẶP LẠI: 3 × 4 = 4 + 4 + 4 = 12"
+    },
+    {
+      "mistake": "Nhầm chiều trừ: 5 - 8 = 3",
+      "correction": "Số bị trừ phải lớn hơn hoặc bằng số trừ (ở cấp Tiểu học)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "stn_quiz_01",
+      "title": "Kiểm tra: Số tự nhiên & Phép tính",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "stn_prob_001"
+        },
+        {
+          "ref": "stn_prob_006"
+        },
+        {
+          "ref": "stn_prob_011"
+        },
+        {
+          "ref": "stn_prob_015"
+        },
+        {
+          "ref": "stn_prob_017"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

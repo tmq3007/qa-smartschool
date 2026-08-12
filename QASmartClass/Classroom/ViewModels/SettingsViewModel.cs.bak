@@ -1,0 +1,241 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Serilog;
+using QASmartClass.Shared;
+using QASmartTouch.Services;
+
+namespace QASmartClass.Classroom.ViewModels
+{
+    public partial class SettingsViewModel : ObservableObject
+    {
+        private static readonly string SettingsFilePath = QASmartClass.Services.AppPaths.ClassroomSettingsFile;
+
+        // General settings
+        [ObservableProperty]
+        private string theme = "Light";
+
+        [ObservableProperty]
+        private string language = "vi";
+
+        [ObservableProperty]
+        private int fontSize = 14;
+
+        // Network settings
+        [ObservableProperty]
+        private int tcpPort = 29877;
+
+        [ObservableProperty]
+        private bool autoReconnect = true;
+
+        [ObservableProperty]
+        private int maxStudents = 35;
+
+        // Info Display
+        [ObservableProperty]
+        private string dbSizeText = "—";
+
+        [ObservableProperty]
+        private double dbBarRatio = 0;
+
+        [ObservableProperty]
+        private string cacheSizeText = "—";
+
+        [ObservableProperty]
+        private double cacheBarRatio = 0;
+
+        [ObservableProperty]
+        private string countLessons = "—";
+
+        [ObservableProperty]
+        private string countStudents = "—";
+
+        [ObservableProperty]
+        private string countQuizzes = "—";
+
+        [ObservableProperty]
+        private string countEvents = "—";
+
+        public SettingsViewModel()
+        {
+        }
+
+        public void LoadSettings()
+        {
+            try
+            {
+                if (File.Exists(SettingsFilePath))
+                {
+                    var json = File.ReadAllText(SettingsFilePath);
+                    var saved = JsonSerializer.Deserialize<ClassroomSettings>(json) ?? new ClassroomSettings();
+                    
+                    Theme = saved.Theme;
+                    Language = saved.Language;
+                    FontSize = saved.FontSize;
+                    TcpPort = saved.TcpPort;
+                    AutoReconnect = saved.AutoReconnect;
+                    MaxStudents = saved.MaxStudents;
+                }
+
+                RefreshStorageInfo();
+                LoadDbStats();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("LoadSettings error: {Err}", ex.Message);
+            }
+        }
+
+        public void SaveSettings()
+        {
+            try
+            {
+                var settings = new ClassroomSettings
+                {
+                    Theme = Theme,
+                    Language = Language,
+                    FontSize = FontSize,
+                    TcpPort = TcpPort,
+                    AutoReconnect = AutoReconnect,
+                    MaxStudents = MaxStudents,
+                    SavedAt = DateTime.Now
+                };
+
+                Directory.CreateDirectory(Path.GetDirectoryName(SettingsFilePath)!);
+                var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(SettingsFilePath, json);
+                Log.Information("Settings saved to {Path}", SettingsFilePath);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("SaveSettings error: {Err}", ex.Message);
+            }
+        }
+
+        private void LoadDbStats()
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var db = app.Database;
+                if (db != null)
+                {
+                    CountLessons = db.Lessons.Count().ToString();
+                    CountStudents = db.Students.Count().ToString();
+                    CountQuizzes = db.Quizzes.Count().ToString();
+                    CountEvents = db.EventLogs.Count().ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("LoadDbStats error: {Err}", ex.Message);
+            }
+        }
+
+        private void RefreshStorageInfo()
+        {
+            try
+            {
+                var dbPath = QASmartClass.Services.AppPaths.DatabaseFile;
+                long dbSize = 0;
+                if (File.Exists(dbPath)) dbSize = new FileInfo(dbPath).Length;
+                DbSizeText = FormatBytes(dbSize);
+                DbBarRatio = Math.Min((double)dbSize / (50 * 1024 * 1024), 1.0);
+
+                long cacheSize = 0;
+                var logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+                if (Directory.Exists(logDir))
+                {
+                    foreach (var f in Directory.GetFiles(logDir, "*", SearchOption.AllDirectories))
+                    {
+                        try { cacheSize += new FileInfo(f).Length; } catch { }
+                    }
+                }
+                CacheSizeText = FormatBytes(cacheSize);
+                CacheBarRatio = Math.Min((double)cacheSize / (50 * 1024 * 1024), 1.0);
+            }
+            catch (Exception ex) { Log.Warning("RefreshStorageInfo error: {Err}", ex.Message); }
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes < 1024) return $"{bytes} B";
+            if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+            if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024):F1} MB";
+            return $"{bytes / (1024.0 * 1024 * 1024):F2} GB";
+        }
+
+        [RelayCommand]
+        private void ClearCache()
+        {
+            var logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+            int deleted = 0;
+            long freed = 0;
+            if (Directory.Exists(logDir))
+            {
+                foreach (var f in Directory.GetFiles(logDir, "*.log"))
+                {
+                    try
+                    {
+                        freed += new FileInfo(f).Length;
+                        File.Delete(f);
+                        deleted++;
+                    }
+                    catch { }
+                }
+            }
+            MessageBox.Show($"Da xoa {deleted} file ({FormatBytes(freed)})!\nThu muc logs da duoc don sach.",
+                "Xoa Cache", MessageBoxButton.OK, MessageBoxImage.Information);
+            RefreshStorageInfo();
+            Log.Information("Cache cleared: {Count} files, {Size} freed", deleted, FormatBytes(freed));
+        }
+
+        [RelayCommand]
+        private void OpenDbFolder()
+        {
+            var folder = QASmartClass.Services.AppPaths.RootDir;
+            Directory.CreateDirectory(folder);
+            System.Diagnostics.Process.Start("explorer.exe", folder);
+        }
+
+        [RelayCommand]
+        private void ResetDb()
+        {
+            var result = MessageBox.Show(
+                "Ban chac chan muon XOA TOAN BO du lieu?\n\nThao tac nay khong the hoan tac!",
+                "Xac nhan Reset", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                var dbPath = QASmartClass.Services.AppPaths.DatabaseFile;
+                try
+                {
+                    if (File.Exists(dbPath)) File.Delete(dbPath);
+                    MessageBox.Show("Da xoa CSDL. Khoi dong lai ung dung de tao moi.",
+                        "Reset thanh cong", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Log.Warning("Database reset by user");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Loi: {ex.Message}", "Khong the xoa", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+    }
+
+    public class ClassroomSettings
+    {
+        public string Theme { get; set; } = "Light";
+        public string Language { get; set; } = "vi";
+        public int FontSize { get; set; } = 14;
+        public int TcpPort { get; set; } = 29877;
+        public bool AutoReconnect { get; set; } = true;
+        public int MaxStudents { get; set; } = 35;
+        public DateTime SavedAt { get; set; } = DateTime.Now;
+    }
+}
+

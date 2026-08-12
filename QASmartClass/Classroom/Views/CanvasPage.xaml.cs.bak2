@@ -1,0 +1,1321 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Ink;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using QASmartClass.Data;
+using Serilog;
+
+namespace QASmartClass.Classroom.Views
+{
+    public partial class CanvasPage : Page
+    {
+        private int _lessonId = 0;
+        private double _zoomLevel = 1.0;
+        private int _currentBlockIndex = 0;
+        private int _totalBlocks = 0;
+        private bool _focusMode = false;
+        private bool _spotlightMode = false;
+
+        // ── Pan state ──
+        private bool _panMode = false;
+        private bool _isPanning = false;
+        private Point _panStartMouse;
+        private double _panStartX, _panStartY;
+
+        // ── Undo/Redo ──
+        private readonly Stack<IUndoableAction> _undoStack = new();
+        private readonly Stack<IUndoableAction> _redoStack = new();
+        private bool _isUndoRedo = false;
+        private StrokeCollection _lastStrokeState = new();
+
+        // ── Shape drawing state ──
+        private string _currentTool = "Pen";
+        private bool _isDrawingShape = false;
+        private Point _shapeStartPoint;
+        private Shape? _previewShape = null;
+
+        // ── Background mode ──
+        private int _bgMode = 0; // 0=solid, 1=grid, 2=dots, 3=lines
+
+        // ── Shape list for undo ──
+        private readonly List<UIElement> _shapeElements = new();
+
+        // ── Window key handlers to prevent leaks ──
+        private KeyEventHandler? _windowKeyDownHandler;
+        private KeyEventHandler? _windowKeyUpHandler;
+
+        public CanvasPage(int lessonId = 0)
+        {
+            InitializeComponent();
+            drawCanvas.DefaultDrawingAttributes.Color = Colors.White;
+            drawCanvas.DefaultDrawingAttributes.Width = 3;
+            drawCanvas.DefaultDrawingAttributes.Height = 3;
+
+            // Stroke slider feedback
+            strokeSlider.ValueChanged += (s, e) =>
+            {
+                drawCanvas.DefaultDrawingAttributes.Width = strokeSlider.Value;
+                drawCanvas.DefaultDrawingAttributes.Height = strokeSlider.Value;
+                txtStrokeSize.Text = $"{(int)strokeSlider.Value}px";
+            };
+
+            // Undo tracking
+            _lastStrokeState = drawCanvas.Strokes.Clone();
+            drawCanvas.StrokeCollected += (s, e) =>
+            {
+                if (!_isUndoRedo)
+                {
+                    PushAction(new StrokeUndoAction(drawCanvas, _lastStrokeState, drawCanvas.Strokes));
+                    _lastStrokeState = drawCanvas.Strokes.Clone();
+                }
+            };
+            drawCanvas.StrokeErased += (s, e) =>
+            {
+                if (!_isUndoRedo)
+                {
+                    PushAction(new StrokeUndoAction(drawCanvas, _lastStrokeState, drawCanvas.Strokes));
+                    _lastStrokeState = drawCanvas.Strokes.Clone();
+                }
+            };
+
+            _lessonId = lessonId;
+
+            Loaded += (_, __) =>
+            {
+                if (_lessonId > 0) LoadLessonOnCanvas(_lessonId);
+                _lastStrokeState = drawCanvas.Strokes.Clone();
+
+                var win = Window.GetWindow(this);
+                if (win != null)
+                {
+                    // Hủy đăng ký các handler cũ trước để tránh đăng ký lặp
+                    if (_windowKeyDownHandler != null) win.KeyDown -= _windowKeyDownHandler;
+                    if (_windowKeyUpHandler != null) win.KeyUp -= _windowKeyUpHandler;
+
+                    _windowKeyDownHandler = (s, e) =>
+                    {
+                        if (e.Key == Key.Space && !_panMode) { _panMode = true; UpdatePanToolStyle(); }
+                        if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control) Undo_Click(null!, null!);
+                        if (e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control) Redo_Click(null!, null!);
+                        if (e.Key == Key.Add || (e.Key == Key.OemPlus && Keyboard.Modifiers == ModifierKeys.Control)) SetZoom(Math.Min(_zoomLevel + 0.15, 3.0));
+                        if (e.Key == Key.Subtract || (e.Key == Key.OemMinus && Keyboard.Modifiers == ModifierKeys.Control)) SetZoom(Math.Max(_zoomLevel - 0.15, 0.5));
+                        
+                        // Hỗ trợ phím tắt chuyển công cụ tương tự Tooltip
+                        if (Keyboard.Modifiers == ModifierKeys.None)
+                        {
+                            if (e.Key == Key.P) SelectTool(toolPen, null!);
+                            else if (e.Key == Key.H) SelectTool(toolHighlight, null!);
+                            else if (e.Key == Key.E) SelectTool(toolEraser, null!);
+                            else if (e.Key == Key.S) SelectTool(toolSelect, null!);
+                        }
+                    };
+                    _windowKeyUpHandler = (s, e) => { if (e.Key == Key.Space && _panMode) { _panMode = false; UpdatePanToolStyle(); } };
+
+                    win.KeyDown += _windowKeyDownHandler;
+                    win.KeyUp += _windowKeyUpHandler;
+                }
+                ApplyBackground();
+                SelectTool(toolPen, null!);
+            };
+
+            Unloaded += (_, __) =>
+            {
+                var win = Window.GetWindow(this);
+                if (win != null)
+                {
+                    if (_windowKeyDownHandler != null) win.KeyDown -= _windowKeyDownHandler;
+                    if (_windowKeyUpHandler != null) win.KeyUp -= _windowKeyUpHandler;
+                }
+            };
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  TOOL SELECTION
+        // ═══════════════════════════════════════════════════════════
+
+        private void SelectTool(object sender, MouseButtonEventArgs e)
+        {
+            if (_panMode)
+            {
+                _panMode = false;
+                toolPan.Background = new SolidColorBrush(Color.FromRgb(45, 50, 80));
+                if (toolPan.Child is TextBlock tbPan)
+                {
+                    tbPan.Foreground = new SolidColorBrush(Color.FromRgb(176, 190, 197));
+                }
+                lessonOverlay.IsHitTestVisible = false;
+            }
+
+            var allTools = new[] { toolPen, toolHighlight, toolEraser, toolSelect, toolShape, toolEllipse, toolLine, toolArrow, toolText };
+            foreach (var t in allTools)
+            {
+                t.Background = new SolidColorBrush(Color.FromRgb(45, 50, 80));
+                if (t.Child is TextBlock tb) tb.Foreground = new SolidColorBrush(Color.FromRgb(176, 190, 197));
+            }
+
+            if (sender is Border border)
+            {
+                border.Background = new SolidColorBrush(Color.FromRgb(25, 118, 210));
+                if (border.Child is TextBlock tb2) tb2.Foreground = Brushes.White;
+
+                _currentTool = border.Tag?.ToString() ?? "Pen";
+
+                switch (_currentTool)
+                {
+                    case "Highlight":
+                        drawCanvas.EditingMode = InkCanvasEditingMode.Ink;
+                        drawCanvas.DefaultDrawingAttributes.IsHighlighter = true;
+                        drawCanvas.DefaultDrawingAttributes.Color = Color.FromArgb(128, 255, 255, 0);
+                        drawCanvas.DefaultDrawingAttributes.Width = 20;
+                        drawCanvas.DefaultDrawingAttributes.Height = 10;
+                        drawCanvas.IsHitTestVisible = true;
+                        ShowToolHint("Bút nhấn — kéo để vẽ");
+                        break;
+                    case "Eraser":
+                        drawCanvas.DefaultDrawingAttributes.IsHighlighter = false;
+                        drawCanvas.EditingMode = InkCanvasEditingMode.EraseByStroke;
+                        drawCanvas.IsHitTestVisible = true;
+                        ShowToolHint("Tẩy — chạm vào nét để xóa");
+                        break;
+                    case "Select":
+                        drawCanvas.DefaultDrawingAttributes.IsHighlighter = false;
+                        drawCanvas.EditingMode = InkCanvasEditingMode.Select;
+                        drawCanvas.IsHitTestVisible = true;
+                        ShowToolHint("Chọn — kéo khung để chọn nét");
+                        break;
+                    case "Shape":
+                    case "Ellipse":
+                    case "Line":
+                    case "Arrow":
+                        drawCanvas.DefaultDrawingAttributes.IsHighlighter = false;
+                        drawCanvas.EditingMode = InkCanvasEditingMode.None;
+                        drawCanvas.IsHitTestVisible = false;
+                        string shapeName = _currentTool switch
+                        {
+                            "Shape" => "Hình chữ nhật", "Ellipse" => "Hình elip",
+                            "Line" => "Đường thẳng", "Arrow" => "Mũi tên", _ => ""
+                        };
+                        ShowToolHint($"{shapeName} — kéo chuột để vẽ");
+                        break;
+                    case "Text":
+                        drawCanvas.DefaultDrawingAttributes.IsHighlighter = false;
+                        drawCanvas.EditingMode = InkCanvasEditingMode.None;
+                        drawCanvas.IsHitTestVisible = false;
+                        ShowToolHint("Chèn chữ — click vào vị trí trên bảng");
+                        break;
+                    default: // Pen
+                        drawCanvas.DefaultDrawingAttributes.IsHighlighter = false;
+                        drawCanvas.EditingMode = InkCanvasEditingMode.Ink;
+                        drawCanvas.DefaultDrawingAttributes.Width = strokeSlider.Value;
+                        drawCanvas.DefaultDrawingAttributes.Height = strokeSlider.Value;
+                        drawCanvas.IsHitTestVisible = true;
+                        ShowToolHint("Bút vẽ — kéo để vẽ tự do");
+                        break;
+                }
+            }
+        }
+
+        private void ShowToolHint(string text)
+        {
+            txtToolHint.Text = text;
+            toolHint.Visibility = Visibility.Visible;
+            var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromSeconds(3))
+            { BeginTime = TimeSpan.FromSeconds(1), EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn } };
+            fadeOut.Completed += (_, _) => toolHint.Visibility = Visibility.Collapsed;
+            toolHint.BeginAnimation(OpacityProperty, fadeOut);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  COLOR PICKER
+        // ═══════════════════════════════════════════════════════════
+
+        private void ColorPick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Ellipse el && el.Tag is string hex)
+            {
+                var color = (Color)ColorConverter.ConvertFromString(hex);
+                drawCanvas.DefaultDrawingAttributes.Color = color;
+                currentColorFill.Background = new SolidColorBrush(color);
+            }
+        }
+
+        private static readonly string[] _extraColors = { "#E91E63", "#9C27B0", "#3F51B5", "#009688", "#795548", "#607D8B", "#F44336", "#00BCD4", "#CDDC39", "#FF5722" };
+        private int _extraColorIndex = 0;
+
+        private void CustomColor_Click(object sender, MouseButtonEventArgs e)
+        {
+            var hex = _extraColors[_extraColorIndex % _extraColors.Length];
+            _extraColorIndex++;
+            var c = (Color)ColorConverter.ConvertFromString(hex);
+            drawCanvas.DefaultDrawingAttributes.Color = c;
+            currentColorFill.Background = new SolidColorBrush(c);
+            ShowToolHint($"Màu: {hex}");
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  UNDO / REDO
+        // ═══════════════════════════════════════════════════════════
+
+        private void PushAction(IUndoableAction action)
+        {
+            if (_isUndoRedo) return;
+            _undoStack.Push(action);
+            _redoStack.Clear();
+            if (_undoStack.Count > 100)
+            {
+                var list = _undoStack.ToList();
+                list.RemoveAt(list.Count - 1);
+                list.Reverse();
+                _undoStack.Clear();
+                foreach (var act in list)
+                {
+                    _undoStack.Push(act);
+                }
+            }
+        }
+
+        private void Undo_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (_undoStack.Count > 0)
+            {
+                _isUndoRedo = true;
+                var action = _undoStack.Pop();
+                action.Undo();
+                _redoStack.Push(action);
+                _isUndoRedo = false;
+                _lastStrokeState = drawCanvas.Strokes.Clone();
+                Log.Information("Undo — stack: {Count}", _undoStack.Count);
+            }
+        }
+
+        private void Redo_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (_redoStack.Count > 0)
+            {
+                _isUndoRedo = true;
+                var action = _redoStack.Pop();
+                action.Redo();
+                _undoStack.Push(action);
+                _isUndoRedo = false;
+                _lastStrokeState = drawCanvas.Strokes.Clone();
+                Log.Information("Redo — stack: {Count}", _redoStack.Count);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  BACKGROUND PATTERNS
+        // ═══════════════════════════════════════════════════════════
+
+        private void BgToggle_Click(object sender, MouseButtonEventArgs e)
+        {
+            _bgMode = (_bgMode + 1) % 4;
+            ApplyBackground();
+            string[] names = { "⊟ Trơn", "⊞ Ô vuông", "⁙ Chấm", "☰ Kẻ ngang" };
+            txtBgMode.Text = new[] { "⊞", "⁙", "☰", "⊟" }[_bgMode];
+            ShowToolHint($"Nền: {names[_bgMode]}");
+        }
+
+        private void ApplyBackground()
+        {
+            bgPatternCanvas.Children.Clear();
+
+            switch (_bgMode)
+            {
+                case 1: // Grid
+                    DrawGridPattern(40, Color.FromArgb(30, 255, 255, 255));
+                    break;
+                case 2: // Dots
+                    DrawDotsPattern(30, 3, Color.FromArgb(40, 255, 255, 255));
+                    break;
+                case 3: // Horizontal lines
+                    DrawLinePattern(40, Color.FromArgb(25, 255, 255, 255));
+                    break;
+            }
+        }
+
+        private void DrawGridPattern(double spacing, Color color)
+        {
+            double w = 2000, h = 1400;
+            var brush = new SolidColorBrush(color);
+            for (double x = 0; x < w; x += spacing)
+            {
+                bgPatternCanvas.Children.Add(new Line { X1 = x, Y1 = 0, X2 = x, Y2 = h, Stroke = brush, StrokeThickness = 0.5 });
+            }
+            for (double y = 0; y < h; y += spacing)
+            {
+                bgPatternCanvas.Children.Add(new Line { X1 = 0, Y1 = y, X2 = w, Y2 = y, Stroke = brush, StrokeThickness = 0.5 });
+            }
+        }
+
+        private void DrawDotsPattern(double spacing, double dotSize, Color color)
+        {
+            double w = 2000, h = 1400;
+            var brush = new SolidColorBrush(color);
+            for (double x = spacing; x < w; x += spacing)
+            {
+                for (double y = spacing; y < h; y += spacing)
+                {
+                    var dot = new Ellipse { Width = dotSize, Height = dotSize, Fill = brush };
+                    Canvas.SetLeft(dot, x - dotSize / 2);
+                    Canvas.SetTop(dot, y - dotSize / 2);
+                    bgPatternCanvas.Children.Add(dot);
+                }
+            }
+        }
+
+        private void DrawLinePattern(double spacing, Color color)
+        {
+            double w = 2000, h = 1400;
+            var brush = new SolidColorBrush(color);
+            for (double y = spacing; y < h; y += spacing)
+            {
+                bgPatternCanvas.Children.Add(new Line { X1 = 0, Y1 = y, X2 = w, Y2 = y, Stroke = brush, StrokeThickness = 0.5 });
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  SHAPE DRAWING (Rect, Ellipse, Line, Arrow)
+        // ═══════════════════════════════════════════════════════════
+
+        private void StartShapeDraw(Point pos)
+        {
+            if (_currentTool == "Text")
+            {
+                InsertTextAtPosition(pos);
+                return;
+            }
+
+            _isDrawingShape = true;
+            _shapeStartPoint = pos;
+            _previewShape = null;
+        }
+
+        private void UpdateShapePreview(Point pos)
+        {
+            if (!_isDrawingShape) return;
+            shapePreviewCanvas.Children.Clear();
+
+            var color = drawCanvas.DefaultDrawingAttributes.Color;
+            var thickness = drawCanvas.DefaultDrawingAttributes.Width;
+            var brush = new SolidColorBrush(color);
+
+            var rect = new Rect(_shapeStartPoint, pos);
+            Shape? shape = null;
+
+            switch (_currentTool)
+            {
+                case "Shape":
+                    shape = new Rectangle
+                    {
+                        Width = rect.Width, Height = rect.Height,
+                        Stroke = brush, StrokeThickness = thickness,
+                        Fill = Brushes.Transparent, StrokeDashArray = new DoubleCollection { 4, 2 }
+                    };
+                    Canvas.SetLeft(shape, rect.Left);
+                    Canvas.SetTop(shape, rect.Top);
+                    break;
+                case "Ellipse":
+                    shape = new Ellipse
+                    {
+                        Width = rect.Width, Height = rect.Height,
+                        Stroke = brush, StrokeThickness = thickness,
+                        Fill = Brushes.Transparent, StrokeDashArray = new DoubleCollection { 4, 2 }
+                    };
+                    Canvas.SetLeft(shape, rect.Left);
+                    Canvas.SetTop(shape, rect.Top);
+                    break;
+                case "Line":
+                    shape = new Line
+                    {
+                        X1 = _shapeStartPoint.X, Y1 = _shapeStartPoint.Y,
+                        X2 = pos.X, Y2 = pos.Y,
+                        Stroke = brush, StrokeThickness = thickness,
+                        StrokeDashArray = new DoubleCollection { 4, 2 }
+                    };
+                    break;
+                case "Arrow":
+                    shape = new Line
+                    {
+                        X1 = _shapeStartPoint.X, Y1 = _shapeStartPoint.Y,
+                        X2 = pos.X, Y2 = pos.Y,
+                        Stroke = brush, StrokeThickness = thickness,
+                        StrokeDashArray = new DoubleCollection { 4, 2 }
+                    };
+                    break;
+            }
+
+            if (shape != null)
+            {
+                shapePreviewCanvas.Children.Add(shape);
+                _previewShape = shape;
+            }
+        }
+
+        private void FinishShapeDraw(Point pos)
+        {
+            if (!_isDrawingShape) return;
+            _isDrawingShape = false;
+            shapePreviewCanvas.Children.Clear();
+
+            var color = drawCanvas.DefaultDrawingAttributes.Color;
+            var thickness = drawCanvas.DefaultDrawingAttributes.Width;
+            var brush = new SolidColorBrush(color);
+            var rect = new Rect(_shapeStartPoint, pos);
+
+            // Minimum size check
+            if (rect.Width < 5 && rect.Height < 5 &&
+                _currentTool != "Line" && _currentTool != "Arrow") return;
+
+            Shape? finalShape = null;
+
+            switch (_currentTool)
+            {
+                case "Shape":
+                    finalShape = new Rectangle
+                    {
+                        Width = rect.Width, Height = rect.Height,
+                        Stroke = brush, StrokeThickness = thickness, Fill = Brushes.Transparent
+                    };
+                    Canvas.SetLeft(finalShape, rect.Left);
+                    Canvas.SetTop(finalShape, rect.Top);
+                    break;
+                case "Ellipse":
+                    finalShape = new Ellipse
+                    {
+                        Width = rect.Width, Height = rect.Height,
+                        Stroke = brush, StrokeThickness = thickness, Fill = Brushes.Transparent
+                    };
+                    Canvas.SetLeft(finalShape, rect.Left);
+                    Canvas.SetTop(finalShape, rect.Top);
+                    break;
+                case "Line":
+                    finalShape = new Line
+                    {
+                        X1 = _shapeStartPoint.X, Y1 = _shapeStartPoint.Y,
+                        X2 = pos.X, Y2 = pos.Y,
+                        Stroke = brush, StrokeThickness = thickness,
+                        StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round
+                    };
+                    break;
+                case "Arrow":
+                    // Arrow with arrowhead
+                    var arrowGroup = CreateArrowPath(_shapeStartPoint, pos, brush, thickness);
+                    shapeCanvas.Children.Add(arrowGroup);
+                    _shapeElements.Add(arrowGroup);
+                    PushAction(new ShapeUndoAction(shapeCanvas, _shapeElements, arrowGroup));
+                    return;
+            }
+
+            if (finalShape != null)
+            {
+                shapeCanvas.Children.Add(finalShape);
+                _shapeElements.Add(finalShape);
+                PushAction(new ShapeUndoAction(shapeCanvas, _shapeElements, finalShape));
+            }
+        }
+
+        private System.Windows.Shapes.Path CreateArrowPath(Point start, Point end, SolidColorBrush brush, double thickness)
+        {
+            var angle = Math.Atan2(end.Y - start.Y, end.X - start.X);
+            var headLen = Math.Max(thickness * 4, 12);
+            var headAngle = Math.PI / 6;
+
+            var p1 = new Point(end.X - headLen * Math.Cos(angle - headAngle), end.Y - headLen * Math.Sin(angle - headAngle));
+            var p2 = new Point(end.X - headLen * Math.Cos(angle + headAngle), end.Y - headLen * Math.Sin(angle + headAngle));
+
+            var geo = new GeometryGroup();
+            geo.Children.Add(new LineGeometry(start, end));
+            geo.Children.Add(new LineGeometry(end, p1));
+            geo.Children.Add(new LineGeometry(end, p2));
+
+            return new System.Windows.Shapes.Path
+            {
+                Data = geo, Stroke = brush, StrokeThickness = thickness,
+                StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round
+            };
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  TEXT INSERTION
+        // ═══════════════════════════════════════════════════════════
+
+        private void InsertTextAtPosition(Point pos)
+        {
+            var inputBox = new TextBox
+            {
+                FontSize = Math.Max(drawCanvas.DefaultDrawingAttributes.Width * 4, 16),
+                Foreground = new SolidColorBrush(drawCanvas.DefaultDrawingAttributes.Color),
+                Background = new SolidColorBrush(Color.FromArgb(180, 15, 52, 96)),
+                BorderThickness = new Thickness(1),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(25, 118, 210)),
+                Padding = new Thickness(6, 4, 6, 4),
+                MinWidth = 100,
+                AcceptsReturn = false,
+                FontFamily = new FontFamily("Segoe UI")
+            };
+
+            Canvas.SetLeft(inputBox, pos.X);
+            Canvas.SetTop(inputBox, pos.Y);
+            shapeCanvas.Children.Add(inputBox);
+
+            inputBox.Loaded += (_, _) => { inputBox.Focus(); };
+
+            inputBox.KeyDown += (s, ke) =>
+            {
+                if (ke.Key == Key.Enter || ke.Key == Key.Escape)
+                {
+                    if (ke.Key == Key.Enter && !string.IsNullOrWhiteSpace(inputBox.Text))
+                    {
+                        // Convert to TextBlock
+                        var tb = new TextBlock
+                        {
+                            Text = inputBox.Text,
+                            FontSize = inputBox.FontSize,
+                            Foreground = inputBox.Foreground,
+                            FontFamily = inputBox.FontFamily
+                        };
+                        Canvas.SetLeft(tb, Canvas.GetLeft(inputBox));
+                        Canvas.SetTop(tb, Canvas.GetTop(inputBox));
+                        shapeCanvas.Children.Remove(inputBox);
+                        shapeCanvas.Children.Add(tb);
+                        _shapeElements.Add(tb);
+                        PushAction(new TextUndoAction(shapeCanvas, _shapeElements, tb));
+                    }
+                    else
+                    {
+                        shapeCanvas.Children.Remove(inputBox);
+                    }
+                }
+            };
+            inputBox.LostFocus += (s, _) =>
+            {
+                if (!string.IsNullOrWhiteSpace(inputBox.Text))
+                {
+                    var tb = new TextBlock
+                    {
+                        Text = inputBox.Text,
+                        FontSize = inputBox.FontSize,
+                        Foreground = inputBox.Foreground,
+                        FontFamily = inputBox.FontFamily
+                    };
+                    Canvas.SetLeft(tb, Canvas.GetLeft(inputBox));
+                    Canvas.SetTop(tb, Canvas.GetTop(inputBox));
+                    shapeCanvas.Children.Remove(inputBox);
+                    shapeCanvas.Children.Add(tb);
+                    _shapeElements.Add(tb);
+                    PushAction(new TextUndoAction(shapeCanvas, _shapeElements, tb));
+                }
+                else
+                {
+                    shapeCanvas.Children.Remove(inputBox);
+                }
+            };
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  SAVE / LOAD CANVAS
+        // ═══════════════════════════════════════════════════════════
+
+        private void SaveCanvas_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dlg = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "Ink file (*.isf)|*.isf|PNG image (*.png)|*.png",
+                    FileName = $"BangVe_{DateTime.Now:yyyyMMdd_HHmmss}",
+                    DefaultExt = ".isf"
+                };
+
+                if (dlg.ShowDialog() == true)
+                {
+                    if (dlg.FilterIndex == 2) // PNG
+                    {
+                        SaveAsPng(dlg.FileName);
+                    }
+                    else // ISF
+                    {
+                        using var fs = new FileStream(dlg.FileName, FileMode.Create);
+                        drawCanvas.Strokes.Save(fs);
+                    }
+                    MessageBox.Show($"Da luu: {dlg.FileName}", "Luu", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Log.Information("Canvas saved: {Path}", dlg.FileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Loi: {ex.Message}", "Loi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void LoadCanvas_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dlg = new Microsoft.Win32.OpenFileDialog
+                {
+                    Filter = "Ink file (*.isf)|*.isf",
+                    DefaultExt = ".isf"
+                };
+
+                if (dlg.ShowDialog() == true)
+                {
+                    using var fs = new FileStream(dlg.FileName, FileMode.Open);
+                    drawCanvas.Strokes = new StrokeCollection(fs);
+                    _undoStack.Clear();
+                    _redoStack.Clear();
+                    _lastStrokeState = drawCanvas.Strokes.Clone();
+                    Log.Information("Canvas loaded: {Path}", dlg.FileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Loi: {ex.Message}", "Loi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SaveAsPng(string path)
+        {
+            var target = canvasArea;
+            var width = (int)target.ActualWidth;
+            var height = (int)target.ActualHeight;
+            if (width <= 0 || height <= 0) return;
+
+            var renderBitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+            renderBitmap.Render(target);
+
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+            using var stream = File.Create(path);
+            encoder.Save(stream);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  PAN MODE
+        // ═══════════════════════════════════════════════════════════
+
+        private void PanMode_Click(object sender, MouseButtonEventArgs e)
+        {
+            _panMode = !_panMode;
+            UpdatePanToolStyle();
+        }
+
+        private void UpdatePanToolStyle()
+        {
+            var activeColor = new SolidColorBrush(Color.FromRgb(25, 118, 210));
+            var inactiveColor = new SolidColorBrush(Color.FromRgb(45, 50, 80));
+            toolPan.Background = _panMode ? activeColor : inactiveColor;
+            
+            if (toolPan.Child is TextBlock tbPan)
+            {
+                tbPan.Foreground = _panMode ? Brushes.White : new SolidColorBrush(Color.FromRgb(176, 190, 197));
+            }
+
+            // Sync lesson content hit test visibility
+            lessonOverlay.IsHitTestVisible = _panMode;
+
+            if (_panMode)
+            {
+                // Deactivate background of other tools
+                var allTools = new[] { toolPen, toolHighlight, toolEraser, toolSelect, toolShape, toolEllipse, toolLine, toolArrow, toolText };
+                foreach (var t in allTools)
+                {
+                    if (t != null)
+                    {
+                        t.Background = inactiveColor;
+                        if (t.Child is TextBlock tb) tb.Foreground = new SolidColorBrush(Color.FromRgb(176, 190, 197));
+                    }
+                }
+
+                // Deactivate InkCanvas drawing and make it not hit testable
+                drawCanvas.EditingMode = InkCanvasEditingMode.None;
+                drawCanvas.IsHitTestVisible = false;
+                
+                canvasArea.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                // Restore current tool UI highlight and InkCanvas state
+                RestoreCurrentToolState();
+            }
+        }
+
+        private void RestoreCurrentToolState()
+        {
+            var allTools = new[] { toolPen, toolHighlight, toolEraser, toolSelect, toolShape, toolEllipse, toolLine, toolArrow, toolText };
+            Border? activeBorder = null;
+            switch (_currentTool)
+            {
+                case "Highlight": activeBorder = toolHighlight; break;
+                case "Eraser": activeBorder = toolEraser; break;
+                case "Select": activeBorder = toolSelect; break;
+                case "Shape": activeBorder = toolShape; break;
+                case "Ellipse": activeBorder = toolEllipse; break;
+                case "Line": activeBorder = toolLine; break;
+                case "Arrow": activeBorder = toolArrow; break;
+                case "Text": activeBorder = toolText; break;
+                default: activeBorder = toolPen; break;
+            }
+
+            foreach (var t in allTools)
+            {
+                if (t != null)
+                {
+                    bool isActive = (t == activeBorder);
+                    t.Background = new SolidColorBrush(isActive ? Color.FromRgb(25, 118, 210) : Color.FromRgb(45, 50, 80));
+                    if (t.Child is TextBlock tb)
+                    {
+                        tb.Foreground = isActive ? Brushes.White : new SolidColorBrush(Color.FromRgb(176, 190, 197));
+                    }
+                }
+            }
+
+            switch (_currentTool)
+            {
+                case "Highlight":
+                    drawCanvas.EditingMode = InkCanvasEditingMode.Ink;
+                    drawCanvas.DefaultDrawingAttributes.IsHighlighter = true;
+                    drawCanvas.DefaultDrawingAttributes.Color = Color.FromArgb(128, 255, 255, 0);
+                    drawCanvas.DefaultDrawingAttributes.Width = 20;
+                    drawCanvas.DefaultDrawingAttributes.Height = 10;
+                    drawCanvas.IsHitTestVisible = true;
+                    break;
+                case "Eraser":
+                    drawCanvas.DefaultDrawingAttributes.IsHighlighter = false;
+                    drawCanvas.EditingMode = InkCanvasEditingMode.EraseByStroke;
+                    drawCanvas.IsHitTestVisible = true;
+                    break;
+                case "Select":
+                    drawCanvas.DefaultDrawingAttributes.IsHighlighter = false;
+                    drawCanvas.EditingMode = InkCanvasEditingMode.Select;
+                    drawCanvas.IsHitTestVisible = true;
+                    break;
+                case "Shape":
+                case "Ellipse":
+                case "Line":
+                case "Arrow":
+                case "Text":
+                    drawCanvas.DefaultDrawingAttributes.IsHighlighter = false;
+                    drawCanvas.EditingMode = InkCanvasEditingMode.None;
+                    drawCanvas.IsHitTestVisible = false;
+                    break;
+                default: // Pen
+                    drawCanvas.DefaultDrawingAttributes.IsHighlighter = false;
+                    drawCanvas.EditingMode = InkCanvasEditingMode.Ink;
+                    drawCanvas.DefaultDrawingAttributes.Width = strokeSlider.Value;
+                    drawCanvas.DefaultDrawingAttributes.Height = strokeSlider.Value;
+                    drawCanvas.IsHitTestVisible = true;
+                    break;
+            }
+
+            canvasArea.Cursor = Cursors.Arrow;
+        }
+
+        private void CanvasArea_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            bool isPanGesture = _panMode || (e.MiddleButton == MouseButtonState.Pressed);
+
+            if (isPanGesture || (_zoomLevel > 1.0 && Keyboard.Modifiers == ModifierKeys.Alt))
+            {
+                _isPanning = true;
+                _panStartMouse = e.GetPosition(canvasArea);
+                _panStartX = panTransform.X;
+                _panStartY = panTransform.Y;
+                canvasArea.CaptureMouse();
+                canvasArea.Cursor = Cursors.SizeAll;
+                e.Handled = isPanGesture;
+                return;
+            }
+
+            // Shape/Text drawing
+            if (_currentTool is "Shape" or "Ellipse" or "Line" or "Arrow" or "Text")
+            {
+                var pos = e.GetPosition(shapePreviewCanvas);
+                StartShapeDraw(pos);
+                e.Handled = true;
+            }
+        }
+
+        private void CanvasArea_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isPanning)
+            {
+                var current = e.GetPosition(canvasArea);
+                var dx = current.X - _panStartMouse.X;
+                var dy = current.Y - _panStartMouse.Y;
+                var areaW = canvasArea.ActualWidth;
+                var areaH = canvasArea.ActualHeight;
+                var maxPanX = areaW * (_zoomLevel - 1) / 2.0;
+                var maxPanY = areaH * (_zoomLevel - 1) / 2.0;
+                panTransform.X = Math.Max(-maxPanX, Math.Min(maxPanX, _panStartX + dx));
+                panTransform.Y = Math.Max(-maxPanY, Math.Min(maxPanY, _panStartY + dy));
+                return;
+            }
+
+            if (_isDrawingShape)
+            {
+                var pos = e.GetPosition(shapePreviewCanvas);
+                UpdateShapePreview(pos);
+            }
+        }
+
+        private void CanvasArea_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_isPanning)
+            {
+                _isPanning = false;
+                canvasArea.ReleaseMouseCapture();
+                canvasArea.Cursor = _panMode ? Cursors.Hand : Cursors.Arrow;
+                return;
+            }
+
+            if (_isDrawingShape)
+            {
+                var pos = e.GetPosition(shapePreviewCanvas);
+                FinishShapeDraw(pos);
+            }
+        }
+
+        private void CanvasArea_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                var delta = e.Delta > 0 ? 0.1 : -0.1;
+                var newZoom = Math.Max(0.5, Math.Min(3.0, _zoomLevel + delta));
+                if (Math.Abs(newZoom - _zoomLevel) < 0.001) return;
+
+                var scale = newZoom / _zoomLevel;
+                var areaW = canvasArea.ActualWidth;
+                var areaH = canvasArea.ActualHeight;
+                var cx = areaW / 2.0;
+                var cy = areaH / 2.0;
+                panTransform.X = cx + (panTransform.X - cx) * scale;
+                panTransform.Y = cy + (panTransform.Y - cy) * scale;
+
+                var maxPanX = areaW * (newZoom - 1) / 2.0;
+                var maxPanY = areaH * (newZoom - 1) / 2.0;
+                panTransform.X = Math.Max(-maxPanX, Math.Min(maxPanX, panTransform.X));
+                panTransform.Y = Math.Max(-maxPanY, Math.Min(maxPanY, panTransform.Y));
+                zoomTransform.ScaleX = newZoom;
+                zoomTransform.ScaleY = newZoom;
+                _zoomLevel = newZoom;
+
+                var pct = (int)(newZoom * 100);
+                txtZoomLevel.Text = $"{pct}%";
+                txtZoomBadge.Text = $"🔍 {pct}%";
+                zoomBadge.Visibility = newZoom != 1.0 ? Visibility.Visible : Visibility.Collapsed;
+                e.Handled = true;
+            }
+        }
+
+        private void ZoomIn_Click(object sender, MouseButtonEventArgs e) => SetZoom(Math.Min(_zoomLevel + 0.15, 3.0));
+        private void ZoomOut_Click(object sender, MouseButtonEventArgs e) => SetZoom(Math.Max(_zoomLevel - 0.15, 0.5));
+
+        private void ZoomReset_Click(object sender, MouseButtonEventArgs e)
+        {
+            SetZoom(1.0);
+            panTransform.X = 0;
+            panTransform.Y = 0;
+        }
+
+        private void SetZoom(double level)
+        {
+            _zoomLevel = level;
+            var anim = new DoubleAnimation(level, TimeSpan.FromMilliseconds(200))
+            { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+            zoomTransform.BeginAnimation(ScaleTransform.ScaleXProperty, anim);
+            zoomTransform.BeginAnimation(ScaleTransform.ScaleYProperty, anim);
+
+            var pct = (int)(level * 100);
+            txtZoomLevel.Text = $"{pct}%";
+            txtZoomBadge.Text = $"🔍 {pct}%";
+            zoomBadge.Visibility = level != 1.0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  SCREENSHOT
+        // ═══════════════════════════════════════════════════════════
+
+        private void Screenshot_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var flashAnim = new DoubleAnimation(0.7, 0, TimeSpan.FromMilliseconds(300));
+                flashOverlay.BeginAnimation(OpacityProperty, flashAnim);
+
+                var folder = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "QASmartClass");
+                Directory.CreateDirectory(folder);
+                var filePath = System.IO.Path.Combine(folder, $"BangVe_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+
+                SaveAsPng(filePath);
+                MessageBox.Show($"Da chup bang!\n\n{filePath}", "Chup man hinh", MessageBoxButton.OK, MessageBoxImage.Information);
+                Log.Information("Screenshot saved: {Path}", filePath);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Screenshot error");
+                MessageBox.Show($"Loi: {ex.Message}", "Loi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  CLEAR / SMART TOUCH
+        // ═══════════════════════════════════════════════════════════
+
+        private void ClearCanvas_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("Xoa toan bo bang?", "Xac nhan", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                drawCanvas.Strokes.Clear();
+                shapeCanvas.Children.Clear();
+                _shapeElements.Clear();
+                lessonOverlay.Children.Clear();
+                lessonOverlay.Visibility = Visibility.Collapsed;
+                blockNav.Visibility = Visibility.Collapsed;
+                _focusMode = false;
+                _spotlightMode = false;
+                spotlightOverlay.Visibility = Visibility.Collapsed;
+                focusOverlay.Visibility = Visibility.Collapsed;
+                _undoStack.Clear();
+                _redoStack.Clear();
+                _lastStrokeState = drawCanvas.Strokes.Clone();
+            }
+        }
+
+        private void GoToSmartScreen_Click(object sender, RoutedEventArgs e)
+        {
+            var app = (QASmartTouch.App)Application.Current;
+            app.ModeService.GoToScreen();
+        }
+
+        private void Canvas_MouseEnter(object sender, MouseEventArgs e) { }
+        private void Canvas_MouseLeave(object sender, MouseEventArgs e) { }
+
+        // ═══════════════════════════════════════════════════════════
+        //  LESSON LOADING (preserved from original)
+        // ═══════════════════════════════════════════════════════════
+
+        private void LoadLessonOnCanvas(int lessonId)
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                var lesson = app.Database.Lessons.Find(lessonId);
+                if (lesson == null) return;
+
+                var contents = app.Database.LessonContents
+                    .Where(c => c.LessonId == lessonId)
+                    .OrderBy(c => c.SortOrder)
+                    .ToList();
+
+                if (!contents.Any()) return;
+
+                lessonOverlay.Visibility = Visibility.Visible;
+                lessonOverlay.Children.Clear();
+
+                var titleBar = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromArgb(230, 25, 118, 210)),
+                    CornerRadius = new CornerRadius(0, 0, 8, 8),
+                    Padding = new Thickness(20, 12, 20, 12),
+                    Margin = new Thickness(0, 0, 0, 8)
+                };
+                var titleStack = new StackPanel();
+                titleStack.Children.Add(new TextBlock
+                {
+                    Text = $"📖 {lesson.Title}", FontSize = 22, FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.White, TextWrapping = TextWrapping.Wrap
+                });
+                titleStack.Children.Add(new TextBlock
+                {
+                    Text = $"{lesson.Subject} — {lesson.Grade} | {contents.Count} phần",
+                    FontSize = 13, Foreground = new SolidColorBrush(Color.FromRgb(187, 222, 251)), Margin = new Thickness(0, 2, 0, 0)
+                });
+                titleBar.Child = titleStack;
+                lessonOverlay.Children.Add(titleBar);
+
+                _totalBlocks = contents.Count;
+                for (int i = 0; i < contents.Count; i++)
+                {
+                    var block = contents[i];
+                    var text = block.Data.Replace("\\n", "\n");
+                    var blockBorder = new Border
+                    {
+                        Tag = i,
+                        Background = new SolidColorBrush(Color.FromArgb(240, 255, 255, 255)),
+                        CornerRadius = new CornerRadius(8),
+                        Padding = new Thickness(18, 14, 18, 14),
+                        Margin = new Thickness(8, 0, 8, 8),
+                        BorderBrush = Brushes.Transparent,
+                        BorderThickness = new Thickness(2)
+                    };
+                    blockBorder.MouseLeftButtonDown += BlockBorder_Click;
+                    blockBorder.Cursor = Cursors.Hand;
+                    blockBorder.Child = BuildCanvasRichText(text);
+                    lessonOverlay.Children.Add(blockBorder);
+                }
+
+                blockNav.Visibility = Visibility.Visible;
+                _currentBlockIndex = 0;
+                UpdateBlockNav();
+                Log.Information("Lesson loaded on canvas: {Title}, {Blocks} blocks", lesson.Title, contents.Count);
+            }
+            catch (Exception ex) { Log.Warning("LoadLessonOnCanvas error: {Error}", ex.Message); }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  BLOCK NAVIGATION
+        // ═══════════════════════════════════════════════════════════
+
+        private void PrevBlock_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (_currentBlockIndex > 0) { _currentBlockIndex--; ScrollToBlock(_currentBlockIndex); UpdateBlockNav(); }
+        }
+
+        private void NextBlock_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (_currentBlockIndex < _totalBlocks - 1) { _currentBlockIndex++; ScrollToBlock(_currentBlockIndex); UpdateBlockNav(); }
+        }
+
+        private void ScrollToBlock(int index)
+        {
+            if (index + 1 < lessonOverlay.Children.Count && lessonOverlay.Children[index + 1] is FrameworkElement fe)
+            {
+                for (int i = 1; i < lessonOverlay.Children.Count; i++)
+                {
+                    if (lessonOverlay.Children[i] is Border bd)
+                        bd.BorderBrush = i == index + 1 ? new SolidColorBrush(Color.FromRgb(25, 118, 210)) : Brushes.Transparent;
+                }
+                fe.BringIntoView();
+            }
+        }
+
+        private void UpdateBlockNav() => txtBlockNav.Text = $"{_currentBlockIndex + 1}/{_totalBlocks}";
+
+        private void BlockBorder_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border bd && bd.Tag is int index)
+            { _currentBlockIndex = index; ScrollToBlock(index); UpdateBlockNav(); }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  FOCUS / SPOTLIGHT
+        // ═══════════════════════════════════════════════════════════
+
+        private void FocusMode_Click(object sender, MouseButtonEventArgs e)
+        {
+            _focusMode = !_focusMode;
+            if (_focusMode && lessonOverlay.Children.Count > 1)
+            {
+                for (int i = 0; i < lessonOverlay.Children.Count; i++)
+                {
+                    if (lessonOverlay.Children[i] is FrameworkElement fe)
+                        fe.Opacity = i == 0 ? 0.3 : ((i - 1) == _currentBlockIndex ? 1.0 : 0.15);
+                }
+            }
+            else
+            {
+                foreach (FrameworkElement child in lessonOverlay.Children) child.Opacity = 1.0;
+            }
+        }
+
+        private void Spotlight_Click(object sender, MouseButtonEventArgs e)
+        {
+            _spotlightMode = !_spotlightMode;
+            spotlightOverlay.Visibility = _spotlightMode ? Visibility.Visible : Visibility.Collapsed;
+            if (_spotlightMode) { spotlightOverlay.Children.Clear(); spotlightOverlay.Background = Brushes.Transparent; }
+        }
+
+        private void Spotlight_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!_spotlightMode) return;
+            var pos = e.GetPosition(spotlightOverlay);
+            var w = spotlightOverlay.ActualWidth;
+            var h = spotlightOverlay.ActualHeight;
+            double radius = 120;
+
+            spotlightOverlay.Children.Clear();
+            var geo = new CombinedGeometry(GeometryCombineMode.Exclude,
+                new RectangleGeometry(new Rect(0, 0, w, h)),
+                new EllipseGeometry(pos, radius, radius));
+            spotlightOverlay.Children.Add(new System.Windows.Shapes.Path
+            { Data = geo, Fill = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)) });
+
+            var ring = new Ellipse
+            {
+                Width = radius * 2 + 4, Height = radius * 2 + 4,
+                Stroke = new SolidColorBrush(Color.FromArgb(80, 255, 255, 255)),
+                StrokeThickness = 2, Fill = Brushes.Transparent
+            };
+            Canvas.SetLeft(ring, pos.X - radius - 2);
+            Canvas.SetTop(ring, pos.Y - radius - 2);
+            spotlightOverlay.Children.Add(ring);
+        }
+
+        private void Spotlight_Cancel(object sender, MouseButtonEventArgs e)
+        {
+            _spotlightMode = false;
+            spotlightOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void FocusOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            focusOverlay.Visibility = Visibility.Collapsed;
+            _focusMode = false;
+            foreach (FrameworkElement child in lessonOverlay.Children) child.Opacity = 1.0;
+        }
+
+        private void FocusOverlay_MouseMove(object sender, MouseEventArgs e) { }
+        private void FocusOverlay_MouseUp(object sender, MouseButtonEventArgs e) { }
+
+        // ═══════════════════════════════════════════════════════════
+        //  RICH TEXT BUILDER (preserved from original)
+        // ═══════════════════════════════════════════════════════════
+
+        private static RichTextBox BuildCanvasRichText(string text)
+        {
+            var rtb = new RichTextBox
+            {
+                BorderThickness = new Thickness(0), IsReadOnly = true,
+                Background = Brushes.Transparent, Padding = new Thickness(0),
+                FontFamily = new FontFamily("Segoe UI"), FontSize = 15, IsHitTestVisible = false
+            };
+
+            var doc = new FlowDocument { PagePadding = new Thickness(0) };
+            foreach (var rawLine in text.Split('\n'))
+            {
+                var line = rawLine.TrimEnd('\r');
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var para = new Paragraph { Margin = new Thickness(0, 2, 0, 2) };
+                if (line.StartsWith("📌") || line.StartsWith("✍") || line.StartsWith("⚡"))
+                {
+                    para.Inlines.Add(new Run(line) { FontSize = 18, FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush(Color.FromRgb(25, 118, 210)) });
+                    para.Margin = new Thickness(0, 6, 0, 4);
+                }
+                else if (line.StartsWith("📖"))
+                {
+                    para.Inlines.Add(new Run(line) { FontSize = 17, FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush(Color.FromRgb(33, 33, 33)) });
+                    para.Margin = new Thickness(0, 6, 0, 4);
+                }
+                else if (line.StartsWith("📝"))
+                {
+                    para.Inlines.Add(new Run(line) { FontSize = 16, FontWeight = FontWeights.SemiBold,
+                        Foreground = new SolidColorBrush(Color.FromRgb(46, 125, 50)) });
+                }
+                else if (line.TrimStart().StartsWith("•") || line.TrimStart().StartsWith("🔹") ||
+                         line.TrimStart().StartsWith("✅") || line.TrimStart().StartsWith("❌"))
+                {
+                    para.Margin = new Thickness(14, 1, 0, 1);
+                    para.Inlines.Add(new Run(line) { FontSize = 15, Foreground = new SolidColorBrush(Color.FromRgb(55, 55, 55)) });
+                }
+                else
+                {
+                    para.Inlines.Add(new Run(line) { FontSize = 15, Foreground = new SolidColorBrush(Color.FromRgb(55, 55, 55)) });
+                }
+                doc.Blocks.Add(para);
+            }
+            rtb.Document = doc;
+            return rtb;
+        }
+    }
+
+    public interface IUndoableAction
+    {
+        void Undo();
+        void Redo();
+    }
+
+    public class StrokeUndoAction : IUndoableAction
+    {
+        private readonly InkCanvas _inkCanvas;
+        private readonly StrokeCollection _prevStrokes;
+        private readonly StrokeCollection _newStrokes;
+
+        public StrokeUndoAction(InkCanvas inkCanvas, StrokeCollection prevStrokes, StrokeCollection newStrokes)
+        {
+            _inkCanvas = inkCanvas;
+            _prevStrokes = prevStrokes.Clone();
+            _newStrokes = newStrokes.Clone();
+        }
+
+        public void Undo()
+        {
+            _inkCanvas.Strokes = _prevStrokes.Clone();
+        }
+
+        public void Redo()
+        {
+            _inkCanvas.Strokes = _newStrokes.Clone();
+        }
+    }
+
+    public class ShapeUndoAction : IUndoableAction
+    {
+        private readonly Canvas _shapeCanvas;
+        private readonly List<UIElement> _shapeElements;
+        private readonly UIElement _element;
+
+        public ShapeUndoAction(Canvas shapeCanvas, List<UIElement> shapeElements, UIElement element)
+        {
+            _shapeCanvas = shapeCanvas;
+            _shapeElements = shapeElements;
+            _element = element;
+        }
+
+        public void Undo()
+        {
+            _shapeCanvas.Children.Remove(_element);
+            _shapeElements.Remove(_element);
+        }
+
+        public void Redo()
+        {
+            if (!_shapeCanvas.Children.Contains(_element))
+                _shapeCanvas.Children.Add(_element);
+            if (!_shapeElements.Contains(_element))
+                _shapeElements.Add(_element);
+        }
+    }
+
+    public class TextUndoAction : IUndoableAction
+    {
+        private readonly Canvas _shapeCanvas;
+        private readonly List<UIElement> _shapeElements;
+        private readonly UIElement _element;
+
+        public TextUndoAction(Canvas shapeCanvas, List<UIElement> shapeElements, UIElement element)
+        {
+            _shapeCanvas = shapeCanvas;
+            _shapeElements = shapeElements;
+            _element = element;
+        }
+
+        public void Undo()
+        {
+            _shapeCanvas.Children.Remove(_element);
+            _shapeElements.Remove(_element);
+        }
+
+        public void Redo()
+        {
+            if (!_shapeCanvas.Children.Contains(_element))
+                _shapeCanvas.Children.Add(_element);
+            if (!_shapeElements.Contains(_element))
+                _shapeElements.Add(_element);
+        }
+    }
+}
+

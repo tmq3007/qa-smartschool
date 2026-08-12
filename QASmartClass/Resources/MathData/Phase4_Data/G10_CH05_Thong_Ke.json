@@ -1,0 +1,403 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch05",
+    "chapterName": "Thống Kê Mô Tả",
+    "grade": 10,
+    "totalSections": 3,
+    "totalConcepts": 10,
+    "totalProblems": 15,
+    "toolMapping": [
+      "StatisticsTool"
+    ],
+    "thptWeight": "5%",
+    "estimatedHours": 10
+  },
+  "sections": [
+    {
+      "sectionId": "tk_01",
+      "sectionName": "Số liệu thống kê & Bảng tần số",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "tk_001",
+          "name": "Mẫu số liệu",
+          "definition": "Tập hợp các giá trị thu được từ quan sát hoặc điều tra",
+          "properties": [
+            "Tần số: số lần xuất hiện",
+            "Tần suất: tần số / tổng quan sát",
+            "Tần suất tích lũy: tổng tần suất từ đầu"
+          ]
+        },
+        {
+          "id": "tk_002",
+          "name": "Bảng tần số & Tần suất",
+          "definition": "Bảng tóm tắt dữ liệu theo giá trị và số lần xuất hiện",
+          "properties": [
+            "Tổng tần số = n (cỡ mẫu)",
+            "Tổng tần suất = 1 (100%)"
+          ]
+        },
+        {
+          "id": "tk_003",
+          "name": "Biểu đồ thống kê",
+          "definition": "Biểu diễn trực quan của dữ liệu",
+          "properties": [
+            "Biểu đồ cột (Bar chart)",
+            "Biểu đồ tròn (Pie chart)",
+            "Biểu đồ đường (Line chart)",
+            "Biểu đồ tần suất hình cột (Histogram)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tk_prob_001",
+          "difficulty": "Easy",
+          "question": "Cho mẫu số liệu: 3, 5, 7, 5, 3, 5, 8, 5. Tần số của giá trị 5 là:",
+          "options": [
+            "A) 4",
+            "B) 3",
+            "C) 5",
+            "D) 2"
+          ],
+          "correctAnswer": "A",
+          "solution": "Đếm số lần 5 xuất hiện: 4 lần",
+          "points": 10
+        },
+        {
+          "problemId": "tk_prob_002",
+          "difficulty": "Easy",
+          "question": "Tần suất của giá trị 3 trong mẫu {3,5,7,5,3,5,8,5} là:",
+          "options": [
+            "A) 25%",
+            "B) 50%",
+            "C) 12.5%",
+            "D) 37.5%"
+          ],
+          "correctAnswer": "A",
+          "solution": "Tần số(3)=2, n=8. Tần suất=2/8=0.25=25%",
+          "points": 10
+        },
+        {
+          "problemId": "tk_prob_003",
+          "difficulty": "Medium",
+          "question": "Biểu đồ nào phù hợp nhất để so sánh điểm thi của 4 lớp?",
+          "options": [
+            "A) Biểu đồ cột",
+            "B) Biểu đồ tròn",
+            "C) Biểu đồ đường",
+            "D) Histogram"
+          ],
+          "correctAnswer": "A",
+          "solution": "Biểu đồ cột (Bar chart) phù hợp để so sánh giá trị giữa các nhóm",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "tk_02",
+      "sectionName": "Các số đặc trưng: Trung bình, Trung vị, Mốt",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "tk_004",
+          "name": "Số trung bình (Mean)",
+          "formula": "x̄ = (x₁+x₂+...+xₙ)/n",
+          "properties": [
+            "Chịu ảnh hưởng bởi giá trị ngoại lệ",
+            "Luôn nằm giữa min và max"
+          ]
+        },
+        {
+          "id": "tk_005",
+          "name": "Trung vị (Median)",
+          "definition": "Giá trị ở vị trí giữa khi sắp xếp tăng dần",
+          "properties": [
+            "n lẻ: Me = x₍ₙ₊₁₎/₂",
+            "n chẵn: Me = (xₙ/₂ + xₙ/₂₊₁)/2",
+            "Không bị ảnh hưởng bởi giá trị ngoại lệ"
+          ]
+        },
+        {
+          "id": "tk_006",
+          "name": "Mốt (Mode)",
+          "definition": "Giá trị có tần số lớn nhất",
+          "properties": [
+            "Có thể có nhiều mốt (đa mốt)",
+            "Có thể không có mốt"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tk_prob_004",
+          "difficulty": "Easy",
+          "question": "Trung bình cộng của 4, 6, 8, 10, 12 là:",
+          "options": [
+            "A) 8",
+            "B) 7",
+            "C) 9",
+            "D) 10"
+          ],
+          "correctAnswer": "A",
+          "solution": "x̄ = (4+6+8+10+12)/5 = 40/5 = 8",
+          "points": 10
+        },
+        {
+          "problemId": "tk_prob_005",
+          "difficulty": "Easy",
+          "question": "Trung vị của dãy 2, 5, 7, 9, 11 là:",
+          "options": [
+            "A) 7",
+            "B) 5",
+            "C) 9",
+            "D) 6.8"
+          ],
+          "correctAnswer": "A",
+          "solution": "n=5 (lẻ), Me = x₃ = 7",
+          "points": 10
+        },
+        {
+          "problemId": "tk_prob_006",
+          "difficulty": "Medium",
+          "question": "Trung vị của dãy 3, 5, 7, 8, 10, 12 là:",
+          "options": [
+            "A) 7.5",
+            "B) 7",
+            "C) 8",
+            "D) 7.8"
+          ],
+          "correctAnswer": "A",
+          "solution": "n=6 (chẵn), Me = (x₃+x₄)/2 = (7+8)/2 = 7.5",
+          "points": 15
+        },
+        {
+          "problemId": "tk_prob_007",
+          "difficulty": "Medium",
+          "question": "Mốt của mẫu {2,3,3,5,5,5,7,8} là:",
+          "options": [
+            "A) 5",
+            "B) 3",
+            "C) 7",
+            "D) 4.75"
+          ],
+          "correctAnswer": "A",
+          "solution": "Tần số: 2(1), 3(2), 5(3), 7(1), 8(1). Mốt = 5 (tần số cao nhất = 3)",
+          "points": 10
+        },
+        {
+          "problemId": "tk_prob_008",
+          "difficulty": "Hard",
+          "question": "Cho mẫu: 5, 8, 6, a, 9, 7. Biết trung bình = 7. Giá trị a là:",
+          "options": [
+            "A) 7",
+            "B) 8",
+            "C) 6",
+            "D) 9"
+          ],
+          "correctAnswer": "A",
+          "solution": "x̄ = (5+8+6+a+9+7)/6 = 7 → 35+a = 42 → a = 7",
+          "points": 20
+        },
+        {
+          "problemId": "tk_prob_009",
+          "difficulty": "Hard",
+          "question": "Điểm thi 10 HS: 3,4,5,5,6,6,6,7,8,10. Trung bình, trung vị, mốt lần lượt là:",
+          "options": [
+            "A) 6; 6; 6",
+            "B) 6; 5.5; 6",
+            "C) 5.5; 6; 5",
+            "D) 6; 6; 5"
+          ],
+          "correctAnswer": "A",
+          "solution": "TB=(3+4+5+5+6+6+6+7+8+10)/10=60/10=6. Me=(x₅+x₆)/2=(6+6)/2=6. Mốt=6(3 lần)",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "tk_03",
+      "sectionName": "Phương sai & Độ lệch chuẩn",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "tk_007",
+          "name": "Phương sai (Variance)",
+          "formula": "S² = Σ(xᵢ - x̄)²/n",
+          "properties": [
+            "Đo mức độ phân tán của dữ liệu",
+            "S² ≥ 0, S²=0 khi tất cả giá trị bằng nhau"
+          ]
+        },
+        {
+          "id": "tk_008",
+          "name": "Độ lệch chuẩn (Standard Deviation)",
+          "formula": "S = √S² = √[Σ(xᵢ-x̄)²/n]",
+          "properties": [
+            "Cùng đơn vị với dữ liệu",
+            "S nhỏ: dữ liệu tập trung quanh TB",
+            "S lớn: dữ liệu phân tán"
+          ]
+        },
+        {
+          "id": "tk_009",
+          "name": "Khoảng biến thiên",
+          "formula": "R = xₘₐₓ - xₘᵢₙ",
+          "properties": [
+            "Đo khoảng phân bố dữ liệu",
+            "Nhạy cảm với ngoại lệ"
+          ]
+        },
+        {
+          "id": "tk_010",
+          "name": "Tứ phân vị",
+          "definition": "Q₁ (25%), Q₂=Me (50%), Q₃ (75%)",
+          "properties": [
+            "IQR = Q₃ - Q₁ (khoảng tứ phân vị)",
+            "Phát hiện ngoại lệ: x < Q₁ - 1.5·IQR hoặc x > Q₃ + 1.5·IQR"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tk_prob_010",
+          "difficulty": "Easy",
+          "question": "Khoảng biến thiên của mẫu {2, 5, 8, 3, 12} là:",
+          "options": [
+            "A) 10",
+            "B) 12",
+            "C) 6",
+            "D) 7"
+          ],
+          "correctAnswer": "A",
+          "solution": "R = xmax - xmin = 12 - 2 = 10",
+          "points": 10
+        },
+        {
+          "problemId": "tk_prob_011",
+          "difficulty": "Medium",
+          "question": "Phương sai của mẫu {2, 4, 6} là:",
+          "options": [
+            "A) 8/3",
+            "B) 4/3",
+            "C) 2",
+            "D) 4"
+          ],
+          "correctAnswer": "A",
+          "solution": "x̄=4. S²=[(2-4)²+(4-4)²+(6-4)²]/3 = (4+0+4)/3 = 8/3",
+          "points": 15
+        },
+        {
+          "problemId": "tk_prob_012",
+          "difficulty": "Medium",
+          "question": "Độ lệch chuẩn của mẫu {1, 3, 5, 7, 9} là:",
+          "options": [
+            "A) 2√2",
+            "B) 4",
+            "C) √8",
+            "D) 2.83"
+          ],
+          "correctAnswer": "A",
+          "solution": "x̄=5. S²=[(1-5)²+(3-5)²+(5-5)²+(7-5)²+(9-5)²]/5 = (16+4+0+4+16)/5=8. S=√8=2√2",
+          "points": 15
+        },
+        {
+          "problemId": "tk_prob_013",
+          "difficulty": "Hard",
+          "question": "Lớp A có điểm TB=7.5, S=0.8. Lớp B có điểm TB=7.5, S=1.5. Nhận xét đúng:",
+          "options": [
+            "A) Lớp A đồng đều hơn",
+            "B) Lớp B đồng đều hơn",
+            "C) Hai lớp như nhau",
+            "D) Không so sánh được"
+          ],
+          "correctAnswer": "A",
+          "solution": "Cùng TB=7.5, S(A)=0.8 < S(B)=1.5 → Lớp A có điểm tập trung hơn quanh TB",
+          "points": 20
+        },
+        {
+          "problemId": "tk_prob_014",
+          "difficulty": "Hard",
+          "question": "Cho mẫu {1,3,5,7,9,100}. Số đặc trưng nào KHÔNG bị ảnh hưởng bởi giá trị 100?",
+          "options": [
+            "A) Trung vị",
+            "B) Trung bình",
+            "C) Khoảng biến thiên",
+            "D) Phương sai"
+          ],
+          "correctAnswer": "A",
+          "solution": "Me=(5+7)/2=6, không đổi dù 100 thay đổi. TB, R, S² đều bị ảnh hưởng",
+          "points": 20
+        },
+        {
+          "problemId": "tk_prob_015",
+          "difficulty": "Easy",
+          "question": "Mẫu nào có phương sai bằng 0?",
+          "options": [
+            "A) {5, 5, 5, 5}",
+            "B) {1, 2, 3, 4}",
+            "C) {0, 0, 0, 1}",
+            "D) {-1, 0, 1}"
+          ],
+          "correctAnswer": "A",
+          "solution": "S²=0 khi mọi giá trị bằng nhau. {5,5,5,5}: x̄=5, mọi xᵢ-x̄=0",
+          "points": 10
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm trung vị với trung bình",
+      "correction": "Trung vị là giá trị giữa khi sắp xếp, trung bình là tổng/n"
+    },
+    {
+      "mistake": "Quên sắp xếp trước khi tìm trung vị",
+      "correction": "Phải sắp xếp tăng dần rồi mới xác định vị trí giữa"
+    },
+    {
+      "mistake": "Nhầm công thức phương sai: chia (n-1) thay vì n",
+      "correction": "SGK Việt Nam: S²=Σ(xᵢ-x̄)²/n. Phương sai mẫu hiệu chỉnh mới chia (n-1)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "tk_quiz_01",
+      "title": "Kiểm tra: Thống kê mô tả",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "tk_prob_001"
+        },
+        {
+          "ref": "tk_prob_004"
+        },
+        {
+          "ref": "tk_prob_005"
+        },
+        {
+          "ref": "tk_prob_011"
+        },
+        {
+          "ref": "tk_prob_013"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

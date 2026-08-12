@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g02_giuaki1",
+    "title": "Đề thi Giữa Kì 1 Toán Lớp 2",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 2,
+    "examType": "GiuaKi1"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "3 điểm không thẳng hàng tạo được mấy đoạn thẳng?",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 4"
+      ],
+      "answer": "C",
+      "solution": "3 điểm: AB, AC, BC = 3 đoạn thẳng"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "18 ÷ 3 = ?",
+      "options": [
+        "A) 5",
+        "B) 6",
+        "C) 7",
+        "D) 9"
+      ],
+      "answer": "B",
+      "solution": "18 ÷ 3 = 6. Vì 3 × 6 = 18"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Phòng học dài 10 m, rộng 6 m. Diện tích = ?",
+      "options": [
+        "A) 32 m²",
+        "B) 60 m²",
+        "C) 16 m²",
+        "D) 100 m²"
+      ],
+      "answer": "B",
+      "solution": "S = 10 × 6 = 60 m²"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Có 3 đĩa, mỗi đĩa 6 quả táo. Tổng cộng bao nhiêu quả?",
+      "options": [
+        "A) 9",
+        "B) 15",
+        "C) 18",
+        "D) 21"
+      ],
+      "answer": "C",
+      "solution": "3 × 6 = 18 quả táo"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Diện tích hình vuông cạnh 5 cm = ?",
+      "options": [
+        "A) 10 cm²",
+        "B) 20 cm²",
+        "C) 25 cm²",
+        "D) 30 cm²"
+      ],
+      "answer": "C",
+      "solution": "S = 5 × 5 = 25 cm²"
+    },
+    {
+      "id": 6,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "23 ÷ 5 = ? dư ?",
+      "options": [
+        "A) 4 dư 3",
+        "B) 5 dư 0",
+        "C) 4 dư 2",
+        "D) 3 dư 8"
+      ],
+      "answer": "A",
+      "solution": "23 ÷ 5: 5 × 4 = 20, 23 - 20 = 3. Kết quả: 4 dư 3"
+    },
+    {
+      "id": 7,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Một chuyến xe khởi hành lúc 7:45 sáng, chạy trong 2 giờ 35 phút. Xe đến nơi lúc mấy giờ?",
+      "options": [
+        "A) 10:10",
+        "B) 10:20",
+        "C) 9:20",
+        "D) 10:00"
+      ],
+      "answer": "B",
+      "solution": "7:45 + 2 giờ = 9:45. 9:45 + 35 phút = 10:20"
+    },
+    {
+      "id": 8,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "4 điểm không có 3 điểm nào thẳng hàng. Số đoạn thẳng tạo được = ?",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 6",
+        "D) 8"
+      ],
+      "answer": "C",
+      "solution": "Số đoạn = C(4,2) = 4×3÷2 = 6 đoạn thẳng"
+    },
+    {
+      "id": 9,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Sân HCN 20 m × 15 m. Lát gạch vuông cạnh 1 m. Cần bao nhiêu viên?",
+      "options": [
+        "A) 200",
+        "B) 250",
+        "C) 300",
+        "D) 350"
+      ],
+      "answer": "C",
+      "solution": "S sân = 20 × 15 = 300 m². Mỗi viên 1 m² → cần 300 viên"
+    },
+    {
+      "id": 10,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Mẹ mua 2kg 300g gạo và 1kg 700g đường. Tổng cộng nặng bao nhiêu?",
+      "options": [
+        "A) 3kg",
+        "B) 4kg",
+        "C) 3kg 900g",
+        "D) 4kg 100g"
+      ],
+      "answer": "B",
+      "solution": "2kg 300g + 1kg 700g = 3kg 1000g = 4kg"
+    },
+    {
+      "id": 11,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "2 × 6 = ?",
+      "options": [
+        "A) 10",
+        "B) 12",
+        "C) 14",
+        "D) 8"
+      ],
+      "answer": "B",
+      "solution": "2 × 6 = 12. Hoặc: 6 + 6 = 12"
+    },
+    {
+      "id": 12,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "2 × ? = 16. Số cần điền là?",
+      "options": [
+        "A) 6",
+        "B) 7",
+        "C) 8",
+        "D) 9"
+      ],
+      "answer": "C",
+      "solution": "2 × 8 = 16. Hoặc: 16 ÷ 2 = 8"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Rào xung quanh vườn hình chữ nhật dài 12 m, rộng 8 m. Cổng rộng 2 m. Cần bao nhiêu m rào?",
+      "options": [
+        "A) 38 m",
+        "B) 40 m",
+        "C) 36 m",
+        "D) 42 m"
+      ],
+      "answer": "A",
+      "solution": "CV = (12 + 8) × 2 = 40 m. Trừ cổng: 40 - 2 = 38 m"
+    },
+    {
+      "id": 14,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Diện tích HCN dài 8 cm, rộng 4 cm = ?",
+      "options": [
+        "A) 12 cm²",
+        "B) 24 cm²",
+        "C) 32 cm²",
+        "D) 36 cm²"
+      ],
+      "answer": "C",
+      "solution": "S = 8 × 4 = 32 cm²"
+    },
+    {
+      "id": 15,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Chia 25 bông hoa thành các bó, mỗi bó 5 bông. Được bao nhiêu bó?",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 6",
+        "D) 3"
+      ],
+      "answer": "B",
+      "solution": "25 ÷ 5 = 5 bó"
+    },
+    {
+      "id": 16,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "5 × ? = 35. Số cần điền là?",
+      "options": [
+        "A) 5",
+        "B) 6",
+        "C) 7",
+        "D) 8"
+      ],
+      "answer": "C",
+      "solution": "5 × 7 = 35. Hoặc: 35 ÷ 5 = 7"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1 mét bằng bao nhiêu xăng-ti-mét?",
+      "options": [
+        "A) 10cm",
+        "B) 100cm",
+        "C) 1000cm",
+        "D) 50cm"
+      ],
+      "answer": "B",
+      "solution": "1m = 100cm. Mỗi mét chia thành 100 phần bằng nhau, mỗi phần là 1cm"
+    },
+    {
+      "id": 18,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Một sợi dây dài 2m 40cm. Cắt đi 75cm. Sợi dây còn lại dài bao nhiêu?",
+      "options": [
+        "A) 1m 65cm",
+        "B) 1m 75cm",
+        "C) 2m 65cm",
+        "D) 1m 55cm"
+      ],
+      "answer": "A",
+      "solution": "2m 40cm = 240cm. 240cm - 75cm = 165cm = 1m 65cm"
+    },
+    {
+      "id": 19,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Chu vi hình chữ nhật dài 5 cm, rộng 3 cm = ?",
+      "options": [
+        "A) 8 cm",
+        "B) 15 cm",
+        "C) 16 cm",
+        "D) 30 cm"
+      ],
+      "answer": "C",
+      "solution": "CV = (5 + 3) × 2 = 16 cm"
+    },
+    {
+      "id": 20,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1 giờ bằng bao nhiêu phút?",
+      "options": [
+        "A) 30 phút",
+        "B) 45 phút",
+        "C) 60 phút",
+        "D) 100 phút"
+      ],
+      "answer": "C",
+      "solution": "1 giờ = 60 phút"
+    }
+  ]
+}

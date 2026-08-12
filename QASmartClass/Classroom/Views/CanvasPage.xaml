@@ -1,0 +1,311 @@
+<Page x:Class="QASmartClass.Classroom.Views.CanvasPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Bảng vẽ" Background="#1A1A2E">
+    <Page.Resources>
+        <Style x:Key="ToolBtn" TargetType="Border">
+            <Setter Property="Background" Value="#20243A"/>
+            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="MinWidth" Value="40"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,3,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#343A5F"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.3"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ToolButton" TargetType="Button">
+            <Setter Property="Background" Value="#20243A"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="MinWidth" Value="40"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,3,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="7"
+                                BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#343A5F"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.3"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ToolTxt" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#B0BEC5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="4,0"/>
+        </Style>
+        <Style x:Key="ActionBtn" TargetType="Button">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+
+        <!-- ═══ TOOLBAR ═══ -->
+        <Border Grid.Row="0" Padding="8,5">
+            <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,0"><GradientStop Color="#1C1D2A" Offset="0"/><GradientStop Color="#242538" Offset="1"/></LinearGradientBrush></Border.Background>
+            <ScrollViewer x:Name="toolbarScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <Grid MinWidth="{Binding ViewportWidth, ElementName=toolbarScroller}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                <!-- Left: Title + Drawing tools -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="🎨 Bảng vẽ" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="4,0,16,0"/>
+                    <!-- Drawing tools -->
+                    <Border x:Name="toolPen" Style="{StaticResource ToolBtn}" Background="#1976D2" MouseLeftButtonDown="SelectTool" Tag="Pen" ToolTip="Bút vẽ (P)">
+                        <TextBlock Text="✏️ Bút" Style="{StaticResource ToolTxt}" Foreground="White"/>
+                    </Border>
+                    <Border x:Name="toolHighlight" Style="{StaticResource ToolBtn}" MouseLeftButtonDown="SelectTool" Tag="Highlight" ToolTip="Bút nhấn (H)">
+                        <TextBlock Text="🖌️ Highlight" Style="{StaticResource ToolTxt}"/>
+                    </Border>
+                    <Border x:Name="toolEraser" Style="{StaticResource ToolBtn}" MouseLeftButtonDown="SelectTool" Tag="Eraser" ToolTip="Tẩy (E)">
+                        <TextBlock Text="🧹 Tẩy" Style="{StaticResource ToolTxt}"/>
+                    </Border>
+                    <Border x:Name="toolSelect" Style="{StaticResource ToolBtn}" MouseLeftButtonDown="SelectTool" Tag="Select" ToolTip="Chọn (S)">
+                        <TextBlock Text="⬚ Chọn" Style="{StaticResource ToolTxt}"/>
+                    </Border>
+                    <!-- Separator -->
+                    <Border Width="1" Background="#3D4265" Margin="4,3,6,3"/>
+                    <!-- Shape tools -->
+                    <Border x:Name="toolShape" Style="{StaticResource ToolBtn}" MouseLeftButtonDown="SelectTool" Tag="Shape" ToolTip="Hình chữ nhật">
+                        <TextBlock Text="▭ HCN" Style="{StaticResource ToolTxt}"/>
+                    </Border>
+                    <Border x:Name="toolEllipse" Style="{StaticResource ToolBtn}" MouseLeftButtonDown="SelectTool" Tag="Ellipse" ToolTip="Hình elip">
+                        <TextBlock Text="⬭ Elip" Style="{StaticResource ToolTxt}"/>
+                    </Border>
+                    <Border x:Name="toolLine" Style="{StaticResource ToolBtn}" MouseLeftButtonDown="SelectTool" Tag="Line" ToolTip="Đường thẳng">
+                        <TextBlock Text="╱ Thẳng" Style="{StaticResource ToolTxt}"/>
+                    </Border>
+                    <Border x:Name="toolArrow" Style="{StaticResource ToolBtn}" MouseLeftButtonDown="SelectTool" Tag="Arrow" ToolTip="Mũi tên">
+                        <TextBlock Text="→ Tên" Style="{StaticResource ToolTxt}"/>
+                    </Border>
+                    <Border x:Name="toolText" Style="{StaticResource ToolBtn}" MouseLeftButtonDown="SelectTool" Tag="Text" ToolTip="Chèn chữ">
+                        <TextBlock Text="T Chữ" Style="{StaticResource ToolTxt}" FontWeight="Bold"/>
+                    </Border>
+                    <!-- Separator -->
+                    <Border Width="1" Background="#3D4265" Margin="4,3,6,3"/>
+                    <!-- Understand rate progress bar -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,8,0" ToolTip="Tỷ lệ hiểu bài của lớp">
+                        <TextBlock Text="👍" FontSize="12" Foreground="White" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <ProgressBar x:Name="prgUnderstandRate" Width="80" Height="8" Minimum="0" Maximum="100" Value="100" 
+                                     Foreground="#69F0AE" Background="#3D4265" BorderThickness="0" VerticalAlignment="Center">
+                            <ProgressBar.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </ProgressBar.Resources>
+                        </ProgressBar>
+                        <TextBlock x:Name="txtUnderstandPercent" Text="100%" FontSize="11" Foreground="#69F0AE" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Center: Colors + Stroke -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Ellipse Width="22" Height="22" Fill="White" Margin="0,0,3,0" Cursor="Hand" MouseLeftButtonDown="ColorPick" Tag="#FFFFFF" Stroke="#555" StrokeThickness="1"/>
+                    <Ellipse Width="22" Height="22" Fill="#FF5252" Margin="0,0,3,0" Cursor="Hand" MouseLeftButtonDown="ColorPick" Tag="#FF5252"/>
+                    <Ellipse Width="22" Height="22" Fill="#FF9800" Margin="0,0,3,0" Cursor="Hand" MouseLeftButtonDown="ColorPick" Tag="#FF9800"/>
+                    <Ellipse Width="22" Height="22" Fill="#FFD740" Margin="0,0,3,0" Cursor="Hand" MouseLeftButtonDown="ColorPick" Tag="#FFD740"/>
+                    <Ellipse Width="22" Height="22" Fill="#69F0AE" Margin="0,0,3,0" Cursor="Hand" MouseLeftButtonDown="ColorPick" Tag="#69F0AE"/>
+                    <Ellipse Width="22" Height="22" Fill="#40C4FF" Margin="0,0,3,0" Cursor="Hand" MouseLeftButtonDown="ColorPick" Tag="#40C4FF"/>
+                    <Ellipse Width="22" Height="22" Fill="#7C4DFF" Margin="0,0,3,0" Cursor="Hand" MouseLeftButtonDown="ColorPick" Tag="#7C4DFF"/>
+                    <Ellipse Width="22" Height="22" Fill="#FF80AB" Margin="0,0,5,0" Cursor="Hand" MouseLeftButtonDown="ColorPick" Tag="#FF80AB"/>
+                    <!-- Current color indicator -->
+                    <Border x:Name="currentColorBorder" Width="26" Height="26" CornerRadius="13" BorderBrush="#90CAF9" BorderThickness="2" Margin="0,0,6,0" Cursor="Hand" MouseLeftButtonDown="CustomColor_Click" ToolTip="Chọn màu tùy chỉnh">
+                        <Border x:Name="currentColorFill" CornerRadius="11" Background="White"/>
+                    </Border>
+                    <Border Width="1" Background="#3D4265" Margin="0,3,6,3"/>
+                    <TextBlock Text="Nét:" FontSize="11" Foreground="#90CAF9" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <Slider x:Name="strokeSlider" Width="70" Minimum="1" Maximum="30" Value="3" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="txtStrokeSize" Text="3px" FontSize="11" Foreground="#B0BEC5" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                </StackPanel>
+
+                <!-- Right: Actions -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Undo/Redo -->
+                    <Button x:Name="btnUndo" Style="{StaticResource ToolButton}" Click="Undo_Click" ToolTip="Hoàn tác (Ctrl+Z)">
+                        <Viewbox Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="#B0BEC5" Data="M12.5,8C9.85,8 7.45,9 5.6,10.6L2,7V16H11L7.38,12.38C8.77,11.22 10.54,10.5 12.5,10.5C16.04,10.5 19.05,12.81 20.1,16L22.47,15.22C21.08,11.03 17.15,8 12.5,8Z"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
+                    <Button x:Name="btnRedo" Style="{StaticResource ToolButton}" Click="Redo_Click" ToolTip="Làm lại (Ctrl+Y)" Margin="0,0,12,0">
+                        <Viewbox Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="#B0BEC5" Data="M18.4,10.6C16.55,9 14.15,8 11.5,8C6.85,8 2.92,11.03 1.54,15.22L3.9,16C4.95,12.81 7.95,10.5 11.5,10.5C13.45,10.5 15.23,11.22 16.62,12.38L13,16H22V7L18.4,10.6Z"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
+                    <Border Width="1" Background="#3D4265" Margin="2,3,4,3"/>
+                    <!-- Background -->
+                    <Border Style="{StaticResource ToolBtn}" MouseLeftButtonDown="BgToggle_Click" ToolTip="Đổi nền bảng">
+                        <TextBlock x:Name="txtBgMode" Text="⊞" Style="{StaticResource ToolTxt}" FontSize="14"/>
+                    </Border>
+                    <!-- Zoom -->
+                    <Border Style="{StaticResource ToolBtn}" MouseLeftButtonDown="ZoomIn_Click" ToolTip="Phóng to (Ctrl +)">
+                        <TextBlock Text="🔍+" Style="{StaticResource ToolTxt}"/>
+                    </Border>
+                    <Border Style="{StaticResource ToolBtn}" MouseLeftButtonDown="ZoomOut_Click" ToolTip="Thu nhỏ (Ctrl -)">
+                        <TextBlock Text="🔍−" Style="{StaticResource ToolTxt}"/>
+                    </Border>
+                    <Border Style="{StaticResource ToolBtn}" MouseLeftButtonDown="ZoomReset_Click" ToolTip="Về 100%">
+                        <TextBlock Text="1:1" Style="{StaticResource ToolTxt}" FontWeight="Bold"/>
+                    </Border>
+                    <Border x:Name="toolPan" Style="{StaticResource ToolBtn}" MouseLeftButtonDown="PanMode_Click" ToolTip="Kéo (Space)">
+                        <TextBlock Text="✋" Style="{StaticResource ToolTxt}" FontSize="14"/>
+                    </Border>
+                    <TextBlock x:Name="txtZoomLevel" Text="100%" FontSize="11" Foreground="#90CAF9" VerticalAlignment="Center" Margin="4,0,6,0"/>
+                    <Border Width="1" Background="#3D4265" Margin="0,3,4,3"/>
+                    <!-- Teaching tools -->
+                    <Border Style="{StaticResource ToolBtn}" MouseLeftButtonDown="FocusMode_Click" ToolTip="Chế độ Focus">
+                        <TextBlock Text="🎯" Style="{StaticResource ToolTxt}" FontSize="14"/>
+                    </Border>
+                    <Border Style="{StaticResource ToolBtn}" MouseLeftButtonDown="Spotlight_Click" ToolTip="Đèn chiếu">
+                        <TextBlock Text="💡" Style="{StaticResource ToolTxt}" FontSize="14"/>
+                    </Border>
+                    <Border Width="1" Background="#3D4265" Margin="2,3,4,3"/>
+                    <Button Content="📷 Chụp" Background="#7B1FA2" Style="{StaticResource ActionBtn}" Click="Screenshot_Click"/>
+                    <Button Content="💾 Lưu" Background="#2E7D32" Style="{StaticResource ActionBtn}" Click="SaveCanvas_Click"/>
+                    <Button Content="💾 Lưu Slide" Background="#E65100" Style="{StaticResource ActionBtn}" Click="SaveCanvasAsSlide_Click"/>
+                    <Button Content="📂 Mở" Background="#0277BD" Style="{StaticResource ActionBtn}" Click="LoadCanvas_Click"/>
+                    <Button Content="🖊 Screen" Background="#1976D2" Style="{StaticResource ActionBtn}" Click="GoToSmartScreen_Click"/>
+                    <Button Content="🗑 Xóa" Background="#3F4259" Style="{StaticResource ActionBtn}" Click="ClearCanvas_Click" ToolTip="Xóa toàn bộ nội dung bảng vẽ"/>
+                </StackPanel>
+            </Grid>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ═══ CANVAS AREA ═══ -->
+        <Grid Grid.Row="1" x:Name="canvasArea" ClipToBounds="True" Background="Transparent"
+              MouseLeftButtonDown="CanvasArea_MouseDown"
+              MouseMove="CanvasArea_MouseMove"
+              MouseLeftButtonUp="CanvasArea_MouseUp"
+              MouseWheel="CanvasArea_MouseWheel">
+            <!-- Zoomable content wrapper -->
+            <Grid x:Name="zoomContainer" RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="zoomTransform" ScaleX="1" ScaleY="1"/>
+                        <TranslateTransform x:Name="panTransform" X="0" Y="0"/>
+                    </TransformGroup>
+                </Grid.RenderTransform>
+
+                <!-- Background pattern canvas -->
+                <Canvas x:Name="bgPatternCanvas" Background="#0F3460" IsHitTestVisible="False"/>
+
+                <!-- Main InkCanvas -->
+                <AdornerDecorator>
+                    <InkCanvas x:Name="drawCanvas" Background="Transparent"
+                               MouseEnter="Canvas_MouseEnter" MouseLeave="Canvas_MouseLeave"/>
+                </AdornerDecorator>
+
+                <!-- Shape overlay canvas for geometric shapes -->
+                <Canvas x:Name="shapeCanvas" IsHitTestVisible="False"/>
+
+                <!-- Lesson content overlay -->
+                <ScrollViewer x:Name="lessonScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                              IsHitTestVisible="True" Margin="40,20,40,20">
+                    <StackPanel x:Name="lessonOverlay" Visibility="Collapsed" MaxWidth="900"
+                                HorizontalAlignment="Center"/>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Focus overlay -->
+            <Canvas x:Name="focusOverlay" Visibility="Collapsed" IsHitTestVisible="True"
+                    MouseLeftButtonDown="FocusOverlay_MouseDown" MouseMove="FocusOverlay_MouseMove"
+                    MouseLeftButtonUp="FocusOverlay_MouseUp"/>
+
+            <!-- Spotlight -->
+            <Canvas x:Name="spotlightOverlay" Visibility="Collapsed" IsHitTestVisible="True"
+                    MouseMove="Spotlight_MouseMove" MouseLeftButtonDown="Spotlight_Cancel"/>
+
+            <!-- Screenshot flash -->
+            <Border x:Name="flashOverlay" Background="White" Opacity="0" IsHitTestVisible="False"/>
+
+            <!-- Shape preview (for drawing shapes) -->
+            <Canvas x:Name="shapePreviewCanvas" IsHitTestVisible="False"/>
+
+            <!-- Block nav -->
+            <StackPanel x:Name="blockNav" Visibility="Collapsed" Orientation="Horizontal"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,20,20">
+                <Border Background="#1976D2" CornerRadius="8" Padding="10,8" Margin="0,0,4,0" Cursor="Hand" MouseLeftButtonDown="PrevBlock_Click">
+                    <TextBlock Text="⬆️ Trước" FontSize="12" Foreground="White" FontWeight="SemiBold"/>
+                </Border>
+                <Border Background="#1976D2" CornerRadius="8" Padding="10,8" Margin="0,0,4,0" Cursor="Hand" MouseLeftButtonDown="NextBlock_Click">
+                    <TextBlock Text="⬇️ Tiếp" FontSize="12" Foreground="White" FontWeight="SemiBold"/>
+                </Border>
+                <Border x:Name="navBlockInfo" Background="#263238" CornerRadius="8" Padding="10,8">
+                    <TextBlock x:Name="txtBlockNav" Text="1/5" FontSize="12" Foreground="#90CAF9" FontWeight="SemiBold"/>
+                </Border>
+            </StackPanel>
+
+            <!-- Zoom badge -->
+            <Border x:Name="zoomBadge" Visibility="Collapsed" Background="#263238" CornerRadius="8" Padding="10,6"
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,20">
+                <TextBlock x:Name="txtZoomBadge" Text="🔍 100%" FontSize="12" Foreground="#90CAF9"/>
+            </Border>
+
+            <!-- Reaction Counter Panel -->
+            <Border x:Name="reactionCounterPanel" Visibility="Collapsed" Background="#263238" CornerRadius="8" Padding="10,6"
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,55">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="txtReactionUnderstand" Text="👍 0" FontSize="12" Foreground="#69F0AE" FontWeight="Bold" Margin="0,0,10,0"/>
+                    <TextBlock x:Name="txtReactionConfused" Text="😕 0" FontSize="12" Foreground="#FF9800" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Tool hint (bottom center) -->
+            <Border x:Name="toolHint" Background="#263238" CornerRadius="8" Padding="12,6" Opacity="0.9"
+                    HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20" Visibility="Collapsed">
+                <TextBlock x:Name="txtToolHint" Text="" FontSize="11" Foreground="#B0BEC5"/>
+            </Border>
+
+            <!-- Floating reaction canvas -->
+            <Canvas x:Name="floatingReactionCanvas" Background="Transparent" IsHitTestVisible="False"/>
+        </Grid>
+    </Grid>
+</Page>
+

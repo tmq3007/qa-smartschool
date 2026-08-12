@@ -1,0 +1,108 @@
+<Window x:Class="QASmartClass.HealthRoom.Views.HealthRecordInputDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Nhập kết quả khám sức khỏe" Height="620" Width="430"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Background="#F8FAFC" FontFamily="Segoe UI">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock Text="🏥 Phiếu Nhập Kết Quả Khám" FontSize="18" FontWeight="Bold" Foreground="#0F172A"/>
+            <TextBlock Text="Vui lòng điền đầy đủ và chính xác thông tin y tế của học sinh." FontSize="12" Foreground="#64748B" Margin="0,2,0,0"/>
+        </StackPanel>
+
+        <!-- Form fields -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="0,0,5,0">
+                
+                <TextBlock Text="Chọn học sinh *:" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,4"/>
+                <ComboBox x:Name="CboStudent" DisplayMemberPath="FullName" Margin="0,0,0,10" Height="36" Padding="6" SelectionChanged="CboStudent_SelectionChanged"/>
+
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Lớp:" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TxtClass" IsReadOnly="True" Background="#E2E8F0" Height="36" Padding="6" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Tuổi thực tế (nếu khác):" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TxtAge" Height="36" Padding="6" VerticalContentAlignment="Center" ToolTip="Để trống để hệ thống tự động tính theo khối lớp"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Chiều cao (cm) *:" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TxtHeight" Height="36" Padding="6" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Cân nặng (kg) *:" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TxtWeight" Height="36" Padding="6" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="Thị lực *" FontWeight="SemiBold" Foreground="#334155" Margin="0,5,0,4"/>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Mắt trái (0.1 - 2.0):" FontSize="11" Foreground="#64748B" Margin="0,0,0,2"/>
+                        <TextBox x:Name="TxtVisionLeft" Height="36" Padding="6" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Mắt phải (0.1 - 2.0):" FontSize="11" Foreground="#64748B" Margin="0,0,0,2"/>
+                        <TextBox x:Name="TxtVisionRight" Height="36" Padding="6" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="Bệnh mãn tính / Tiền sử dị ứng:" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,4"/>
+                <TextBox x:Name="TxtNotes" Height="60" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,0,15" Padding="6"/>
+
+                <!-- Guideline Box -->
+                <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="📋 Quy trình đo khám 3 bước chuẩn:" FontWeight="Bold" FontSize="12" Foreground="#1E40AF" Margin="0,0,0,4"/>
+                        <TextBlock Text="1. Đọc tên học sinh, đối chiếu thông tin lớp học hiển thị." FontSize="11" Foreground="#1E3A8A" TextWrapping="Wrap" Margin="0,0,0,2"/>
+                        <TextBlock Text="2. Đo chiều cao, cân nặng và kiểm tra thị lực hai mắt." FontSize="11" Foreground="#1E3A8A" TextWrapping="Wrap" Margin="0,0,0,2"/>
+                        <TextBlock Text="3. Ghi nhận tiền sử bệnh/dị ứng nổi bật và lưu trữ." FontSize="11" Foreground="#1E3A8A" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Actions -->
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="Hủy bỏ" Grid.Column="0" Margin="0,0,5,0" Padding="10" Background="#F1F5F9" Foreground="#475569" BorderThickness="0" Cursor="Hand" Click="BtnCancel_Click"/>
+            <Button Content="Lưu Kết Quả" Grid.Column="1" Margin="5,0,0,0" Padding="10" Background="#10B981" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnSave_Click" FontWeight="Bold"/>
+        </Grid>
+    </Grid>
+</Window>

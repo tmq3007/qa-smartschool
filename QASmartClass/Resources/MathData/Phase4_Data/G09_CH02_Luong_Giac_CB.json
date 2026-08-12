@@ -1,0 +1,376 @@
+{
+  "metadata": {
+    "chapterId": "g09_ch02",
+    "chapterName": "Lượng Giác Cơ Bản",
+    "grade": 9,
+    "totalSections": 3,
+    "totalConcepts": 7,
+    "totalProblems": 15,
+    "toolMapping": [
+      "TrigonometryTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 12,
+    "prerequisites": [
+      "g09_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "lg_01",
+      "sectionName": "Đường tròn lượng giác & Góc lượng giác",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "lg_001",
+          "name": "Đường tròn lượng giác",
+          "definition": "Đường tròn tâm O bán kính 1, gốc A(1,0), chiều dương ngược kim đồng hồ"
+        },
+        {
+          "id": "lg_002",
+          "name": "Góc lượng giác",
+          "definition": "Góc có thể > 360° hoặc < 0°. Đổi radian: π rad = 180°",
+          "examples": [
+            "90° = π/2 rad",
+            "360° = 2π rad",
+            "-90° = -π/2 rad"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lg_prob_001",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Đổi 60° ra radian:",
+          "options": [
+            "A) π/3",
+            "B) π/6",
+            "C) π/4",
+            "D) 2π/3"
+          ],
+          "correctAnswer": "A",
+          "solution": "60° × π/180° = π/3 rad",
+          "points": 5
+        },
+        {
+          "problemId": "lg_prob_002",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Đổi π/4 rad ra độ:",
+          "options": [
+            "A) 30°",
+            "B) 45°",
+            "C) 60°",
+            "D) 90°"
+          ],
+          "correctAnswer": "B",
+          "solution": "π/4 × 180°/π = 45°",
+          "points": 5
+        },
+        {
+          "problemId": "lg_prob_003",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Góc 450° tương ứng với góc nào trên đường tròn?",
+          "options": [
+            "A) 90°",
+            "B) 180°",
+            "C) 270°",
+            "D) 0°"
+          ],
+          "correctAnswer": "A",
+          "solution": "450° - 360° = 90°",
+          "points": 10
+        },
+        {
+          "problemId": "lg_prob_004",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Trên đường tròn lượng giác, điểm M(0,1) ứng với góc:",
+          "options": [
+            "A) 0°",
+            "B) 90°",
+            "C) 180°",
+            "D) 270°"
+          ],
+          "correctAnswer": "B",
+          "solution": "M(0,1) nằm trên trục Oy dương → góc 90°",
+          "points": 10
+        },
+        {
+          "problemId": "lg_prob_005",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Đổi 5π/6 rad ra độ:",
+          "options": [
+            "A) 150°",
+            "B) 120°",
+            "C) 300°",
+            "D) 210°"
+          ],
+          "correctAnswer": "A",
+          "solution": "5π/6 × 180/π = 150°",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "lg_02",
+      "sectionName": "Giá trị lượng giác góc đặc biệt",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "lg_003",
+          "name": "Bảng giá trị đặc biệt",
+          "properties": [
+            "sin0°=0, sin30°=1/2, sin45°=√2/2, sin60°=√3/2, sin90°=1",
+            "cos0°=1, cos30°=√3/2, cos45°=√2/2, cos60°=1/2, cos90°=0"
+          ]
+        },
+        {
+          "id": "lg_004",
+          "name": "Dấu của TSLG theo góc phần tư",
+          "definition": "I: tất cả (+). II: sin(+). III: tan(+). IV: cos(+)"
+        },
+        {
+          "id": "lg_005",
+          "name": "Hệ thức cơ bản",
+          "formulas": [
+            "sin²α + cos²α = 1",
+            "tanα = sinα/cosα",
+            "1 + tan²α = 1/cos²α"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lg_prob_006",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "sin 90° = ?",
+          "options": [
+            "A) 0",
+            "B) 1",
+            "C) -1",
+            "D) 1/2"
+          ],
+          "correctAnswer": "B",
+          "solution": "sin 90° = 1 (giá trị đặc biệt)",
+          "points": 5
+        },
+        {
+          "problemId": "lg_prob_007",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "sin²60° + cos²60° = ?",
+          "options": [
+            "A) 0",
+            "B) 1/2",
+            "C) 1",
+            "D) √3"
+          ],
+          "correctAnswer": "C",
+          "solution": "sin²α + cos²α = 1 với mọi α",
+          "points": 5
+        },
+        {
+          "problemId": "lg_prob_008",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính: 2sin30° × cos60° + tan45°",
+          "options": [
+            "A) 1.5",
+            "B) 2",
+            "C) 1",
+            "D) 2.5"
+          ],
+          "correctAnswer": "A",
+          "solution": "2×(1/2)×(1/2) + 1 = 0.5 + 1 = 1.5",
+          "points": 10
+        },
+        {
+          "problemId": "lg_prob_009",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "sin 150° = ?",
+          "options": [
+            "A) 1/2",
+            "B) -1/2",
+            "C) √3/2",
+            "D) -√3/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "sin150° = sin(180°-30°) = sin30° = 1/2 (góc phần tư II, sin > 0)",
+          "points": 10
+        },
+        {
+          "problemId": "lg_prob_010",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "cos 120° = ?",
+          "options": [
+            "A) 1/2",
+            "B) -1/2",
+            "C) √3/2",
+            "D) -√3/2"
+          ],
+          "correctAnswer": "B",
+          "solution": "cos120° = cos(180°-60°) = -cos60° = -1/2",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "lg_03",
+      "sectionName": "Ứng dụng lượng giác",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "lg_006",
+          "name": "Công thức cộng",
+          "formulas": [
+            "sin(a±b) = sinacosb ± cosasinb",
+            "cos(a±b) = cosacosb ∓ sinasinb"
+          ]
+        },
+        {
+          "id": "lg_007",
+          "name": "Ứng dụng thực tế",
+          "definition": "Đo chiều cao, khoảng cách dùng TSLG và các góc đo được"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lg_prob_011",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "sin(30°+60°) = sin 90° = ?",
+          "options": [
+            "A) 0",
+            "B) 1",
+            "C) -1",
+            "D) 1/2"
+          ],
+          "correctAnswer": "B",
+          "solution": "sin90° = 1",
+          "points": 5
+        },
+        {
+          "problemId": "lg_prob_012",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính sin75° = sin(45°+30°):",
+          "options": [
+            "A) (√6+√2)/4",
+            "B) (√3+1)/2",
+            "C) √3/2",
+            "D) (√6-√2)/4"
+          ],
+          "correctAnswer": "A",
+          "solution": "sin45°cos30° + cos45°sin30° = (√2/2)(√3/2) + (√2/2)(1/2) = (√6+√2)/4",
+          "points": 10
+        },
+        {
+          "problemId": "lg_prob_013",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "cos(2×60°) = cos120° = ?",
+          "options": [
+            "A) -1/2",
+            "B) 1/2",
+            "C) 0",
+            "D) -1"
+          ],
+          "correctAnswer": "A",
+          "solution": "cos120° = -cos60° = -1/2",
+          "points": 10
+        },
+        {
+          "problemId": "lg_prob_014",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Một cột cờ tạo bóng dài 10m khi mặt trời ở góc 60°. Chiều cao cột cờ:",
+          "options": [
+            "A) 10√3 m",
+            "B) 5√3 m",
+            "C) 10 m",
+            "D) 20 m"
+          ],
+          "correctAnswer": "A",
+          "solution": "tan60° = h/10 → h = 10×tan60° = 10√3 ≈ 17.3m",
+          "points": 15
+        },
+        {
+          "problemId": "lg_prob_015",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Chứng minh: sin²α + cos²α = 1 khi α=45°:",
+          "options": [
+            "A) (√2/2)² + (√2/2)² = 1/2+1/2 = 1",
+            "B) 1+0 = 1",
+            "C) 0+1 = 1",
+            "D) (1/2)²+(√3/2)² = 1"
+          ],
+          "correctAnswer": "A",
+          "solution": "sin45°=cos45°=√2/2. (√2/2)²+(√2/2)² = 2/4+2/4 = 1",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm: sin(a+b) = sin a + sin b",
+      "correction": "sin(a+b) = sinacosb + cosasinb (công thức cộng)"
+    },
+    {
+      "mistake": "Quên dấu theo góc phần tư: cos120° > 0",
+      "correction": "Góc phần tư II: cos < 0. cos120° = -1/2"
+    },
+    {
+      "mistake": "Nhầm radian và độ: π/6 = 60°",
+      "correction": "π/6 = 30° (π = 180°, π/6 = 30°)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "lg_quiz_01",
+      "title": "Kiểm tra: Lượng giác cơ bản",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "lg_prob_001"
+        },
+        {
+          "ref": "lg_prob_006"
+        },
+        {
+          "ref": "lg_prob_008"
+        },
+        {
+          "ref": "lg_prob_009"
+        },
+        {
+          "ref": "lg_prob_014"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

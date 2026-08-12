@@ -1,0 +1,116 @@
+<Window x:Class="QASmartClass.StudentClient.Views.SecureWebWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="Trình duyệt học tập an toàn" 
+        Width="1200" Height="800"
+        WindowState="Maximized"
+        WindowStyle="None"
+        AllowsTransparency="False"
+        Background="White"
+        Topmost="True"
+        ShowInTaskbar="False"
+        PreviewKeyDown="Window_PreviewKeyDown">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>  <!-- Header -->
+            <RowDefinition Height="*"/>   <!-- WebView -->
+            <RowDefinition Height="45"/>  <!-- Footer -->
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#1565C0" Padding="16,0">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🌐" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Trình duyệt học tập an toàn — QA SmartClass" 
+                               FontSize="16" FontWeight="Bold" 
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button x:Name="btnClose" 
+                        Width="38" Height="38"
+                        HorizontalAlignment="Right"
+                        Background="#E53935" 
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="btnClose_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" 
+                                    CornerRadius="8">
+                                <TextBlock Text="✖" Foreground="White" FontSize="14" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+        </Border>
+        
+        <!-- WebView2 -->
+        <Border Grid.Row="1" Background="White">
+            <Grid>
+                <!-- Loading Indicator -->
+                <StackPanel x:Name="loadingPanel" 
+                            VerticalAlignment="Center" 
+                            HorizontalAlignment="Center"
+                            Visibility="Visible">
+                    <TextBlock Text="🔄" FontSize="36" 
+                               HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="Đang tải trang web..." 
+                               FontSize="14" FontWeight="Bold" Foreground="#424242"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- WebView2 Control -->
+                <wv2:WebView2 x:Name="webView" 
+                              Visibility="Collapsed"/>
+            </Grid>
+        </Border>
+        
+        <!-- Footer Controls -->
+        <Border Grid.Row="2" Background="#F5F5F5" 
+               BorderBrush="#E0E0E0" BorderThickness="0,1,0,0"
+               Padding="16,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnBack" 
+                            Width="110" Height="32" Margin="0,0,8,0"
+                            Background="White" BorderBrush="#BDBDBD" BorderThickness="1"
+                            Cursor="Hand" Click="btnBack_Click">
+                        <TextBlock Text="⬅ Quay lại" FontSize="13" FontWeight="SemiBold" Foreground="#424242"/>
+                    </Button>
+                    <Button x:Name="btnForward" 
+                            Width="110" Height="32" Margin="0,0,8,0"
+                            Background="White" BorderBrush="#BDBDBD" BorderThickness="1"
+                            Cursor="Hand" Click="btnForward_Click">
+                        <TextBlock Text="➡ Tiếp tục" FontSize="13" FontWeight="SemiBold" Foreground="#424242"/>
+                    </Button>
+                    <Button x:Name="btnRefresh" 
+                            Width="95" Height="32"
+                            Background="White" BorderBrush="#BDBDBD" BorderThickness="1"
+                            Cursor="Hand" Click="btnRefresh_Click">
+                        <TextBlock Text="🔄 Tải lại" FontSize="13" FontWeight="SemiBold" Foreground="#424242"/>
+                    </Button>
+                </StackPanel>
+
+                <TextBlock x:Name="txtCurrentUrl" Grid.Column="1" 
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="13" Foreground="#1565C0" FontWeight="SemiBold"
+                           TextTrimming="CharacterEllipsis" Margin="20,0"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🛡️ Chế độ bảo vệ tích cực" FontSize="10" Foreground="#2E7D32" FontWeight="Bold"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

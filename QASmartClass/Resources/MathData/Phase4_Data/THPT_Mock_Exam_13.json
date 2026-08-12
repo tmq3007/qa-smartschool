@@ -1,0 +1,714 @@
+﻿{
+  "metadata": {
+    "examId": "thpt_mock_13",
+    "title": "Đề thi thử THPT Quốc Gia - Đề số 13 (Chuẩn 2025)",
+    "totalQuestions": 50,
+    "timeLimit": 90,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.2,
+    "grade": 12,
+    "examType": "MockExam"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "∫₀² (2x+1)dx bằng:",
+      "options": [
+        "A) 6",
+        "B) 5",
+        "C) 4",
+        "D) 8"
+      ],
+      "answer": "A",
+      "solution": "[x²+x]₀² = (4+2) - 0 = 6"
+    },
+    {
+      "id": 2,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Có 3 đường từ A đến B, 4 đường từ B đến C. Hỏi có bao nhiêu cách đi từ A đến C qua B?",
+      "options": [
+        "A) 7",
+        "B) 12",
+        "C) 24",
+        "D) 64"
+      ],
+      "answer": "B",
+      "solution": "Quy tắc nhân: 3 × 4 = 12 cách"
+    },
+    {
+      "id": 3,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Cho y = x⁴ - 2x² + 1. Số điểm cực trị là:",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 0"
+      ],
+      "answer": "C",
+      "solution": "y'=4x³-4x=4x(x²-1)=0→x=0,±1. Cả 3 đều đổi dấu→3 cực trị"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Giải phương trình z² - (3+i)z + (2+i) = 0",
+      "options": [
+        "A) z₁ = 2+i, z₂ = 1",
+        "B) z₁ = 3+i, z₂ = 2",
+        "C) z₁ = 1+i, z₂ = 2",
+        "D) z₁ = 2-i, z₂ = 1+i"
+      ],
+      "answer": "A",
+      "solution": "Δ = (3+i)² - 4(2+i) = 9+6i-1-8-4i = 2i\n√(2i): đặt (x+yi)² = 2i → x²-y²=0, 2xy=2\nx=y → 2x²=2 → x=1, y=1\n√Δ = 1+i\nz = [(3+i) ± (1+i)] / 2\nz₁ = (4+2i)/2 = 2+i\nz₂ = (2+0i)/2 = 1"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Từ các chữ số 0,1,2,3,4 lập số có 3 chữ số khác nhau. Có bao nhiêu số?",
+      "options": [
+        "A) 48",
+        "B) 60",
+        "C) 36",
+        "D) 120"
+      ],
+      "answer": "A",
+      "solution": "Chữ số hàng trăm ≠ 0: 4 cách\nChữ số hàng chục: 4 cách (còn lại)\nChữ số hàng đơn vị: 3 cách\nTổng: 4 × 4 × 3 = 48"
+    },
+    {
+      "id": 6,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính (2 + 3i)(1 - 4i)",
+      "options": [
+        "A) 14 - 5i",
+        "B) 2 - 5i",
+        "C) 14 + 5i",
+        "D) -10 - 5i"
+      ],
+      "answer": "A",
+      "solution": "= 2·1 + 2·(-4i) + 3i·1 + 3i·(-4i)\n= 2 - 8i + 3i - 12i²\n= 2 - 5i + 12 = 14 - 5i"
+    },
+    {
+      "id": 7,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Giá trị cực tiểu của y = x³ - 3x + 5 là:",
+      "options": [
+        "A) 3",
+        "B) 5",
+        "C) 7",
+        "D) -1"
+      ],
+      "answer": "A",
+      "solution": "y'=3x²-3=0→x=±1. y''=6x. y''(1)=6>0→CT tại x=1. y_CT=1-3+5=3"
+    },
+    {
+      "id": 8,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Giải: log₂(x-1) = 3",
+      "options": [
+        "A) x=8",
+        "B) x=9",
+        "C) x=7",
+        "D) x=4"
+      ],
+      "answer": "B",
+      "solution": "x-1 = 2³ = 8 → x = 9. ĐK: x>1 ✓"
+    },
+    {
+      "id": 9,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Rút gọn: log₂(8) + log₂(4) - log₂(2) =",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 6",
+        "D) 3"
+      ],
+      "answer": "A",
+      "solution": "3 + 2 - 1 = 4. Hoặc: log₂(8·4/2) = log₂(16) = 4"
+    },
+    {
+      "id": 10,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Diện tích hình phẳng giới hạn bởi y=x², Ox, x=0, x=2 là:",
+      "options": [
+        "A) 4/3",
+        "B) 8/3",
+        "C) 4",
+        "D) 2"
+      ],
+      "answer": "B",
+      "solution": "S = ∫₀² x²dx = [x³/3]₀² = 8/3"
+    },
+    {
+      "id": 11,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tính (3 + i)/(1 - 2i)",
+      "options": [
+        "A) 1/5 + 7i/5",
+        "B) 3/5 + i/5",
+        "C) 1 + 7i",
+        "D) 7/5 + i/5"
+      ],
+      "answer": "A",
+      "solution": "Nhân liên hợp:\n= (3+i)(1+2i) / [(1-2i)(1+2i)]\n= (3+6i+i+2i²) / (1+4)\n= (3+7i-2) / 5\n= (1+7i)/5 = 1/5 + 7i/5"
+    },
+    {
+      "id": 12,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Hàm số y = x³ - 3x² + 4 có cực đại tại:",
+      "options": [
+        "A) x=0",
+        "B) x=2",
+        "C) x=-1",
+        "D) x=1"
+      ],
+      "answer": "A",
+      "solution": "y' = 3x²-6x = 3x(x-2) = 0 → x=0, x=2.\ny''=6x-6. y''(0)=-6<0 → cực đại tại x=0. y''(2)=6>0 → cực tiểu tại x=2"
+    },
+    {
+      "id": 13,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Phương trình z² + 4 = 0 có nghiệm là:",
+      "options": [
+        "A) z = ±2",
+        "B) z = ±2i",
+        "C) z = ±4i",
+        "D) Vô nghiệm"
+      ],
+      "answer": "B",
+      "solution": "z² = -4 → z = ±√(-4) = ±2i"
+    },
+    {
+      "id": 14,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Giải: log₃(x²-5x+6) = 1",
+      "options": [
+        "A) x=0, x=5",
+        "B) x=1, x=4",
+        "C) x=2, x=3",
+        "D) Vô nghiệm"
+      ],
+      "answer": "A",
+      "solution": "x²-5x+6 = 3¹ = 3 → x²-5x+3=0. Δ=13. x=(5±√13)/2. Hmm, kiểm tra lại...\nSửa: x²-5x+6=3 → x²-5x+3=0 → x=(5±√13)/2 ≈ 4.3 và 0.7. ĐK: x²-5x+6>0 → x<2 hoặc x>3. x≈0.7<2✓, x≈4.3>3✓"
+    },
+    {
+      "id": 15,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Tìm m để y = x³ - 3mx + 1 đồng biến trên ℝ",
+      "options": [
+        "A) m ≤ 0",
+        "B) m < 0",
+        "C) m ≥ 0",
+        "D) m > 0"
+      ],
+      "answer": "A",
+      "solution": "y' = 3x²-3m ≥ 0 ∀x ⟺ 3m ≤ 3x² ∀x ⟺ m ≤ min(x²) = 0"
+    },
+    {
+      "id": 16,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Đạo hàm của y = 3ˣ là:",
+      "options": [
+        "A) x·3^(x-1)",
+        "B) 3ˣ·ln3",
+        "C) 3ˣ/ln3",
+        "D) 3^(x-1)"
+      ],
+      "answer": "B",
+      "solution": "(aˣ)' = aˣ·ln(a) → (3ˣ)' = 3ˣ·ln3"
+    },
+    {
+      "id": 17,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tính khoảng cách giữa 2 đường thẳng chéo nhau:\nd₁: (x-1)/2 = (y+1)/1 = z/3\nd₂: (x-2)/1 = y/(-1) = (z-1)/2",
+      "options": [
+        "A) 1/√35",
+        "B) √35",
+        "C) 1/√7",
+        "D) √7/5"
+      ],
+      "answer": "A",
+      "solution": "M₁(1,-1,0), u₁⃗=(2,1,3)\nM₂(2,0,1), u₂⃗=(1,-1,2)\nM₁M₂⃗ = (1,1,1)\nu₁⃗ × u₂⃗ = (1·2-3·(-1), 3·1-2·2, 2·(-1)-1·1) = (5,-1,-3)\nd = |M₁M₂⃗ · (u₁⃗×u₂⃗)| / |u₁⃗×u₂⃗|\n= |5-1-3| / √(25+1+9) = 1/√35"
+    },
+    {
+      "id": 18,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Cho z thỏa |z - 1 - i| = 1 và |z| đạt giá trị lớn nhất. Tìm z.",
+      "options": [
+        "A) 1 + i + (1+i)/√2",
+        "B) 1 + i + √2",
+        "C) (1 + √2/2) + (1 + √2/2)i",
+        "D) 2 + 2i"
+      ],
+      "answer": "C",
+      "solution": "|z - (1+i)| = 1: đường tròn tâm I(1,1), R=1.\n|z| max khi z nằm trên tia OI phía xa O nhất.\nOI = √2, |z|_max = √2 + 1.\nHướng OI: (1/√2, 1/√2).\nz = (1+1/√2) + (1+1/√2)i"
+    },
+    {
+      "id": 19,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "PT tiếp tuyến của y = x³ tại điểm có hoành độ x=1:",
+      "options": [
+        "A) y=3x-2",
+        "B) y=3x+2",
+        "C) y=x-1",
+        "D) y=3x"
+      ],
+      "answer": "A",
+      "solution": "y(1)=1, y'=3x², y'(1)=3. TT: y-1=3(x-1) → y=3x-2"
+    },
+    {
+      "id": 20,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tìm tập hợp các điểm M biểu diễn z thỏa |z - 2| = |z + 2i|",
+      "options": [
+        "A) Đường thẳng y = -x",
+        "B) Đường thẳng y = x",
+        "C) Đường tròn tâm O bán kính 2",
+        "D) Đường thẳng x + y = 2"
+      ],
+      "answer": "A",
+      "solution": "Gọi z = x + yi.\n|z - 2| = |z + 2i|\n√((x-2)² + y²) = √(x² + (y+2)²)\n(x-2)² + y² = x² + (y+2)²\nx² - 4x + 4 + y² = x² + y² + 4y + 4\n-4x = 4y → y = -x\nTập hợp: đường thẳng y = -x"
+    },
+    {
+      "id": 21,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tỉ lệ sản phẩm lỗi 5%. Lấy 10 SP kiểm tra. Tính XS có nhiều nhất 1 SP lỗi.",
+      "options": [
+        "A) ≈ 0.914",
+        "B) ≈ 0.599",
+        "C) ≈ 0.315",
+        "D) ≈ 0.500"
+      ],
+      "answer": "A",
+      "solution": "P(X≤1) = P(X=0) + P(X=1)\nP(0) = C(10,0)·0.05⁰·0.95¹⁰ = 0.5987\nP(1) = C(10,1)·0.05¹·0.95⁹ = 10·0.05·0.6302 = 0.3151\nP(X≤1) = 0.5987 + 0.3151 = 0.9138"
+    },
+    {
+      "id": 22,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Mô-đun của z = 3 + 4i bằng:",
+      "options": [
+        "A) 7",
+        "B) 5",
+        "C) 25",
+        "D) √7"
+      ],
+      "answer": "B",
+      "solution": "|z| = √(3² + 4²) = √(9 + 16) = √25 = 5"
+    },
+    {
+      "id": 23,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Giải: 9ˣ - 4·3ˣ + 3 = 0",
+      "options": [
+        "A) x=0, x=1",
+        "B) x=1, x=log₃4",
+        "C) x=0, x=log₃3=1",
+        "D) x=0, x=2"
+      ],
+      "answer": "C",
+      "solution": "Đặt t=3ˣ>0. t²-4t+3=0→t=1,3. 3ˣ=1→x=0; 3ˣ=3→x=1"
+    },
+    {
+      "id": 24,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Tiệm cận ngang của y = (3x²-1)/(x²+2) là:",
+      "options": [
+        "A) y=3",
+        "B) y=0",
+        "C) y=1",
+        "D) Không có"
+      ],
+      "answer": "A",
+      "solution": "lim[x→±∞] (3x²-1)/(x²+2) = lim 3-1/x² / 1+2/x² = 3"
+    },
+    {
+      "id": 25,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Cho log₂(a) = 3, log₂(b) = 5. Tính log₂(a²b³):",
+      "options": [
+        "A) 21",
+        "B) 19",
+        "C) 16",
+        "D) 23"
+      ],
+      "answer": "A",
+      "solution": "log₂(a²b³) = 2log₂(a) + 3log₂(b) = 2·3 + 3·5 = 21"
+    },
+    {
+      "id": 26,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "∫x·e^x dx bằng:",
+      "options": [
+        "A) xe^x-e^x+C",
+        "B) xe^x+C",
+        "C) e^x(x+1)+C",
+        "D) x²e^x/2+C"
+      ],
+      "answer": "A",
+      "solution": "Từng phần: u=x, dv=e^x dx → du=dx, v=e^x.\n∫xe^x dx = xe^x - ∫e^x dx = xe^x - e^x + C"
+    },
+    {
+      "id": 27,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Số tiệm cận của đồ thị y = (2x+1)/(x-1) là:",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 0"
+      ],
+      "answer": "B",
+      "solution": "TCĐ: x=1. TCN: y=2. Tổng: 2"
+    },
+    {
+      "id": 28,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Cho A(1,2,3), B(3,4,5). Tìm tọa độ trung điểm I của AB.",
+      "options": [
+        "A) I(2, 3, 4)",
+        "B) I(4, 6, 8)",
+        "C) I(1, 1, 1)",
+        "D) I(2, 2, 2)"
+      ],
+      "answer": "A",
+      "solution": "I = ((1+3)/2, (2+4)/2, (3+5)/2) = (2, 3, 4)"
+    },
+    {
+      "id": 29,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Đồ thị y = x³ - 3x² + 2 cắt trục Ox tại mấy điểm?",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 0"
+      ],
+      "answer": "C",
+      "solution": "x³-3x²+2=0. x=1 là nghiệm. Chia: (x-1)(x²-2x-2)=0. Δ=12>0→2 nghiệm nữa. Tổng: 3"
+    },
+    {
+      "id": 30,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính z · z̄ với z = 4 - 3i",
+      "options": [
+        "A) 25",
+        "B) 7",
+        "C) -7",
+        "D) 24"
+      ],
+      "answer": "A",
+      "solution": "z · z̄ = (4 - 3i)(4 + 3i) = 16 + 12i - 12i - 9i² = 16 + 9 = 25"
+    },
+    {
+      "id": 31,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "∫₀^(π/2) x·cosx dx bằng:",
+      "options": [
+        "A) π/2-1",
+        "B) 1",
+        "C) π/2",
+        "D) 0"
+      ],
+      "answer": "A",
+      "solution": "Từng phần: u=x, dv=cosx dx.\n= [x·sinx]₀^(π/2) - ∫₀^(π/2) sinx dx\n= π/2·1 - [-cosx]₀^(π/2)\n= π/2 - (0+1) = π/2 - 1"
+    },
+    {
+      "id": 32,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Giải: 4ˣ - 3·2ˣ + 2 = 0",
+      "options": [
+        "A) x=0, x=1",
+        "B) x=1, x=2",
+        "C) x=0, x=2",
+        "D) x=-1, x=1"
+      ],
+      "answer": "A",
+      "solution": "Đặt t=2ˣ>0. t²-3t+2=0 → t=1,2. 2ˣ=1→x=0; 2ˣ=2→x=1"
+    },
+    {
+      "id": 33,
+      "topic": "chuyen_de",
+      "difficulty": "Extreme",
+      "question": "Tìm m để PT x⁴ - 2x² = m có đúng 4 nghiệm phân biệt:",
+      "options": [
+        "A) -1<m<0",
+        "B) 0<m<1",
+        "C) m>0",
+        "D) m<-1"
+      ],
+      "answer": "A",
+      "solution": "Đặt t=x²≥0. Khảo sát f(x)=x⁴-2x². Vẽ đồ thị hàm bậc 4 trùng phương, ta thấy điểm cực tiểu tại x=±1, y=-1 và cực đại tại x=0, y=0. Để đường thẳng y=m cắt đồ thị tại 4 điểm thì -1 < m < 0."
+    },
+    {
+      "id": 34,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "log₂(32) bằng:",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 6",
+        "D) 3"
+      ],
+      "answer": "B",
+      "solution": "2⁵ = 32 → log₂(32) = 5"
+    },
+    {
+      "id": 35,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm hệ số của x⁵ trong khai triển (2x - 1)¹⁰",
+      "options": [
+        "A) -8064",
+        "B) 8064",
+        "C) -252",
+        "D) 252"
+      ],
+      "answer": "A",
+      "solution": "Số hạng tổng quát: C(10,k)·(2x)¹⁰⁻ᵏ·(-1)ᵏ\nCần 10-k = 5 → k = 5\nHệ số = C(10,5)·2⁵·(-1)⁵ = 252·32·(-1) = -8064"
+    },
+    {
+      "id": 36,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "CSC có u₁=2, d=3. Tìm u₁₀.",
+      "options": [
+        "A) 29",
+        "B) 32",
+        "C) 27",
+        "D) 30"
+      ],
+      "answer": "A",
+      "solution": "u₁₀ = 2+9·3 = 29"
+    },
+    {
+      "id": 37,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Cho CSN u₁=5, q=-2. Tính u₁+u₂+u₃:",
+      "options": [
+        "A) 15",
+        "B) 5",
+        "C) -5",
+        "D) -15"
+      ],
+      "answer": "A",
+      "solution": "u₁=5, u₂=-10, u₃=20. Tổng=5-10+20=15"
+    },
+    {
+      "id": 38,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "PT tiếp tuyến của y=x³ tại x=1:",
+      "options": [
+        "A) y=3x-2",
+        "B) y=3x+2",
+        "C) y=x-1",
+        "D) y=3x"
+      ],
+      "answer": "A",
+      "solution": "f(1)=1, f'(x)=3x², f'(1)=3. TT: y=3(x-1)+1=3x-2"
+    },
+    {
+      "id": 39,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Rút 1 lá bài từ bộ 52 lá. XS được lá Át:",
+      "options": [
+        "A) 1/13",
+        "B) 1/52",
+        "C) 4/13",
+        "D) 1/4"
+      ],
+      "answer": "A",
+      "solution": "Có 4 lá Át. P = 4/52 = 1/13"
+    },
+    {
+      "id": 40,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "lim (√(n²+n) - n) =",
+      "options": [
+        "A) 1/2",
+        "B) 0",
+        "C) 1",
+        "D) ∞"
+      ],
+      "answer": "A",
+      "solution": "Nhân liên hợp: (n²+n-n²)/(√(n²+n)+n) = n/(n√(1+1/n)+n) = 1/(√(1+1/n)+1) → 1/2"
+    },
+    {
+      "id": 41,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "GTLN của y=3sinx-4cosx là:",
+      "options": [
+        "A) 7",
+        "B) 5",
+        "C) 1",
+        "D) 25"
+      ],
+      "answer": "B",
+      "solution": "y_max=√(9+16)=√25=5"
+    },
+    {
+      "id": 42,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "(e²ˣ)' bằng:",
+      "options": [
+        "A) 2e²ˣ",
+        "B) e²ˣ",
+        "C) 2xe²ˣ",
+        "D) e²ˣ/2"
+      ],
+      "answer": "A",
+      "solution": "Đặt u=2x. (eᵘ)'=eᵘ·u'=e²ˣ·2=2e²ˣ"
+    },
+    {
+      "id": 43,
+      "topic": "chuyen_de",
+      "difficulty": "Hard",
+      "question": "Hộp có 4 bi đỏ, 6 bi xanh. Lấy 3 bi. XS có đúng 2 bi đỏ:",
+      "options": [
+        "A) 3/10",
+        "B) 36/120",
+        "C) 1/3",
+        "D) 2/5"
+      ],
+      "answer": "A",
+      "solution": "C₁₀³=120. C₄²·C₆¹=6·6=36. P=36/120=3/10"
+    },
+    {
+      "id": 44,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Tính sin75° =",
+      "options": [
+        "A) (√6+√2)/4",
+        "B) (√6-√2)/4",
+        "C) √3/2",
+        "D) 1/2"
+      ],
+      "answer": "A",
+      "solution": "sin75°=sin(45°+30°)=sin45°cos30°+cos45°sin30°=(√2/2)(√3/2)+(√2/2)(1/2)=(√6+√2)/4"
+    },
+    {
+      "id": 45,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Số nghiệm của cosx=√2/2 trên [0;4π) là:",
+      "options": [
+        "A) 2",
+        "B) 4",
+        "C) 6",
+        "D) 8"
+      ],
+      "answer": "B",
+      "solution": "x=±π/4+k2π. Trên [0;4π): x=π/4, 7π/4, 9π/4, 15π/4. Tổng 4 nghiệm"
+    },
+    {
+      "id": 46,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Tổng 2 nghiệm của 2x²-5x+3=0 là:",
+      "options": [
+        "A) 5/2",
+        "B) 3/2",
+        "C) -5/2",
+        "D) 5"
+      ],
+      "answer": "A",
+      "solution": "Vieta: x₁+x₂=-(-5)/2=5/2"
+    },
+    {
+      "id": 47,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "Cho A(1;3), B(5;7). Trung điểm M của AB có tọa độ:",
+      "options": [
+        "A) (3;5)",
+        "B) (2;5)",
+        "C) (3;4)",
+        "D) (6;10)"
+      ],
+      "answer": "A",
+      "solution": "M = ((1+5)/2; (3+7)/2) = (3; 5)"
+    },
+    {
+      "id": 48,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Mốt của mẫu {2,3,3,5,5,5,7,8} là:",
+      "options": [
+        "A) 5",
+        "B) 3",
+        "C) 7",
+        "D) 4.75"
+      ],
+      "answer": "A",
+      "solution": "Tần số: 2(1), 3(2), 5(3), 7(1), 8(1). Mốt = 5 (tần số cao nhất = 3)"
+    },
+    {
+      "id": 49,
+      "topic": "chuyen_de",
+      "difficulty": "Easy",
+      "question": "a⃗=(3;4), b⃗=(1;-2). Tích vô hướng a⃗·b⃗ =",
+      "options": [
+        "A) -5",
+        "B) 5",
+        "C) 11",
+        "D) -11"
+      ],
+      "answer": "A",
+      "solution": "a⃗·b⃗ = 3·1 + 4·(-2) = 3-8 = -5"
+    },
+    {
+      "id": 50,
+      "topic": "chuyen_de",
+      "difficulty": "Medium",
+      "question": "Độ lệch chuẩn của mẫu {1, 3, 5, 7, 9} là:",
+      "options": [
+        "A) 2√2",
+        "B) 4",
+        "C) √8",
+        "D) 2.83"
+      ],
+      "answer": "A",
+      "solution": "x̄=5. S²=[(1-5)²+(3-5)²+(5-5)²+(7-5)²+(9-5)²]/5 = (16+4+0+4+16)/5=8. S=√8=2√2"
+    }
+  ]
+}

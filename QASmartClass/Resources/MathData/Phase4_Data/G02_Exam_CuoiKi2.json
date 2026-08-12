@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g02_cuoiki2",
+    "title": "Đề thi Cuối Kì 2 Toán Lớp 2",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 2,
+    "examType": "CuoiKi2"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Chia 25 bông hoa thành các bó, mỗi bó 5 bông. Được bao nhiêu bó?",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 6",
+        "D) 3"
+      ],
+      "answer": "B",
+      "solution": "25 ÷ 5 = 5 bó"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Bạn An bắt đầu làm bài tập lúc 14:30 và kết thúc lúc 16:00. Bạn An làm bài trong bao lâu?",
+      "options": [
+        "A) 1 giờ",
+        "B) 1 giờ 30 phút",
+        "C) 2 giờ",
+        "D) 2 giờ 30 phút"
+      ],
+      "answer": "B",
+      "solution": "16:00 - 14:30 = 1 giờ 30 phút"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Sân HCN 20 m × 15 m. Lát gạch vuông cạnh 1 m. Cần bao nhiêu viên?",
+      "options": [
+        "A) 200",
+        "B) 250",
+        "C) 300",
+        "D) 350"
+      ],
+      "answer": "C",
+      "solution": "S sân = 20 × 15 = 300 m². Mỗi viên 1 m² → cần 300 viên"
+    },
+    {
+      "id": 4,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Qua 2 điểm phân biệt vẽ được mấy đường thẳng?",
+      "options": [
+        "A) 0",
+        "B) 1",
+        "C) 2",
+        "D) Vô số"
+      ],
+      "answer": "B",
+      "solution": "Qua 2 điểm phân biệt chỉ vẽ được đúng 1 đường thẳng"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "2 × 6 = ?",
+      "options": [
+        "A) 10",
+        "B) 12",
+        "C) 14",
+        "D) 8"
+      ],
+      "answer": "B",
+      "solution": "2 × 6 = 12. Hoặc: 6 + 6 = 12"
+    },
+    {
+      "id": 6,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Chu vi hình chữ nhật dài 5 cm, rộng 3 cm = ?",
+      "options": [
+        "A) 8 cm",
+        "B) 15 cm",
+        "C) 16 cm",
+        "D) 30 cm"
+      ],
+      "answer": "C",
+      "solution": "CV = (5 + 3) × 2 = 16 cm"
+    },
+    {
+      "id": 7,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Đường gấp khúc ABCD có AB = 3 cm, BC = 5 cm, CD = 4 cm. Độ dài đường gấp khúc = ?",
+      "options": [
+        "A) 10 cm",
+        "B) 12 cm",
+        "C) 15 cm",
+        "D) 9 cm"
+      ],
+      "answer": "B",
+      "solution": "Tổng = 3 + 5 + 4 = 12 cm"
+    },
+    {
+      "id": 8,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1 mét bằng bao nhiêu xăng-ti-mét?",
+      "options": [
+        "A) 10cm",
+        "B) 100cm",
+        "C) 1000cm",
+        "D) 50cm"
+      ],
+      "answer": "B",
+      "solution": "1m = 100cm. Mỗi mét chia thành 100 phần bằng nhau, mỗi phần là 1cm"
+    },
+    {
+      "id": 9,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "3 điểm không thẳng hàng tạo được mấy đoạn thẳng?",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 4"
+      ],
+      "answer": "C",
+      "solution": "3 điểm: AB, AC, BC = 3 đoạn thẳng"
+    },
+    {
+      "id": 10,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Diện tích hình vuông cạnh 5 cm = ?",
+      "options": [
+        "A) 10 cm²",
+        "B) 20 cm²",
+        "C) 25 cm²",
+        "D) 30 cm²"
+      ],
+      "answer": "C",
+      "solution": "S = 5 × 5 = 25 cm²"
+    },
+    {
+      "id": 11,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Hình vuông S = 36 cm². Cạnh = ?",
+      "options": [
+        "A) 4 cm",
+        "B) 6 cm",
+        "C) 9 cm",
+        "D) 12 cm"
+      ],
+      "answer": "B",
+      "solution": "a = √36 = 6 cm (vì 6 × 6 = 36)"
+    },
+    {
+      "id": 12,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "2 × ? = 16. Số cần điền là?",
+      "options": [
+        "A) 6",
+        "B) 7",
+        "C) 8",
+        "D) 9"
+      ],
+      "answer": "C",
+      "solution": "2 × 8 = 16. Hoặc: 16 ÷ 2 = 8"
+    },
+    {
+      "id": 13,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1 giờ bằng bao nhiêu phút?",
+      "options": [
+        "A) 30 phút",
+        "B) 45 phút",
+        "C) 60 phút",
+        "D) 100 phút"
+      ],
+      "answer": "C",
+      "solution": "1 giờ = 60 phút"
+    },
+    {
+      "id": 14,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "3 × 7 + 2 × 5 = ?",
+      "options": [
+        "A) 31",
+        "B) 28",
+        "C) 25",
+        "D) 35"
+      ],
+      "answer": "A",
+      "solution": "3 × 7 = 21. 2 × 5 = 10. 21 + 10 = 31"
+    },
+    {
+      "id": 15,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "23 ÷ 5 = ? dư ?",
+      "options": [
+        "A) 4 dư 3",
+        "B) 5 dư 0",
+        "C) 4 dư 2",
+        "D) 3 dư 8"
+      ],
+      "answer": "A",
+      "solution": "23 ÷ 5: 5 × 4 = 20, 23 - 20 = 3. Kết quả: 4 dư 3"
+    },
+    {
+      "id": 16,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "HCN có chu vi 24 cm, chiều dài gấp đôi chiều rộng. Chiều dài = ?",
+      "options": [
+        "A) 6 cm",
+        "B) 8 cm",
+        "C) 10 cm",
+        "D) 12 cm"
+      ],
+      "answer": "B",
+      "solution": "Gọi rộng = a → dài = 2a. CV = (2a + a) × 2 = 6a = 24. a = 4. Dài = 8 cm"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Tìm x: 4 × x = 5 × 8",
+      "options": [
+        "A) 8",
+        "B) 10",
+        "C) 12",
+        "D) 9"
+      ],
+      "answer": "B",
+      "solution": "5 × 8 = 40. 4 × x = 40. x = 40 ÷ 4 = 10"
+    },
+    {
+      "id": 18,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "3 × 4 = ?",
+      "options": [
+        "A) 7",
+        "B) 9",
+        "C) 12",
+        "D) 15"
+      ],
+      "answer": "C",
+      "solution": "3 × 4 = 12. Hoặc: 4 + 4 + 4 = 12"
+    },
+    {
+      "id": 19,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Chia đều 15 viên kẹo cho 4 bạn. Mỗi bạn được mấy viên? Dư mấy viên?",
+      "options": [
+        "A) 3 viên, dư 3",
+        "B) 4 viên, dư 1",
+        "C) 3 viên, dư 2",
+        "D) 5 viên, dư 0"
+      ],
+      "answer": "A",
+      "solution": "15 ÷ 4 = 3 dư 3. Vì 4 × 3 = 12, 15 - 12 = 3"
+    },
+    {
+      "id": 20,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Số nào vừa thuộc bảng nhân 2 vừa thuộc bảng nhân 3?",
+      "options": [
+        "A) 8",
+        "B) 9",
+        "C) 10",
+        "D) 6"
+      ],
+      "answer": "D",
+      "solution": "6 = 2 × 3 = 3 × 2. Vậy 6 thuộc cả hai bảng nhân"
+    }
+  ]
+}

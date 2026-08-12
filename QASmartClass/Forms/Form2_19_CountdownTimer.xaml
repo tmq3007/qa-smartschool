@@ -1,0 +1,990 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_19_CountdownTimer"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Đồng Hồ Đếm Ngược"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        Width="400"
+
+        Height="658"
+
+        Topmost="True"
+
+        ResizeMode="NoResize"
+
+        ShowInTaskbar="False"
+
+        Loaded="Window_Loaded"
+
+        KeyDown="Window_KeyDown">
+
+    
+
+    <Border Background="White"
+
+            CornerRadius="15"
+
+            Padding="20"
+
+            Margin="10">
+
+        <Border.Effect>
+
+            <DropShadowEffect Color="Black" Opacity="0.3" ShadowDepth="5" BlurRadius="20"/>
+
+        </Border.Effect>
+
+        
+
+        <Grid>
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/> <!-- Header -->
+
+                <RowDefinition Height="Auto"/> <!-- Time Input -->
+
+                <RowDefinition Height="Auto"/> <!-- Presets -->
+
+                <RowDefinition Height="*"/>    <!-- Timer Display -->
+
+                <RowDefinition Height="Auto"/> <!-- Controls -->
+
+            </Grid.RowDefinitions>
+
+            
+
+            <!-- HEADER -->
+
+            <Grid Grid.Row="0" Margin="0,0,0,20" 
+
+                  MouseLeftButtonDown="Header_MouseLeftButtonDown"
+
+                  Background="Transparent"
+
+                  Cursor="SizeAll">
+
+                <TextBlock Text="⏱️ Đồng Hồ Đếm Ngược"
+
+                          FontSize="22"
+
+                          FontWeight="Bold"
+
+                          Foreground="#4a5568"
+
+                          HorizontalAlignment="Center"
+
+                          IsHitTestVisible="False"/>
+
+                <Button x:Name="btnClose"
+
+                       Content="✕"
+
+                       Width="30" Height="30"
+
+                       HorizontalAlignment="Right"
+
+                       VerticalAlignment="Top"
+
+                       Background="Transparent"
+
+                       BorderThickness="0"
+
+                       FontSize="18"
+
+                       Foreground="#718096"
+
+                       Cursor="Hand"
+
+                       Click="btnClose_Click"
+
+                       ToolTip="Đóng"/>
+
+            </Grid>
+
+            
+
+            <!-- SECTION 1: TIME INPUT -->
+
+            <StackPanel Grid.Row="1" Margin="0,0,0,15">
+
+                <TextBlock Text="Thiết Lập Thời Gian"
+
+                          FontSize="16"
+
+                          FontWeight="SemiBold"
+
+                          Foreground="#2d3748"
+
+                          HorizontalAlignment="Center"
+
+                          Margin="0,0,0,15"/>
+
+                
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    
+
+                    <!-- Hours -->
+
+                    <Border Grid.Column="0" 
+
+                           Background="#edf2f7"
+
+                           BorderBrush="#cbd5e0"
+
+                           BorderThickness="2"
+
+                           CornerRadius="8"
+
+                           Padding="10"
+
+                           Margin="5">
+
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="*"/>
+
+                            </Grid.RowDefinitions>
+
+                            
+
+                            <TextBlock Grid.Row="0"
+
+                                      Text="Giờ"
+
+                                      FontSize="12"
+
+                                      Foreground="#718096"
+
+                                      HorizontalAlignment="Center"
+
+                                      Margin="0,0,0,5"/>
+
+                            
+
+                            <Grid Grid.Row="1">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                
+
+                                <TextBox x:Name="txtHours"
+
+                                        Grid.Column="0"
+
+                                        Text="00"
+
+                                        FontFamily="Segoe UI"
+
+                                        FontSize="28"
+
+                                        FontWeight="Bold"
+
+                                        Foreground="#2d3748"
+
+                                        TextAlignment="Center"
+
+                                        BorderThickness="0"
+
+                                        Background="Transparent"
+
+                                        MaxLength="2"
+
+                                        PreviewTextInput="NumericOnly_PreviewTextInput"
+
+                                        GotFocus="TextBox_GotFocus"
+
+                                        VerticalAlignment="Center"/>
+
+                                
+
+                                <StackPanel Grid.Column="1" 
+
+                                           VerticalAlignment="Center"
+
+                                           Margin="5,0,0,0">
+
+                                    <Button x:Name="btnHoursUp"
+
+                                           Content="▲"
+
+                                           Width="36" Height="22"
+
+                                           FontSize="10"
+
+                                           Padding="0"
+
+                                           Background="#e6fffa"
+
+                                           BorderBrush="#81e6d9"
+
+                                           BorderThickness="1"
+
+                                           Foreground="#234e52"
+
+                                           Cursor="Hand"
+
+                                           Click="btnHoursUp_Click"
+
+                                           ToolTip="Tăng giờ"/>
+
+                                    <Button x:Name="btnHoursDown"
+
+                                           Content="▼"
+
+                                           Width="36" Height="22"
+
+                                           FontSize="10"
+
+                                           Padding="0"
+
+                                           Margin="0,2,0,0"
+
+                                           Background="#e6fffa"
+
+                                           BorderBrush="#81e6d9"
+
+                                           BorderThickness="1"
+
+                                           Foreground="#234e52"
+
+                                           Cursor="Hand"
+
+                                           Click="btnHoursDown_Click"
+
+                                           ToolTip="Giảm giờ"/>
+
+                                </StackPanel>
+
+                            </Grid>
+
+                        </Grid>
+
+                    </Border>
+
+                    
+
+                    <!-- Minutes -->
+
+                    <Border Grid.Column="1"
+
+                           Background="#edf2f7"
+
+                           BorderBrush="#cbd5e0"
+
+                           BorderThickness="2"
+
+                           CornerRadius="8"
+
+                           Padding="10"
+
+                           Margin="5">
+
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="*"/>
+
+                            </Grid.RowDefinitions>
+
+                            
+
+                            <TextBlock Grid.Row="0"
+
+                                      Text="Phút"
+
+                                      FontSize="12"
+
+                                      Foreground="#718096"
+
+                                      HorizontalAlignment="Center"
+
+                                      Margin="0,0,0,5"/>
+
+                            
+
+                            <Grid Grid.Row="1">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                
+
+                                <TextBox x:Name="txtMinutes"
+
+                                        Grid.Column="0"
+
+                                        Text="10"
+
+                                        FontFamily="Segoe UI"
+
+                                        FontSize="28"
+
+                                        FontWeight="Bold"
+
+                                        Foreground="#2d3748"
+
+                                        TextAlignment="Center"
+
+                                        BorderThickness="0"
+
+                                        Background="Transparent"
+
+                                        MaxLength="2"
+
+                                        PreviewTextInput="NumericOnly_PreviewTextInput"
+
+                                        GotFocus="TextBox_GotFocus"
+
+                                        VerticalAlignment="Center"/>
+
+                                
+
+                                <StackPanel Grid.Column="1" 
+
+                                           VerticalAlignment="Center"
+
+                                           Margin="5,0,0,0">
+
+                                    <Button x:Name="btnMinutesUp"
+
+                                           Content="▲"
+
+                                           Width="36" Height="22"
+
+                                           FontSize="10"
+
+                                           Padding="0"
+
+                                           Background="#e6fffa"
+
+                                           BorderBrush="#81e6d9"
+
+                                           BorderThickness="1"
+
+                                           Foreground="#234e52"
+
+                                           Cursor="Hand"
+
+                                           Click="btnMinutesUp_Click"
+
+                                           ToolTip="Tăng phút"/>
+
+                                    <Button x:Name="btnMinutesDown"
+
+                                           Content="▼"
+
+                                           Width="36" Height="22"
+
+                                           FontSize="10"
+
+                                           Padding="0"
+
+                                           Margin="0,2,0,0"
+
+                                           Background="#e6fffa"
+
+                                           BorderBrush="#81e6d9"
+
+                                           BorderThickness="1"
+
+                                           Foreground="#234e52"
+
+                                           Cursor="Hand"
+
+                                           Click="btnMinutesDown_Click"
+
+                                           ToolTip="Giảm phút"/>
+
+                                </StackPanel>
+
+                            </Grid>
+
+                        </Grid>
+
+                    </Border>
+
+                    
+
+                    <!-- Seconds -->
+
+                    <Border Grid.Column="2"
+
+                           Background="#edf2f7"
+
+                           BorderBrush="#cbd5e0"
+
+                           BorderThickness="2"
+
+                           CornerRadius="8"
+
+                           Padding="10"
+
+                           Margin="5">
+
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+
+                                <RowDefinition Height="Auto"/>
+
+                                <RowDefinition Height="*"/>
+
+                            </Grid.RowDefinitions>
+
+                            
+
+                            <TextBlock Grid.Row="0"
+
+                                      Text="Giây"
+
+                                      FontSize="12"
+
+                                      Foreground="#718096"
+
+                                      HorizontalAlignment="Center"
+
+                                      Margin="0,0,0,5"/>
+
+                            
+
+                            <Grid Grid.Row="1">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                
+
+                                <TextBox x:Name="txtSeconds"
+
+                                        Grid.Column="0"
+
+                                        Text="00"
+
+                                        FontFamily="Segoe UI"
+
+                                        FontSize="28"
+
+                                        FontWeight="Bold"
+
+                                        Foreground="#2d3748"
+
+                                        TextAlignment="Center"
+
+                                        BorderThickness="0"
+
+                                        Background="Transparent"
+
+                                        MaxLength="2"
+
+                                        PreviewTextInput="NumericOnly_PreviewTextInput"
+
+                                        GotFocus="TextBox_GotFocus"
+
+                                        VerticalAlignment="Center"/>
+
+                                
+
+                                <StackPanel Grid.Column="1" 
+
+                                           VerticalAlignment="Center"
+
+                                           Margin="5,0,0,0">
+
+                                    <Button x:Name="btnSecondsUp"
+
+                                           Content="▲"
+
+                                           Width="36" Height="22"
+
+                                           FontSize="10"
+
+                                           Padding="0"
+
+                                           Background="#e6fffa"
+
+                                           BorderBrush="#81e6d9"
+
+                                           BorderThickness="1"
+
+                                           Foreground="#234e52"
+
+                                           Cursor="Hand"
+
+                                           Click="btnSecondsUp_Click"
+
+                                           ToolTip="Tăng giây"/>
+
+                                    <Button x:Name="btnSecondsDown"
+
+                                           Content="▼"
+
+                                           Width="36" Height="22"
+
+                                           FontSize="10"
+
+                                           Padding="0"
+
+                                           Margin="0,2,0,0"
+
+                                           Background="#e6fffa"
+
+                                           BorderBrush="#81e6d9"
+
+                                           BorderThickness="1"
+
+                                           Foreground="#234e52"
+
+                                           Cursor="Hand"
+
+                                           Click="btnSecondsDown_Click"
+
+                                           ToolTip="Giảm giây"/>
+
+                                </StackPanel>
+
+                            </Grid>
+
+                        </Grid>
+
+                    </Border>
+
+                </Grid>
+
+            </StackPanel>
+
+            
+
+            <!-- SECTION 2: QUICK PRESETS -->
+
+            <StackPanel Grid.Row="2" Margin="0,0,0,20">
+
+                <TextBlock Text="Cài đặt nhanh:"
+
+                          FontSize="12"
+
+                          Foreground="#718096"
+
+                          Margin="0,0,0,8"/>
+
+                
+
+                <UniformGrid Rows="1" Columns="5">
+
+                    <Button Content="5 phút"
+
+                           Margin="2"
+
+                           Padding="8,6"
+
+                           Background="#e6fffa"
+
+                           BorderBrush="#81e6d9"
+
+                           BorderThickness="1.5"
+
+                           Foreground="#234e52"
+
+                           FontSize="11"
+
+                           Cursor="Hand"
+
+                           Click="Preset_Click"
+
+                           Tag="5"/>
+
+                    <Button Content="10 phút"
+
+                           Margin="2"
+
+                           Padding="8,6"
+
+                           Background="#e6fffa"
+
+                           BorderBrush="#81e6d9"
+
+                           BorderThickness="1.5"
+
+                           Foreground="#234e52"
+
+                           FontSize="11"
+
+                           Cursor="Hand"
+
+                           Click="Preset_Click"
+
+                           Tag="10"/>
+
+                    <Button Content="15 phút"
+
+                           Margin="2"
+
+                           Padding="8,6"
+
+                           Background="#e6fffa"
+
+                           BorderBrush="#81e6d9"
+
+                           BorderThickness="1.5"
+
+                           Foreground="#234e52"
+
+                           FontSize="11"
+
+                           Cursor="Hand"
+
+                           Click="Preset_Click"
+
+                           Tag="15"/>
+
+                    <Button Content="30 phút"
+
+                           Margin="2"
+
+                           Padding="8,6"
+
+                           Background="#e6fffa"
+
+                           BorderBrush="#81e6d9"
+
+                           BorderThickness="1.5"
+
+                           Foreground="#234e52"
+
+                           FontSize="11"
+
+                           Cursor="Hand"
+
+                           Click="Preset_Click"
+
+                           Tag="30"/>
+
+                    <Button Content="1 giờ"
+
+                           Margin="2"
+
+                           Padding="8,6"
+
+                           Background="#e6fffa"
+
+                           BorderBrush="#81e6d9"
+
+                           BorderThickness="1.5"
+
+                           Foreground="#234e52"
+
+                           FontSize="11"
+
+                           Cursor="Hand"
+
+                           Click="Preset_Click"
+
+                           Tag="60"/>
+
+                </UniformGrid>
+
+            </StackPanel>
+
+            
+
+            <!-- SECTION 3: TIMER DISPLAY -->
+
+            <StackPanel Grid.Row="3" 
+
+                       HorizontalAlignment="Center"
+
+                       VerticalAlignment="Center">
+
+                <TextBlock Text="Thời Gian Còn Lại"
+
+                          FontSize="16"
+
+                          FontWeight="SemiBold"
+
+                          Foreground="#2d3748"
+
+                          HorizontalAlignment="Center"
+
+                          Margin="0,0,0,20"/>
+
+                
+
+                <!-- Timer Circle -->
+
+                <Grid Width="260" Height="260">
+
+                    <!-- Background Circle -->
+
+                    <Ellipse Width="260" Height="260"
+
+                            Stroke="#cbd5e0"
+
+                            StrokeThickness="12"
+
+                            Fill="#f7fafc"/>
+
+                    
+
+                    <!-- Progress Arc -->
+
+                    <Canvas Width="260" Height="260">
+
+                        <Path x:Name="ProgressArc"
+
+                             Stroke="#3182ce"
+
+                             StrokeThickness="16"
+
+                             Fill="Transparent"
+
+                             StrokeStartLineCap="Round"
+
+                             StrokeEndLineCap="Round"/>
+
+                    </Canvas>
+
+                    
+
+                    <!-- Timer Text -->
+
+                    <StackPanel VerticalAlignment="Center">
+
+                        <TextBlock x:Name="txtTimerDisplay"
+
+                                  Text="10:00"
+
+                                  FontFamily="Segoe UI"
+
+                                  FontSize="56"
+
+                                  FontWeight="Bold"
+
+                                  Foreground="#1a365d"
+
+                                  HorizontalAlignment="Center">
+
+                            <TextBlock.Effect>
+
+                                <DropShadowEffect Color="#3182ce" 
+
+                                                Opacity="0.3" 
+
+                                                ShadowDepth="0" 
+
+                                                BlurRadius="8"/>
+
+                            </TextBlock.Effect>
+
+                        </TextBlock>
+
+                        <TextBlock Text="phút : giây"
+
+                                  FontSize="14"
+
+                                  FontWeight="SemiBold"
+
+                                  Foreground="#4a5568"
+
+                                  HorizontalAlignment="Center"
+
+                                  Margin="0,5,0,0"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+                
+
+                <!-- Status Indicator -->
+
+                <StackPanel Orientation="Horizontal"
+
+                           HorizontalAlignment="Center"
+
+                           Margin="0,20,0,0">
+
+                    <Ellipse x:Name="statusDot"
+
+                            Width="12" Height="12"
+
+                            Fill="#cbd5e0"
+
+                            Margin="0,0,8,0"/>
+
+                    <TextBlock x:Name="txtStatus"
+
+                              Text="Sẵn sàng"
+
+                              FontSize="14"
+
+                              Foreground="#718096"/>
+
+                </StackPanel>
+
+            </StackPanel>
+
+            
+
+            <!-- SECTION 4: CONTROL BUTTONS -->
+
+            <Grid Grid.Row="4" Margin="0,20,0,0">
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                </Grid.ColumnDefinitions>
+
+                
+
+                <!-- Start/Resume Button -->
+
+                <Button x:Name="btnStart"
+
+                       Grid.Column="0"
+
+                       Content="▶ Bắt đầu"
+
+                       Height="50"
+
+                       Margin="2"
+
+                       Background="#48bb78"
+
+                       BorderBrush="#38a169"
+
+                       BorderThickness="2"
+
+                       Foreground="White"
+
+                       FontSize="16"
+
+                       FontWeight="Bold"
+
+                       Cursor="Hand"
+
+                       Click="btnStart_Click"
+
+                       ToolTip="Bắt đầu đếm ngược (Space)"/>
+
+                
+
+                <!-- Pause Button -->
+
+                <Button x:Name="btnPause"
+
+                       Grid.Column="1"
+
+                       Content="⏸ Tạm dừng"
+
+                       Height="50"
+
+                       Margin="2"
+
+                       Background="#ed8936"
+
+                       BorderBrush="#dd6b20"
+
+                       BorderThickness="2"
+
+                       Foreground="White"
+
+                       FontSize="16"
+
+                       FontWeight="Bold"
+
+                       Cursor="Hand"
+
+                       Click="btnPause_Click"
+
+                       IsEnabled="False"
+
+                       ToolTip="Tạm dừng (Space)"/>
+
+                
+
+                <!-- Reset Button -->
+
+                <Button x:Name="btnReset"
+
+                       Grid.Column="2"
+
+                       Content="↻ Đặt lại"
+
+                       Height="50"
+
+                       Margin="2"
+
+                       Background="#718096"
+
+                       BorderBrush="#4a5568"
+
+                       BorderThickness="2"
+
+                       Foreground="White"
+
+                       FontSize="16"
+
+                       FontWeight="Bold"
+
+                       Cursor="Hand"
+
+                       Click="btnReset_Click"
+
+                       ToolTip="Đặt lại (R)"/>
+
+            </Grid>
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

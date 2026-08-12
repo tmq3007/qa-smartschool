@@ -1,0 +1,111 @@
+﻿<UserControl x:Class="QASmartTouch.Controls.ColorPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="180" d:DesignWidth="240">
+    
+    <UserControl.Resources>
+        <!-- Drop Shadow Effect -->
+        <DropShadowEffect x:Key="DropShadowEffect" 
+                        Color="Black" 
+                        Opacity="0.2" 
+                        BlurRadius="16" 
+                        ShadowDepth="4"/>
+        
+        <!-- Color Swatch Style -->
+        <Style x:Key="ColorSwatchStyle" TargetType="Border">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#3498db"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    
+    <Border Background="White"
+            CornerRadius="12"
+            Padding="15"
+            Effect="{StaticResource DropShadowEffect}">
+        
+        <StackPanel>
+            <!-- Title -->
+            <TextBlock Text="Chọn màu:"
+                      FontSize="13"
+                      FontWeight="SemiBold"
+                      Foreground="#2c3e50"
+                      Margin="0,0,0,10"/>
+            
+            <!-- Color Grid -->
+            <UniformGrid Columns="6" Rows="3">
+                
+                <!-- Row 1: Basic Colors -->
+                <Border Background="Black" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#000000"/>
+                <Border Background="#e74c3c" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#e74c3c"/>
+                <Border Background="#3498db" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#3498db"/>
+                <Border Background="#2ecc71" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#2ecc71"/>
+                <Border Background="#f39c12" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#f39c12"/>
+                <Border Background="#9b59b6" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#9b59b6"/>
+                
+                <!-- Row 2: Secondary Colors -->
+                <Border Background="#34495e" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#34495e"/>
+                <Border Background="#e67e22" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#e67e22"/>
+                <Border Background="#1abc9c" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#1abc9c"/>
+                <Border Background="#f1c40f" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#f1c40f"/>
+                <Border Background="#95a5a6" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#95a5a6"/>
+                <Border Background="White" BorderBrush="#ddd" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#FFFFFF"/>
+                
+                <!-- Row 3: Pastel Colors -->
+                <Border Background="#ff6b9d" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#ff6b9d"/>
+                <Border Background="#c44569" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#c44569"/>
+                <Border Background="#4b7bec" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#4b7bec"/>
+                <Border Background="#26de81" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#26de81"/>
+                <Border Background="#fed330" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#fed330"/>
+                <Border Background="#a55eea" Style="{StaticResource ColorSwatchStyle}" MouseDown="ColorSwatch_MouseDown" Tag="#a55eea"/>
+            </UniformGrid>
+            
+            <!-- Custom Color Button -->
+            <Button x:Name="btnCustomColor"
+                    Content="🎨 Màu tùy chỉnh..."
+                    Margin="0,10,0,0"
+                    Padding="8,6"
+                    Background="#f8f9fa"
+                    BorderBrush="#ddd"
+                    BorderThickness="1"
+                    Click="btnCustomColor_Click"
+                    Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                           BorderBrush="{TemplateBinding BorderBrush}"
+                                           BorderThickness="{TemplateBinding BorderThickness}"
+                                           CornerRadius="6"
+                                           Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#e9ecef"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Border>
+</UserControl>

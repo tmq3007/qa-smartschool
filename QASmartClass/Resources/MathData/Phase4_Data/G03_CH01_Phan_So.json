@@ -1,0 +1,414 @@
+{
+  "metadata": {
+    "chapterId": "g03_ch01",
+    "chapterName": "Phân Số & Số Thập Phân",
+    "grade": 3,
+    "totalSections": 3,
+    "totalConcepts": 8,
+    "totalProblems": 16,
+    "toolMapping": [
+      "FractionTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 12,
+    "prerequisites": [
+      "g01_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "ps_01",
+      "sectionName": "Khái niệm Phân số",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "ps_001",
+          "name": "Phân số",
+          "definition": "Phân số a/b biểu diễn a phần của tổng thể b phần bằng nhau (b ≠ 0)",
+          "examples": [
+            "1/2 = một nửa (chia bánh thành 2 phần, lấy 1)",
+            "3/4 = ba phần tư (chia thành 4, lấy 3)"
+          ]
+        },
+        {
+          "id": "ps_002",
+          "name": "Phân số bằng nhau",
+          "definition": "Hai phân số bằng nhau khi nhân (chia) cả tử và mẫu cùng một số ≠ 0",
+          "examples": [
+            "1/2 = 2/4 = 3/6",
+            "2/3 = 4/6 = 6/9"
+          ]
+        },
+        {
+          "id": "ps_003",
+          "name": "Rút gọn phân số",
+          "definition": "Chia cả tử và mẫu cho ƯCLN của chúng",
+          "examples": [
+            "4/6 = 2/3 (chia cho 2)",
+            "15/20 = 3/4 (chia cho 5)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ps_prob_001",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Bạn chia 1 chiếc pizza thành 4 phần bằng nhau và ăn 1 phần. Bạn đã ăn bao nhiêu phần pizza?",
+          "options": [
+            "A) 1/2",
+            "B) 1/4",
+            "C) 1/3",
+            "D) 4/1"
+          ],
+          "correctAnswer": "B",
+          "solution": "Chia thành 4 phần, ăn 1 phần → 1/4 chiếc pizza",
+          "points": 5
+        },
+        {
+          "problemId": "ps_prob_002",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Phân số nào bằng 1/2?",
+          "options": [
+            "A) 2/3",
+            "B) 3/6",
+            "C) 2/5",
+            "D) 1/3"
+          ],
+          "correctAnswer": "B",
+          "solution": "3/6 = (3÷3)/(6÷3) = 1/2",
+          "points": 5
+        },
+        {
+          "problemId": "ps_prob_003",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Rút gọn phân số 12/18:",
+          "options": [
+            "A) 2/3",
+            "B) 3/4",
+            "C) 4/6",
+            "D) 6/9"
+          ],
+          "correctAnswer": "A",
+          "solution": "ƯCLN(12,18) = 6. 12/18 = (12÷6)/(18÷6) = 2/3",
+          "points": 10
+        },
+        {
+          "problemId": "ps_prob_004",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "So sánh: 2/5 và 3/5",
+          "options": [
+            "A) 2/5 > 3/5",
+            "B) 2/5 < 3/5",
+            "C) 2/5 = 3/5",
+            "D) Không so sánh được"
+          ],
+          "correctAnswer": "B",
+          "solution": "Cùng mẫu: so sánh tử: 2 < 3 → 2/5 < 3/5",
+          "points": 10
+        },
+        {
+          "problemId": "ps_prob_005",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Sắp xếp từ bé đến lớn: 1/2, 1/3, 1/4",
+          "options": [
+            "A) 1/4, 1/3, 1/2",
+            "B) 1/2, 1/3, 1/4",
+            "C) 1/3, 1/2, 1/4",
+            "D) 1/4, 1/2, 1/3"
+          ],
+          "correctAnswer": "A",
+          "solution": "Cùng tử = 1, mẫu càng lớn → phân số càng bé: 1/4 < 1/3 < 1/2",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "ps_02",
+      "sectionName": "Phép tính với Phân số",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "ps_004",
+          "name": "Cộng phân số cùng mẫu",
+          "formula": "a/c + b/c = (a+b)/c",
+          "examples": [
+            "1/5 + 2/5 = 3/5",
+            "3/8 + 4/8 = 7/8"
+          ]
+        },
+        {
+          "id": "ps_005",
+          "name": "Cộng phân số khác mẫu",
+          "formula": "Quy đồng mẫu số rồi cộng tử",
+          "examples": [
+            "1/2 + 1/3 = 3/6 + 2/6 = 5/6",
+            "2/3 + 1/4 = 8/12 + 3/12 = 11/12"
+          ]
+        },
+        {
+          "id": "ps_006",
+          "name": "Nhân phân số",
+          "formula": "a/b × c/d = (a×c)/(b×d)",
+          "examples": [
+            "1/2 × 3/4 = 3/8",
+            "2/3 × 3/5 = 6/15 = 2/5"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ps_prob_006",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Tính: 2/7 + 3/7 = ?",
+          "options": [
+            "A) 5/7",
+            "B) 5/14",
+            "C) 6/7",
+            "D) 1"
+          ],
+          "correctAnswer": "A",
+          "solution": "Cùng mẫu: 2/7 + 3/7 = (2+3)/7 = 5/7",
+          "points": 5
+        },
+        {
+          "problemId": "ps_prob_007",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính: 1/3 + 1/6 = ?",
+          "options": [
+            "A) 2/9",
+            "B) 1/2",
+            "C) 2/6",
+            "D) 1/9"
+          ],
+          "correctAnswer": "B",
+          "solution": "Quy đồng: 1/3 = 2/6. 2/6 + 1/6 = 3/6 = 1/2",
+          "points": 10
+        },
+        {
+          "problemId": "ps_prob_008",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính: 3/4 - 1/2 = ?",
+          "options": [
+            "A) 2/2",
+            "B) 1/4",
+            "C) 1/2",
+            "D) 2/4"
+          ],
+          "correctAnswer": "B",
+          "solution": "Quy đồng: 1/2 = 2/4. 3/4 - 2/4 = 1/4",
+          "points": 10
+        },
+        {
+          "problemId": "ps_prob_009",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tính: 2/3 × 3/4 = ?",
+          "options": [
+            "A) 6/12",
+            "B) 1/2",
+            "C) 5/7",
+            "D) 2/4"
+          ],
+          "correctAnswer": "B",
+          "solution": "2/3 × 3/4 = (2×3)/(3×4) = 6/12 = 1/2",
+          "points": 15
+        },
+        {
+          "problemId": "ps_prob_010",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tính: 2/5 + 1/3 + 1/15 = ?",
+          "options": [
+            "A) 4/15",
+            "B) 2/3",
+            "C) 3/5",
+            "D) 4/5"
+          ],
+          "correctAnswer": "D",
+          "solution": "Quy đồng mẫu 15: 6/15 + 5/15 + 1/15 = 12/15 → rút gọn: 12/15 = 4/5. Đáp án D) 4/5",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "ps_03",
+      "sectionName": "Số Thập Phân",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "ps_007",
+          "name": "Số thập phân",
+          "definition": "Cách viết phân số dưới dạng dấu phẩy (hoặc dấu chấm thập phân)",
+          "examples": [
+            "1/2 = 0,5",
+            "3/4 = 0,75",
+            "1/10 = 0,1"
+          ]
+        },
+        {
+          "id": "ps_008",
+          "name": "Cộng trừ số thập phân",
+          "definition": "Đặt dấu phẩy thẳng hàng rồi tính như số tự nhiên",
+          "examples": [
+            "1,5 + 2,3 = 3,8",
+            "5,0 - 1,7 = 3,3"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "ps_prob_011",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Viết phân số 3/10 dưới dạng số thập phân:",
+          "options": [
+            "A) 0,3",
+            "B) 3,0",
+            "C) 0,03",
+            "D) 30"
+          ],
+          "correctAnswer": "A",
+          "solution": "3/10 = 3 ÷ 10 = 0,3",
+          "points": 5
+        },
+        {
+          "problemId": "ps_prob_012",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Tính: 2,4 + 3,5 = ?",
+          "options": [
+            "A) 5,9",
+            "B) 5,8",
+            "C) 6,9",
+            "D) 59"
+          ],
+          "correctAnswer": "A",
+          "solution": "Đặt phẩy thẳng hàng: 2,4 + 3,5 = 5,9",
+          "points": 5
+        },
+        {
+          "problemId": "ps_prob_013",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính: 7,2 - 3,8 = ?",
+          "options": [
+            "A) 3,4",
+            "B) 4,4",
+            "C) 3,6",
+            "D) 4,6"
+          ],
+          "correctAnswer": "A",
+          "solution": "7,2 - 3,8: 2-8 không đủ, mượn: 12-8=4. 6-3=3. Kết quả: 3,4",
+          "points": 10
+        },
+        {
+          "problemId": "ps_prob_014",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Viết 3/4 dưới dạng số thập phân:",
+          "options": [
+            "A) 0,34",
+            "B) 0,75",
+            "C) 0,43",
+            "D) 7,5"
+          ],
+          "correctAnswer": "B",
+          "solution": "3/4 = 3 ÷ 4 = 0,75",
+          "points": 10
+        },
+        {
+          "problemId": "ps_prob_015",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tính: 12,56 + 3,7 - 6,26 = ?",
+          "options": [
+            "A) 10",
+            "B) 9,0",
+            "C) 10,0",
+            "D) 9,56"
+          ],
+          "correctAnswer": "C",
+          "solution": "12,56 + 3,7 = 16,26. 16,26 - 6,26 = 10,0",
+          "points": 15
+        },
+        {
+          "problemId": "ps_prob_016",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Số nào lớn nhất: 0,5  ;  0,49  ;  0,502  ;  0,51?",
+          "options": [
+            "A) 0,5",
+            "B) 0,49",
+            "C) 0,502",
+            "D) 0,51"
+          ],
+          "correctAnswer": "D",
+          "solution": "So sánh: 0,49 < 0,5 < 0,502 < 0,51. Số lớn nhất là 0,51",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Cộng phân số khác mẫu: cộng cả tử lẫn mẫu (1/2 + 1/3 = 2/5)",
+      "correction": "Phải quy đồng mẫu trước: 1/2 + 1/3 = 3/6 + 2/6 = 5/6"
+    },
+    {
+      "mistake": "Nhầm: mẫu càng lớn → phân số càng lớn",
+      "correction": "Mẫu càng lớn → phần chia càng nhỏ: 1/4 < 1/3 < 1/2"
+    },
+    {
+      "mistake": "Quên đặt dấu phẩy thẳng hàng khi cộng số thập phân",
+      "correction": "Luôn viết dấu phẩy thẳng hàng trước khi tính"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "ps_quiz_01",
+      "title": "Kiểm tra: Phân số & Số thập phân",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "ps_prob_001"
+        },
+        {
+          "ref": "ps_prob_006"
+        },
+        {
+          "ref": "ps_prob_007"
+        },
+        {
+          "ref": "ps_prob_011"
+        },
+        {
+          "ref": "ps_prob_014"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

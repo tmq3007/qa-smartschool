@@ -1,0 +1,43 @@
+<!-- ============================================ -->
+<!-- COPY ĐOẠN NÀY VÀO FILE QASmartScreen.csproj -->
+<!-- Thêm vào TRƯỚC tag </Project> -->
+<!-- ============================================ -->
+
+  <!-- Interactive Books Module - Models & Services -->
+  <ItemGroup>
+    <Compile Include="Modules\InteractiveBooks\Models\Book.cs" />
+    <Compile Include="Modules\InteractiveBooks\Services\BookService.cs" />
+  </ItemGroup>
+
+  <!-- Interactive Books Module - XAML Forms -->
+  <ItemGroup>
+    <Page Include="Forms\Form2_20_SubMenuBooks.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Forms\Form2_20_1_BookViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <!-- Interactive Books Module - Code-behind -->
+  <ItemGroup>
+    <Compile Include="Forms\Form2_20_SubMenuBooks.xaml.cs">
+      <DependentUpon>Form2_20_SubMenuBooks.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Form2_20_1_BookViewer.xaml.cs">
+      <DependentUpon>Form2_20_1_BookViewer.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <!-- Interactive Books Module - Data Files -->
+  <ItemGroup>
+    <None Include="Modules\InteractiveBooks\Data\books.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+<!-- ============================================ -->
+<!-- KẾT THÚC - Đừng quên SAVE file sau khi paste -->
+<!-- ============================================ -->

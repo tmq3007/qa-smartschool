@@ -1,0 +1,320 @@
+<Page x:Class="QASmartClass.Classroom.Views.SurveyPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Khảo sát" Background="#F5F7FA">
+
+    <Page.Resources>
+        <!-- Rounded Button Template -->
+        <ControlTemplate x:Key="RoundBtn" TargetType="Button">
+            <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="bd" Property="Opacity" Value="0.85"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <!-- Tab Button Style -->
+        <Style x:Key="TabBtn" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer Margin="24,16" VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="780">
+            <TextBlock Text="📊 Khảo sát &amp; Đánh giá" FontSize="18" FontWeight="Bold" Foreground="#212121"/>
+            <TextBlock Text="Tạo khảo sát tùy chỉnh, thu thập phản hồi real-time từ học sinh" FontSize="13" Foreground="#757575" Margin="0,2,0,16"/>
+
+            <!-- ═══ SURVEY TYPE TABS ═══ -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                <Border x:Name="tabQuickPoll" Style="{StaticResource TabBtn}" Background="#E3F2FD" BorderBrush="#1976D2"
+                        MouseLeftButtonDown="Tab_Click" Tag="quick">
+                    <TextBlock Text="⚡ Khảo sát nhanh" FontSize="13" FontWeight="SemiBold" Foreground="#1565C0"/>
+                </Border>
+                <Border x:Name="tabCustom" Style="{StaticResource TabBtn}"
+                        MouseLeftButtonDown="Tab_Click" Tag="custom">
+                    <TextBlock Text="📝 Câu hỏi tùy chỉnh" FontSize="13" FontWeight="SemiBold" Foreground="#424242"/>
+                </Border>
+                <Border x:Name="tabSatisfaction" Style="{StaticResource TabBtn}"
+                        MouseLeftButtonDown="Tab_Click" Tag="satisfaction">
+                    <TextBlock Text="⭐ Độ hài lòng lớp học" FontSize="13" FontWeight="SemiBold" Foreground="#424242"/>
+                </Border>
+            </StackPanel>
+
+            <!-- ═══ TARGET SELECTION ═══ -->
+            <Border x:Name="panelTargetSelection" Visibility="Collapsed" Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="👥 Đối tượng nhận" FontSize="14" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,12"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <RadioButton x:Name="rbAllStudents" Content="Tất cả học sinh" IsChecked="True" FontSize="13" Margin="0,0,16,0"
+                                     GroupName="Target" Checked="TargetChanged" Unchecked="TargetChanged"/>
+                        <RadioButton x:Name="rbSelectClasses" Content="Chọn lớp nhận" FontSize="13"
+                                     GroupName="Target" Checked="TargetChanged" Unchecked="TargetChanged"/>
+                    </StackPanel>
+
+                    <!-- Sub: Class list checkboxes -->
+                    <Border x:Name="panelClassPicker" Visibility="Collapsed" Background="#E8F5E9" CornerRadius="8" Padding="12,10" Margin="0,4,0,0">
+                        <StackPanel>
+                            <TextBlock Text="📂 Chọn các lớp nhận khảo sát:" FontSize="13" FontWeight="SemiBold" Foreground="#2E7D32" Margin="0,0,0,8"/>
+                            <WrapPanel x:Name="classCheckList" Margin="0,0,0,8"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Chọn tất cả" FontSize="10" Padding="8,3" Margin="0,0,6,0"
+                                        Background="#C8E6C9" Foreground="#2E7D32" BorderThickness="0" Cursor="Hand"
+                                        Click="SelectAllClasses_Click" Template="{StaticResource RoundBtn}"/>
+                                <Button Content="Bỏ chọn" FontSize="10" Padding="8,3"
+                                        Background="#FFCDD2" Foreground="#C62828" BorderThickness="0" Cursor="Hand"
+                                        Click="DeselectAllClasses_Click" Template="{StaticResource RoundBtn}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!--  TAB 1: QUICK POLL (Khảo sát nhanh)           -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <Border x:Name="panelQuickPoll" Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="⚡ Khảo sát nhanh — GV click để đếm" FontSize="15" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,16"/>
+                    <UniformGrid Columns="4" Margin="0,0,0,16">
+                        <Border Background="#E8F5E9" CornerRadius="10" Padding="12,16" Margin="0,0,8,0" Cursor="Hand"
+                                MouseLeftButtonDown="QuickPoll_Click" Tag="yes">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="👍" FontSize="28" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Hiểu rồi" FontSize="13" FontWeight="SemiBold" Foreground="#2E7D32" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                <TextBlock x:Name="txtYes" Text="0" FontSize="20" FontWeight="Bold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#FFEBEE" CornerRadius="10" Padding="12,16" Margin="0,0,8,0" Cursor="Hand"
+                                MouseLeftButtonDown="QuickPoll_Click" Tag="no">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="👎" FontSize="28" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Chưa hiểu" FontSize="13" FontWeight="SemiBold" Foreground="#C62828" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                <TextBlock x:Name="txtNo" Text="0" FontSize="20" FontWeight="Bold" Foreground="#F44336" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#FFF3E0" CornerRadius="10" Padding="12,16" Margin="0,0,8,0" Cursor="Hand"
+                                MouseLeftButtonDown="QuickPoll_Click" Tag="slow">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🐢" FontSize="28" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Hơi chậm" FontSize="13" FontWeight="SemiBold" Foreground="#E65100" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                <TextBlock x:Name="txtSlow" Text="0" FontSize="20" FontWeight="Bold" Foreground="#FF9800" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#E3F2FD" CornerRadius="10" Padding="12,16" Cursor="Hand"
+                                MouseLeftButtonDown="QuickPoll_Click" Tag="fast">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🚀" FontSize="28" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Quá dễ" FontSize="13" FontWeight="SemiBold" Foreground="#1565C0" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                <TextBlock x:Name="txtFast" Text="0" FontSize="20" FontWeight="Bold" Foreground="#1976D2" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+                    <Button Content="🔄 Reset" Width="100" HorizontalAlignment="Right"
+                            Background="#F5F5F5" Foreground="#424242" BorderThickness="0" Cursor="Hand" Padding="0,8"
+                            Click="ResetPoll_Click" Template="{StaticResource RoundBtn}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!--  TAB 2: CUSTOM SURVEY (Câu hỏi tùy chỉnh)      -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <Border x:Name="panelCustom" Visibility="Collapsed" Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="📝 Tạo câu hỏi khảo sát" FontSize="15" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,12"/>
+
+                    <!-- Saved Templates Selection -->
+                    <TextBlock Text="📋 Chọn câu hỏi mẫu:" FontSize="13" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="cboSavedTemplates" FontSize="13" Margin="0,0,0,12" SelectionChanged="SavedTemplates_SelectionChanged"/>
+
+                    <!-- Question -->
+                    <TextBlock Text="Câu hỏi:" FontSize="13" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,4"/>
+                    <TextBox x:Name="txtQuestion" FontSize="14" Padding="10" Height="44" AcceptsReturn="False"
+                             BorderBrush="#E0E0E0" BorderThickness="1"/>
+
+                    <!-- Answer Options -->
+                    <TextBlock Text="Phương án trả lời:" FontSize="13" FontWeight="SemiBold" Foreground="#616161" Margin="0,12,0,4"/>
+                    <StackPanel x:Name="answerOptionsPanel">
+                        <DockPanel Margin="0,0,0,6">
+                            <Border Background="#E8F5E9" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0">
+                                <TextBlock Text="A" FontSize="13" FontWeight="Bold" Foreground="#2E7D32" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBox x:Name="txtOptA" FontSize="13" Padding="8,6" BorderBrush="#E0E0E0" BorderThickness="1"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,0,0,6">
+                            <Border Background="#E3F2FD" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0">
+                                <TextBlock Text="B" FontSize="13" FontWeight="Bold" Foreground="#1565C0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBox x:Name="txtOptB" FontSize="13" Padding="8,6" BorderBrush="#E0E0E0" BorderThickness="1"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,0,0,6">
+                            <Border Background="#FFF3E0" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0">
+                                <TextBlock Text="C" FontSize="13" FontWeight="Bold" Foreground="#E65100" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBox x:Name="txtOptC" FontSize="13" Padding="8,6" BorderBrush="#E0E0E0" BorderThickness="1"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,0,0,6">
+                            <Border Background="#FFEBEE" CornerRadius="6" Width="28" Height="28" Margin="0,0,8,0">
+                                <TextBlock Text="D" FontSize="13" FontWeight="Bold" Foreground="#C62828" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBox x:Name="txtOptD" FontSize="13" Padding="8,6" BorderBrush="#E0E0E0" BorderThickness="1"/>
+                        </DockPanel>
+                    </StackPanel>
+
+                    <!-- Time Limit -->
+                    <DockPanel Margin="0,12,0,0">
+                        <TextBlock Text="⏱️ Thời gian:" FontSize="13" FontWeight="SemiBold" Foreground="#616161" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox x:Name="cboTimeLimit" Width="140" FontSize="13" SelectedIndex="1">
+                            <ComboBoxItem Content="Không giới hạn" Tag="0"/>
+                            <ComboBoxItem Content="30 giây" Tag="30"/>
+                            <ComboBoxItem Content="1 phút" Tag="60"/>
+                            <ComboBoxItem Content="2 phút" Tag="120"/>
+                            <ComboBoxItem Content="5 phút" Tag="300"/>
+                            <ComboBoxItem Content="10 phút" Tag="600"/>
+                        </ComboBox>
+                    </DockPanel>
+
+                    <!-- Action Buttons -->
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="📤 Gửi khảo sát tới HS" Padding="0,12" Margin="0,0,8,0"
+                                Background="#1976D2" Foreground="White" FontSize="14" FontWeight="SemiBold"
+                                BorderThickness="0" Cursor="Hand" Click="SendCustomSurvey_Click"
+                                Template="{StaticResource RoundBtn}"/>
+                        <Button Grid.Column="1" Content="💾 Lưu thành mẫu" Padding="16,12"
+                                Background="#2E7D32" Foreground="White" FontSize="14" FontWeight="SemiBold"
+                                BorderThickness="0" Cursor="Hand" Click="SaveTemplate_Click"
+                                Template="{StaticResource RoundBtn}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!--  TAB 3: SATISFACTION (Độ hài lòng lớp học)     -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <Border x:Name="panelSatisfaction" Visibility="Collapsed" Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="⭐ Đánh giá độ hài lòng lớp học" FontSize="15" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,6"/>
+                    <TextBlock Text="Gửi form đánh giá 5 sao tới tất cả học sinh" FontSize="13" Foreground="#757575" Margin="0,0,0,16"/>
+
+                    <!-- Preview -->
+                    <Border Background="#F5F7FA" CornerRadius="10" Padding="16" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="📋 Nội dung đánh giá (sẽ gửi tới HS):" FontSize="13" FontWeight="SemiBold" Foreground="#616161" Margin="0,0,0,10"/>
+                            <TextBlock Text="Câu hỏi: Đánh giá mức độ hài lòng chung về buổi học hôm nay" FontSize="13" FontWeight="Bold" Foreground="#424242" Margin="16,2"/>
+                            <TextBlock Text="Các mức lựa chọn:" FontSize="13" Foreground="#424242" Margin="16,6,0,2"/>
+                            <TextBlock Text="• ⭐ 1 sao — Chưa hài lòng" FontSize="13" Foreground="#757575" Margin="24,2"/>
+                            <TextBlock Text="• ⭐⭐ 2 sao — Tạm được" FontSize="13" Foreground="#757575" Margin="24,2"/>
+                            <TextBlock Text="• ⭐⭐⭐ 3 sao — Bình thường" FontSize="13" Foreground="#757575" Margin="24,2"/>
+                            <TextBlock Text="• ⭐⭐⭐⭐ 4 sao — Hài lòng" FontSize="13" Foreground="#757575" Margin="24,2"/>
+                            <TextBlock Text="• ⭐⭐⭐⭐⭐ 5 sao — Rất hài lòng" FontSize="13" Foreground="#757575" Margin="24,2"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Star Rating (teacher local) -->
+                    <Border Background="#FFFDE7" CornerRadius="10" Padding="16" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="⭐ Đánh giá nhanh (GV tự đánh giá):" FontSize="14" FontWeight="SemiBold" Foreground="#F57F17" Margin="0,0,0,8"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
+                                <TextBlock x:Name="gvStar1" Text="★" FontSize="36" Cursor="Hand" Margin="4,0" Foreground="#DFE4EA" MouseLeftButtonDown="Star_Click" Tag="1"/>
+                                <TextBlock x:Name="gvStar2" Text="★" FontSize="36" Cursor="Hand" Margin="4,0" Foreground="#DFE4EA" MouseLeftButtonDown="Star_Click" Tag="2"/>
+                                <TextBlock x:Name="gvStar3" Text="★" FontSize="36" Cursor="Hand" Margin="4,0" Foreground="#DFE4EA" MouseLeftButtonDown="Star_Click" Tag="3"/>
+                                <TextBlock x:Name="gvStar4" Text="★" FontSize="36" Cursor="Hand" Margin="4,0" Foreground="#DFE4EA" MouseLeftButtonDown="Star_Click" Tag="4"/>
+                                <TextBlock x:Name="gvStar5" Text="★" FontSize="36" Cursor="Hand" Margin="4,0" Foreground="#DFE4EA" MouseLeftButtonDown="Star_Click" Tag="5"/>
+                            </StackPanel>
+                            <TextBlock x:Name="txtStarResult" Text="Chưa có đánh giá" FontSize="14"
+                                       Foreground="#757575" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Time Limit for satisfaction -->
+                    <DockPanel Margin="0,0,0,12">
+                        <TextBlock Text="⏱️ Thời gian:" FontSize="13" FontWeight="SemiBold" Foreground="#616161" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox x:Name="cboSatisfactionTime" Width="140" FontSize="13" SelectedIndex="2">
+                            <ComboBoxItem Content="1 phút" Tag="60"/>
+                            <ComboBoxItem Content="2 phút" Tag="120"/>
+                            <ComboBoxItem Content="3 phút" Tag="180"/>
+                            <ComboBoxItem Content="5 phút" Tag="300"/>
+                        </ComboBox>
+                    </DockPanel>
+
+                    <Button Content="📤 Gửi đánh giá tới HS" Padding="0,12"
+                            Background="#F57F17" Foreground="White" FontSize="14" FontWeight="SemiBold"
+                            BorderThickness="0" Cursor="Hand" Click="SendSatisfaction_Click"
+                            Template="{StaticResource RoundBtn}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!--  LIVE RESULTS PANEL (shared by all types)      -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <Border x:Name="surveyResultsPanel" Visibility="Collapsed"
+                    Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel>
+                    <!-- Header with total + timer -->
+                    <DockPanel Margin="0,0,0,12">
+                        <TextBlock Text="📊 Kết quả khảo sát (real-time)" FontSize="15" FontWeight="SemiBold" Foreground="#1565C0"/>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <!-- Timer -->
+                            <Border x:Name="timerBadge" Visibility="Collapsed" Background="#FFF3E0" CornerRadius="12" Padding="8,4" Margin="0,0,8,0">
+                                <TextBlock>
+                                    <Run Text="⏱️ "/>
+                                    <Run x:Name="txtCountdown" Text="00:30" FontWeight="Bold" Foreground="#E65100"/>
+                                </TextBlock>
+                            </Border>
+                            <!-- Total -->
+                            <Border Background="#E3F2FD" CornerRadius="12" Padding="8,4">
+                                <TextBlock>
+                                    <Run Text="Tổng: "/>
+                                    <Run x:Name="txtTotalVotes" Text="0" FontWeight="Bold" Foreground="#1565C0"/>
+                                    <Run Text=" phản hồi"/>
+                                </TextBlock>
+                            </Border>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- Question display -->
+                    <Border Background="#E8EAF6" CornerRadius="8" Padding="12,8" Margin="0,0,0,12">
+                        <TextBlock TextWrapping="Wrap">
+                            <Run Text="❓ " FontSize="14"/>
+                            <Run x:Name="txtActiveQuestion" Text="" Foreground="#1A237E" FontWeight="Bold" FontSize="14"/>
+                        </TextBlock>
+                    </Border>
+
+                    <!-- Dynamic results bars -->
+                    <StackPanel x:Name="resultBarsPanel" Margin="0,0,0,12"/>
+
+                    <!-- Student Star Rating Summary -->
+                    <Border x:Name="panelStudentStarRating" Visibility="Collapsed" Background="#FFFDE7" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <DockPanel>
+                            <TextBlock Text="⭐ Đánh giá trung bình từ học sinh:" FontSize="14" FontWeight="SemiBold" Foreground="#F57F17" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBlock x:Name="txtStudentStarAvg" Text="0.0 / 5.0" FontSize="17" FontWeight="Bold" Foreground="#F57F17" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtStudentStarCount" Text="(0 lượt đánh giá)" FontSize="13" Foreground="#757575" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Response log -->
+                    <Border Background="#F5F7FA" CornerRadius="8" Padding="12" MaxHeight="180" Margin="0,4,0,0">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="surveyResponseLog">
+                                <TextBlock Text="⏳ Đang chờ phản hồi từ học sinh..." FontSize="13" Foreground="#BDBDBD" FontStyle="Italic" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

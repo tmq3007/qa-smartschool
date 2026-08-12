@@ -1,0 +1,293 @@
+/* ═══════════════════════════════════════════════════════════
+   QA SmartClass — Tools Content CSS
+   Styles for tool tables/content rendered inside Tool Focus overlay
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══ SCROLL CONTAINER ═══ */
+.tc-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ═══ TABLE BASE ═══ */
+.tc-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+    font-size: 13px;
+}
+.tc-table th, .tc-table td {
+    padding: 8px 10px;
+    text-align: center;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+.tc-table thead th {
+    background: linear-gradient(135deg, #1E40AF, #2563EB);
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+.tc-table tbody th {
+    background: #EFF6FF;
+    color: #1E40AF;
+    font-weight: 700;
+    min-width: 48px;
+}
+.tc-table tbody td {
+    background: #F8FAFC;
+    color: #334155;
+    font-weight: 500;
+}
+.tc-table tbody tr:hover td {
+    background: #DBEAFE;
+}
+
+/* ═══ MULTIPLICATION TABLE ═══ */
+.multiplication-table td.tc-cell {
+    cursor: default;
+    min-width: 36px;
+}
+.multiplication-table tbody tr:nth-child(even) td {
+    background: #F0F4F8;
+}
+
+/* ═══ TRIGONOMETRY TABLE ═══ */
+.trig-table .tc-row-sin td { background: #EFF6FF; }
+.trig-table .tc-row-cos td { background: #F0FDF4; }
+.trig-table .tc-row-tan td { background: #FFFBEB; }
+
+.tc-formulas {
+    margin-top: 16px;
+    padding: 16px;
+    background: #F8FAFC;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+}
+.tc-formulas h4 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #1E40AF;
+}
+.tc-formula-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.tc-formula-item {
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    font-family: 'Segoe UI', monospace;
+    font-size: 13px;
+    color: #334155;
+    text-align: center;
+}
+
+/* ═══ PERIODIC TABLE ═══ */
+.tc-element-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 6px;
+}
+.tc-element {
+    border: 2px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 8px;
+    text-align: center;
+    background: white;
+    transition: all 0.15s ease;
+    cursor: default;
+}
+.tc-element:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.tc-el-number { font-size: 9px; font-weight: 600; text-align: right; }
+.tc-el-symbol { font-size: 22px; font-weight: 800; line-height: 1.2; }
+.tc-el-name { font-size: 8px; color: #64748B; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-el-mass { font-size: 9px; color: #94A3B8; }
+
+/* ═══ IDENTITIES ═══ */
+.tc-identity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.tc-identity-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    transition: all 0.15s ease;
+}
+.tc-identity-card:hover {
+    background: #EFF6FF;
+    border-color: #93C5FD;
+}
+.tc-id-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563EB, #3B82F6);
+    color: white;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.tc-id-title {
+    font-size: 12px;
+    color: #64748B;
+    font-weight: 500;
+}
+.tc-id-formula {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1E293B;
+    font-family: 'Segoe UI', serif;
+    margin-top: 2px;
+}
+
+/* ═══ UNIT CONVERTER ═══ */
+.tc-converter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.tc-converter-group {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 14px;
+}
+.tc-converter-group h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: #1E40AF;
+}
+.tc-converter-group ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.tc-converter-group li {
+    padding: 4px 0;
+    font-size: 12px;
+    color: #475569;
+    border-bottom: 1px solid #F1F5F9;
+}
+.tc-converter-group li:last-child { border-bottom: none; }
+
+/* ═══ CALCULATOR ═══ */
+.tc-calculator {
+    max-width: 300px;
+    margin: 0 auto;
+}
+.tc-calc-display {
+    background: #0F172A;
+    color: white;
+    font-size: 32px;
+    font-weight: 300;
+    text-align: right;
+    padding: 20px 16px;
+    border-radius: 12px 12px 0 0;
+    min-height: 60px;
+    overflow: hidden;
+    font-family: 'Segoe UI', monospace;
+}
+.tc-calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: #E2E8F0;
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+}
+.tc-calc-btn {
+    padding: 16px;
+    border: none;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    background: white;
+    color: #1E293B;
+    transition: background 0.1s ease;
+}
+.tc-calc-btn:hover { background: #F1F5F9; }
+.tc-calc-btn:active { background: #E2E8F0; }
+.tc-calc-btn.tc-calc-op {
+    background: #2563EB;
+    color: white;
+}
+.tc-calc-btn.tc-calc-op:hover { background: #1D4ED8; }
+.tc-calc-btn.tc-calc-fn {
+    background: #F1F5F9;
+    color: #64748B;
+}
+
+/* ═══ CONSTANTS ═══ */
+.tc-constants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.tc-const-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    transition: all 0.15s ease;
+}
+.tc-const-card:hover {
+    background: #EFF6FF;
+    border-color: #93C5FD;
+}
+.tc-const-symbol {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #7C3AED, #8B5CF6);
+    color: white;
+    font-weight: 800;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Segoe UI', serif;
+}
+.tc-const-name { font-size: 13px; font-weight: 600; color: #1E293B; }
+.tc-const-value { font-size: 12px; color: #64748B; font-family: monospace; margin-top: 2px; }
+
+/* ═══ VERB TABLE ═══ */
+.verb-table td:first-child { font-weight: 700; color: #1E40AF; }
+.verb-table td:last-child { color: #64748B; font-size: 12px; font-style: italic; }
+
+/* ═══ SECTION HIGHLIGHT (golden border animation) ═══ */
+.tc-section-highlighted {
+    outline: 3px solid #F59E0B !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.2), 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+    animation: tcSectionGlow 1.5s ease-in-out infinite !important;
+    border-radius: 8px;
+    position: relative;
+    z-index: 5;
+}
+@keyframes tcSectionGlow {
+    0%, 100% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.2), 0 4px 16px rgba(245, 158, 11, 0.3); }
+    50% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0.1), 0 8px 24px rgba(245, 158, 11, 0.4); }
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 640px) {
+    .tc-formula-grid { grid-template-columns: 1fr; }
+    .tc-converter-grid { grid-template-columns: 1fr; }
+    .tc-element-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+}

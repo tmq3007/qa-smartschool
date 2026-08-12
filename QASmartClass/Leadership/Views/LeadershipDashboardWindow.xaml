@@ -1,0 +1,200 @@
+﻿<Window x:Class="QASmartClass.Leadership.Views.LeadershipDashboardWindow"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+
+        xmlns:viewmodels="clr-namespace:QASmartClass.Leadership.ViewModels"
+
+        xmlns:local="clr-namespace:QASmartClass.Leadership.Views"
+
+        mc:Ignorable="d" 
+
+        d:DesignHeight="720" d:DesignWidth="1280"
+
+        Title="QA SmartSchool - Bảng điều khiển Ban Giám Hiệu" Background="{DynamicResource AppBackground}"
+
+        WindowStartupLocation="CenterScreen"
+
+        FontFamily="Segoe UI">
+
+
+
+    <Window.DataContext>
+
+        <viewmodels:LeadershipDashboardViewModel />
+
+    </Window.DataContext>
+
+
+
+    <Grid Margin="30">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="*" />
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="Auto"/>
+
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+
+                <TextBlock Text="{Binding WelcomeMessage}" 
+
+                           FontSize="32" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" />
+
+                <TextBlock Text="Tổng quan số liệu thời gian thực toàn trường." 
+
+                           FontSize="16" Foreground="{DynamicResource TextSecondary}" Margin="0,5,0,0" />
+
+            </StackPanel>
+
+            
+
+            <Button Grid.Column="1" Content="📄 Xuất Báo Cáo" Command="{Binding ExportReportCommand}" 
+
+                    Background="#1E88E5" Foreground="White" FontWeight="Bold" FontSize="16" Padding="20,10" Cursor="Hand" VerticalAlignment="Center">
+
+                <Button.Template>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Button.Template>
+
+            </Button>
+
+        </Grid>
+
+
+
+        <!-- KPI Cards -->
+
+        <WrapPanel Grid.Row="2" Orientation="Horizontal">
+
+            <!-- Card 1: Total Students -->
+
+            <Border Background="#1E88E5" CornerRadius="12" Padding="20" Width="250" Height="120" Margin="0,0,20,20">
+
+                <StackPanel>
+
+                    <TextBlock Text="TỔNG HỌC SINH" Foreground="White" FontSize="14" Opacity="0.9" FontWeight="SemiBold" />
+
+                    <TextBlock Text="{Binding TotalStudents}" Foreground="White" FontSize="48" FontWeight="Bold" Margin="0,10,0,0" />
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Card 2: Total Teachers -->
+
+            <Border Background="#43A047" CornerRadius="12" Padding="20" Width="250" Height="120" Margin="0,0,20,20">
+
+                <StackPanel>
+
+                    <TextBlock Text="TỔNG GIÁO VIÊN" Foreground="White" FontSize="14" Opacity="0.9" FontWeight="SemiBold" />
+
+                    <TextBlock Text="{Binding TotalTeachers}" Foreground="White" FontSize="48" FontWeight="Bold" Margin="0,10,0,0" />
+
+                </StackPanel>
+
+            </Border>
+
+            
+
+            <!-- Card 3: Attendance Rate -->
+
+            <Border Background="#FDD835" CornerRadius="12" Padding="20" Width="250" Height="120" Margin="0,0,20,20">
+
+                <StackPanel>
+
+                    <TextBlock Text="TỶ LỆ CHUYÊN CẦN" Foreground="#333333" FontSize="14" Opacity="0.9" FontWeight="SemiBold" />
+
+                    <TextBlock Text="{Binding AttendanceRate}" Foreground="#333333" FontSize="48" FontWeight="Bold" Margin="0,10,0,0" />
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Card 4: Total Incidents -->
+
+            <Border Background="#E53935" CornerRadius="12" Padding="20" Width="250" Height="120" Margin="0,0,20,20">
+
+                <StackPanel>
+
+                    <TextBlock Text="SỰ CỐ CHƯA XỬ LÝ" Foreground="White" FontSize="14" Opacity="0.9" FontWeight="SemiBold" />
+
+                    <TextBlock Text="{Binding TotalIncidents}" Foreground="White" FontSize="48" FontWeight="Bold" Margin="0,10,0,0" />
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Card 5: Total SKKNs -->
+
+            <Border Background="#8E24AA" CornerRadius="12" Padding="20" Width="250" Height="120" Margin="0,0,20,20">
+
+                <StackPanel>
+
+                    <TextBlock Text="TỔNG SỐ SKKN" Foreground="White" FontSize="14" Opacity="0.9" FontWeight="SemiBold" />
+
+                    <TextBlock Text="{Binding TotalSkkns}" Foreground="White" FontSize="48" FontWeight="Bold" Margin="0,10,0,0" />
+
+                </StackPanel>
+
+            </Border>
+
+        </WrapPanel>
+
+
+
+        <!-- Approval Queue -->
+
+        <Grid Grid.Row="3" Margin="0,10,0,0">
+
+            <local:ApprovalQueueView DataContext="{Binding ApprovalQueueVM}" />
+
+        </Grid>
+
+    </Grid>
+
+</Window>
+
+
+

@@ -1,0 +1,314 @@
+{
+  "metadata": {
+    "chapterId": "g04_ch01",
+    "chapterName": "Hình Học Cơ Bản",
+    "grade": 4,
+    "totalSections": 3,
+    "totalConcepts": 9,
+    "totalProblems": 10,
+    "toolMapping": [
+      "GeometryTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 8,
+    "prerequisites": [
+      "g01_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "hh_01",
+      "sectionName": "Hình phẳng cơ bản",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "hh_001",
+          "name": "Điểm, đoạn thẳng, đường thẳng",
+          "definition": "Điểm không có kích thước, đoạn thẳng có 2 đầu mút, đường thẳng kéo dài vô hạn 2 phía"
+        },
+        {
+          "id": "hh_002",
+          "name": "Góc",
+          "definition": "Góc tạo bởi 2 tia chung gốc. Góc vuông = 90°, góc nhọn < 90°, góc tù > 90°",
+          "examples": [
+            "Góc bàn = góc vuông 90°",
+            "Kim đồng hồ chỉ 3:00 = góc vuông"
+          ]
+        },
+        {
+          "id": "hh_003",
+          "name": "Tam giác",
+          "definition": "Hình có 3 cạnh, 3 đỉnh, tổng 3 góc = 180°",
+          "properties": [
+            "Tam giác đều: 3 cạnh bằng nhau",
+            "Tam giác vuông: có 1 góc 90°",
+            "Tam giác cân: 2 cạnh bằng nhau"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh_prob_001",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Hình tam giác có bao nhiêu cạnh?",
+          "options": [
+            "A) 2",
+            "B) 3",
+            "C) 4",
+            "D) 5"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tam giác (tri = 3, angle = góc) có 3 cạnh và 3 đỉnh",
+          "points": 5
+        },
+        {
+          "problemId": "hh_prob_002",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Một tam giác có 2 góc là 60° và 80°. Góc thứ 3 là:",
+          "options": [
+            "A) 40°",
+            "B) 50°",
+            "C) 60°",
+            "D) 30°"
+          ],
+          "correctAnswer": "A",
+          "solution": "Tổng 3 góc = 180°. Góc 3 = 180° - 60° - 80° = 40°",
+          "points": 10
+        },
+        {
+          "problemId": "hh_prob_003",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tam giác nào sau đây là tam giác vuông?",
+          "options": [
+            "A) 3cm, 4cm, 5cm",
+            "B) 3cm, 3cm, 3cm",
+            "C) 2cm, 3cm, 4cm",
+            "D) 5cm, 5cm, 5cm"
+          ],
+          "correctAnswer": "A",
+          "solution": "Kiểm tra: 3² + 4² = 9 + 16 = 25 = 5² → tam giác vuông (định lý Pytago)",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hh_02",
+      "sectionName": "Chu vi & Diện tích",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "hh_004",
+          "name": "Chu vi hình chữ nhật",
+          "formula": "C = (dài + rộng) × 2",
+          "examples": [
+            "Dài 5cm, rộng 3cm → C = (5+3)×2 = 16cm"
+          ]
+        },
+        {
+          "id": "hh_005",
+          "name": "Diện tích hình chữ nhật",
+          "formula": "S = dài × rộng",
+          "examples": [
+            "Dài 5cm, rộng 3cm → S = 5×3 = 15cm²"
+          ]
+        },
+        {
+          "id": "hh_006",
+          "name": "Diện tích tam giác",
+          "formula": "S = (đáy × cao) ÷ 2",
+          "examples": [
+            "Đáy 6cm, cao 4cm → S = (6×4)÷2 = 12cm²"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh_prob_004",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Tính chu vi hình chữ nhật có chiều dài 8cm, chiều rộng 5cm:",
+          "options": [
+            "A) 13cm",
+            "B) 26cm",
+            "C) 40cm",
+            "D) 30cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "C = (8+5) × 2 = 13 × 2 = 26cm",
+          "points": 5
+        },
+        {
+          "problemId": "hh_prob_005",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính diện tích hình chữ nhật có chiều dài 12cm, chiều rộng 7cm:",
+          "options": [
+            "A) 38cm²",
+            "B) 84cm²",
+            "C) 19cm²",
+            "D) 74cm²"
+          ],
+          "correctAnswer": "B",
+          "solution": "S = 12 × 7 = 84cm²",
+          "points": 10
+        },
+        {
+          "problemId": "hh_prob_006",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính diện tích tam giác có đáy 10cm, chiều cao 6cm:",
+          "options": [
+            "A) 60cm²",
+            "B) 30cm²",
+            "C) 16cm²",
+            "D) 32cm²"
+          ],
+          "correctAnswer": "B",
+          "solution": "S = (10 × 6) ÷ 2 = 60 ÷ 2 = 30cm²",
+          "points": 10
+        },
+        {
+          "problemId": "hh_prob_007",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Một hình chữ nhật có chu vi 30cm, chiều dài gấp đôi chiều rộng. Diện tích là:",
+          "options": [
+            "A) 50cm²",
+            "B) 40cm²",
+            "C) 100cm²",
+            "D) 75cm²"
+          ],
+          "correctAnswer": "A",
+          "solution": "Gọi rộng = a → dài = 2a. Chu vi: (2a + a)×2 = 30 → 3a = 15 → a = 5. Dài = 10. S = 10×5 = 50cm²",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hh_03",
+      "sectionName": "Hình tròn",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "hh_007",
+          "name": "Bán kính & Đường kính",
+          "definition": "Bán kính (r): khoảng cách từ tâm đến mép. Đường kính (d) = 2r"
+        },
+        {
+          "id": "hh_008",
+          "name": "Chu vi hình tròn",
+          "formula": "C = 2 × π × r ≈ 2 × 3,14 × r"
+        },
+        {
+          "id": "hh_009",
+          "name": "Diện tích hình tròn",
+          "formula": "S = π × r² ≈ 3,14 × r × r"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hh_prob_008",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Đường kính hình tròn bằng 10cm. Bán kính là:",
+          "options": [
+            "A) 20cm",
+            "B) 5cm",
+            "C) 10cm",
+            "D) 15cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "r = d ÷ 2 = 10 ÷ 2 = 5cm",
+          "points": 5
+        },
+        {
+          "problemId": "hh_prob_009",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính chu vi hình tròn có bán kính 7cm (lấy π ≈ 3,14):",
+          "options": [
+            "A) 43,96cm",
+            "B) 21,98cm",
+            "C) 153,86cm²",
+            "D) 44cm"
+          ],
+          "correctAnswer": "A",
+          "solution": "C = 2 × 3,14 × 7 = 43,96cm",
+          "points": 10
+        },
+        {
+          "problemId": "hh_prob_010",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tính diện tích hình tròn có bán kính 5cm (lấy π ≈ 3,14):",
+          "options": [
+            "A) 31,4cm²",
+            "B) 78,5cm²",
+            "C) 15,7cm²",
+            "D) 25cm²"
+          ],
+          "correctAnswer": "B",
+          "solution": "S = 3,14 × 5² = 3,14 × 25 = 78,5cm²",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm chu vi với diện tích",
+      "correction": "Chu vi = tổng độ dài các cạnh (đơn vị cm). Diện tích = vùng bên trong (đơn vị cm²)"
+    },
+    {
+      "mistake": "Quên chia 2 khi tính diện tích tam giác",
+      "correction": "Diện tích tam giác = đáy × cao ÷ 2"
+    },
+    {
+      "mistake": "Nhầm bán kính và đường kính",
+      "correction": "Đường kính = 2 × bán kính"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "hh_quiz_01",
+      "title": "Kiểm tra: Hình học cơ bản",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "hh_prob_001"
+        },
+        {
+          "ref": "hh_prob_004"
+        },
+        {
+          "ref": "hh_prob_006"
+        },
+        {
+          "ref": "hh_prob_008"
+        },
+        {
+          "ref": "hh_prob_009"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

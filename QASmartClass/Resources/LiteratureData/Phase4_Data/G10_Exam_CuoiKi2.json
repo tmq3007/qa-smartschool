@@ -1,0 +1,677 @@
+﻿{
+  "metadata": {
+    "examId": "g10_lit_cuoiki2",
+    "title": "Đề thi Cuối Kì 2 Ngữ Văn Lớp 10",
+    "grade": 10,
+    "examType": "CuoiKi2",
+    "totalMCQ": 40,
+    "timeLimit": 120,
+    "totalPoints": 10,
+    "ptsPerMCQ": 0.15,
+    "essayPoints": 4,
+    "works": [
+      "Ôn tập tổng hợp lớp 10"
+    ],
+    "createdDate": "2026-05-07",
+    "version": "Phase5_TiengViet"
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "questionType": "MultipleChoice",
+      "section": "I. Đọc hiểu",
+      "question": "Xác định phương thức biểu đạt chính của văn bản: Ôn tập tổng hợp lớp 10?",
+      "options": [
+        "Biểu cảm kết hợp tự sự",
+        "Thuyết minh",
+        "Nghị luận",
+        "Miêu tả thuần túy"
+      ],
+      "answer": "Biểu cảm kết hợp tự sự",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Easy"
+    },
+    {
+      "id": "q2",
+      "questionType": "MultipleChoice",
+      "section": "I. Đọc hiểu",
+      "question": "Đề tài chính của tác phẩm 'Ôn tập tổng hợp lớp 10' là gì?",
+      "options": [
+        "Tình yêu quê hương đất nước",
+        "Phê phán xã hội cũ",
+        "Ca ngợi thiên nhiên",
+        "Bài học đạo lý"
+      ],
+      "answer": "Tình yêu quê hương đất nước",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Easy"
+    },
+    {
+      "id": "q3",
+      "questionType": "MultipleChoice",
+      "section": "I. Đọc hiểu",
+      "question": "Biện pháp tu từ nào được sử dụng phổ biến trong 'Ôn tập tổng hợp lớp 10'?",
+      "options": [
+        "So sánh và ẩn dụ",
+        "Nhân hóa",
+        "Điệp ngữ",
+        "Nói quá"
+      ],
+      "answer": "So sánh và ẩn dụ",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "q4",
+      "questionType": "MultipleChoice",
+      "section": "I. Đọc hiểu",
+      "question": "Giá trị nhân đạo lớn nhất của 'Ôn tập tổng hợp lớp 10' là gì?",
+      "options": [
+        "Sự cảm thông sâu sắc với con người",
+        "Ca ngợi tự nhiên",
+        "Phản ánh lịch sử",
+        "Giáo dục kỹ năng sống"
+      ],
+      "answer": "Sự cảm thông sâu sắc với con người",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "q5",
+      "questionType": "MultipleChoice",
+      "section": "II. Tiếng Việt",
+      "question": "Câu 'Mùa xuân là tết trồng cây' - từ 'xuân' là từ loại gì?",
+      "options": [
+        "Danh từ",
+        "Động từ",
+        "Phó từ",
+        "Số từ"
+      ],
+      "answer": "Danh từ",
+      "points": 0.15,
+      "topic": "Tiếng Việt",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "q6",
+      "questionType": "MultipleChoice",
+      "section": "II. Tiếng Việt",
+      "question": "Thành phần biệt lập trong câu 'Ôi quê hương, tôi nhớ' là gì?",
+      "options": [
+        "Thành phần gọi đáp",
+        "Động từ",
+        "Phó từ",
+        "Số từ"
+      ],
+      "answer": "Thành phần gọi đáp",
+      "points": 0.15,
+      "topic": "Tiếng Việt",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "q7",
+      "questionType": "MultipleChoice",
+      "section": "II. Tiếng Việt",
+      "question": "Phép liên kết nào được dùng nhiều nhất trong văn bản tự sự?",
+      "options": [
+        "Phép lặp",
+        "Động từ",
+        "Phó từ",
+        "Số từ"
+      ],
+      "answer": "Phép lặp",
+      "points": 0.15,
+      "topic": "Tiếng Việt",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "q8",
+      "questionType": "MultipleChoice",
+      "section": "II. Tiếng Việt",
+      "question": "Câu ghép 'Trời mưa nên đường lầy' là kiểu câu ghép gì?",
+      "options": [
+        "Câu ghép chính phụ chỉ nguyên nhân",
+        "Động từ",
+        "Phó từ",
+        "Số từ"
+      ],
+      "answer": "Câu ghép chính phụ chỉ nguyên nhân",
+      "points": 0.15,
+      "topic": "Tiếng Việt",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "q9",
+      "questionType": "MultipleChoice",
+      "section": "II. Tiếng Việt",
+      "question": "Từ 'lặng lẽ' trong 'Lặng Lẽ Sa Pa' là từ loại gì?",
+      "options": [
+        "Tính từ",
+        "Động từ",
+        "Phó từ",
+        "Số từ"
+      ],
+      "answer": "Tính từ",
+      "points": 0.15,
+      "topic": "Tiếng Việt",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "q10",
+      "questionType": "MultipleChoice",
+      "section": "II. Tiếng Việt",
+      "question": "Biện pháp tu từ 'nhân hóa' có tác dụng chính là gì?",
+      "options": [
+        "Làm cho sự vật có tình cảm, sinh động như con người",
+        "Động từ",
+        "Phó từ",
+        "Số từ"
+      ],
+      "answer": "Làm cho sự vật có tình cảm, sinh động như con người",
+      "points": 0.15,
+      "topic": "Tiếng Việt",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "q11",
+      "questionType": "MultipleChoice",
+      "section": "II. Tiếng Việt",
+      "question": "Nghĩa của từ 'nhân nhượng' là gì?",
+      "options": [
+        "Chấp nhận nhường bộ để giữ hòa khí",
+        "Động từ",
+        "Phó từ",
+        "Số từ"
+      ],
+      "answer": "Chấp nhận nhường bộ để giữ hòa khí",
+      "points": 0.15,
+      "topic": "Tiếng Việt",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "q12",
+      "questionType": "MultipleChoice",
+      "section": "II. Tiếng Việt",
+      "question": "Từ 'bóng' trong 'bóng tối' và 'bóng bay' có phải từ nhiều nghĩa không?",
+      "options": [
+        "Không, là từ đồng âm",
+        "Động từ",
+        "Phó từ",
+        "Số từ"
+      ],
+      "answer": "Không, là từ đồng âm",
+      "points": 0.15,
+      "topic": "Tiếng Việt",
+      "difficulty": "Medium"
+    },
+    {
+      "id": "q13",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q14",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q15",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q16",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q17",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q18",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q19",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q20",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q21",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q22",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q23",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q24",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q25",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q26",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q27",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q28",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q29",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q30",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q31",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q32",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q33",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q34",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q35",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q36",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q37",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q38",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q39",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    },
+    {
+      "id": "q40",
+      "questionType": "MultipleChoice",
+      "section": "II. Trắc nghiệm phân tích",
+      "question": "Nhân vật chính trong 'Ôn tập tổng hợp lớp 10' mang đặc điểm gì nổi bật?",
+      "options": [
+        "Có nhân cách đẹp, giàu tình cảm",
+        "Bi quan, yếu đuối",
+        "Lạnh lùng, xa cách",
+        "Thực dụng, mưu mô"
+      ],
+      "answer": "Có nhân cách đẹp, giàu tình cảm",
+      "points": 0.15,
+      "topic": "Ôn tập tổng hợp lớp 10",
+      "difficulty": "Hard"
+    }
+  ],
+  "essayQuestion": {
+    "id": "tl1",
+    "questionType": "Essay",
+    "section": "III. Làm văn (4 điểm)",
+    "question": "Phân tích một trong các tác phẩm đã học: Ôn tập tổng hợp lớp 10. Làm rõ giá trị nội dung và nghệ thuật của tác phẩm đó.",
+    "points": 4,
+    "timeHint": "Khoảng 600-800 chữ",
+    "worksOptions": [
+      "Ôn tập tổng hợp lớp 10"
+    ],
+    "rubric": {
+      "diem1": "Giới thiệu tác giả, tác phẩm, vấn đề phân tích (0.5đ)",
+      "diem2": "Phân tích nội dung chính với dẫn chứng cụ thể (2.0đ)",
+      "diem3": "Phân tích nghệ thuật đặc sắc (1.0đ)",
+      "diem4": "Đánh giá và mở rộng (0.5đ)"
+    }
+  }
+}

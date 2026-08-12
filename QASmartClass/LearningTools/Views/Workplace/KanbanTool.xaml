@@ -1,0 +1,312 @@
+<UserControl x:Class="QASmartClass.LearningTools.Views.Workplace.KanbanTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:QASmartClass.LearningTools"
+             Background="White" xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls">
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- === HEADER === -->
+        <Border Grid.Row="0" Background="#F8F9FA" Padding="16,10" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Pomodoro Timer -->
+                    <Border Background="#E0F7FA" CornerRadius="8" Padding="10,4" Margin="0,0,12,0" BorderBrush="#00838F" BorderThickness="1" x:Name="pomoPanel" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="⏱️ Tập trung:" FontSize="12" FontWeight="Bold" Foreground="#006064" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="txtPomoTime" Text="25:00" FontSize="13" FontWeight="Bold" Foreground="#00838F" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Button x:Name="btnPomoStart" Content="▶" Width="20" Height="20" Padding="0" Cursor="Hand" Click="PomoStart_Click" Background="White" BorderBrush="#00838F" FontSize="10" FontWeight="Bold"/>
+                            <Button x:Name="btnPomoReset" Content="🔄" Width="20" Height="20" Padding="0" Margin="4,0,0,0" Cursor="Hand" Click="PomoReset_Click" Background="White" BorderBrush="#00838F" FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+                    <Button x:Name="btnTemplate" Content="🎯 Mẫu dự án ▼" Padding="12,6" Margin="0,0,6,0" FontSize="13" Cursor="Hand" Click="Template_Click" Background="#E0F2F1" Foreground="#00796B" BorderBrush="#00796B" BorderThickness="1"/>
+                    <Button x:Name="btnClear" Content="🗑️ Xóa bảng" Padding="12,6" FontSize="13" Cursor="Hand" Click="Clear_Click" Background="#FFEBEE" Foreground="#C62828" BorderBrush="#EF9A9A" BorderThickness="1"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="📌 Bảng Kanban" FontSize="22" FontWeight="Bold" Foreground="#00796B"/>
+                    <TextBlock Text="Quản lý tiến độ dự án theo phương pháp Agile trực quan" FontSize="13" Foreground="#757575" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#F1F8E9">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#B2DFDB"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#00796B"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextWorkspace" Text="Bảng Kanban" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#E0E0E0"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 1: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#B2DFDB" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#00796B" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#B2DFDB" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+<!-- 1. Sơ đồ 4 bước trực quan -->
+                        <Border Background="#F9F9F9" CornerRadius="8" Padding="12" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock x:Name="txtStepTitle" Text="🗺️ QUY TRÌNH THAO TÁC 4 BƯỚC ĐƠN GIẢN" FontSize="13" FontWeight="Bold" Foreground="#004D40" Margin="0,0,0,10"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Bước 1 -->
+                                    <Border Grid.Column="0" Background="#E3F2FD" CornerRadius="6" Padding="10,8" BorderBrush="#90CAF9" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock x:Name="txtStep1Header" Text="1. 📝 Thêm thẻ mới" FontSize="12" FontWeight="Bold" Foreground="#0D47A1" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtStep1Desc" Text="Nhập việc vào ô thêm nhanh rồi nhấn Enter để tạo thẻ ở cột To Do." FontSize="11" Foreground="#1565C0" TextWrapping="Wrap" Margin="0,4,0,0" LineHeight="14"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <TextBlock Grid.Column="1" Text="➔" FontSize="20" FontWeight="Bold" Foreground="#B0BEC5" VerticalAlignment="Center" Margin="6,0"/>
+                                    
+                                    <!-- Bước 2 -->
+                                    <Border Grid.Column="2" Background="#FFF9C4" CornerRadius="6" Padding="10,8" BorderBrush="#FFF59D" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock x:Name="txtStep2Header" Text="2. ✏️ Điền chi tiết" FontSize="12" FontWeight="Bold" Foreground="#F57F17" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtStep2Desc" Text="Nhấp trực tiếp vào thẻ để ghi chú người phụ trách, thời hạn, yêu cầu." FontSize="11" Foreground="#E65100" TextWrapping="Wrap" Margin="0,4,0,0" LineHeight="14"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <TextBlock Grid.Column="3" Text="➔" FontSize="20" FontWeight="Bold" Foreground="#B0BEC5" VerticalAlignment="Center" Margin="6,0"/>
+                                    
+                                    <!-- Bước 3 -->
+                                    <Border Grid.Column="4" Background="#FFE0B2" CornerRadius="6" Padding="10,8" BorderBrush="#FFCC80" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock x:Name="txtStep3Header" Text="3. ⏱️ Bật Pomodoro" FontSize="12" FontWeight="Bold" Foreground="#E65100" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtStep3Desc" Text="Kéo thẻ sang Doing, bấm ▶ để tập trung làm việc trong 25 phút." FontSize="11" Foreground="#D84315" TextWrapping="Wrap" Margin="0,4,0,0" LineHeight="14"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <TextBlock Grid.Column="5" Text="➔" FontSize="20" FontWeight="Bold" Foreground="#B0BEC5" VerticalAlignment="Center" Margin="6,0"/>
+                                    
+                                    <!-- Bước 4 -->
+                                    <Border Grid.Column="6" Background="#E8F5E9" CornerRadius="6" Padding="10,8" BorderBrush="#A5D6A7" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock x:Name="txtStep4Header" Text="4. 🏆 Hoàn thành" FontSize="12" FontWeight="Bold" Foreground="#1B5E20" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtStep4Desc" Text="Di chuyển thẻ sang Done (bấm ▶ hoặc kéo thả) để tích lũy thành quả." FontSize="11" Foreground="#2E7D32" TextWrapping="Wrap" Margin="0,4,0,0" LineHeight="14"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- 2. Hướng dẫn chi tiết & Các ví dụ gợi ý học đường -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="12"/> <!-- spacing -->
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Cột bên trái: Chi tiết & Ý nghĩa sư phạm -->
+                            <StackPanel Grid.Column="0">
+                                <Border Background="#E0F2F1" CornerRadius="6" Padding="12" BorderBrush="#B2DFDB" BorderThickness="1" Margin="0,0,0,8">
+                                    <StackPanel>
+                                        <TextBlock x:Name="txtOriginHeader" Text="💡 NGUỒN GỐC &amp; Ý NGHĨA SƯ PHẠM" FontSize="12" FontWeight="Bold" Foreground="#00796B" Margin="0,0,0,4"/>
+                                        <TextBlock x:Name="txtToolMeaning" TextWrapping="Wrap" FontSize="12" Foreground="#37474F" LineHeight="16" Margin="0,0,0,6"/>
+                                        <TextBlock x:Name="txtAppHeader" Text="🌍 ÁP DỤNG THỰC TẾ" FontSize="12" FontWeight="Bold" Foreground="#00796B" Margin="0,4,0,4"/>
+                                        <TextBlock x:Name="txtToolApplication" TextWrapping="Wrap" FontSize="12" Foreground="#37474F" LineHeight="16"/>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <TextBlock x:Name="txtGuidelineText" TextWrapping="Wrap" FontSize="12" Foreground="#424242" LineHeight="17">
+                                    • <Run FontWeight="Bold" Foreground="#1565C0" Text="TO DO (Cần làm):"/> Chứa mọi nhiệm vụ chưa bắt đầu. Hãy phân rã bài tập lớn thành nhiều thẻ việc nhỏ.&#x0a;
+                                    • <Run FontWeight="Bold" Foreground="#E65100" Text="DOING (Đang làm):"/> Công việc đang thực hiện. <Run FontWeight="Bold" Text="Quy tắc WIP:"/> Không nên làm quá 3 việc cùng lúc để tránh phân tâm.&#x0a;
+                                    • <Run FontWeight="Bold" Foreground="#2E7D32" Text="DONE (Đã xong):"/> Phần thưởng thị giác! Thẻ tự co giãn sinh động và phát nhạc vui tươi khi được di chuyển vào đây.&#x0a;
+                                    • <Run FontWeight="Bold" Text="Tự động lưu:"/> Hệ thống tự động ghi nhớ trạng thái bảng vào SQLite, dữ liệu được giữ nguyên vẹn kể cả khi tắt máy.
+                                </TextBlock>
+                            </StackPanel>
+                            
+                            <!-- Cột bên phải: Gợi ý kịch bản mẫu nhanh -->
+                            <Border Grid.Column="2" Background="#FFF3E0" CornerRadius="6" Padding="10" BorderBrush="#FFE0B2" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock x:Name="txtSuggestionsHeader" Text="🏫 VÍ DỤ GỢI Ý HỌC ĐƯỜNG" FontSize="12" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,6"/>
+                                    <TextBlock x:Name="txtSuggestionsDesc" TextWrapping="Wrap" FontSize="11" Foreground="#4E342E" LineHeight="15">
+                                        👉 <Run FontWeight="Bold" Text="Môn Toán:"/> Giải 3 đề thi thử học kỳ (To Do) ➔ Làm đề 3 (Doing) ➔ Đã giải xong đề 1 &amp; 2 (Done).&#x0a;&#x0a;
+                                        👉 <Run FontWeight="Bold" Text="Dự án STEM:"/> Vẽ sơ đồ khối robot ➔ Hàn mạch động cơ ➔ Đã mua đủ linh kiện.&#x0a;&#x0a;
+                                        👉 <Run FontWeight="Bold" Text="Cá nhân:"/> Học 20 từ vựng Anh văn ➔ Vẽ sơ đồ tư duy môn Sử ➔ Đã thuộc lý thuyết Địa.
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 2: KHU VỰC THAO TÁC / KANBAN BOARD -->
+                <Grid x:Name="viewWorkspace" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Quick Add Bar -->
+                    <Border Grid.Row="0" Background="#E0F2F1" CornerRadius="8" Padding="12,8" Margin="0,0,0,16" BorderBrush="#00796B" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock Text="📝 Thêm thẻ mới:" FontSize="14" FontWeight="SemiBold" Foreground="#00796B" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <Button DockPanel.Dock="Right" Content="➕ Thêm vào To Do" Padding="12,6" FontSize="13" Cursor="Hand" Click="QuickAdd_Click" Margin="8,0,0,0" Background="#00796B" Foreground="White" BorderThickness="0"/>
+                            <TextBox x:Name="txtQuickAdd" FontSize="14" Padding="8,6" BorderBrush="#B2DFDB" BorderThickness="1" Background="White" ToolTip="Nhập tên công việc và nhấn Enter" KeyDown="QuickAdd_KeyDown" MaxLength="100"/>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Kanban Board Columns -->
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/> <!-- spacing -->
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- TO DO Column -->
+                        <Border Grid.Column="0" Background="#FAFAFA" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <Border Grid.Row="0" Background="#E3F2FD" CornerRadius="8,8,0,0" Padding="12" BorderBrush="#BBDEFB" BorderThickness="0,0,0,2">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Right" Background="#90CAF9" CornerRadius="12" Padding="8,2">
+                                            <TextBlock x:Name="countTodo" Text="0" FontSize="13" FontWeight="Bold" Foreground="#1565C0"/>
+                                        </Border>
+                                        <TextBlock Text="📋 TO DO (Cần làm)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" VerticalAlignment="Center"/>
+                                    </DockPanel>
+                                </Border>
+
+                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="colTodo" Background="Transparent" MinHeight="400" Margin="12" AllowDrop="True" Drop="Column_Drop" DragEnter="Column_DragEnter"/>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+
+                        <!-- DOING Column -->
+                        <Border Grid.Column="2" Background="#FAFAFA" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <Border Grid.Row="0" Background="#FFF3E0" CornerRadius="8,8,0,0" Padding="12" BorderBrush="#FFE0B2" BorderThickness="0,0,0,2">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Right" Background="#FFCC80" CornerRadius="12" Padding="8,2">
+                                            <TextBlock x:Name="countDoing" Text="0" FontSize="13" FontWeight="Bold" Foreground="#E65100"/>
+                                        </Border>
+                                        <TextBlock Text="⚡ DOING (Đang làm)" FontSize="16" FontWeight="Bold" Foreground="#E65100" VerticalAlignment="Center"/>
+                                    </DockPanel>
+                                </Border>
+
+                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="colDoing" Background="Transparent" MinHeight="400" Margin="12" AllowDrop="True" Drop="Column_Drop" DragEnter="Column_DragEnter"/>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+
+                        <!-- DONE Column -->
+                        <Border Grid.Column="4" Background="#FAFAFA" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <Border Grid.Row="0" Background="#E8F5E9" CornerRadius="8,8,0,0" Padding="12" BorderBrush="#C8E6C9" BorderThickness="0,0,0,2">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Right" Background="#A5D6A7" CornerRadius="12" Padding="8,2">
+                                            <TextBlock x:Name="countDone" Text="0" FontSize="13" FontWeight="Bold" Foreground="#2E7D32"/>
+                                        </Border>
+                                        <TextBlock Text="✅ DONE (Hoàn thành)" FontSize="16" FontWeight="Bold" Foreground="#2E7D32" VerticalAlignment="Center"/>
+                                    </DockPanel>
+                                </Border>
+
+                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="colDone" Background="Transparent" MinHeight="400" Margin="12" AllowDrop="True" Drop="Column_Drop" DragEnter="Column_DragEnter"/>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <!-- VIEW 3: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

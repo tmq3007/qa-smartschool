@@ -1,0 +1,447 @@
+{
+  "metadata": {
+    "chapterId": "g06_ch01",
+    "chapterName": "Số Hữu Tỉ & Số Thực",
+    "grade": 6,
+    "totalSections": 3,
+    "totalConcepts": 9,
+    "totalProblems": 20,
+    "toolMapping": [
+      "FractionTool",
+      "PrimeNumberTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 16,
+    "prerequisites": [
+      "g03_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "sht_01",
+      "sectionName": "Số hữu tỉ & Tính chất",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "sht_001",
+          "name": "Số hữu tỉ",
+          "definition": "Số viết được dưới dạng p/q (p, q ∈ ℤ, q ≠ 0). Ký hiệu: ℚ"
+        },
+        {
+          "id": "sht_002",
+          "name": "So sánh số hữu tỉ",
+          "definition": "Quy đồng mẫu dương rồi so sánh tử"
+        },
+        {
+          "id": "sht_003",
+          "name": "Giá trị tuyệt đối",
+          "definition": "|a| = a nếu a ≥ 0, |a| = -a nếu a < 0"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "sht_prob_001",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Số nào sau đây là số hữu tỉ?",
+          "options": [
+            "A) √2",
+            "B) π",
+            "C) -3/7",
+            "D) √3"
+          ],
+          "correctAnswer": "C",
+          "solution": "-3/7 có dạng p/q → hữu tỉ",
+          "points": 5
+        },
+        {
+          "problemId": "sht_prob_002",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Tính: |-7| + |3| = ?",
+          "options": [
+            "A) -4",
+            "B) 10",
+            "C) 4",
+            "D) -10"
+          ],
+          "correctAnswer": "B",
+          "solution": "|-7| = 7, |3| = 3. 7 + 3 = 10",
+          "points": 5
+        },
+        {
+          "problemId": "sht_prob_003",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "So sánh: -3/4 và -5/7",
+          "options": [
+            "A) -3/4 > -5/7",
+            "B) -3/4 < -5/7",
+            "C) Bằng nhau",
+            "D) Không so sánh được"
+          ],
+          "correctAnswer": "B",
+          "solution": "Quy đồng mẫu 28: -21/28 < -20/28 → -3/4 < -5/7",
+          "points": 10
+        },
+        {
+          "problemId": "sht_prob_004",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tính: 2/3 + (-5/6) = ?",
+          "options": [
+            "A) -1/6",
+            "B) 1/6",
+            "C) -3/6",
+            "D) 7/6"
+          ],
+          "correctAnswer": "A",
+          "solution": "Quy đồng mẫu 6: 4/6 + (-5/6) = -1/6",
+          "points": 10
+        },
+        {
+          "problemId": "sht_prob_005",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm x: |x - 2| = 5",
+          "options": [
+            "A) x = 7",
+            "B) x = -3",
+            "C) x = 7 hoặc x = -3",
+            "D) x = 3"
+          ],
+          "correctAnswer": "C",
+          "solution": "x - 2 = 5 → x = 7 hoặc x - 2 = -5 → x = -3",
+          "points": 15
+        },
+        {
+          "problemId": "sht_prob_006",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tính: (-2/3) × 9/4 + (-2/3) × 3/4",
+          "options": [
+            "A) -2",
+            "B) 2",
+            "C) -1",
+            "D) -3"
+          ],
+          "correctAnswer": "A",
+          "solution": "(-2/3) × (9/4 + 3/4) = (-2/3) × 3 = -2",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "sht_02",
+      "sectionName": "Số nguyên tố, ƯCLN, BCNN",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "sht_004",
+          "name": "Số nguyên tố",
+          "definition": "Số > 1 chỉ chia hết cho 1 và chính nó"
+        },
+        {
+          "id": "sht_005",
+          "name": "Phân tích thừa số nguyên tố",
+          "definition": "Viết số dưới dạng tích thừa số nguyên tố"
+        },
+        {
+          "id": "sht_006",
+          "name": "ƯCLN & BCNN",
+          "definition": "ƯCLN: tích TSNT chung, mũ nhỏ nhất. BCNN: tích TSNT, mũ lớn nhất"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "sht_prob_007",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Số nào là số nguyên tố?",
+          "options": [
+            "A) 15",
+            "B) 21",
+            "C) 23",
+            "D) 27"
+          ],
+          "correctAnswer": "C",
+          "solution": "23 chỉ chia hết cho 1 và 23 → nguyên tố",
+          "points": 5
+        },
+        {
+          "problemId": "sht_prob_008",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Phân tích 30 ra thừa số nguyên tố:",
+          "options": [
+            "A) 2 × 15",
+            "B) 2 × 3 × 5",
+            "C) 5 × 6",
+            "D) 3 × 10"
+          ],
+          "correctAnswer": "B",
+          "solution": "30 = 2 × 3 × 5",
+          "points": 5
+        },
+        {
+          "problemId": "sht_prob_009",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tìm ƯCLN(24, 36):",
+          "options": [
+            "A) 6",
+            "B) 12",
+            "C) 8",
+            "D) 4"
+          ],
+          "correctAnswer": "B",
+          "solution": "24 = 2³×3, 36 = 2²×3². ƯCLN = 2²×3 = 12",
+          "points": 10
+        },
+        {
+          "problemId": "sht_prob_010",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tìm BCNN(8, 12):",
+          "options": [
+            "A) 24",
+            "B) 48",
+            "C) 96",
+            "D) 4"
+          ],
+          "correctAnswer": "A",
+          "solution": "8 = 2³, 12 = 2²×3. BCNN = 2³×3 = 24",
+          "points": 10
+        },
+        {
+          "problemId": "sht_prob_011",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "36 bi đỏ và 48 bi xanh chia đều vào hộp. Số hộp nhiều nhất?",
+          "options": [
+            "A) 6",
+            "B) 8",
+            "C) 12",
+            "D) 4"
+          ],
+          "correctAnswer": "C",
+          "solution": "ƯCLN(36,48) = 12 hộp",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "sht_03",
+      "sectionName": "Số thực & Căn bậc hai",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "sht_007",
+          "name": "Số vô tỉ",
+          "definition": "Số thập phân vô hạn không tuần hoàn: √2, π"
+        },
+        {
+          "id": "sht_008",
+          "name": "Tập số thực ℝ",
+          "definition": "ℝ = ℚ ∪ I"
+        },
+        {
+          "id": "sht_009",
+          "name": "Căn bậc hai",
+          "definition": "√a = b khi b ≥ 0 và b² = a"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "sht_prob_012",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "√25 = ?",
+          "options": [
+            "A) 5",
+            "B) 12,5",
+            "C) 625",
+            "D) ±5"
+          ],
+          "correctAnswer": "A",
+          "solution": "√25 = 5 vì 5² = 25",
+          "points": 5
+        },
+        {
+          "problemId": "sht_prob_013",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Số nào là số vô tỉ?",
+          "options": [
+            "A) 0,25",
+            "B) 1/3",
+            "C) √5",
+            "D) -7"
+          ],
+          "correctAnswer": "C",
+          "solution": "√5 ≈ 2,236... vô hạn không tuần hoàn → vô tỉ",
+          "points": 5
+        },
+        {
+          "problemId": "sht_prob_014",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "√49 + √81 = ?",
+          "options": [
+            "A) 16",
+            "B) 130",
+            "C) 15",
+            "D) √130"
+          ],
+          "correctAnswer": "A",
+          "solution": "7 + 9 = 16",
+          "points": 10
+        },
+        {
+          "problemId": "sht_prob_015",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "√(36 + 64) = ?",
+          "options": [
+            "A) 10",
+            "B) 14",
+            "C) 6 + 8",
+            "D) 100"
+          ],
+          "correctAnswer": "A",
+          "solution": "√100 = 10. Lưu ý: √(a+b) ≠ √a + √b",
+          "points": 10
+        },
+        {
+          "problemId": "sht_prob_016",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm x: x² = 49",
+          "options": [
+            "A) 7",
+            "B) -7",
+            "C) ±7",
+            "D) 2401"
+          ],
+          "correctAnswer": "C",
+          "solution": "x = ±√49 = ±7",
+          "points": 15
+        },
+        {
+          "problemId": "sht_prob_017",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tìm x: √x = 6",
+          "options": [
+            "A) x = 3",
+            "B) x = 12",
+            "C) x = 36",
+            "D) x = 6"
+          ],
+          "correctAnswer": "C",
+          "solution": "x = 6² = 36",
+          "points": 15
+        },
+        {
+          "problemId": "sht_prob_018",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "0,333... dưới dạng phân số:",
+          "options": [
+            "A) 1/3",
+            "B) 3/10",
+            "C) 33/100",
+            "D) 3/9"
+          ],
+          "correctAnswer": "A",
+          "solution": "0,(3) = 1/3 → hữu tỉ",
+          "points": 10
+        },
+        {
+          "problemId": "sht_prob_019",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "√4 trên trục số nằm ở:",
+          "options": [
+            "A) Giữa 1 và 2",
+            "B) Vị trí số 2",
+            "C) Giữa 3 và 4",
+            "D) Vị trí 4"
+          ],
+          "correctAnswer": "B",
+          "solution": "√4 = 2",
+          "points": 5
+        },
+        {
+          "problemId": "sht_prob_020",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Sắp xếp tăng dần: √3, 1.5, √2, 2",
+          "options": [
+            "A) √2, 1.5, √3, 2",
+            "B) 1.5, √2, √3, 2",
+            "C) √2, √3, 1.5, 2",
+            "D) 1.5, √3, √2, 2"
+          ],
+          "correctAnswer": "A",
+          "solution": "√2≈1.414 < 1.5 < √3≈1.732 < 2",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm: √(a+b) = √a + √b",
+      "correction": "√(a+b) ≠ √a + √b"
+    },
+    {
+      "mistake": "x² = 9 → x = 3",
+      "correction": "x² = 9 → x = ±3"
+    },
+    {
+      "mistake": "Nhầm ƯCLN và BCNN",
+      "correction": "ƯCLN: mũ NHỎ nhất. BCNN: mũ LỚN nhất"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "sht_quiz_01",
+      "title": "Kiểm tra: Số hữu tỉ & Số thực",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "sht_prob_001"
+        },
+        {
+          "ref": "sht_prob_007"
+        },
+        {
+          "ref": "sht_prob_009"
+        },
+        {
+          "ref": "sht_prob_012"
+        },
+        {
+          "ref": "sht_prob_015"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

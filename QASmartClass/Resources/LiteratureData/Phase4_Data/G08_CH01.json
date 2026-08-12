@@ -1,0 +1,160 @@
+{
+  "metadata": {
+    "chapterId": "g08_ch01",
+    "chapterName": "Bài 1: Văn nghị luận trung đại — Tình yêu Tổ quốc",
+    "grade": 8,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 3
+  },
+  "sections": [
+    {
+      "sectionId": "s_g8_ch0_0",
+      "sectionName": "Hịch Tướng Sĩ — Trần Quốc Tuấn",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-8-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g8_Hịch_Tướng_Sĩ.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Thể Loại",
+          "theorem": "Trần Quốc Tuấn (Hưng Đạo Đại Vương, 1231–1300) — vị tướng lỗi lạc nhất lịch sử Việt Nam, ba lần đánh thắng Mông-Nguyên. 'Hịch tướng sĩ' (1284) là bài hịch viết để khích lệ quân sĩ trước cuộc kháng chiến lần 2.",
+          "imageUrls": ["Resources/LiteratureData/Images/tran_quoc_tuan.png"]
+        },
+        {
+          "name": "Nỗi đau của chủ tướng",
+          "definition": "Ta thường tới bữa quên ăn, nửa đêm vỗ gối; ruột đau như cắt, nước mắt đầm đìa; chỉ căm tức chưa xả thịt lột da, nuốt gan uống máu quân thù. Dẫu cho trăm thân này phơi ngoài nội cỏ, nghìn xác này gói trong da ngựa, ta cũng vui lòng."
+        },
+        {
+          "name": "Phê phán và kêu gọi",
+          "definition": "Nay các ngươi nhìn chủ nhục mà không biết lo, thấy nước nhục mà không biết thẹn, làm tướng triều đình phải hầu giặc mà không biết tức... Nay ta bảo thật các ngươi: nên nhớ câu 'đặt mồi lửa vào dưới đống củi' là nguy hiểm lắm. Nên suy nghĩ câu 'kiềng canh nóng mà thổi rau nguội' là thận trọng đó."
+        },
+        {
+          "name": "Phân tích nghệ thuật",
+          "examples": [
+            "**Lập luận ba bước**: Nêu gương trung thần → Phê phán thái độ sai → Kêu gọi hành động đúng.",
+            "**'Quên ăn, vỗ gối, ruột đau như cắt'**: Lòng yêu nước không cần nói to — bộc lộ qua hành động và cảm xúc thực tế.",
+            "**Giọng điệu đa dạng**: Khi trách mắng thẳng thắn ('không biết lo, không biết thẹn'), khi khuyến khích tha thiết ('huấn luyện quân sĩ').",
+            "**Thể Hịch**: Thể văn nghị luận cổ, dùng để kêu gọi chiến đấu — có kết cấu chặt chẽ, lập luận sắc bén."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Đoạn Trần Quốc Tuấn bày tỏ nỗi đau 'quên ăn, vỗ gối, nước mắt đầm đìa' có tác dụng thuyết phục như thế nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Chứng tỏ chủ tướng đau nỗi đau của đất nước — làm quân sĩ tin và cảm động, sẵn sàng hi sinh theo",
+            "Cho thấy Trần Quốc Tuấn yếu đuối và cần quân sĩ giúp đỡ",
+            "Trình bày tình hình nguy cấp để quân sĩ hiểu rõ hơn về giặc Mông-Nguyên",
+            "Là phép liệt kê để tăng độ dài và tính chất trang trọng của bài hịch"
+          ],
+          "answer": "Chứng tỏ chủ tướng đau nỗi đau của đất nước — làm quân sĩ tin và cảm động, sẵn sàng hi sinh theo",
+          "hints": ["Người nói trước khi kêu gọi người khác thường cần chứng minh điều gì?"],
+          "explanation": "Đây là kỹ thuật lập luận: trước khi kêu gọi quân sĩ hi sinh, Trần Quốc Tuấn chứng minh bản thân sẵn sàng 'phơi trăm thân ngoài nội cỏ'. Người lính sẽ tin tưởng chủ tướng đã hi sinh thân mình trước. Lòng chân thật của người trên sẽ khơi dậy lòng trung thành của người dưới."
+        },
+        {
+          "id": "p2",
+          "question": "Trần Quốc Tuấn phê phán quân sĩ 'không biết lo, không biết thẹn' — điều này phản ánh chiến lược thuyết phục nào?",
+          "difficulty": "Hard",
+          "options": [
+            "Đánh vào danh dự và lòng tự trọng — khiến quân sĩ tự xấu hổ mà tự nguyện thay đổi",
+            "Phê phán công khai để kỷ luật và răn đe những kẻ không tuân lệnh",
+            "Liệt kê tội lỗi để xác định hình phạt theo luật quân sự",
+            "Trần Quốc Tuấn tức giận và mất bình tĩnh trước thái độ của quân sĩ"
+          ],
+          "answer": "Đánh vào danh dự và lòng tự trọng — khiến quân sĩ tự xấu hổ mà tự nguyện thay đổi",
+          "hints": ["Điều gì quý giá nhất với người lính: vật chất hay danh dự?"],
+          "explanation": "Trần Quốc Tuấn hiểu tâm lý người lính: danh dự còn quý hơn tính mạng. Phê phán 'không biết thẹn' là tấn công vào danh dự — khiến họ tự cảm thấy xấu hổ và muốn chứng minh bản thân. Đây là kỹ thuật thuyết phục bằng cảm xúc (pathos) thay vì chỉ ra lệnh — hiệu quả hơn nhiều."
+        },
+        {
+          "id": "p3",
+          "question": "Câu 'Dẫu cho trăm thân này phơi ngoài nội cỏ, nghìn xác gói trong da ngựa, ta cũng vui lòng' thể hiện điều gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Lòng yêu nước sẵn sàng hi sinh tột cùng — coi cái chết nhẹ hơn sự sỉ nhục của đất nước",
+            "Sự khinh thường cái chết của một vị tướng dày dạn trận mạc",
+            "Lời hứa hẹn với quân sĩ rằng ông sẽ chiến đấu đến người cuối cùng",
+            "Phóng đại văn học để tạo ấn tượng mạnh trong thể hịch"
+          ],
+          "answer": "Lòng yêu nước sẵn sàng hi sinh tột cùng — coi cái chết nhẹ hơn sự sỉ nhục của đất nước",
+          "hints": ["'Vui lòng' hi sinh — điều đó nói lên mức độ yêu nước như thế nào?"],
+          "explanation": "'Vui lòng' chấp nhận hi sinh không phải bi thảm mà là sự bình thản của người đặt Tổ quốc lên trên tất cả. Hình ảnh 'trăm thân phơi ngoài nội cỏ' (chết trận không có người chôn cất) vẫn 'vui lòng' — đây là lòng yêu nước mãnh liệt nhất, không toan tính, không sợ hãi."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g8_ch0_1",
+      "sectionName": "Nước Đại Việt Ta (Trích Bình Ngô Đại Cáo — Nguyễn Trãi)",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-8-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g8_Nước_Đại_Việt_Ta.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Nguyễn Trãi (1380–1442) — anh hùng dân tộc, nhà văn hóa lớn. 'Bình Ngô Đại Cáo' (1428) là tuyên ngôn độc lập của nước Đại Việt sau khi đánh thắng giặc Minh — được coi là bản tuyên ngôn độc lập thứ hai của dân tộc.",
+          "imageUrls": ["Resources/LiteratureData/Images/nguyen_trai.png"]
+        },
+        {
+          "name": "Nguyên lý nhân nghĩa",
+          "definition": "Việc nhân nghĩa cốt ở yên dân,\nQuân điếu phạt trước lo trừ bạo.\nNhư nước Đại Việt ta từ trước,\nVốn xưng nền văn hiến đã lâu."
+        },
+        {
+          "name": "Khẳng định chủ quyền",
+          "definition": "Núi sông bờ cõi đã chia,\nPhong tục Bắc Nam cũng khác.\nTừ Triệu, Đinh, Lý, Trần bao đời gây nền độc lập,\nCùng Hán, Đường, Tống, Nguyên mỗi bên xưng đế một phương.\nTuy mạnh yếu từng lúc khác nhau,\nSong hào kiệt đời nào cũng có."
+        },
+        {
+          "name": "Phân tích tư tưởng",
+          "examples": [
+            "**Khái niệm 'nhân nghĩa'**: Nguyễn Trãi mở rộng Nho giáo: nhân nghĩa = yên dân, trừ bạo — không phải trung quân thuần túy mà là bảo vệ nhân dân.",
+            "**Bằng chứng độc lập**: 5 yếu tố: văn hiến, bờ cõi, phong tục, triều đại, anh hùng — lập luận toàn diện hơn 'Nam quốc sơn hà' chỉ dùng 2 yếu tố.",
+            "**So sánh ngang hàng**: 'Triệu, Đinh, Lý, Trần' vs 'Hán, Đường, Tống, Nguyên' — đặt Đại Việt ngang bằng Trung Hoa về tư cách quốc gia.",
+            "**'Hào kiệt đời nào cũng có'**: Không chỉ độc lập về lãnh thổ mà độc lập về nhân tài."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Nguyễn Trãi dùng 5 yếu tố (văn hiến, bờ cõi, phong tục, triều đại, anh hùng) để chứng minh điều gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Đại Việt là quốc gia có chủ quyền độc lập toàn diện — không chỉ về đất đai mà cả văn hóa, lịch sử và nhân tài",
+            "Đại Việt mạnh hơn Trung Hoa về mọi mặt",
+            "Lịch sử Việt Nam dài và phức tạp hơn lịch sử Trung Hoa",
+            "Chứng minh quyền của nhà Lê được cai trị đất nước sau khi đánh Minh"
+          ],
+          "answer": "Đại Việt là quốc gia có chủ quyền độc lập toàn diện — không chỉ về đất đai mà cả văn hóa, lịch sử và nhân tài",
+          "hints": ["So sánh với 'Nam quốc sơn hà' — bài thơ đó dùng mấy yếu tố?"],
+          "explanation": "'Nam quốc sơn hà' (thế kỷ XI) chỉ dùng 2 yếu tố: lãnh thổ và phong tục. Nguyễn Trãi nâng lên 5 yếu tố: thêm văn hiến (văn hóa), triều đại (lịch sử chính trị), anh hùng (nhân tài). Quan niệm chủ quyền toàn diện hơn — đây là bước tiến về tư duy chính trị-pháp lý của thế kỷ XV."
+        },
+        {
+          "id": "p2",
+          "question": "Câu 'Từ Triệu, Đinh, Lý, Trần bao đời gây nền độc lập / Cùng Hán, Đường, Tống, Nguyên mỗi bên xưng đế một phương' có ý nghĩa gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Đặt các triều đại Việt ngang hàng với Trung Hoa — khẳng định Đại Việt là quốc gia độc lập, không phải chư hầu",
+            "Liệt kê lịch sử các triều đại để chứng minh sự lâu đời của dân tộc",
+            "So sánh để thấy Đại Việt kém hơn Trung Hoa về số triều đại",
+            "Nhắc nhở người Minh rằng họ đã từng bị đánh bại bởi Đại Việt"
+          ],
+          "answer": "Đặt các triều đại Việt ngang hàng với Trung Hoa — khẳng định Đại Việt là quốc gia độc lập, không phải chư hầu",
+          "hints": ["'Mỗi bên xưng đế một phương' — điều đó có nghĩa là gì về tư cách quốc gia?"],
+          "explanation": "Đây là tư duy ngoại giao táo bạo: Nguyễn Trãi không cúi đầu nhận Đại Việt là 'phiên bang' của Trung Hoa mà đặt hai bên ngang hàng ('mỗi bên một phương'). Câu này là lời tuyên bố: chúng tôi không phải thuộc hạ, chúng tôi là quốc gia riêng biệt có lịch sử ngang bằng các bạn."
+        },
+        {
+          "id": "p3",
+          "question": "Tư tưởng 'nhân nghĩa' của Nguyễn Trãi có gì khác biệt so với Nho giáo truyền thống?",
+          "difficulty": "Hard",
+          "options": [
+            "Nguyễn Trãi mở rộng: nhân nghĩa = yên dân + trừ bạo — đặt lợi ích nhân dân lên trên, không chỉ trung thành với vua",
+            "Nguyễn Trãi áp dụng nguyên xi Nho giáo Trung Hoa vào hoàn cảnh Việt Nam",
+            "Nguyễn Trãi phủ nhận Nho giáo và xây dựng hệ tư tưởng riêng của người Việt",
+            "Nhân nghĩa trong Bình Ngô Đại Cáo chỉ có nghĩa là chiến thắng quân Minh"
+          ],
+          "answer": "Nguyễn Trãi mở rộng: nhân nghĩa = yên dân + trừ bạo — đặt lợi ích nhân dân lên trên, không chỉ trung thành với vua",
+          "hints": ["Nho giáo gốc: nhân nghĩa = trung quân, hiếu đạo. Nguyễn Trãi thêm vào điều gì?"],
+          "explanation": "Nho giáo truyền thống: nhân nghĩa hướng đến vua. Nguyễn Trãi sáng tạo: nhân nghĩa = 'yên dân' (làm dân được yên ổn) và 'trừ bạo' (diệt kẻ tàn ác). Điều này đặt nhân dân làm trung tâm — tư duy tiến bộ vượt thời đại, gần với quan niệm hiện đại về nhà nước phục vụ nhân dân."
+        }
+      ]
+    }
+  ]
+}

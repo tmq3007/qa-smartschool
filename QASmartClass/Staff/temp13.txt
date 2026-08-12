@@ -1,0 +1,40 @@
+                SaveHomeworkToDb(existing, true);
+                RenderList();
+                UpdateStats();
+                MessageBox.Show($"✅ Đã cập nhật bài tập!\n\n📝 {existing.Title}", "Cập nhật thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                var newHw = new HomeworkItem
+                {
+                    Subject = cboSubject.Text.Trim(),
+                    Title = txtTitle.Text.Trim(),
+                    Description = txtDesc.Text.Trim(),
+                    Deadline = deadline,
+                    Attachment = txtAttachment.Text.Trim(),
+                    CreatedAt = DateTime.Now
+                };
+
+                SaveHomeworkToDb(newHw, false);
+                _allItems.Insert(0, newHw);
+                RenderList();
+                UpdateStats();
+
+                var app = (QASmartTouch.App)Application.Current;
+                app.RaiseLocalCommand($"CMD|HOMEWORK|{newHw.Title}: {newHw.Description}");
+
+                MessageBox.Show($"✅ Đã giao BTVN và gửi đến HS!\n\n📝 {newHw.Title}\n📚 {newHw.Subject}\n⏰ Hạn: {newHw.Deadline:dd/MM/yyyy HH:mm}",
+                    "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private TextBlock CreateFieldLabel(string text, bool required = false)
+        {
+            var tb = new TextBlock
+            {
+                FontSize = 12, FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(73, 80, 87)),
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            tb.Inlines.Add(text);
+            if (required)

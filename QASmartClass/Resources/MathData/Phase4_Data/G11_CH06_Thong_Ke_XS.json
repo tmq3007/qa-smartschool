@@ -1,0 +1,391 @@
+{
+  "metadata": {
+    "chapterId": "g11_ch06",
+    "chapterName": "Thống Kê & Xác Suất Nâng Cao",
+    "grade": 11,
+    "totalSections": 3,
+    "totalConcepts": 10,
+    "totalProblems": 15,
+    "toolMapping": [
+      "StatisticsTool",
+      "ProbabilityTool"
+    ],
+    "thptWeight": "6%",
+    "estimatedHours": 12
+  },
+  "sections": [
+    {
+      "sectionId": "st11_01",
+      "sectionName": "Biến ngẫu nhiên rời rạc",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "st11_001",
+          "name": "Biến ngẫu nhiên rời rạc",
+          "definition": "X là biến ngẫu nhiên rời rạc nếu X nhận hữu hạn hoặc đếm được các giá trị x₁, x₂, ..., xₙ"
+        },
+        {
+          "id": "st11_002",
+          "name": "Bảng phân phối xác suất",
+          "definition": "Bảng liệt kê các giá trị xᵢ và P(X=xᵢ)",
+          "properties": [
+            "Σ P(X=xᵢ) = 1",
+            "P(X=xᵢ) ≥ 0"
+          ]
+        },
+        {
+          "id": "st11_003",
+          "name": "Kỳ vọng (Expected value)",
+          "formula": "E(X) = Σ xᵢ·P(X=xᵢ)",
+          "properties": [
+            "E(aX+b) = aE(X)+b",
+            "E(X) là giá trị trung bình dài hạn"
+          ]
+        },
+        {
+          "id": "st11_004",
+          "name": "Phương sai & Độ lệch chuẩn",
+          "formulas": [
+            "D(X) = E(X²) - [E(X)]²",
+            "σ(X) = √D(X)"
+          ],
+          "properties": [
+            "D(aX+b) = a²·D(X)",
+            "D(X) ≥ 0"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "st11_prob_001",
+          "difficulty": "Easy",
+          "question": "X có bảng: P(X=1)=0.3, P(X=2)=0.5, P(X=3)=0.2. E(X)=",
+          "options": [
+            "A) 1.9",
+            "B) 2.0",
+            "C) 1.5",
+            "D) 2.3"
+          ],
+          "correctAnswer": "A",
+          "solution": "E(X)=1·0.3+2·0.5+3·0.2=0.3+1.0+0.6=1.9",
+          "points": 10
+        },
+        {
+          "problemId": "st11_prob_002",
+          "difficulty": "Medium",
+          "question": "X có bảng: P(X=0)=1/4, P(X=1)=1/2, P(X=2)=a. Tìm a:",
+          "options": [
+            "A) 1/4",
+            "B) 1/2",
+            "C) 3/4",
+            "D) 0"
+          ],
+          "correctAnswer": "A",
+          "solution": "ΣP=1: 1/4+1/2+a=1 → a=1-3/4=1/4",
+          "points": 15
+        },
+        {
+          "problemId": "st11_prob_003",
+          "difficulty": "Medium",
+          "question": "E(X)=3, D(X)=4. Tính E(2X+1) và D(2X+1):",
+          "options": [
+            "A) E=7, D=16",
+            "B) E=7, D=4",
+            "C) E=6, D=8",
+            "D) E=7, D=9"
+          ],
+          "correctAnswer": "A",
+          "solution": "E(2X+1)=2·3+1=7. D(2X+1)=4·4=16",
+          "points": 15
+        },
+        {
+          "problemId": "st11_prob_004",
+          "difficulty": "Hard",
+          "question": "Gieo xúc xắc 1 lần. X=số chấm. D(X)=",
+          "options": [
+            "A) 35/12",
+            "B) 7/2",
+            "C) 91/6",
+            "D) 3.5"
+          ],
+          "correctAnswer": "A",
+          "solution": "E(X)=(1+2+3+4+5+6)/6=7/2. E(X²)=(1+4+9+16+25+36)/6=91/6. D=91/6-(7/2)²=91/6-49/4=(182-147)/12=35/12",
+          "points": 20
+        },
+        {
+          "problemId": "st11_prob_005",
+          "difficulty": "Easy",
+          "question": "X nhận giá trị 1,2,3 với XS bằng nhau. E(X)=",
+          "options": [
+            "A) 2",
+            "B) 1.5",
+            "C) 3",
+            "D) 1"
+          ],
+          "correctAnswer": "A",
+          "solution": "E(X)=(1+2+3)/3=6/3=2",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "st11_02",
+      "sectionName": "Phân phối nhị thức (Binomial)",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "st11_005",
+          "name": "Phép thử Bernoulli",
+          "definition": "Phép thử chỉ có 2 kết quả: thành công (p) hoặc thất bại (q=1-p)"
+        },
+        {
+          "id": "st11_006",
+          "name": "Phân phối nhị thức B(n,p)",
+          "formula": "P(X=k) = Cₙᵏ pᵏ qⁿ⁻ᵏ",
+          "properties": [
+            "E(X)=np",
+            "D(X)=npq",
+            "k = 0, 1, ..., n"
+          ]
+        },
+        {
+          "id": "st11_007",
+          "name": "XS trong phép thử lặp",
+          "formula": "P(X≥1) = 1 - P(X=0) = 1 - qⁿ"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "st11_prob_006",
+          "difficulty": "Easy",
+          "question": "Gieo đồng xu 5 lần. XS được đúng 3 sấp:",
+          "options": [
+            "A) 5/16",
+            "B) 10/32",
+            "C) 3/8",
+            "D) 1/4"
+          ],
+          "correctAnswer": "A",
+          "solution": "X~B(5, 1/2). P(X=3)=C₅³·(1/2)³·(1/2)²=10/32=5/16",
+          "points": 10
+        },
+        {
+          "problemId": "st11_prob_007",
+          "difficulty": "Medium",
+          "question": "Bắn 4 phát, XS trúng mỗi phát = 0.6. E(số phát trúng)=",
+          "options": [
+            "A) 2.4",
+            "B) 3",
+            "C) 1.6",
+            "D) 2"
+          ],
+          "correctAnswer": "A",
+          "solution": "X~B(4, 0.6). E(X)=np=4·0.6=2.4",
+          "points": 15
+        },
+        {
+          "problemId": "st11_prob_008",
+          "difficulty": "Medium",
+          "question": "Tỉ lệ SP lỗi = 5%. Kiểm tra 10 SP. XS có ĐÚNG 1 lỗi:",
+          "options": [
+            "A) C₁₀¹·(0.05)¹·(0.95)⁹",
+            "B) 10·0.05",
+            "C) 0.05",
+            "D) 1-0.95¹⁰"
+          ],
+          "correctAnswer": "A",
+          "solution": "X~B(10, 0.05). P(X=1)=C₁₀¹·0.05·0.95⁹",
+          "points": 15
+        },
+        {
+          "problemId": "st11_prob_009",
+          "difficulty": "Hard",
+          "question": "Bắn 3 phát, P(trúng)=0.7. XS trúng ÍT NHẤT 2 phát:",
+          "options": [
+            "A) 0.784",
+            "B) 0.7",
+            "C) 0.441",
+            "D) 0.9"
+          ],
+          "correctAnswer": "A",
+          "solution": "P(X≥2)=P(X=2)+P(X=3)=C₃²·0.7²·0.3+0.7³=3·0.49·0.3+0.343=0.441+0.343=0.784",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "st11_03",
+      "sectionName": "Ước lượng & Khoảng tin cậy",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "st11_008",
+          "name": "Ước lượng điểm",
+          "definition": "Dùng trung bình mẫu x̄ để ước lượng trung bình tổng thể μ"
+        },
+        {
+          "id": "st11_009",
+          "name": "Khoảng tin cậy cho μ",
+          "formula": "x̄ ± z_{α/2}·σ/√n",
+          "properties": [
+            "z₀.₀₂₅=1.96 (95%)",
+            "z₀.₀₀₅=2.576 (99%)",
+            "n lớn → khoảng tin cậy hẹp hơn"
+          ]
+        },
+        {
+          "id": "st11_010",
+          "name": "Cỡ mẫu tối thiểu",
+          "formula": "n ≥ (z_{α/2}·σ/ε)²",
+          "properties": [
+            "ε: sai số cho phép",
+            "σ: độ lệch chuẩn tổng thể"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "st11_prob_010",
+          "difficulty": "Easy",
+          "question": "Mẫu n=100, x̄=50, σ=10. Khoảng tin cậy 95% cho μ:",
+          "options": [
+            "A) (48.04; 51.96)",
+            "B) (40; 60)",
+            "C) (49; 51)",
+            "D) (47; 53)"
+          ],
+          "correctAnswer": "A",
+          "solution": "x̄ ± 1.96·σ/√n = 50 ± 1.96·10/10 = 50 ± 1.96 → (48.04; 51.96)",
+          "points": 10
+        },
+        {
+          "problemId": "st11_prob_011",
+          "difficulty": "Medium",
+          "question": "Muốn sai số ε≤2 với σ=10, tin cậy 95%. Cỡ mẫu tối thiểu:",
+          "options": [
+            "A) 97",
+            "B) 100",
+            "C) 50",
+            "D) 25"
+          ],
+          "correctAnswer": "A",
+          "solution": "n ≥ (1.96·10/2)² = (9.8)² = 96.04 → n=97",
+          "points": 15
+        },
+        {
+          "problemId": "st11_prob_012",
+          "difficulty": "Medium",
+          "question": "Khi n tăng gấp 4, độ rộng khoảng tin cậy:",
+          "options": [
+            "A) Giảm một nửa",
+            "B) Giảm 1/4",
+            "C) Không đổi",
+            "D) Tăng gấp đôi"
+          ],
+          "correctAnswer": "A",
+          "solution": "Độ rộng ~ 1/√n. √(4n)=2√n → 1/(2√n) = giảm 1/2",
+          "points": 15
+        },
+        {
+          "problemId": "st11_prob_013",
+          "difficulty": "Hard",
+          "question": "n=64, x̄=75, σ=8. Với 99% tin cậy, cận trên của μ:",
+          "options": [
+            "A) 77.576",
+            "B) 76.96",
+            "C) 79",
+            "D) 80"
+          ],
+          "correctAnswer": "A",
+          "solution": "Cận trên = x̄ + z·σ/√n = 75 + 2.576·8/8 = 75 + 2.576 = 77.576",
+          "points": 20
+        },
+        {
+          "problemId": "st11_prob_014",
+          "difficulty": "Easy",
+          "question": "Mẫu lớn (n>30) có ưu điểm gì khi ước lượng?",
+          "options": [
+            "A) Khoảng tin cậy hẹp hơn, ước lượng chính xác hơn",
+            "B) Không cần biết σ",
+            "C) Khoảng tin cậy rộng hơn",
+            "D) Phải dùng phân phối t-Student"
+          ],
+          "correctAnswer": "A",
+          "solution": "n lớn → σ/√n nhỏ → khoảng tin cậy hẹp → ước lượng chính xác hơn",
+          "points": 10
+        },
+        {
+          "problemId": "st11_prob_015",
+          "difficulty": "Hard",
+          "question": "So sánh KTC 95% và 99% cùng mẫu:",
+          "options": [
+            "A) KTC 99% rộng hơn KTC 95%",
+            "B) KTC 95% rộng hơn",
+            "C) Bằng nhau",
+            "D) Phụ thuộc σ"
+          ],
+          "correctAnswer": "A",
+          "solution": "z₀.₀₂₅=1.96 < z₀.₀₀₅=2.576. Mức tin cậy cao hơn → z lớn hơn → KTC rộng hơn",
+          "points": 20
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm E(X²) với [E(X)]²",
+      "correction": "D(X)=E(X²)-[E(X)]². Hai đại lượng này khác nhau!"
+    },
+    {
+      "mistake": "Quên q=1-p trong nhị thức",
+      "correction": "P(X=k) = Cₙᵏ pᵏ qⁿ⁻ᵏ, q=1-p (KHÔNG phải p)"
+    },
+    {
+      "mistake": "Nhầm D(aX+b)=a·D(X)",
+      "correction": "Đúng: D(aX+b)=a²·D(X). Phương sai nhân a² (KHÔNG phải a)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "st11_quiz_01",
+      "title": "Kiểm tra: Thống kê & XS nâng cao",
+      "timeLimit": 900,
+      "questions": [
+        {
+          "ref": "st11_prob_001"
+        },
+        {
+          "ref": "st11_prob_003"
+        },
+        {
+          "ref": "st11_prob_006"
+        },
+        {
+          "ref": "st11_prob_008"
+        },
+        {
+          "ref": "st11_prob_010"
+        },
+        {
+          "ref": "st11_prob_012"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

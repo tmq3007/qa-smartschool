@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g03_giuaki2",
+    "title": "Đề thi Giữa Kì 2 Toán Lớp 3",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 3,
+    "examType": "GiuaKi2"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Chia đều 15,6 kg gạo vào 4 túi. Mỗi túi = ? kg",
+      "options": [
+        "A) 3,6 kg",
+        "B) 3,8 kg",
+        "C) 3,9 kg",
+        "D) 4,1 kg"
+      ],
+      "answer": "C",
+      "solution": "15,6 ÷ 4 = 3,9 kg"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Mua sữa 12.500đ và bánh 8.750đ. Tổng = ? (viết bằng nghìn đồng)",
+      "options": [
+        "A) 20,25 nghìn",
+        "B) 21,25 nghìn",
+        "C) 21,50 nghìn",
+        "D) 20,75 nghìn"
+      ],
+      "answer": "B",
+      "solution": "12,5 + 8,75 = 21,25 nghìn đồng"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Bạn An đi ngủ lúc 21:00, thức dậy lúc 6:30. An ngủ bao lâu?",
+      "options": [
+        "A) 8 giờ 30 phút",
+        "B) 9 giờ",
+        "C) 9 giờ 30 phút",
+        "D) 10 giờ"
+      ],
+      "answer": "C",
+      "solution": "21:00 → 6:30 hôm sau = 9 giờ 30 phút"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tính: 2,4 + 3,5 = ?",
+      "options": [
+        "A) 5,9",
+        "B) 5,8",
+        "C) 6,9",
+        "D) 59"
+      ],
+      "answer": "A",
+      "solution": "Đặt phẩy thẳng hàng: 2,4 + 3,5 = 5,9"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Bạn sinh ngày 15/8/2016. Đến ngày 15/8/2026 bạn bao nhiêu tuổi?",
+      "options": [
+        "A) 9 tuổi",
+        "B) 10 tuổi",
+        "C) 11 tuổi",
+        "D) 8 tuổi"
+      ],
+      "answer": "B",
+      "solution": "2026 - 2016 = 10 tuổi"
+    },
+    {
+      "id": 6,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "So sánh: 0,9 ... 0,85",
+      "options": [
+        "A) 0,9 < 0,85",
+        "B) 0,9 > 0,85",
+        "C) 0,9 = 0,85",
+        "D) Không so sánh được"
+      ],
+      "answer": "B",
+      "solution": "0,9 = 0,90 > 0,85 (so phần thập phân: 90 > 85)"
+    },
+    {
+      "id": 7,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "3,14 + 2,86 + 1,5 = ?",
+      "options": [
+        "A) 7,0",
+        "B) 7,5",
+        "C) 6,5",
+        "D) 8,0"
+      ],
+      "answer": "B",
+      "solution": "3,14 + 2,86 = 6,00. 6,00 + 1,50 = 7,50 = 7,5"
+    },
+    {
+      "id": 8,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Bạn chia 1 chiếc pizza thành 4 phần bằng nhau và ăn 1 phần. Bạn đã ăn bao nhiêu phần pizza?",
+      "options": [
+        "A) 1/2",
+        "B) 1/4",
+        "C) 1/3",
+        "D) 4/1"
+      ],
+      "answer": "B",
+      "solution": "Chia thành 4 phần, ăn 1 phần → 1/4 chiếc pizza"
+    },
+    {
+      "id": 9,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Viết phân số 3/10 dưới dạng số thập phân:",
+      "options": [
+        "A) 0,3",
+        "B) 3,0",
+        "C) 0,03",
+        "D) 30"
+      ],
+      "answer": "A",
+      "solution": "3/10 = 3 ÷ 10 = 0,3"
+    },
+    {
+      "id": 10,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Mua 4 cái bánh, mỗi cái 7.500đ. Đưa 50.000đ. Tiền thừa = ?",
+      "options": [
+        "A) 15.000đ",
+        "B) 20.000đ",
+        "C) 22.500đ",
+        "D) 10.000đ"
+      ],
+      "answer": "B",
+      "solution": "4 × 7.500 = 30.000đ. 50.000 - 30.000 = 20.000đ thừa"
+    },
+    {
+      "id": 11,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Viết 3/4 dưới dạng số thập phân:",
+      "options": [
+        "A) 0,34",
+        "B) 0,75",
+        "C) 0,43",
+        "D) 7,5"
+      ],
+      "answer": "B",
+      "solution": "3/4 = 3 ÷ 4 = 0,75"
+    },
+    {
+      "id": 12,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "So sánh: 2/5 và 3/5",
+      "options": [
+        "A) 2/5 > 3/5",
+        "B) 2/5 < 3/5",
+        "C) 2/5 = 3/5",
+        "D) Không so sánh được"
+      ],
+      "answer": "B",
+      "solution": "Cùng mẫu: so sánh tử: 2 < 3 → 2/5 < 3/5"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "10 - 3,45 = ?",
+      "options": [
+        "A) 6,55",
+        "B) 6,45",
+        "C) 7,55",
+        "D) 7,45"
+      ],
+      "answer": "A",
+      "solution": "10,00 - 3,45 = 6,55"
+    },
+    {
+      "id": 14,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Số thập phân nào bằng 3/4?",
+      "options": [
+        "A) 0,34",
+        "B) 0,75",
+        "C) 3,4",
+        "D) 0,43"
+      ],
+      "answer": "B",
+      "solution": "3/4 = 3 ÷ 4 = 0,75"
+    },
+    {
+      "id": 15,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Hôm nay thứ 4. 10 ngày nữa là thứ mấy?",
+      "options": [
+        "A) Thứ 6",
+        "B) Thứ 7",
+        "C) Chủ nhật",
+        "D) Thứ 2"
+      ],
+      "answer": "B",
+      "solution": "10 ÷ 7 = 1 tuần dư 3. Thứ 4 + 3 = Thứ 7"
+    },
+    {
+      "id": 16,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "3,2 + 1,5 = ?",
+      "options": [
+        "A) 4,5",
+        "B) 4,7",
+        "C) 5,2",
+        "D) 3,7"
+      ],
+      "answer": "B",
+      "solution": "3,2 + 1,5 = 4,7"
+    },
+    {
+      "id": 17,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Từ 15/3 đến 15/5 có bao nhiêu ngày?",
+      "options": [
+        "A) 60 ngày",
+        "B) 61 ngày",
+        "C) 62 ngày",
+        "D) 59 ngày"
+      ],
+      "answer": "B",
+      "solution": "Tháng 3 còn 16 ngày + tháng 4: 30 ngày + 15 ngày đầu tháng 5 = 61"
+    },
+    {
+      "id": 18,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Bạn An có 2 tờ 20.000đ và 1 tờ 5.000đ. An có tổng cộng bao nhiêu?",
+      "options": [
+        "A) 25.000đ",
+        "B) 40.000đ",
+        "C) 45.000đ",
+        "D) 50.000đ"
+      ],
+      "answer": "C",
+      "solution": "2 × 20.000 + 5.000 = 40.000 + 5.000 = 45.000đ"
+    },
+    {
+      "id": 19,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Sắp xếp tăng dần: 1,5 ; 1,05 ; 1,50 ; 0,15",
+      "options": [
+        "A) 0,15 ; 1,05 ; 1,5 ; 1,50",
+        "B) 0,15 ; 1,5 ; 1,05 ; 1,50",
+        "C) 1,50 ; 1,5 ; 1,05 ; 0,15",
+        "D) 0,15 ; 1,05 ; 1,50 ; 1,5"
+      ],
+      "answer": "A",
+      "solution": "0,15 < 1,05 < 1,5 = 1,50. Lưu ý: 1,5 = 1,50"
+    },
+    {
+      "id": 20,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tính: 2/5 + 1/3 + 1/15 = ?",
+      "options": [
+        "A) 4/15",
+        "B) 2/3",
+        "C) 3/5",
+        "D) 4/5"
+      ],
+      "answer": "D",
+      "solution": "Quy đồng mẫu 15: 6/15 + 5/15 + 1/15 = 12/15 → rút gọn: 12/15 = 4/5. Đáp án D) 4/5"
+    }
+  ]
+}

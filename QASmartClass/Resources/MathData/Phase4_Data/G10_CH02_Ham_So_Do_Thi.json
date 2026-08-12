@@ -1,0 +1,316 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch02",
+    "chapterName": "Hàm Số & Đồ Thị",
+    "grade": 10,
+    "totalSections": 3,
+    "totalConcepts": 10,
+    "totalProblems": 11,
+    "toolMapping": [
+      "CoordinateTool",
+      "QuadraticTool"
+    ],
+    "thptWeight": "8%",
+    "estimatedHours": 15
+  },
+  "sections": [
+    {
+      "sectionId": "hs_01",
+      "sectionName": "Hàm số bậc hai & Parabol",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "hs_001",
+          "name": "Đồ thị hàm bậc hai",
+          "formula": "y = ax²+bx+c",
+          "properties": [
+            "Đỉnh I(-b/2a; -Δ/4a)",
+            "Trục đối xứng x=-b/2a",
+            "a>0: hướng lên (min), a<0: hướng xuống (max)"
+          ]
+        },
+        {
+          "id": "hs_002",
+          "name": "Sự tương giao",
+          "method": "Số giao điểm = Số nghiệm PT f(x)=g(x)",
+          "cases": [
+            "Δ>0: 2 giao điểm",
+            "Δ=0: tiếp xúc",
+            "Δ<0: không giao"
+          ]
+        },
+        {
+          "id": "hs_003",
+          "name": "Dấu tam thức bậc hai",
+          "theorem": "f(x)=ax²+bx+c. Nếu Δ>0, f(x) có nghiệm x₁,x₂: f(x) cùng dấu a ngoài [x₁,x₂], trái dấu a trong (x₁,x₂)"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hs_prob_001",
+          "difficulty": "Easy",
+          "question": "Parabol y=x²-6x+5 cắt Ox tại:",
+          "options": [
+            "A) x=1,5",
+            "B) x=-1,-5",
+            "C) x=2,3",
+            "D) x=-1,5"
+          ],
+          "correctAnswer": "A",
+          "solution": "x²-6x+5=0→(x-1)(x-5)=0→x=1,5",
+          "points": 10
+        },
+        {
+          "problemId": "hs_prob_002",
+          "difficulty": "Medium",
+          "question": "Tìm m để y=x²-2mx+m+2 luôn dương:",
+          "options": [
+            "A) -1<m<2",
+            "B) m>2",
+            "C) m<-1 hoặc m>2",
+            "D) -1≤m≤2"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ'=m²-m-2<0→(m+1)(m-2)<0→-1<m<2",
+          "points": 15
+        },
+        {
+          "problemId": "hs_prob_003",
+          "difficulty": "Hard",
+          "question": "Số giao điểm của y=x²-4x+3 và y=x-1:",
+          "options": [
+            "A) 0",
+            "B) 1",
+            "C) 2",
+            "D) 3"
+          ],
+          "correctAnswer": "C",
+          "solution": "x²-4x+3=x-1→x²-5x+4=0. Δ=25-16=9>0→2 giao điểm",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hs_02",
+      "sectionName": "Phương trình & Bất phương trình",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "hs_004",
+          "name": "PT bậc hai ax²+bx+c=0",
+          "formula": "x = (-b±√Δ)/(2a), Δ=b²-4ac"
+        },
+        {
+          "id": "hs_005",
+          "name": "Định lý Vieta",
+          "formulas": [
+            "x₁+x₂ = -b/a",
+            "x₁·x₂ = c/a"
+          ]
+        },
+        {
+          "id": "hs_006",
+          "name": "BPT bậc hai",
+          "method": "Dùng dấu tam thức: xét Δ, xét dấu a, kết luận"
+        },
+        {
+          "id": "hs_007",
+          "name": "PT & BPT chứa căn",
+          "method": "Bình phương 2 vế + kiểm tra ĐK"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hs_prob_004",
+          "difficulty": "Easy",
+          "question": "Tổng 2 nghiệm của 2x²-5x+3=0 là:",
+          "options": [
+            "A) 5/2",
+            "B) 3/2",
+            "C) -5/2",
+            "D) 5"
+          ],
+          "correctAnswer": "A",
+          "solution": "Vieta: x₁+x₂=-(-5)/2=5/2",
+          "points": 10
+        },
+        {
+          "problemId": "hs_prob_005",
+          "difficulty": "Medium",
+          "question": "Giải BPT: x²-5x+6≤0",
+          "options": [
+            "A) [2;3]",
+            "B) (-∞;2]∪[3;+∞)",
+            "C) (2;3)",
+            "D) x≤2"
+          ],
+          "correctAnswer": "A",
+          "solution": "x²-5x+6=(x-2)(x-3)≤0, a=1>0. Nghiệm: 2≤x≤3",
+          "points": 15
+        },
+        {
+          "problemId": "hs_prob_006",
+          "difficulty": "Hard",
+          "question": "Tìm m để x²-2(m+1)x+m²+2=0 có 2 nghiệm dương:",
+          "options": [
+            "A) m≥-1/2 và m≠√2",
+            "B) m>-1/2",
+            "C) -1/2≤m, m²+2>0",
+            "D) m≥-1/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "Δ'=(m+1)²-m²-2=2m-1≥0→m≥1/2. S=2(m+1)>0→m>-1. P=m²+2>0 ∀m. Kết hợp: m≥1/2",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "hs_03",
+      "sectionName": "Hệ phương trình & Đường conic",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "hs_008",
+          "name": "Hệ PT bậc nhất 2 ẩn",
+          "method": "Phương pháp: Thế, Cộng đại số, Cramer"
+        },
+        {
+          "id": "hs_009",
+          "name": "Đường tròn",
+          "formula": "(x-a)²+(y-b)²=R² hoặc x²+y²-2ax-2by+c=0"
+        },
+        {
+          "id": "hs_010",
+          "name": "Elip",
+          "formula": "x²/a²+y²/b²=1 (a>b>0)",
+          "elements": [
+            "Tiêu điểm F₁(-c,0), F₂(c,0) với c²=a²-b²",
+            "Tâm sai e=c/a"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hs_prob_007",
+          "difficulty": "Easy",
+          "question": "Giải hệ: x+y=5, x-y=1",
+          "options": [
+            "A) (3;2)",
+            "B) (2;3)",
+            "C) (4;1)",
+            "D) (1;4)"
+          ],
+          "correctAnswer": "A",
+          "solution": "Cộng: 2x=6→x=3. y=5-3=2",
+          "points": 10
+        },
+        {
+          "problemId": "hs_prob_008",
+          "difficulty": "Medium",
+          "question": "Tâm và bán kính đường tròn x²+y²-4x+6y-3=0:",
+          "options": [
+            "A) I(2;-3), R=4",
+            "B) I(-2;3), R=4",
+            "C) I(2;-3), R=16",
+            "D) I(4;-6), R=√55"
+          ],
+          "correctAnswer": "A",
+          "solution": "(x-2)²+(y+3)²=4+9+3=16. I(2;-3), R=4",
+          "points": 15
+        },
+        {
+          "problemId": "hs_prob_009",
+          "difficulty": "Medium",
+          "question": "Elip x²/25+y²/9=1 có tiêu cự bằng:",
+          "options": [
+            "A) 8",
+            "B) 4",
+            "C) 16",
+            "D) √34"
+          ],
+          "correctAnswer": "A",
+          "solution": "a²=25, b²=9, c²=25-9=16→c=4. Tiêu cự=2c=8",
+          "points": 15
+        },
+        {
+          "problemId": "hs_prob_010",
+          "difficulty": "Hard",
+          "question": "Tìm m để đường thẳng y=x+m tiếp xúc đường tròn x²+y²=4:",
+          "options": [
+            "A) m=±2√2",
+            "B) m=±2",
+            "C) m=±4",
+            "D) m=0"
+          ],
+          "correctAnswer": "A",
+          "solution": "Khoảng cách từ O đến y=x+m: d=|m|/√2=R=2→|m|=2√2",
+          "points": 20
+        },
+        {
+          "problemId": "hs_prob_011",
+          "difficulty": "Hard",
+          "question": "PT tiếp tuyến của (C): x²+y²=25 tại M(3;4):",
+          "options": [
+            "A) 3x+4y=25",
+            "B) 4x+3y=25",
+            "C) 3x-4y=25",
+            "D) x+y=7"
+          ],
+          "correctAnswer": "A",
+          "solution": "TT tại M(x₀,y₀) trên x²+y²=R²: x₀·x+y₀·y=R². 3x+4y=25",
+          "points": 20
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Quên Δ≥0 khi dùng Vieta",
+      "correction": "Vieta chỉ áp dụng khi PT CÓ nghiệm (Δ≥0)"
+    },
+    {
+      "mistake": "Nhầm c² = a²+b² (Elip)",
+      "correction": "Elip: c²=a²-b² (khác Hyperbol: c²=a²+b²)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "hs_quiz_01",
+      "title": "Kiểm tra: Hàm số & Đồ thị",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "hs_prob_001"
+        },
+        {
+          "ref": "hs_prob_004"
+        },
+        {
+          "ref": "hs_prob_005"
+        },
+        {
+          "ref": "hs_prob_007"
+        },
+        {
+          "ref": "hs_prob_008"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

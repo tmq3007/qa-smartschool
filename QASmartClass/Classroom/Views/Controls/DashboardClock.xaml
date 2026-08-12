@@ -1,0 +1,103 @@
+﻿<UserControl x:Class="QASmartClass.Classroom.Views.Controls.DashboardClock"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" 
+             d:DesignHeight="180" d:DesignWidth="320">
+    <UserControl.Resources>
+        <!-- Style for the settings button -->
+        <Style x:Key="SettingsButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                            <TextBlock Text="⚙️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#33000000"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border x:Name="ContainerBorder" CornerRadius="12" Background="White" ClipToBounds="True">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.09" Color="Black"/>
+        </Border.Effect>
+
+        <Grid x:Name="MainGrid">
+            <!-- Background Layer (for some themes) -->
+            <Border x:Name="ThemeBackground" CornerRadius="12" Background="Transparent"/>
+
+            <!-- Settings Button -->
+            <Button Style="{StaticResource SettingsButtonStyle}" 
+                    Width="30" Height="30" 
+                    HorizontalAlignment="Right" VerticalAlignment="Top" 
+                    Margin="0,5,5,0" Panel.ZIndex="10"
+                    Click="Settings_Click">
+                <Button.ContextMenu>
+                    <ContextMenu x:Name="SettingsMenu">
+                        <MenuItem Header="Đồng hồ điện tử" Click="MenuTypeDigital_Click"/>
+                        <MenuItem Header="Đồng hồ kim" Click="MenuTypeAnalog_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Giao diện: 1" Click="MenuTheme_Click" Tag="0"/>
+                        <MenuItem Header="Giao diện: 2" Click="MenuTheme_Click" Tag="1"/>
+                        <MenuItem Header="Giao diện: 3" Click="MenuTheme_Click" Tag="2"/>
+                        <MenuItem Header="Giao diện: 4" Click="MenuTheme_Click" Tag="3"/>
+                        <MenuItem Header="Giao diện: 5" Click="MenuTheme_Click" Tag="4"/>
+                        <MenuItem Header="Giao diện: 6" Click="MenuTheme_Click" Tag="5"/>
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
+
+            <!-- DIGITAL CLOCK -->
+            <Grid x:Name="DigitalClockPanel" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock x:Name="txtDigiTime" Text="12:00:00" FontSize="48" FontWeight="Bold" Foreground="#212121" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="txtDigiDate" Text="Thứ Hai, 01/01/2026" FontSize="14" Foreground="#757575" HorizontalAlignment="Center" Margin="0,-5,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- ANALOG CLOCK -->
+            <Grid x:Name="AnalogClockPanel" Visibility="Collapsed" Width="140" Height="140" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,10">
+                <Ellipse x:Name="AnaFace" Fill="White" Stroke="#E0E0E0" StrokeThickness="4"/>
+                
+                <!-- Center dot -->
+                <Ellipse x:Name="AnaCenter" Width="8" Height="8" Fill="#212121" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="5"/>
+
+                <!-- Numbers -->
+                <Canvas x:Name="AnaNumbersCanvas" Width="140" Height="140"/>
+
+                <!-- Hands -->
+                <Canvas Width="140" Height="140">
+                    <!-- Hour -->
+                    <Line x:Name="AnaHourHand" X1="70" Y1="70" X2="70" Y2="35" Stroke="#212121" StrokeThickness="4" StrokeEndLineCap="Round">
+                        <Line.RenderTransform>
+                            <RotateTransform x:Name="RotHour" CenterX="70" CenterY="70"/>
+                        </Line.RenderTransform>
+                    </Line>
+                    <!-- Minute -->
+                    <Line x:Name="AnaMinuteHand" X1="70" Y1="70" X2="70" Y2="20" Stroke="#424242" StrokeThickness="3" StrokeEndLineCap="Round">
+                        <Line.RenderTransform>
+                            <RotateTransform x:Name="RotMinute" CenterX="70" CenterY="70"/>
+                        </Line.RenderTransform>
+                    </Line>
+                    <!-- Second -->
+                    <Line x:Name="AnaSecondHand" X1="70" Y1="85" X2="70" Y2="15" Stroke="#E53935" StrokeThickness="1.5" StrokeEndLineCap="Round" Panel.ZIndex="4">
+                        <Line.RenderTransform>
+                            <RotateTransform x:Name="RotSecond" CenterX="70" CenterY="70"/>
+                        </Line.RenderTransform>
+                    </Line>
+                </Canvas>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

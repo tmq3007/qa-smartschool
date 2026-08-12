@@ -1,0 +1,235 @@
+<Window x:Class="QASmartTouch.Forms.Form4_1_QuickSurvey"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Khảo sát nhanh" 
+        Width="650" Height="520"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F7FA"
+        ResizeMode="CanResize"
+        MinWidth="600" MinHeight="450">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <!-- Header -->
+            <RowDefinition Height="*"/>
+            <!-- Content -->
+            <RowDefinition Height="70"/>
+            <!-- Footer -->
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E1E8ED" BorderThickness="0,0,0,1">
+            <Grid Margin="20,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Path Fill="#9C27B0" 
+                          Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M17,18H12V16H17V18M17,14H12V12H17V14M17,10H12V8H17V10M11,18H7L7,16H11V18M11,14H7V12H11V14M11,10H7V8H11V10Z"
+                          Width="28" Height="28"
+                          Margin="0,0,12,0"/>
+                    <TextBlock Text="Tạo khảo sát nhanh" 
+                               FontSize="20" 
+                               FontWeight="Bold" 
+                               Foreground="#2F3542"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button x:Name="btnClose" 
+                       Width="35" Height="35"
+                       HorizontalAlignment="Right"
+                       Background="#FEE2E2"
+                       BorderThickness="0"
+                       Cursor="Hand"
+                       Click="btnClose_Click">
+                    <Path Fill="#EE5A6F" 
+                          Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                          Width="16" Height="16"/>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- CONTENT -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- Survey Info -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Question Type -->
+                    <RowDefinition Height="*"/>
+                    <!-- Questions -->
+                </Grid.RowDefinitions>
+
+                <!-- SURVEY INFO -->
+                <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="20" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="Thông tin khảo sát" FontSize="15" FontWeight="Bold" Foreground="#2F3542" Margin="0,0,0,12"/>
+                        
+                        <TextBlock Text="Tiêu đề:" FontSize="13" Foreground="#57606F" Margin="0,0,0,6"/>
+                        <TextBox x:Name="txtSurveyTitle" Height="40" FontSize="14" 
+                                Text="Đánh giá bài giảng hôm nay" VerticalContentAlignment="Center" Margin="0,0,0,12"/>
+                        
+                        <TextBlock Text="Mô tả (tùy chọn):" FontSize="13" Foreground="#57606F" Margin="0,0,0,6"/>
+                        <TextBox x:Name="txtSurveyDescription" Height="60" FontSize="14" 
+                                Text="Vui lòng cho chúng tôi biết ý kiến của bạn về bài học hôm nay" 
+                                TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top" Padding="8"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- QUESTION TYPE -->
+                <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="20" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="Loại câu hỏi" FontSize="16" FontWeight="Bold" Foreground="#2F3542" Margin="0,0,0,12"/>
+                        <UniformGrid Columns="4" Rows="1">
+                            <RadioButton x:Name="rbMultipleChoice" GroupName="QuestionType" Content="Trắc nghiệm" FontSize="15" Margin="0,0,10,0" IsChecked="True"/>
+                            <RadioButton x:Name="rbRating" GroupName="QuestionType" Content="Đánh giá sao" FontSize="15" Margin="0,0,10,0"/>
+                            <RadioButton x:Name="rbYesNo" GroupName="QuestionType" Content="Có/Không" FontSize="15" Margin="0,0,10,0"/>
+                            <RadioButton x:Name="rbScale" GroupName="QuestionType" Content="Thang điểm 1-10" FontSize="15"/>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <!-- QUESTIONS -->
+                <Border Grid.Row="2" Background="White" CornerRadius="10" Padding="20">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <TextBlock Text="Câu hỏi" FontSize="16" FontWeight="Bold" Foreground="#2F3542" VerticalAlignment="Center"/>
+                            <Button x:Name="btnAddQuestion" Content="+ Thêm câu hỏi" Height="35" Width="130" HorizontalAlignment="Right"
+                                   Background="#2E86DE" Foreground="White" BorderThickness="0" Cursor="Hand" FontSize="13"
+                                   Click="btnAddQuestion_Click"/>
+                        </Grid>
+
+                        <StackPanel x:Name="panelQuestions">
+                            <!-- Question 1 -->
+                            <Border Background="#F8F9FA" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Row="0" Grid.Column="0">
+                                        <TextBlock Text="Câu 1" FontSize="13" FontWeight="Bold" Foreground="#9C27B0" Margin="0,0,0,6"/>
+                                        <TextBox Height="35" FontSize="13" Text="Bạn hiểu rõ nội dung bài học không?" VerticalContentAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30" 
+                                           Background="#FEE2E2" BorderThickness="0" Cursor="Hand"
+                                           Click="btnDeleteQuestion_Click" Tag="1" VerticalAlignment="Top">
+                                        <Path Fill="#EE5A6F" 
+                                             Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                                             Width="14" Height="14"/>
+                                    </Button>
+
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                                        <TextBlock Text="Tùy chọn trả lời:" FontSize="13" Foreground="#57606F" Margin="0,0,0,6"/>
+                                        <UniformGrid Columns="2" Rows="2">
+                                            <RadioButton Content="A. Hoàn toàn hiểu" FontSize="13" Margin="0,0,0,4"/>
+                                            <RadioButton Content="B. Hiểu một phần" FontSize="13" Margin="0,0,0,4"/>
+                                            <RadioButton Content="C. Chưa hiểu rõ" FontSize="13" Margin="0,0,0,4"/>
+                                            <RadioButton Content="D. Không hiểu" FontSize="13" Margin="0,0,0,4"/>
+                                        </UniformGrid>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Question 2 -->
+                            <Border Background="#F8F9FA" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Row="0" Grid.Column="0">
+                                        <TextBlock Text="Câu 2" FontSize="13" FontWeight="Bold" Foreground="#9C27B0" Margin="0,0,0,6"/>
+                                        <TextBox Height="35" FontSize="13" Text="Tốc độ giảng dạy có phù hợp không?" VerticalContentAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30" 
+                                           Background="#FEE2E2" BorderThickness="0" Cursor="Hand"
+                                           Click="btnDeleteQuestion_Click" Tag="2" VerticalAlignment="Top">
+                                        <Path Fill="#EE5A6F" 
+                                             Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                                             Width="14" Height="14"/>
+                                    </Button>
+
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                                        <TextBlock Text="Đánh giá:" FontSize="13" Foreground="#57606F" Margin="0,0,0,6"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Fill="#FFC107" Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" Width="24" Height="24" Margin="0,0,4,0"/>
+                                            <Path Fill="#FFC107" Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" Width="24" Height="24" Margin="0,0,4,0"/>
+                                            <Path Fill="#FFC107" Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" Width="24" Height="24" Margin="0,0,4,0"/>
+                                            <Path Fill="#FFC107" Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" Width="24" Height="24" Margin="0,0,4,0"/>
+                                            <Path Fill="#DFE4EA" Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" Width="24" Height="24"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Question 3 -->
+                            <Border Background="#F8F9FA" CornerRadius="8" Padding="15">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Row="0" Grid.Column="0">
+                                        <TextBlock Text="Câu 3" FontSize="13" FontWeight="Bold" Foreground="#9C27B0" Margin="0,0,0,6"/>
+                                        <TextBox Height="35" FontSize="13" Text="Góp ý khác (tùy chọn)" VerticalContentAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Row="0" Grid.Column="1" Width="30" Height="30" 
+                                           Background="#FEE2E2" BorderThickness="0" Cursor="Hand"
+                                           Click="btnDeleteQuestion_Click" Tag="3" VerticalAlignment="Top">
+                                        <Path Fill="#EE5A6F" 
+                                             Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                                             Width="14" Height="14"/>
+                                    </Button>
+
+                                    <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+                                             Height="60" FontSize="13" 
+                                             Text="Nhập góp ý của bạn..." 
+                                             TextWrapping="Wrap" AcceptsReturn="True" 
+                                             VerticalContentAlignment="Top" Padding="8"
+                                             Margin="0,10,0,0"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </ScrollViewer>
+
+        <!-- FOOTER -->
+        <Border Grid.Row="2" Background="White" BorderBrush="#E1E8ED" BorderThickness="0,1,0,0">
+            <Grid Margin="20,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <CheckBox x:Name="chkAnonymous" Content="Khảo sát ẩn danh" FontSize="13" VerticalAlignment="Center" IsChecked="True"/>
+                    <TextBlock Text="Thời gian: 5 phút" FontSize="13" Foreground="#57606F" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="btnPreview" Content="Xem trước" Height="40" Width="120" Margin="0,0,10,0"
+                           Background="#FF9800" Foreground="White" BorderThickness="0" Cursor="Hand" FontSize="13"
+                           Click="btnPreview_Click"/>
+                    <Button x:Name="btnStartSurvey" Content="Bắt đầu khảo sát" Height="40" Width="160"
+                           Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand" FontWeight="Bold" FontSize="13"
+                           Click="btnStartSurvey_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>

@@ -1,0 +1,292 @@
+﻿<Page x:Class="QASmartClass.HRModule.Views.AssetManagementView"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Quản lý Tài sản" Background="#F0F2F5" FontFamily="Segoe UI">
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <DockPanel Margin="0,0,0,20">
+
+            <TextBlock Text="📦 Quản lý Tài sản Cố định" FontSize="24" FontWeight="Bold" Foreground="#1E293B"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+                <Button x:Name="BtnAdd" Content="➕ Thêm Tài sản" Background="#3B82F6" Foreground="White" Padding="15,8" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="BtnAdd_Click"/>
+
+                <Button x:Name="BtnTransfer" Content="🔄 Điều chuyển" Background="#8B5CF6" Foreground="White" Padding="15,8" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="BtnTransfer_Click"/>
+
+                <Button x:Name="BtnExport" Content="📄 Xuất Báo cáo" Background="#F59E0B" Foreground="White" Padding="15,8" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="BtnExport_Click"/>
+
+                <Button x:Name="BtnRefresh" Content="🔄 Làm mới" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Padding="15,8" Cursor="Hand" Click="BtnRefresh_Click"/>
+
+            </StackPanel>
+
+        </DockPanel>
+
+
+
+        <!-- Main Content Grid -->
+
+        <Grid Grid.Row="1">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="200"/>
+
+                <ColumnDefinition Width="*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Filters -->
+
+            <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="15" Margin="0,0,15,0">
+
+                <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+
+                <StackPanel>
+
+                    <TextBlock Text="Lọc trạng thái" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                    <RadioButton Content="Tất cả" GroupName="Status" IsChecked="True" Margin="0,5" Checked="Filter_Changed"/>
+
+                    <RadioButton Content="Đang sử dụng" GroupName="Status" Tag="InUse" Margin="0,5" Checked="Filter_Changed"/>
+
+                    <RadioButton Content="Đang sửa chữa" GroupName="Status" Tag="UnderRepair" Margin="0,5" Checked="Filter_Changed"/>
+
+                    <RadioButton Content="Đã thanh lý" GroupName="Status" Tag="Disposed" Margin="0,5" Checked="Filter_Changed"/>
+
+
+
+                    <Border Height="1" Background="#E2E8F0" Margin="0,15"/>
+
+
+
+                    <TextBlock Text="Cảnh báo" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10" Foreground="#EF4444"/>
+
+                    <CheckBox x:Name="ChkExpiringWarranty" Content="Sắp hết bảo hành" Margin="0,5" Checked="Filter_Changed" Unchecked="Filter_Changed"/>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- DataGrid -->
+
+            <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="20">
+
+                <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+
+                <DataGrid x:Name="DgAssets" AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="1" BorderBrush="#E2E8F0" Background="White" HeadersVisibility="Column" RowHeight="40">
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Tên Tài sản" Binding="{Binding Name}" Width="2*"/>
+
+                        <DataGridTextColumn Header="Danh mục" Binding="{Binding Category}" Width="120"/>
+
+                        <DataGridTextColumn Header="Số Serial" Binding="{Binding SerialNumber}" Width="120"/>
+
+                        <DataGridTextColumn Header="Vị trí" Binding="{Binding Location}" Width="*"/>
+
+                        <DataGridTextColumn Header="Người giữ" Binding="{Binding AssignedTo}" Width="*"/>
+
+                        <DataGridTextColumn Header="Ngày mua" Binding="{Binding PurchaseDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+
+                        <DataGridTextColumn Header="Nguyên giá" Binding="{Binding Value, StringFormat=N0}" Width="100"/>
+
+                        <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="120"/>
+
+                    </DataGrid.Columns>
+
+                </DataGrid>
+
+            </Border>
+
+        </Grid>
+
+        
+
+        <!-- Popup Overlay for Adding Asset -->
+
+        <Grid x:Name="PopupAddAsset" Grid.Row="0" Grid.RowSpan="2" Background="#80000000" Visibility="Collapsed">
+
+            <Border Background="White" CornerRadius="12" Padding="20" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                <Border.Effect>
+
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.3"/>
+
+                </Border.Effect>
+
+                <StackPanel>
+
+                    <TextBlock Text="Thêm Tài sản Cố định" FontSize="18" FontWeight="Bold" Margin="0,0,0,15" HorizontalAlignment="Center" Foreground="#1E293B"/>
+
+                    
+
+                    <TextBlock Text="Tên Tài sản:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <TextBox x:Name="TxtAssetName" Padding="8" Margin="0,0,0,10" BorderThickness="1" BorderBrush="#CBD5E1"/>
+
+                    
+
+                    <TextBlock Text="Danh mục:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <ComboBox x:Name="CbAssetCategory" Padding="8" Margin="0,0,0,10">
+
+                        <ComboBoxItem Content="Electronics" IsSelected="True"/>
+
+                        <ComboBoxItem Content="Furniture"/>
+
+                        <ComboBoxItem Content="Vehicle"/>
+
+                        <ComboBoxItem Content="Other"/>
+
+                    </ComboBox>
+
+                    
+
+                    <TextBlock Text="Số Serial:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <TextBox x:Name="TxtSerialNumber" Padding="8" Margin="0,0,0,10" BorderThickness="1" BorderBrush="#CBD5E1"/>
+
+                    
+
+                    <TextBlock Text="Ngày mua:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <DatePicker x:Name="DpPurchaseDate" Padding="8" Margin="0,0,0,10"/>
+
+                    
+
+                    <TextBlock Text="Nguyên giá (VNĐ):" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <TextBox x:Name="TxtValue" Padding="8" Margin="0,0,0,10" BorderThickness="1" BorderBrush="#CBD5E1"/>
+
+                    
+
+                    <TextBlock Text="Vị trí lắp đặt:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <TextBox x:Name="TxtLocation" Padding="8" Margin="0,0,0,10" BorderThickness="1" BorderBrush="#CBD5E1"/>
+
+                    
+
+                    <TextBlock Text="Người chịu trách nhiệm:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <TextBox x:Name="TxtAssignedTo" Padding="8" Margin="0,0,0,15" BorderThickness="1" BorderBrush="#CBD5E1"/>
+
+                    
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="*"/>
+
+                            <ColumnDefinition Width="*"/>
+
+                        </Grid.ColumnDefinitions>
+
+                        <Button Content="Hủy" Grid.Column="0" Margin="0,0,5,0" Padding="10" Background="#F1F5F9" Foreground="#475569" BorderThickness="0" Cursor="Hand" Click="BtnCancelAddAsset_Click"/>
+
+                        <Button Content="Lưu" Grid.Column="1" Margin="5,0,0,0" Padding="10" Background="#3B82F6" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnSaveAsset_Click"/>
+
+                    </Grid>
+
+                </StackPanel>
+
+            </Border>
+
+        </Grid>
+
+
+
+        <!-- Popup Overlay for Transferring Asset -->
+
+        <Grid x:Name="PopupTransferAsset" Grid.Row="0" Grid.RowSpan="2" Background="#80000000" Visibility="Collapsed">
+
+            <Border Background="White" CornerRadius="12" Padding="20" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                <Border.Effect>
+
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.3"/>
+
+                </Border.Effect>
+
+                <StackPanel>
+
+                    <TextBlock Text="Điều chuyển Tài sản" FontSize="18" FontWeight="Bold" Margin="0,0,0,15" HorizontalAlignment="Center" Foreground="#1E293B"/>
+
+                    
+
+                    <TextBlock x:Name="TxtTransferTarget" Text="Tài sản: Projector ABC" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10" Foreground="#4F46E5"/>
+
+                    
+
+                    <TextBlock Text="Bộ phận/Nơi chuyển đi:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <TextBox x:Name="TxtFromDept" Padding="8" Margin="0,0,0,10" BorderThickness="1" BorderBrush="#CBD5E1"/>
+
+                    
+
+                    <TextBlock Text="Bộ phận/Nơi chuyển đến:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <TextBox x:Name="TxtToDept" Padding="8" Margin="0,0,0,10" BorderThickness="1" BorderBrush="#CBD5E1"/>
+
+                    
+
+                    <TextBlock Text="Ngày điều chuyển:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <DatePicker x:Name="DpTransferDate" Padding="8" Margin="0,0,0,10"/>
+
+                    
+
+                    <TextBlock Text="Lý do điều chuyển:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+
+                    <TextBox x:Name="TxtTransferReason" Padding="8" Margin="0,0,0,15" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" BorderThickness="1" BorderBrush="#CBD5E1"/>
+
+                    
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="*"/>
+
+                            <ColumnDefinition Width="*"/>
+
+                        </Grid.ColumnDefinitions>
+
+                        <Button Content="Hủy" Grid.Column="0" Margin="0,0,5,0" Padding="10" Background="#F1F5F9" Foreground="#475569" BorderThickness="0" Cursor="Hand" Click="BtnCancelTransfer_Click"/>
+
+                        <Button Content="Lưu phiếu" Grid.Column="1" Margin="5,0,0,0" Padding="10" Background="#8B5CF6" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnSaveTransfer_Click"/>
+
+                    </Grid>
+
+                </StackPanel>
+
+            </Border>
+
+        </Grid>
+
+    </Grid>
+
+</Page>
+
+
+

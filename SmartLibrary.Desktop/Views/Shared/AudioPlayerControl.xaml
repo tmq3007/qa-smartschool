@@ -1,0 +1,50 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Shared.AudioPlayerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="60" d:DesignWidth="800">
+    
+    <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="0,1,0,0" Padding="12,8">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/> <!-- Left: Title -->
+                <ColumnDefinition Width="*"/>   <!-- Middle: Timeline Slider -->
+                <ColumnDefinition Width="180"/> <!-- Right: Volume Control -->
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT: TITLE & COVER -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Width="36" Height="36" Background="#2563EB" CornerRadius="6" Margin="0,0,10,0" VerticalAlignment="Center">
+                    <TextBlock Text="🎧" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center" Width="170">
+                    <TextBlock x:Name="TxtTitle" Text="Chọn sách nói để nghe" Foreground="#F8FAFC" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="TxtStatus" Text="Sách nói và audio bài giảng" Foreground="#94A3B8" FontSize="10" Margin="0,2,0,0"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- MIDDLE: CONTROLS & TIMELINE -->
+            <Grid Grid.Column="1" Margin="24,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- Play Button -->
+                    <ColumnDefinition Width="*"/>    <!-- Slider -->
+                    <ColumnDefinition Width="Auto"/> <!-- Timer text -->
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="BtnPlay" Content="▶" Click="BtnPlay_Click" Style="{StaticResource SecondaryButton}" Width="36" Height="36" Margin="0,0,12,0" Cursor="Hand" Padding="0" FontSize="14" FontWeight="Bold" Background="#0F172A" Foreground="#38BDF8" BorderBrush="#334155"/>
+                
+                <Slider x:Name="SliderProgress" Grid.Column="1" Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center" Margin="0,0,12,0" Thumb.DragStarted="SliderProgress_DragStarted" Thumb.DragCompleted="SliderProgress_DragCompleted" Cursor="Hand"/>
+                
+                <TextBlock x:Name="TxtTime" Grid.Column="2" Text="00:00 / 00:00" Foreground="#CBD5E1" FontSize="11" VerticalAlignment="Center" Width="80" TextAlignment="Right"/>
+            </Grid>
+
+            <!-- RIGHT: VOLUME -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button x:Name="BtnMute" Content="🔊" Click="BtnMute_Click" Style="{StaticResource SecondaryButton}" Width="32" Height="32" BorderThickness="0" Background="Transparent" Foreground="#CBD5E1" Cursor="Hand" Padding="0" FontSize="14"/>
+                <Slider x:Name="SliderVolume" Width="100" Minimum="0" Maximum="1" Value="0.5" VerticalAlignment="Center" Margin="8,0,0,0" ValueChanged="SliderVolume_ValueChanged" Cursor="Hand"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

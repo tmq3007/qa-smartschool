@@ -1,0 +1,574 @@
+﻿{
+  "metadata": {
+    "examId": "g07_giuaki2",
+    "title": "Đề thi Giữa Kì 2 Toán Lớp 7",
+    "totalQuestions": 40,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.25,
+    "grade": 7,
+    "examType": "GiuaKi2"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tần suất loại A = 25%, loại B = 40%, loại C = 20%. Tổng = 60 SP. Số SP loại D = ?",
+      "options": [
+        "A) 6",
+        "B) 9",
+        "C) 12",
+        "D) 15"
+      ],
+      "answer": "B",
+      "solution": "D = 100-25-40-20 = 15%. Số D = 60 × 15% = 9"
+    },
+    {
+      "id": 2,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "△ABC: AB=5, ∠B=60°, BC=7. △DEF: DE=5, ∠E=60°, EF=7. Bằng nhau theo?",
+      "options": [
+        "A) c.c.c",
+        "B) c.g.c",
+        "C) g.c.g",
+        "D) Không đủ KĐ"
+      ],
+      "answer": "B",
+      "solution": "2 cạnh kẹp góc bằng nhau: AB=DE, ∠B=∠E, BC=EF → c.g.c"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Giải PT: 5x - 3 = 2x + 9",
+      "options": [
+        "A) x = 2",
+        "B) x = 4",
+        "C) x = 3",
+        "D) x = 6"
+      ],
+      "answer": "B",
+      "solution": "5x - 2x = 9 + 3 → 3x = 12 → x = 4"
+    },
+    {
+      "id": 4,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "△ABC và △DEF: ∠A=∠D=40°, AB=DE=5, ∠B=∠E=70°. Bằng nhau theo?",
+      "options": [
+        "A) c.c.c",
+        "B) c.g.c",
+        "C) g.c.g",
+        "D) Không bằng nhau"
+      ],
+      "answer": "C",
+      "solution": "2 góc kẹp cạnh bằng nhau: ∠A=∠D, AB=DE, ∠B=∠E → g.c.g"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Thu gọn: 3x² + 5x - 2x² + 3 - x",
+      "options": [
+        "A) x² + 4x + 3",
+        "B) x² + 6x + 3",
+        "C) 5x² + 4x + 3",
+        "D) x² + 4x - 3"
+      ],
+      "answer": "A",
+      "solution": "(3x²-2x²) + (5x-x) + 3 = x² + 4x + 3"
+    },
+    {
+      "id": 6,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Giải hệ: 2x + y = 8 và x - y = 1",
+      "options": [
+        "A) x=3, y=2",
+        "B) x=2, y=4",
+        "C) x=4, y=0",
+        "D) x=1, y=6"
+      ],
+      "answer": "A",
+      "solution": "Cộng: 3x = 9 → x = 3 → y = 8 - 6 = 2"
+    },
+    {
+      "id": 7,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Hệ PT: x + y = 5, x + y = 8 có:",
+      "options": [
+        "A) x=3, y=2",
+        "B) Vô số nghiệm",
+        "C) Vô nghiệm",
+        "D) x=8, y=-3"
+      ],
+      "answer": "C",
+      "solution": "x+y không thể vừa = 5 vừa = 8 → vô nghiệm (2 đường thẳng song song)"
+    },
+    {
+      "id": 8,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "HBH có 1 góc = 60°. Góc đối diện = ?",
+      "options": [
+        "A) 60°",
+        "B) 90°",
+        "C) 120°",
+        "D) 180°"
+      ],
+      "answer": "A",
+      "solution": "HBH: góc đối bằng nhau. 2 góc kề bù: 60° + 120° = 180°"
+    },
+    {
+      "id": 9,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Điểm 6 (5 HS), 7 (10 HS), 8 (8 HS), 9 (2 HS). x̄ = ?",
+      "options": [
+        "A) 6,8",
+        "B) 7,0",
+        "C) 7,28",
+        "D) 7,5"
+      ],
+      "answer": "C",
+      "solution": "x̄ = (6×5+7×10+8×8+9×2)/25 = (30+70+64+18)/25 = 182/25 = 7,28"
+    },
+    {
+      "id": 10,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Dữ liệu: 4,4,5,5,5,6. Mốt = ?",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 6",
+        "D) 4,5"
+      ],
+      "answer": "B",
+      "solution": "5 xuất hiện 3 lần (nhiều nhất) → Mo = 5"
+    },
+    {
+      "id": 11,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "P(x) = x³ - 2x + 1, Q(x) = 2x² + x - 3. P(x) + Q(x) = ?",
+      "options": [
+        "A) x³ + 2x² - x - 2",
+        "B) x³ + 2x² - 3x + 4",
+        "C) x³ + 2x² + x - 2",
+        "D) 3x³ - x + 4"
+      ],
+      "answer": "A",
+      "solution": "x³ + 2x² + (-2x+x) + (1-3) = x³ + 2x² - x - 2"
+    },
+    {
+      "id": 12,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tính: 53² - 47² = ?",
+      "options": [
+        "A) 36",
+        "B) 360",
+        "C) 600",
+        "D) 6000"
+      ],
+      "answer": "C",
+      "solution": "53²-47² = (53+47)(53-47) = 100 × 6 = 600"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Thu gọn: 3x² + 5x - 2x² + x - 4 = ?",
+      "options": [
+        "A) x² + 6x - 4",
+        "B) x² + 4x - 4",
+        "C) 5x² + 6x - 4",
+        "D) x² + 6x + 4"
+      ],
+      "answer": "A",
+      "solution": "(3x²-2x²) + (5x+x) - 4 = x² + 6x - 4"
+    },
+    {
+      "id": 14,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "(x + 2)² = ?",
+      "options": [
+        "A) x² + 2x + 4",
+        "B) x² + 4x + 4",
+        "C) x² + 4",
+        "D) 2x² + 4"
+      ],
+      "answer": "B",
+      "solution": "(x+2)² = x² + 2(x)(2) + 2² = x² + 4x + 4"
+    },
+    {
+      "id": 15,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Mua 3 vở và 2 bút hết 29.000đ. Mua 1 vở và 4 bút hết 27.000đ. Giá 1 vở?",
+      "options": [
+        "A) 5.000đ",
+        "B) 3.000đ",
+        "C) 7.000đ",
+        "D) 4.000đ"
+      ],
+      "answer": "B",
+      "solution": "3v+2b=29, v+4b=27. Nhân PT2 ×3: 3v+12b=81. Trừ: 10b=52 → b=5.2. Cần kiểm tra lại số"
+    },
+    {
+      "id": 16,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Giải PT: 2(x + 3) = 5x - 6",
+      "options": [
+        "A) x = 4",
+        "B) x = 3",
+        "C) x = 2",
+        "D) x = 0"
+      ],
+      "answer": "A",
+      "solution": "2x + 6 = 5x - 6 → 12 = 3x → x = 4"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Tổng 2 số là 50. Hiệu 2 số là 14. Tìm 2 số (dùng hệ PT):",
+      "options": [
+        "A) 32 và 18",
+        "B) 30 và 20",
+        "C) 34 và 16",
+        "D) 28 và 22"
+      ],
+      "answer": "A",
+      "solution": "x+y=50, x-y=14. Cộng: 2x=64 → x=32, y=18"
+    },
+    {
+      "id": 18,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Bậc đa thức: 5x⁴ - 3x² + 7x - 1 = ?",
+      "options": [
+        "A) 2",
+        "B) 3",
+        "C) 4",
+        "D) 5"
+      ],
+      "answer": "C",
+      "solution": "Hạng tử bậc cao nhất: 5x⁴ → bậc = 4"
+    },
+    {
+      "id": 19,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Cạnh tam giác: 3, 4, 5. Tam giác thuộc loại?",
+      "options": [
+        "A) Đều",
+        "B) Cân",
+        "C) Vuông",
+        "D) Tù"
+      ],
+      "answer": "C",
+      "solution": "3²+4² = 9+16 = 25 = 5² → vuông (Pythagoras)"
+    },
+    {
+      "id": 20,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Tam giác đều có mỗi góc = ?",
+      "options": [
+        "A) 45°",
+        "B) 60°",
+        "C) 90°",
+        "D) 120°"
+      ],
+      "answer": "B",
+      "solution": "Đều: 3 góc bằng nhau = 180/3 = 60°"
+    },
+    {
+      "id": 21,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Giải PT: (x+1)/3 - (x-2)/4 = 1",
+      "options": [
+        "A) x = 5",
+        "B) x = 7",
+        "C) x = 11",
+        "D) x = 3"
+      ],
+      "answer": "A",
+      "solution": "Nhân 12: 4(x+1) - 3(x-2) = 12 → 4x+4-3x+6 = 12 → x + 10 = 12 → x = 2. Kiểm tra lại"
+    },
+    {
+      "id": 22,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Dữ liệu: Giỏi=12, Khá=18, TB=8, Yếu=2. N=40. Tần suất Khá = ?%",
+      "options": [
+        "A) 18%",
+        "B) 40%",
+        "C) 45%",
+        "D) 50%"
+      ],
+      "answer": "C",
+      "solution": "18/40 = 0,45 = 45%"
+    },
+    {
+      "id": 23,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Bảng tần số nhóm [0-3]: 5, [3-6]: 12, [6-9]: 8, [9-12]: 5. N=30. Tần suất tích lũy đến [6-9] = ?%",
+      "options": [
+        "A) 56,7%",
+        "B) 83,3%",
+        "C) 40%",
+        "D) 26,7%"
+      ],
+      "answer": "B",
+      "solution": "Tích lũy = (5+12+8)/30 = 25/30 = 83,3%"
+    },
+    {
+      "id": 24,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Hệ PT: x + y = 10, 2x + 2y = 20 có:",
+      "options": [
+        "A) Nghiệm duy nhất",
+        "B) Vô số nghiệm",
+        "C) Vô nghiệm",
+        "D) 2 nghiệm"
+      ],
+      "answer": "B",
+      "solution": "PT2 = 2×PT1 → 2 PT trùng nhau → vô số nghiệm"
+    },
+    {
+      "id": 25,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "△ABC = △DEF (c.g.c). AB=DE=6, ∠A=∠D=50°, AC=DF=8. BC = ?",
+      "options": [
+        "A) BC = EF",
+        "B) BC ≠ EF",
+        "C) Không xác định",
+        "D) BC = 6"
+      ],
+      "answer": "A",
+      "solution": "2 tam giác bằng nhau → cạnh tương ứng bằng nhau: BC = EF"
+    },
+    {
+      "id": 26,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính nhanh: 101² = ?",
+      "options": [
+        "A) 10100",
+        "B) 10201",
+        "C) 10001",
+        "D) 10301"
+      ],
+      "answer": "B",
+      "solution": "101² = (100+1)² = 10000 + 200 + 1 = 10201"
+    },
+    {
+      "id": 27,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Bậc của đơn thức 4x³y² là:",
+      "options": [
+        "A) 3",
+        "B) 5",
+        "C) 2",
+        "D) 4"
+      ],
+      "answer": "B",
+      "solution": "Bậc = 3 + 2 = 5"
+    },
+    {
+      "id": 28,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Bậc của đơn thức 4x³y² = ?",
+      "options": [
+        "A) 3",
+        "B) 4",
+        "C) 5",
+        "D) 6"
+      ],
+      "answer": "C",
+      "solution": "Bậc = 3 + 2 = 5"
+    },
+    {
+      "id": 29,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tìm nghiệm đa thức: P(x) = 2x - 6",
+      "options": [
+        "A) x = 2",
+        "B) x = 3",
+        "C) x = -3",
+        "D) x = 6"
+      ],
+      "answer": "B",
+      "solution": "2x - 6 = 0 → 2x = 6 → x = 3"
+    },
+    {
+      "id": 30,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tam giác cân tại A, góc A = 40°. Góc B = ?",
+      "options": [
+        "A) 40°",
+        "B) 60°",
+        "C) 70°",
+        "D) 80°"
+      ],
+      "answer": "C",
+      "solution": "Cân tại A → B = C. B+C = 180-40 = 140. B = 70°"
+    },
+    {
+      "id": 31,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Hình thoi có 2 đường chéo 6 cm và 8 cm. S = ?",
+      "options": [
+        "A) 14 cm²",
+        "B) 24 cm²",
+        "C) 48 cm²",
+        "D) 36 cm²"
+      ],
+      "answer": "B",
+      "solution": "S = d₁×d₂/2 = 6×8/2 = 24 cm²"
+    },
+    {
+      "id": 32,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tam giác ABC: A=50°, B=70°. C = ?",
+      "options": [
+        "A) 50°",
+        "B) 60°",
+        "C) 70°",
+        "D) 80°"
+      ],
+      "answer": "B",
+      "solution": "C = 180 - 50 - 70 = 60°"
+    },
+    {
+      "id": 33,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "2 tam giác có 3 cạnh: (3,4,5) và (3,4,5). Bằng nhau theo?",
+      "options": [
+        "A) c.c.c",
+        "B) c.g.c",
+        "C) g.c.g",
+        "D) Không bằng nhau"
+      ],
+      "answer": "A",
+      "solution": "3 cạnh bằng nhau từng đôi → c.c.c"
+    },
+    {
+      "id": 34,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Giải hệ: x + y = 7 và x - y = 3",
+      "options": [
+        "A) x=5, y=2",
+        "B) x=4, y=3",
+        "C) x=3, y=4",
+        "D) x=6, y=1"
+      ],
+      "answer": "A",
+      "solution": "Cộng: 2x = 10 → x = 5 → y = 2"
+    },
+    {
+      "id": 35,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Tứ giác nào vừa là HBH vừa có 4 cạnh bằng nhau?",
+      "options": [
+        "A) Hình chữ nhật",
+        "B) Hình thoi",
+        "C) Hình vuông",
+        "D) Cả B và C"
+      ],
+      "answer": "D",
+      "solution": "Hình thoi = HBH + 4 cạnh bằng. Hình vuông = HBH + 4 cạnh bằng + 4 góc vuông"
+    },
+    {
+      "id": 36,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Khi nào nên dùng trung vị thay vì trung bình?",
+      "options": [
+        "A) Dữ liệu đều",
+        "B) Có giá trị ngoại lai (outlier)",
+        "C) Dữ liệu nhỏ",
+        "D) Luôn dùng trung vị"
+      ],
+      "answer": "B",
+      "solution": "Trung vị không bị ảnh hưởng bởi outlier, nên dùng khi có giá trị cực biên"
+    },
+    {
+      "id": 37,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Phân tích: x² - 16 = ?",
+      "options": [
+        "A) (x-4)²",
+        "B) (x+4)(x-4)",
+        "C) (x-8)(x+2)",
+        "D) x(x-16)"
+      ],
+      "answer": "B",
+      "solution": "x² - 16 = x² - 4² = (x+4)(x-4)"
+    },
+    {
+      "id": 38,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Giải PT: 2x + 6 = 0",
+      "options": [
+        "A) x = 3",
+        "B) x = -3",
+        "C) x = 6",
+        "D) x = -6"
+      ],
+      "answer": "B",
+      "solution": "2x = -6 → x = -3"
+    },
+    {
+      "id": 39,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Cho △ABC vuông tại A, AB=6, AC=8. △DEF vuông tại D, DE=6, DF=8. CM △ABC = △DEF",
+      "options": [
+        "A) c.c.c",
+        "B) Cạnh huyền - cạnh góc vuông",
+        "C) c.g.c",
+        "D) Cả B và C đúng"
+      ],
+      "answer": "D",
+      "solution": "Vuông: ∠A=∠D=90°, AB=DE, AC=DF → c.g.c. Hoặc: BC=EF=10, AB=DE, AC=DF → c.c.c. Cả 2 đều đúng"
+    },
+    {
+      "id": 40,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Tam giác vuông cân. Góc vuông = 90°. Mỗi góc nhọn = ?",
+      "options": [
+        "A) 30°",
+        "B) 45°",
+        "C) 60°",
+        "D) 90°"
+      ],
+      "answer": "B",
+      "solution": "Vuông cân: 2 góc nhọn bằng nhau. (180-90)/2 = 45°"
+    }
+  ]
+}

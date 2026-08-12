@@ -1,0 +1,84 @@
+<Window x:Class="SmartLibrary.Desktop.Views.Librarian.LostBookDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Ghi nhận sách thất lạc và hỗ trợ đền bù" Height="450" Width="400"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize"
+        Background="{DynamicResource BackgroundBrush}">
+    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Title -->
+                <RowDefinition Height="*"/>    <!-- Inputs -->
+                <RowDefinition Height="Auto"/> <!-- Buttons -->
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                <TextBlock Text="⚠️ Ghi nhận tài liệu thất lạc" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource DangerTextBrush}"/>
+                <TextBlock Text="Độc giả: " x:Name="ReaderInfoText" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <!-- Inputs -->
+            <StackPanel Grid.Row="1">
+                <!-- Barcode Input -->
+                <TextBlock Text="Mã vạch (Barcode) sách thất lạc *" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="80"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="BarcodeTextBox" Style="{StaticResource ModernInputStyle}" MaxLength="50"/>
+                    <Button Grid.Column="1" Content="Kiểm tra" Click="CheckBook_Click" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
+                </Grid>
+ 
+                <!-- Book Info Display (Read only) -->
+                <Border Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Thông tin sách:" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="BookTitleText" Text="Chưa nhập mã vạch" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="BookPriceText" Text="Giá bìa: 0 VNĐ" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Border>
+ 
+                <!-- Penalty Rule Selector -->
+                <TextBlock Text="Quy tắc hỗ trợ đền bù *" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                <ComboBox x:Name="RuleComboBox" BorderBrush="{DynamicResource BorderBrush}" Margin="0,0,0,16" SelectionChanged="Rule_SelectionChanged">
+                    <ComboBoxItem Content="Hỗ trợ đền bù gấp 1.5 lần giá bìa (Phạt tiền)" IsSelected="True"/>
+                    <ComboBoxItem Content="Hỗ trợ đền bù gấp 2.0 lần giá bìa (Sách quý hiếm)"/>
+                    <ComboBoxItem Content="Đền bù hiện vật: Mua trả lại sách mới tương đương (Miễn phạt tiền)"/>
+                    <ComboBoxItem Content="Lao động công ích: Trực ban, sắp xếp thư viện (2-4 buổi)"/>
+                </ComboBox>
+
+                <!-- Fine Calculated -->
+                <Border Background="{DynamicResource DangerBgBrush}" BorderBrush="{DynamicResource DangerHoverBgBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Tổng phí đền bù hỗ trợ:" FontSize="13" Foreground="{DynamicResource DangerTextBrush}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" x:Name="FineCalculatedText" Text="0 VNĐ" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource DangerTextBrush}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Checkbox ân hạn -->
+                <CheckBox x:Name="GracePeriodCheckBox" Content="Ân hạn 7 ngày tìm kiếm lại sách (chưa tính phí ngay)" 
+                          IsChecked="True" FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,12,0,0" VerticalContentAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Buttons -->
+            <Grid Grid.Row="2" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Xác nhận thất lạc" Click="Confirm_Click" Style="{StaticResource DangerButton}" Height="38"/>
+                <Button Grid.Column="2" Content="Đóng" Click="Cancel_Click" Style="{StaticResource SecondaryButton}" Height="38"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

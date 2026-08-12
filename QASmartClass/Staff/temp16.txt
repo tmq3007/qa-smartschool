@@ -1,0 +1,30 @@
+        {
+            if (SelectedClass == null)
+            {
+                Assignments.Clear();
+                return;
+            }
+
+            try
+            {
+                using var db = new AppDbContext();
+                var list = await db.Assignments
+                    .Where(a => a.RosterId == SelectedClass.Id)
+                    .OrderByDescending(a => a.CreatedAt)
+                    .ToListAsync();
+                Assignments = new ObservableCollection<Assignment>(list);
+                SelectedAssignment = null;
+                Submissions.Clear();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Lỗi tải bài tập: {ex.Message}";
+            }
+        }
+
+        private async Task LoadSubmissionsAsync()
+        {
+            if (SelectedAssignment == null)
+            {
+                Submissions.Clear();
+                return;

@@ -1,0 +1,252 @@
+﻿<Page x:Class="QASmartClass.Classroom.Views.RubricGradingPage"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Chấm Điểm Theo Rubric" Background="#F0F2F5">
+
+
+
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+
+            <ColumnDefinition Width="280"/>
+
+            <ColumnDefinition Width="*"/>
+
+        </Grid.ColumnDefinitions>
+
+
+
+        <!-- Left Sidebar: Students & Rubrics -->
+
+        <Border Grid.Column="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,1,0">
+
+            <StackPanel Margin="16">
+
+                <TextBlock Text="ĐÁNH GIÁ RUBRIC" FontSize="16" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,16"/>
+
+                
+
+                <TextBlock Text="Chọn Rubric:" Foreground="#64748B" Margin="0,0,0,4"/>
+
+                <ComboBox x:Name="cbRubrics" Padding="6" Margin="0,0,0,16" DisplayMemberPath="Title" SelectionChanged="CbRubrics_SelectionChanged"/>
+
+
+
+                <TextBlock Text="Danh sách học sinh:" Foreground="#64748B" Margin="0,0,0,4"/>
+
+                <ListBox x:Name="listStudents" BorderThickness="0" Background="Transparent" 
+
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" Height="450"
+
+                         SelectionChanged="ListStudents_SelectionChanged">
+
+                    <ListBox.ItemTemplate>
+
+                        <DataTemplate>
+
+                            <Border Padding="10" Margin="0,2">
+
+                                <DockPanel>
+
+                                    <Border Width="30" Height="30" CornerRadius="15" Background="#E2E8F0" Margin="0,0,10,0">
+
+                                        <TextBlock Text="{Binding StudentCode}" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#475569"/>
+
+                                    </Border>
+
+                                    <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#1E293B"/>
+
+                                </DockPanel>
+
+                            </Border>
+
+                        </DataTemplate>
+
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- Right Content: Grading Form -->
+
+        <ScrollViewer Grid.Column="1" Padding="24" VerticalScrollBarVisibility="Auto" x:Name="scrollContent" Visibility="Collapsed">
+
+            <StackPanel MaxWidth="800">
+
+                <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,20">
+
+                    <DockPanel>
+
+                        <StackPanel>
+
+                            <TextBlock x:Name="txtStudentName" Text="Trần Văn A" FontSize="20" FontWeight="Bold" Foreground="#1E293B"/>
+
+                            <TextBlock x:Name="txtRubricName" Text="Rubric: Bài thuyết trình" FontSize="14" Foreground="#64748B" Margin="0,4,0,0"/>
+
+                        </StackPanel>
+
+                        <Border HorizontalAlignment="Right" VerticalAlignment="Center" Background="#ECFDF5" CornerRadius="8" Padding="12,8">
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <TextBlock Text="Tổng điểm: " Foreground="#065F46" FontSize="16"/>
+
+                                <TextBlock x:Name="txtTotalPoints" Text="0/0" FontWeight="Bold" Foreground="#047857" FontSize="16"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </DockPanel>
+
+                </Border>
+
+
+
+                <!-- Grading Criteria Items -->
+
+                <ItemsControl x:Name="icGrading">
+
+                    <ItemsControl.ItemTemplate>
+
+                        <DataTemplate>
+
+                            <Border Background="White" CornerRadius="10" Padding="16" Margin="0,0,0,16" BorderBrush="#E2E8F0" BorderThickness="1">
+
+                                <StackPanel>
+
+                                    <DockPanel Margin="0,0,0,12">
+
+                                        <TextBlock Text="{Binding Criteria.CriteriaName}" FontSize="16" FontWeight="SemiBold" Foreground="#1E293B"/>
+
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+                                            <TextBlock Text="Điểm: " VerticalAlignment="Center" Foreground="#64748B"/>
+
+                                            <TextBox Text="{Binding GivenPoints, UpdateSourceTrigger=PropertyChanged}" Width="50" Padding="4" TextAlignment="Center" FontWeight="Bold" TextChanged="Points_TextChanged"/>
+
+                                            <TextBlock Text="{Binding MaxPointsLabel}" VerticalAlignment="Center" Foreground="#64748B" Margin="4,0,0,0"/>
+
+                                        </StackPanel>
+
+                                    </DockPanel>
+
+                                    
+
+                                    <Grid Margin="0,0,0,12">
+
+                                        <Grid.ColumnDefinitions>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                            <ColumnDefinition Width="10"/>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                            <ColumnDefinition Width="10"/>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                            <ColumnDefinition Width="10"/>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                        </Grid.ColumnDefinitions>
+
+                                        
+
+                                        <!-- Levels -->
+
+                                        <RadioButton Grid.Column="0" GroupName="{Binding Criteria.Id}" Content="{Binding Criteria.Level1Desc}" IsChecked="{Binding IsL1}" Checked="Level_Checked" Tag="1" Style="{StaticResource LevelRadioStyle}"/>
+
+                                        <RadioButton Grid.Column="2" GroupName="{Binding Criteria.Id}" Content="{Binding Criteria.Level2Desc}" IsChecked="{Binding IsL2}" Checked="Level_Checked" Tag="2" Style="{StaticResource LevelRadioStyle}"/>
+
+                                        <RadioButton Grid.Column="4" GroupName="{Binding Criteria.Id}" Content="{Binding Criteria.Level3Desc}" IsChecked="{Binding IsL3}" Checked="Level_Checked" Tag="3" Style="{StaticResource LevelRadioStyle}"/>
+
+                                        <RadioButton Grid.Column="6" GroupName="{Binding Criteria.Id}" Content="{Binding Criteria.Level4Desc}" IsChecked="{Binding IsL4}" Checked="Level_Checked" Tag="4" Style="{StaticResource LevelRadioStyle}"/>
+
+                                    </Grid>
+
+
+
+                                    <TextBox Text="{Binding Feedback, UpdateSourceTrigger=PropertyChanged}" Height="50" TextWrapping="Wrap" AcceptsReturn="True" 
+
+                                             Padding="8" Background="#F8FAFC" BorderBrush="#E2E8F0" Tag="Nhận xét thêm (không bắt buộc)..."/>
+
+                                </StackPanel>
+
+                            </Border>
+
+                        </DataTemplate>
+
+                    </ItemsControl.ItemTemplate>
+
+                </ItemsControl>
+
+
+
+                <Button Content="💾 Lưu Điểm" Background="#3B82F6" Foreground="White" FontSize="16" FontWeight="Bold"
+
+                        Padding="0,14" BorderThickness="0" Cursor="Hand" Margin="0,10,0,40" Click="SaveGrades_Click"/>
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+
+
+    </Grid>
+
+
+
+    <Page.Resources>
+
+        <Style x:Key="LevelRadioStyle" TargetType="RadioButton">
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="RadioButton">
+
+                        <Border x:Name="border" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10">
+
+                            <TextBlock Text="{TemplateBinding Content}" TextWrapping="Wrap" FontSize="12" Foreground="#334155"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsChecked" Value="True">
+
+                                <Setter TargetName="border" Property="Background" Value="#DBEAFE"/>
+
+                                <Setter TargetName="border" Property="BorderBrush" Value="#3B82F6"/>
+
+                                <Setter TargetName="border" Property="BorderThickness" Value="2"/>
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+    </Page.Resources>
+
+</Page>
+

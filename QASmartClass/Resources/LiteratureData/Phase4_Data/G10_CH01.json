@@ -1,0 +1,157 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch01",
+    "chapterName": "Bài 1: Sử thi",
+    "grade": 10,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 3
+  },
+  "sections": [
+    {
+      "sectionId": "s_g10_ch0_0",
+      "sectionName": "Chiến Thắng Mtao-Mxây (Trích Sử thi Đăm Săn)",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-10-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g10_Đăm_Săn.mp3",
+      "concepts": [
+        {
+          "name": "Thể Loại & Xuất Xứ",
+          "theorem": "Sử thi (anh hùng ca) là thể loại tự sự dân gian dài, ca ngợi người anh hùng và sự kiện trọng đại của cộng đồng. Đăm Săn là sử thi của người Ê-đê (Tây Nguyên), được kể trong lễ hội cộng đồng."
+        },
+        {
+          "name": "Đoạn chiến đấu với Mtao-Mxây",
+          "definition": "Đăm Săn rút thanh gươm ra múa. Một lần xốc tới, chàng vượt một đồi tranh. Một lần xốc tới nữa, chàng vượt một đồi lồ ô. Còn Mtao-Mxây thì bước thấp bước cao chạy hết bãi tây sang bãi đông... Chàng múa trên cao, gió như bão. Chàng múa dưới thấp, gió như lốc."
+        },
+        {
+          "name": "Cảnh ăn mừng chiến thắng",
+          "definition": "Họ đến chật ních cả nhà Đăm Săn. Tôi tớ chật ních cả sàn... Đăm Săn uống không biết say, ăn không biết no, chuyện trò không biết chán. Cả miền Ê-đê Ê-ga ca tụng chàng là dũng tướng, chắc như cây giáo, như núi, không ai bằng chàng."
+        },
+        {
+          "name": "Đặc trưng nghệ thuật sử thi",
+          "examples": [
+            "**Phóng đại (khoa trương)**: 'Múa trên cao gió như bão, múa dưới thấp gió như lốc' — thủ pháp phóng đại đặc trưng của sử thi.",
+            "**So sánh trùng điệp**: 'Chắc như cây giáo, như núi' — liên tiếp nhiều so sánh tạo ấn tượng mạnh mẽ.",
+            "**Nhân vật sử thi**: Đăm Săn không chỉ là cá nhân mà đại diện cho cả cộng đồng người Ê-đê — chiến thắng của chàng là chiến thắng của cả tộc người.",
+            "**Không gian sử thi**: Rộng lớn, hoành tráng — núi rừng, bãi đồng, đồi tranh — phù hợp với tầm vóc anh hùng."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hình ảnh 'Đăm Săn múa trên cao gió như bão, múa dưới thấp gió như lốc' sử dụng thủ pháp nghệ thuật nào đặc trưng của sử thi?",
+          "difficulty": "Easy",
+          "options": [
+            "Phóng đại (khoa trương) — thổi phồng sức mạnh của anh hùng vượt xa thực tế để tôn vinh vẻ đẹp kỳ vĩ",
+            "So sánh — ví sức mạnh của Đăm Săn với sức mạnh của bão và lốc",
+            "Ẩn dụ — bão và lốc ẩn dụ cho sức tàn phá của người anh hùng",
+            "Nhân hóa — thiên nhiên (bão, lốc) nhân hóa thành sức mạnh của con người"
+          ],
+          "answer": "Phóng đại (khoa trương) — thổi phồng sức mạnh của anh hùng vượt xa thực tế để tôn vinh vẻ đẹp kỳ vĩ",
+          "hints": ["Múa kiếm tạo ra bão và lốc — điều đó có thực tế không?"],
+          "explanation": "Phóng đại là thủ pháp cốt lõi của sử thi: không cần chân thực mà cần hoành tráng. Sức mạnh của Đăm Săn được nâng lên tầm thiên nhiên (bão, lốc) để khẳng định đây không phải người thường mà là anh hùng bất tử của cộng đồng Ê-đê."
+        },
+        {
+          "id": "p2",
+          "question": "Nhân vật Đăm Săn đại diện cho điều gì trong tư duy của người Ê-đê cổ đại?",
+          "difficulty": "Medium",
+          "options": [
+            "Đại diện cho cả cộng đồng người Ê-đê — chiến thắng của chàng là vinh quang chung của cả tộc người",
+            "Đại diện cho khát vọng cá nhân muốn trở nên nổi tiếng và giàu có",
+            "Đại diện cho sức mạnh quân sự của một bộ tộc Tây Nguyên cụ thể",
+            "Đại diện cho người anh hùng lý tưởng theo tiêu chuẩn của người Kinh"
+          ],
+          "answer": "Đại diện cho cả cộng đồng người Ê-đê — chiến thắng của chàng là vinh quang chung của cả tộc người",
+          "hints": ["Sau chiến thắng, ai cùng ăn mừng với Đăm Săn?"],
+          "explanation": "Sử thi khác tiểu thuyết ở chỗ: nhân vật sử thi là biểu tượng cộng đồng, không phải cá nhân. Cảnh ăn mừng 'tôi tớ chật ních cả sàn', 'cả miền Ê-đê ca tụng' — chiến thắng cá nhân trở thành lễ hội tập thể. Đây là tư duy cộng đồng đặc trưng của văn hóa dân gian Tây Nguyên."
+        },
+        {
+          "id": "p3",
+          "question": "Điểm khác biệt cơ bản giữa sử thi anh hùng dân gian (Đăm Săn) và truyện cổ tích (Thánh Gióng) là gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Sử thi: dài, tả kỹ trận chiến và sinh hoạt cộng đồng, nhân vật phức tạp; Cổ tích: ngắn gọn, kết thúc có hậu, nhân vật đơn tuyến",
+            "Sử thi có yếu tố thần kỳ còn cổ tích không có",
+            "Sử thi ca ngợi người anh hùng còn cổ tích ca ngợi người lao động",
+            "Sử thi của người dân tộc thiểu số còn cổ tích của người Kinh"
+          ],
+          "answer": "Sử thi: dài, tả kỹ trận chiến và sinh hoạt cộng đồng, nhân vật phức tạp; Cổ tích: ngắn gọn, kết thúc có hậu, nhân vật đơn tuyến",
+          "hints": ["So sánh độ dài và cách xây dựng nhân vật của hai thể loại."],
+          "explanation": "Sử thi (epic) là thể loại tự sự dài, có kết cấu phức tạp, miêu tả tỉ mỉ trận chiến, lễ hội, sinh hoạt — nhân vật anh hùng đa chiều. Cổ tích: ngắn, kết cấu đơn giản (thiện thắng ác), nhân vật ít tâm lý. Cả hai đều thuộc văn học dân gian nhưng phục vụ mục đích khác nhau."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g10_ch0_1",
+      "sectionName": "Uy-lít-xơ Trở Về (Trích Ô-đi-xê — Homer)",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-10-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g10_Uy-lít-xơ_trở_về.mp3",
+      "concepts": [
+        {
+          "name": "Tác Phẩm & Xuất Xứ",
+          "theorem": "Ô-đi-xê (Odyssey) là sử thi Hy Lạp cổ đại của Homer, kể về hành trình trở về quê hương sau chiến tranh thành Tơ-roa của Uy-lít-xơ (Odysseus). Đoạn trích là cảnh Uy-lít-xơ gặp lại vợ — Pê-nê-lốp sau 20 năm xa cách."
+        },
+        {
+          "name": "Pê-nê-lốp thử thách chồng",
+          "definition": "Lòng nàng xao xuyến biết bao... Khi thì nàng nhìn thẳng vào mặt chàng, khi thì không nhận ra chàng vì áo quần rách rưới che phủ thân chàng... Pê-nê-lốp vẫn ngồi im lặng. Lòng nàng đau xót vì không biết nên đứng xa hay lại gần ôm lấy đầu chàng mà hôn."
+        },
+        {
+          "name": "Thử thách chiếc giường",
+          "definition": "Pê-nê-lốp... ra lệnh cho nhũ mẫu dời chiếc giường kiên cố ra khỏi phòng ngủ... Uy-lít-xơ bực bội nói: 'Hỡi nàng ơi, nàng vừa nói một điều khiến lòng ta đau đớn! Ai đã dời chiếc giường? Việc đó thật khó dù là tay thợ lão luyện...'"
+        },
+        {
+          "name": "Phân tích tâm lý nhân vật",
+          "examples": [
+            "**Pê-nê-lốp thận trọng**: Không nhận ra chồng ngay — không phải vì lạnh lùng mà vì cần xác nhận. Đây là trí tuệ, không phải vô tình.",
+            "**Thử thách chiếc giường**: Pê-nê-lốp đặt bẫy thông minh — chỉ Uy-lít-xơ thật sự mới biết bí mật chiếc giường làm từ gốc ô-liu sống.",
+            "**Sử thi Homer vs Đăm Săn**: Homer chú trọng tâm lý nhân vật; Đăm Săn chú trọng hành động anh hùng — hai phong cách sử thi Đông-Tây khác nhau."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Tại sao Pê-nê-lốp không nhận ra chồng ngay khi Uy-lít-xơ trở về?",
+          "difficulty": "Medium",
+          "options": [
+            "Nàng thận trọng, cần xác minh — đây là trí tuệ của người phụ nữ sau 20 năm chờ đợi và đối phó với bao kẻ cầu hôn giả dối",
+            "Nàng đã quên mặt chồng sau 20 năm xa cách",
+            "Áo quần rách rưới của Uy-lít-xơ che khuất hoàn toàn diện mạo",
+            "Nàng không muốn nhận chồng vì đã quen với cuộc sống một mình"
+          ],
+          "answer": "Nàng thận trọng, cần xác minh — đây là trí tuệ của người phụ nữ sau 20 năm chờ đợi và đối phó với bao kẻ cầu hôn giả dối",
+          "hints": ["Trong 20 năm đó, bao nhiêu kẻ đã đến giả làm hoặc mạo danh Uy-lít-xơ?"],
+          "explanation": "Pê-nê-lốp không phải lạnh lùng — nàng đau đớn ('lòng nàng xao xuyến'). Nhưng sau 20 năm đối phó với hàng trăm kẻ cầu hôn giả dối, nàng học được sự thận trọng. Đây là trí tuệ: không tin ngay, phải thử thách để xác nhận. Homer xây dựng Pê-nê-lốp như người phụ nữ thông minh và mạnh mẽ — không yếu đuối thụ động."
+        },
+        {
+          "id": "p2",
+          "question": "Thử thách chiếc giường mà Pê-nê-lốp đặt ra có ý nghĩa gì trong câu chuyện?",
+          "difficulty": "Medium",
+          "options": [
+            "Là bằng chứng thông minh xác minh danh tính — chỉ Uy-lít-xơ thật sự mới biết bí mật chiếc giường",
+            "Pê-nê-lốp muốn kiểm tra xem Uy-lít-xơ có còn khỏe mạnh như xưa",
+            "Phong tục Hy Lạp cổ đại yêu cầu người vợ phải thử thách chồng khi trở về",
+            "Pê-nê-lốp muốn trừng phạt Uy-lít-xơ vì đã đi xa quá lâu"
+          ],
+          "answer": "Là bằng chứng thông minh xác minh danh tính — chỉ Uy-lít-xơ thật sự mới biết bí mật chiếc giường",
+          "hints": ["Bí mật của chiếc giường là gì mà chỉ Uy-lít-xơ mới biết?"],
+          "explanation": "Chiếc giường được làm từ gốc ô-liu sống — không thể dời được. Chỉ Uy-lít-xơ (người tự tay làm) mới biết bí mật này. Khi Uy-lít-xơ bực bội giải thích bí mật, Pê-nê-lốp mới chắc chắn 100% đây là chồng thật. Thử thách thông minh: không thể học vẹt, chỉ người trong cuộc mới biết."
+        },
+        {
+          "id": "p3",
+          "question": "So sánh cách xây dựng nhân vật anh hùng trong 'Đăm Săn' và 'Uy-lít-xơ trở về' — điểm khác nhau cơ bản là gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Đăm Săn: anh hùng thể chất (sức mạnh, chiến đấu); Uy-lít-xơ: anh hùng trí tuệ (khôn ngoan, thử thách tâm lý)",
+            "Đăm Săn là anh hùng đơn độc còn Uy-lít-xơ có đồng đội hỗ trợ",
+            "Đăm Săn chiến đấu với thiên nhiên còn Uy-lít-xơ chiến đấu với con người",
+            "Cả hai nhân vật đều có cách xây dựng tương tự nhau vì cùng là sử thi"
+          ],
+          "answer": "Đăm Săn: anh hùng thể chất (sức mạnh, chiến đấu); Uy-lít-xơ: anh hùng trí tuệ (khôn ngoan, thử thách tâm lý)",
+          "hints": ["Ưu điểm nổi bật nhất của Đăm Săn là gì? Của Uy-lít-xơ là gì?"],
+          "explanation": "Hai mô hình anh hùng: Đăm Săn (Ê-đê) — anh hùng cơ bắp, chiến thắng bằng sức mạnh và dũng cảm. Uy-lít-xơ (Hy Lạp) — 'người mưu trí', chiến thắng bằng trí tuệ và sự kiên nhẫn. Đây phản ánh hai triết lý khác nhau về người anh hùng lý tưởng của hai nền văn minh."
+        }
+      ]
+    }
+  ]
+}

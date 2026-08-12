@@ -1,0 +1,70 @@
+﻿<Page x:Class="QASmartClass.HRModule.Views.AttendanceStaffView"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Chấm công Nhân sự" Background="#F0F2F5" FontFamily="Segoe UI">
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <DockPanel Margin="0,0,0,20">
+
+            <TextBlock Text="⏱️ Chấm công Giáo viên / Nhân viên" FontSize="24" FontWeight="Bold" Foreground="#1E293B"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+                <Button x:Name="BtnCalculateSalary" Content="💰 Tính Lương Tháng" Background="#8B5CF6" Foreground="White" Padding="15,8" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="BtnCalculateSalary_Click"/>
+
+                <Button x:Name="BtnExport" Content="📄 Xuất PDF" Background="#F59E0B" Foreground="White" Padding="15,8" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="BtnExport_Click"/>
+
+                <Button x:Name="BtnRefresh" Content="🔄 Làm mới" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Padding="15,8" Cursor="Hand" Click="BtnRefresh_Click"/>
+
+            </StackPanel>
+
+        </DockPanel>
+
+
+
+        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="20">
+
+            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+
+            <DataGrid x:Name="DgAttendance" AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="1" BorderBrush="#E2E8F0" Background="White" HeadersVisibility="Column" RowHeight="40">
+
+                <DataGrid.Columns>
+
+                    <DataGridTextColumn Header="Ngày" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="120"/>
+
+                    <DataGridTextColumn Header="Mã NV" Binding="{Binding StaffId}" Width="100"/>
+
+                    <DataGridTextColumn Header="Check-in" Binding="{Binding CheckIn}" Width="120"/>
+
+                    <DataGridTextColumn Header="Check-out" Binding="{Binding CheckOut}" Width="120"/>
+
+                    <DataGridTextColumn Header="Số giờ làm" Binding="{Binding WorkingHours}" Width="100"/>
+
+                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="*"/>
+
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+        </Border>
+
+    </Grid>
+
+</Page>
+
+
+

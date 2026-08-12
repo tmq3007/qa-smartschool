@@ -1,0 +1,369 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+
+  <PropertyGroup>
+
+    <OutputType Condition="!$(MSBuildProjectName.EndsWith('_wpftmp'))">WinExe</OutputType>
+
+    <OutputType Condition="$(MSBuildProjectName.EndsWith('_wpftmp'))">Library</OutputType>
+
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+
+    <Nullable>enable</Nullable>
+
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <UseWPF>true</UseWPF>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <AssemblyName>QASmartClass</AssemblyName>
+
+    <RootNamespace>QASmartClass</RootNamespace>
+
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+
+    <FileVersion>3.0.0.0</FileVersion>
+
+    <Product>QA SmartTouch - Interactive Whiteboard</Product>
+
+    <Company>QA Education Technology</Company>
+
+    <Copyright>Copyright © 2025-2026</Copyright>
+
+    <!-- DPI Awareness Manifest for 86-inch display support -->
+
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <!-- Suppress bulk warnings: NuGet compat + unused fields/events + nullable -->
+
+    <NoWarn>NU1701;NU1603;NETSDK1206;NETSDK1086;CS0414;CS0169;CS0067;CS0649;CS8618;CS8600;CS8601;CS8602;CS8604;CS8625</NoWarn>
+
+    <CodePage>65001</CodePage>
+
+  </PropertyGroup>
+
+  <PropertyGroup>
+
+    <DefineConstants>NO_SMARTSCHOOL</DefineConstants>
+
+  </PropertyGroup>
+
+
+
+
+
+  <ItemGroup>
+
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.1.1" />
+
+    <PackageReference Include="EPPlus" Version="8.5.4" />
+
+    <PackageReference Include="Google.Cloud.Vision.V1" Version="3.8.0" />
+
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3912.50" />
+
+    <PackageReference Include="NAudio" Version="2.3.0" />
+
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+
+    <PackageReference Include="HelixToolkit.Wpf" Version="2.25.0" />
+
+    <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
+
+    <PackageReference Include="QRCoder" Version="1.8.0" />
+
+    <PackageReference Include="QuestPDF" Version="2026.5.0" />
+
+    <PackageReference Include="System.IO.Ports" Version="10.0.8" />
+
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.8" />
+
+    <PackageReference Include="System.Speech" Version="8.0.0" />
+
+    <PackageReference Include="System.Drawing.Common" Version="8.0.11" />
+
+    <PackageReference Include="Imazen.WebP" Version="1.0.29" />
+
+    <!-- Camera Module Dependencies -->
+
+    <PackageReference Include="OpenCvSharp4" Version="4.11.0.20241117" />
+
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.11.0.20241117" />
+
+    <PackageReference Include="OpenCvSharp4.Extensions" Version="4.11.0.20241117" />
+
+    <!-- 3D Model Import Dependencies -->
+
+    <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
+
+    <!-- QA Smart Class - New Dependencies -->
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.0" />
+
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.8" />
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0" />
+
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+
+    <PackageReference Include="Serilog" Version="3.1.1" />
+
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+
+    <!-- License System - Hardware Fingerprint via WMI -->
+
+    <PackageReference Include="System.Management" Version="8.0.0" />
+
+    <PackageReference Include="WpfMath" Version="2.1.0" />
+
+  </ItemGroup>
+
+
+
+  <!-- WPF XPS Export Support -->
+
+  <ItemGroup>
+
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.Wpf" />
+
+  </ItemGroup>
+
+
+
+  <ItemGroup>
+
+    <None Update="Assets\**">
+
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+
+    </None>
+
+    <None Update="Resources\**">
+
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+
+    </None>
+
+    <None Update="PeriodicTable\Data\**">
+
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+
+    </None>
+
+  </ItemGroup>
+
+
+
+  <ItemGroup>
+
+    <Resource Include="Assets\Images\app_*.png" />
+
+    <Resource Include="Assets\Images\app_*.jpg" />
+
+    <Resource Include="Assets\Data\DefaultTimelineEvents.json" />
+
+  </ItemGroup>
+
+
+
+  <!-- ✨ Settings Configuration -->
+
+  <ItemGroup>
+
+    <Compile Update="Properties\Settings.Designer.cs">
+
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+
+      <AutoGen>True</AutoGen>
+
+      <DependentUpon>Settings.settings</DependentUpon>
+
+    </Compile>
+
+    <Compile Update="Properties\Resources.Designer.cs">
+
+      <DesignTime>True</DesignTime>
+
+      <AutoGen>True</AutoGen>
+
+      <DependentUpon>Resources.resx</DependentUpon>
+
+    </Compile>
+
+  </ItemGroup>
+
+
+
+  <ItemGroup>
+
+    <None Update="Properties\Settings.settings">
+
+      <Generator>SettingsSingleFileGenerator</Generator>
+
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+
+    </None>
+
+  </ItemGroup>
+
+
+
+  <ItemGroup>
+
+    <EmbeddedResource Update="Properties\Resources.resx">
+
+      <Generator>PublicResXFileCodeGenerator</Generator>
+
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+
+    </EmbeddedResource>
+
+    <EmbeddedResource Update="Properties\Resources.vi-VN.resx">
+
+      <DependentUpon>Resources.resx</DependentUpon>
+
+    </EmbeddedResource>
+
+  </ItemGroup>
+
+
+
+
+
+<!-- Interactive Books Module - Models & Services -->
+
+<ItemGroup>
+
+	<Compile Remove="Resources\LiteratureData\Phase4_Data\ExamGenerator\**\*.cs" />
+
+	<!-- Remove auto-included items first -->
+
+	<Compile Remove="Modules\**\*.cs" />
+
+	<!-- V7 P5: Exclude test project from main build -->
+
+	<Compile Remove="QASmartClass.Tests\**\*.cs" />
+
+	<!-- Then explicitly add what we need -->
+
+	<Compile Include="Modules\InteractiveBooks\Models\Book.cs" />
+
+	<Compile Include="Modules\InteractiveBooks\Services\BookService.cs" />
+
+</ItemGroup>
+
+
+
+<!-- Interactive Books Module - XAML Forms -->
+
+<!-- SDK-style projects auto-include .xaml files, no need to explicitly add them -->
+
+
+
+
+
+<ItemGroup>
+
+	<None Include="Modules\InteractiveBooks\Data\books.json">
+
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+
+	</None>
+
+	<None Include="Modules\InteractiveBooks\Data\images\**\*">
+
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+
+		<Link>Modules\InteractiveBooks\Data\images\%(RecursiveDir)%(Filename)%(Extension)</Link>
+
+	</None>
+
+</ItemGroup>
+
+
+
+<!-- Version Management Configuration Files -->
+
+<ItemGroup>
+
+	<None Include="..\config\VersionStatus.json">
+
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+
+		<Link>config\VersionStatus.json</Link>
+
+	</None>
+
+	<None Include="..\config\VersionDetail.json">
+
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+
+		<Link>config\VersionDetail.json</Link>
+
+	</None>
+
+	<None Include="..\config\AppBranding.json">
+
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+
+		<Link>config\AppBranding.json</Link>
+
+	</None>
+
+</ItemGroup>
+
+
+
+<!-- Student WebApp — served by WebSocketBridgeService on port 8080 -->
+
+<ItemGroup>
+
+	<None Include="StudentWebApp\**\*">
+
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+
+		<Link>StudentWebApp\%(RecursiveDir)%(Filename)%(Extension)</Link>
+
+	</None>
+
+	<!-- Exclude node_modules or any dev-only files if present -->
+
+	<None Remove="StudentWebApp\node_modules\**" />
+
+</ItemGroup>
+
+
+
+  <ItemGroup>
+
+    <Resource Include="Resources\Fonts\Inter-Regular.ttf" />
+
+    <Resource Include="Resources\Fonts\Inter-Bold.ttf" />
+
+    <Resource Include="Resources\Fonts\Outfit-Regular.ttf" />
+
+    <Resource Include="Resources\Fonts\Outfit-Bold.ttf" />
+
+  </ItemGroup>
+
+
+
+  <ItemGroup>
+
+    <ProjectReference Include="..\SmartLibrary.Desktop\SmartLibrary.Desktop.csproj" />
+
+  </ItemGroup>
+
+
+
+  <!-- <Target Name="PrintCompileItems" BeforeTargets="CoreCompile">
+
+    <WriteLinesToFile File="C:\Users\DELL\.gemini\antigravity\brain\8d35128e-83a8-4867-a538-719d76764236\compile_items_$(MSBuildProjectName).txt" Lines="@(Compile)" Overwrite="true" />
+
+  </Target> -->
+
+
+
+</Project>

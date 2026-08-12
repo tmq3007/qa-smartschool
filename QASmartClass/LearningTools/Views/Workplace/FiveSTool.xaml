@@ -1,0 +1,355 @@
+<UserControl x:Class="QASmartClass.LearningTools.Views.Workplace.FiveSTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="White" xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls">
+
+    <UserControl.Resources>
+        <Style x:Key="TabButtonBase" TargetType="Button">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="4,4,0,0" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ActiveTabStyle" TargetType="Button" BasedOn="{StaticResource TabButtonBase}">
+            <Setter Property="Background" Value="#00796B"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#00796B"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#004D40"/>
+                    <Setter Property="BorderBrush" Value="#004D40"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="InactiveTabStyle" TargetType="Button" BasedOn="{StaticResource TabButtonBase}">
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="Foreground" Value="#757575"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E0E0E0"/>
+                    <Setter Property="BorderBrush" Value="#CCCCCC"/>
+                    <Setter Property="Foreground" Value="#424242"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="RatingButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="4,0,0,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="16">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#FFD54F"/>
+                                <Setter Property="Foreground" Value="#004D40"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Tag" Value="Selected">
+                    <Setter Property="Background" Value="#FFB300"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="Tag" Value="Normal">
+                    <Setter Property="Background" Value="#EEEEEE"/>
+                    <Setter Property="Foreground" Value="#757575"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- === HEADER === -->
+        <Border Grid.Row="0" Background="#F8F9FA" Padding="16,10" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnTemplate" Content="🎯 Chọn Mẫu ▼" Padding="12,8" Margin="0,0,6,0" FontSize="13" Cursor="Hand" Click="Template_Click"/>
+                    <Button x:Name="btnExport" Content="📷 Xuất ảnh PNG" Padding="12,8" Margin="0,0,6,0" FontSize="13" Cursor="Hand" Click="Export_Click"/>
+                    <Button x:Name="btnClear" Content="🗑️ Làm lại" Padding="12,8" FontSize="13" Cursor="Hand" Click="Clear_Click"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="🏠 Đánh Giá 5S" FontSize="20" FontWeight="Bold" Foreground="#00796B"/>
+                    <TextBlock Text="Sàng lọc (Seiri) - Sắp xếp (Seiton) - Sạch sẽ (Seiso) - Săn sóc (Seiketsu) - Sẵn sàng (Shitsuke)" FontSize="12" Foreground="#757575" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#F1F8E9">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#B2DFDB"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#00796B"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextWorkspace" Text="Bảng đánh giá 5S" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#E0E0E0"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 1: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#B2DFDB" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#00796B" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#B2DFDB" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+<StackPanel x:Name="panelGuideText" Background="White">
+                            <!-- Zoom buttons -->
+                            <DockPanel LastChildFill="False" Margin="0,0,0,8">
+                                <TextBlock Text="Cỡ chữ hướng dẫn:" FontSize="12" Foreground="#757575" VerticalAlignment="Center"/>
+                                <Button Content="A+" FontSize="11" FontWeight="Bold" Width="28" Height="22" Margin="6,0,4,0" Cursor="Hand" Click="ZoomIn_Click" Background="#E0E0E0" BorderBrush="#CCCCCC" BorderThickness="1"/>
+                                <Button Content="A-" FontSize="11" FontWeight="Bold" Width="28" Height="22" Cursor="Hand" Click="ZoomOut_Click" Background="#E0E0E0" BorderBrush="#CCCCCC" BorderThickness="1"/>
+                            </DockPanel>
+
+                            <!-- Nguồn gốc & Ý nghĩa -->
+                            <Border Background="#E3F2FD" CornerRadius="6" Padding="12" Margin="0,0,0,12" BorderBrush="#BBDEFB" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="💡 NGUỒN GỐC &amp; Ý NGHĨA" FontWeight="Bold" FontSize="13" Foreground="#1565C0" Margin="0,0,0,6"/>
+                                    <TextBlock x:Name="txtToolMeaning" TextWrapping="Wrap" FontSize="13" Foreground="#424242" Margin="0,0,0,10" LineHeight="18"/>
+                                    <TextBlock Text="🌍 ÁP DỤNG THỰC TẾ" FontWeight="Bold" FontSize="13" Foreground="#E65100" Margin="0,0,0,6"/>
+                                    <TextBlock x:Name="txtToolApplication" TextWrapping="Wrap" FontSize="13" Foreground="#424242" LineHeight="18"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Định nghĩa 5S -->
+                            <TextBlock Text="📝 Ý NGHĨA 5 BƯỚC ĐÁNH GIÁ:" FontWeight="Bold" FontSize="13" Foreground="#2E7D32" Margin="0,0,0,8"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- 1S -->
+                                <Border Grid.Row="0" Grid.Column="0" Background="#FFEBEE" CornerRadius="4" Padding="6,4" Margin="0,0,8,6" VerticalAlignment="Center">
+                                    <TextBlock Text="1S - Sàng Lọc" FontWeight="Bold" Foreground="#C62828" FontSize="12"/>
+                                </Border>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Loại bỏ vật dụng không cần thiết (nháp cũ, vỏ chai, bút hết mực...) để không gian gọn gàng." VerticalAlignment="Center" TextWrapping="Wrap" FontSize="13" Foreground="#424242" Margin="0,0,0,6"/>
+
+                                <!-- 2S -->
+                                <Border Grid.Row="1" Grid.Column="0" Background="#E3F2FD" CornerRadius="4" Padding="6,4" Margin="0,0,8,6" VerticalAlignment="Center">
+                                    <TextBlock Text="2S - Sắp Xếp" FontWeight="Bold" Foreground="#1565C0" FontSize="12"/>
+                                </Border>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="Mỗi đồ vật có một vị trí cố định, dễ tìm, dễ lấy (sách xếp theo môn học, bút thước để đúng khay)." VerticalAlignment="Center" TextWrapping="Wrap" FontSize="13" Foreground="#424242" Margin="0,0,0,6"/>
+
+                                <!-- 3S -->
+                                <Border Grid.Row="2" Grid.Column="0" Background="#E8F5E9" CornerRadius="4" Padding="6,4" Margin="0,0,8,6" VerticalAlignment="Center">
+                                    <TextBlock Text="3S - Sạch Sẽ" FontWeight="Bold" Foreground="#2E7D32" FontSize="12"/>
+                                </Border>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="Lau chùi, quét dọn bàn học, sàn nhà và thiết bị thường xuyên, giữ không gian luôn vệ sinh." VerticalAlignment="Center" TextWrapping="Wrap" FontSize="13" Foreground="#424242" Margin="0,0,0,6"/>
+
+                                <!-- 4S -->
+                                <Border Grid.Row="3" Grid.Column="0" Background="#FFF8E1" CornerRadius="4" Padding="6,4" Margin="0,0,8,6" VerticalAlignment="Center">
+                                    <TextBlock Text="4S - Săn Sóc" FontWeight="Bold" Foreground="#F57F17" FontSize="12"/>
+                                </Border>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="Duy trì liên tục các tiêu chuẩn 3S ở trên hàng ngày, tạo thành nếp sống ngăn nắp ổn định." VerticalAlignment="Center" TextWrapping="Wrap" FontSize="13" Foreground="#424242" Margin="0,0,0,6"/>
+
+                                <!-- 5S -->
+                                <Border Grid.Row="4" Grid.Column="0" Background="#F3E5F5" CornerRadius="4" Padding="6,4" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <TextBlock Text="5S - Sẵn Sàng" FontWeight="Bold" Foreground="#6A1B9A" FontSize="12"/>
+                                </Border>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="Tự giác thực hiện các quy trình trên mà không cần nhắc nhở, rèn luyện thói quen kỷ luật tự thân." VerticalAlignment="Center" TextWrapping="Wrap" FontSize="13" Foreground="#424242"/>
+                            </Grid>
+
+                            <!-- Tiêu chuẩn chấm điểm -->
+                            <Border BorderBrush="#E0E0E0" BorderThickness="0,1,0,1" Padding="0,12" Margin="0,4,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="⭐ TIÊU CHUẨN ĐÁNH GIÁ (1 - 5 điểm):" FontWeight="Bold" FontSize="13" Foreground="#E65100" Margin="0,0,0,8"/>
+                                    <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#424242" LineHeight="20">
+                                        • <Run FontWeight="Bold" Foreground="#C62828">1 điểm (Chưa làm):</Run> Chưa thực hiện gì cả, không gian bừa bộn/bẩn thỉu.<LineBreak/>
+                                        • <Run FontWeight="Bold" Foreground="#EF6C00">2 điểm (Ít khi làm):</Run> Rất hiếm khi thực hiện, chỉ dọn dẹp khi bị nhắc nhở gay gắt.<LineBreak/>
+                                        • <Run FontWeight="Bold" Foreground="#F57F17">3 điểm (Thỉnh thoảng):</Run> Có dọn dẹp nhưng không thường xuyên, không giữ được lâu.<LineBreak/>
+                                        • <Run FontWeight="Bold" Foreground="#2E7D32">4 điểm (Thường xuyên):</Run> Tự giác thực hiện đều đặn mỗi ngày, sắp xếp khá tốt.<LineBreak/>
+                                        • <Run FontWeight="Bold" Foreground="#00796B">5 điểm (Xuất sắc):</Run> Duy trì hoàn hảo, tự giác 100%, không gian sạch đẹp như mẫu.
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Quy trình thao tác -->
+                            <TextBlock Text="👣 HƯỚNG DẪN TỪNG BƯỚC THAO TÁC:" FontWeight="Bold" FontSize="13" Foreground="#1565C0" Margin="0,0,0,8"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#424242" LineHeight="20">
+                                <Run FontWeight="Bold" Foreground="#1565C0">Bước 1: Chọn mẫu hoặc Đặt tên</Run><LineBreak/>
+                                Bấm nút <Run FontWeight="Bold">"🎯 Chọn Mẫu"</Run> để lấy ví dụ như Bàn học ở nhà, Trực nhật lớp, hoặc tự nhập tên khu vực vào ô <Run FontWeight="Bold">"Khu vực đánh giá"</Run>.<LineBreak/>
+                                💡 <Run FontStyle="Italic">Mẹo:</Run> Có thể chọn các mẫu trong danh mục <Run FontWeight="Bold">"💡 Mẫu Điểm Tham Khảo"</Run> để xem kết quả đánh giá thực tế trực quan.<LineBreak/><LineBreak/>
+                                <Run FontWeight="Bold" Foreground="#1565C0">Bước 2: Chấm điểm các tiêu chí</Run><LineBreak/>
+                                Bấm lần lượt vào các Tab từ <Run FontWeight="Bold">"1S"</Run> đến <Run FontWeight="Bold">"5S"</Run>. Đọc từng tiêu chuẩn và click chọn thang điểm tròn tương ứng <Run FontWeight="Bold">(1 đến 5)</Run>.<LineBreak/><LineBreak/>
+                                <Run FontWeight="Bold" Foreground="#1565C0">Bước 3: Xem biểu đồ Radar phân tích</Run><LineBreak/>
+                                Biểu đồ tự động vẽ đa giác kết quả. Nếu đỉnh nào bị khuyết lõm vào tâm, đó chính là điểm 5S cần khắc phục. Thang điểm tổng hợp bên dưới sẽ đưa ra xếp loại cụ thể.<LineBreak/><LineBreak/>
+                                <Run FontWeight="Bold" Foreground="#1565C0">Bước 4: Xuất ảnh báo cáo</Run><LineBreak/>
+                                Bấm nút <Run FontWeight="Bold">"📷 Xuất ảnh PNG"</Run> để lưu lại biểu đồ và bảng kết quả sắc nét, phục vụ việc lưu minh chứng thi đua hoặc theo dõi tiến trình cải tiến.
+                            </TextBlock>
+                        </StackPanel>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 2: BẢNG ĐÁNH GIÁ 5S -->
+                <Grid x:Name="viewWorkspace" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="350"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- LEFT: Checklist -->
+                    <Border Grid.Column="0" Background="#FAFAFA" CornerRadius="10" Padding="16" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,16,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <DockPanel Grid.Row="0" Margin="0,0,0,12">
+                                <TextBlock Text="Khu vực đánh giá:" FontSize="13" FontWeight="SemiBold" Foreground="#00796B" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBox x:Name="txtSubject" FontSize="14" Padding="8,6" BorderBrush="#B2DFDB" BorderThickness="1" Background="White" MaxLength="50" LostFocus="Subject_LostFocus"/>
+                            </DockPanel>
+
+                            <!-- Tabs -->
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+                                <Button x:Name="tab1" Content="1S: Sàng Lọc" Click="Tab_Click" Tag="1" Style="{StaticResource InactiveTabStyle}"/>
+                                <Button x:Name="tab2" Content="2S: Sắp Xếp" Click="Tab_Click" Tag="2" Style="{StaticResource InactiveTabStyle}"/>
+                                <Button x:Name="tab3" Content="3S: Sạch Sẽ" Click="Tab_Click" Tag="3" Style="{StaticResource InactiveTabStyle}"/>
+                                <Button x:Name="tab4" Content="4S: Săn Sóc" Click="Tab_Click" Tag="4" Style="{StaticResource InactiveTabStyle}"/>
+                                <Button x:Name="tab5" Content="5S: Sẵn Sàng" Click="Tab_Click" Tag="5" Style="{StaticResource InactiveTabStyle}"/>
+                            </StackPanel>
+
+                            <Border Grid.Row="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Padding="12">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="checklistPanel"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- RIGHT: Radar Chart & Result -->
+                    <Border x:Name="chartBorder" Grid.Column="1" Background="White" CornerRadius="10" Padding="20" BorderBrush="#E0E0E0" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="KẾT QUẢ ĐÁNH GIÁ 5S" FontSize="16" FontWeight="Bold" Foreground="#212121" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+
+                            <!-- Radar Chart -->
+                            <Border Grid.Row="1" Background="#FAFAFA" CornerRadius="8" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,16" Padding="10">
+                                <Canvas x:Name="radarCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="RadarCanvas_SizeChanged"/>
+                            </Border>
+
+                            <!-- Score summary -->
+                            <Border Grid.Row="2" Background="#E0F2F1" BorderBrush="#00796B" BorderThickness="2" CornerRadius="8" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="ĐIỂM TỔNG HỢP:" FontSize="13" FontWeight="Bold" Foreground="#00796B" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                    <TextBlock x:Name="txtTotalScore" Text="0 / 25" FontSize="28" FontWeight="Bold" Foreground="#004D40" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="txtEvaluation" Text="Hãy hoàn thành đánh giá" FontSize="13" Foreground="#00796B" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    <TextBlock x:Name="txtAdvice" TextWrapping="Wrap" FontSize="12" FontStyle="Italic" Foreground="#004D40" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- VIEW 3: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Canvas vẽ pháo hoa giấy bay chúc mừng -->
+        <Canvas Grid.Row="1" x:Name="confettiCanvas" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Panel.ZIndex="999"/>
+    </Grid>
+</UserControl>

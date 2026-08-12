@@ -1,0 +1,862 @@
+<Window FontFamily="Segoe UI" x:Class="QASmartTouch.PeriodicTable.Views.RulesWindow"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="QUY TẮC TÍNH TAN (Chế độ học tập)" 
+
+        Height="700" 
+
+        Width="850"
+
+        WindowStartupLocation="CenterScreen"
+
+        Background="#F5F5F5"
+
+        ResizeMode="CanResize">
+
+    
+
+    <Window.Resources>
+
+        <!-- Style cho section header -->
+
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="18"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Setter Property="Margin" Value="0,0,0,12"/>
+
+        </Style>
+
+        
+
+        <!-- Style cho rule item -->
+
+        <Style x:Key="RuleItemStyle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="Margin" Value="0,5,0,5"/>
+
+            <Setter Property="TextWrapping" Value="Wrap"/>
+
+            <Setter Property="LineHeight" Value="24"/>
+
+        </Style>
+
+        
+
+        <!-- Style cho mẹo ghi nhớ -->
+
+        <Style x:Key="TipStyle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="FontStyle" Value="Italic"/>
+
+            <Setter Property="Margin" Value="5,6,0,6"/>
+
+            <Setter Property="TextWrapping" Value="Wrap"/>
+
+            <Setter Property="LineHeight" Value="26"/>
+
+        </Style>
+
+    </Window.Resources>
+
+    
+
+    <Grid Margin="0">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+        
+
+        <!-- Header -->
+
+        <Border Grid.Row="0" 
+
+                Background="#1976D2" 
+
+                Padding="25,18"
+
+                Margin="0">
+
+            <StackPanel Orientation="Horizontal">
+
+                <TextBlock Text="📚" FontSize="32" Margin="0,0,15,0" VerticalAlignment="Center"/>
+
+                <TextBlock Text="CÁC QUY TẮC TAN CƠ BẢN TRONG HÓA HỌC" 
+
+                           FontSize="22" 
+
+                           FontWeight="Bold" 
+
+                           Foreground="White"
+
+                           VerticalAlignment="Center"/>
+
+            </StackPanel>
+
+        </Border>
+
+        
+
+        <!-- Nội dung chính -->
+
+        <ScrollViewer Grid.Row="1" 
+
+                      VerticalScrollBarVisibility="Auto"
+
+                      Background="White"
+
+                      Padding="25,20">
+
+            <StackPanel>
+
+                
+
+                <!-- Grid 3 cột cho 3 quy tắc -->
+
+                <Grid Margin="0,0,0,25">
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="15"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="15"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    
+
+                    <!-- CỘT 1: QUY TẮC 1 - MUỐI LUÔN TAN -->
+
+                    <Border Grid.Column="0"
+
+                            Background="#E8F5E9" 
+
+                            Padding="18" 
+
+                            CornerRadius="8" 
+
+                            BorderBrush="#4CAF50"
+
+                            BorderThickness="2">
+
+                        <StackPanel>
+
+                            <!-- Header -->
+
+                            <StackPanel Orientation="Horizontal" 
+
+                                        HorizontalAlignment="Center"
+
+                                        Margin="0,0,0,12">
+
+                                <TextBlock Text="✅" FontSize="32" Margin="0,0,8,0"/>
+
+                            </StackPanel>
+
+                            
+
+                            <TextBlock Text="QUY TẮC 1" 
+
+                                       FontSize="16" 
+
+                                       FontWeight="Bold"
+
+                                       Foreground="#1B5E20"
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,0,0,3"/>
+
+                            
+
+                            <TextBlock Text="MUỐI LUÔN TAN" 
+
+                                       FontSize="14" 
+
+                                       FontWeight="Bold"
+
+                                       Foreground="#2E7D32"
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,0,0,15"
+
+                                       TextWrapping="Wrap"
+
+                                       TextAlignment="Center"/>
+
+                            
+
+                            <!-- Nội dung -->
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#1B5E20" 
+
+                                       Margin="0,0,0,8"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="22">
+
+                                <Run Text="• Tất cả muối của" FontWeight="SemiBold"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  Na⁺, K⁺, NH₄⁺" FontWeight="Bold" Foreground="#1565C0" FontSize="14"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  đều TAN" FontWeight="Bold"/>
+
+                            </TextBlock>
+
+                            
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#1B5E20" 
+
+                                       Margin="0,0,0,8"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="22">
+
+                                <Run Text="• Tất cả muối" FontWeight="SemiBold"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  nitrat (NO₃⁻)" FontWeight="Bold" Foreground="#1565C0" FontSize="14"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  đều TAN" FontWeight="Bold"/>
+
+                            </TextBlock>
+
+                            
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#1B5E20" 
+
+                                       Margin="0,0,0,0"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="22">
+
+                                <Run Text="• Tất cả muối" FontWeight="SemiBold"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  clorat (ClO₃⁻)" FontWeight="Bold" Foreground="#1565C0" FontSize="14"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  đều TAN" FontWeight="Bold"/>
+
+                            </TextBlock>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    
+
+                    <!-- CỘT 2: QUY TẮC 2 - MUỐI THƯỜNG TAN -->
+
+                    <Border Grid.Column="2"
+
+                            Background="#FFF3E0" 
+
+                            Padding="18" 
+
+                            CornerRadius="8" 
+
+                            BorderBrush="#FF9800"
+
+                            BorderThickness="2">
+
+                        <StackPanel>
+
+                            <!-- Header -->
+
+                            <StackPanel Orientation="Horizontal" 
+
+                                        HorizontalAlignment="Center"
+
+                                        Margin="0,0,0,12">
+
+                                <TextBlock Text="⚠️" FontSize="32" Margin="0,0,8,0"/>
+
+                            </StackPanel>
+
+                            
+
+                            <TextBlock Text="QUY TẮC 2" 
+
+                                       FontSize="16" 
+
+                                       FontWeight="Bold"
+
+                                       Foreground="#E65100"
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,0,0,3"/>
+
+                            
+
+                            <TextBlock Text="MUỐI THƯỜNG TAN" 
+
+                                       FontSize="14" 
+
+                                       FontWeight="Bold"
+
+                                       Foreground="#F57C00"
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,0,0,3"
+
+                                       TextWrapping="Wrap"
+
+                                       TextAlignment="Center"/>
+
+                            
+
+                            <TextBlock Text="(CÓ NGOẠI LỆ)" 
+
+                                       FontSize="12" 
+
+                                       FontWeight="SemiBold"
+
+                                       Foreground="#EF6C00"
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,0,0,12"
+
+                                       TextWrapping="Wrap"
+
+                                       TextAlignment="Center"/>
+
+                            
+
+                            <!-- Nội dung -->
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#4E342E" 
+
+                                       Margin="0,0,0,6"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="20">
+
+                                <Run Text="• " FontWeight="Bold" Foreground="#F57C00"/>
+
+                                <Run Text="Clorua (Cl⁻)" FontWeight="Bold" Foreground="#F57C00" FontSize="13.5"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  Tan " FontWeight="SemiBold"/>
+
+                                <Run Text="(trừ Ag, Pb, Hg₂)" Foreground="#C62828" FontWeight="SemiBold" FontSize="12"/>
+
+                            </TextBlock>
+
+                            
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#4E342E" 
+
+                                       Margin="0,0,0,6"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="20">
+
+                                <Run Text="• " FontWeight="Bold" Foreground="#F57C00"/>
+
+                                <Run Text="Bromua (Br⁻)" FontWeight="Bold" Foreground="#F57C00" FontSize="13.5"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  Tan " FontWeight="SemiBold"/>
+
+                                <Run Text="(trừ Ag, Pb, Hg₂)" Foreground="#C62828" FontWeight="SemiBold" FontSize="12"/>
+
+                            </TextBlock>
+
+                            
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#4E342E" 
+
+                                       Margin="0,0,0,6"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="20">
+
+                                <Run Text="• " FontWeight="Bold" Foreground="#F57C00"/>
+
+                                <Run Text="Iodua (I⁻)" FontWeight="Bold" Foreground="#F57C00" FontSize="13.5"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  Tan " FontWeight="SemiBold"/>
+
+                                <Run Text="(trừ Ag, Pb, Hg₂)" Foreground="#C62828" FontWeight="SemiBold" FontSize="12"/>
+
+                            </TextBlock>
+
+                            
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#4E342E" 
+
+                                       Margin="0,0,0,0"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="20">
+
+                                <Run Text="• " FontWeight="Bold" Foreground="#F57C00"/>
+
+                                <Run Text="Sunfat (SO₄²⁻)" FontWeight="Bold" Foreground="#F57C00" FontSize="13.5"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  Tan " FontWeight="SemiBold"/>
+
+                                <Run Text="(trừ Ba, Pb, Ca)" Foreground="#C62828" FontWeight="SemiBold" FontSize="12"/>
+
+                            </TextBlock>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    
+
+                    <!-- CỘT 3: QUY TẮC 3 - MUỐI THƯỜNG KHÔNG TAN -->
+
+                    <Border Grid.Column="4"
+
+                            Background="#FFEBEE" 
+
+                            Padding="18" 
+
+                            CornerRadius="8" 
+
+                            BorderBrush="#F44336"
+
+                            BorderThickness="2">
+
+                        <StackPanel>
+
+                            <!-- Header -->
+
+                            <StackPanel Orientation="Horizontal" 
+
+                                        HorizontalAlignment="Center"
+
+                                        Margin="0,0,0,12">
+
+                                <TextBlock Text="❌" FontSize="32" Margin="0,0,8,0"/>
+
+                            </StackPanel>
+
+                            
+
+                            <TextBlock Text="QUY TẮC 3" 
+
+                                       FontSize="16" 
+
+                                       FontWeight="Bold"
+
+                                       Foreground="#C62828"
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,0,0,3"/>
+
+                            
+
+                            <TextBlock Text="MUỐI KHÔNG TAN" 
+
+                                       FontSize="14" 
+
+                                       FontWeight="Bold"
+
+                                       Foreground="#D32F2F"
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,0,0,3"
+
+                                       TextWrapping="Wrap"
+
+                                       TextAlignment="Center"/>
+
+                            
+
+                            <TextBlock Text="(CÓ NGOẠI LỆ)" 
+
+                                       FontSize="12" 
+
+                                       FontWeight="SemiBold"
+
+                                       Foreground="#E53935"
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,0,0,12"
+
+                                       TextWrapping="Wrap"
+
+                                       TextAlignment="Center"/>
+
+                            
+
+                            <!-- Nội dung -->
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#4E342E" 
+
+                                       Margin="0,0,0,5"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="20">
+
+                                <Run Text="• " FontWeight="Bold" Foreground="#D32F2F"/>
+
+                                <Run Text="Cacbonat (CO₃²⁻)" FontWeight="Bold" Foreground="#D32F2F" FontSize="13"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  Không tan " FontWeight="SemiBold"/>
+
+                                <Run Text="(trừ Na, K, NH₄)" Foreground="#2E7D32" FontWeight="SemiBold" FontSize="11.5"/>
+
+                            </TextBlock>
+
+                            
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#4E342E" 
+
+                                       Margin="0,0,0,5"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="20">
+
+                                <Run Text="• " FontWeight="Bold" Foreground="#D32F2F"/>
+
+                                <Run Text="Photphat (PO₄³⁻)" FontWeight="Bold" Foreground="#D32F2F" FontSize="13"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  Không tan " FontWeight="SemiBold"/>
+
+                                <Run Text="(trừ Na, K, NH₄)" Foreground="#2E7D32" FontWeight="SemiBold" FontSize="11.5"/>
+
+                            </TextBlock>
+
+                            
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#4E342E" 
+
+                                       Margin="0,0,0,5"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="20">
+
+                                <Run Text="• " FontWeight="Bold" Foreground="#D32F2F"/>
+
+                                <Run Text="Hidroxit (OH⁻)" FontWeight="Bold" Foreground="#D32F2F" FontSize="13"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  Không tan " FontWeight="SemiBold"/>
+
+                                <Run Text="(trừ Na, K, Ba, Ca)" Foreground="#2E7D32" FontWeight="SemiBold" FontSize="11.5"/>
+
+                            </TextBlock>
+
+                            
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#4E342E" 
+
+                                       Margin="0,0,0,5"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="20">
+
+                                <Run Text="• " FontWeight="Bold" Foreground="#D32F2F"/>
+
+                                <Run Text="Sunfua (S²⁻)" FontWeight="Bold" Foreground="#D32F2F" FontSize="13"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  Không tan " FontWeight="SemiBold"/>
+
+                                <Run Text="(trừ Na, K, NH₄)" Foreground="#2E7D32" FontWeight="SemiBold" FontSize="11.5"/>
+
+                            </TextBlock>
+
+                            
+
+                            <TextBlock FontSize="13" 
+
+                                       Foreground="#4E342E" 
+
+                                       Margin="0,0,0,0"
+
+                                       TextWrapping="Wrap"
+
+                                       LineHeight="20">
+
+                                <Run Text="• " FontWeight="Bold" Foreground="#D32F2F"/>
+
+                                <Run Text="Sunfit (SO₃²⁻)" FontWeight="Bold" Foreground="#D32F2F" FontSize="13"/>
+
+                                <LineBreak/>
+
+                                <Run Text="  Không tan " FontWeight="SemiBold"/>
+
+                                <Run Text="(trừ Na, K, NH₄)" Foreground="#2E7D32" FontWeight="SemiBold" FontSize="11.5"/>
+
+                            </TextBlock>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </Grid>
+
+                
+
+                <!-- MẸO GHI NHỚ -->
+
+                <Border Background="#F3E5F5" 
+
+                        Padding="20" 
+
+                        CornerRadius="8"
+
+                        BorderBrush="#9C27B0"
+
+                        BorderThickness="2">
+
+                    <StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+
+                            <TextBlock Text="💡" FontSize="28" Margin="0,0,12,0" VerticalAlignment="Center"/>
+
+                            <TextBlock Text="MẸO GHI NHỚ:" 
+
+                                       Style="{StaticResource SectionHeaderStyle}"
+
+                                       Foreground="#6A1B9A"/>
+
+                        </StackPanel>
+
+                        
+
+                        <TextBlock Style="{StaticResource TipStyle}" Foreground="#4A148C">
+
+                            <Run Text="🎵 &quot;Na K NH₄ - Nitrat Clorat - Luôn luôn tan&quot;" FontWeight="SemiBold"/>
+
+                        </TextBlock>
+
+                        
+
+                        <TextBlock Style="{StaticResource TipStyle}" Foreground="#4A148C">
+
+                            <Run Text="🎵 &quot;Bạc chì thủy ngân - Halogenua không tan&quot;" FontWeight="SemiBold"/>
+
+                        </TextBlock>
+
+                        
+
+                        <TextBlock Style="{StaticResource TipStyle}" Foreground="#4A148C">
+
+                            <Run Text="🎵 &quot;Ba Pb Ca sunfat - Cũng khó mà tan&quot;" FontWeight="SemiBold"/>
+
+                        </TextBlock>
+
+                        
+
+                        <TextBlock Style="{StaticResource TipStyle}" Foreground="#4A148C">
+
+                            <Run Text="🎵 &quot;Cacbonat Photphat Hidroxit - Không tan (trừ kiềm)&quot;" FontWeight="SemiBold"/>
+
+                        </TextBlock>
+
+                    </StackPanel>
+
+                </Border>
+
+                
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+        
+
+        <!-- Footer với checkbox và nút đóng -->
+
+        <Border Grid.Row="2" 
+
+                Background="#EEEEEE" 
+
+                Padding="25,15"
+
+                BorderBrush="#BDBDBD"
+
+                BorderThickness="0,1,0,0">
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+                
+
+                <CheckBox Grid.Column="0" 
+
+                          Content="✓ Đã hiểu các quy tắc" 
+
+                          Foreground="#424242"
+
+                          FontSize="15"
+
+                          FontWeight="SemiBold"
+
+                          VerticalAlignment="Center"/>
+
+                
+
+                <Button Grid.Column="1"
+
+                        Content="Đóng"
+
+                        Click="CloseButton_Click"
+
+                        Background="#1976D2"
+
+                        Foreground="White"
+
+                        FontWeight="Bold"
+
+                        FontSize="14"
+
+                        Padding="30,10"
+
+                        Cursor="Hand">
+
+                    <Button.Style>
+
+                        <Style TargetType="Button">
+
+                            <Setter Property="Template">
+
+                                <Setter.Value>
+
+                                    <ControlTemplate TargetType="Button">
+
+                                        <Border Background="{TemplateBinding Background}" 
+
+                                                CornerRadius="6"
+
+                                                BorderThickness="0">
+
+                                            <ContentPresenter HorizontalAlignment="Center" 
+
+                                                              VerticalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate>
+
+                                </Setter.Value>
+
+                            </Setter>
+
+                            <Style.Triggers>
+
+                                <Trigger Property="IsMouseOver" Value="True">
+
+                                    <Setter Property="Background" Value="#1565C0"/>
+
+                                </Trigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </Button.Style>
+
+                </Button>
+
+            </Grid>
+
+        </Border>
+
+        
+
+    </Grid>
+
+</Window>
+
+
+

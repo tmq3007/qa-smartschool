@@ -1,0 +1,440 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form5_1_ColorPicker"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Chọn màu" 
+
+        Width="420" Height="550"
+
+        WindowStartupLocation="CenterOwner"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        ResizeMode="NoResize"
+
+        Topmost="True"
+
+        ShowInTaskbar="False">
+
+
+
+    <Border Background="White" 
+
+            CornerRadius="15" 
+
+            BorderBrush="#E1E8ED" 
+
+            BorderThickness="1">
+
+        <Border.Effect>
+
+            <DropShadowEffect Color="#CCCCCC" 
+
+                            Direction="270" 
+
+                            ShadowDepth="3" 
+
+                            BlurRadius="15" 
+
+                            Opacity="0.3"/>
+
+        </Border.Effect>
+
+
+
+        <Grid Margin="20">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Header -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Preview -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Quick Colors -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Sliders -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Hex Input -->
+
+                <RowDefinition Height="*"/>
+
+                <!-- Recent Colors -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Buttons -->
+
+            </Grid.RowDefinitions>
+
+
+
+            <!-- HEADER -->
+
+            <Grid Grid.Row="0" Margin="0,0,0,15">
+
+                <StackPanel Orientation="Horizontal">
+
+                    <Path Fill="#E91E63" 
+
+                          Data="M17.5,12A1.5,1.5 0 0,1 16,10.5A1.5,1.5 0 0,1 17.5,9A1.5,1.5 0 0,1 19,10.5A1.5,1.5 0 0,1 17.5,12M14.5,8A1.5,1.5 0 0,1 13,6.5A1.5,1.5 0 0,1 14.5,5A1.5,1.5 0 0,1 16,6.5A1.5,1.5 0 0,1 14.5,8M9.5,8A1.5,1.5 0 0,1 8,6.5A1.5,1.5 0 0,1 9.5,5A1.5,1.5 0 0,1 11,6.5A1.5,1.5 0 0,1 9.5,8M6.5,12A1.5,1.5 0 0,1 5,10.5A1.5,1.5 0 0,1 6.5,9A1.5,1.5 0 0,1 8,10.5A1.5,1.5 0 0,1 6.5,12M12,3A9,9 0 0,0 3,12A9,9 0 0,0 12,21A1.5,1.5 0 0,0 13.5,19.5C13.5,19.11 13.35,18.76 13.11,18.5C12.88,18.23 12.73,17.88 12.73,17.5A1.5,1.5 0 0,1 14.23,16H16A5,5 0 0,0 21,11C21,6.58 16.97,3 12,3Z"
+
+                          Width="20" Height="20"
+
+                          VerticalAlignment="Center"
+
+                          Margin="0,0,8,0"/>
+
+                    <TextBlock Text="Chọn màu" 
+
+                              FontSize="16" 
+
+                              FontWeight="Bold" 
+
+                              Foreground="#2F3542"
+
+                              VerticalAlignment="Center"/>
+
+                </StackPanel>
+
+                <Button x:Name="btnClose" 
+
+                       Width="30" Height="30"
+
+                       HorizontalAlignment="Right"
+
+                       Background="#FEE2E2"
+
+                       BorderThickness="0"
+
+                       Cursor="Hand"
+
+                       Click="btnClose_Click">
+
+                    <Path Fill="#EE5A6F" 
+
+                         Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+
+                         Width="14" Height="14"/>
+
+                </Button>
+
+            </Grid>
+
+
+
+            <!-- PREVIEW -->
+
+            <Border Grid.Row="1" 
+
+                   x:Name="colorPreview"
+
+                   Height="60" 
+
+                   Background="#FF0000"
+
+                   CornerRadius="8"
+
+                   BorderBrush="#DFE4EA"
+
+                   BorderThickness="1"
+
+                   Margin="0,0,0,15">
+
+                <TextBlock Text="Màu đã chọn" 
+
+                          FontSize="14"
+
+                          FontWeight="Bold"
+
+                          Foreground="White"
+
+                          HorizontalAlignment="Center"
+
+                          VerticalAlignment="Center">
+
+                    <TextBlock.Effect>
+
+                        <DropShadowEffect Color="Black" 
+
+                                        Direction="270" 
+
+                                        ShadowDepth="2" 
+
+                                        BlurRadius="4" 
+
+                                        Opacity="0.5"/>
+
+                    </TextBlock.Effect>
+
+                </TextBlock>
+
+            </Border>
+
+
+
+            <!-- QUICK COLORS -->
+
+            <StackPanel Grid.Row="2" Margin="0,0,0,15">
+
+                <TextBlock Text="Màu thường dùng" FontSize="12" FontWeight="SemiBold" Foreground="#57606F" Margin="0,0,0,8"/>
+
+                <WrapPanel>
+
+                    <Button Width="35" Height="35" Background="#FF0000" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#FF0000" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#FF5722" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#FF5722" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#FF9800" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#FF9800" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#FFC107" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#FFC107" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#FFEB3B" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#FFEB3B" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#CDDC39" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#CDDC39" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#8BC34A" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#8BC34A" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#4CAF50" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#4CAF50" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#009688" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#009688" Cursor="Hand"/>
+
+                    
+
+                    <Button Width="35" Height="35" Background="#00BCD4" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#00BCD4" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#03A9F4" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#03A9F4" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#2196F3" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#2196F3" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#3F51B5" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#3F51B5" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#673AB7" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#673AB7" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#9C27B0" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#9C27B0" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#E91E63" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#E91E63" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#F44336" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#F44336" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#795548" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#795548" Cursor="Hand"/>
+
+                    
+
+                    <Button Width="35" Height="35" Background="#FFFFFF" Margin="0,0,4,4" BorderThickness="1" BorderBrush="#DFE4EA" Click="btnQuickColor_Click" Tag="#FFFFFF" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#F1F2F6" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#F1F2F6" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#DFE4EA" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#DFE4EA" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#A4B0BE" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#A4B0BE" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#747D8C" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#747D8C" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#57606F" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#57606F" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#2F3542" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#2F3542" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#000000" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#000000" Cursor="Hand"/>
+
+                </WrapPanel>
+
+            </StackPanel>
+
+
+
+            <!-- RGB SLIDERS -->
+
+            <StackPanel Grid.Row="3" Margin="0,0,0,15">
+
+                <TextBlock Text="RGB" FontSize="12" FontWeight="SemiBold" Foreground="#57606F" Margin="0,0,0,8"/>
+
+                
+
+                <!-- Red -->
+
+                <Grid Margin="0,0,0,8">
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="20"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="50"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="R" FontSize="12" Foreground="#F44336" FontWeight="Bold" VerticalAlignment="Center"/>
+
+                    <Slider Grid.Column="1" x:Name="sliderRed" Minimum="0" Maximum="255" Value="255" 
+
+                           TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+
+                           ValueChanged="Slider_ValueChanged"/>
+
+                    <TextBox Grid.Column="2" x:Name="txtRed" Text="255" FontSize="11" Height="25" VerticalContentAlignment="Center" 
+
+                            TextAlignment="Center" Margin="5,0,0,0" TextChanged="txtRed_TextChanged"/>
+
+                </Grid>
+
+
+
+                <!-- Green -->
+
+                <Grid Margin="0,0,0,8">
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="20"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="50"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="G" FontSize="12" Foreground="#4CAF50" FontWeight="Bold" VerticalAlignment="Center"/>
+
+                    <Slider Grid.Column="1" x:Name="sliderGreen" Minimum="0" Maximum="255" Value="0" 
+
+                           TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+
+                           ValueChanged="Slider_ValueChanged"/>
+
+                    <TextBox Grid.Column="2" x:Name="txtGreen" Text="0" FontSize="11" Height="25" VerticalContentAlignment="Center" 
+
+                            TextAlignment="Center" Margin="5,0,0,0" TextChanged="txtGreen_TextChanged"/>
+
+                </Grid>
+
+
+
+                <!-- Blue -->
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="20"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="50"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="B" FontSize="12" Foreground="#2196F3" FontWeight="Bold" VerticalAlignment="Center"/>
+
+                    <Slider Grid.Column="1" x:Name="sliderBlue" Minimum="0" Maximum="255" Value="0" 
+
+                           TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+
+                           ValueChanged="Slider_ValueChanged"/>
+
+                    <TextBox Grid.Column="2" x:Name="txtBlue" Text="0" FontSize="11" Height="25" VerticalContentAlignment="Center" 
+
+                            TextAlignment="Center" Margin="5,0,0,0" TextChanged="txtBlue_TextChanged"/>
+
+                </Grid>
+
+            </StackPanel>
+
+
+
+            <!-- HEX INPUT -->
+
+            <StackPanel Grid.Row="4" Margin="0,0,0,15">
+
+                <TextBlock Text="Mã màu Hex" FontSize="12" FontWeight="SemiBold" Foreground="#57606F" Margin="0,0,0,8"/>
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="20"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="#" FontSize="14" FontWeight="Bold" Foreground="#2F3542" VerticalAlignment="Center"/>
+
+                    <TextBox Grid.Column="1" x:Name="txtHex" Height="35" FontSize="13" Text="FF0000" 
+
+                            VerticalContentAlignment="Center" MaxLength="6" CharacterCasing="Upper"
+
+                            TextChanged="txtHex_TextChanged"/>
+
+                </Grid>
+
+            </StackPanel>
+
+
+
+            <!-- RECENT COLORS -->
+
+            <StackPanel Grid.Row="5" Margin="0,0,0,15">
+
+                <TextBlock Text="Màu gần đây" FontSize="12" FontWeight="SemiBold" Foreground="#57606F" Margin="0,0,0,8"/>
+
+                <WrapPanel x:Name="panelRecentColors">
+
+                    <Button Width="35" Height="35" Background="#2E86DE" Margin="0,0,4,0" BorderThickness="0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#2E86DE"/>
+
+                    <Button Width="35" Height="35" Background="#4CAF50" Margin="0,0,4,0" BorderThickness="0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#4CAF50"/>
+
+                    <Button Width="35" Height="35" Background="#FF9800" Margin="0,0,4,0" BorderThickness="0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#FF9800"/>
+
+                    <Button Width="35" Height="35" Background="#E91E63" Margin="0,0,4,0" BorderThickness="0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#E91E63"/>
+
+                    <Button Width="35" Height="35" Background="#9C27B0" Margin="0,0,4,0" BorderThickness="0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#9C27B0"/>
+
+                </WrapPanel>
+
+            </StackPanel>
+
+
+
+            <!-- BUTTONS -->
+
+            <Grid Grid.Row="6">
+
+                <Button x:Name="btnCancel" Content="Hủy" Height="40" Width="100"
+
+                       Background="#F1F2F6" Foreground="#2F3542" BorderThickness="0" Cursor="Hand"
+
+                       HorizontalAlignment="Left" Click="btnCancel_Click"/>
+
+                <Button x:Name="btnOK" Content="Chọn màu này" Height="40" Width="140"
+
+                       Background="#2E86DE" Foreground="White" BorderThickness="0" Cursor="Hand" FontWeight="Bold"
+
+                       HorizontalAlignment="Right" Click="btnOK_Click"/>
+
+            </Grid>
+
+
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

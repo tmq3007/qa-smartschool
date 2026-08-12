@@ -1,0 +1,84 @@
+﻿{
+  "metadata": {
+    "examId": "g09_tuyensinh10_09",
+    "title": "Đề thi Tuyển Sinh vào Lớp 10 - Đề số 09",
+    "totalQuestions": 5,
+    "timeLimit": 120,
+    "totalPoints": 10,
+    "pointsPerQuestion": 2,
+    "grade": 9,
+    "examType": "TuyenSinh10"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Giải: 5x-2y=1, 3x+4y=24",
+      "options": [
+        "A) x=2, y=4.5",
+        "B) x=1, y=2",
+        "C) x=3, y=7",
+        "D) x=2, y=9/2"
+      ],
+      "answer": "A",
+      "solution": "Nhân PT1 × 2: 10x-4y=2. Cộng PT2: 13x=26 → x=2. 5(2)-2y=1 → y=4.5"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "ΔABC vuông tại A, AB=6, AC=8. Tính sin B, cos B, tan B:",
+      "options": [
+        "A) 4/5, 3/5, 4/3",
+        "B) 3/5, 4/5, 3/4",
+        "C) 8/10, 6/10, 8/6",
+        "D) 6/10, 8/10, 6/8"
+      ],
+      "answer": "A",
+      "solution": "BC=10. sinB=AC/BC=8/10=4/5. cosB=AB/BC=6/10=3/5. tanB=AC/AB=8/6=4/3"
+    },
+    {
+      "id": 3,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Trung vị của dãy: 3, 5, 7, 9, 11:",
+      "options": [
+        "A) 5",
+        "B) 7",
+        "C) 9",
+        "D) 6"
+      ],
+      "answer": "B",
+      "solution": "Dãy có 5 số, trung vị ở vị trí (5+1)/2 = 3 → số thứ 3 = 7"
+    },
+    {
+      "id": 4,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Xe A đi từ Hà Nội, xe B từ Huế. Ngược chiều, gặp nhau sau 5h. A: 60 km/h, B: 40 km/h. Khoảng cách HN-Huế = ?",
+      "options": [
+        "A) 400 km",
+        "B) 500 km",
+        "C) 600 km",
+        "D) 700 km"
+      ],
+      "answer": "B",
+      "solution": "Ngược chiều: s = (v1+v2)×t = (60+40)×5 = 500 km"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Đường tròn bán kính 7 cm. Đường kính = ?",
+      "options": [
+        "A) 7 cm",
+        "B) 14 cm",
+        "C) 21 cm",
+        "D) 3,5 cm"
+      ],
+      "answer": "B",
+      "solution": "d = 2R = 2 × 7 = 14 cm"
+    }
+  ]
+}

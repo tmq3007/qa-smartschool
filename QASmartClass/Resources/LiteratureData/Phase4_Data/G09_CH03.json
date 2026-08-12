@@ -1,0 +1,233 @@
+{
+  "metadata": {
+    "chapterId": "g09_ch03",
+    "chapterName": "Bài 3: Truyện Kiều — Nguyễn Du",
+    "grade": 9,
+    "totalProblems": 9,
+    "totalSections": 3,
+    "estimatedHours": 4,
+    "thptWeight": "Trọng điểm thi vào 10 — Bắt buộc học thuộc lòng"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g9_ch2_0",
+      "sectionName": "Chị Em Thúy Kiều",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Chị_em_Thúy_Kiều.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Nguyễn Du (1765–1820) — Đại thi hào dân tộc. Truyện Kiều (3254 câu lục bát) là kiệt tác văn học chữ Nôm, ca ngợi vẻ đẹp và đồng cảm với số phận người phụ nữ tài hoa bạc mệnh.",
+          "imageUrls": ["Resources/LiteratureData/Images/nguyen_du.png"]
+        },
+        {
+          "name": "Tả Thúy Vân — vẻ đẹp đoan trang",
+          "definition": "Vân xem trang trọng khác vời,\nKhuôn trăng đầy đặn, nét ngài nở nang.\nHoa cười ngọc thốt đoan trang,\nMây thua nước tóc, tuyết nhường màu da."
+        },
+        {
+          "name": "Tả Thúy Kiều — vẻ đẹp sắc sảo",
+          "definition": "Kiều càng sắc sảo mặn mà,\nSo bề tài sắc lại là phần hơn.\nLàn thu thủy nét xuân sơn,\nHoa ghen thua thắm liễu hờn kém xanh.\nMột hai nghiêng nước nghiêng thành,\nSắc đành đòi một tài đành họa hai."
+        },
+        {
+          "name": "Nghệ thuật tả người bằng thiên nhiên",
+          "examples": [
+            "**Tả Vân**: 'Mây thua nước tóc, tuyết nhường màu da' — thiên nhiên chủ động nhường nhịn → vẻ đẹp đoan trang hài hòa, dự báo cuộc đời êm ả.",
+            "**Tả Kiều**: 'Hoa ghen thua thắm, liễu hờn kém xanh' — thiên nhiên ghen ghét → vẻ đẹp vượt trội nhưng dự báo số phận đau khổ (hồng nhan bạc mệnh).",
+            "**Tả Vân trước Kiều**: Nguyễn Du dùng kỹ thuật 'đòn bẩy' — tả Vân để làm nền tôn Kiều lên.",
+            "**'Nghiêng nước nghiêng thành'**: Điển cố Trung Hoa — vẻ đẹp làm vua chúa mê đắm, mất cả thành quách."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Nguyễn Du tả Thúy Vân trước Thúy Kiều với dụng ý nghệ thuật gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Kỹ thuật đòn bẩy — tả Vân đẹp để làm nền tôn Kiều lên mức vượt trội hơn",
+            "Tả theo thứ tự tuổi tác — Vân lớn hơn nên tả trước",
+            "Vân là nhân vật chính nên cần được giới thiệu trước",
+            "Nguyễn Du muốn so sánh hai chị em để người đọc tự chọn người đẹp hơn"
+          ],
+          "answer": "Kỹ thuật đòn bẩy — tả Vân đẹp để làm nền tôn Kiều lên mức vượt trội hơn",
+          "hints": ["Câu 'So bề tài sắc lại là phần hơn' nói Kiều hơn Vân — nếu tả Kiều trước thì sao?"],
+          "explanation": "Nguyễn Du dùng kỹ thuật đòn bẩy: tả Vân đẹp trước ('trang trọng khác vời') → khi tả Kiều 'lại là phần hơn', người đọc hiểu ngay Kiều đẹp hơn bội phần. Nếu tả Kiều trước thì không có điểm so sánh. Đây là bút pháp tả người tinh vi nhất của Nguyễn Du."
+        },
+        {
+          "id": "p2",
+          "question": "Sự khác biệt giữa 'mây thua, tuyết nhường' (tả Vân) và 'hoa ghen, liễu hờn' (tả Kiều) dự báo điều gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Vân: thiên nhiên thuận hòa → số phận êm ả; Kiều: thiên nhiên ghen ghét → số phận đau khổ (hồng nhan bạc mệnh)",
+            "Vân đẹp hơn Kiều vì thiên nhiên nhường nhịn; Kiều kém hơn vì thiên nhiên không thích",
+            "Nguyễn Du dùng các từ khác nhau để tránh lặp lại trong thơ",
+            "Vân và Kiều đều đẹp như nhau nhưng vẻ đẹp có màu sắc khác nhau"
+          ],
+          "answer": "Vân: thiên nhiên thuận hòa → số phận êm ả; Kiều: thiên nhiên ghen ghét → số phận đau khổ (hồng nhan bạc mệnh)",
+          "hints": ["Trong quan niệm dân gian: 'hồng nhan bạc mệnh' — người đẹp quá thường...?"],
+          "explanation": "Nguyễn Du tả vẻ đẹp đồng thời dự báo số phận: Vân đẹp nhưng thiên nhiên 'thua, nhường' — không ghen tị → cuộc đời Vân sẽ bình yên (thay Kiều lấy Kim Trọng). Kiều đẹp đến mức 'hoa ghen, liễu hờn' → thiên nhiên không chấp nhận → số phận truân chuyên 15 năm đoạn trường."
+        },
+        {
+          "id": "p3",
+          "question": "Câu thơ 'Một hai nghiêng nước nghiêng thành' sử dụng điển cố gì và có ý nghĩa gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Điển cố Hán — vẻ đẹp của Kiều có thể khiến vua chúa mê đắm đến mức mất cả giang sơn",
+            "Thành ngữ dân gian Việt Nam ca ngợi người đẹp nhất làng",
+            "Hình ảnh ẩn dụ về sức mạnh vô địch của người phụ nữ trong xã hội phong kiến",
+            "Nguyễn Du mô tả vẻ đẹp của Kiều theo tiêu chuẩn thẩm mỹ thời Lê"
+          ],
+          "answer": "Điển cố Hán — vẻ đẹp của Kiều có thể khiến vua chúa mê đắm đến mức mất cả giang sơn",
+          "hints": ["'Nghiêng nước nghiêng thành' — 'nước' và 'thành' bị nghiêng như thế nào?"],
+          "explanation": "Điển cố từ thơ của Lý Diên Niên (Hán): 'Nhất cố khuynh nhân thành, tái cố khuynh nhân quốc' (nhìn một lần nghiêng thành, nhìn hai lần nghiêng nước). Ý: vẻ đẹp của Kiều có thể khiến bậc đế vương mê đắm đến mức bỏ bê giang sơn. Đây là mức độ ca ngợi tột cùng — và cũng là lời cảnh báo về số phận."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g9_ch2_1",
+      "sectionName": "Cảnh Ngày Xuân",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Cảnh_ngày_xuân.mp3",
+      "concepts": [
+        {
+          "name": "Xuất Xứ",
+          "theorem": "Đoạn trích 'Cảnh ngày xuân' (câu 39–56 Truyện Kiều) tả cảnh chị em Kiều đi chơi hội Thanh Minh và gặp mộ Đạm Tiên — mở đầu cho chuỗi bi kịch của Kiều."
+        },
+        {
+          "name": "Cảnh xuân tươi đẹp",
+          "definition": "Ngày xuân con én đưa thoi,\nThiều quang chín chục đã ngoài sáu mươi.\nCỏ non xanh tận chân trời,\nCành lê trắng điểm một vài bông hoa."
+        },
+        {
+          "name": "Cảnh chiều tà — tan hội",
+          "definition": "Tà tà bóng ngả về tây,\nChị em thơ thẩn dan tay ra về.\nBước dần theo ngọn tiểu khê,\nLần xem phong cảnh có bề thanh thanh.\nNao nao dòng nước uốn quanh,\nDịp cầu nho nhỏ cuối ghềnh bắc ngang."
+        },
+        {
+          "name": "Bút pháp tả cảnh ngụ tình",
+          "examples": [
+            "**Cảnh xuân (buổi sáng)**: 'Cỏ non xanh', 'cành lê trắng' — màu sắc tươi sáng, tinh khôi → tâm trạng háo hức vui tươi.",
+            "**Cảnh chiều tà**: 'Tà tà bóng ngả', 'nao nao dòng nước', 'thanh thanh' — âm điệu chậm, buồn → dự báo tâm trạng bâng khuâng trước khi gặp mộ Đạm Tiên.",
+            "**'Nao nao dòng nước uốn quanh'**: Từ láy 'nao nao' vừa tả cảnh (nước chảy) vừa tả tình (lòng người xao xuyến).",
+            "**Chuyển cảnh có dụng ý**: Cảnh đẹp → cảnh buồn theo thời gian trong ngày — chuẩn bị cho cuộc gặp mộ Đạm Tiên và gặp Kim Trọng."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Câu thơ 'Cỏ non xanh tận chân trời / Cành lê trắng điểm một vài bông hoa' tạo bức tranh thiên nhiên có đặc điểm gì?",
+          "difficulty": "Easy",
+          "options": [
+            "Nền xanh rộng lớn (cỏ) điểm vài đốm trắng (hoa lê) — bức tranh đơn sơ mà tinh tế, màu sắc hài hòa",
+            "Bức tranh rậm rạp nhiều màu sắc sặc sỡ của mùa xuân",
+            "Cảnh hoang vu buồn bã của đồng quê Trung Hoa",
+            "Màu sắc tương phản mạnh mẽ giữa xanh và trắng tạo ấn tượng thị giác"
+          ],
+          "answer": "Nền xanh rộng lớn (cỏ) điểm vài đốm trắng (hoa lê) — bức tranh đơn sơ mà tinh tế, màu sắc hài hòa",
+          "hints": ["'Tận chân trời' — cỏ chiếm bao nhiêu không gian? 'Một vài bông hoa' — hoa nhiều hay ít?"],
+          "explanation": "Nguyễn Du vẽ bức tranh tối giản: nền xanh mênh mông (cỏ non trải tới chân trời) với vài chấm trắng tinh khiết (hoa lê). Kỹ thuật hội họa: màu chủ đạo + điểm nhấn. Bức tranh tươi sáng, không gian rộng mở → tâm trạng háo hức của chị em Kiều đầu ngày xuân."
+        },
+        {
+          "id": "p2",
+          "question": "Từ láy 'nao nao' trong câu 'Nao nao dòng nước uốn quanh' có tác dụng gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Vừa tả cảnh (nước chảy nhẹ nhàng) vừa tả tình (lòng người xao xuyến bâng khuâng) — bút pháp tả cảnh ngụ tình",
+            "Từ láy âm thanh mô tả tiếng nước chảy róc rách",
+            "Tả màu sắc của dòng nước xanh trong cuối buổi chiều",
+            "Thể hiện sự vui vẻ của chị em Kiều khi tan hội trở về"
+          ],
+          "answer": "Vừa tả cảnh (nước chảy nhẹ nhàng) vừa tả tình (lòng người xao xuyến bâng khuâng) — bút pháp tả cảnh ngụ tình",
+          "hints": ["'Nao nao' — bạn cảm thấy từ này tả cảnh hay tả tâm trạng?"],
+          "explanation": "'Nao nao' là từ láy tượng hình kiêm tượng tâm: tả dòng nước uốn nhẹ (cảnh) đồng thời gợi cảm giác bâng khuâng, xao xuyến trong lòng người (tình). Đây là bút pháp 'tả cảnh ngụ tình' đặc trưng của thơ trung đại Việt Nam — đỉnh cao trong ngòi bút Nguyễn Du."
+        },
+        {
+          "id": "p3",
+          "question": "Cảnh xuân từ buổi sáng đến chiều tà thay đổi như thế nào và dự báo điều gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Từ tươi sáng, rộng mở → buồn bâng khuâng, thanh vắng — dự báo tâm trạng Kiều sắp gặp điều buồn (mộ Đạm Tiên)",
+            "Cảnh thay đổi theo quy luật tự nhiên của ngày, không có dụng ý nghệ thuật đặc biệt",
+            "Cảnh chiều tà đẹp hơn cảnh sáng vì màu sắc ấm hơn",
+            "Nguyễn Du tả chi tiết để người đọc hình dung cả ngày hội Thanh Minh"
+          ],
+          "answer": "Từ tươi sáng, rộng mở → buồn bâng khuâng, thanh vắng — dự báo tâm trạng Kiều sắp gặp điều buồn (mộ Đạm Tiên)",
+          "hints": ["Sau cảnh 'nao nao dòng nước', Kiều gặp điều gì?"],
+          "explanation": "Nguyễn Du dùng cảnh vật để dẫn dắt tâm trạng: buổi sáng — cỏ xanh, lê trắng, không khí vui → chị em Kiều háo hức đi hội. Chiều tà — 'nao nao', 'thanh thanh', 'tà tà' → bầu không khí chuyển buồn, báo hiệu Kiều sắp gặp mộ Đạm Tiên và nghe về số phận 'hồng nhan bạc mệnh' — khởi đầu cho chuỗi lo âu về tương lai."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g9_ch2_2",
+      "sectionName": "Kiều Ở Lầu Ngưng Bích",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Kiều_ở_lầu_Ngưng_Bích.mp3",
+      "concepts": [
+        {
+          "name": "Hoàn cảnh",
+          "theorem": "Sau khi bị Mã Giám Sinh lừa gạt, Kiều rút dao tự vẫn không thành. Tú Bà vờ nhượng bộ, giam lỏng nàng ở lầu Ngưng Bích chờ ngày ép tiếp khách."
+        },
+        {
+          "name": "Cảnh ngộ cô đơn",
+          "definition": "Trước lầu Ngưng Bích khóa xuân,\nVẻ non xa tấm trăng gần ở chung.\nBốn bề bát ngát xa trông,\nCát vàng cồn nọ bụi hồng dặm kia."
+        },
+        {
+          "name": "Nỗi nhớ Kim Trọng và cha mẹ",
+          "definition": "Tưởng người dưới nguyệt chén đồng,\nTin sương luống những rày trông mai chờ... \nXót người tựa cửa hôm mai,\nQuạt nồng ấp lạnh những ai đó giờ?"
+        },
+        {
+          "name": "Nghệ thuật điệp ngữ tả cảnh ngụ tình",
+          "examples": [
+            "**Buồn trông cửa bể chiều hôm...**: Cánh buồm thấp thoáng (nhớ quê, cô đơn).",
+            "**Buồn trông ngọn nước mới sa...**: Hoa trôi man mác (số phận chìm nổi).",
+            "**Buồn trông nội cỏ rầu rầu...**: (Sự sống héo hon, tẻ nhạt).",
+            "**Buồn trông gió cuốn mặt duềnh...**: Tiếng sóng kêu quanh ghế (dự báo tai họa ập đến)."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Vì sao Kiều nhớ Kim Trọng trước rồi mới nhớ cha mẹ?",
+          "difficulty": "Medium",
+          "options": [
+            "Tâm lý hợp lý: Kiều đã bán mình báo hiếu cha mẹ nên phần nào an ủi, nhưng với Kim Trọng thì nàng là người mang tội bội ước, nỗi day dứt lớn hơn",
+            "Vì Kiều yêu Kim Trọng hơn cha mẹ",
+            "Vì Nguyễn Du đề cao tình yêu nam nữ hơn chữ hiếu",
+            "Vì Kiều cho rằng cha mẹ ở nhà vẫn được an toàn"
+          ],
+          "answer": "Tâm lý hợp lý: Kiều đã bán mình báo hiếu cha mẹ nên phần nào an ủi, nhưng với Kim Trọng thì nàng là người mang tội bội ước, nỗi day dứt lớn hơn",
+          "hints": ["Kiều đã làm gì cho cha mẹ? Còn với Kim Trọng thì nàng đã làm gì?"],
+          "explanation": "Kiều bán mình cứu cha → chữ Hiếu đã đền đáp. Nhưng với Kim Trọng, nàng lỗi thề ('chén đồng'). Nỗi đau vì phản bội lời thề và sự xót xa cho tình đầu dang dở khiến Kiều day dứt nhớ Kim Trọng trước. Đây là sự tinh tế trong miêu tả tâm lý của Nguyễn Du."
+        },
+        {
+          "id": "p2",
+          "question": "Cấu trúc điệp ngữ 'Buồn trông...' trong 8 câu cuối có tác dụng nghệ thuật gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Tạo âm hưởng điệp khúc dồn dập như từng đợt sóng buồn thương, kết hợp bút pháp tả cảnh ngụ tình khắc họa nỗi tuyệt vọng và dự báo tai họa",
+            "Tả chi tiết 4 cảnh đẹp khác nhau của lầu Ngưng Bích để người đọc hình dung không gian",
+            "Nhấn mạnh sự rảnh rỗi của Kiều khi bị giam lỏng",
+            "Thể hiện sự chuyển đổi thời gian từ sáng đến tối"
+          ],
+          "answer": "Tạo âm hưởng điệp khúc dồn dập như từng đợt sóng buồn thương, kết hợp bút pháp tả cảnh ngụ tình khắc họa nỗi tuyệt vọng và dự báo tai họa",
+          "hints": ["'Buồn trông' lặp lại 4 lần. Cảm giác buồn tăng hay giảm? Cảnh vật cuối cùng là gì?"],
+          "explanation": "Điệp ngữ 'Buồn trông' lặp lại ở đầu câu như những đợt sóng lòng cuộn trào. Cảnh vật từ xa đến gần, âm thanh từ êm dịu đến dữ dội ('ầm ầm tiếng sóng kêu quanh ghế ngồi'). Đây là đỉnh cao của 'tả cảnh ngụ tình': cảnh lầu Ngưng Bích chính là bức tranh nội tâm hoảng loạn và sự dự báo về cơn bão táp sắp ập đến đời Kiều."
+        },
+        {
+          "id": "p3",
+          "question": "Hình ảnh 'Hoa trôi man mác biết là về đâu?' ẩn dụ cho điều gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Số phận chìm nổi, lênh đênh vô định của Thúy Kiều giữa dòng đời",
+            "Cảnh đẹp buồn bã của mùa thu",
+            "Sự chia ly giữa Kiều và Kim Trọng",
+            "Khát vọng muốn được tự do như những cánh hoa"
+          ],
+          "answer": "Số phận chìm nổi, lênh đênh vô định của Thúy Kiều giữa dòng đời",
+          "hints": ["Kiều đang bị giam lỏng, tương lai bất định. 'Hoa trôi' giống hoàn cảnh của ai?"],
+          "explanation": "'Hoa' = người con gái (hồng nhan). 'Trôi man mác biết là về đâu' = tương lai vô định, không biết cuộc đời sẽ bị dạt về phương nào. Nhìn hoa trôi mà Kiều xót thương cho chính thân phận bèo bọt của mình khi rơi vào tay lũ buôn người."
+        }
+      ]
+    }
+  ]
+}

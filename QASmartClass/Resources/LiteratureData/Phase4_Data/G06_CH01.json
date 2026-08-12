@@ -1,0 +1,230 @@
+{
+  "metadata": {
+    "chapterId": "g06_ch01",
+    "chapterName": "Bài 1: Truyền thuyết",
+    "grade": 6,
+    "totalProblems": 9,
+    "totalSections": 3,
+    "estimatedHours": 3
+  },
+  "sections": [
+    {
+      "sectionId": "s_g6_ch0_0",
+      "sectionName": "Thánh Gióng",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g6_Thánh_Gióng.mp3",
+      "concepts": [
+        {
+          "name": "Thể Loại Truyền Thuyết",
+          "theorem": "Truyền thuyết là truyện dân gian kể về nhân vật hoặc sự kiện lịch sử có yếu tố kỳ ảo, hoang đường. Người kể và người nghe đều tin là có thật. Khác cổ tích (hoàn toàn hư cấu).",
+          "imageUrls": ["Resources/LiteratureData/Images/thanh_giong.png"]
+        },
+        {
+          "name": "Chi tiết kỳ lạ của Gióng",
+          "definition": "Đứa trẻ lên ba không biết nói, không biết cười, đặt đâu nằm đấy... Nghe sứ giả rao, bỗng dưng cất tiếng nói: 'Mẹ ra mời sứ giả vào đây cho con!' Sứ giả vào, đứa bé bảo: 'Ông về tâu với vua, đúc cho ta một con ngựa sắt, một cái roi sắt và một tấm áo giáp sắt, ta sẽ phá tan lũ giặc này.'"
+        },
+        {
+          "name": "Gióng vươn vai chiến đấu",
+          "definition": "Gióng vươn vai một cái bỗng biến thành một tráng sĩ mình cao hơn trượng, oai phong lẫm liệt. Tráng sĩ mặc áo giáp sắt, cầm roi sắt, cưỡi ngựa sắt xông ra trận... Roi sắt gãy, Gióng nhổ những cụm tre cạnh đường quật vào giặc."
+        },
+        {
+          "name": "Phân tích ý nghĩa",
+          "examples": [
+            "**Gióng 3 tuổi không nói**: Khi Tổ quốc nguy biến → đột nhiên lên tiếng — tinh thần yêu nước tiềm ẩn bùng cháy.",
+            "**'Vươn vai' hóa tráng sĩ**: Biểu tượng sức mạnh quật khởi phi thường của dân tộc trước giặc ngoại xâm.",
+            "**Nhổ tre đánh giặc**: Không cần vũ khí hiện đại — tinh thần và sức mạnh tự nhiên của đất Việt đủ đánh thắng giặc.",
+            "**Bay về trời**: Người anh hùng dân tộc bất tử — Gióng không chết mà 'về trời', trở thành thần."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Chi tiết Gióng 3 tuổi không nói nhưng bỗng lên tiếng khi nghe tin giặc có ý nghĩa gì?",
+          "difficulty": "Easy",
+          "options": [
+            "Tinh thần yêu nước tiềm ẩn trong mỗi người Việt — khi Tổ quốc nguy biến sẽ bùng cháy mạnh mẽ",
+            "Gióng là thần thánh giả vờ không nói để thử thách cha mẹ",
+            "Truyện giải thích tại sao một số trẻ em nói muộn hơn bình thường",
+            "Cha mẹ Gióng không biết dạy con nói cho đến khi có sứ giả đến"
+          ],
+          "answer": "Tinh thần yêu nước tiềm ẩn trong mỗi người Việt — khi Tổ quốc nguy biến sẽ bùng cháy mạnh mẽ",
+          "hints": ["Gióng chọn 'lần đầu nói' để nói về điều gì?"],
+          "explanation": "Chi tiết Gióng 3 tuổi không nói nhưng lần đầu lên tiếng là để xin vũ khí đánh giặc — tượng trưng cho tinh thần yêu nước luôn tiềm ẩn, sẵn sàng bùng cháy. Người dân Việt dù bình thường đến mức nào (như đứa trẻ chưa biết nói) cũng sẽ đứng lên khi Tổ quốc cần."
+        },
+        {
+          "id": "p2",
+          "question": "Hình ảnh Gióng 'vươn vai' rồi trở thành tráng sĩ khổng lồ tượng trưng cho điều gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Sức mạnh quật khởi phi thường của cả dân tộc trước giặc xâm lăng — từ nhỏ bé vươn lên vĩ đại",
+            "Sự phát triển thần kỳ của trẻ em khi được ăn nhiều cơm",
+            "Sức mạnh siêu nhiên của thần linh giúp đỡ người Việt",
+            "Giải thích nguồn gốc của người Kinh có thân hình to lớn"
+          ],
+          "answer": "Sức mạnh quật khởi phi thường của cả dân tộc trước giặc xâm lăng — từ nhỏ bé vươn lên vĩ đại",
+          "hints": ["'Vươn vai' = từ bé → lớn. Đây là biểu tượng của dân tộc hay cá nhân?"],
+          "explanation": "Cú 'vươn vai' của Gióng là biểu tượng hùng hồn nhất của văn học dân gian Việt Nam: từ đứa trẻ yếu đuối → tráng sĩ khổng lồ. Đây là hình ảnh của cả dân tộc Việt Nam: tưởng nhỏ bé, chậm chạp nhưng khi giặc đến sẽ vươn dậy phi thường. Không phải thần linh giúp — mà là sức mạnh nội tại của dân tộc."
+        },
+        {
+          "id": "p3",
+          "question": "Sau khi thắng giặc, Gióng không ở lại nhận thưởng mà bay về trời. Điều này thể hiện gì về nhân vật anh hùng trong truyền thuyết?",
+          "difficulty": "Medium",
+          "options": [
+            "Người anh hùng dân tộc bất tử, vô tư lợi — chiến đấu vì Tổ quốc không màng danh lợi",
+            "Gióng là thần tiên nên phải về lại chỗ của mình sau khi hoàn thành nhiệm vụ",
+            "Truyện giải thích nguồn gốc của núi Sóc Sơn và đền thờ Thánh Gióng",
+            "Người xưa tin rằng người tài giỏi sau khi chết sẽ hóa thành thần"
+          ],
+          "answer": "Người anh hùng dân tộc bất tử, vô tư lợi — chiến đấu vì Tổ quốc không màng danh lợi",
+          "hints": ["Gióng có hỏi vua thưởng gì không? Tại sao không?"],
+          "explanation": "Gióng bay về trời ngay sau khi thắng giặc — không ở lại nhận phong thưởng. Chi tiết này tôn vinh phẩm chất người anh hùng lý tưởng: chiến đấu vì Tổ quốc, không vì lợi ích cá nhân. Hình ảnh 'bay về trời' cũng khẳng định sự bất tử: anh hùng dân tộc không chết mà trở thành thần — sống mãi trong lòng nhân dân."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g6_ch0_1",
+      "sectionName": "Sơn Tinh — Thủy Tinh",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g6_Sơn_Tinh_Thủy_Tinh.mp3",
+      "concepts": [
+        {
+          "name": "Xuất Xứ",
+          "theorem": "Truyền thuyết giải thích hiện tượng lũ lụt hằng năm ở đồng bằng sông Hồng và ý chí của người Việt cổ trong việc chế ngự thiên tai, bảo vệ cuộc sống.",
+          "imageUrls": ["Resources/LiteratureData/Images/son_tinh_thuy_tinh.png"]
+        },
+        {
+          "name": "Cuộc chiến hằng năm",
+          "definition": "Thủy Tinh đến sau, không lấy được vợ, đùng đùng nổi giận, đem quân đuổi đánh Sơn Tinh. Thủy Tinh hô mưa, gọi gió, làm thành giông bão rung chuyển cả đất trời, dâng nước sông lên cuồn cuộn đánh Sơn Tinh. Sơn Tinh không hề nao núng. Thần dùng phép lạ bốc từng quả đồi, dời từng dãy núi, dựng thành lũy đất, ngăn chặn dòng lũ."
+        },
+        {
+          "name": "Ý nghĩa",
+          "examples": [
+            "**Thủy Tinh**: Biểu tượng cho lũ lụt, thiên tai tàn phá hằng năm.",
+            "**Sơn Tinh**: Biểu tượng cho ý chí của người Việt chinh phục và chế ngự thiên tai.",
+            "**Cuộc chiến hằng năm**: Giải thích hiện tượng lũ lụt mùa hạ ở đồng bằng sông Hồng.",
+            "**Sơn Tinh luôn thắng**: Khẳng định niềm tin của người Việt: con người sẽ chiến thắng thiên tai."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Sơn Tinh và Thủy Tinh là biểu tượng cho điều gì trong cuộc sống của người Việt cổ?",
+          "difficulty": "Easy",
+          "options": [
+            "Sơn Tinh = ý chí chinh phục thiên tai; Thủy Tinh = lũ lụt, thiên tai tàn phá hằng năm",
+            "Sơn Tinh = vùng núi; Thủy Tinh = vùng biển trong địa lý Việt Nam",
+            "Hai vị thần này là những nhân vật lịch sử có thật thời Hùng Vương",
+            "Sơn Tinh = người tốt; Thủy Tinh = kẻ xấu trong xã hội phong kiến"
+          ],
+          "answer": "Sơn Tinh = ý chí chinh phục thiên tai; Thủy Tinh = lũ lụt, thiên tai tàn phá hằng năm",
+          "hints": ["Truyện này 'giải thích' hiện tượng tự nhiên nào xảy ra hằng năm ở Việt Nam?"],
+          "explanation": "Người Việt cổ dùng truyền thuyết để giải thích thiên nhiên: lũ lụt hằng năm ở đồng bằng sông Hồng = Thủy Tinh tấn công. Người dân đắp đê, dựng nhà trên cao = Sơn Tinh chống lũ. Truyện phản ánh cuộc đấu tranh thực tế và niềm tin: con người (Sơn Tinh) sẽ chiến thắng thiên tai (Thủy Tinh)."
+        },
+        {
+          "id": "p2",
+          "question": "Tại sao Sơn Tinh lấy được Mị Nương trước Thủy Tinh — điều này có dụng ý gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Sơn Tinh mang lễ vật đúng hạn trước — tượng trưng cho sự cần cù, chủ động của người lao động biết chuẩn bị",
+            "Vua Hùng yêu thích núi hơn biển nên ưu tiên Sơn Tinh",
+            "Sơn Tinh mạnh hơn Thủy Tinh nên xứng đáng hơn",
+            "Lễ vật của Sơn Tinh giá trị hơn của Thủy Tinh"
+          ],
+          "answer": "Sơn Tinh mang lễ vật đúng hạn trước — tượng trưng cho sự cần cù, chủ động của người lao động biết chuẩn bị",
+          "hints": ["Vua Hùng quy định lễ vật gì và ai đến trước?"],
+          "explanation": "Vua Hùng ra điều kiện: ai mang lễ vật (voi, gà, ngựa...) đến trước thì lấy được Mị Nương. Sơn Tinh đến trước — biểu tượng cho người cần cù, biết chuẩn bị. Thủy Tinh đến sau — tức giận vì thua → lũ lụt. Bài học: thành công thuộc về người chủ động, cần cù, chuẩn bị kỹ càng."
+        },
+        {
+          "id": "p3",
+          "question": "Câu kết 'Hằng năm, Thủy Tinh lại dâng nước đánh Sơn Tinh, nhưng đều thua' có ý nghĩa gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Người Việt luôn chiến thắng thiên tai — niềm tin lạc quan vào sức mạnh chinh phục tự nhiên",
+            "Lũ lụt là hình phạt của thần linh vì con người không kính trọng thiên nhiên",
+            "Thiên tai lũ lụt sẽ mãi mãi tồn tại và không thể ngăn chặn",
+            "Thủy Tinh có thể thắng nếu cố gắng thêm vài lần nữa"
+          ],
+          "answer": "Người Việt luôn chiến thắng thiên tai — niềm tin lạc quan vào sức mạnh chinh phục tự nhiên",
+          "hints": ["Sơn Tinh luôn thắng hay thỉnh thoảng thua?"],
+          "explanation": "Câu kết 'đều thua' là tuyên ngôn lạc quan của người Việt cổ: dù lũ lụt xảy ra hằng năm (Thủy Tinh tấn công), con người (Sơn Tinh) luôn chiến thắng. Đây phản ánh tinh thần bất khuất: không sợ thiên tai, không bỏ cuộc, lũ năm nay đến thì năm sau lại đắp đê chống lũ — đó là tinh thần người Việt ngàn năm."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g6_ch0_2",
+      "sectionName": "Sự Tích Hồ Gươm",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g6_Sự_tích_Hồ_Gươm.mp3",
+      "concepts": [
+        {
+          "name": "Tóm Tắt",
+          "theorem": "Truyền thuyết kể Long Quân cho Lê Lợi mượn gươm thần để đánh đuổi giặc Minh. Sau khi thắng, vua ra hồ Tả Vọng, rùa vàng hiện lên đòi lại gươm — từ đó hồ có tên Hồ Hoàn Kiếm (Hồ Gươm).",
+          "imageUrls": ["Resources/LiteratureData/Images/ho_guom.png"]
+        },
+        {
+          "name": "Lê Lợi nhận gươm",
+          "definition": "Một hôm Lê Thận thả lưới ở bến sông, kéo lưới lên ba lần, lần nào cũng được một thanh sắt. Lê Thận nhìn kỹ thì ra một lưỡi gươm... Về sau, Lê Lợi bắt được chuôi gươm nạm ngọc trên rừng. Tra vào nhau vừa in. Từ khi có thanh gươm thần, nghĩa quân Lam Sơn càng ngày càng thắng lớn."
+        },
+        {
+          "name": "Trả gươm",
+          "definition": "Vua đang ngự thuyền rồng trên hồ Tả Vọng... Long Quân sai rùa vàng lên đòi lại gươm thần. Thanh gươm tự nhiên động đậy. Vua nâng gươm hướng về phía rùa vàng. Nhanh như cắt, rùa há miệng đớp lấy thanh gươm và lặn xuống nước."
+        },
+        {
+          "name": "Ý nghĩa",
+          "examples": [
+            "**Gươm đến từ nước**: Lưỡi gươm từ sông, chuôi gươm từ rừng → sức mạnh từ cả dân tộc (rừng núi và sông nước).",
+            "**Gươm thần giúp đánh giặc**: Tượng trưng cho chính nghĩa — người có chính nghĩa mới được trợ giúp.",
+            "**Trả gươm = kết thúc chiến tranh**: Gươm thần chỉ dùng khi đất nước nguy biến, không dùng để chinh phạt.",
+            "**Hồ Hoàn Kiếm**: Giải thích tên gọi lịch sử của hồ nổi tiếng nhất Hà Nội."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Chi tiết lưỡi gươm từ dưới nước, chuôi gươm từ trên rừng có ý nghĩa gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Sức mạnh đánh giặc đến từ khắp nơi — từ dân miền xuôi (sông nước) và dân miền ngược (rừng núi) cùng góp sức",
+            "Gươm thần có nguồn gốc siêu nhiên từ hai thế giới khác nhau",
+            "Lê Lợi phải tự tìm kiếm vũ khí vì không có quân đội hỗ trợ",
+            "Chi tiết kỳ ảo để làm cho câu chuyện thêm hấp dẫn và ly kỳ"
+          ],
+          "answer": "Sức mạnh đánh giặc đến từ khắp nơi — từ dân miền xuôi (sông nước) và dân miền ngược (rừng núi) cùng góp sức",
+          "hints": ["Ai tìm thấy lưỡi gươm? Ai tìm thấy chuôi gươm? Họ ở đâu?"],
+          "explanation": "Lê Thận (ngư dân) tìm thấy lưỡi gươm dưới sông; Lê Lợi (lãnh đạo) tìm thấy chuôi gươm trên rừng. Chi tiết này tượng trưng: thắng giặc Minh không phải công của riêng ai mà là sức mạnh đoàn kết của toàn dân — rừng và sông, miền núi và miền xuôi, vua và dân cùng chung tay."
+        },
+        {
+          "id": "p2",
+          "question": "Việc Long Quân đòi lại gươm sau khi đánh thắng giặc thể hiện điều gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Gươm thần chỉ dùng khi đất nước nguy biến, không phải vũ khí chinh phạt hay quyền lực thường xuyên",
+            "Long Quân muốn cho vua khác mượn gươm để đánh giặc ở nơi khác",
+            "Gươm thần có thể gây nguy hiểm nếu giữ lâu nên phải trả",
+            "Vua Lê Thái Tổ vi phạm điều kiện mượn gươm nên bị đòi lại"
+          ],
+          "answer": "Gươm thần chỉ dùng khi đất nước nguy biến, không phải vũ khí chinh phạt hay quyền lực thường xuyên",
+          "hints": ["Gươm được cho mượn với mục đích gì? Mục đích đó đã hoàn thành chưa?"],
+          "explanation": "Long Quân cho mượn gươm để 'đánh đuổi giặc Minh' — mục đích hoàn thành, gươm được đòi lại. Chi tiết này thể hiện quan niệm chính trị tiến bộ: vũ lực chỉ dùng để bảo vệ, không dùng để xâm lược. Đây cũng là lý giải thần thoại về tên Hồ Hoàn Kiếm (hoàn = trả lại)."
+        },
+        {
+          "id": "p3",
+          "question": "Truyền thuyết Hồ Gươm gắn với sự kiện lịch sử nào của Việt Nam?",
+          "difficulty": "Easy",
+          "options": [
+            "Cuộc khởi nghĩa Lam Sơn do Lê Lợi lãnh đạo, đánh đuổi giặc Minh (thế kỷ XV)",
+            "Cuộc kháng chiến chống quân Mông-Nguyên thời nhà Trần (thế kỷ XIII)",
+            "Trận Bạch Đằng do Ngô Quyền lãnh đạo (năm 938)",
+            "Cuộc kháng chiến chống Pháp đầu thế kỷ XX"
+          ],
+          "answer": "Cuộc khởi nghĩa Lam Sơn do Lê Lợi lãnh đạo, đánh đuổi giặc Minh (thế kỷ XV)",
+          "hints": ["Ai là nhân vật chính trong truyện? Đó là vị vua nào trong lịch sử?"],
+          "explanation": "Lê Lợi là người anh hùng dân tộc lãnh đạo khởi nghĩa Lam Sơn (1418–1428), sau đó lên ngôi vua, lập ra nhà Lê. Truyền thuyết Hồ Gươm gắn với giai đoạn lịch sử này, nhằm tôn vinh chiến công và giải thích tên gọi Hồ Hoàn Kiếm (Hồ Gươm) — di tích lịch sử nổi tiếng nhất Hà Nội."
+        }
+      ]
+    }
+  ]
+}

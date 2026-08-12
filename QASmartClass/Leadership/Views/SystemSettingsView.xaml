@@ -1,0 +1,413 @@
+<Page x:Class="QASmartClass.Leadership.Views.SystemSettingsView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Cấu hình Hệ thống &amp; Cài đặt chung" Background="#F0F2F5"
+      FontFamily="Segoe UI">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock Text="⚙️ Cấu hình Hệ thống" FontSize="24" FontWeight="Bold" Foreground="#212121"/>
+                <TextBlock Text="Quản lý các tham số cơ sở dữ liệu, kết nối và cài đặt chung của trường." Foreground="#757575" Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Cột bên trái: Cài đặt Chung, Kết nối, Cổng phụ huynh, Bản đồ, Phê duyệt giáo án -->
+                <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="20" Margin="0,0,10,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Cài đặt Trường học" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Tên Trường:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtSchoolName" Text="Trường THPT QA SmartSchool" Height="35" Padding="5" Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Năm học hiện tại:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtAcademicYear" Text="2025-2026" Height="35" Padding="5" Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Mã định danh (BGD):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtSchoolId" Text="QA998877" Height="35" Padding="5" Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Cài đặt Kết nối (P2P LAN)" FontSize="18" FontWeight="Bold" Margin="0,20,0,15"/>
+
+                        <TextBlock Text="IP Address (Máy chủ Server):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtIPAddress" Text="192.168.1.100" Height="35" Padding="5" Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Port mặc định:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtPort" Text="29877" Height="35" Padding="5" Margin="0,0,0,20"/>
+
+                        <CheckBox x:Name="chkAutoBackup" Content="Tự động sao lưu dữ liệu hàng ngày" FontSize="13" Margin="0,0,0,20" FontWeight="SemiBold"/>
+
+                        <!-- Cấu hình Cổng Phụ huynh (Parent Portal) -->
+                        <TextBlock Text="Cấu hình Cổng Phụ huynh (Parent Portal)" FontSize="18" FontWeight="Bold" Margin="0,20,0,15"/>
+
+                        <TextBlock Text="Mức độ bảo mật đăng nhập:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbPPAuthLevel" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Đơn giản (Chỉ SĐT)" Tag="Simple"/>
+                            <ComboBoxItem Content="Bảo mật cao (Mật khẩu/PIN)" Tag="High"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Định tuyến tin nhắn:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbPPRouting" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Định tuyến thông minh (GVCN)" Tag="Homeroom"/>
+                            <ComboBoxItem Content="Hộp thư chung (GV)" Tag="General"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Trạng thái điểm danh (So khớp):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbPPAttendance" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Không phân biệt hoa/thường" Tag="CaseInsensitive"/>
+                            <ComboBoxItem Content="Phân biệt tuyệt đối (Capitalized)" Tag="Strict"/>
+                        </ComboBox>
+
+                        <!-- Cấu hình Bản đồ & Cổng tự động (Gate & Map Security) -->
+                        <TextBlock Text="Cấu hình Bản đồ &amp; Cổng tự động" FontSize="18" FontWeight="Bold" Margin="0,20,0,15"/>
+
+                        <TextBlock Text="Công nghệ định vị vị trí:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbTrackingTech" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Tắt định vị (Vô hiệu hóa)" Tag="0"/>
+                            <ComboBoxItem Content="RFID Tĩnh (Ngưỡng RSSI cứng)" Tag="1"/>
+                            <ComboBoxItem Content="BLE Beacons (Ngưỡng RSSI động)" Tag="2"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Chế độ ngoại tuyến cổng:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbOfflineFallback" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Khóa rào chắn cứng (Từ chối)" Tag="0"/>
+                            <ComboBoxItem Content="Xác thực offline &amp; Tạo hàng đợi" Tag="1"/>
+                            <ComboBoxItem Content="Mở khẩn cấp thủ công (Manual)" Tag="2"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Chống quẹt thẻ hộ (Anti-Passback):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbAntiPassbackMode" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Tắt kiểm tra chéo (Cho phép)" Tag="0"/>
+                            <ComboBoxItem Content="Bật chống quẹt thẻ hộ" Tag="1"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Hành vi vi phạm Anti-Passback:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbAntiPassbackAction" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Chỉ cảnh báo nhẹ" Tag="0"/>
+                            <ComboBoxItem Content="Trừ điểm rèn luyện &amp; Báo tin PH" Tag="1"/>
+                            <ComboBoxItem Content="Khóa cứng rào chắn tự động" Tag="2"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Yêu cầu so khớp khuôn mặt:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbFaceMatchRequirement" Height="35" Margin="0,0,0,25">
+                            <ComboBoxItem Content="Tắt so khớp khuôn mặt" Tag="0"/>
+                            <ComboBoxItem Content="Phạt điểm rèn luyện nếu sai lệch" Tag="1"/>
+                            <ComboBoxItem Content="Khóa cứng cổng nếu sai lệch" Tag="2"/>
+                        </ComboBox>
+
+                        <!-- Kiểm soát Phê duyệt Giáo án (Mới nâng cấp) -->
+                        <TextBlock Text="Kiểm soát Phê duyệt Giáo án" FontSize="18" FontWeight="Bold" Margin="0,20,0,15"/>
+                        
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox x:Name="chkRequireLessonApproval" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="Yêu cầu phê duyệt giáo án trước khi giảng dạy" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                        </Grid>
+
+                        <TextBlock Text="Vai trò có quyền phê duyệt bài giảng:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbLessonApprovalRole" Height="35" Margin="0,0,0,25">
+                            <ComboBoxItem Content="Chỉ Ban Giám hiệu / Hiệu trưởng (SchoolAdmin)" Tag="SchoolAdmin"/>
+                            <ComboBoxItem Content="Hiệu trưởng hoặc Tổ trưởng bộ môn (SchoolAdmin/SubjectHead)" Tag="SchoolAdminOrSubjectHead"/>
+                        </ComboBox>
+
+                        <Button Content="💾 Lưu Cấu Hình" Height="45" Background="#1976D2" Foreground="White" 
+                                FontWeight="Bold" FontSize="14" Cursor="Hand" BorderThickness="0" Click="BtnSaveSettings_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Cột bên phải: Giao diện, Thời khóa biểu, Data Retention, Master, Phục hồi bảo trì -->
+                <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="20" Margin="10,0,0,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <StackPanel>
+                        <!-- Theme Config -->
+                        <TextBlock Text="Giao diện &amp; Thương hiệu (Theme)" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Màu chủ đạo (Primary Color):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Border Width="30" Height="30" Background="#1976D2" CornerRadius="15" Margin="0,0,10,0" Cursor="Hand" MouseLeftButtonDown="ThemeColor_Click" Tag="#1976D2"/>
+                            <Border Width="30" Height="30" Background="#4CAF50" CornerRadius="15" Margin="0,0,10,0" Cursor="Hand" MouseLeftButtonDown="ThemeColor_Click" Tag="#4CAF50"/>
+                            <Border Width="30" Height="30" Background="#F44336" CornerRadius="15" Margin="0,0,10,0" Cursor="Hand" MouseLeftButtonDown="ThemeColor_Click" Tag="#F44336"/>
+                            <Border Width="30" Height="30" Background="#9C27B0" CornerRadius="15" Margin="0,0,10,0" Cursor="Hand" MouseLeftButtonDown="ThemeColor_Click" Tag="#9C27B0"/>
+                        </StackPanel>
+
+                        <TextBlock Text="Mã màu Hex tùy chọn:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtThemeHex" Text="#1976D2" Height="35" Padding="5" Margin="0,0,0,15"/>
+
+                        <!-- Cấu hình Thời khóa biểu & Tiết học (Mới nâng cấp) -->
+                        <TextBlock Text="Cấu hình Thời khóa biểu &amp; Tiết học" FontSize="18" FontWeight="Bold" Margin="0,15,0,15"/>
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Tiết học" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Bắt đầu (HH:mm)" FontWeight="Bold" Margin="5,0,0,5"/>
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="Kết thúc (HH:mm)" FontWeight="Bold" Margin="5,0,0,5"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Tiết 1" VerticalAlignment="Center" Margin="0,2"/>
+                            <TextBox x:Name="txtP1Start" Grid.Row="1" Grid.Column="1" Text="07:30" Height="28" Padding="3" Margin="5,2"/>
+                            <TextBox x:Name="txtP1End" Grid.Row="1" Grid.Column="2" Text="08:15" Height="28" Padding="3" Margin="5,2"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Tiết 2" VerticalAlignment="Center" Margin="0,2"/>
+                            <TextBox x:Name="txtP2Start" Grid.Row="2" Grid.Column="1" Text="08:20" Height="28" Padding="3" Margin="5,2"/>
+                            <TextBox x:Name="txtP2End" Grid.Row="2" Grid.Column="2" Text="09:05" Height="28" Padding="3" Margin="5,2"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Tiết 3" VerticalAlignment="Center" Margin="0,2"/>
+                            <TextBox x:Name="txtP3Start" Grid.Row="3" Grid.Column="1" Text="09:15" Height="28" Padding="3" Margin="5,2"/>
+                            <TextBox x:Name="txtP3End" Grid.Row="3" Grid.Column="2" Text="10:00" Height="28" Padding="3" Margin="5,2"/>
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Tiết 4" VerticalAlignment="Center" Margin="0,2"/>
+                            <TextBox x:Name="txtP4Start" Grid.Row="4" Grid.Column="1" Text="10:05" Height="28" Padding="3" Margin="5,2"/>
+                            <TextBox x:Name="txtP4End" Grid.Row="4" Grid.Column="2" Text="10:50" Height="28" Padding="3" Margin="5,2"/>
+
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Tiết 5" VerticalAlignment="Center" Margin="0,2"/>
+                            <TextBox x:Name="txtP5Start" Grid.Row="5" Grid.Column="1" Text="10:55" Height="28" Padding="3" Margin="5,2"/>
+                            <TextBox x:Name="txtP5End" Grid.Row="5" Grid.Column="2" Text="11:40" Height="28" Padding="3" Margin="5,2"/>
+
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Tiết 6" VerticalAlignment="Center" Margin="0,2"/>
+                            <TextBox x:Name="txtP6Start" Grid.Row="6" Grid.Column="1" Text="13:00" Height="28" Padding="3" Margin="5,2"/>
+                            <TextBox x:Name="txtP6End" Grid.Row="6" Grid.Column="2" Text="13:45" Height="28" Padding="3" Margin="5,2"/>
+
+                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Tiết 7" VerticalAlignment="Center" Margin="0,2"/>
+                            <TextBox x:Name="txtP7Start" Grid.Row="7" Grid.Column="1" Text="13:50" Height="28" Padding="3" Margin="5,2"/>
+                            <TextBox x:Name="txtP7End" Grid.Row="7" Grid.Column="2" Text="14:35" Height="28" Padding="3" Margin="5,2"/>
+
+                            <TextBlock Grid.Row="8" Grid.Column="0" Text="Tiết 8" VerticalAlignment="Center" Margin="0,2"/>
+                            <TextBox x:Name="txtP8Start" Grid.Row="8" Grid.Column="1" Text="14:45" Height="28" Padding="3" Margin="5,2"/>
+                            <TextBox x:Name="txtP8End" Grid.Row="8" Grid.Column="2" Text="15:30" Height="28" Padding="3" Margin="5,2"/>
+
+                            <TextBlock Grid.Row="9" Grid.Column="0" Text="Tiết 9" VerticalAlignment="Center" Margin="0,2"/>
+                            <TextBox x:Name="txtP9Start" Grid.Row="9" Grid.Column="1" Text="15:35" Height="28" Padding="3" Margin="5,2"/>
+                            <TextBox x:Name="txtP9End" Grid.Row="9" Grid.Column="2" Text="16:20" Height="28" Padding="3" Margin="5,2"/>
+
+                            <TextBlock Grid.Row="10" Grid.Column="0" Text="Tiết 10" VerticalAlignment="Center" Margin="0,2"/>
+                            <TextBox x:Name="txtP10Start" Grid.Row="10" Grid.Column="1" Text="16:25" Height="28" Padding="3" Margin="5,2"/>
+                            <TextBox x:Name="txtP10End" Grid.Row="10" Grid.Column="2" Text="17:10" Height="28" Padding="3" Margin="5,2"/>
+                        </Grid>
+
+                        <!-- Data Retention -->
+                        <TextBlock Text="Chính sách Dữ liệu (Data Retention)" FontSize="18" FontWeight="Bold" Margin="0,15,0,15"/>
+
+                        <TextBlock Text="Xóa nhật ký (Audit Logs) cũ hơn:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbLogRetention" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="30 Ngày"/>
+                            <ComboBoxItem Content="90 Ngày" IsSelected="True"/>
+                            <ComboBoxItem Content="180 Ngày"/>
+                            <ComboBoxItem Content="Không bao giờ xóa"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Xóa thông báo (Push Logs) cũ hơn:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbPushRetention" Height="35" Margin="0,0,0,20">
+                            <ComboBoxItem Content="30 Ngày" IsSelected="True"/>
+                            <ComboBoxItem Content="90 Ngày"/>
+                            <ComboBoxItem Content="180 Ngày"/>
+                            <ComboBoxItem Content="Không bao giờ xóa"/>
+                        </ComboBox>
+
+                        <!-- Advanced IT settings -->
+                        <TextBlock Text="Cài đặt Quản trị &amp; Sao lưu nâng cao" FontSize="18" FontWeight="Bold" Margin="0,15,0,15"/>
+
+                        <TextBlock Text="Chế độ thích ứng tổng thể:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbDeploymentModel" Height="35" Margin="0,0,0,15" SelectionChanged="CmbDeploymentModel_SelectionChanged">
+                            <ComboBoxItem Content="Mô hình A (Hạ tầng yếu)" Tag="Model_A_Low"/>
+                            <ComboBoxItem Content="Mô hình B (Hạ tầng tiêu chuẩn)" Tag="Model_B_Standard"/>
+                            <ComboBoxItem Content="Mô hình C (Hạ tầng hiện đại)" Tag="Model_C_High"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Chế độ ghi nhật ký SQLite WAL:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbWALMode" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Bật SQLite WAL (Khuyên dùng)" Tag="Enabled"/>
+                            <ComboBoxItem Content="Tắt SQLite WAL (Ghi trực tiếp)" Tag="Disabled"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Kiểm soát tiến trình trùng lặp (Single Instance):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbSingleInstanceMode" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Tự động tắt tiến trình treo/ngầm cũ (Khuyên dùng)" Tag="KillLingering"/>
+                            <ComboBoxItem Content="Tắt ứng dụng mới mở nếu đã đang chạy" Tag="ExitNew"/>
+                            <ComboBoxItem Content="Không giới hạn (Cho phép chạy song song)" Tag="None"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Thời gian chờ giữ kết nối (Network Keep-Alive Timeout):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbNetworkKeepAliveTimeout" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="15 giây (Mạng ổn định, phát hiện ngắt kết nối cực nhanh)" Tag="15"/>
+                            <ComboBoxItem Content="30 giây (Môi trường tiêu chuẩn - Khuyên dùng)" Tag="30"/>
+                            <ComboBoxItem Content="60 giây (Mạng yếu/nhiễu, hạn chế báo mất kết nối ảo)" Tag="60"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Định dạng nén hình ảnh trình chiếu (Screen Compression Format):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbNetworkCompressionFormat" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="WebP (Siêu tối ưu - Băng thông thấp, nén cực cao - Khuyên dùng)" Tag="WebP"/>
+                            <ComboBoxItem Content="JPEG (Tiêu chuẩn - Độ tương thích cao)" Tag="JPEG"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Phương thức truyền phát bài giảng (Streaming Method):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbStreamFallbackMode" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Tự động chuyển đổi Hybrid (UDP + HTTP Fallback - Khuyên dùng)" Tag="AutoFallback"/>
+                            <ComboBoxItem Content="Chỉ truyền phát bằng UDP Multicast" Tag="UdpOnly"/>
+                            <ComboBoxItem Content="Chỉ dùng chụp ảnh &amp; HTTP Pull (Thích hợp cho mạng yếu/chặn Multicast)" Tag="HttpOnly"/>
+                        </ComboBox>
+
+
+                        <TextBlock Text="Chu kỳ đồng bộ dữ liệu mạng LAN:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbSyncInterval" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="1 phút (Thời gian thực)" Tag="1"/>
+                            <ComboBoxItem Content="5 phút (Tiêu chuẩn)" Tag="5"/>
+                            <ComboBoxItem Content="15 phút (Giảm tải mạng yếu)" Tag="15"/>
+                            <ComboBoxItem Content="Chỉ đồng bộ thủ công" Tag="-1"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Mức độ hiển thị hiệu ứng đồ họa:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbGraphicsLevel" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Đầy đủ hiệu ứng và ảnh động SVG" Tag="DynamicSVG"/>
+                            <ComboBoxItem Content="Tắt hiệu ứng, dùng Emoji tĩnh (Nhẹ RAM)" Tag="StaticEmoji"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Phê duyệt kết nối thiết bị di động mới:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbMobileAutoApprove" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Tự động phê duyệt (Khuyên dùng)" Tag="Enabled"/>
+                            <ComboBoxItem Content="Bắt buộc phê duyệt thủ công" Tag="Disabled"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Xử lý lịch mượn khi báo hỏng thiết bị:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbAutoCancelBookings" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Tự động tìm thiết bị thay thế cùng loại" Tag="0"/>
+                            <ComboBoxItem Content="Hủy lịch mượn và gửi thông báo đẩy" Tag="1"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Số ngày xử lý SLA mặc định cho văn bản:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbDefaultSLADays" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="1 Ngày" Tag="1"/>
+                            <ComboBoxItem Content="2 Ngày" Tag="2"/>
+                            <ComboBoxItem Content="3 Ngày (Tiêu chuẩn)" Tag="3"/>
+                            <ComboBoxItem Content="5 Ngày" Tag="5"/>
+                            <ComboBoxItem Content="7 Ngày (Linh hoạt)" Tag="7"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Tự động thông báo phụ huynh khi có sự cố nghiêm trọng:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbIncidentAutoNotify" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Tự động gửi thông báo đẩy (Khuyên dùng)" Tag="Enabled"/>
+                            <ComboBoxItem Content="Không gửi tự động (Xác minh thủ công)" Tag="Disabled"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Kiểm tra toàn vẹn nhật ký kiểm toán:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbAuditIntegrityMode" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Kiểm tra toàn vẹn chặt chẽ (Strict - Khuyên dùng)" Tag="Strict"/>
+                            <ComboBoxItem Content="Bỏ qua kiểm tra toàn vẹn (Relaxed)" Tag="Relaxed"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Chế độ xác thực &amp; băm mật khẩu:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbPwdHashLevel" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Băm bảo mật cao (PBKDF2)" Tag="PBKDF2"/>
+                            <ComboBoxItem Content="Cho phép mật khẩu thô (Plaintext Fallback)" Tag="PlaintextFallback"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Hành động khi CSDL vượt ngưỡng:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbOverLimitAction" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Chỉ hiển thị cảnh báo" Tag="WarnOnly"/>
+                            <ComboBoxItem Content="Tự động dọn dẹp logs cũ" Tag="AutoClean"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Nơi lưu trữ file sao lưu:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbStorageTarget" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Lưu local tại máy chủ LAN" Tag="LocalOnly"/>
+                            <ComboBoxItem Content="Đồng bộ Cloud Phòng/Sở" Tag="CloudSync"/>
+                        </ComboBox>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                <TextBlock Text="Giờ sao lưu tự động:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtBackupTime" Text="23:00" Height="35" Padding="5"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                <TextBlock Text="Ngưỡng CSDL (MB):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtDbSizeLimit" Text="500" Height="35" Padding="5"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Button Content="🧹 Chạy dọn dẹp dữ liệu ngay" Height="45" Background="#FF9800" Foreground="White" 
+                                FontWeight="Bold" FontSize="14" Cursor="Hand" BorderThickness="0" Click="BtnCleanData_Click"/>
+
+                        <!-- Maintenance & Disaster Recovery -->
+                        <TextBlock Text="Bảo trì Hệ thống &amp; Phục hồi thảm họa" FontSize="18" FontWeight="Bold" Margin="0,20,0,15"/>
+
+                        <TextBlock Text="Chế độ dự báo CSDL:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbGrowthForecastMode" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Hồi quy tuyến tính (Khuyên dùng)" Tag="Linear"/>
+                            <ComboBoxItem Content="Mô hình số mũ (Exponential)" Tag="Exponential"/>
+                            <ComboBoxItem Content="Tắt dự báo" Tag="Disabled"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Quy tắc lưu trữ tự động (Archive):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbArchiveMode" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Tự động nén &amp; dọn dẹp logs cũ" Tag="AutoArchive"/>
+                            <ComboBoxItem Content="Chỉ lưu trữ thủ công" Tag="ManualOnly"/>
+                            <ComboBoxItem Content="Tắt lưu trữ" Tag="Disabled"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Tần suất quét mạng IoT:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbScanInterval" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="30 giây (Thời gian thực)" Tag="30"/>
+                            <ComboBoxItem Content="60 giây (Tiêu chuẩn)" Tag="60"/>
+                            <ComboBoxItem Content="300 giây (Tiết kiệm băng thông)" Tag="300"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Chế độ khôi phục qua Sandbox:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="cmbSandboxMode" Height="35" Margin="0,0,0,15">
+                            <ComboBoxItem Content="Bắt buộc Sandbox kiểm tra (Strict)" Tag="Strict"/>
+                            <ComboBoxItem Content="Khôi phục trực tiếp nhanh (Permissive)" Tag="Permissive"/>
+                        </ComboBox>
+
+                        <Button Content="📦 Lưu trữ dữ liệu log cũ ngay (Archive)" Height="40" Background="#8E24AA" Foreground="White" 
+                                FontWeight="Bold" FontSize="13" Cursor="Hand" BorderThickness="0" Margin="0,5,0,15" Click="BtnArchiveLogs_Click"/>
+
+                        <TextBlock Text="Chọn tệp tin sao lưu (.db) để khôi phục:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="txtBackupFilePath" Height="35" Padding="5" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                            <Button Grid.Column="1" Content="Chọn File..." Width="90" Height="35" Margin="5,0,0,0" Click="BtnSelectBackup_Click"/>
+                        </Grid>
+
+                        <TextBlock x:Name="txtSandboxStatus" Text="Trạng thái Sandbox: Chưa kiểm tra" Foreground="#64748B" FontSize="12" Margin="0,0,0,10" FontWeight="SemiBold"/>
+
+                        <Button Content="🛡️ Khôi phục dữ liệu qua Sandbox" x:Name="btnRestoreSandbox" Height="45" Background="#10B981" Foreground="White" 
+                                FontWeight="Bold" FontSize="14" Cursor="Hand" BorderThickness="0" Margin="0,0,0,10" Click="BtnRestoreSandbox_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>

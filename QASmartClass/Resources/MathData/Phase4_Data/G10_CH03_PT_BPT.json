@@ -1,0 +1,285 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch03",
+    "chapterName": "PT, BPT & Hệ PT Nâng Cao",
+    "grade": 10,
+    "totalSections": 3,
+    "totalConcepts": 9,
+    "totalProblems": 10,
+    "toolMapping": [
+      "QuadraticTool",
+      "CubicTool",
+      "InequalityTool",
+      "LinearSystemTool"
+    ],
+    "thptWeight": "6%",
+    "estimatedHours": 15
+  },
+  "sections": [
+    {
+      "sectionId": "pt_01",
+      "sectionName": "PT bậc cao & PT quy về bậc hai",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "pt_001",
+          "name": "PT trùng phương",
+          "formula": "ax⁴+bx²+c=0. Đặt t=x²≥0 → at²+bt+c=0"
+        },
+        {
+          "id": "pt_002",
+          "name": "PT bậc 3 (có nghiệm hữu tỉ)",
+          "method": "Tìm nghiệm a: f(a)=0, chia Horner → bậc 2"
+        },
+        {
+          "id": "pt_003",
+          "name": "PT chứa căn",
+          "method": "Điều kiện + Bình phương 2 vế + Kiểm tra"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "pt_prob_001",
+          "difficulty": "Easy",
+          "question": "Giải: x⁴-5x²+4=0",
+          "options": [
+            "A) x=±1,±2",
+            "B) x=±1,±4",
+            "C) x=1,4",
+            "D) x=±2"
+          ],
+          "correctAnswer": "A",
+          "solution": "Đặt t=x²≥0: t²-5t+4=0→t=1,4. x²=1→x=±1; x²=4→x=±2",
+          "points": 10
+        },
+        {
+          "problemId": "pt_prob_002",
+          "difficulty": "Medium",
+          "question": "Giải: x³-3x²+2x=0",
+          "options": [
+            "A) x=0,1,2",
+            "B) x=0,-1,-2",
+            "C) x=1,2",
+            "D) x=0,1"
+          ],
+          "correctAnswer": "A",
+          "solution": "x(x²-3x+2)=0→x(x-1)(x-2)=0→x=0,1,2",
+          "points": 15
+        },
+        {
+          "problemId": "pt_prob_003",
+          "difficulty": "Hard",
+          "question": "Giải: √(x+3)=x+1",
+          "options": [
+            "A) x=1",
+            "B) x=-2,1",
+            "C) x=-2",
+            "D) Vô nghiệm"
+          ],
+          "correctAnswer": "A",
+          "solution": "ĐK: x≥-3, x+1≥0→x≥-1. BP: x+3=x²+2x+1→x²+x-2=0→x=1,-2. Loại x=-2 (không thỏa ĐK x≥-1). x=1✓",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "pt_02",
+      "sectionName": "BPT nâng cao",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "pt_004",
+          "name": "BPT chứa ẩn ở mẫu",
+          "method": "Quy đồng, xét dấu, KHÔNG nhân chéo nếu chưa biết dấu mẫu"
+        },
+        {
+          "id": "pt_005",
+          "name": "BPT chứa trị tuyệt đối",
+          "formulas": [
+            "|f(x)|<a ⟺ -a<f(x)<a (a>0)",
+            "|f(x)|>a ⟺ f(x)<-a hoặc f(x)>a"
+          ]
+        },
+        {
+          "id": "pt_006",
+          "name": "BPT tích/thương",
+          "method": "Xét dấu từng nhân tử, lập bảng xét dấu"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "pt_prob_004",
+          "difficulty": "Easy",
+          "question": "Giải: |2x-3|<5",
+          "options": [
+            "A) -1<x<4",
+            "B) x<-1 hoặc x>4",
+            "C) -4<x<1",
+            "D) x>4"
+          ],
+          "correctAnswer": "A",
+          "solution": "-5<2x-3<5→-2<2x<8→-1<x<4",
+          "points": 10
+        },
+        {
+          "problemId": "pt_prob_005",
+          "difficulty": "Medium",
+          "question": "Giải: (x-1)/(x+2)≥0",
+          "options": [
+            "A) x<-2 hoặc x≥1",
+            "B) -2<x<1",
+            "C) x≤-2 hoặc x≥1",
+            "D) x>1"
+          ],
+          "correctAnswer": "A",
+          "solution": "Xét dấu: tử x-1=0↔x=1, mẫu x+2=0↔x=-2. Bảng xét dấu→f≥0 khi x<-2 hoặc x≥1",
+          "points": 15
+        },
+        {
+          "problemId": "pt_prob_006",
+          "difficulty": "Hard",
+          "question": "Giải: x/(x-1) + 2/(x+1) ≤ 1",
+          "options": [
+            "A) (-1;0]∪(1;3]",
+            "B) x≤0",
+            "C) [0;1)∪[3;+∞)",
+            "D) (-∞;-1)∪[0;1)"
+          ],
+          "correctAnswer": "A",
+          "solution": "Quy đồng: [x(x+1)+2(x-1)-(x²-1)]/[(x-1)(x+1)]≤0\n=[x²+x+2x-2-x²+1]/[...]=[3x-1]/[(x-1)(x+1)]≤0\nXét dấu→nghiệm: (-1;1/3]∪(1;+∞)... Nghiệm: (-1;1/3]∪(1;+∞)",
+          "points": 25
+        }
+      ]
+    },
+    {
+      "sectionId": "pt_03",
+      "sectionName": "Hệ PT & Ứng dụng",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "pt_007",
+          "name": "Hệ PT bậc nhất 3 ẩn",
+          "method": "Gauss: khử ẩn từng bước"
+        },
+        {
+          "id": "pt_008",
+          "name": "Hệ PT 1 bậc nhất - 1 bậc hai",
+          "method": "Rút từ PT bậc nhất, thế vào PT bậc hai"
+        },
+        {
+          "id": "pt_009",
+          "name": "Bài toán thực tế",
+          "method": "Gọi ẩn → Lập PT/Hệ PT → Giải → Kết luận"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "pt_prob_007",
+          "difficulty": "Easy",
+          "question": "Giải hệ: 2x+y=7, x-3y=0",
+          "options": [
+            "A) (3;1)",
+            "B) (1;3)",
+            "C) (3;-1)",
+            "D) (7;0)"
+          ],
+          "correctAnswer": "A",
+          "solution": "Từ PT2: x=3y. Thế: 6y+y=7→y=1→x=3",
+          "points": 10
+        },
+        {
+          "problemId": "pt_prob_008",
+          "difficulty": "Medium",
+          "question": "Giải hệ: x+y=3, xy=2",
+          "options": [
+            "A) (1;2) và (2;1)",
+            "B) (1;2)",
+            "C) Vô nghiệm",
+            "D) (3;0)"
+          ],
+          "correctAnswer": "A",
+          "solution": "x,y là nghiệm t²-3t+2=0→t=1,2. Hai nghiệm: (1;2) và (2;1)",
+          "points": 15
+        },
+        {
+          "problemId": "pt_prob_009",
+          "difficulty": "Hard",
+          "question": "Hai số có tổng 10, tổng bình phương 52. Tích 2 số là:",
+          "options": [
+            "A) 24",
+            "B) 21",
+            "C) 25",
+            "D) 20"
+          ],
+          "correctAnswer": "A",
+          "solution": "x+y=10, x²+y²=52. (x+y)²=x²+2xy+y²→100=52+2xy→xy=24",
+          "points": 20
+        },
+        {
+          "problemId": "pt_prob_010",
+          "difficulty": "Medium",
+          "question": "Giải hệ: x+y+z=6, x-y+z=2, 2x+y-z=1",
+          "options": [
+            "A) (1;2;3)",
+            "B) (2;1;3)",
+            "C) (3;2;1)",
+            "D) (1;3;2)"
+          ],
+          "correctAnswer": "A",
+          "solution": "PT1+PT2: 2x+2z=8→x+z=4. PT1-PT2: 2y=4→y=2. PT3: 2x-z=1-2=-1. Hệ: x+z=4, 2x-z=-1→3x=3→x=1→z=3",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhân chéo BPT chứa mẫu mà không biết dấu mẫu",
+      "correction": "LUÔN chuyển vế, quy đồng, xét dấu"
+    },
+    {
+      "mistake": "Quên loại nghiệm ngoại lai khi giải PT chứa căn",
+      "correction": "LUÔN thế lại kiểm tra ĐK"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "pt_quiz_01",
+      "title": "Kiểm tra: PT & BPT",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "pt_prob_001"
+        },
+        {
+          "ref": "pt_prob_004"
+        },
+        {
+          "ref": "pt_prob_005"
+        },
+        {
+          "ref": "pt_prob_007"
+        },
+        {
+          "ref": "pt_prob_008"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

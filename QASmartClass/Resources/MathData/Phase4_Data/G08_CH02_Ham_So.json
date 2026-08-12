@@ -1,0 +1,372 @@
+{
+  "metadata": {
+    "chapterId": "g08_ch02",
+    "chapterName": "Hàm Số Bậc Nhất & Bậc Hai",
+    "grade": 8,
+    "totalSections": 3,
+    "totalConcepts": 8,
+    "totalProblems": 15,
+    "toolMapping": [
+      "CoordinateTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 14,
+    "prerequisites": [
+      "g07_ch01",
+      "g08_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "hs_01",
+      "sectionName": "Hàm số bậc nhất y = ax + b",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "hs_001",
+          "name": "Hàm số bậc nhất",
+          "definition": "y = ax + b (a ≠ 0). Đồ thị là đường thẳng",
+          "properties": [
+            "a > 0: đồng biến (đi lên)",
+            "a < 0: nghịch biến (đi xuống)",
+            "b: tung độ gốc (cắt trục Oy)"
+          ]
+        },
+        {
+          "id": "hs_002",
+          "name": "Hệ số góc",
+          "definition": "Hệ số a = tan(α) = (y₂-y₁)/(x₂-x₁) cho biết độ dốc đường thẳng"
+        },
+        {
+          "id": "hs_003",
+          "name": "Hai đường thẳng song song & cắt nhau",
+          "definition": "Song song: a₁ = a₂, b₁ ≠ b₂. Cắt nhau: a₁ ≠ a₂. Trùng nhau: a₁=a₂, b₁=b₂"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hs_prob_001",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Đồ thị y = 2x + 3 cắt trục Oy tại điểm:",
+          "options": [
+            "A) (0, 3)",
+            "B) (3, 0)",
+            "C) (0, 2)",
+            "D) (2, 3)"
+          ],
+          "correctAnswer": "A",
+          "solution": "Khi x=0: y=3 → điểm (0, 3)",
+          "points": 5
+        },
+        {
+          "problemId": "hs_prob_002",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Hàm số y = -3x + 1 là hàm:",
+          "options": [
+            "A) Đồng biến",
+            "B) Nghịch biến",
+            "C) Hằng số",
+            "D) Không xác định"
+          ],
+          "correctAnswer": "B",
+          "solution": "a = -3 < 0 → nghịch biến",
+          "points": 5
+        },
+        {
+          "problemId": "hs_prob_003",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tìm PT đường thẳng đi qua A(1,3) và B(3,7):",
+          "options": [
+            "A) y = 2x + 1",
+            "B) y = 2x - 1",
+            "C) y = x + 2",
+            "D) y = 3x"
+          ],
+          "correctAnswer": "A",
+          "solution": "a = (7-3)/(3-1) = 2. y = 2x + b, qua (1,3): 3 = 2+b → b=1. y = 2x+1",
+          "points": 10
+        },
+        {
+          "problemId": "hs_prob_004",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Hai đường thẳng y=2x+3 và y=2x-1:",
+          "options": [
+            "A) Cắt nhau",
+            "B) Song song",
+            "C) Trùng nhau",
+            "D) Vuông góc"
+          ],
+          "correctAnswer": "B",
+          "solution": "a₁=a₂=2 nhưng b₁=3≠b₂=-1 → song song",
+          "points": 10
+        },
+        {
+          "problemId": "hs_prob_005",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm giao điểm y = 2x-1 và y = -x+5:",
+          "options": [
+            "A) (2, 3)",
+            "B) (3, 2)",
+            "C) (1, 4)",
+            "D) (4, 1)"
+          ],
+          "correctAnswer": "A",
+          "solution": "2x-1 = -x+5 → 3x=6 → x=2, y=3. Giao điểm (2,3)",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hs_02",
+      "sectionName": "Hàm số bậc hai y = ax² + bx + c",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "hs_004",
+          "name": "Parabol",
+          "definition": "Đồ thị y=ax²+bx+c là parabol. a>0: bề lõm (∪). a<0: bề lồi (∩)"
+        },
+        {
+          "id": "hs_005",
+          "name": "Đỉnh parabol",
+          "definition": "Đỉnh I(-b/2a; -Δ/4a). Trục đối xứng x=-b/2a"
+        },
+        {
+          "id": "hs_006",
+          "name": "Giao với trục hoành",
+          "definition": "Giải ax²+bx+c=0. Δ>0: cắt 2 điểm. Δ=0: tiếp xúc. Δ<0: không cắt"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hs_prob_006",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Parabol y = x² - 4x + 3 có đỉnh tại:",
+          "options": [
+            "A) (2, -1)",
+            "B) (-2, 15)",
+            "C) (4, 3)",
+            "D) (2, 3)"
+          ],
+          "correctAnswer": "A",
+          "solution": "x_đ = 4/2 = 2. y_đ = 4-8+3 = -1. Đỉnh (2,-1)",
+          "points": 5
+        },
+        {
+          "problemId": "hs_prob_007",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Parabol y = -x² + 6x - 5 bề:",
+          "options": [
+            "A) Lõm (∪)",
+            "B) Lồi (∩)",
+            "C) Không xác định",
+            "D) Cả hai"
+          ],
+          "correctAnswer": "B",
+          "solution": "a = -1 < 0 → bề lồi (∩)",
+          "points": 10
+        },
+        {
+          "problemId": "hs_prob_008",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tìm giao điểm y = x² với trục Ox:",
+          "options": [
+            "A) (0,0)",
+            "B) (1,0) và (-1,0)",
+            "C) Không cắt",
+            "D) (0,0) và (1,1)"
+          ],
+          "correctAnswer": "A",
+          "solution": "x² = 0 → x = 0. Tiếp xúc tại gốc O(0,0)",
+          "points": 10
+        },
+        {
+          "problemId": "hs_prob_009",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Parabol y=x²-4x+3 cắt Ox tại 2 điểm có hoành độ:",
+          "options": [
+            "A) x=1, x=3",
+            "B) x=-1, x=-3",
+            "C) x=1, x=-3",
+            "D) x=0, x=4"
+          ],
+          "correctAnswer": "A",
+          "solution": "x²-4x+3=0 → (x-1)(x-3)=0 → x=1, x=3",
+          "points": 15
+        },
+        {
+          "problemId": "hs_prob_010",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tìm m để y=x²-2x+m tiếp xúc Ox:",
+          "options": [
+            "A) m=1",
+            "B) m=-1",
+            "C) m=0",
+            "D) m=2"
+          ],
+          "correctAnswer": "A",
+          "solution": "Tiếp xúc ⟺ Δ=0 → 4-4m=0 → m=1",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "hs_03",
+      "sectionName": "Bài toán tổng hợp",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "hs_007",
+          "name": "Giao đường thẳng và parabol",
+          "definition": "Thế y từ đường thẳng vào parabol → PT bậc 2"
+        },
+        {
+          "id": "hs_008",
+          "name": "Bảng biến thiên",
+          "definition": "Bảng thể hiện sự tăng/giảm và giá trị đặc biệt của hàm số"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "hs_prob_011",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Hàm y=x² đồng biến trên:",
+          "options": [
+            "A) (0;+∞)",
+            "B) (-∞;0)",
+            "C) ℝ",
+            "D) (-∞;+∞)"
+          ],
+          "correctAnswer": "A",
+          "solution": "y=x² đồng biến khi x>0",
+          "points": 5
+        },
+        {
+          "problemId": "hs_prob_012",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tìm giao điểm y=x² và y=2x+3:",
+          "options": [
+            "A) (3,9) và (-1,1)",
+            "B) (1,1) và (3,9)",
+            "C) (-1,1) và (3,9)",
+            "D) (0,3) và (2,7)"
+          ],
+          "correctAnswer": "C",
+          "solution": "x²=2x+3 → x²-2x-3=0 → (x-3)(x+1)=0 → x=3,y=9; x=-1,y=1",
+          "points": 10
+        },
+        {
+          "problemId": "hs_prob_013",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "GTNN của y=x²-6x+11 là:",
+          "options": [
+            "A) 2",
+            "B) 0",
+            "C) 11",
+            "D) -2"
+          ],
+          "correctAnswer": "A",
+          "solution": "y = (x-3)²+2 ≥ 2. GTNN = 2 khi x=3",
+          "points": 15
+        },
+        {
+          "problemId": "hs_prob_014",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Đường thẳng y=x+1 cắt parabol y=x² tại mấy điểm?",
+          "options": [
+            "A) 0",
+            "B) 1",
+            "C) 2",
+            "D) 3"
+          ],
+          "correctAnswer": "C",
+          "solution": "x²=x+1 → x²-x-1=0, Δ=5>0 → 2 giao điểm",
+          "points": 10
+        },
+        {
+          "problemId": "hs_prob_015",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm m để đường thẳng y=mx tiếp xúc parabol y=x²+1:",
+          "options": [
+            "A) m=±2",
+            "B) m=1",
+            "C) m=0",
+            "D) m=±√2"
+          ],
+          "correctAnswer": "A",
+          "solution": "x²+1=mx → x²-mx+1=0. Tiếp xúc: Δ=m²-4=0 → m=±2",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm: a>0 → parabol lồi",
+      "correction": "a>0 → bề LÕM (∪ mở lên). a<0 → bề LỒI (∩ mở xuống)"
+    },
+    {
+      "mistake": "Quên trục đối xứng khi vẽ parabol",
+      "correction": "Luôn tìm đỉnh I(-b/2a; f(-b/2a)) và trục x=-b/2a trước khi vẽ"
+    },
+    {
+      "mistake": "Nhầm: đồ thị y=ax+b đi qua gốc O",
+      "correction": "Chỉ qua O khi b=0 (y=ax)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "hs_quiz_01",
+      "title": "Kiểm tra: Hàm số bậc 1 & bậc 2",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "hs_prob_001"
+        },
+        {
+          "ref": "hs_prob_003"
+        },
+        {
+          "ref": "hs_prob_006"
+        },
+        {
+          "ref": "hs_prob_009"
+        },
+        {
+          "ref": "hs_prob_012"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

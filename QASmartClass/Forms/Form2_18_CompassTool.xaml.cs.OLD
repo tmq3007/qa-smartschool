@@ -1,0 +1,412 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+
+namespace QASmartScreen.Forms
+{
+    public partial class Form2_18_CompassTool : Window
+    {
+        #region Fields
+
+        // Compass State
+        private CompassState _state;
+
+        // Drag State for Window
+        private bool _isDragging = false;
+        private Point _dragStartPoint;
+        private double _originalLeft = 0;
+        private double _originalTop = 0;
+
+        // Compass Interaction State
+        private bool _isDraggingPencilTip = false;
+        private Point _centerPosition; // Center point in canvas coordinates
+        private double _currentRadius = 70; // Default radius
+        private bool _isRadiusLocked = false;
+
+        // Temporary message timer
+        private DispatcherTimer? _messageTimer;
+
+        #endregion
+
+        #region Constructor
+
+        public Form2_18_CompassTool()
+        {
+            InitializeComponent();
+
+            // Initialize state
+            _state = new CompassState
+            {
+                CenterX = 130,
+                CenterY = 130,
+                Radius = 70,
+                IsLocked = false
+            };
+
+            // Setup event handlers for interactive elements
+            PencilTip.MouseLeftButtonDown += PencilTip_MouseDown;
+            PencilTip.MouseLeftButtonUp += PencilTip_MouseUp;
+            PencilTip.MouseMove += PencilTip_MouseMove;
+
+            CenterPoint.MouseLeftButtonDown += CenterPoint_MouseDown;
+            CenterPoint.MouseLeftButtonUp += CenterPoint_MouseUp;
+            CenterPoint.MouseMove += CenterPoint_MouseMove;
+        }
+
+        #endregion
+
+        #region Window Events
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Center window on screen
+            var workArea = SystemParameters.WorkArea;
+            this.Left = (workArea.Width - this.Width) / 2;
+            this.Top = (workArea.Height - this.Height) / 2;
+
+            // Initialize center position
+            _centerPosition = new Point(_state.CenterX, _state.CenterY);
+            _currentRadius = _state.Radius;
+
+            // Update compass visual
+            UpdateCompass();
+        }
+
+        #endregion
+
+        #region Drawing Methods
+
+        private void UpdateCompass()
+        {
+            // Update center point position
+            Canvas.SetLeft(CenterPoint, _centerPosition.X - 4);
+            Canvas.SetTop(CenterPoint, _centerPosition.Y - 4);
+
+            // Update Arm1 (fixed leg) - pointing upward
+            Arm1.X1 = _centerPosition.X;
+            Arm1.Y1 = _centerPosition.Y;
+            Arm1.X2 = _centerPosition.X;
+            Arm1.Y2 = _centerPosition.Y - 40; // Fixed 40px upward
+
+            // Calculate Arm2 endpoint (pencil tip) based on radius
+            // For visual appeal, arms spread at slight angle
+            double angle = 10; // degrees from vertical
+            double angleRad = angle * Math.PI / 180.0;
+            double arm2X = _centerPosition.X + _currentRadius * Math.Sin(angleRad);
+            double arm2Y = _centerPosition.Y + _currentRadius * Math.Cos(angleRad);
+
+            // Update Arm2 (movable leg with pencil)
+            Arm2.X1 = _centerPosition.X;
+            Arm2.Y1 = _centerPosition.Y;
+            Arm2.X2 = arm2X;
+            Arm2.Y2 = arm2Y;
+
+            // Update pencil tip position
+            Canvas.SetLeft(PencilTip, arm2X - 3);
+            Canvas.SetTop(PencilTip, arm2Y - 3);
+
+            // Update circle preview
+            double circleLeft = _centerPosition.X - _currentRadius;
+            double circleTop = _centerPosition.Y - _currentRadius;
+            Canvas.SetLeft(CirclePreview, circleLeft);
+            Canvas.SetTop(CirclePreview, circleTop);
+            CirclePreview.Width = _currentRadius * 2;
+            CirclePreview.Height = _currentRadius * 2;
+            CirclePreview.Visibility = Visibility.Visible;
+
+            // Update radius display
+            RadiusValue.Text = Math.Round(_currentRadius, 1).ToString();
+            Canvas.SetLeft(RadiusDisplay, _centerPosition.X + 10);
+            Canvas.SetTop(RadiusDisplay, _centerPosition.Y + _currentRadius / 2);
+
+            // Update text input
+            txtRadius.Text = Math.Round(_currentRadius, 0).ToString();
+
+            // Update state
+            _state.CenterX = _centerPosition.X;
+            _state.CenterY = _centerPosition.Y;
+            _state.Radius = _currentRadius;
+        }
+
+        private void ShowTemporaryMessage(string message, int durationMs = 2000)
+        {
+            StatusText.Text = message;
+            StatusMessage.Visibility = Visibility.Visible;
+
+            // Cancel existing timer
+            _messageTimer?.Stop();
+
+            // Create new timer
+            _messageTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(durationMs)
+            };
+            _messageTimer.Tick += (s, e) =>
+            {
+                StatusMessage.Visibility = Visibility.Collapsed;
+                _messageTimer?.Stop();
+            };
+            _messageTimer.Start();
+        }
+
+        #endregion
+
+        #region Pencil Tip Interaction (Adjust Radius)
+
+        private void PencilTip_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_isRadiusLocked)
+            {
+                ShowTemporaryMessage("⚠️ Bán kính đã bị khóa! Mở khóa để điều chỉnh.", 2000);
+                return;
+            }
+
+            _isDraggingPencilTip = true;
+            PencilTip.CaptureMouse();
+            e.Handled = true;
+        }
+
+        private void PencilTip_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_isDraggingPencilTip)
+            {
+                _isDraggingPencilTip = false;
+                PencilTip.ReleaseMouseCapture();
+                e.Handled = true;
+            }
+        }
+
+        private void PencilTip_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isDraggingPencilTip && e.LeftButton == MouseButtonState.Pressed)
+            {
+                Point mousePos = e.GetPosition(CompassCanvas);
+
+                // Calculate new radius (distance from center to mouse)
+                double dx = mousePos.X - _centerPosition.X;
+                double dy = mousePos.Y - _centerPosition.Y;
+                double newRadius = Math.Sqrt(dx * dx + dy * dy);
+
+                // Clamp radius between reasonable values
+                newRadius = Math.Max(20, Math.Min(newRadius, 120));
+
+                _currentRadius = newRadius;
+                UpdateCompass();
+
+                e.Handled = true;
+            }
+        }
+
+        #endregion
+
+        #region Center Point Interaction (Adjust Center)
+
+        private bool _isDraggingCenter = false;
+
+        private void CenterPoint_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _isDraggingCenter = true;
+            CenterPoint.CaptureMouse();
+            e.Handled = true;
+        }
+
+        private void CenterPoint_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_isDraggingCenter)
+            {
+                _isDraggingCenter = false;
+                CenterPoint.ReleaseMouseCapture();
+                e.Handled = true;
+            }
+        }
+
+        private void CenterPoint_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isDraggingCenter && e.LeftButton == MouseButtonState.Pressed)
+            {
+                Point mousePos = e.GetPosition(CompassCanvas);
+
+                // Clamp center position within canvas bounds
+                mousePos.X = Math.Max(30, Math.Min(mousePos.X, 230));
+                mousePos.Y = Math.Max(30, Math.Min(mousePos.Y, 230));
+
+                _centerPosition = mousePos;
+                UpdateCompass();
+
+                e.Handled = true;
+            }
+        }
+
+        #endregion
+
+        #region Button Handlers
+
+        private void btnMove_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                _isDragging = true;
+                _dragStartPoint = e.GetPosition(this.Owner);
+                _originalLeft = this.Left;
+                _originalTop = this.Top;
+                ((Button)sender).CaptureMouse();
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_isDragging)
+            {
+                _isDragging = false;
+                ((Button)sender).ReleaseMouseCapture();
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
+            {
+                Point currentPoint = e.GetPosition(this.Owner);
+                double deltaX = currentPoint.X - _dragStartPoint.X;
+                double deltaY = currentPoint.Y - _dragStartPoint.Y;
+
+                this.Left = _originalLeft + deltaX;
+                this.Top = _originalTop + deltaY;
+
+                e.Handled = true;
+            }
+        }
+
+        private void btnLock_Click(object sender, RoutedEventArgs e)
+        {
+            _isRadiusLocked = !_isRadiusLocked;
+            _state.IsLocked = _isRadiusLocked;
+
+            if (_isRadiusLocked)
+            {
+                btnLock.Content = "🔒";
+                btnLock.BorderBrush = new SolidColorBrush(Color.FromRgb(239, 68, 68)); // Red
+                ShowTemporaryMessage("🔒 Bán kính đã khóa: " + Math.Round(_currentRadius, 1) + " px", 2000);
+            }
+            else
+            {
+                btnLock.Content = "🔓";
+                btnLock.BorderBrush = new SolidColorBrush(Color.FromRgb(245, 158, 11)); // Amber
+                ShowTemporaryMessage("🔓 Bán kính đã mở khóa", 1500);
+            }
+        }
+
+        private void btnDraw_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Integrate with MainDashboard to draw actual circle on canvas
+            // For now, show visual feedback
+            
+            // Flash the circle preview
+            var originalStroke = CirclePreview.Stroke;
+            CirclePreview.Stroke = new SolidColorBrush(Color.FromRgb(16, 185, 129)); // Green
+            CirclePreview.StrokeThickness = 3;
+            CirclePreview.StrokeDashArray = null;
+
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
+            timer.Tick += (s, ev) =>
+            {
+                CirclePreview.Stroke = originalStroke;
+                CirclePreview.StrokeThickness = 1.5;
+                CirclePreview.StrokeDashArray = new DoubleCollection { 5, 3 };
+                timer.Stop();
+            };
+            timer.Start();
+
+            ShowTemporaryMessage("✓ Đường tròn R=" + Math.Round(_currentRadius, 1) + "px đã vẽ!", 2000);
+
+            // Fire event for MainDashboard integration
+            OnCircleDrawRequested?.Invoke(this, new CircleDrawEventArgs
+            {
+                CenterX = _centerPosition.X,
+                CenterY = _centerPosition.Y,
+                Radius = _currentRadius
+            });
+        }
+
+        private void btnReset_Click(object sender, RoutedEventArgs e)
+        {
+            // Reset to default state
+            _centerPosition = new Point(130, 130);
+            _currentRadius = 70;
+            _isRadiusLocked = false;
+            _state.IsLocked = false;
+
+            btnLock.Content = "🔓";
+            btnLock.BorderBrush = new SolidColorBrush(Color.FromRgb(245, 158, 11));
+
+            UpdateCompass();
+            ShowTemporaryMessage("↻ Đã đặt lại compa", 1500);
+        }
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        #endregion
+
+        #region Radius Input Handler
+
+        private void txtRadius_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (double.TryParse(txtRadius.Text, out double newRadius))
+                {
+                    // Clamp radius
+                    newRadius = Math.Max(20, Math.Min(newRadius, 120));
+                    _currentRadius = newRadius;
+                    UpdateCompass();
+                    ShowTemporaryMessage("✓ Bán kính đã cập nhật: " + Math.Round(newRadius, 1) + " px", 1500);
+                }
+                else
+                {
+                    ShowTemporaryMessage("⚠️ Giá trị không hợp lệ!", 2000);
+                    txtRadius.Text = Math.Round(_currentRadius, 0).ToString();
+                }
+
+                // Remove focus from textbox
+                CompassCanvas.Focus();
+                e.Handled = true;
+            }
+        }
+
+        #endregion
+
+        #region Events for Dashboard Integration
+
+        public event EventHandler<CircleDrawEventArgs>? OnCircleDrawRequested;
+
+        #endregion
+    }
+
+    #region Supporting Classes
+
+    public class CompassState
+    {
+        public double CenterX { get; set; }
+        public double CenterY { get; set; }
+        public double Radius { get; set; }
+        public bool IsLocked { get; set; }
+    }
+
+    public class CircleDrawEventArgs : EventArgs
+    {
+        public double CenterX { get; set; }
+        public double CenterY { get; set; }
+        public double Radius { get; set; }
+    }
+
+    #endregion
+}

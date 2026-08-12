@@ -1,0 +1,239 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Math.BasicMathTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             xmlns:local="clr-namespace:QASmartClass.LearningTools.Views.Math"
+             Background="{StaticResource Gray100}">
+             
+    <controls:BaseToolControl.Resources>
+        <Style x:Key="PracticalCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Gray300}"/>
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform X="0" Y="0"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource BrandPrimary}"/>
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)" To="-4" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)" To="0" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </controls:BaseToolControl.Resources>
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Border Grid.Row="0" CornerRadius="0" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#E3F2FD" Offset="0"/>
+                    <GradientStop Color="#BBDEFB" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="🧮 Toán Học Cơ Bản" FontSize="20" FontWeight="Bold" Foreground="#1565C0"/>
+                    <TextBlock Text="Cộng &amp; Trừ • Phạm vi 10-2000 • Thi đấu chia màn hình" FontSize="14" Foreground="#1976D2" Margin="0,3,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#E3F2FD">
+                <!-- Math Category: Blue hover/selected -->
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#BBDEFB"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="{StaticResource BrandPrimaryColor}"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🎮" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPlay" Text="Luyện tập &amp; Thi đấu" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#BBDEFB"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 0: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#C5CAE9" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#C5CAE9" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: LUYỆN TẬP & THI ĐẤU -->
+                <Grid x:Name="viewPlay" Margin="16" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- HÀNG 0: THANH ĐIỀU KHIỂN CỐ ĐỊNH -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock x:Name="txtHeaderTitle" Text="⚙️ Cài Đặt Trò Chơi (Toán Cơ Bản)" FontSize="20" FontWeight="Bold" Foreground="{StaticResource BrandPrimary}" VerticalAlignment="Center"/>
+                        <Button x:Name="btnStop" Content="⏹ DỪNG THI ĐẤU" FontSize="16" FontWeight="Bold" Foreground="White" Background="{StaticResource StateError}" Padding="20,10" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="Collapsed" Cursor="Hand" Click="BtnStop_Click"/>
+                    </Grid>
+
+                    <!-- HÀNG 1: BẢNG CÀI ĐẶT (setupPanel) -->
+                    <Border x:Name="setupPanel" Grid.Row="1" Background="White" CornerRadius="16" Padding="24" Margin="0,0,0,16" BorderBrush="{StaticResource Gray300}" BorderThickness="1">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Cột 1: Cấu hình Đề bài -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Phạm vi số:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <ComboBox x:Name="cboRange" FontSize="16" Padding="8" Margin="0,0,0,12" SelectedIndex="3">
+                                        <ComboBoxItem Content="Trong phạm vi 10"/>
+                                        <ComboBoxItem Content="Trong phạm vi 20"/>
+                                        <ComboBoxItem Content="Trong phạm vi 50"/>
+                                        <ComboBoxItem Content="Trong phạm vi 100"/>
+                                        <ComboBoxItem Content="Trong phạm vi 500"/>
+                                        <ComboBoxItem Content="Trong phạm vi 1000"/>
+                                        <ComboBoxItem Content="Trong phạm vi 2000"/>
+                                    </ComboBox>
+
+                                    <TextBlock Text="Phép tính:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <ComboBox x:Name="cboOperation" FontSize="16" Padding="8" Margin="0,0,0,12" SelectedIndex="2">
+                                        <ComboBoxItem Content="Chỉ Phép Cộng (+)"/>
+                                        <ComboBoxItem Content="Chỉ Phép Trừ (-)"/>
+                                        <ComboBoxItem Content="Hỗn hợp (+, -)"/>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <!-- Cột 2: Dạng Toán & Độ Dài -->
+                                <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                                    <TextBlock Text="Dạng Toán:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <ComboBox x:Name="cboMathType" FontSize="16" Padding="8" Margin="0,0,0,12" SelectedIndex="0">
+                                        <ComboBoxItem Content="Tính kết quả (VD: 12 + 5 = ?)"/>
+                                        <ComboBoxItem Content="Điền dấu so sánh (VD: 15 + 3 [?] 20)"/>
+                                    </ComboBox>
+
+                                    <TextBlock Text="Độ dài vòng thi:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <ComboBox x:Name="cboQuestions" FontSize="16" Padding="8" Margin="0,0,0,12" SelectedIndex="0">
+                                        <ComboBoxItem Content="10 câu"/>
+                                        <ComboBoxItem Content="20 câu"/>
+                                        <ComboBoxItem Content="30 câu"/>
+                                        <ComboBoxItem Content="Vô tận (Luyện tập)"/>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <!-- Cột 3: Chế độ Người chơi -->
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Chế độ thi đấu:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <ComboBox x:Name="cboPlayers" FontSize="16" Padding="8" Margin="0,0,0,12" SelectedIndex="0">
+                                        <ComboBoxItem Content="👤 1 Người chơi"/>
+                                        <ComboBoxItem Content="👥 2 Người (Chia đôi màn hình)"/>
+                                        <ComboBoxItem Content="👨‍👩‍👦 3 Người (Chia ba màn hình)"/>
+                                    </ComboBox>
+
+                                    <TextBlock Text="Cách thức nhập:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                    <ComboBox x:Name="cboInputMode" FontSize="16" Padding="8" Margin="0,0,0,12" SelectedIndex="0">
+                                        <ComboBoxItem Content="Học sinh chạm màn hình tự làm"/>
+                                        <ComboBoxItem Content="Học sinh đọc - Cô xác nhận đúng/sai"/>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+                                <Button x:Name="btnStart" Content="▶ BẮT ĐẦU THI ĐẤU" FontSize="18" FontWeight="Bold" Foreground="White" Background="#1565C0" 
+                                        Padding="32,12" BorderThickness="0" Cursor="Hand" Click="BtnStart_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- PLAY AREA -->
+                    <UniformGrid x:Name="playArea" Grid.Row="2" Columns="1" Rows="1"/>
+                </Grid>
+
+                <!-- VIEW 2: PRACTICAL APPLICATIONS -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

@@ -1,0 +1,126 @@
+<UserControl TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" x:Class="QASmartClass.Staff.Views.PayrollView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:QASmartClass.Staff.ViewModels"
+             mc:Ignorable="d" d:DesignHeight="768" d:DesignWidth="1024"
+             Background="{StaticResource AppBackground}" >
+    <UserControl.DataContext>
+        <vm:PayrollViewModel/>
+    </UserControl.DataContext>
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,8">
+            <Border DockPanel.Dock="Left" Width="48" Height="48" CornerRadius="12" Margin="0,0,16,0">
+                <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#10B981" Offset="0"/><GradientStop Color="#34D399" Offset="1"/></LinearGradientBrush></Border.Background>
+                <TextBlock Text="&#xE7BF;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Quản lý Lương &amp; Thuế" Style="{StaticResource StaffPageTitle}"/>
+                <TextBlock Text="Tự động hóa tính lương, khấu trừ thuế TNCN và bảo hiểm theo thời gian thực." Style="{StaticResource StaffPageSubtitle}" Margin="0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="350"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Form Panel -->
+            <Border Grid.Column="0" Style="{StaticResource StaffFormCard}" Margin="0,0,20,0">
+                <StackPanel>
+                    <TextBlock Text="Tính Lương Nhân Sự" FontWeight="Bold" FontSize="18" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,20"/>
+                    
+                    <TextBlock Text="Tên nhân sự:" Style="{StaticResource StaffFormLabel}"/>
+                    <ComboBox SelectedItem="{Binding StaffName}" ItemsSource="{Binding StaffNames}" Style="{StaticResource StaffComboBox}"/>
+
+                    <TextBlock Text="Tháng:" Style="{StaticResource StaffFormLabel}"/>
+                    <ComboBox SelectedValue="{Binding SelectedMonth}" SelectedValuePath="Tag" DisplayMemberPath="Content" ItemsSource="{Binding MonthOptions}" Style="{StaticResource StaffComboBox}"/>
+
+                    <TextBlock Text="Năm:" Style="{StaticResource StaffFormLabel}"/>
+                    <ComboBox SelectedValue="{Binding CalculateYear}" SelectedValuePath="Tag" DisplayMemberPath="Content" ItemsSource="{Binding YearOptions}" Style="{StaticResource StaffComboBox}"/>
+                    
+                    <Button Content="💰 TÍNH LƯƠNG TỰ ĐỘNG" Style="{StaticResource StaffPrimaryBtn}" Command="{Binding CalculateCommand}" Margin="0,15,0,0"/>
+                    <Button Content="⚡ TÍNH LƯƠNG HÀNG LOẠT" Style="{StaticResource StaffOutlineBtn}" Command="{Binding BatchCalculateCommand}" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Data Panel -->
+            <Border Grid.Column="1" Style="{StaticResource StaffFormCard}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Filter & Actions -->
+                    <Grid Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Lọc tháng:" Style="{StaticResource StaffFormLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox SelectedValue="{Binding FilterMonth}" SelectedValuePath="Tag" DisplayMemberPath="Content" ItemsSource="{Binding MonthOptions}" Style="{StaticResource StaffComboBox}" Width="120" Margin="0,0,10,0"/>
+                            <TextBlock Text="Năm:" Style="{StaticResource StaffFormLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox SelectedValue="{Binding FilterYear}" SelectedValuePath="Tag" DisplayMemberPath="Content" ItemsSource="{Binding YearOptions}" Style="{StaticResource StaffComboBox}" Width="100" Margin="0,0,15,0"/>
+                            <Button Content="Tải dữ liệu" Style="{StaticResource StaffOutlineBtn}" Padding="15,8" Command="{Binding LoadPayrollsCommand}" Margin="0,0,10,0"/>
+                            <Button Content="✅ Chốt Lương" Style="{StaticResource StaffSuccessBtn}" Padding="15,8" Command="{Binding FinalizeCommand}" CommandParameter="{Binding SelectedItem, ElementName=LvPayrolls}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- DataGrid -->
+                    <DataGrid x:Name="LvPayrolls" ItemsSource="{Binding Payrolls}" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
+                              IsReadOnly="True" Background="White" RowBackground="White" AlternatingRowBackground="#F8FAFC"
+                              BorderThickness="0" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9" HeadersVisibility="Column" RowHeight="42">
+                        <DataGrid.ColumnHeaderStyle><Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource StaffDataGridHeader}"/></DataGrid.ColumnHeaderStyle>
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow" BasedOn="{StaticResource StaffDataGridRow}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Status}" Value="Paid">
+                                        <Setter Property="Background" Value="#F0FDF4"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Nhân sự" Binding="{Binding StaffName}" Width="*"/>
+                            <DataGridTextColumn Header="Lương cơ bản" Binding="{Binding BaseSalary, StringFormat='N0'}" Width="120"/>
+                            <DataGridTextColumn Header="Khấu trừ" Binding="{Binding Deduction, StringFormat='N0'}" Width="100"/>
+                            <DataGridTextColumn Header="Thuế" Binding="{Binding Tax, StringFormat='N0'}" Width="100"/>
+                            <DataGridTextColumn Header="Thực nhận" Binding="{Binding NetSalary, StringFormat='N0'}" Width="130"/>
+                            <DataGridTemplateColumn Header="Trạng thái" Width="110">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border x:Name="StatusBorder" Background="#DCFCE7" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center">
+                                            <TextBlock x:Name="StatusText" Text="{Binding Status}" Foreground="#16A34A" FontWeight="SemiBold" FontSize="12"/>
+                                        </Border>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding Status}" Value="Draft">
+                                                <Setter TargetName="StatusBorder" Property="Background" Value="#F1F5F9"/>
+                                                <Setter TargetName="StatusText" Property="Foreground" Value="#64748B"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Paid">
+                                                <Setter TargetName="StatusBorder" Property="Background" Value="#DCFCE7"/>
+                                                <Setter TargetName="StatusText" Property="Foreground" Value="#16A34A"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                                <Setter TargetName="StatusBorder" Property="Background" Value="#FEF9C3"/>
+                                                <Setter TargetName="StatusText" Property="Foreground" Value="#CA8A04"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

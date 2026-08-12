@@ -1,0 +1,498 @@
+<Window x:Class="QASmartTouch.Forms.Form2_6_SubMenuSelectionRecognition"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="6. Chọn và Nhận diện" 
+
+        Width="420" Height="440"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        ResizeMode="NoResize"
+
+        Topmost="True"
+
+        ShowInTaskbar="False"
+
+        FontFamily="{StaticResource InterFont}">
+
+
+
+    <Border Background="White" 
+
+            CornerRadius="15" 
+
+            BorderBrush="#E1E8ED" 
+
+            BorderThickness="1">
+
+        <Border.Effect>
+
+            <DropShadowEffect Color="#CCCCCC" 
+
+                            Direction="270" 
+
+                            ShadowDepth="3" 
+
+                            BlurRadius="15" 
+
+                            Opacity="0.3"/>
+
+        </Border.Effect>
+
+
+
+        <Grid Margin="15">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Header -->
+
+                <RowDefinition Height="*"/>
+
+                <!-- Content -->
+
+            </Grid.RowDefinitions>
+
+
+
+            <!-- HEADER -->
+
+            <Grid Grid.Row="0" Margin="0,0,0,15">
+
+                <StackPanel Orientation="Horizontal">
+
+                    <Path Fill="#2E86DE" 
+
+                          Data="M18,14H10.5L12.5,12H18M6,14V11.5L12.88,4.64C13.07,4.45 13.39,4.45 13.59,4.64L15.35,6.41C15.55,6.61 15.55,6.92 15.35,7.12L8.47,14M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4C22,2.89 21.1,2 20,2Z"
+
+                          Width="20" Height="20"
+
+                          VerticalAlignment="Center"
+
+                          Margin="0,0,8,0"/>
+
+                    <TextBlock Text="6. Chọn và Nhận diện" 
+
+                              FontSize="16" 
+
+                              FontWeight="Bold" 
+
+                              Foreground="#2F3542"
+
+                              VerticalAlignment="Center"/>
+
+                </StackPanel>
+
+                <Button x:Name="btnClose" 
+
+                       Style="{StaticResource CloseButton}"
+
+                       Click="btnClose_Click"/>
+
+            </Grid>
+
+
+
+            <!-- CONTENT -->
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+
+                <StackPanel>
+
+                    
+
+                    <!-- Selection Tools -->
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+
+                        <Path Fill="#2E86DE" Data="M12,1L3,5V11C3,16.55 6.84,21.73 12,23C17.16,21.73 21,16.55 21,11V5L12,1M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M17.13,17C15.92,18.85 14.11,20.24 12,20.92C9.89,20.24 8.08,18.85 6.87,17C6.53,16.5 6.24,15.97 6,15.43C6,13.91 8.71,12.67 12,12.67C15.29,12.67 18,13.91 18,15.43C17.76,15.97 17.47,16.5 17.13,17Z" Width="16" Height="16"
+
+                          Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+
+                        <TextBlock Text="Công cụ chọn" 
+
+                                  FontSize="13" 
+
+                                  FontWeight="SemiBold" 
+
+                                  Foreground="#57606F"
+
+                                  VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
+                    
+
+                    <UniformGrid Columns="3" Rows="1" Margin="0,0,0,15">
+
+                        <Button Height="60" Margin="4"
+
+                               Background="#F1F2F6"
+
+                               BorderThickness="0"
+
+                               Cursor="Hand"
+
+                               Click="btnSelectRect_Click"
+
+                               ToolTip="Chọn đối tượng bằng khung hình chữ nhật">
+
+                            <StackPanel>
+
+                                <Path Fill="#2196F3" 
+
+                                     Data="M3,3H21V21H3V3M5,5V19H19V5H5Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Chữ nhật" FontSize="11" Foreground="#2F3542"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+
+
+
+
+                        <Button Height="60" Margin="4"
+
+                               Background="#F1F2F6"
+
+                               BorderThickness="0"
+
+                               Cursor="Hand"
+
+                               Click="btnSelectLasso_Click"
+
+                               Visibility="Collapsed"
+
+                               ToolTip="Vẽ vòng tự do để chọn đối tượng bên trong">
+
+                            <StackPanel>
+
+                                <Path Fill="#4CAF50" 
+
+                                     Data="M12.34,2A6.39,6.39 0 0,0 8,5C8.18,5.66 8.44,6.5 8.78,7.5C9.53,9.69 10.54,12.35 11.72,15.11C12.89,17.86 13.91,20 14.66,21.36C15.05,22.12 15.37,22.69 15.61,23.06C15.73,23.24 15.83,23.38 15.9,23.47L16,23.58L16.11,23.47C16.17,23.38 16.27,23.24 16.39,23.06C16.63,22.69 16.95,22.12 17.34,21.36C18.09,20 19.11,17.86 20.28,15.11C21.46,12.35 22.47,9.69 23.22,7.5C23.56,6.5 23.82,5.66 24,5A6.39,6.39 0 0,0 19.66,2A5.45,5.45 0 0,0 16,4.5A5.45,5.45 0 0,0 12.34,2Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Tự do (Lasso)" FontSize="11" Foreground="#2F3542"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+
+
+                        <Button Height="60" Margin="4"
+
+                               Background="#F1F2F6"
+
+                               BorderThickness="0"
+
+                               Cursor="Hand"
+
+                               Click="btnSelectMagic_Click"
+
+                               ToolTip="Tự động chọn tất cả đối tượng CÙNG MÀU trên bảng">
+
+                            <StackPanel>
+
+                                <Path Fill="#9C27B0" 
+
+                                     Data="M7.5,5.6L5,7L6.4,4.5L5,2L7.5,3.4L10,2L8.6,4.5L10,7L7.5,5.6M19.5,15.4L22,14L20.6,16.5L22,19L19.5,17.6L17,19L18.4,16.5L17,14L19.5,15.4M22,2L20.6,4.5L22,7L19.5,5.6L17,7L18.4,4.5L17,2L19.5,3.4L22,2M13.34,12.78L15.78,10.34L13.66,8.22L11.22,10.66L13.34,12.78M14.37,7.29L16.71,9.63C17.1,10 17.1,10.65 16.71,11.04L5.04,22.71C4.65,23.1 4,23.1 3.63,22.71L1.29,20.37C0.9,20 0.9,19.35 1.29,18.96L12.96,7.29C13.35,6.9 14,6.9 14.37,7.29Z"
+
+                                     Width="24" Height="24"
+
+                                     Margin="0,0,0,4"/>
+
+                                <TextBlock Text="Đũa phép" FontSize="11" Foreground="#2F3542"/>
+
+                            </StackPanel>
+
+                        </Button>
+
+                    </UniformGrid>
+
+
+
+                    <!-- Recognition Features -->
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+
+                        <Path Fill="#2E86DE" Data="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2Z" Width="16" Height="16"
+
+                          Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+
+                        <TextBlock Text="Nhận diện thông minh" 
+
+                                  FontSize="13" 
+
+                                  FontWeight="SemiBold" 
+
+                                  Foreground="#57606F"
+
+                                  VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
+
+
+                    <Button Height="50" Margin="0,0,0,8"
+
+                           Background="#F1F2F6"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnOCR_Click"
+
+                           ToolTip="Nhận diện chữ viết trên bảng thành văn bản">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Path Grid.Column="0" Fill="#00BCD4" 
+
+                                 Data="M3,5H9V11H3V5M5,7V9H7V7H5M11,7H21V9H11V7M11,15H21V17H11V15M5,20L1.5,16.5L2.91,15.09L5,17.17L9.59,12.59L11,14L5,20Z"
+
+                                 Width="24" Height="24"
+
+                                 Margin="0,0,10,0"/>
+
+                            <TextBlock Grid.Column="1" Text="Nhận diện chữ (OCR)" 
+
+                                      FontSize="13"
+
+                                      FontWeight="SemiBold"
+
+                                      Foreground="#2F3542"
+
+                                      VerticalAlignment="Center"/>
+
+                        </Grid>
+
+                    </Button>
+
+
+
+                    <Button Height="50" Margin="0,0,0,8"
+
+                           Background="#F1F2F6"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnTranslate_Click"
+
+                           ToolTip="Dịch văn bản đã nhận diện sang ngôn ngữ khác">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Path Grid.Column="0" Fill="#4CAF50" 
+
+                                 Data="M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z"
+
+                                 Width="24" Height="24"
+
+                                 Margin="0,0,10,0"/>
+
+                            <TextBlock Grid.Column="1" Text="Dịch văn bản" 
+
+                                      FontSize="13"
+
+                                      FontWeight="SemiBold"
+
+                                      Foreground="#2F3542"
+
+                                      VerticalAlignment="Center"/>
+
+                        </Grid>
+
+                    </Button>
+
+
+
+                    <Button Height="50" Margin="0,0,0,8"
+
+                           Background="#F1F2F6"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnTextToSpeech_Click"
+
+                           ToolTip="Đọc to văn bản đã nhận diện">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Path Grid.Column="0" Fill="#FF5722" 
+
+                                 Data="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"
+
+                                 Width="24" Height="24"
+
+                                 Margin="0,0,10,0"/>
+
+                            <TextBlock Grid.Column="1" Text="Đọc văn bản" 
+
+                                      FontSize="13"
+
+                                      FontWeight="SemiBold"
+
+                                      Foreground="#2F3542"
+
+                                      VerticalAlignment="Center"/>
+
+                        </Grid>
+
+                    </Button>
+
+
+
+                    <Button Height="50" Margin="0,0,0,8"
+
+                           Background="#F1F2F6"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnSearch_Click"
+
+                           ToolTip="Tìm kiếm nội dung trên Google">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Path Grid.Column="0" Fill="#2196F3" 
+
+                                 Data="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"
+
+                                 Width="24" Height="24"
+
+                                 Margin="0,0,10,0"/>
+
+                            <TextBlock Grid.Column="1" Text="Tìm kiếm Google" 
+
+                                      FontSize="13"
+
+                                      FontWeight="SemiBold"
+
+                                      Foreground="#2F3542"
+
+                                      VerticalAlignment="Center"/>
+
+                        </Grid>
+
+                    </Button>
+
+
+
+                    <Button Height="50"
+
+                           Background="#F1F2F6"
+
+                           BorderThickness="0"
+
+                           Cursor="Hand"
+
+                           Click="btnAIChat_Click"
+
+                           ToolTip="Hỏi AI về nội dung đã nhận diện">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="Auto"/>
+
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Path Grid.Column="0" Fill="#9C27B0" 
+
+                                 Data="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z"
+
+                                 Width="24" Height="24"
+
+                                 Margin="0,0,10,0"/>
+
+                            <TextBlock Grid.Column="1" Text="Hỏi AI về nội dung" 
+
+                                      FontSize="13"
+
+                                      FontWeight="SemiBold"
+
+                                      Foreground="#2F3542"
+
+                                      VerticalAlignment="Center"/>
+
+                        </Grid>
+
+                    </Button>
+
+
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

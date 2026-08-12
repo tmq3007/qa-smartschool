@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA SmartClass — E2E Test Runner</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0B1929;
+            color: #E2E8F0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        h1 { font-size: 24px; margin-bottom: 6px; color: #60A5FA; }
+        .subtitle { font-size: 13px; color: #94A3B8; margin-bottom: 30px; }
+        .card {
+            background: #1E293B;
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 700px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+        .card h3 { color: #60A5FA; font-size: 15px; margin-bottom: 12px; }
+        .card p { font-size: 13px; color: #94A3B8; line-height: 1.7; }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            margin: 8px 4px 8px 0;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .btn-primary { background: linear-gradient(135deg, #2563EB, #1D4ED8); color: white; }
+        .btn-green { background: linear-gradient(135deg, #16A34A, #15803D); color: white; }
+        .btn-orange { background: linear-gradient(135deg, #EA580C, #C2410C); color: white; }
+        code {
+            background: #0F172A;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 12px;
+            color: #FCD34D;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+        }
+        pre {
+            background: #0F172A;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 12px;
+            color: #A5F3FC;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .step { display: flex; gap: 12px; margin: 10px 0; align-items: flex-start; }
+        .step-num {
+            background: #2563EB;
+            color: white;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .step-text { font-size: 13px; color: #CBD5E1; line-height: 1.7; }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-pass { background: #166534; color: #4ADE80; }
+        .badge-fail { background: #7F1D1D; color: #FCA5A5; }
+        .badge-info { background: #1E3A5F; color: #93C5FD; }
+        #resultPanel { display: none; }
+        #resultPanel.visible { display: block; }
+        .result-line { font-size: 12px; padding: 4px 0; border-bottom: 1px solid #1E293B; }
+        .result-line.pass { color: #4ADE80; }
+        .result-line.fail { color: #FCA5A5; }
+    </style>
+</head>
+<body>
+    <h1>🧪 QA SmartClass — E2E Test Runner</h1>
+    <div class="subtitle">Automated Testing for Student Web App v2.0</div>
+
+    <!-- Method 1: Auto-inject (recommended) -->
+    <div class="card">
+        <h3>🚀 Phương pháp 1: Tự động (Khuyến nghị)</h3>
+        <p>Mở app.html với tham số <code>?e2e=1</code> để tự động tải E2E harness:</p>
+        <div style="margin-top:12px">
+            <a href="../app.html?e2e=1" class="btn btn-primary" target="_blank">▶ Mở App + E2E Harness</a>
+        </div>
+        <p style="margin-top:10px">Sau khi mở, nhấn <code>F12</code> → Console → chạy:</p>
+        <pre>E2E.runAll()</pre>
+    </div>
+
+    <!-- Method 2: Console inject -->
+    <div class="card">
+        <h3>🔧 Phương pháp 2: Console Inject</h3>
+        <p>Nếu app.html đã mở sẵn, dán đoạn sau vào DevTools Console (<code>F12</code>):</p>
+        <pre>// Inject E2E Harness
+const s = document.createElement('script');
+s.src = '../tests/e2e-harness.js';
+s.onload = () => console.log('✅ E2E Harness loaded! Run: E2E.runAll()');
+document.head.appendChild(s);</pre>
+        <p style="margin-top:8px">Sau đó chạy: <code>E2E.runAll()</code></p>
+    </div>
+
+    <!-- Method 3: Step by step -->
+    <div class="card">
+        <h3>📋 Phương pháp 3: Từng bước</h3>
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text">Mở <a href="../app.html" style="color:#60A5FA" target="_blank">app.html</a> trong browser</div>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text">Nhấn <code>F12</code> để mở DevTools Console</div>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text">Chạy từng test riêng lẻ:</div>
+        </div>
+        <pre>// Individual tests:
+await E2E.testNavigation()   // T1: Navigation
+await E2E.testDashboard()    // T2: Dashboard
+await E2E.testQuizFlow()     // T3: Quiz
+await E2E.testHandRaise()    // T4: Hand Raise
+await E2E.testOverlays()     // T5: Overlays (10 types)
+await E2E.testChat()         // T6: Chat
+await E2E.testSubmit()       // T7: Submit
+await E2E.testSurvey()       // T8: Survey
+await E2E.testResults()      // T9: Results
+await E2E.testSettings()     // T10: Settings
+await E2E.testLesson()       // T11: Lesson
+await E2E.testPersistence()  // T12: Persistence
+await E2E.testUI()           // T13: UI</pre>
+    </div>
+
+    <!-- Test Coverage Summary -->
+    <div class="card">
+        <h3>📊 Test Coverage</h3>
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+            <tr style="border-bottom:1px solid #334155">
+                <td style="padding:6px;color:#94A3B8">Test Suite</td>
+                <td style="padding:6px;color:#94A3B8">Assertions</td>
+                <td style="padding:6px;color:#94A3B8">Coverage</td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T1: Navigation</td>
+                <td style="padding:6px">19 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">9 pages</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T2: Dashboard</td>
+                <td style="padding:6px">5 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">100%</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T3: Quiz Flow</td>
+                <td style="padding:6px">12 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">Full lifecycle</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T4: Hand Raise</td>
+                <td style="padding:6px">5 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">100%</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T5: Overlays</td>
+                <td style="padding:6px">17 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">10 types</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T6: Chat</td>
+                <td style="padding:6px">6 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">100%</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T7: Submit</td>
+                <td style="padding:6px">7 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">3 tabs</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T8: Survey</td>
+                <td style="padding:6px">2 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">100%</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T9: Results</td>
+                <td style="padding:6px">3 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">100%</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T10: Settings</td>
+                <td style="padding:6px">5 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">5 sections</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T11: Lesson</td>
+                <td style="padding:6px">2 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">Full lifecycle</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #1E293B">
+                <td style="padding:6px">T12: Persistence</td>
+                <td style="padding:6px">5 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">localStorage</span></td>
+            </tr>
+            <tr>
+                <td style="padding:6px">T13: UI</td>
+                <td style="padding:6px">4 checks</td>
+                <td style="padding:6px"><span class="badge badge-pass">CSS + Toast</span></td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+            }
+
+            if (NewDeadline < DateTime.Today)
+            {
+                MessageBox.Show("Hạn nộp không hợp lệ (trong quá khứ).", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                using var db = new AppDbContext();
+                var assignment = new Assignment
+                {
+                    Title = NewTitle,
+                    Description = NewDescription,
+                    Deadline = NewDeadline,
+                    RosterId = SelectedClass.Id,
+                    CreatedAt = DateTime.Now
+                };
+
+                db.Assignments.Add(assignment);
+                await db.SaveChangesAsync();
+
+                NewTitle = string.Empty;
+                NewDescription = string.Empty;
+                NewDeadline = DateTime.Today.AddDays(7);
+                
+                await LoadAssignmentsAsync();
+                StatusMessage = "✅ Đã tạo bài tập mới!";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi tạo bài tập: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        [RelayCommand]
+        private async Task DeleteAssignmentAsync(Assignment assignment)
+        {
+            if (assignment == null) return;

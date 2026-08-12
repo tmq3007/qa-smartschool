@@ -1,0 +1,157 @@
+<Page x:Class="QASmartClass.Classroom.Views.WebsitePushPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="#F5F5F5">
+
+    <Grid Margin="24,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,0,12"
+                BorderBrush="#E0E0E0" BorderThickness="1">
+            <StackPanel>
+                <TextBlock Text="🌐 Mở website trên máy Học sinh" FontSize="18" FontWeight="Bold" Foreground="#212121"/>
+                <TextBlock Text="Gửi URL để mở trình duyệt trên tất cả máy HS đang kết nối" FontSize="13" Foreground="#616161" Margin="0,2,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ═══ URL INPUT & WEB CONTROL ═══ -->
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ═══ URL INPUT ═══ -->
+            <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="20,16" Margin="0,0,12,0"
+                    BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Nhập URL:" FontSize="12" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,6"/>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="🚀 Gửi đến HS" FontSize="13" Padding="16,10"
+                                Background="#1976D2" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="SendUrl_Click" Margin="8,0,0,0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#1565C0"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <TextBox x:Name="txtUrl" FontSize="14" Padding="12,10" 
+                                 Text="https://" BorderBrush="#BBDEFB" BorderThickness="2"
+                                 VerticalContentAlignment="Center">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsFocused" Value="True">
+                                            <Setter Property="BorderBrush" Value="#1976D2"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                    </DockPanel>
+
+                    <!-- Quick bookmarks -->
+                    <TextBlock Text="⭐ Bookmarks:" FontSize="13" FontWeight="SemiBold" Foreground="#555" Margin="0,12,0,6"/>
+                    <WrapPanel x:Name="bookmarkPanel">
+                        <!-- Populated in code-behind -->
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══ WEB CONTROL ═══ -->
+            <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="20,16"
+                    BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="🛡️ Kiểm soát Web máy HS" FontSize="14" FontWeight="Bold" Foreground="#212121" Margin="0,0,0,16"/>
+                    
+                    <!-- Web access toggle -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Mở truy cập Web" FontSize="12" FontWeight="SemiBold" Foreground="#333"/>
+                            <TextBlock Text="Cho phép học sinh lướt web" FontSize="10" Foreground="#888" Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <!-- Switch control -->
+                        <ToggleButton x:Name="toggleWebAccess" Grid.Column="1" Width="50" Height="26" IsChecked="True" Cursor="Hand" Click="ToggleWebAccess_Click">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="border" Background="#E0E0E0" CornerRadius="13" Padding="2">
+                                        <Ellipse x:Name="dot" Fill="White" Width="22" Height="22" HorizontalAlignment="Left"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#4CAF50"/>
+                                            <Setter TargetName="dot" Property="HorizontalAlignment" Value="Right"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                    </Grid>
+
+                    <Separator Background="#EEEEEE" Margin="0,0,0,16"/>
+
+                    <!-- Whitelist toggle -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Giới hạn (Whitelist)" FontSize="12" FontWeight="SemiBold" Foreground="#333"/>
+                            <TextBlock Text="Chỉ mở các website từ giáo viên" FontSize="10" Foreground="#888" Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <!-- Switch control -->
+                        <ToggleButton x:Name="toggleWhitelistMode" Grid.Column="1" Width="50" Height="26" IsChecked="False" Cursor="Hand" Click="ToggleWhitelistMode_Click">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="border" Background="#E0E0E0" CornerRadius="13" Padding="2">
+                                        <Ellipse x:Name="dot" Fill="White" Width="22" Height="22" HorizontalAlignment="Left"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#FF9800"/>
+                                            <Setter TargetName="dot" Property="HorizontalAlignment" Value="Right"/>
+                                        </Trigger>
+                                        <DataTrigger Binding="{Binding ElementName=toggleWebAccess, Path=IsChecked}" Value="False">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                            <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                                        </DataTrigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ═══ HISTORY ═══ -->
+        <Border Grid.Row="2" Background="White" CornerRadius="10" Padding="16"
+                BorderBrush="#E0E0E0" BorderThickness="1">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="📜 Lịch sử URL đã gửi" FontSize="14" FontWeight="Bold"
+                           Foreground="#212121" Margin="0,0,0,10"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="historyList"/>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Page>

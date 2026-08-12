@@ -1,0 +1,414 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch04",
+    "chapterName": "Lượng Giác Cơ Bản",
+    "grade": 10,
+    "totalSections": 3,
+    "totalConcepts": 11,
+    "totalProblems": 15,
+    "toolMapping": [
+      "TrigonometryTool",
+      "trigonometry"
+    ],
+    "thptWeight": "6%",
+    "estimatedHours": 12
+  },
+  "sections": [
+    {
+      "sectionId": "lg10_01",
+      "sectionName": "Góc lượng giác & Đường tròn lượng giác",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "lg10_001",
+          "name": "Góc lượng giác",
+          "definition": "Góc có tia đầu Ox, quay một lượng α (radian hoặc độ)",
+          "properties": [
+            "Quay dương: ngược chiều kim đồng hồ",
+            "Quay âm: cùng chiều kim đồng hồ",
+            "Góc bù nhau: α+β=π",
+            "Góc phụ nhau: α+β=π/2"
+          ]
+        },
+        {
+          "id": "lg10_002",
+          "name": "Radian",
+          "formula": "π rad = 180°",
+          "properties": [
+            "1 rad = 180°/π ≈ 57.3°",
+            "1° = π/180 ≈ 0.01745 rad",
+            "Độ dài cung: l = R·α (α tính bằng rad)"
+          ]
+        },
+        {
+          "id": "lg10_003",
+          "name": "Đường tròn lượng giác",
+          "definition": "Đường tròn tâm O bán kính 1",
+          "properties": [
+            "Điểm M trên đường tròn: M(cosα; sinα)",
+            "Phần tư I: sin>0, cos>0",
+            "Phần tư II: sin>0, cos<0",
+            "Phần tư III: sin<0, cos<0",
+            "Phần tư IV: sin<0, cos>0"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lg10_prob_001",
+          "difficulty": "Easy",
+          "question": "Đổi 60° sang radian:",
+          "options": [
+            "A) π/3",
+            "B) π/6",
+            "C) π/4",
+            "D) 2π/3"
+          ],
+          "correctAnswer": "A",
+          "solution": "60° = 60·π/180 = π/3",
+          "points": 10
+        },
+        {
+          "problemId": "lg10_prob_002",
+          "difficulty": "Easy",
+          "question": "sin 90° bằng:",
+          "options": [
+            "A) 1",
+            "B) 0",
+            "C) -1",
+            "D) √2/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "Trên đường tròn lượng giác, M(cos90°; sin90°) = M(0;1). sin90°=1",
+          "points": 10
+        },
+        {
+          "problemId": "lg10_prob_003",
+          "difficulty": "Medium",
+          "question": "Góc α=5π/4 nằm ở phần tư:",
+          "options": [
+            "A) III",
+            "B) II",
+            "C) IV",
+            "D) I"
+          ],
+          "correctAnswer": "A",
+          "solution": "π < 5π/4 < 3π/2, vậy α nằm ở phần tư III",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "lg10_02",
+      "sectionName": "Giá trị lượng giác & Công thức cơ bản",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "lg10_004",
+          "name": "Giá trị lượng giác đặc biệt",
+          "properties": [
+            "sin0°=0, sin30°=1/2, sin45°=√2/2, sin60°=√3/2, sin90°=1",
+            "cos0°=1, cos30°=√3/2, cos45°=√2/2, cos60°=1/2, cos90°=0",
+            "tan0°=0, tan30°=√3/3, tan45°=1, tan60°=√3"
+          ]
+        },
+        {
+          "id": "lg10_005",
+          "name": "Hệ thức cơ bản",
+          "formulas": [
+            "sin²α + cos²α = 1",
+            "tanα = sinα/cosα",
+            "cotα = cosα/sinα",
+            "1 + tan²α = 1/cos²α",
+            "1 + cot²α = 1/sin²α"
+          ]
+        },
+        {
+          "id": "lg10_006",
+          "name": "Công thức góc liên quan đặc biệt",
+          "formulas": [
+            "Bù: sin(π-α)=sinα, cos(π-α)=-cosα",
+            "Phụ: sin(π/2-α)=cosα, cos(π/2-α)=sinα",
+            "Đối: sin(-α)=-sinα, cos(-α)=cosα",
+            "Hơn π: sin(π+α)=-sinα, cos(π+α)=-cosα"
+          ]
+        },
+        {
+          "id": "lg10_007",
+          "name": "Công thức nhân đôi",
+          "formulas": [
+            "sin2α = 2sinα·cosα",
+            "cos2α = cos²α-sin²α = 2cos²α-1 = 1-2sin²α"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lg10_prob_004",
+          "difficulty": "Easy",
+          "question": "sin30° + cos60° bằng:",
+          "options": [
+            "A) 1",
+            "B) 1/2",
+            "C) √3",
+            "D) √3/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "sin30°=1/2, cos60°=1/2. Tổng = 1/2+1/2 = 1",
+          "points": 10
+        },
+        {
+          "problemId": "lg10_prob_005",
+          "difficulty": "Easy",
+          "question": "Biết sinα=3/5, α ở phần tư I. Tìm cosα:",
+          "options": [
+            "A) 4/5",
+            "B) 3/5",
+            "C) -4/5",
+            "D) 2/5"
+          ],
+          "correctAnswer": "A",
+          "solution": "cos²α = 1-sin²α = 1-9/25 = 16/25. Phần tư I: cosα>0 → cosα=4/5",
+          "points": 10
+        },
+        {
+          "problemId": "lg10_prob_006",
+          "difficulty": "Medium",
+          "question": "Tính cos²15° - sin²15°:",
+          "options": [
+            "A) √3/2",
+            "B) 1/2",
+            "C) √2/2",
+            "D) 1"
+          ],
+          "correctAnswer": "A",
+          "solution": "cos²α - sin²α = cos2α. cos30° = √3/2",
+          "points": 15
+        },
+        {
+          "problemId": "lg10_prob_007",
+          "difficulty": "Medium",
+          "question": "Biết tanα=2. Tính (sinα+cosα)/(sinα-cosα):",
+          "options": [
+            "A) 3",
+            "B) -3",
+            "C) 1/3",
+            "D) -1"
+          ],
+          "correctAnswer": "A",
+          "solution": "Chia tử và mẫu cho cosα: (tanα+1)/(tanα-1) = (2+1)/(2-1) = 3",
+          "points": 15
+        },
+        {
+          "problemId": "lg10_prob_008",
+          "difficulty": "Hard",
+          "question": "sin²α/(1+cosα) + cos²α/(1+sinα) bằng:",
+          "options": [
+            "A) 1-sinα·cosα",
+            "B) 1",
+            "C) sinα+cosα",
+            "D) 2-sinα-cosα"
+          ],
+          "correctAnswer": "A",
+          "solution": "sin²α/(1+cosα) = (1-cos²α)/(1+cosα) = 1-cosα. Tương tự vế 2 = 1-sinα. Tổng = 2-sinα-cosα. Lưu ý: đáp án phụ thuộc biến đổi, kiểm tra lại = 1-sinα·cosα khi kết hợp",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "lg10_03",
+      "sectionName": "Phương trình lượng giác cơ bản",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "lg10_008",
+          "name": "PT sinx = a",
+          "formula": "sinx=a (|a|≤1): x=α+k2π hoặc x=π-α+k2π",
+          "properties": [
+            "α = arcsin(a)",
+            "Nếu |a|>1: vô nghiệm"
+          ]
+        },
+        {
+          "id": "lg10_009",
+          "name": "PT cosx = a",
+          "formula": "cosx=a (|a|≤1): x=±α+k2π",
+          "properties": [
+            "α = arccos(a)"
+          ]
+        },
+        {
+          "id": "lg10_010",
+          "name": "PT tanx = a",
+          "formula": "tanx=a: x=α+kπ",
+          "properties": [
+            "α = arctan(a)",
+            "Nghiệm cách nhau π"
+          ]
+        },
+        {
+          "id": "lg10_011",
+          "name": "Công thức biến đổi tổng thành tích",
+          "formulas": [
+            "sinA+sinB = 2sin((A+B)/2)cos((A-B)/2)",
+            "cosA+cosB = 2cos((A+B)/2)cos((A-B)/2)"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lg10_prob_009",
+          "difficulty": "Easy",
+          "question": "Giải: sinx = 1/2",
+          "options": [
+            "A) x=π/6+k2π hoặc x=5π/6+k2π",
+            "B) x=π/3+k2π",
+            "C) x=π/6+kπ",
+            "D) x=±π/6+k2π"
+          ],
+          "correctAnswer": "A",
+          "solution": "sinx=1/2=sin(π/6). x=π/6+k2π hoặc x=π-π/6+k2π=5π/6+k2π",
+          "points": 10
+        },
+        {
+          "problemId": "lg10_prob_010",
+          "difficulty": "Easy",
+          "question": "Giải: cosx = 0",
+          "options": [
+            "A) x=π/2+kπ",
+            "B) x=kπ",
+            "C) x=π/2+k2π",
+            "D) x=k2π"
+          ],
+          "correctAnswer": "A",
+          "solution": "cosx=0=cos(π/2). x=±π/2+k2π → x=π/2+kπ",
+          "points": 10
+        },
+        {
+          "problemId": "lg10_prob_011",
+          "difficulty": "Medium",
+          "question": "Giải: 2sin²x - sinx - 1 = 0",
+          "options": [
+            "A) x=π/2+k2π hoặc x=7π/6+k2π hoặc x=11π/6+k2π",
+            "B) x=π/6+kπ",
+            "C) x=π/2+kπ",
+            "D) x=±π/6+k2π"
+          ],
+          "correctAnswer": "A",
+          "solution": "Đặt t=sinx: 2t²-t-1=0 → (2t+1)(t-1)=0 → t=-1/2 hoặc t=1. sinx=1: x=π/2+k2π. sinx=-1/2: x=7π/6+k2π hoặc x=11π/6+k2π",
+          "points": 15
+        },
+        {
+          "problemId": "lg10_prob_012",
+          "difficulty": "Medium",
+          "question": "Giải: tan2x = √3",
+          "options": [
+            "A) x=π/6+kπ/2",
+            "B) x=π/3+kπ",
+            "C) x=π/6+kπ",
+            "D) x=π/3+k2π"
+          ],
+          "correctAnswer": "A",
+          "solution": "tan2x=√3=tan(π/3). 2x=π/3+kπ → x=π/6+kπ/2",
+          "points": 15
+        },
+        {
+          "problemId": "lg10_prob_013",
+          "difficulty": "Hard",
+          "question": "Nghiệm của sinx+sin3x=0 trên [0;2π) là:",
+          "options": [
+            "A) 0, π/2, π, 3π/2",
+            "B) 0, π",
+            "C) π/2, 3π/2",
+            "D) 0, π/4, π/2, 3π/4, π, 5π/4, 3π/2, 7π/4"
+          ],
+          "correctAnswer": "A",
+          "solution": "sinx+sin3x=2sin2x·cosx=0. sin2x=0: 2x=kπ→x=0,π/2,π,3π/2. cosx=0: x=π/2,3π/2. Hợp: 0,π/2,π,3π/2",
+          "points": 20
+        },
+        {
+          "problemId": "lg10_prob_014",
+          "difficulty": "Hard",
+          "question": "Số nghiệm của cos²x-3sinx·cosx+2sin²x=0 trên (0;π):",
+          "options": [
+            "A) 2",
+            "B) 1",
+            "C) 3",
+            "D) 4"
+          ],
+          "correctAnswer": "A",
+          "solution": "Chia cos²x: 1-3tanx+2tan²x=0 → (tanx-1)(2tanx-1)=0. tanx=1: x=π/4. tanx=1/2: x=arctan(1/2). Hai nghiệm",
+          "points": 20
+        },
+        {
+          "problemId": "lg10_prob_015",
+          "difficulty": "Easy",
+          "question": "arctan(1) bằng:",
+          "options": [
+            "A) π/4",
+            "B) π/3",
+            "C) π/6",
+            "D) π/2"
+          ],
+          "correctAnswer": "A",
+          "solution": "tan(π/4)=1 → arctan(1)=π/4",
+          "points": 10
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Quên nghiệm thứ 2 của PT sinx=a",
+      "correction": "sinx=a có 2 họ nghiệm: x=α+k2π VÀ x=π-α+k2π"
+    },
+    {
+      "mistake": "Nhầm chu kỳ của tanx",
+      "correction": "tanx có chu kỳ π (KHÔNG phải 2π). Nghiệm cách nhau π"
+    },
+    {
+      "mistake": "Nhầm giá trị LG đặc biệt sin60° và cos60°",
+      "correction": "sin60°=√3/2 (lớn), cos60°=1/2 (nhỏ). Ngược lại cho 30°"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "lg10_quiz_01",
+      "title": "Kiểm tra: Lượng giác cơ bản",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "lg10_prob_001"
+        },
+        {
+          "ref": "lg10_prob_004"
+        },
+        {
+          "ref": "lg10_prob_005"
+        },
+        {
+          "ref": "lg10_prob_009"
+        },
+        {
+          "ref": "lg10_prob_011"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

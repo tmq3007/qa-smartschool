@@ -1,0 +1,104 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- 
+        ========================================================================
+        QA SMART CLASS — DESIGN TOKENS
+        ========================================================================
+        File này chứa các biến màu sắc (Tokens) được mapping từ DS.cs.
+        Sử dụng StaticResource thay vì hard-code hex color trong XAML để:
+        1. Dễ dàng bảo trì, đồng bộ giao diện.
+        2. Hỗ trợ chuyển đổi giao diện (Dark/Light mode) sau này.
+        ========================================================================
+    -->
+
+    <!-- THƯƠNG HIỆU -->
+    <Color x:Key="BrandPrimaryColor">#1565C0</Color>
+    <SolidColorBrush x:Key="BrandPrimary" Color="{StaticResource BrandPrimaryColor}" />
+
+    <Color x:Key="BrandSecondaryColor">#0D47A1</Color>
+    <SolidColorBrush x:Key="BrandSecondary" Color="{StaticResource BrandSecondaryColor}" />
+
+    <Color x:Key="BrandAccentColor">#E65100</Color>
+    <SolidColorBrush x:Key="BrandAccent" Color="{StaticResource BrandAccentColor}" />
+
+    <!-- NHÓM TOOL TOÁN HỌC -->
+    <Color x:Key="CatMathColor">#1565C0</Color>
+    <SolidColorBrush x:Key="CatMath" Color="{StaticResource CatMathColor}" />
+    <Color x:Key="CatMathBgColor">#E3F2FD</Color>
+    <SolidColorBrush x:Key="CatMathBg" Color="{StaticResource CatMathBgColor}" />
+
+    <!-- NHÓM TOOL KHOA HỌC -->
+    <Color x:Key="CatScienceColor">#2E7D32</Color>
+    <SolidColorBrush x:Key="CatScience" Color="{StaticResource CatScienceColor}" />
+    <Color x:Key="CatScienceBgColor">#E8F5E9</Color>
+    <SolidColorBrush x:Key="CatScienceBg" Color="{StaticResource CatScienceBgColor}" />
+
+    <!-- NHÓM TOOL NGÔN NGỮ -->
+    <Color x:Key="CatLanguageColor">#6A1B9A</Color>
+    <SolidColorBrush x:Key="CatLanguage" Color="{StaticResource CatLanguageColor}" />
+    <Color x:Key="CatLanguageBgColor">#F3E5F5</Color>
+    <SolidColorBrush x:Key="CatLanguageBg" Color="{StaticResource CatLanguageBgColor}" />
+
+    <!-- NHÓM TOOL ĐA MÔN -->
+    <Color x:Key="CatMultiColor">#E65100</Color>
+    <SolidColorBrush x:Key="CatMulti" Color="{StaticResource CatMultiColor}" />
+    <Color x:Key="CatMultiBgColor">#FFF3E0</Color>
+    <SolidColorBrush x:Key="CatMultiBg" Color="{StaticResource CatMultiBgColor}" />
+
+    <!-- NHÓM TOOL TƯ DUY -->
+    <Color x:Key="CatThinkingColor">#AD1457</Color>
+    <SolidColorBrush x:Key="CatThinking" Color="{StaticResource CatThinkingColor}" />
+    <Color x:Key="CatThinkingBgColor">#FCE4EC</Color>
+    <SolidColorBrush x:Key="CatThinkingBg" Color="{StaticResource CatThinkingBgColor}" />
+
+    <!-- GRAYSCALE (Trắng, Đen, Xám) -->
+    <Color x:Key="Gray900Color">#212121</Color>
+    <SolidColorBrush x:Key="Gray900" Color="{StaticResource Gray900Color}" />
+    
+    <Color x:Key="Gray800Color">#424242</Color>
+    <SolidColorBrush x:Key="Gray800" Color="{StaticResource Gray800Color}" />
+    
+    <Color x:Key="Gray700Color">#616161</Color>
+    <SolidColorBrush x:Key="Gray700" Color="{StaticResource Gray700Color}" />
+    
+    <Color x:Key="Gray300Color">#E0E0E0</Color>
+    <SolidColorBrush x:Key="Gray300" Color="{StaticResource Gray300Color}" />
+    
+    <Color x:Key="Gray100Color">#F5F5F5</Color>
+    <SolidColorBrush x:Key="Gray100" Color="{StaticResource Gray100Color}" />
+    
+    <!-- TRẠNG THÁI (Success, Error, Info, Warning) -->
+    <Color x:Key="StateSuccessColor">#388E3C</Color>
+    <SolidColorBrush x:Key="StateSuccess" Color="{StaticResource StateSuccessColor}" />
+    
+    <Color x:Key="StateErrorColor">#D32F2F</Color>
+    <SolidColorBrush x:Key="StateError" Color="{StaticResource StateErrorColor}" />
+    
+    <Color x:Key="StateWarningColor">#F57C00</Color>
+    <SolidColorBrush x:Key="StateWarning" Color="{StaticResource StateWarningColor}" />
+    
+    <Color x:Key="StateInfoColor">#1976D2</Color>
+    <SolidColorBrush x:Key="StateInfo" Color="{StaticResource StateInfoColor}" />
+
+    <!-- HỆ THỐNG MÀU CHỦ ĐỀ THÍCH ỨNG (Dynamic Theme Tokens) -->
+    <!-- Các key này được sử dụng dưới dạng DynamicResource để tự động tương thích với Dark Mode -->
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="SurfaceBackground" Color="White"/>
+    <SolidColorBrush x:Key="TextPrimary" Color="#212121"/>
+    <SolidColorBrush x:Key="TextSecondary" Color="#333333"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#CBD5E1"/>
+    <SolidColorBrush x:Key="SidebarBackground" Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="SidebarHeaderBackground" Color="#E2E8F0"/>
+
+    <!-- NHÓM TOOL NGHỀ NGHIỆP -->
+    <Color x:Key="CatWorkplaceColor">#00796B</Color>
+    <SolidColorBrush x:Key="CatWorkplace" Color="{StaticResource CatWorkplaceColor}" />
+
+    <!-- NHÓM TOOL ỨNG DỤNG THỰC TẾ -->
+    <Color x:Key="CatPracticalAppsColor">#00796B</Color>
+    <SolidColorBrush x:Key="CatPracticalApps" Color="{StaticResource CatPracticalAppsColor}" />
+
+    <!-- Tab Active Brush default fallback -->
+    <SolidColorBrush x:Key="TabActiveBrush" Color="#1565C0"/>
+
+</ResourceDictionary>

@@ -1,0 +1,60 @@
+﻿{
+  "metadata": {
+    "chapterId": "g05_ch01",
+    "chapterName": "Bài 1: Tập đọc Lớp 5",
+    "grade": 5,
+    "totalProblems": 2,
+    "totalSections": 1,
+    "estimatedHours": 2,
+    "thptWeight": "Kiến thức nền tảng Tiếng Việt Tiểu Học"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g5_ch1_0",
+      "sectionName": "Tập đọc",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/tieng-viet-5-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g5_Tập_đọc.mp3",
+      "concepts": [
+        {
+          "name": "Mục tiêu bài học",
+          "theorem": "Nắm vững kiến thức cơ bản về phân môn Tập đọc theo chương trình GDPT 2018.",
+          "definition": "Bài học tình yêu quê hương\n\nÔng nội dắt tay Lâm đi trên con đê đầu làng. Ông chỉ cho Lâm những ruộng lúa chín vàng, dòng sông hiền hòa chảy xuôi. Ông dặn: 'Quê hương ta đẹp như bức tranh. Cháu phải chăm ngoan, học giỏi để mai sau góp phần xây dựng quê hương thêm giàu đẹp'. Lâm ngoan ngoãn vâng lời ông."
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Đọc đúng đoạn văn và trả lời: Nội dung chính của bài đọc là gì?",
+          "difficulty": "Easy",
+          "options": [
+            "Ca ngợi thiên nhiên",
+            "Kể chuyện cổ tích",
+            "Giáo dục lòng hiếu thảo",
+            "Miêu tả con vật"
+          ],
+          "answer": "Giáo dục lòng hiếu thảo",
+          "hints": [
+            "Đọc kỹ phần cuối"
+          ],
+          "explanation": "Bài đọc hướng các em biết yêu thương ông bà cha mẹ."
+        },
+        {
+          "id": "p2",
+          "question": "Nhân vật chính trong bài đọc có tính cách như thế nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Ngoan ngoãn, chăm chỉ",
+            "Lười biếng",
+            "Nghịch ngợm",
+            "Nhút nhát"
+          ],
+          "answer": "Ngoan ngoãn, chăm chỉ",
+          "hints": [
+            "Bạn nhỏ đã giúp mẹ làm gì?"
+          ],
+          "explanation": "Bạn nhỏ biết giúp mẹ quét nhà, trông em nên rất ngoan ngoãn."
+        }
+      ]
+    }
+  ]
+}

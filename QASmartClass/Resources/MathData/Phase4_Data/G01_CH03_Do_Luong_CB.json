@@ -1,0 +1,425 @@
+{
+  "metadata": {
+    "chapterId": "g01_ch03",
+    "chapterName": "Đo Lường Cơ Bản",
+    "grade": 1,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 18,
+    "toolMapping": [
+      "unit_converter"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 10,
+    "prerequisites": [
+      "g01_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "dl1_01",
+      "sectionName": "Đo chiều dài (cm, m)",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "dl1_001",
+          "name": "Xentimet (cm)",
+          "definition": "Đơn vị đo chiều dài nhỏ, dùng thước kẻ",
+          "examples": [
+            "Bút chì dài khoảng 17 cm",
+            "Ngón tay rộng khoảng 1 cm"
+          ]
+        },
+        {
+          "id": "dl1_002",
+          "name": "Mét (m)",
+          "definition": "1 m = 100 cm. Dùng đo chiều dài lớn hơn",
+          "examples": [
+            "Bàn học dài khoảng 1 m",
+            "Phòng học rộng khoảng 8 m"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dl1_p01",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "1 m bằng bao nhiêu cm?",
+          "options": [
+            "A) 10 cm",
+            "B) 50 cm",
+            "C) 100 cm",
+            "D) 1000 cm"
+          ],
+          "correctAnswer": "C",
+          "solution": "1 m = 100 cm",
+          "points": 5
+        },
+        {
+          "problemId": "dl1_p02",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Bút chì dài 15 cm hay 15 m?",
+          "options": [
+            "A) 15 cm",
+            "B) 15 m",
+            "C) 15 km",
+            "D) 15 mm"
+          ],
+          "correctAnswer": "A",
+          "solution": "Bút chì là vật nhỏ → đo bằng cm: khoảng 15 cm",
+          "points": 5
+        },
+        {
+          "problemId": "dl1_p03",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Đoạn dây dài 2 m 30 cm. Đổi ra cm = ?",
+          "options": [
+            "A) 203 cm",
+            "B) 230 cm",
+            "C) 2030 cm",
+            "D) 23 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "2 m = 200 cm. 200 + 30 = 230 cm",
+          "points": 10
+        },
+        {
+          "problemId": "dl1_p04",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Bạn An cao 1 m 25 cm. Bạn Bình cao 1 m 32 cm. Bình cao hơn An bao nhiêu cm?",
+          "options": [
+            "A) 5 cm",
+            "B) 7 cm",
+            "C) 10 cm",
+            "D) 12 cm"
+          ],
+          "correctAnswer": "B",
+          "solution": "132 - 125 = 7 cm",
+          "points": 10
+        },
+        {
+          "problemId": "dl1_p05",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Cắt đoạn dây 3 m thành các đoạn 50 cm. Được bao nhiêu đoạn?",
+          "options": [
+            "A) 5",
+            "B) 6",
+            "C) 7",
+            "D) 3"
+          ],
+          "correctAnswer": "B",
+          "solution": "3 m = 300 cm. 300 ÷ 50 = 6 đoạn",
+          "points": 15
+        },
+        {
+          "problemId": "dl1_p06",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Sợi dây dài 450 cm. Đổi ra m và cm: ?",
+          "options": [
+            "A) 4 m 5 cm",
+            "B) 45 m 0 cm",
+            "C) 4 m 50 cm",
+            "D) 40 m 50 cm"
+          ],
+          "correctAnswer": "C",
+          "solution": "450 cm = 400 cm + 50 cm = 4 m 50 cm",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "dl1_02",
+      "sectionName": "Đo khối lượng (kg, g)",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "dl1_003",
+          "name": "Kilôgam (kg)",
+          "definition": "Đơn vị đo khối lượng, dùng cân",
+          "examples": [
+            "Túi gạo nặng 5 kg",
+            "Em bé nặng khoảng 3 kg"
+          ]
+        },
+        {
+          "id": "dl1_004",
+          "name": "Gam (g)",
+          "definition": "1 kg = 1000 g. Đo vật nhẹ",
+          "examples": [
+            "Viên thuốc nặng 500 mg",
+            "Quả trứng nặng khoảng 60 g"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dl1_p07",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "1 kg bằng bao nhiêu gam?",
+          "options": [
+            "A) 10 g",
+            "B) 100 g",
+            "C) 1000 g",
+            "D) 10000 g"
+          ],
+          "correctAnswer": "C",
+          "solution": "1 kg = 1000 g",
+          "points": 5
+        },
+        {
+          "problemId": "dl1_p08",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Vật nào nặng hơn: quả cam hay xe đạp?",
+          "options": [
+            "A) Quả cam",
+            "B) Xe đạp",
+            "C) Bằng nhau",
+            "D) Không so sánh được"
+          ],
+          "correctAnswer": "B",
+          "solution": "Xe đạp nặng khoảng 12 kg, quả cam khoảng 200 g → xe đạp nặng hơn",
+          "points": 5
+        },
+        {
+          "problemId": "dl1_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Mẹ mua 2 kg gạo và 500 g đường. Tổng cộng nặng bao nhiêu gam?",
+          "options": [
+            "A) 2500 g",
+            "B) 2050 g",
+            "C) 3000 g",
+            "D) 250 g"
+          ],
+          "correctAnswer": "A",
+          "solution": "2 kg = 2000 g. 2000 + 500 = 2500 g",
+          "points": 10
+        },
+        {
+          "problemId": "dl1_p10",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Túi bột nặng 1 kg 200 g. Dùng hết 450 g. Còn lại bao nhiêu gam?",
+          "options": [
+            "A) 750 g",
+            "B) 850 g",
+            "C) 650 g",
+            "D) 550 g"
+          ],
+          "correctAnswer": "A",
+          "solution": "1 kg 200 g = 1200 g. 1200 - 450 = 750 g",
+          "points": 10
+        },
+        {
+          "problemId": "dl1_p11",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "5 quả cam cân nặng 1 kg. Mỗi quả cam nặng khoảng bao nhiêu gam?",
+          "options": [
+            "A) 100 g",
+            "B) 150 g",
+            "C) 200 g",
+            "D) 250 g"
+          ],
+          "correctAnswer": "C",
+          "solution": "1 kg = 1000 g. 1000 ÷ 5 = 200 g mỗi quả",
+          "points": 15
+        },
+        {
+          "problemId": "dl1_p12",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "3 gói kẹo, mỗi gói 350 g. Tổng cộng bao nhiêu kg và g?",
+          "options": [
+            "A) 1 kg 50 g",
+            "B) 1 kg 500 g",
+            "C) 1 kg 150 g",
+            "D) 1 kg 100 g"
+          ],
+          "correctAnswer": "A",
+          "solution": "3 × 350 = 1050 g = 1 kg 50 g",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "dl1_03",
+      "sectionName": "Đo dung tích (lít)",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "dl1_005",
+          "name": "Lít (l)",
+          "definition": "Đơn vị đo dung tích chất lỏng",
+          "examples": [
+            "Chai nước 1 lít",
+            "Xô nước chứa 10 lít"
+          ]
+        },
+        {
+          "id": "dl1_006",
+          "name": "Ước lượng dung tích",
+          "definition": "Phán đoán dung tích bằng so sánh với vật quen thuộc",
+          "examples": [
+            "Cốc nước ≈ 200 ml",
+            "Bình nước lớn ≈ 2 lít"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "dl1_p13",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Chai nước suối thường chứa bao nhiêu lít?",
+          "options": [
+            "A) 0.5 lít",
+            "B) 5 lít",
+            "C) 50 lít",
+            "D) 500 lít"
+          ],
+          "correctAnswer": "A",
+          "solution": "Chai nước suối phổ biến chứa khoảng 0.5 lít (500 ml)",
+          "points": 5
+        },
+        {
+          "problemId": "dl1_p14",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Bể cá chứa 20 lít hay 20 ml nước?",
+          "options": [
+            "A) 20 ml",
+            "B) 20 lít",
+            "C) 20 kg",
+            "D) 20 m"
+          ],
+          "correctAnswer": "B",
+          "solution": "Bể cá là vật chứa lớn → đo bằng lít: khoảng 20 lít",
+          "points": 5
+        },
+        {
+          "problemId": "dl1_p15",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Bình nước chứa 5 lít. Rót ra 2 cốc, mỗi cốc 200 ml. Còn lại bao nhiêu ml?",
+          "options": [
+            "A) 4600 ml",
+            "B) 4800 ml",
+            "C) 4500 ml",
+            "D) 4400 ml"
+          ],
+          "correctAnswer": "A",
+          "solution": "5 lít = 5000 ml. Rót: 2 × 200 = 400 ml. Còn: 5000 - 400 = 4600 ml",
+          "points": 10
+        },
+        {
+          "problemId": "dl1_p16",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "3 chai sữa, mỗi chai 1 lít. Uống hết 2 lít. Còn bao nhiêu?",
+          "options": [
+            "A) 1 lít",
+            "B) 2 lít",
+            "C) 5 lít",
+            "D) 3 lít"
+          ],
+          "correctAnswer": "A",
+          "solution": "3 × 1 = 3 lít. 3 - 2 = 1 lít còn lại",
+          "points": 10
+        },
+        {
+          "problemId": "dl1_p17",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Dùng ca 500 ml múc nước đổ vào xô. Múc 8 lần thì đầy xô. Xô chứa bao nhiêu lít?",
+          "options": [
+            "A) 3 lít",
+            "B) 4 lít",
+            "C) 5 lít",
+            "D) 8 lít"
+          ],
+          "correctAnswer": "B",
+          "solution": "8 × 500 ml = 4000 ml = 4 lít",
+          "points": 15
+        },
+        {
+          "problemId": "dl1_p18",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Bình A chứa 3 lít, bình B chứa 1 lít 500 ml. Tổng cộng bao nhiêu ml?",
+          "options": [
+            "A) 4000 ml",
+            "B) 4500 ml",
+            "C) 5000 ml",
+            "D) 3500 ml"
+          ],
+          "correctAnswer": "B",
+          "solution": "3 lít = 3000 ml. 1 lít 500 ml = 1500 ml. Tổng: 3000 + 1500 = 4500 ml",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm m với cm: viết 2 m thành 20 cm",
+      "correction": "1 m = 100 cm. Nhớ: 1 m rất dài (= chiều dài cánh tay người lớn)"
+    },
+    {
+      "mistake": "Nhầm kg với g: 2 kg = 200 g",
+      "correction": "1 kg = 1000 g (nhớ: kg = 'kilo' = nghìn)"
+    },
+    {
+      "mistake": "Quên đổi đơn vị trước khi cộng/trừ",
+      "correction": "Luôn đổi về cùng đơn vị trước khi tính toán"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "dl1_quiz_01",
+      "title": "Kiểm tra: Đo lường cơ bản Lớp 1",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "dl1_p01"
+        },
+        {
+          "ref": "dl1_p07"
+        },
+        {
+          "ref": "dl1_p13"
+        },
+        {
+          "ref": "dl1_p03"
+        },
+        {
+          "ref": "dl1_p11"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

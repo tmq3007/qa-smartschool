@@ -1,0 +1,615 @@
+Phân tích chi tiết chức năng chọn vùng (Selection Tools) trong phần mềm bảng tương tác thông minh
+Dựa trên hình ảnh đính kèm, đây là giao diện của một phần mềm vẽ/chỉnh sửa cho bảng tương tác thông minh (Interactive Whiteboard). Dưới đây là phân tích chi tiết về các chức năng chọn vùng kèm logic xử lý:
+
+🎯 Thanh công cụ chính (Main Toolbar)
+1. Công cụ chọn vùng (Selection Tool) - Biểu tượng mũi tên trắng
+Chức năng chính: Cho phép chọn và thao tác với các đối tượng đã vẽ
+
+Logic xử lý:
+
+Copy
+KHI người dùng click vào công cụ này:
+  → Chuyển con trỏ thành mũi tên chọn
+  → Kích hoạt chế độ selection mode
+  
+KHI click vào một đối tượng:
+  → Kiểm tra tọa độ click có nằm trong bounds của đối tượng không
+  → NẾU có: 
+      • Đánh dấu đối tượng là "selected"
+      • Hiển thị bounding box màu vàng đứt nét
+      • Hiển thị control points (điểm điều khiển)
+      • Hiển thị thanh công cụ phụ
+  → NẾU không: Bỏ chọn đối tượng hiện tại
+  
+KHI kéo đối tượng đã chọn:
+  → Tính toán delta (dx, dy) = (vị trí hiện tại - vị trí ban đầu)
+  → Cập nhật tọa độ đối tượng: x += dx, y += dy
+  → Vẽ lại đối tượng ở vị trí mới
+  → Cập nhật real-time trong khi kéo
+Cách sử dụng:
+
+Single click: Chọn đối tượng
+Click + Drag: Di chuyển đối tượng
+Click vùng trống: Bỏ chọn
+Shift + Click: Chọn nhiều đối tượng
+🛠️ Thanh công cụ phụ khi đã chọn đối tượng
+2. Biểu tượng số "6" - Kích thước nét vẽ (Stroke Width)
+Chức năng: Hiển thị và điều chỉnh độ dày của nét vẽ (từ 1-10)
+
+Logic xử lý:
+
+Copy
+KHỞI TẠO:
+  → Đọc thuộc tính strokeWidth của đối tượng được chọn
+  → Hiển thị giá trị hiện tại (VD: "6")
+  
+KHI click vào biểu tượng số:
+  → Hiển thị dropdown menu với danh sách:
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  → Đánh dấu (highlight) giá trị hiện tại
+  → Hiển thị preview trực quan cho mỗi kích thước:
+      • Số 1: ━━━━ (mỏng nhất)
+      • Số 5: ━━━━ (trung bình)
+      • Số 10: ━━━━ (dày nhất)
+  
+KHI người dùng chọn một giá trị mới (VD: chọn "8"):
+  → Cập nhật thuộc tính: object.strokeWidth = 8
+  → Vẽ lại đối tượng với nét vẽ mới
+  → Cập nhật hiển thị trên biểu tượng: "6" → "8"
+  → Đóng dropdown menu
+  → Lưu vào history để có thể Undo/Redo
+  
+NẾU chọn nhiều đối tượng cùng lúc:
+  → Hiển thị giá trị của đối tượng được chọn đầu tiên
+  → HOẶC hiển thị "Mixed" nếu các đối tượng có strokeWidth khác nhau
+  → Khi thay đổi: áp dụng cho TẤT CẢ đối tượng được chọn
+Giao diện dropdown:
+
+Copy
+┌─────────────────┐
+│  1  ━━━━━━━━   │
+│  2  ━━━━━━━━   │
+│  3  ━━━━━━━━   │
+│  4  ━━━━━━━━   │
+│  5  ━━━━━━━━   │
+│ ✓6  ━━━━━━━━   │ ← Đang chọn
+│  7  ━━━━━━━━   │
+│  8  ━━━━━━━━   │
+│  9  ━━━━━━━━   │
+│  10 ━━━━━━━━   │
+└─────────────────┘
+3. Biểu tượng nút phát (Flip Tool)
+Chức năng: Lật/đảo ngược đối tượng theo trục ngang hoặc dọc
+
+Logic xử lý:
+
+Copy
+KHI click vào biểu tượng:
+  → Hiển thị submenu với 2 tùy chọn:
+      • Flip Horizontal (Lật ngang) ⟷
+      • Flip Vertical (Lật dọc) ⟱
+  
+KHI chọn "Flip Horizontal":
+  → Tính toán tâm đối tượng: centerX = (x + width/2)
+  → ĐỐI VỚI mỗi điểm (px, py) trong đối tượng:
+      • newX = 2 * centerX - px
+      • newY = py (giữ nguyên)
+  → Áp dụng transform: scaleX *= -1
+  → Vẽ lại đối tượng
+  → Lưu vào history
+  
+KHI chọn "Flip Vertical":
+  → Tính toán tâm đối tượng: centerY = (y + height/2)
+  → ĐỐI VỚI mỗi điểm (px, py) trong đối tượng:
+      • newX = px (giữ nguyên)
+      • newY = 2 * centerY - py
+  → Áp dụng transform: scaleY *= -1
+  → Vẽ lại đối tượng
+  → Lưu vào history
+Ứng dụng: Hữu ích khi cần tạo đối tượng đối xứng hoặc thay đổi hướng của hình vẽ
+
+4. Biểu tượng làm mới (Rotate Tool)
+Chức năng: Xoay đối tượng theo các góc định sẵn
+
+Logic xử lý:
+
+Copy
+KHI click vào biểu tượng:
+  → Hiển thị menu với các tùy chọn:
+      • Rotate 90° Clockwise (Xoay phải 90°) ↻
+      • Rotate 90° Counter-clockwise (Xoay trái 90°) ↺
+      • Rotate 180° (Xoay 180°) ⟲
+      • Custom Angle... (Góc tùy chỉnh)
+  
+KHI chọn "Rotate 90° Clockwise":
+  → Tính toán tâm xoay: (centerX, centerY)
+  → Cập nhật góc xoay: rotation = (rotation + 90) % 360
+  → Áp dụng ma trận xoay:
+      [cos(90°)  -sin(90°)]   [0   -1]
+      [sin(90°)   cos(90°)] = [1    0]
+  → ĐỐI VỚI mỗi điểm (x, y):
+      • dx = x - centerX
+      • dy = y - centerY
+      • newX = centerX + (dx * cos(θ) - dy * sin(θ))
+      • newY = centerY + (dx * sin(θ) + dy * cos(θ))
+  → Vẽ lại đối tượng
+  → Lưu vào history
+  
+KHI chọn "Custom Angle":
+  → Hiển thị input dialog hoặc slider (0-360°)
+  → Cho phép người dùng nhập/kéo góc xoay
+  → Hiển thị preview real-time
+  → Áp dụng khi người dùng xác nhận
+Phím tắt: Ctrl + R (xoay 90° phải), Ctrl + Shift + R (xoay 90° trái)
+
+5. Biểu tượng khóa (Lock Tool)
+Chức năng: Khóa/mở khóa đối tượng để tránh chỉnh sửa nhầm
+
+Logic xử lý:
+
+Copy
+KHỞI TẠO:
+  → Kiểm tra thuộc tính: object.isLocked
+  → NẾU locked: Hiển thị icon khóa đóng 🔒
+  → NẾU unlocked: Hiển thị icon khóa mở 🔓
+  
+KHI click vào biểu tượng:
+  → Toggle trạng thái: object.isLocked = !object.isLocked
+  
+  NẾU chuyển sang LOCKED:
+      • Cập nhật icon: 🔓 → 🔒
+      • Vô hiệu hóa các chức năng:
+          - Không thể di chuyển (drag disabled)
+          - Không thể resize (control points ẩn)
+          - Không thể xóa (delete disabled)
+          - Không thể chỉnh sửa thuộc tính
+      • Thay đổi màu bounding box: vàng → xám
+      • Hiển thị icon khóa nhỏ trên đối tượng
+      • Lưu trạng thái
+  
+  NẾU chuyển sang UNLOCKED:
+      • Cập nhật icon: 🔒 → 🔓
+      • Kích hoạt lại tất cả chức năng
+      • Khôi phục màu bounding box: xám → vàng
+      • Ẩn icon khóa trên đối tượng
+      • Lưu trạng thái
+
+KHI cố gắng thao tác với đối tượng đã khóa:
+  → Hiển thị thông báo: "Object is locked. Unlock to edit."
+  → Phát hiệu ứng rung nhẹ (shake animation)
+  → Không cho phép thực hiện hành động
+Ứng dụng:
+
+Khóa đối tượng nền (background) để không bị di chuyển nhầm
+Bảo vệ các thành phần quan trọng trong bản vẽ
+Hữu ích khi làm việc với nhiều layer phức tạp
+6. Biểu tượng nhóm (Group Tool)
+Chức năng: Nhóm/bỏ nhóm nhiều đối tượng thành một nhóm
+
+Logic xử lý:
+
+Copy
+ĐIỀU KIỆN kích hoạt:
+  → Chỉ hiển thị khi có >= 2 đối tượng được chọn
+  → NẾU < 2 đối tượng: Icon bị mờ (disabled)
+
+KHI click vào "Group" (khi chưa nhóm):
+  → Tạo đối tượng Group mới:
+      group = {
+        type: "group",
+        id: generateUniqueId(),
+        children: [object1, object2, ...],
+        bounds: calculateCombinedBounds(selectedObjects),
+        transform: { x: 0, y: 0, rotation: 0, scale: 1 }
+      }
+  → Tính toán bounding box chung:
+      • minX = min(all objects x)
+      • minY = min(all objects y)
+      • maxX = max(all objects x + width)
+      • maxY = max(all objects y + height)
+  → Chuyển đổi tọa độ các đối tượng con về tương đối với group
+  → Xóa các đối tượng riêng lẻ khỏi canvas
+  → Thêm group vào canvas
+  → Cập nhật icon: Group → Ungroup
+  → Lưu vào history
+
+KHI click vào "Ungroup" (khi đã nhóm):
+  → Lấy danh sách children từ group
+  → ĐỐI VỚI mỗi child:
+      • Chuyển đổi tọa độ từ tương đối về tuyệt đối
+      • Áp dụng transform của group (rotation, scale)
+      • Thêm lại vào canvas như đối tượng độc lập
+  → Xóa group khỏi canvas
+  → Chọn tất cả các đối tượng vừa ungroup
+  → Cập nhật icon: Ungroup → Group
+  → Lưu vào history
+
+KHI thao tác với Group:
+  → Di chuyển: Di chuyển tất cả children cùng lúc
+  → Resize: Scale tất cả children theo tỷ lệ
+  → Rotate: Xoay tất cả children quanh tâm group
+  → Delete: Xóa toàn bộ group và children
+Phím tắt: Ctrl + G (Group), Ctrl + Shift + G (Ungroup)
+
+📐 Thanh công cụ bên phải (Right Sidebar)
+7. Mũi tên lên (Layer Order - Bring to Front)
+Chức năng: Điều chỉnh thứ tự lớp (z-index) của đối tượng
+
+Logic xử lý:
+
+Copy
+KHI click vào biểu tượng:
+  → Hiển thị menu với các tùy chọn:
+      • Bring to Front (Đưa lên trên cùng) ⬆⬆
+      • Bring Forward (Đưa lên 1 lớp) ⬆
+      • Send Backward (Đưa xuống 1 lớp) ⬇
+      • Send to Back (Đưa xuống dưới cùng) ⬇⬇
+
+KHI chọn "Bring to Front":
+  → Lấy z-index cao nhất hiện tại: maxZ = max(all objects zIndex)
+  → Cập nhật: object.zIndex = maxZ + 1
+  → Sắp xếp lại danh sách đối tượng theo zIndex
+  → Vẽ lại canvas (đối tượng có zIndex cao vẽ sau cùng)
+  → Lưu vào history
+
+KHI chọn "Bring Forward":
+  → Tìm đối tượng có zIndex lớn hơn gần nhất
+  → Hoán đổi zIndex: 
+      temp = object.zIndex
+      object.zIndex = nextObject.zIndex
+      nextObject.zIndex = temp
+  → Vẽ lại canvas
+  → Lưu vào history
+
+KHI chọn "Send to Back":
+  → Lấy z-index thấp nhất: minZ = min(all objects zIndex)
+  → Cập nhật: object.zIndex = minZ - 1
+  → Sắp xếp lại và vẽ lại
+  → Lưu vào history
+
+KHI chọn "Send Backward":
+  → Tìm đối tượng có zIndex nhỏ hơn gần nhất
+  → Hoán đổi zIndex
+  → Vẽ lại canvas
+  → Lưu vào history
+Phím tắt:
+
+Ctrl + Shift + ] : Bring to Front
+Ctrl + ] : Bring Forward
+Ctrl + [ : Send Backward
+Ctrl + Shift + [ : Send to Back
+8. Biểu tượng copy/duplicate (Duplicate Tool)
+Chức năng: Sao chép đối tượng đã chọn
+
+Logic xử lý:
+
+Copy
+KHI click vào biểu tượng:
+  → Tạo bản sao sâu (deep copy) của đối tượng:
+      newObject = {
+        ...cloneDeep(selectedObject),
+        id: generateUniqueId(),  // ID mới duy nhất
+        x: selectedObject.x + 20,  // Offset để thấy rõ
+        y: selectedObject.y + 20,
+        zIndex: maxZIndex + 1
+      }
+  
+  → Sao chép TẤT CẢ thuộc tính:
+      • Hình dạng (shape, path)
+      • Màu sắc (fill, stroke)
+      • Kích thước (width, height, strokeWidth)
+      • Transform (rotation, scale)
+      • Style (opacity, shadow, etc.)
+  
+  → Thêm đối tượng mới vào canvas
+  → Bỏ chọn đối tượng cũ
+  → Chọn đối tượng mới (để dễ di chuyển tiếp)
+  → Vẽ đối tượng mới
+  → Lưu vào history
+
+NẾU sao chép Group:
+  → Sao chép đệ quy tất cả children
+  → Giữ nguyên cấu trúc phân cấp
+  → Cập nhật ID cho group và tất cả children
+
+NẾU sao chép nhiều đối tượng:
+  → Sao chép từng đối tượng
+  → Giữ nguyên khoảng cách tương đối giữa các đối tượng
+  → Offset toàn bộ nhóm (+20, +20)
+Phím tắt: Ctrl + D (Duplicate), Ctrl + C + Ctrl + V (Copy & Paste)
+
+Tính năng nâng cao:
+
+Copy
+Smart Duplicate (Sao chép thông minh):
+  → Ghi nhớ offset của lần duplicate trước
+  → VD: Nếu lần 1 di chuyển (+50, 0)
+  → Lần duplicate tiếp theo tự động offset (+50, 0)
+  → Hữu ích để tạo mẫu lặp lại đều đặn
+9. Biểu tượng lưu (Save to Library)
+Chức năng: Lưu đối tượng vào thư viện để tái sử dụng
+
+Logic xử lý:
+
+Copy
+KHI click vào biểu tượng:
+  → Hiển thị dialog "Save to Library":
+      ┌─────────────────────────────────┐
+      │ Save to Library                 │
+      ├─────────────────────────────────┤
+      │ Name: [___________________]     │
+      │ Category: [Dropdown ▼]          │
+      │   • Shapes                      │
+      │   • Sports                      │
+      │   • Education                   │
+      │   • Custom                      │
+      │ Tags: [___________________]     │
+      │ Preview: [Thumbnail]            │
+      │                                 │
+      │ [Cancel]  [Save]                │
+      └─────────────────────────────────┘
+  
+KHI người dùng nhấn "Save":
+  → Tạo thumbnail (preview image):
+      • Render đối tượng vào canvas tạm
+      • Resize về kích thước chuẩn (128x128px)
+      • Chuyển thành base64 hoặc blob
+  
+  → Tạo library item:
+      libraryItem = {
+        id: generateUniqueId(),
+        name: userInput.name,
+        category: userInput.category,
+        tags: userInput.tags.split(','),
+        thumbnail: thumbnailBase64,
+        objectData: serialize(selectedObject),
+        createdAt: Date.now(),
+        usageCount: 0
+      }
+  
+  → Lưu vào database/localStorage:
+      • Local: localStorage.setItem('library_' + id, JSON.stringify(item))
+      • Server: POST /api/library/items
+  
+  → Cập nhật giao diện thư viện
+  → Hiển thị thông báo: "Saved to library successfully!"
+  → Đóng dialog
+
+KHI sử dụng lại từ thư viện:
+  → Deserialize objectData
+  → Tạo instance mới với ID mới
+  → Đặt vào vị trí trung tâm canvas
+  → Tăng usageCount++
+Ứng dụng:
+
+Lưu các sơ đồ chiến thuật thường dùng
+Tạo thư viện biểu tượng riêng
+Chia sẻ giữa các bài giảng
+10. Biểu tượng thùng rác (Delete Tool)
+Chức năng: Xóa đối tượng đã chọn
+
+Logic xử lý:
+
+Copy
+KHI click vào biểu tượng:
+  → Kiểm tra trạng thái lock:
+      NẾU object.isLocked == true:
+          • Hiển thị cảnh báo: "Cannot delete locked object"
+          • Dừng xử lý
+          • Return
+  
+  → Kiểm tra số lượng đối tượng được chọn:
+      NẾU selectedObjects.length == 1:
+          • Hiển thị confirm: "Delete this object?"
+      NẾU selectedObjects.length > 1:
+          • Hiển thị confirm: "Delete {count} objects?"
+  
+  → NẾU người dùng xác nhận:
+      • Lưu trạng thái trước khi xóa (để Undo):
+          history.push({
+            action: 'delete',
+            objects: cloneDeep(selectedObjects),
+            timestamp: Date.now()
+          })
+      
+      • ĐỐI VỚI mỗi đối tượng được chọn:
+          - Xóa khỏi canvas: canvas.remove(object)
+          - Xóa khỏi danh sách: objects.splice(index, 1)
+          - Giải phóng bộ nhớ: object.dispose()
+      
+      • Xóa bounding box và control points
+      • Ẩn thanh công cụ phụ
+      • Vẽ lại canvas
+      • Cập nhật selection: selectedObjects = []
+      • Hiển thị thông báo: "Deleted successfully"
+
+KHI xóa Group:
+  → Hỏi thêm tùy chọn:
+      • Delete entire group
+      • Ungroup and delete selected items only
+  → Xử lý theo lựa chọn
+
+Tính năng Soft Delete (Xóa mềm):
+  → Thay vì xóa hẳn, đánh dấu: object.isDeleted = true
+  → Ẩn khỏi canvas nhưng vẫn giữ trong memory
+  → Cho phép Undo dễ dàng hơn
+  → Xóa hẳn sau khi history đầy hoặc người dùng xác nhận
+Phím tắt: Delete, Backspace
+
+Tính năng bảo vệ:
+
+Copy
+Confirmation Settings:
+  → Cho phép tắt confirm dialog trong settings
+  → Nhưng luôn confirm khi xóa nhiều đối tượng (>5)
+  → Không confirm khi dùng phím tắt (để nhanh hơn)
+🎨 Đặc điểm của vùng chọn (Selection Highlight)
+Bounding Box (Khung chọn)
+Logic hiển thị:
+
+Copy
+KHI đối tượng được chọn:
+  → Tính toán bounds:
+      bounds = {
+        x: object.x,
+        y: object.y,
+        width: object.width,
+        height: object.height,
+        rotation: object.rotation
+      }
+  
+  → Vẽ bounding box:
+      • Style: dashed line (đường đứt nét)
+      • Color: #FFD700 (vàng)
+      • Width: 2px
+      • Dash pattern: [5, 5] (5px line, 5px gap)
+  
+  → Vẽ control points (8 điểm):
+      Vị trí:
+      • 4 góc: topLeft, topRight, bottomLeft, bottomRight
+      • 4 cạnh: topCenter, rightCenter, bottomCenter, leftCenter
+      
+      Style:
+      • Shape: circle
+      • Radius: 6px
+      • Fill: white
+      • Stroke: #FFD700 (vàng)
+      • StrokeWidth: 2px
+  
+  → Vẽ rotation handle (điểm xoay):
+      • Vị trí: topCenter + offset (0, -30px)
+      • Icon: ↻ hoặc circle
+      • Kết nối với topCenter bằng đường thẳng đứt nét
+
+KHI hover vào control point:
+  → Thay đổi cursor tương ứng:
+      • Góc: nwse-resize, nesw-resize
+      • Cạnh: ns-resize, ew-resize
+      • Rotation handle: grab
+  → Phóng to control point: radius 6px → 8px
+  → Thay đổi màu: white → light yellow
+
+KHI kéo control point:
+  → Corner (góc): Resize theo cả 2 chiều
+      • Giữ Shift: Giữ tỷ lệ (proportional)
+      • Giữ Alt: Resize từ tâm (center-based)
+  
+  → Edge (cạnh): Resize theo 1 chiều
+      • Top/Bottom: Thay đổi height
+      • Left/Right: Thay đổi width
+  
+  → Rotation handle: Xoay đối tượng
+      • Tính góc: angle = atan2(mouseY - centerY, mouseX - centerX)
+      • Giữ Shift: Snap to 15° increments
+      • Hiển thị góc xoay real-time: "45°"
+🔄 Hệ thống History (Undo/Redo)
+Logic xử lý:
+
+Copy
+Cấu trúc History Stack:
+  historyStack = {
+    past: [],      // Các hành động đã làm
+    present: {},   // Trạng thái hiện tại
+    future: []     // Các hành động đã undo
+  }
+
+KHI thực hiện một hành động:
+  → Lưu trạng thái hiện tại vào past:
+      past.push({
+        action: 'move' | 'resize' | 'rotate' | 'delete' | ...,
+        objectId: object.id,
+        before: cloneDeep(object.previousState),
+        after: cloneDeep(object.currentState),
+        timestamp: Date.now()
+      })
+  
+  → Xóa future stack (vì đã có hành động mới):
+      future = []
+  
+  → Giới hạn history size:
+      NẾU past.length > MAX_HISTORY_SIZE (VD: 50):
+          past.shift()  // Xóa hành động cũ nhất
+
+KHI nhấn Undo (Ctrl + Z):
+  → Lấy hành động cuối cùng từ past:
+      lastAction = past.pop()
+  
+  → Khôi phục trạng thái trước:
+      object.setState(lastAction.before)
+  
+  → Lưu vào future để có thể Redo:
+      future.push(lastAction)
+  
+  → Vẽ lại canvas
+
+KHI nhấn Redo (Ctrl + Y):
+  → Lấy hành động từ future:
+      nextAction = future.pop()
+  
+  → Áp dụng lại trạng thái sau:
+      object.setState(nextAction.after)
+  
+  → Lưu lại vào past:
+      past.push(nextAction)
+  
+  → Vẽ lại canvas
+
+Tối ưu hóa:
+  → Batch actions: Nhóm các hành động nhỏ liên tiếp
+      VD: Kéo đối tượng tạo nhiều event, chỉ lưu 1 history entry
+  → Compress history: Nén dữ liệu cũ để tiết kiệm bộ nhớ
+  → Auto-save: Lưu history vào localStorage định kỳ
+💡 Ứng dụng thực tế trong giảng dạy
+1. Giáo viên Thể dục
+Copy
+Tình huống: Vẽ sơ đồ chiến thuật bóng đá
+  → Vẽ sân bóng từ thư viện
+  → Lock sân bóng (để không di chuyển nhầm)
+  → Thêm cầu thủ (circles với số áo)
+  → Group các cầu thủ cùng đội
+  → Vẽ đường di chuyển (arrows) với strokeWidth = 4
+  → Duplicate chiến thuật để tạo biến thể
+  → Save vào library để dùng cho bài sau
+2. Giáo viên Toán học
+Copy
+Tình huống: Minh họa phép biến hình
+  → Vẽ hình tam giác gốc
+  → Duplicate và Flip Horizontal → Đối xứng trục
+  → Duplicate và Rotate 90° → Xoay
+  → Duplicate và Scale → Phóng to/thu nhỏ
+  → Group tất cả để so sánh
+  → Adjust strokeWidth = 3 để học sinh nhìn rõ
+3. Giáo viên Ngữ văn
+Copy
+Tình huống: Vẽ sơ đồ tư duy
+  → Tạo node trung tâm (chủ đề chính)
+  → Duplicate nhiều lần cho các ý phụ
+  → Arrange theo thứ tự (Bring to Front/Back)
+  → Vẽ các mũi tên kết nối
+  → Lock các node quan trọng
+  → Save template vào library
+🎯 Tổng kết Logic Flow
+Copy
+User Interaction Flow:
+  1. Chọn công cụ Selection Tool
+  2. Click vào đối tượng
+     ↓
+  3. Hiển thị bounding box + control points
+     ↓
+  4. Hiển thị thanh công cụ phụ với các options:
+     • Stroke Width (1-10)
+     • Flip (Horizontal/Vertical)
+     • Rotate (90°/180°/Custom)
+     • Lock/Unlock
+     • Group/Ungroup
+     ↓
+  5. Thanh công cụ bên phải:
+     • Layer Order (Z-index)
+     • Duplicate
+     • Save to Library
+     • Delete
+     ↓
+  6. Mọi thao tác đều được lưu vào History
+     ↓
+  7. Có thể Undo/Redo bất cứ lúc nào
+Kết luận: Đây là một hệ thống chọn vùng hoàn chỉnh, trực quan và mạnh mẽ, được thiết kế tối ưu cho màn hình cảm ứng và bảng tương tác thông minh. Mỗi chức năng đều có logic xử lý rõ ràng, hỗ trợ đầy đủ các thao tác cần thiết cho giảng dạy và thuyết trình chuyên nghiệp.

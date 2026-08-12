@@ -1,0 +1,156 @@
+﻿<Window x:Class="QASmartClass.StudentClient.Views.CareerDetailWindow"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Lộ trình Hướng nghiệp Chi tiết" Height="500" Width="600"
+
+        WindowStartupLocation="CenterScreen" Background="#F8FAFC" FontFamily="Segoe UI">
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header Card -->
+
+        <Border Grid.Row="0" CornerRadius="10" Padding="20">
+
+            <Border.Background>
+
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+
+                    <GradientStop Color="#1E3A8A" Offset="0"/>
+
+                    <GradientStop Color="#4F46E5" Offset="1"/>
+
+                </LinearGradientBrush>
+
+            </Border.Background>
+
+            <StackPanel>
+
+                <TextBlock x:Name="TxtTitle" Text="Kỹ sư phần mềm" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+
+                <TextBlock x:Name="TxtDescription" Text="Nghiên cứu, thiết kế, phát triển và thử nghiệm các phần mềm, hệ thống vận hành máy tính." FontSize="13" Foreground="#E0E7FF" TextWrapping="Wrap"/>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- Details Scroll Viewer -->
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,15,0,15">
+
+            <StackPanel Margin="0,0,10,0">
+
+                <!-- Subjects Combination -->
+
+                <Border Background="White" CornerRadius="8" Padding="15" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,0,12">
+
+                    <StackPanel>
+
+                        <TextBlock Text="📚 Tổ hợp môn thi THPT Quốc gia liên quan:" FontSize="14" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,8"/>
+
+                        <Border Background="#EEF2F6" CornerRadius="4" Padding="8,4" HorizontalAlignment="Left">
+
+                            <TextBlock x:Name="TxtSubjects" Text="A00 (Toán, Lý, Hóa), A01 (Toán, Lý, Anh), D01 (Toán, Văn, Anh)" FontSize="12" FontWeight="SemiBold" Foreground="#4F46E5"/>
+
+                        </Border>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- Core Skills -->
+
+                <Border Background="White" CornerRadius="8" Padding="15" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0,0,0,12">
+
+                    <StackPanel>
+
+                        <TextBlock Text="🛠 Kỹ năng cốt lõi cần chuẩn bị:" FontSize="14" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,8"/>
+
+                        <TextBlock x:Name="TxtSkills" Text="• Tư duy logic &amp; Giải quyết vấn đề&#10;• Thành thạo các ngôn ngữ lập trình (C#, Java, Python)&#10;• Làm việc nhóm và kỹ năng tự học tốt" FontSize="13" Foreground="#475569" TextWrapping="Wrap"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- Learning Roadmap -->
+
+                <Border Background="White" CornerRadius="8" Padding="15" BorderBrush="#E2E8F0" BorderThickness="1">
+
+                    <StackPanel>
+
+                        <TextBlock Text="🚀 Lộ trình học tập &amp; Phát triển sự nghiệp:" FontSize="14" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,8"/>
+
+                        <TextBlock x:Name="TxtRoadmap" Text="1. Giai đoạn học sinh: Tập trung học tốt môn Toán học, Tin học. Tham gia các câu lạc bộ thuật toán.&#10;2. Giai đoạn Đại học: Học chuyên ngành CNTT/Kỹ thuật phần mềm. Hoàn thành các chứng chỉ chuyên môn.&#10;3. Giai đoạn đi làm: Thực tập tại các doanh nghiệp công nghệ, phát triển thành Junior/Senior Developer." FontSize="13" Foreground="#475569" TextWrapping="Wrap"/>
+
+                    </StackPanel>
+
+                </Border>
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+
+
+        <!-- Footer Buttons -->
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+
+            <Button x:Name="BtnExportPdf" Content="📄 Tải cẩm nang PDF" Width="150" Padding="10,6" Margin="0,0,10,0"
+
+                    Background="#4F46E5" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnExportPdf_Click">
+
+                <Button.Resources>
+
+                    <Style TargetType="Border">
+
+                        <Setter Property="CornerRadius" Value="6"/>
+
+                    </Style>
+
+                </Button.Resources>
+
+            </Button>
+
+            <Button Content="Đóng" Width="100" Padding="10,6"
+
+                    Background="#64748B" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnClose_Click">
+
+                <Button.Resources>
+
+                    <Style TargetType="Border">
+
+                        <Setter Property="CornerRadius" Value="6"/>
+
+                    </Style>
+
+                </Button.Resources>
+
+            </Button>
+
+        </StackPanel>
+
+    </Grid>
+
+</Window>
+

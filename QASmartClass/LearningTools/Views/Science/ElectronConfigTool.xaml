@@ -1,0 +1,286 @@
+﻿<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Science.ElectronConfigTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="{StaticResource Gray100}">
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Border Grid.Row="0" CornerRadius="0" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#EDE7F6" Offset="0"/>
+                    <GradientStop Color="#D1C4E9" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel>
+                <TextBlock Text="⚛️ Cấu Hình Electron" FontSize="20" FontWeight="Bold" Foreground="#4527A0"/>
+                <TextBlock Text="Lớp 10 • Nhập số hiệu nguyên tử Z → Cấu hình e, lớp vỏ Bohr, sơ đồ ô lượng tử Orbital &amp; Ứng dụng thực tế" FontSize="14" Foreground="#7E57C2" Margin="0,3,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#EDE7F6">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#C8E6C9"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#2E7D32"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}"
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4">
+
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚛️" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextSimulator" Text="Trình mô phỏng" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🎯" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#D1C4E9"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 0: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12" MaxWidth="1000" HorizontalAlignment="Center">
+<TextBlock Text="📖 HƯỚNG DẪN SỬ DỤNG &amp; VÍ DỤ SƯ PHẠM" FontSize="22" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,8" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Công cụ hỗ trợ giáo viên và học sinh trực quan hóa mô hình nguyên tử, cấu hình electron và cấu trúc tuần hoàn." FontSize="14" Foreground="#424242" Margin="0,0,0,24" HorizontalAlignment="Center"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="0.8*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                <Border Background="White" CornerRadius="12" BorderThickness="1" BorderBrush="#E0E0E0" Padding="20" Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <TextBlock Text="📖 Hướng dẫn thao tác nhanh" FontSize="16" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,16"/>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" Background="#EDE7F6" CornerRadius="12" Width="26" Height="26" Margin="0,0,12,0">
+                                                <TextBlock Text="1" FontWeight="Bold" Foreground="#4527A0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="Nhập số hiệu nguyên tử Z từ 1 đến 118 hoặc nhấn vào các nút 'Nguyên tố tiêu biểu' để chọn nhanh." FontSize="13.5" VerticalAlignment="Center" Foreground="#37474F" TextWrapping="Wrap"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" Background="#EDE7F6" CornerRadius="12" Width="26" Height="26" Margin="0,0,12,0">
+                                                <TextBlock Text="2" FontWeight="Bold" Foreground="#4527A0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="Quan sát cấu hình electron sắp xếp theo lớp (Shell order), trật tự mức năng lượng Aufbau và cấu hình e rút gọn." FontSize="13.5" VerticalAlignment="Center" Foreground="#37474F" TextWrapping="Wrap"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" Background="#EDE7F6" CornerRadius="12" Width="26" Height="26" Margin="0,0,12,0">
+                                                <TextBlock Text="3" FontWeight="Bold" Foreground="#4527A0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="Phân tích đặc trưng vỏ: xem chu kỳ, nhóm (A/B), block nguyên tố, tính chất (kim loại, phi kim, á kim, khí hiếm)." FontSize="13.5" VerticalAlignment="Center" Foreground="#37474F" TextWrapping="Wrap"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Background="White" CornerRadius="12" BorderThickness="1" BorderBrush="#E0E0E0" Padding="20">
+                                    <StackPanel>
+                                        <TextBlock Text="⚡ Các trường hợp đặc biệt &amp; Ngoại lệ" FontSize="16" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,12"/>
+                                        <Border BorderThickness="1" BorderBrush="#E0E0E0" CornerRadius="6" ClipToBounds="True">
+                                            <Grid Background="#F9F9FB">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="40"/>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="120"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Row="0" Grid.ColumnSpan="4" Background="#EDE7F6" Padding="6,8">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="40"/>
+                                                            <ColumnDefinition Width="80"/>
+                                                            <ColumnDefinition Width="120"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="Z" FontWeight="Bold" Foreground="#4527A0" FontSize="12.5"/>
+                                                        <TextBlock Grid.Column="1" Text="Ký hiệu" FontWeight="Bold" Foreground="#4527A0" FontSize="12.5"/>
+                                                        <TextBlock Grid.Column="2" Text="Cấu hình e" FontWeight="Bold" Foreground="#4527A0" FontSize="12.5"/>
+                                                        <TextBlock Grid.Column="3" Text="Giải thích" FontWeight="Bold" Foreground="#4527A0" FontSize="12.5"/>
+                                                    </Grid>
+                                                </Border>
+                                                <Border Grid.Row="1" Grid.ColumnSpan="4" BorderThickness="0,1,0,0" BorderBrush="#E0E0E0" Padding="6,8">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="40"/>
+                                                            <ColumnDefinition Width="80"/>
+                                                            <ColumnDefinition Width="120"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="24" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="1" Text="Cr (Crom)" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="2" Text="[Ar] 3d⁵ 4s¹" Foreground="#1565C0" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="3" Text="Đạt bán bão hòa d⁵ bền vững." VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                                    </Grid>
+                                                </Border>
+                                                <Border Grid.Row="2" Grid.ColumnSpan="4" BorderThickness="0,1,0,0" BorderBrush="#E0E0E0" Padding="6,8" Background="White">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="40"/>
+                                                            <ColumnDefinition Width="80"/>
+                                                            <ColumnDefinition Width="120"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="29" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="1" Text="Cu (Đồng)" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="2" Text="[Ar] 3d¹⁰ 4s¹" Foreground="#1565C0" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="3" Text="Đạt bão hòa d¹⁰ bền vững hơn." VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <Border Background="White" CornerRadius="12" BorderThickness="1" BorderBrush="#E0E0E0" Padding="20" Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <TextBlock Text="💡 Ghi nhớ lý thuyết cốt lõi" FontSize="16" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,12"/>
+                                        <TextBlock Text="• Trật tự mức năng lượng Aufbau:" FontWeight="Bold" Foreground="#37474F" FontSize="13" Margin="0,0,0,4"/>
+                                        <TextBlock Text="1s 2s 2p 3s 3p 4s 3d 4p 5s 4d 5p 6s 4f 5d 6p 7s 5f 6d 7p. Sắp xếp lại theo thứ tự số lớp n tăng dần." FontSize="12.5" Foreground="#555" Margin="0,0,0,12" TextWrapping="Wrap"/>
+                                        <TextBlock Text="• Sức chứa e tối đa:" FontWeight="Bold" Foreground="#37474F" FontSize="13" Margin="0,0,0,4"/>
+                                        <TextBlock Text="Phân lớp s: 2e • p: 6e • d: 10e • f: 14e." FontSize="12.5" Foreground="#555" Margin="0,0,0,4" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: SIMULATOR -->
+                <ScrollViewer x:Name="viewSimulator" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Padding="12" Visibility="Collapsed">
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT COLUMN: Input & Presets -->
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#D1C4E9" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <StackPanel>
+                                    <TextBlock Text="📝 Nhập số hiệu nguyên tử Z (1−118)" FontSize="16" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,16"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Background="#EDE7F6" CornerRadius="10" Padding="12,10" Margin="0,0,16,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Z" FontSize="16" FontWeight="Bold" Foreground="#4527A0"/>
+                                                <TextBox x:Name="txtZ" FontSize="28" Padding="10,6" FontWeight="Bold" Width="120" BorderThickness="0" Background="Transparent" TextChanged="Z_Changed" Text="26"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock x:Name="txtElement" Text="" FontSize="24" FontWeight="Bold" Foreground="#4527A0"/>
+                                            <TextBlock x:Name="txtSymbol" Text="" FontSize="18" Foreground="#7E57C2" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Quick select presets -->
+                            <Border Background="White" CornerRadius="14" Padding="20,16" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <StackPanel>
+                                    <TextBlock Text="⚡ Nguyên tố tiêu biểu &amp; Ngoại lệ" FontSize="16" FontWeight="Bold" Foreground="#424242" Margin="0,0,0,12"/>
+                                    <WrapPanel x:Name="presetPanel"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- RIGHT COLUMN: Analysis & Graphics -->
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <!-- Text Analysis -->
+                            <Border Background="White" CornerRadius="14" Padding="20,16" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <StackPanel>
+                                    <TextBlock Text="📊 Kết quả phân tích chi tiết" FontSize="16" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,12"/>
+                                    <StackPanel x:Name="resultPanel"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Orbital Quantum boxes -->
+                            <Border x:Name="cardOrbital" Background="White" CornerRadius="14" Padding="20,16" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1" Visibility="Collapsed">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <StackPanel>
+                                    <TextBlock Text="🔋 Sơ đồ orbital lớp ngoài cùng" FontSize="16" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,12"/>
+                                    <WrapPanel x:Name="orbitalPanel" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Bohr Model Vector Canvas -->
+                            <Border x:Name="cardBohr" Background="White" CornerRadius="14" Padding="20,16" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1" Visibility="Collapsed">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <StackPanel>
+                                    <TextBlock Text="⚛️ Mô hình lớp vỏ electron (Bohr)" FontSize="16" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,12"/>
+                                    <Viewbox Stretch="Uniform" MaxHeight="300" HorizontalAlignment="Center">
+                                        <Canvas x:Name="bohrCanvas" Width="300" Height="300" Background="Transparent" HorizontalAlignment="Center"/>
+                                    </Viewbox>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+
+                <!-- VIEW 2: PRACTICAL APPLICATIONS -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

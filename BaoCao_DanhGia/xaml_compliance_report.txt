@@ -1,0 +1,144 @@
+File: BrainstormTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 10558 chars
+----------------------------------------
+File: CountriesTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: False
+  - Total length: 26226 chars
+----------------------------------------
+File: DynasTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 5354 chars
+----------------------------------------
+File: FocusTimerTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: False
+  - Total length: 29985 chars
+----------------------------------------
+File: FormulasTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 13189 chars
+----------------------------------------
+File: HistoryTimelineTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 21939 chars
+----------------------------------------
+File: LiteratureTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 14193 chars
+----------------------------------------
+File: MathSymbolsTool.xaml
+  - Hardcoded Fonts: {'Segoe UI Symbol'}
+  - Has ScrollViewer: True
+  - Has User Guide: False
+  - Total length: 17652 chars
+----------------------------------------
+File: MindmapTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 17739 chars
+----------------------------------------
+File: NoiseMonitorTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 18357 chars
+----------------------------------------
+File: NotebookTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 44785 chars
+----------------------------------------
+File: PeriodicTableTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: False
+  - Total length: 2955 chars
+----------------------------------------
+File: PhysicsSandboxTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 22163 chars
+----------------------------------------
+File: PlanetsTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: False
+  - Total length: 15199 chars
+----------------------------------------
+File: TextbookTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: False
+  - Total length: 11373 chars
+----------------------------------------
+File: EisenhowerTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 50891 chars
+----------------------------------------
+File: FishboneTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 22706 chars
+----------------------------------------
+File: FiveSTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 23830 chars
+----------------------------------------
+File: FiveWhyTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 15660 chars
+----------------------------------------
+File: KanbanTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 20682 chars
+----------------------------------------
+File: KpiOkrTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 15050 chars
+----------------------------------------
+File: ParetoTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: False
+  - Total length: 25761 chars
+----------------------------------------
+File: PdcaTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 23134 chars
+----------------------------------------
+File: SwotTool.xaml
+  - Hardcoded Fonts: set()
+  - Has ScrollViewer: True
+  - Has User Guide: True
+  - Total length: 18280 chars
+----------------------------------------

@@ -1,0 +1,140 @@
+﻿<Window x:Class="QASmartTouch.Forms.ColorPickerPopup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Chọn màu"
+        Width="280"
+        Height="240"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <!-- Color Button Style -->
+        <Style x:Key="ColorButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="35"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                               BorderBrush="{TemplateBinding BorderBrush}"
+                               BorderThickness="{TemplateBinding BorderThickness}"
+                               CornerRadius="6"
+                               x:Name="border">
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#88C0D0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#2E3440" 
+            CornerRadius="12"
+            BorderBrush="#4C566A"
+            BorderThickness="2"
+            Padding="15">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" 
+                            Opacity="0.5" 
+                            BlurRadius="15" 
+                            ShadowDepth="5"/>
+        </Border.Effect>
+
+        <StackPanel>
+            <!-- Title -->
+            <TextBlock Text="Chọn màu bút" 
+                      FontSize="14" 
+                      FontWeight="Bold"
+                      Foreground="#ECEFF4"
+                      Margin="0,0,0,15"/>
+
+            <!-- Color Grid -->
+            <UniformGrid Rows="2" Columns="6" Margin="0,0,0,15">
+                <!-- Row 1 -->
+                <Button x:Name="btnColorRed" Click="ColorButton_Click" Tag="#FF0000" Style="{StaticResource ColorButtonStyle}" Background="#FF0000"/>
+                <Button x:Name="btnColorOrange" Click="ColorButton_Click" Tag="#FF8800" Style="{StaticResource ColorButtonStyle}" Background="#FF8800"/>
+                <Button x:Name="btnColorYellow" Click="ColorButton_Click" Tag="#FFFF00" Style="{StaticResource ColorButtonStyle}" Background="#FFFF00"/>
+                <Button x:Name="btnColorGreen" Click="ColorButton_Click" Tag="#00FF00" Style="{StaticResource ColorButtonStyle}" Background="#00FF00"/>
+                <Button x:Name="btnColorBlue" Click="ColorButton_Click" Tag="#0088FF" Style="{StaticResource ColorButtonStyle}" Background="#0088FF"/>
+                <Button x:Name="btnColorPurple" Click="ColorButton_Click" Tag="#8800FF" Style="{StaticResource ColorButtonStyle}" Background="#8800FF"/>
+                
+                <!-- Row 2 -->
+                <Button x:Name="btnColorWhite" Click="ColorButton_Click" Tag="#FFFFFF" Style="{StaticResource ColorButtonStyle}" Background="#FFFFFF"/>
+                <Button x:Name="btnColorGray" Click="ColorButton_Click" Tag="#888888" Style="{StaticResource ColorButtonStyle}" Background="#888888"/>
+                <Button x:Name="btnColorBlack" Click="ColorButton_Click" Tag="#000000" Style="{StaticResource ColorButtonStyle}" Background="#000000"/>
+                <Button x:Name="btnColorPink" Click="ColorButton_Click" Tag="#FF88FF" Style="{StaticResource ColorButtonStyle}" Background="#FF88FF"/>
+                <Button x:Name="btnColorCyan" Click="ColorButton_Click" Tag="#00FFFF" Style="{StaticResource ColorButtonStyle}" Background="#00FFFF"/>
+                <Button x:Name="btnColorBrown" Click="ColorButton_Click" Tag="#884400" Style="{StaticResource ColorButtonStyle}" Background="#884400"/>
+            </UniformGrid>
+
+            <!-- Thickness Slider -->
+            <TextBlock Text="Độ dày:" 
+                      FontSize="12"
+                      Foreground="#ECEFF4"
+                      Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal">
+                <Slider x:Name="sliderThickness"
+                       Minimum="1"
+                       Maximum="10"
+                       Value="3"
+                       Width="180"
+                       VerticalAlignment="Center"
+                       ValueChanged="sliderThickness_ValueChanged"/>
+                <TextBlock x:Name="txtThickness"
+                          Text="3px"
+                          FontSize="12"
+                          Foreground="#ECEFF4"
+                          Margin="10,0,0,0"
+                          VerticalAlignment="Center"
+                          Width="40"/>
+            </StackPanel>
+
+            <!-- Confirm Button -->
+            <Button x:Name="btnConfirm"
+                   Content="Xác nhận"
+                   Click="btnConfirm_Click"
+                   Background="#88C0D0"
+                   Foreground="#2E3440"
+                   FontWeight="Bold"
+                   FontSize="12"
+                   Height="32"
+                   Margin="0,15,0,0"
+                   BorderThickness="0"
+                   Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                           CornerRadius="6"
+                                           Padding="10,5">
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#81A1C1"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Border>
+</Window>

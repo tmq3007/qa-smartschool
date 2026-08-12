@@ -1,0 +1,149 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Student.AudiobookStudioView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             >
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="🎙️ Phòng thu âm sách nói cộng đồng (Audiobook Studio)" />
+
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- BẢNG ĐIỀU KHIỂN THU ÂM -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="🎙️ Bảng điều khiển ghi âm" Style="{StaticResource CardTitleText}" Margin="0,0,0,12"/>
+                    
+                    <TextBlock Text="Chọn tác phẩm sách cần thu âm:" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8"/>
+                    <ComboBox ItemsSource="{Binding AvailableBooks}"
+                              SelectedItem="{Binding SelectedBook}"
+                              DisplayMemberPath="DisplayText"
+                              Style="{StaticResource ModernComboBox}"
+                              Padding="8" FontSize="13" Margin="0,0,0,24"/>
+
+                    <!-- Wave Visualizer Simulation during recording -->
+                    <Border Height="100" CornerRadius="12" Background="#0F172A" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,24" Padding="12">
+                        <Grid>
+                            <!-- Text/Status inside Visualizer with Recording Dot -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Ellipse x:Name="RecordingDot" Width="12" Height="12" Fill="#EF4444" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRecording}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard x:Name="BlinkStory">
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                 From="1.0" To="0.15" Duration="0:0:0.6"
+                                                                                 AutoReverse="True" RepeatBehavior="Forever"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <StopStoryboard BeginStoryboardName="BlinkStory"/>
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                                
+                                <TextBlock Text="{Binding StatusText}" 
+                                           Foreground="{DynamicResource PrimaryBrush}" 
+                                           FontSize="13" 
+                                           FontWeight="SemiBold" 
+                                           VerticalAlignment="Center" 
+                                           TextAlignment="Center"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Control Buttons -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Button Grid.Column="0" Content="⏺️ Bắt đầu ghi âm" 
+                                Command="{Binding StartRecordingCommand}"
+                                Height="46" FontSize="13" FontWeight="Bold"
+                                Foreground="White" BorderThickness="0" Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                    <Setter Property="Background" Value="#EF4444"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Background" Value="#475569"/>
+                                            <Setter Property="Foreground" Value="#94A3B8"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                                
+                        <Button Grid.Column="2" Content="⏹️ Dừng ghi âm" 
+                                Command="{Binding StopRecordingCommand}"
+                                Height="46" FontSize="13" FontWeight="Bold"
+                                Background="#475569" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                    </Grid>
+
+                    <Button Content="▶️ Nghe thử bản ghi âm (15 giây)" 
+                            Command="{Binding PlayRecordingCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            Height="40" FontSize="13" Margin="0,0,0,12" Cursor="Hand"/>
+
+                    <Button Content="📤 Gửi tệp âm thanh phê duyệt lên hệ thống" 
+                            Command="{Binding SubmitContributionCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            Height="46" FontSize="13" FontWeight="Bold" Cursor="Hand"/>
+                </StackPanel>
+            </Border>
+
+            <!-- HƯỚNG DẪN & TIÊU CHUẨN KỸ THUẬT -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="📋 Hướng dẫn và tiêu chuẩn" Style="{StaticResource CardTitleText}" Margin="0,0,0,16"/>
+                    
+                    <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="8" Padding="16" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="💡 Quy trình đóng góp sách nói:" Foreground="{DynamicResource SuccessTextBrush}" FontWeight="Bold" FontSize="13" Margin="0,0,0,8"/>
+                            <TextBlock Text="1. Chọn sách giấy/Ebook mà bạn yêu thích ở danh sách chọn." Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                            <TextBlock Text="2. Đảm bảo Microphone hoạt động tốt, không gian yên tĩnh." Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                            <TextBlock Text="3. Bấm nút màu đỏ để bắt đầu đọc và ghi âm." Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                            <TextBlock Text="4. Bấm dừng, nghe lại bản thu âm của mình xem có đạt yêu cầu không." Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                            <TextBlock Text="5. Nhấn gửi để hệ thống kiểm tra và kiểm duyệt nội dung phát thanh." Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="8" Padding="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="⚠️ Tiêu chuẩn chất lượng âm thanh:" Foreground="{DynamicResource WarningTextBrush}" FontWeight="Bold" FontSize="13" Margin="0,0,0,8"/>
+                            <TextBlock Text="• Giọng đọc rõ ràng, phát âm tiếng Việt chuẩn xác." Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                            <TextBlock Text="• Âm lượng vừa phải, không chứa tiếng ồn nền (nhạc nền, tiếng còi xe, gió rít)." Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                            <TextBlock Text="• File ghi âm có định dạng sóng âm tiêu chuẩn Wav." Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

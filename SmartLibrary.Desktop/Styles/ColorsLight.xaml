@@ -1,0 +1,36 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#4F46E5" />
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#4338CA" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#10B981" />
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#F8FAFC" />
+    <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1E293B" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#64748B" />
+    
+    <SolidColorBrush x:Key="SuccessBgBrush" Color="#F0FDF4" />
+    <SolidColorBrush x:Key="SuccessTextBrush" Color="#16A34A" />
+    
+    <SolidColorBrush x:Key="WarningBgBrush" Color="#FFFBEB" />
+    <SolidColorBrush x:Key="WarningTextBrush" Color="#D97706" />
+    
+    <SolidColorBrush x:Key="DangerBgBrush" Color="#FEF2F2" />
+    <SolidColorBrush x:Key="DangerTextBrush" Color="#DC2626" />
+
+    <SolidColorBrush x:Key="BorderBrush" Color="#E2E8F0" />
+    
+    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#1AFFFFFF" />
+    <SolidColorBrush x:Key="SidebarActiveBrush" Color="#33FFFFFF" />
+
+    <!-- Modern Dropdown Brushes -->
+    <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#F1F5F9" />
+    <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#EFF6FF" />
+    <SolidColorBrush x:Key="SelectedTextBrush" Color="#2563EB" />
+    
+    <!-- Eco-friendly Metrics Brushes -->
+    <SolidColorBrush x:Key="CyanTextBrush" Color="#0891B2" />
+    <SolidColorBrush x:Key="BlueTextBrush" Color="#2563EB" />
+    
+    <!-- Semi-transparent overlay brush -->
+    <SolidColorBrush x:Key="PopupOverlayBrush" Color="#660F172A" />
+</ResourceDictionary>

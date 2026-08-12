@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="QA SmartClass - Ứng dụng học sinh thông minh">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0B1929">
+    <title>QA SmartClass — Tham gia lớp học</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/landing.css">
+</head>
+<body>
+    <div class="landing-page" id="landingPage">
+        <div class="landing-card">
+            <!-- Logo -->
+            <div class="landing-logo">
+                <div class="landing-logo-icon">📚</div>
+                <div class="landing-logo-text">QA SMART CLASS</div>
+            </div>
+            <p class="landing-subtitle">Giao diện Học sinh • Tablet & Laptop</p>
+
+            <!-- Form -->
+            <form class="landing-form" id="joinForm" onsubmit="return false;">
+                <!-- Student Name -->
+                <div class="input-group">
+                    <label for="studentName">👤 Họ và Tên</label>
+                    <div class="input-with-icon">
+                        <input type="text" id="studentName" class="landing-input"
+                               placeholder="Nhập tên học sinh..." autocomplete="name"
+                               required>
+                    </div>
+                </div>
+
+                <!-- Student Code -->
+                <div class="input-group">
+                    <label for="studentCode">🆔 Mã Học sinh</label>
+                    <div class="input-with-icon">
+                        <input type="text" id="studentCode" class="landing-input"
+                               placeholder="VD: HS001" autocomplete="off"
+                               required>
+                    </div>
+                </div>
+
+                <!-- Server IP -->
+                <div class="input-group">
+                    <label for="serverIP">🌐 Địa chỉ IP Giáo viên</label>
+                    <div class="input-with-icon">
+                        <input type="text" id="serverIP" class="landing-input"
+                               placeholder="VD: 192.168.1.100" autocomplete="off"
+                               inputmode="url">
+                    </div>
+                    <span id="ipValidationError" style="color: #ff3333; font-size: 12px; display: none; margin-top: 4px;">
+                        ⚠️ Định dạng IPv4 không hợp lệ (Ví dụ đúng: 192.168.1.33)
+                    </span>
+                </div>
+
+                <!-- Join Button -->
+                <button type="submit" class="btn-join" id="btnJoin" onclick="handleJoin()">
+                    <span id="joinBtnText">🚀 Tham gia lớp học</span>
+                    <div class="spinner hidden" id="joinSpinner"></div>
+                </button>
+            </form>
+
+            <!-- OR Divider -->
+            <div class="landing-divider">
+                <span>hoặc</span>
+            </div>
+
+            <!-- QR Scanner -->
+            <button class="btn-qr" id="btnQR" onclick="handleScanQR()">
+                📷 Quét mã QR để kết nối
+            </button>
+
+            <!-- Connection Status -->
+            <div class="landing-status searching hidden" id="connectionStatus">
+                <div class="spinner" style="width:16px;height:16px;border-width:2px;"></div>
+                <span id="statusText">Đang tìm lớp học...</span>
+            </div>
+
+            <!-- Server Info (shown when found) -->
+            <div class="server-info hidden" id="serverInfo">
+                <div class="server-info-row">
+                    <span class="server-info-label">📖 Lớp:</span>
+                    <span class="server-info-value" id="infoClass">—</span>
+                </div>
+                <div class="server-info-row">
+                    <span class="server-info-label">👨‍🏫 GV:</span>
+                    <span class="server-info-value" id="infoTeacher">—</span>
+                </div>
+                <div class="server-info-row">
+                    <span class="server-info-label">🌐 IP:</span>
+                    <span class="server-info-value" id="infoIP">—</span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="landing-footer">
+                <span>QA Smart School</span> © 2026 • v1.0.0
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/utils/storage.js"></script>
+    <script src="js/utils/toast.js"></script>
+    <script src="js/connection.js"></script>
+    <script>
+        // ═══ LANDING PAGE LOGIC ═══
+
+        // Auto-detect server IP from current page URL
+        // When served by WebSocketBridgeService, the page host IS the server
+        function getAutoDetectedIP() {
+            const pageHost = window.location.hostname;
+            const pagePort = window.location.port;
+            // If served from port 8080 (Bridge), use the page host as server IP
+            if (pagePort === '8080' && pageHost && pageHost !== '') {
+                return pageHost;
+            }
+            return '';
+        }
+
+        // Restore saved values
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = AppStorage.getStudentInfo();
+            if (saved.name) document.getElementById('studentName').value = saved.name;
+            if (saved.code) document.getElementById('studentCode').value = saved.code;
+
+            // Priority: auto-detect > saved > empty
+            const autoIP = getAutoDetectedIP();
+            if (autoIP) {
+                document.getElementById('serverIP').value = autoIP;
+                // Show auto-detected hint
+                const label = document.querySelector('label[for="serverIP"]');
+                if (label) label.innerHTML = '🌐 Địa chỉ IP Giáo viên <small style="opacity:0.6">(tự động)</small>';
+            } else if (saved.serverIP) {
+                document.getElementById('serverIP').value = saved.serverIP;
+            }
+        });
+
+        // === UPGRADE_07: IP & Hostname Validation Logic ===
+        function isValidIPOrHost(host) {
+            const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            const HOSTNAME_REGEX = /^(localhost|(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])(?:\.(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]))*)$/;
+
+            // If it contains only digits and dots or starts with digits and dots (likely an IP address)
+            if (/^[0-9.]+$/.test(host) || /^\d+\.\d+/.test(host)) {
+                return IPV4_REGEX.test(host);
+            }
+            return HOSTNAME_REGEX.test(host);
+        }
+
+        function sanitizeHost(ip) {
+            // Strip protocol
+            let host = ip.replace(/^(https?|wss?|ftp):\/\//i, '').trim();
+            // Strip trailing slash and everything after it (path)
+            host = host.replace(/\/.*$/, '');
+            // Strip port only if it is a colon followed by digits at the very end
+            host = host.replace(/:(\d+)$/, '');
+            return host.trim();
+        }
+
+        // Real-time input validation listener
+        document.getElementById('serverIP').addEventListener('input', function(e) {
+            let rawIp = e.target.value.trim();
+            const errorSpan = document.getElementById('ipValidationError');
+
+            if (rawIp === "") {
+                errorSpan.style.display = 'none';
+                e.target.style.borderColor = '';
+                return;
+            }
+
+            // Enforce length limit
+            if (rawIp.length > 255) {
+                rawIp = rawIp.substring(0, 255);
+                e.target.value = rawIp;
+            }
+
+            // Sanitize host using improved function
+            const cleanIp = sanitizeHost(rawIp);
+
+            if (!isValidIPOrHost(cleanIp)) {
+                errorSpan.style.display = 'block';
+                e.target.style.borderColor = '#ff3333';
+            } else {
+                errorSpan.style.display = 'none';
+                e.target.style.borderColor = '#2e7d32';
+            }
+        });
+
+        function handleJoin() {
+            const name = document.getElementById('studentName').value.trim();
+            const code = document.getElementById('studentCode').value.trim();
+            let ip = document.getElementById('serverIP').value.trim();
+
+            if (!name) {
+                showToast('Vui lòng nhập tên', 'warning');
+                document.getElementById('studentName').focus();
+                return;
+            }
+            if (!code) {
+                showToast('Vui lòng nhập mã học sinh', 'warning');
+                document.getElementById('studentCode').focus();
+                return;
+            }
+
+            // Auto-fill IP if empty and served from Bridge
+            if (!ip) {
+                ip = getAutoDetectedIP();
+                if (ip) {
+                    document.getElementById('serverIP').value = ip;
+                } else {
+                    showToast('Vui lòng nhập IP giáo viên', 'warning');
+                    document.getElementById('serverIP').focus();
+                    return;
+                }
+            }
+
+            // Enforce length limit
+            if (ip.length > 255) {
+                showToast('Địa chỉ IP quá dài', 'error');
+                document.getElementById('serverIP').focus();
+                return;
+            }
+
+            // Sanitize host using improved function
+            const cleanIp = sanitizeHost(ip);
+
+            // Validate IP format
+            if (!isValidIPOrHost(cleanIp)) {
+                showToast('Địa chỉ IP không hợp lệ', 'error');
+                document.getElementById('serverIP').focus();
+                document.getElementById('serverIP').style.borderColor = '#ff3333';
+                document.getElementById('ipValidationError').style.display = 'block';
+                return;
+            }
+
+            // Save info
+            AppStorage.saveStudentInfo({ name, code, serverIP: cleanIp });
+
+            // Show loading state
+            const btn = document.getElementById('btnJoin');
+            const btnText = document.getElementById('joinBtnText');
+            const spinner = document.getElementById('joinSpinner');
+            btn.disabled = true;
+            btnText.textContent = 'Đang kết nối...';
+            spinner.classList.remove('hidden');
+
+            // Show status
+            const status = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+            status.classList.remove('hidden');
+            status.className = 'landing-status searching';
+            statusText.textContent = 'Đang kết nối tới giáo viên...';
+
+            // Build WebSocket URL — use same host:port as the page when served from Bridge
+            const wsPort = (window.location.port === '8080') ? window.location.port : '8080';
+            const wsUrl = `ws://${cleanIp}:${wsPort}/ws`;
+
+            // Validate URL
+            try {
+                new URL(wsUrl);
+            } catch {
+                showToast('Địa chỉ IP không hợp lệ', 'error');
+                btn.disabled = false;
+                btnText.textContent = '🚀 Tham gia lớp học';
+                spinner.classList.add('hidden');
+                return;
+            }
+            StudentConnection.connect(wsUrl, {
+                studentName: name,
+                studentCode: code,
+                onConnected: (data) => {
+                    status.className = 'landing-status found';
+                    statusText.textContent = '✅ Đã kết nối!';
+
+                    // Show server info
+                    const serverInfoEl = document.getElementById('serverInfo');
+                    document.getElementById('infoClass').textContent = data.className || 'N/A';
+                    document.getElementById('infoTeacher').textContent = data.teacherName || 'N/A';
+                    document.getElementById('infoIP').textContent = ip;
+                    serverInfoEl.classList.remove('hidden');
+
+                    showToast(`Đã tham gia lớp ${data.className || ''}`, 'success');
+
+                    // Navigate to app after 1s
+                    setTimeout(() => {
+                        window.location.href = 'app.html';
+                    }, 1000);
+                },
+                onError: (err) => {
+                    status.className = 'landing-status error';
+                    statusText.textContent = '❌ Không thể kết nối. Kiểm tra lại IP.';
+                    btn.disabled = false;
+                    btnText.textContent = '🚀 Tham gia lớp học';
+                    spinner.classList.add('hidden');
+                    showToast('Kết nối thất bại: ' + (err || 'Timeout'), 'error');
+                },
+                onDisconnected: () => {
+                    btn.disabled = false;
+                    btnText.textContent = '🚀 Tham gia lớp học';
+                    spinner.classList.add('hidden');
+                }
+            });
+        }
+
+        function handleScanQR() {
+            showToast('Tính năng quét QR sẽ sớm được cập nhật', 'info');
+        }
+    </script>
+</body>
+</html>

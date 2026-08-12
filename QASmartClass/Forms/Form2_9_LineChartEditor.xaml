@@ -1,0 +1,570 @@
+<Window x:Class="QASmartTouch.Forms.Form2_9_LineChartEditor"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="Biểu Đồ Đường (Line Chart)" 
+
+        Height="750" 
+
+        Width="1400"
+
+        WindowStartupLocation="CenterScreen"
+
+        Background="#F5F7FA"
+
+        ResizeMode="CanResize">
+
+
+
+    <Window.Resources>
+
+        <!-- Modern Button Style -->
+
+        <Style x:Key="ModernButton" TargetType="Button">
+
+            <Setter Property="Background" Value="#667EEA"/>
+
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Padding" Value="15,10"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                                CornerRadius="6"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#5568D3"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+
+
+        <!-- Panel Style -->
+
+        <Style x:Key="PanelStyle" TargetType="Border">
+
+            <Setter Property="Background" Value="White"/>
+
+            <Setter Property="CornerRadius" Value="8"/>
+
+            <Setter Property="Padding" Value="15"/>
+
+            <Setter Property="Margin" Value="0,0,0,15"/>
+
+            <Setter Property="Effect">
+
+                <Setter.Value>
+
+                    <DropShadowEffect Color="Black" Opacity="0.08" BlurRadius="8" ShadowDepth="2"/>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Grid>
+
+        <!-- Header -->
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header Section -->
+
+        <Border Grid.Row="0" Background="#667EEA" Padding="20">
+
+            <Border.Effect>
+
+                <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="10" ShadowDepth="3"/>
+
+            </Border.Effect>
+
+            <StackPanel>
+
+                <TextBlock Text="Chức năng vẽ Biểu đồ Đường" 
+
+                          FontSize="24" 
+
+                          FontWeight="Bold" 
+
+                          Foreground="White"/>
+
+                <TextBlock Text="Công cụ tạo biểu đồ đường (Line Chart) chuyên nghiệp - Trực quan và đẹp mắt" 
+
+                          FontSize="13" 
+
+                          Foreground="White" 
+
+                          Opacity="0.95"
+
+                          Margin="0,5,0,0"/>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- Main Content -->
+
+        <Grid Grid.Row="1">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="380"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Canvas Area -->
+
+            <Grid Grid.Column="0" Background="#F5F7FA" Margin="20">
+
+                <Border x:Name="ChartBorder"
+
+                        Background="White" 
+
+                        CornerRadius="10" 
+
+                        BorderBrush="#DDD" 
+
+                        BorderThickness="0.5"
+
+                        Padding="10,10,10,30">
+
+                    <Border.Effect>
+
+                        <DropShadowEffect Color="Black" Opacity="0.1" BlurRadius="15" ShadowDepth="4"/>
+
+                    </Border.Effect>
+
+
+
+                    <Canvas x:Name="ChartCanvas" 
+                            Background="White"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            SizeChanged="ChartCanvas_SizeChanged"
+                            ClipToBounds="True" Margin="-2,-2,-2,-2"/>
+
+                </Border>
+
+            </Grid>
+
+
+
+            <!-- Control Panel -->
+
+            <ScrollViewer Grid.Column="1" 
+
+                         Background="#F0F2F5" 
+
+                         VerticalScrollBarVisibility="Auto"
+
+                         Padding="20">
+
+                <StackPanel>
+
+
+
+                    <!-- Panel 1: Dữ liệu -->
+
+                    <Border Style="{StaticResource PanelStyle}" BorderBrush="#667EEA" BorderThickness="4,0,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Nhập dữ liệu biểu đồ" 
+
+                                      FontWeight="Bold" 
+
+                                      FontSize="14" 
+
+                                      Foreground="#2C3E50"
+
+                                      Margin="0,0,0,15"/>
+
+
+
+                            <TextBlock Text="Tiêu đề biểu đồ:" FontSize="12" Foreground="#555" FontWeight="SemiBold" Margin="0,0,0,6"/>
+
+                            <TextBox x:Name="txtTitle" 
+
+                                    Text="Doanh thu theo tháng"
+
+                                    Height="35"
+
+                                    Padding="5"
+
+                                    FontSize="13"
+
+                                    BorderBrush="#DDD"
+
+                                    BorderThickness="2"
+
+                                    Margin="0,0,0,15"
+
+                                    TextChanged="OnSettingsChanged"/>
+
+
+
+                            <TextBlock Text="Nhãn trục X (ngang):" FontSize="12" Foreground="#555" FontWeight="SemiBold" Margin="0,0,0,6"/>
+
+                            <TextBox x:Name="txtXAxisLabel" 
+
+                                    Text="Tháng"
+
+                                    Height="35"
+
+                                    Padding="5"
+
+                                    FontSize="13"
+
+                                    BorderBrush="#DDD"
+
+                                    BorderThickness="2"
+
+                                    Margin="0,0,0,15"
+
+                                    TextChanged="OnSettingsChanged"/>
+
+
+
+                            <TextBlock Text="Nhãn trục Y (dọc):" FontSize="12" Foreground="#555" FontWeight="SemiBold" Margin="0,0,0,6"/>
+
+                            <TextBox x:Name="txtYAxisLabel" 
+
+                                    Text="Doanh thu (triệu đồng)"
+
+                                    Height="35"
+
+                                    Padding="5"
+
+                                    FontSize="13"
+
+                                    BorderBrush="#DDD"
+
+                                    BorderThickness="2"
+
+                                    Margin="0,0,0,15"
+
+                                    TextChanged="OnSettingsChanged"/>
+
+
+
+                            <TextBlock Text="Dữ liệu trục X (phân cách bởi dấu phẩy):" FontSize="12" Foreground="#555" FontWeight="SemiBold" Margin="0,0,0,6"/>
+
+                            <TextBox x:Name="txtLabels" 
+
+                                    Text="T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12"
+
+                                    Height="35"
+
+                                    Padding="5"
+
+                                    FontSize="13"
+
+                                    BorderBrush="#DDD"
+
+                                    BorderThickness="2"
+
+                                    Margin="0,0,0,15"
+
+                                    TextChanged="OnSettingsChanged"/>
+
+
+
+                            <TextBlock Text="Các đường dữ liệu:" FontSize="12" Foreground="#555" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+
+
+                            <StackPanel x:Name="LineSeriesPanel" Margin="0,0,0,15">
+
+                                <!-- Line series will be added here dynamically -->
+
+                            </StackPanel>
+
+
+
+                            <Button Content="➕ Thêm đường mới" 
+
+                                   Style="{StaticResource ModernButton}"
+
+                                   Background="#28A745"
+
+                                   Height="35"
+
+                                   Click="AddLineSeries_Click"
+
+                                   Margin="0,0,0,15"/>
+
+
+
+                            <TextBlock Text="Mẫu có sẵn:" FontSize="12" Foreground="#555" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <Grid.RowDefinitions>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                    <RowDefinition Height="Auto"/>
+
+                                </Grid.RowDefinitions>
+
+
+
+                                <Button Grid.Row="0" Grid.Column="0" Content="💰 Doanh thu" Click="LoadPreset_Click" Tag="revenue" Height="35" Margin="0,0,4,8" Background="White" BorderBrush="#DDD" BorderThickness="2" FontSize="11" FontWeight="SemiBold"/>
+
+                                <Button Grid.Row="0" Grid.Column="1" Content="🌡️ Nhiệt độ" Click="LoadPreset_Click" Tag="temperature" Height="35" Margin="4,0,0,8" Background="White" BorderBrush="#DDD" BorderThickness="2" FontSize="11" FontWeight="SemiBold"/>
+
+                                <Button Grid.Row="1" Grid.Column="0" Content="📊 Cổ phiếu" Click="LoadPreset_Click" Tag="stock" Height="35" Margin="0,0,4,0" Background="White" BorderBrush="#DDD" BorderThickness="2" FontSize="11" FontWeight="SemiBold"/>
+
+                                <Button Grid.Row="1" Grid.Column="1" Content="🌐 Website" Click="LoadPreset_Click" Tag="website" Height="35" Margin="4,0,0,0" Background="White" BorderBrush="#DDD" BorderThickness="2" FontSize="11" FontWeight="SemiBold"/>
+
+                            </Grid>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Panel 2: Kiểu biểu đồ -->
+
+                    <Border Style="{StaticResource PanelStyle}" BorderBrush="#667EEA" BorderThickness="4,0,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Kiểu biểu đồ" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+
+
+                            <TextBlock Text="Kiểu đường:" FontSize="12" Foreground="#555" FontWeight="SemiBold" Margin="0,0,0,6"/>
+
+                            <ComboBox x:Name="cmbLineStyle" 
+
+                                     Height="35" 
+
+                                     FontSize="13"
+
+                                     SelectionChanged="OnSettingsChanged"
+
+                                     Margin="0,0,0,15">
+
+                                <ComboBoxItem Content="Đường thẳng" IsSelected="True"/>
+
+                                <ComboBoxItem Content="Đường cong mượt"/>
+
+                                <ComboBoxItem Content="Đường bậc thang"/>
+
+                            </ComboBox>
+
+
+
+                            <StackPanel Margin="0,0,0,15">
+
+                                <Grid>
+
+                                    <TextBlock Text="Độ dày đường:" FontSize="12" Foreground="#555" FontWeight="SemiBold" HorizontalAlignment="Left"/>
+
+                                    <TextBlock x:Name="lblLineWidth" Text="3px" FontSize="12" Foreground="#667EEA" FontWeight="Bold" HorizontalAlignment="Right"/>
+
+                                </Grid>
+
+                                <Slider x:Name="sliderLineWidth" 
+
+                                       Minimum="1" Maximum="8" Value="3" 
+
+                                       TickFrequency="1" IsSnapToTickEnabled="True"
+
+                                       Margin="0,8,0,0"
+
+                                       ValueChanged="OnSliderChanged"/>
+
+                            </StackPanel>
+
+
+
+                            <StackPanel>
+
+                                <Grid>
+
+                                    <TextBlock Text="Kích thước điểm:" FontSize="12" Foreground="#555" FontWeight="SemiBold" HorizontalAlignment="Left"/>
+
+                                    <TextBlock x:Name="lblPointSize" Text="5px" FontSize="12" Foreground="#667EEA" FontWeight="Bold" HorizontalAlignment="Right"/>
+
+                                </Grid>
+
+                                <Slider x:Name="sliderPointSize" 
+
+                                       Minimum="0" Maximum="10" Value="5" 
+
+                                       TickFrequency="1" IsSnapToTickEnabled="True"
+
+                                       Margin="0,8,0,0"
+
+                                       ValueChanged="OnSliderChanged"/>
+
+                            </StackPanel>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Panel 3: Tùy chỉnh hiển thị -->
+
+                    <Border Style="{StaticResource PanelStyle}" BorderBrush="#667EEA" BorderThickness="4,0,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock Text="⚙️ Tùy chỉnh hiển thị" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+
+
+                            <CheckBox x:Name="chkShowGrid" Content="Hiển thị lưới" IsChecked="True" Margin="0,0,0,10" FontSize="12" Checked="OnSettingsChanged" Unchecked="OnSettingsChanged"/>
+
+                            <CheckBox x:Name="chkShowAxes" Content="Hiển thị trục tọa độ" IsChecked="True" Margin="0,0,0,10" FontSize="12" Checked="OnSettingsChanged" Unchecked="OnSettingsChanged"/>
+
+                            <CheckBox x:Name="chkShowPoints" Content="Hiển thị điểm dữ liệu" IsChecked="True" Margin="0,0,0,10" FontSize="12" Checked="OnSettingsChanged" Unchecked="OnSettingsChanged"/>
+
+                            <CheckBox x:Name="chkShowValues" Content="Hiển thị giá trị" IsChecked="False" Margin="0,0,0,10" FontSize="12" Checked="OnSettingsChanged" Unchecked="OnSettingsChanged"/>
+
+                            <CheckBox x:Name="chkShowLegend" Content="Hiển thị chú thích" IsChecked="True" Margin="0,0,0,10" FontSize="12" Checked="OnSettingsChanged" Unchecked="OnSettingsChanged"/>
+
+                            <CheckBox x:Name="chkFillArea" Content="Tô màu vùng dưới đường" IsChecked="False" Margin="0,0,0,10" FontSize="12" Checked="OnSettingsChanged" Unchecked="OnSettingsChanged"/>
+
+                            <CheckBox x:Name="chkAnimate" Content="Animation khi tải" IsChecked="True" FontSize="12"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+
+
+                    <!-- Panel 4: Chức năng -->
+
+                    <Border Style="{StaticResource PanelStyle}" BorderBrush="#667EEA" BorderThickness="4,0,0,0">
+
+                        <StackPanel>
+                            <TextBlock Text="⚙️ Chức năng" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                            <!-- 1. Xác nhận hoàn thành (Màu xanh dương) -->
+                            <Button Content="Xác nhận hoàn thành" 
+                                   Style="{StaticResource ModernButton}"
+                                   Background="#1976D2"
+                                   Height="38"
+                                   FontSize="12"
+                                   Click="Complete_Click"
+                                   Margin="0,0,0,8"/>
+
+                            <!-- 2. Lưu hình ảnh PNG (Màu xanh ngọc) -->
+                            <Button Content="Lưu hình ảnh PNG" 
+                                   Style="{StaticResource ModernButton}"
+                                   Background="#00838F"
+                                   Height="38"
+                                   FontSize="12"
+                                   Click="SaveImage_Click"
+                                   Margin="0,0,0,8"/>
+
+                            <!-- 3. Reset về mặc định (Màu cam) -->
+                            <Button Content="Reset về mặc định" 
+                                   Style="{StaticResource ModernButton}"
+                                   Background="#E65100"
+                                   Height="38"
+                                   FontSize="12"
+                                   Click="Reset_Click"
+                                   Margin="0,0,0,8"/>
+
+                            <!-- 4. Thoát (Màu xám) -->
+                            <Button Content="Thoát" 
+                                   Style="{StaticResource ModernButton}"
+                                   Background="#546E7A"
+                                   Height="38"
+                                   FontSize="12"
+                                   Click="Exit_Click"/>
+                        </StackPanel>
+
+                    </Border>
+
+                    <!-- Panel 5: Hướng dẫn sư phạm -->
+                    <Border Background="#FFF9C4" BorderBrush="#FFE082" BorderThickness="1" CornerRadius="4" Margin="0,10,0,0">
+                        <Expander Header="💡 Hướng dẫn tạo nhanh biểu đồ" IsExpanded="False" Background="Transparent" BorderThickness="0">
+                            <TextBlock Padding="10" FontSize="11" TextWrapping="Wrap" Foreground="#5D4037" FontFamily="Segoe UI">
+                                Bước 1: Nhập tiêu đề và nhãn các trục bên trên.&#x0a;
+                                Bước 2: Click 'Thêm dữ liệu' hoặc nhấn 'Preset dữ liệu mẫu'.&#x0a;
+                                Bước 3: Nhập dữ liệu theo định dạng [Nhãn : Giá trị số].&#x0a;
+                                Bước 4: Nhấn nút màu xanh dương 'Xác nhận hoàn thành' để chèn vào bảng vẽ.
+                            </TextBlock>
+                        </Expander>
+                    </Border>
+
+
+
+                </StackPanel>
+
+            </ScrollViewer>
+
+        </Grid>
+
+    </Grid>
+
+</Window>
+

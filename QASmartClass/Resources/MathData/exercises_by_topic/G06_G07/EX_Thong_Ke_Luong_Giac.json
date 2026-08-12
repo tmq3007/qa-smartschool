@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "topicId": "g06_ex04",
+    "topicName": "Thống Kê & Lượng Giác Cơ Bản",
+    "gradeRange": [6, 7],
+    "totalExercises": 15,
+    "difficulty": {"Easy": 5, "Medium": 5, "Hard": 5},
+    "toolMapping": ["StatisticsTool", "TrigonometryTool", "ProbabilityTool"],
+    "sourceRef": "MATH_EXERCISES_BANK_250+.md (Bài 56-70)"
+  },
+  "exercises": [
+    {"exerciseId": "ex_tklg_056", "difficulty": "Easy", "type": "calculation", "question": "Dữ liệu: 2, 3, 5, 7, 3. Tính trung bình", "answer": "4", "solution": "(2+3+5+7+3)/5 = 20/5 = 4", "points": 5},
+    {"exerciseId": "ex_tklg_057", "difficulty": "Easy", "type": "calculation", "question": "Dữ liệu: 1, 2, 3, 4, 5. Tìm trung vị", "answer": "3", "solution": "Sắp xếp: 1,2,3,4,5. Trung vị = giá trị ở vị trí giữa = 3", "points": 5},
+    {"exerciseId": "ex_tklg_058", "difficulty": "Easy", "type": "calculation", "question": "Dữ liệu: 5, 5, 6, 6, 6, 7. Tìm mốt", "answer": "6", "solution": "6 xuất hiện 3 lần (nhiều nhất) → Mốt = 6", "points": 5},
+    {"exerciseId": "ex_tklg_059", "difficulty": "Easy", "type": "calculation", "question": "Dữ liệu: 10, 20, 30, 40. Tính trung bình", "answer": "25", "solution": "(10+20+30+40)/4 = 100/4 = 25", "points": 5},
+    {"exerciseId": "ex_tklg_060", "difficulty": "Easy", "type": "calculation", "question": "Xác suất tung đồng xu được mặt ngửa", "answer": "1/2", "solution": "Đồng xu có 2 mặt, P(ngửa) = 1/2", "points": 5},
+    {"exerciseId": "ex_tklg_061", "difficulty": "Medium", "type": "calculation", "question": "sin 30° = ?", "answer": "1/2", "solution": "sin 30° = 1/2 (giá trị lượng giác đặc biệt)", "points": 10},
+    {"exerciseId": "ex_tklg_062", "difficulty": "Medium", "type": "calculation", "question": "cos 60° = ?", "answer": "1/2", "solution": "cos 60° = 1/2 (giá trị lượng giác đặc biệt)", "points": 10},
+    {"exerciseId": "ex_tklg_063", "difficulty": "Medium", "type": "calculation", "question": "tan 45° = ?", "answer": "1", "solution": "tan 45° = sin 45°/cos 45° = 1", "points": 10},
+    {"exerciseId": "ex_tklg_064", "difficulty": "Medium", "type": "calculation", "question": "Trong tam giác vuông, sin α = 3/5. Tìm cos α", "answer": "4/5", "solution": "sin²α + cos²α = 1 → cos²α = 1 - 9/25 = 16/25 → cos α = 4/5", "points": 10},
+    {"exerciseId": "ex_tklg_065", "difficulty": "Medium", "type": "calculation", "question": "Xác suất lấy bóng đỏ từ hộp có 3 đỏ, 2 xanh", "answer": "3/5", "solution": "Tổng = 5 bóng. P(đỏ) = 3/5", "points": 10},
+    {"exerciseId": "ex_tklg_066", "difficulty": "Hard", "type": "calculation", "question": "Tính độ cao tòa nhà khi biết bóng dài 20m & góc nâng 30°", "answer": "20/√3 ≈ 11.55m", "solution": "tan 30° = h/20 → h = 20 × tan 30° = 20/√3 ≈ 11.55m", "points": 20},
+    {"exerciseId": "ex_tklg_067", "difficulty": "Hard", "type": "calculation", "question": "Xác suất rút 2 lá bài đỏ từ bộ 52 lá (không hoàn lại)", "answer": "25/102", "solution": "P = (26/52) × (25/51) = 650/2652 = 25/102", "points": 20},
+    {"exerciseId": "ex_tklg_068", "difficulty": "Hard", "type": "calculation", "question": "Dữ liệu thu nhập: 5, 6, 7, 50. Giải thích tại sao dùng trung vị tốt hơn", "answer": "Trung vị = 6.5 (tránh ảnh hưởng ngoại lệ)", "solution": "Trung bình = 17 (bị lệch do outlier 50). Trung vị = (6+7)/2 = 6.5 phản ánh đúng hơn.", "points": 15},
+    {"exerciseId": "ex_tklg_069", "difficulty": "Hard", "type": "proof", "question": "Chứng minh: sin²α + cos²α = 1", "answer": "Hệ quả Định lý Pythagore", "solution": "Trong tam giác vuông: sin α = đối/huyền, cos α = kề/huyền. sin²+cos² = (đối²+kề²)/huyền² = huyền²/huyền² = 1", "points": 20},
+    {"exerciseId": "ex_tklg_070", "difficulty": "Hard", "type": "calculation", "question": "Có 10 bi xanh & 5 bi đỏ. Rút 1 bi. P(xanh) = ?", "answer": "2/3", "solution": "Tổng = 15. P(xanh) = 10/15 = 2/3", "points": 15}
+  ]
+}

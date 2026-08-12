@@ -1,0 +1,76 @@
+<UserControl x:Class="QASmartClass.LearningTools.Views.Math.InteractiveTrigCircle"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             Width="320" Height="320">
+    <Border Background="White" CornerRadius="14" BorderBrush="#E1BEE7" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/>
+        </Border.Effect>
+        <Grid Margin="10">
+            <!-- Canvas vẽ đồ thị -->
+            <Canvas x:Name="drawingCanvas" Background="Transparent" 
+                    ClipToBounds="True"
+                    MouseLeftButtonDown="Canvas_MouseDown"
+                    MouseMove="Canvas_MouseMove"
+                    MouseLeftButtonUp="Canvas_MouseUp">
+                
+                <!-- Lưới nền nét đứt -->
+                <Line x:Name="axisX" Stroke="#BDBDBD" StrokeThickness="1.5"/>
+                <Line x:Name="axisY" Stroke="#BDBDBD" StrokeThickness="1.5"/>
+                
+                <!-- Đường tròn đơn vị -->
+                <Ellipse x:Name="unitCircle" Stroke="#E0E0E0" StrokeThickness="2"/>
+                
+                <!-- Đường tiếp tuyến x = 1 (biểu diễn tan) -->
+                <Line x:Name="lineTanAxis" Stroke="#E0E0E0" StrokeThickness="1" StrokeDashArray="3,3"/>
+                <!-- Đường tiếp tuyến y = 1 (biểu diễn cot) -->
+                <Line x:Name="lineCotAxis" Stroke="#E0E0E0" StrokeThickness="1" StrokeDashArray="3,3"/>
+
+                <!-- Các đoạn gióng biểu diễn giá trị hình học -->
+                <!-- Cosin: đoạn nằm ngang trên Ox (Xanh dương) -->
+                <Line x:Name="lineCos" Stroke="#2196F3" StrokeThickness="3.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                
+                <!-- Sin: đoạn thẳng đứng hạ từ P xuống Ox (Hồng cam) -->
+                <Line x:Name="lineSin" Stroke="#E91E63" StrokeThickness="3.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                
+                <!-- Tan: đoạn thẳng đứng từ (1,0) đến giao điểm tiếp tuyến (Cam) -->
+                <Line x:Name="lineTan" Stroke="#FF9800" StrokeThickness="3.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed"/>
+                
+                <!-- Cot: đoạn nằm ngang từ (0,1) đến giao điểm tiếp tuyến (Xanh lá) -->
+                <Line x:Name="lineCot" Stroke="#4CAF50" StrokeThickness="3.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed"/>
+                
+                <!-- Tia nối từ tâm O đến điểm P (Màu tím) -->
+                <Line x:Name="rayLine" Stroke="#7B1FA2" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                
+                <!-- Cung góc lượng giác theta -->
+                <Path x:Name="angleArc" Stroke="#AB47BC" StrokeThickness="2" Fill="#15AB47BC"/>
+
+                <!-- Điểm biểu diễn P trên đường tròn (Đầu mút tương tác) -->
+                <Ellipse x:Name="pointP" Width="16" Height="16" Fill="#E53935" Stroke="White" StrokeThickness="2.5" Cursor="Hand">
+                    <Ellipse.Effect>
+                        <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.3"/>
+                    </Ellipse.Effect>
+                </Ellipse>
+                
+                <!-- Nhãn hiển thị ký hiệu góc θ, P -->
+                <TextBlock x:Name="lblAngle" Text="θ" Foreground="#7B1FA2" FontSize="14" FontWeight="Bold" FontFamily="Segoe UI"/>
+                <TextBlock x:Name="lblP" Text="P" Foreground="#E53935" FontSize="14" FontWeight="Bold" FontFamily="Segoe UI"/>
+                
+                <!-- Nhãn hiển thị các giá trị biên 1, -1 trên trục Ox, Oy -->
+                <TextBlock Text="1" Foreground="#9E9E9E" FontSize="11" x:Name="lblOneX" FontFamily="Segoe UI"/>
+                <TextBlock Text="-1" Foreground="#9E9E9E" FontSize="11" x:Name="lblNegOneX" FontFamily="Segoe UI"/>
+                <TextBlock Text="1" Foreground="#9E9E9E" FontSize="11" x:Name="lblOneY" FontFamily="Segoe UI"/>
+                <TextBlock Text="-1" Foreground="#9E9E9E" FontSize="11" x:Name="lblNegOneY" FontFamily="Segoe UI"/>
+
+                <!-- Nhãn văn bản động cho các hàm lượng giác trên đồ thị -->
+                <TextBlock x:Name="lblSinText" Text="sin" Foreground="#E91E63" FontSize="13" FontWeight="Bold" FontFamily="Segoe UI" Visibility="Collapsed"/>
+                <TextBlock x:Name="lblCosText" Text="cos" Foreground="#2196F3" FontSize="13" FontWeight="Bold" FontFamily="Segoe UI" Visibility="Collapsed"/>
+                <TextBlock x:Name="lblTanText" Text="tan" Foreground="#FF9800" FontSize="13" FontWeight="Bold" FontFamily="Segoe UI" Visibility="Collapsed"/>
+                <TextBlock x:Name="lblCotText" Text="cot" Foreground="#4CAF50" FontSize="13" FontWeight="Bold" FontFamily="Segoe UI" Visibility="Collapsed"/>
+            </Canvas>
+        </Grid>
+    </Border>
+</UserControl>

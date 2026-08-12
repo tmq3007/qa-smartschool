@@ -1,0 +1,264 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Math.TrigonometryTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             xmlns:local="clr-namespace:QASmartClass.LearningTools.Views.Math"
+             Background="{StaticResource Gray100}">
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER (Gradient + Reset) ═══ -->
+        <Border Grid.Row="0" CornerRadius="0" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#F3E5F5" Offset="0"/>
+                    <GradientStop Color="#E1BEE7" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel>
+                <Border DockPanel.Dock="Right" Background="#6A1B9A" CornerRadius="8" Padding="12,8" VerticalAlignment="Center" Cursor="Hand"
+                        MouseLeftButtonDown="ResetAll_Click" ToolTip="Đặt lại về góc mặc định 45°">
+                    <TextBlock Text="🔄 Đặt lại" FontSize="13" Foreground="White" FontWeight="Bold"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="📊 Bảng Lượng Giác" FontSize="20" FontWeight="Bold" Foreground="#6A1B9A"/>
+                    <TextBlock Text="Lớp 10-12 • sin, cos, tan, cot – bảng giá trị &amp; tính toán lượng giác" FontSize="14" Foreground="#AB47BC" Margin="0,3,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#F3E5F5">
+                <!-- Math Category: Blue hover/selected -->
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#C5CAE9"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="{StaticResource BrandPrimaryColor}"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📊" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextTable" Text="Bảng giá trị" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🧮" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextCalc" Text="Tính toán" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📐" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextFormula" Text="Công thức" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextTheory" Text="Hướng dẫn &amp; Ví dụ" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#E1BEE7"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 0: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#C5CAE9" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#C5CAE9" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: BẢNG GIÁ TRỊ -->
+                <ScrollViewer x:Name="viewTable" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel x:Name="tablePanel" Margin="4"/>
+                </ScrollViewer>
+
+                <!-- VIEW 2: MÁY TÍNH LƯỢNG GIÁC -->
+                <ScrollViewer x:Name="viewCalc" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" Padding="12">
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT COLUMN: Input -->
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <!-- Quick Start Guide -->
+                            <Border Background="#FFF8E1" CornerRadius="10" Padding="14,10" Margin="0,0,0,12" BorderBrush="#FFE082" BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Hướng dẫn nhanh / Quick Guide:" FontSize="14" FontWeight="Bold" Foreground="#F57F17" Margin="0,0,0,4"/>
+                                    <TextBlock Text="1. Nhập góc tự do bằng số lẻ/biểu thức chứa pi hoặc chọn Góc thường dùng.&#x0a;2. Quan sát biểu diễn hình học trên Đường tròn lượng giác ở bên phải.&#x0a;3. Chạm giữ và kéo kéo điểm đỏ P trên đường tròn để thay đổi góc trực quan.&#x0a;4. Xem kết quả giá trị lượng giác tương ứng hiển thị ở bảng kết quả." 
+                                               FontSize="12.5" Foreground="#5D4037" TextWrapping="Wrap" LineHeight="18" FontFamily="Segoe UI"/>
+                                 </StackPanel>
+                            </Border>
+
+                            <!-- Formula card -->
+                            <Border Background="White" CornerRadius="14" Padding="20,16" Margin="0,0,0,16" BorderBrush="#E1BEE7" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="64" Height="64" CornerRadius="32" Margin="0,0,16,0" VerticalAlignment="Center">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#6A1B9A" Offset="0"/>
+                                                <GradientStop Color="#AB47BC" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <TextBlock Text="θ" FontSize="32" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="sin²θ + cos²θ = 1" FontSize="20" FontWeight="Bold" Foreground="#6A1B9A"/>
+                                        <TextBlock Text="tanθ = sinθ/cosθ  •  cotθ = cosθ/sinθ  •  1 + tan²θ = 1/cos²θ  •  1 + cot²θ = 1/sin²θ" FontSize="12.5" FontWeight="SemiBold" Foreground="#AB47BC" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Input -->
+                            <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <StackPanel>
+                                    <Border Background="#F5F7FA" CornerRadius="10" Padding="16,12" Margin="0,0,0,16">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="Góc θ" FontSize="18" FontWeight="Bold" Foreground="#6A1B9A"/>
+                                                <TextBlock Text="số đo góc" FontSize="13" Foreground="#AB47BC" FontStyle="Italic"/>
+                                            </StackPanel>
+                                            <TextBox x:Name="txtAngle" Grid.Column="1" FontSize="24" Padding="10,8" FontWeight="Bold" TextChanged="Angle_Changed" Text="45" MaxLength="15" BorderBrush="#CE93D8" BorderThickness="0,0,0,2" Background="Transparent" VerticalContentAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                    
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                        <TextBlock Text="Đơn vị:" FontSize="15" FontWeight="Bold" Foreground="#6A1B9A" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                        <RadioButton x:Name="rbDegree" Content="Độ (°)" IsChecked="True" FontSize="15" FontWeight="SemiBold" Margin="0,0,16,0" Checked="Unit_Changed"/>
+                                        <RadioButton x:Name="rbRadian" Content="Radian (rad)" FontSize="15" FontWeight="SemiBold" Checked="Unit_Changed"/>
+                                    </StackPanel>
+
+                                    <!-- History -->
+                                    <StackPanel x:Name="spHistory" Margin="0,0,0,16" Visibility="Collapsed">
+                                        <DockPanel LastChildFill="False" Margin="0,0,0,6">
+                                            <TextBlock Text="⏱️ Lịch sử tra cứu:" FontSize="15" FontWeight="Bold" Foreground="#6A1B9A" VerticalAlignment="Center"/>
+                                            <Button x:Name="btnClearHistory" Content="🗑️ Xóa" Click="ClearHistory_Click" DockPanel.Dock="Right" Background="Transparent" BorderThickness="0" Foreground="#E53935" FontWeight="Bold" Cursor="Hand" FontSize="13" VerticalAlignment="Center"/>
+                                        </DockPanel>
+                                        <WrapPanel x:Name="historyPanel"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Quick angles -->
+                                    <TextBlock Text="📐 Góc thường dùng:" FontSize="16" FontWeight="Bold" Foreground="#6A1B9A" Margin="0,0,0,12"/>
+                                    <WrapPanel x:Name="wpQuickAngles" Margin="0,0,0,8"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- RIGHT COLUMN: Results -->
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <!-- Interactive circle -->
+                            <local:InteractiveTrigCircle x:Name="trigCircle" Width="360" Height="360" Margin="0,0,0,16" HorizontalAlignment="Center"/>
+                            
+                            <!-- Results -->
+                            <Border Background="White" CornerRadius="14" Padding="20,16" Margin="0,0,0,16" BorderBrush="#E1BEE7" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <StackPanel>
+                                    <StackPanel x:Name="resultPanel"/>
+                                    <!-- Checkbox extended -->
+                                    <CheckBox x:Name="cbShowExtended" Content="Hiển thị hàm mở rộng (sec, csc)" IsChecked="False" Margin="0,8,0,0" Checked="ShowExtended_Checked" Unchecked="ShowExtended_Checked" FontSize="13" FontWeight="SemiBold" Foreground="#7B1FA2"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Graph -->
+                            <Border Background="#E3F2FD" CornerRadius="14" Padding="16,12" Margin="0,0,0,0" Cursor="Hand" MouseLeftButtonDown="OpenGraph_Click" BorderBrush="#90CAF9" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="📈" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Xem đồ thị" FontSize="15" FontWeight="Bold" Foreground="{StaticResource BrandPrimary}"/>
+                                        <TextBlock Text="Đường tròn lượng giác trực quan" FontSize="13" Foreground="#1976D2" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+
+                <!-- VIEW 3: CÔNG THỨC -->
+                <ScrollViewer x:Name="viewFormula" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel x:Name="formulaPanel" Margin="12"/>
+                </ScrollViewer>
+
+                <!-- VIEW 4: HƯỚNG DẪN & VÍ DỤ -->
+                <ScrollViewer x:Name="viewTheory" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel x:Name="guidePanel" Margin="12"/>
+                </ScrollViewer>
+
+                <!-- VIEW 5: PRACTICAL APPLICATIONS -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

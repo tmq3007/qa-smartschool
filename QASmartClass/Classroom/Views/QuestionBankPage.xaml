@@ -1,0 +1,129 @@
+﻿<Page x:Class="QASmartClass.Classroom.Views.QuestionBankPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Ngân hàng câu hỏi" Background="#FAFAFA">
+    <Grid Margin="24,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,12">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Navigation sub-flow: Quay lại Quiz -->
+                <Button Content="&#xE72B;" FontFamily="Segoe MDL2 Assets" 
+                        Width="32" Height="32" Margin="0,0,12,0" Padding="0"
+                        Background="#F5F5F5" Foreground="#616161" BorderThickness="0"
+                        Cursor="Hand" Click="GoBackToQuiz_Click" ToolTip="Quay lại Quiz"
+                        FontSize="14">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="16">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bg" Property="Background" Value="#E0E0E0"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <StackPanel>
+                    <TextBlock Text="❓ Ngân hàng câu hỏi" FontSize="18" FontWeight="Bold" Foreground="#212121"/>
+                    <TextBlock Text="Quản lý bộ câu hỏi · Import / Export · Ngân hàng câu hỏi" FontSize="12" Foreground="#757575" Margin="0,2,0,0"/>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                <!-- Import/Export buttons -->
+                <Button Content="📥 Lấy từ NH" Padding="10,7" FontSize="11" Background="#E3F2FD" Foreground="#1565C0"
+                        BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="ImportFromBank_Click" ToolTip="Import câu hỏi từ Ngân hàng vào Quiz đang chọn">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}" BorderBrush="#1976D2" BorderThickness="1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#BBDEFB"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="📤 Export" Padding="10,7" FontSize="11" Background="#F3E5F5" Foreground="#7B1FA2"
+                        BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="ExportQuiz_Click" ToolTip="Xuất Quiz đang chọn ra file JSON">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}" BorderBrush="#9C27B0" BorderThickness="1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#E1BEE7"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="📂 Import file" Padding="10,7" FontSize="11" Background="#FFF3E0" Foreground="#E65100"
+                        BorderThickness="0" Cursor="Hand" Margin="0,0,8,0" Click="ImportFile_Click" ToolTip="Nhập câu hỏi từ file JSON vào Quiz đang chọn">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}" BorderBrush="#FF9800" BorderThickness="1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFE0B2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+                <!-- Separator -->
+                <Border Width="1" Height="20" Background="#E0E0E0" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <!-- CRUD buttons -->
+                <Button Content="➕ Thêm Quiz" Padding="10,7" FontSize="12" Background="#F3E5F5" Foreground="#7B1FA2"
+                        BorderThickness="0" Cursor="Hand" Margin="0,0,6,0" Click="AddQuiz_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#E1BEE7"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="🗑️ Xóa Quiz" Padding="10,7" FontSize="12" Background="#FFEBEE" Foreground="#C62828"
+                        BorderThickness="0" Cursor="Hand" Margin="0,0,6,0" Click="DeleteQuiz_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFCDD2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="➕ Thêm câu hỏi" Padding="10,7" FontSize="12" Background="#1976D2" Foreground="White"
+                        BorderThickness="0" Cursor="Hand" Margin="0,0,6,0" Click="AddQuestion_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="🗑️ Xóa" Padding="10,7" FontSize="12" Background="#FFEBEE" Foreground="#C62828"
+                        BorderThickness="0" Cursor="Hand" Click="DeleteQuestion_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFCDD2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="❓ Ngân hàng câu hỏi" FontSize="18" FontWeight="Bold" Foreground="#212121"/>
+                <TextBlock Text="Quản lý bộ câu hỏi · Import / Export · Ngân hàng câu hỏi" FontSize="12" Foreground="#757575" Margin="0,2,0,0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Stats + Quiz Selector -->
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="16,10" Margin="0,0,8,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="📋 Tổng quiz: " FontSize="12" VerticalAlignment="Center" Foreground="#757575"/>
+                    <TextBlock x:Name="txtTotalQuizzes" Text="0" FontSize="16" FontWeight="Bold" Foreground="#9C27B0" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="16,10" Margin="0,0,16,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="❓ Tổng câu hỏi: " FontSize="12" VerticalAlignment="Center" Foreground="#757575"/>
+                    <TextBlock x:Name="txtTotalQuestions" Text="0" FontSize="16" FontWeight="Bold" Foreground="#1976D2" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="12,8" BorderBrush="#E0E0E0" BorderThickness="1">
+                <DockPanel>
+                    <TextBlock Text="Chọn Quiz: " DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="12" Foreground="#757575" Margin="0,0,8,0"/>
+                    <TextBlock x:Name="txtQuestionCount" DockPanel.Dock="Right" Text="0 câu hỏi"
+                               VerticalAlignment="Center" FontSize="12" Foreground="#9C27B0" FontWeight="SemiBold"/>
+                    <ComboBox x:Name="cmbQuiz" FontSize="13" BorderThickness="0" Background="Transparent"
+                               SelectionChanged="QuizChanged"/>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- Questions DataGrid -->
+        <Border Grid.Row="2" Background="White" CornerRadius="12" BorderBrush="#E0E0E0" BorderThickness="1">
+            <DataGrid x:Name="questionGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                      BorderThickness="0" Background="White" RowBackground="White"
+                      AlternatingRowBackground="#FAFAFA" FontSize="12" RowHeight="40"
+                      CanUserResizeRows="False" SelectionMode="Single">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="#" Binding="{Binding SortOrder}" Width="40"/>
+                    <DataGridTextColumn Header="Nội dung câu hỏi" Binding="{Binding Content}" Width="*"/>
+                    <DataGridTextColumn Header="Loại" Binding="{Binding QuestionType}" Width="110"/>
+                    <DataGridTextColumn Header="Đ. khó" Binding="{Binding Difficulty}" Width="70"/>
+                    <DataGridTextColumn Header="Đáp án" Binding="{Binding CorrectAnswer}" Width="70"/>
+                    <DataGridTextColumn Header="Điểm" Binding="{Binding Points}" Width="60"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</Page>

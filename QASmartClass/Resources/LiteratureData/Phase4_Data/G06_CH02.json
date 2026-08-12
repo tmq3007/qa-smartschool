@@ -1,0 +1,155 @@
+{
+  "metadata": {
+    "chapterId": "g06_ch02",
+    "chapterName": "Bài 2: Gõ cửa trái tim",
+    "grade": 6,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 4
+  },
+  "sections": [
+    {
+      "sectionId": "s_g6_ch1_0",
+      "sectionName": "Bài học đường đời đầu tiên — Tô Hoài",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g6_Bài_học_đường_đời_đầu_tiên.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Tô Hoài (1920–2014) là nhà văn xuất sắc của thiếu nhi. Đoạn trích từ chương 1 của 'Dế Mèn phiêu lưu ký' kể về bài học đắt giá của Dế Mèn vì thói kiêu căng, xốc nổi đã gián tiếp gây ra cái chết cho Dế Choắt."
+        },
+        {
+          "name": "Vẻ đẹp ngoại hình của Dế Mèn",
+          "definition": "Bởi tôi ăn uống điều độ và làm việc có chừng mực nên tôi chóng lớn lắm. Chẳng bao lâu, tôi đã trở thành một chàng dế thanh niên cường tráng. Đôi càng tôi mẫm bóng. Những cái vuốt ở chân, ở khoeo cứ cứng dần và nhọn hoắt..."
+        },
+        {
+          "name": "Tính cách kiêu ngạo và hậu quả",
+          "definition": "Tôi tợn lắm. Dám cà khịa với tất cả mọi bà con trong xóm... Tôi đã quát mấy chị Cào Cào, đá anh Gọng Vó. Tôi chê Dế Choắt: 'Chú mày hôi như cú mèo thế này, ta nào chịu được'. Dế Mèn trêu chị Cốc khiến chị Cốc mổ chết Dế Choắt."
+        },
+        {
+          "name": "Nghệ thuật miêu tả",
+          "examples": [
+            "**Nhân hóa xuất sắc**: Gán cho loài vật ngoại hình, hành động và tính cách như con người (thanh niên cường tráng, kiêu ngạo, hối hận).",
+            "**Ngoại hình kiêu hãnh**: Mẫm bóng, nhọn hoắt, phanh phách, ngoàm ngoạp → khỏe mạnh nhưng báo hiệu thói tự phụ.",
+            "**Bài học rút ra**: Thói kiêu căng, xốc nổi sẽ mang lại tai họa cho người khác và sự ân hận cho chính mình suốt đời."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Dế Mèn tự miêu tả ngoại hình của mình với thái độ như thế nào?",
+          "difficulty": "Easy",
+          "options": [
+            "Vô cùng tự hào, kiêu hãnh và mãn nguyện về vẻ đẹp khỏe mạnh, cường tráng của mình",
+            "Tự ti vì thân hình quá to lớn so với các bạn bè trong xóm",
+            "Bình thường, coi đó là sự phát triển tự nhiên của loài dế",
+            "Xấu hổ vì cái vuốt nhọn hoắt và màu nâu bóng mỡ"
+          ],
+          "answer": "Vô cùng tự hào, kiêu hãnh và mãn nguyện về vẻ đẹp khỏe mạnh, cường tráng của mình",
+          "hints": ["Nhớ lại các từ ngữ Mèn dùng: 'cường tráng', 'mẫm bóng', 'hãnh diện'."],
+          "explanation": "Dế Mèn rất tự hào về ngoại hình của mình. Tuy nhiên, sự tự hào thái quá đã biến thành thói kiêu ngạo, hống hách, coi thường người khác — nguyên nhân dẫn đến sai lầm sau này."
+        },
+        {
+          "id": "p2",
+          "question": "Hành động nào của Dế Mèn đã trực tiếp gây ra bi kịch cho Dế Choắt?",
+          "difficulty": "Medium",
+          "options": [
+            "Hát trêu chọc chị Cốc rồi chui tọt vào hang sâu, để mặc Dế Choắt yếu đuối bị chị Cốc hiểu lầm và mổ chết",
+            "Đánh nhau với Dế Choắt để tranh giành lãnh thổ",
+            "Đuổi Dế Choắt ra khỏi hang lúc trời đang mưa bão",
+            "Từ chối cho Dế Choắt đào hang thông sang nhà mình"
+          ],
+          "answer": "Hát trêu chọc chị Cốc rồi chui tọt vào hang sâu, để mặc Dế Choắt yếu đuối bị chị Cốc hiểu lầm và mổ chết",
+          "hints": ["Bi kịch của Dế Choắt liên quan đến nhân vật thứ 3 là ai? Mèn đã làm gì với nhân vật đó?"],
+          "explanation": "Dế Mèn muốn ra oai nên đã trêu chọc chị Cốc nhưng lại hèn nhát trốn đi. Hậu quả là Dế Choắt — người hàng xóm ốm yếu, vô tội — phải chịu cơn thịnh nộ của chị Cốc. Đây là 'bài học đường đời đầu tiên' vô cùng đắt giá của Mèn."
+        },
+        {
+          "id": "p3",
+          "question": "Lời trăng trối cuối cùng của Dế Choắt gửi gắm bài học gì cho Dế Mèn?",
+          "difficulty": "Medium",
+          "options": [
+            "Ở đời mà có thói hung hăng bậy bạ, có óc mà không biết nghĩ, sớm muộn rồi cũng mang vạ vào mình đấy",
+            "Phải biết ăn uống điều độ để có thân hình khỏe mạnh",
+            "Không bao giờ được kết bạn với những kẻ yếu đuối",
+            "Nên xây hang sâu hơn để phòng tránh kẻ thù"
+          ],
+          "answer": "Ở đời mà có thói hung hăng bậy bạ, có óc mà không biết nghĩ, sớm muộn rồi cũng mang vạ vào mình đấy",
+          "hints": ["Dế Choắt có trách móc Mèn không, hay để lại một lời khuyên chân thành?"],
+          "explanation": "Dế Choắt không hề oán hận, mà chỉ dùng chút sức tàn để răn dạy Mèn. Lời khuyên này đã làm Mèn thức tỉnh sự lương thiện, ân hận tột cùng, đánh dấu bước ngoặt trưởng thành trong nhận thức của Dế Mèn."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g6_ch1_1",
+      "sectionName": "Bức tranh của em gái tôi — Tạ Duy Anh",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g6_Bức_tranh_của_em_gái_tôi.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Truyện ngắn của Tạ Duy Anh viết về tình cảm anh em. Tác phẩm tinh tế khắc họa diễn biến tâm lý của người anh trước tài năng của cô em gái Kiều Phương (Mèo)."
+        },
+        {
+          "name": "Sự đố kỵ của người anh",
+          "definition": "Từ lúc biết Mèo có tài hội họa, tôi luôn cảm thấy mình bất tài nên bị đẩy ra ngoài. Những lúc ngồi bên bàn học, tôi chỉ muốn gục xuống khóc... Tôi hay gắt gỏng với em."
+        },
+        {
+          "name": "Bức chân dung 'Anh trai tôi'",
+          "definition": "Trong tranh, một chú bé đang ngồi nhìn ra cửa sổ... Mặt chú bé như tỏa ra một ánh sáng rất lạ. Toát lên từ cặp mắt, tư thế ngồi của chú không chỉ sự suy tư mà còn rất mộng mơ nữa."
+        },
+        {
+          "name": "Sự thức tỉnh",
+          "examples": [
+            "**Giật sững người → Bám chặt lấy tay mẹ → Thỏa mãn → Xấu hổ**: Chuỗi tâm lý phức tạp nhưng rất tự nhiên của người anh khi đứng trước bức tranh đoạt giải nhất của em gái.",
+            "**'Không phải con đâu. Đấy là tâm hồn và lòng nhân hậu của em con đấy'**: Lời nói cuối truyện chứng tỏ người anh đã hoàn toàn nhận ra sự ích kỷ của mình và vẻ đẹp tâm hồn trong sáng của em gái."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Khi tài năng hội họa của Kiều Phương được phát hiện, thái độ của người anh thay đổi như thế nào?",
+          "difficulty": "Easy",
+          "options": [
+            "Cảm thấy tự ti, mặc cảm, đố kỵ và thường xuyên gắt gỏng vô cớ với em gái",
+            "Rất vui vẻ và tự hào khoe với mọi người về tài năng của em",
+            "Bình thường, không quan tâm vì đó là việc của em gái",
+            "Ngưỡng mộ và xin em gái dạy mình vẽ"
+          ],
+          "answer": "Cảm thấy tự ti, mặc cảm, đố kỵ và thường xuyên gắt gỏng vô cớ với em gái",
+          "hints": ["Người anh cảm thấy thế nào khi mọi người chú ý đến em gái nhiều hơn?"],
+          "explanation": "Sự đố kỵ là một cảm xúc tâm lý rất đời thường của trẻ con. Khi thấy em được chú ý, người anh mặc cảm mình bất tài, sinh ra gắt gỏng, lạnh nhạt với em. Tác giả đã miêu tả rất chân thực tâm lý tuổi mới lớn."
+        },
+        {
+          "id": "p2",
+          "question": "Tâm trạng của người anh biến đổi ra sao khi đứng trước bức tranh 'Anh trai tôi' đoạt giải nhất?",
+          "difficulty": "Medium",
+          "options": [
+            "Ngỡ ngàng → hãnh diện → xấu hổ",
+            "Tức giận → ghen tị → chán nản",
+            "Vui sướng → tự hào → muốn học vẽ",
+            "Dửng dưng → ngạc nhiên → vui vẻ"
+          ],
+          "answer": "Ngỡ ngàng → hãnh diện → xấu hổ",
+          "hints": ["Lúc đầu ngạc nhiên (Giật sững). Sau đó thấy hình ảnh mình đẹp (Thỏa mãn). Cuối cùng nhận ra lỗi lầm (Xấu hổ)."],
+          "explanation": "Đây là chi tiết đắt giá nhất: Ngỡ ngàng vì không ngờ em lại vẽ mình. Hãnh diện vì hình ảnh trong tranh quá đẹp (mộng mơ, suy tư). Nhưng sau đó là sự xấu hổ tận cùng, vì anh nhận ra mình đã cư xử tệ bạc với em, trong khi em gái lại luôn nhìn anh bằng đôi mắt nhân hậu, đầy yêu thương."
+        },
+        {
+          "id": "p3",
+          "question": "Câu nói cuối cùng của người anh: 'Không phải con đâu. Đấy là tâm hồn và lòng nhân hậu của em con đấy' mang ý nghĩa gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Khẳng định vẻ đẹp trong bức tranh không phải là ngoại hình thực của anh, mà là sự phản chiếu tấm lòng bao dung, tốt đẹp của người em gái",
+            "Từ chối nhận bức tranh vì người anh thấy mình vẽ xấu hơn bức tranh",
+            "Chê em gái vẽ không giống mình ở ngoài đời thực",
+            "Người anh muốn mẹ tự giữ bức tranh làm kỷ niệm"
+          ],
+          "answer": "Khẳng định vẻ đẹp trong bức tranh không phải là ngoại hình thực của anh, mà là sự phản chiếu tấm lòng bao dung, tốt đẹp của người em gái",
+          "hints": ["Người anh có thực sự đẹp đẽ và mộng mơ như trong tranh không? Ai đã làm cho hình ảnh đó trở nên đẹp như vậy?"],
+          "explanation": "Người anh đã thức tỉnh hoàn toàn. Anh hiểu rằng sự rạng rỡ trong bức tranh là kết tinh từ tình yêu thương vô tư, lòng vị tha và tâm hồn trong sáng của Kiều Phương. Tình cảm ấy lớn đến mức giúp người anh vượt qua sự ích kỷ, đố kỵ của chính mình để hoàn thiện bản thân."
+        }
+      ]
+    }
+  ]
+}

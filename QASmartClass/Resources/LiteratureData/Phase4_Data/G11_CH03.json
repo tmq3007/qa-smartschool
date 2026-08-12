@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "chapterId": "g11_ch03",
+    "chapterName": "Bài 3: Văn tế",
+    "grade": 11,
+    "totalProblems": 3,
+    "totalSections": 1,
+    "estimatedHours": 2,
+    "thptWeight": "Tác phẩm tiêu biểu giai đoạn văn học chống Pháp"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g11_ch2_0",
+      "sectionName": "Văn tế nghĩa sĩ Cần Giuộc — Nguyễn Đình Chiểu",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-11-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g11_Văn_tế_nghĩa_sĩ_Cần_Giuộc.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh Sáng Tác",
+          "theorem": "Nguyễn Đình Chiểu (1822–1888) — nhà thơ mù yêu nước. Tác phẩm được viết năm 1861 theo yêu cầu của tuần phủ Gia Định để tế những người nông dân đã hy sinh dũng cảm trong trận tập kích đồn Cần Giuộc của thực dân Pháp.",
+          "imageUrls": ["Resources/LiteratureData/Images/nguyen_dinh_chieu.png"]
+        },
+        {
+          "name": "Hình tượng người nông dân nghĩa sĩ",
+          "definition": "Nhớ linh xưa:\nCui cút làm ăn, toan lo nghèo khó;\nChưa quen cung ngựa, đâu tới trường nhung; chỉ biết điền viên, cuốc cày toan lo nghèo khó.\nViệc cuốc, việc cày, việc bừa, việc cấy, tay vốn quen làm; tập khiên, tập súng, tập mác, tập cờ, mắt chưa từng ngó."
+        },
+        {
+          "name": "Tinh thần chiến đấu",
+          "definition": "Nào đợi ai đòi ai bắt, phen này xin ra sức đoạn kình; chẳng thèm trốn ngược trốn xuôi, chuyến này dốc ra tay bộ hổ.\nKhá thương thay!\nVốn chẳng phải quân cơ, quân vệ, theo dòng ở lính diễn binh; chẳng qua là dân ấp, dân lân, mến nghĩa làm quân chiêu mộ."
+        },
+        {
+          "name": "Giá trị nghệ thuật",
+          "examples": [
+            "**Tính bi tráng**: Lần đầu tiên trong lịch sử văn học dân tộc, người nông dân mặc áo vải được dựng lên thành bức tượng đài nghệ thuật bi tráng.",
+            "**Biện pháp đối**: 'Việc cuốc... quen làm' đối với 'tập khiên... chưa ngó' → nhấn mạnh sự chuyển đổi đột ngột từ nông dân thành chiến sĩ.",
+            "**Ngôn ngữ**: Kết hợp chữ Nôm với từ ngữ đời sống, mang đậm sắc thái Nam Bộ."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hình tượng người nghĩa sĩ Cần Giuộc có gì đặc biệt so với hình tượng anh hùng trong văn học trung đại trước đó?",
+          "difficulty": "Medium",
+          "options": [
+            "Lần đầu tiên người nông dân nghèo khổ, chất phác được tôn vinh như những người anh hùng đích thực",
+            "Họ là những người được huấn luyện võ thuật tinh thông, bách chiến bách thắng",
+            "Họ là những tướng lĩnh chỉ huy quân đội triều đình",
+            "Họ là những nho sĩ ở ẩn đứng lên cứu nước"
+          ],
+          "answer": "Lần đầu tiên người nông dân nghèo khổ, chất phác được tôn vinh như những người anh hùng đích thực",
+          "hints": ["Nhớ lại những anh hùng như Đăm Săn, Thánh Gióng, Trần Quốc Tuấn... Họ có phải nông dân không?"],
+          "explanation": "Trước Nguyễn Đình Chiểu, văn học thường chỉ ca ngợi các anh hùng cái thế, tướng sĩ triều đình. Đây là lần đầu tiên, những người 'cui cút làm ăn', 'chỉ biết điền viên' trở thành trung tâm của một tác phẩm bi tráng, được tạc tượng đài bất tử."
+        },
+        {
+          "id": "p2",
+          "question": "Câu văn 'Nào đợi ai đòi ai bắt, phen này xin ra sức đoạn kình' thể hiện tinh thần gì của người nông dân?",
+          "difficulty": "Medium",
+          "options": [
+            "Tinh thần tự nguyện, chủ động đứng lên đánh giặc cứu nước vì lòng yêu nước",
+            "Sự tuân thủ tuyệt đối mệnh lệnh của triều đình",
+            "Khát vọng muốn lập công danh để thoát nghèo",
+            "Sự bất mãn với quan lại địa phương"
+          ],
+          "answer": "Tinh thần tự nguyện, chủ động đứng lên đánh giặc cứu nước vì lòng yêu nước",
+          "hints": ["'Nào đợi ai đòi ai bắt' nghĩa là tự mình muốn làm hay bị ép buộc?"],
+          "explanation": "Người nông dân đánh giặc không vì lệnh vua ('nào đợi ai đòi'), không vì danh lợi, mà xuất phát từ lòng 'mến nghĩa', sự căm thù giặc tột độ và tinh thần làm chủ đất nước. Đó là vẻ đẹp của chủ nghĩa anh hùng tự nguyện."
+        },
+        {
+          "id": "p3",
+          "question": "Chất 'bi tráng' trong Văn tế nghĩa sĩ Cần Giuộc được hiểu như thế nào?",
+          "difficulty": "Hard",
+          "options": [
+            "Sự đau thương, xót xa trước hy sinh mất mát nhưng vô cùng hào hùng, lẫm liệt, khích lệ tinh thần người sống",
+            "Cảm xúc buồn bã, tuyệt vọng hoàn toàn trước cái chết của những người nông dân",
+            "Sự phẫn nộ tột cùng dẫn đến những hành động bạo lực",
+            "Ca ngợi chiến thắng vĩ đại mà không có bất kỳ tổn thất nào"
+          ],
+          "answer": "Sự đau thương, xót xa trước hy sinh mất mát nhưng vô cùng hào hùng, lẫm liệt, khích lệ tinh thần người sống",
+          "hints": ["'Bi' là buồn đau, 'Tráng' là mạnh mẽ, hào hùng. Kết hợp lại là gì?"],
+          "explanation": "Nguyễn Đình Chiểu khóc thương cho những người hy sinh ('bi') nhưng không bi lụy. Cái chết của họ tỏa sáng tinh thần bất khuất, khí phách anh hùng ('tráng'), làm lay động lòng người và cổ vũ cuộc chiến đấu tiếp diễn."
+        }
+      ]
+    }
+  ]
+}

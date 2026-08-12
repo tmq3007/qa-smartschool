@@ -1,0 +1,1305 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_20_3DModelSelector"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        xmlns:helix="http://helix-toolkit.org/wpf"
+
+        Title="Chức năng hiển thị hình ảnh 3D" 
+
+        Width="1100" Height="700"
+
+        WindowStartupLocation="CenterOwner"
+
+        Background="#F5F6FA"
+
+        ResizeMode="CanResize">
+
+
+
+    <Window.Resources>
+
+        <!-- Primary Button Style -->
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+
+            <Setter Property="Background" Value="#2196F3"/>
+
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Padding" Value="20,10"/>
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                                CornerRadius="5"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#1976D2"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+
+
+        <!-- Secondary Button Style -->
+
+        <Style x:Key="SecondaryButton" TargetType="Button">
+
+            <Setter Property="Background" Value="White"/>
+
+            <Setter Property="Foreground" Value="#666"/>
+
+            <Setter Property="BorderThickness" Value="1"/>
+
+            <Setter Property="BorderBrush" Value="#DDD"/>
+
+            <Setter Property="Padding" Value="20,10"/>
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                                BorderBrush="{TemplateBinding BorderBrush}"
+
+                                BorderThickness="{TemplateBinding BorderThickness}"
+
+                                CornerRadius="5"
+
+                                Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#F5F5F5"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" >
+
+            <StackPanel Margin="30,20">
+
+                <TextBlock Text="Chức năng hiển thị hình ảnh 3D" FontSize="24" FontWeight="Bold" Foreground="#333"/>
+
+                <TextBlock Text="Hỗ trợ: .obj, .fbx, .3ds, .stl, .dae, .blend" 
+
+                           FontSize="13" Foreground="#999" Margin="0,5,0,0"/>
+
+
+
+                <Button x:Name="btnSelectFile"
+
+                        Content="📁 Chọn file 3D từ máy tính" 
+
+                        Click="btnSelectFile_Click" 
+
+                        Margin="0,15,0,0"
+
+                        Width="250"
+
+                        HorizontalAlignment="Left"
+
+                        Style="{StaticResource PrimaryButton}"/>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- Main Content Area -->
+
+        <Grid Grid.Row="1" >
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="Auto"/>
+
+                <ColumnDefinition Width="*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Control Panel (Left Side) -->
+
+            <Border x:Name="controlPanel"
+
+                    Grid.Column="0"
+
+                    Background="White"
+
+                    BorderBrush="#E0E0E0"
+
+                    BorderThickness="0,0,1,0"
+
+                    Width="220">
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                    <StackPanel Margin="15">
+
+                        <!-- Title -->
+
+                        <TextBlock Text="Điều Khiển Camera" 
+
+                                  FontSize="14" 
+
+                                  FontWeight="SemiBold"
+
+                                  Foreground="#333"
+
+                                  Margin="0,0,0,15"/>
+
+
+
+                        <!-- Zoom Controls -->
+
+                        <TextBlock Text="Zoom" 
+
+                                  FontSize="11" 
+
+                                  Foreground="#666"
+
+                                  Margin="0,0,0,5"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+
+                            <Button Content="-" 
+
+                                    Width="30" Height="30"
+
+                                    FontSize="16" FontWeight="Bold"
+
+                                    Click="BtnZoomOut_Click"
+
+                                    Style="{StaticResource PrimaryButton}"
+
+                                    Padding="5,3"
+
+                                    Margin="0,0,4,0"/>
+
+                            <Slider x:Name="zoomSlider"
+
+                                    Width="110"
+
+                                    Minimum="0.2" Maximum="5.0" Value="1.0"
+
+                                    VerticalAlignment="Center"
+
+                                    ValueChanged="ZoomSlider_ValueChanged"
+
+                                    TickFrequency="0.1" IsSnapToTickEnabled="True"
+
+                                    Margin="0,0,4,0"/>
+
+                            <Button Content="+" 
+
+                                    Width="30" Height="30"
+
+                                    FontSize="16" FontWeight="Bold"
+
+                                    Click="BtnZoomIn_Click"
+
+                                    Style="{StaticResource PrimaryButton}"
+
+                                    Padding="5,3"/>
+
+                        </StackPanel>
+
+
+
+                        <!-- Rotation X -->
+
+                        <TextBlock Text="↔️ Xoay Trái/Phải (X)" 
+
+                                  FontSize="11" 
+
+                                  Foreground="#666"
+
+                                  Margin="0,0,0,5"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+
+                            <Button Content="◄" 
+
+                                    Width="30" Height="30"
+
+                                    FontSize="12" FontWeight="Bold"
+
+                                    Click="BtnRotateLeft_Click"
+
+                                    Style="{StaticResource PrimaryButton}"
+
+                                    Padding="5,3"
+
+                                    Margin="0,0,4,0"/>
+
+                            <Slider x:Name="rotationXSlider"
+
+                                    Width="110"
+
+                                    Minimum="-180" Maximum="180" Value="0"
+
+                                    VerticalAlignment="Center"
+
+                                    ValueChanged="RotationXSlider_ValueChanged"
+
+                                    TickFrequency="15" IsSnapToTickEnabled="True"
+
+                                    Margin="0,0,4,0"/>
+
+                            <Button Content="►" 
+
+                                    Width="30" Height="30"
+
+                                    FontSize="12" FontWeight="Bold"
+
+                                    Click="BtnRotateRight_Click"
+
+                                    Style="{StaticResource PrimaryButton}"
+
+                                    Padding="5,3"/>
+
+                        </StackPanel>
+
+
+
+                        <!-- Rotation Y -->
+
+                        <TextBlock Text="↕️ Xoay Lên/Xuống (Y)" 
+
+                                  FontSize="11" 
+
+                                  Foreground="#666"
+
+                                  Margin="0,0,0,5"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+
+                            <Button Content="▲" 
+
+                                    Width="30" Height="30"
+
+                                    FontSize="12" FontWeight="Bold"
+
+                                    Click="BtnRotateUp_Click"
+
+                                    Style="{StaticResource PrimaryButton}"
+
+                                    Padding="5,3"
+
+                                    Margin="0,0,4,0"/>
+
+                            <Slider x:Name="rotationYSlider"
+
+                                    Width="110"
+
+                                    Minimum="-180" Maximum="180" Value="-30"
+
+                                    VerticalAlignment="Center"
+
+                                    ValueChanged="RotationYSlider_ValueChanged"
+
+                                    TickFrequency="15" IsSnapToTickEnabled="True"
+
+                                    Margin="0,0,4,0"/>
+
+                            <Button Content="▼" 
+
+                                    Width="30" Height="30"
+
+                                    FontSize="12" FontWeight="Bold"
+
+                                    Click="BtnRotateDown_Click"
+
+                                    Style="{StaticResource PrimaryButton}"
+
+                                    Padding="5,3"/>
+
+                        </StackPanel>
+
+
+
+                        <!-- Rotation Z -->
+
+                        <TextBlock Text="Xoay Nghiêng (Z)" 
+
+                                  FontSize="11" 
+
+                                  Foreground="#666"
+
+                                  Margin="0,0,0,5"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+
+                            <Button Content="↶" 
+
+                                    Width="30" Height="30"
+
+                                    FontSize="16" FontWeight="Bold"
+
+                                    Click="BtnRotateCounterClockwise_Click"
+
+                                    Style="{StaticResource PrimaryButton}"
+
+                                    Padding="5,3"
+
+                                    Margin="0,0,4,0"/>
+
+                            <Slider x:Name="rotationZSlider"
+
+                                    Width="110"
+
+                                    Minimum="-180" Maximum="180" Value="0"
+
+                                    VerticalAlignment="Center"
+
+                                    ValueChanged="RotationZSlider_ValueChanged"
+
+                                    TickFrequency="15" IsSnapToTickEnabled="True"
+
+                                    Margin="0,0,4,0"/>
+
+                            <Button Content="↷" 
+
+                                    Width="30" Height="30"
+
+                                    FontSize="16" FontWeight="Bold"
+
+                                    Click="BtnRotateClockwise_Click"
+
+                                    Style="{StaticResource PrimaryButton}"
+
+                                    Padding="5,3"/>
+
+                        </StackPanel>
+
+
+
+                        <!-- Reset Button -->
+
+                        <Button x:Name="btnResetCamera"
+
+                                Content="🔄 Trở Về Mặc Định"
+
+                                Click="BtnResetCamera_Click"
+
+                                Margin="0,10,0,0"
+
+                                Background="#FEF3C7"
+
+                                Foreground="#92400E"
+
+                                BorderBrush="#FCD34D"
+
+                                BorderThickness="2"
+
+                                Padding="12,8"
+
+                                FontSize="11"
+
+                                FontWeight="Bold"
+
+                                Cursor="Hand">
+
+                            <Button.Style>
+
+                                <Style TargetType="Button">
+
+                                    <Setter Property="Template">
+
+                                        <Setter.Value>
+
+                                            <ControlTemplate TargetType="Button">
+
+                                                <Border Background="{TemplateBinding Background}"
+
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+
+                                                        CornerRadius="6"
+
+                                                        Padding="{TemplateBinding Padding}">
+
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                                                </Border>
+
+                                                <ControlTemplate.Triggers>
+
+                                                    <Trigger Property="IsMouseOver" Value="True">
+
+                                                        <Setter Property="Background" Value="#FDE68A"/>
+
+                                                        <Setter Property="BorderBrush" Value="#F59E0B"/>
+
+                                                    </Trigger>
+
+                                                </ControlTemplate.Triggers>
+
+                                            </ControlTemplate>
+
+                                        </Setter.Value>
+
+                                    </Setter>
+
+                                </Style>
+
+                            </Button.Style>
+
+                        </Button>
+
+
+
+                        <!-- Auto-Rotate Checkbox -->
+
+                        <CheckBox x:Name="chkAutoRotate"
+
+                                  Content="🔄 Tự động xoay"
+
+                                  IsChecked="False"
+
+                                  Checked="ChkAutoRotate_Changed"
+
+                                  Unchecked="ChkAutoRotate_Changed"
+
+                                  FontSize="11"
+
+                                  Margin="0,10,0,5"
+
+                                  Foreground="#333"/>
+
+
+
+                        <!-- Rotation Axis Selection -->
+
+                        <StackPanel x:Name="rotationAxisPanel"
+
+                                    Margin="20,5,0,0"
+
+                                    Visibility="Collapsed">
+
+                            <TextBlock Text="Trục xoay:"
+
+                                      FontSize="10"
+
+                                      Foreground="#666"
+
+                                      Margin="0,0,0,5"/>
+
+                            <RadioButton x:Name="rbRotateX"
+
+                                        Content="Xoay X (Trái/Phải)"
+
+                                        GroupName="RotationAxis"
+
+                                        IsChecked="True"
+
+                                        FontSize="10"
+
+                                        Foreground="#333"
+
+                                        Margin="0,2"/>
+
+                            <RadioButton x:Name="rbRotateY"
+
+                                        Content="Xoay Y (Lên/Xuống)"
+
+                                        GroupName="RotationAxis"
+
+                                        FontSize="10"
+
+                                        Foreground="#333"
+
+                                        Margin="0,2"/>
+
+                            <RadioButton x:Name="rbRotateZ"
+
+                                        Content="Xoay Z (Nghiêng)"
+
+                                        GroupName="RotationAxis"
+
+                                        FontSize="10"
+
+                                        Foreground="#333"
+
+                                        Margin="0,2"/>
+
+
+
+                            <!-- Speed Control -->
+
+                            <TextBlock Text="Tốc độ:"
+
+                                      FontSize="10"
+
+                                      Foreground="#666"
+
+                                      Margin="0,8,0,5"/>
+
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="*"/>
+
+                                    <ColumnDefinition Width="Auto"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <Slider x:Name="autoRotateSpeedSlider"
+
+                                       Grid.Column="0"
+
+                                       Minimum="0.1"
+
+                                       Maximum="2.0"
+
+                                       Value="0.5"
+
+                                       TickFrequency="0.1"
+
+                                       IsSnapToTickEnabled="True"
+
+                                       ValueChanged="AutoRotateSpeedSlider_ValueChanged"
+
+                                       VerticalAlignment="Center"/>
+
+                                <TextBlock x:Name="txtAutoRotateSpeed"
+
+                                          Grid.Column="1"
+
+                                          Text="0.5x"
+
+                                          FontSize="10"
+
+                                          Foreground="#666"
+
+                                          Margin="8,0,0,0"
+
+                                          VerticalAlignment="Center"
+
+                                          MinWidth="35"
+
+                                          TextAlignment="Right"/>
+
+                            </Grid>
+
+                        </StackPanel>
+
+
+
+                        <!-- Separator -->
+
+                        <Border Height="1" Background="#E0E0E0" Margin="0,20,0,15"/>
+
+
+
+                        <!-- Lighting Section -->
+
+                        <Border Background="#F9F9F9" 
+
+                                CornerRadius="5" 
+
+                                Padding="10" 
+
+                                Margin="0,0,0,15">
+
+                            <StackPanel>
+
+                                <TextBlock Text="Ánh Sáng" 
+
+                                          FontSize="12" 
+
+                                          FontWeight="SemiBold"
+
+                                          Margin="0,0,0,10"/>
+
+
+
+                                <!-- Ambient Light -->
+
+                                <TextBlock Text="Ambient" FontSize="10" Foreground="#666"/>
+
+                                <Slider x:Name="ambientSlider"
+
+                                        Minimum="0" Maximum="1" Value="0.4"
+
+                                        ValueChanged="AmbientSlider_ValueChanged"
+
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True"
+
+                                        Margin="0,2,0,8"/>
+
+
+
+                                <!-- Key Light -->
+
+                                <TextBlock Text="Key Light" FontSize="10" Foreground="#666"/>
+
+                                <Slider x:Name="keyLightSlider"
+
+                                        Minimum="0" Maximum="1" Value="0.7"
+
+                                        ValueChanged="KeyLightSlider_ValueChanged"
+
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True"
+
+                                        Margin="0,2,0,8"/>
+
+
+
+                                <!-- Fill Light -->
+
+                                <TextBlock Text="Fill Light" FontSize="10" Foreground="#666"/>
+
+                                <Slider x:Name="fillLightSlider"
+
+                                        Minimum="0" Maximum="1" Value="0.3"
+
+                                        ValueChanged="FillLightSlider_ValueChanged"
+
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True"
+
+                                        Margin="0,2,0,0"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Material Section -->
+
+                        <Border Background="#F9F9F9" 
+
+                                CornerRadius="5" 
+
+                                Padding="10" 
+
+                                Margin="0,0,0,15">
+
+                            <StackPanel>
+
+                                <TextBlock Text="Vật Liệu" 
+
+                                          FontSize="12" 
+
+                                          FontWeight="SemiBold"
+
+                                          Margin="0,0,0,10"/>
+
+
+
+                                <!-- Color Picker -->
+
+                                <TextBlock Text="Màu sắc" FontSize="10" Foreground="#666" Margin="0,0,0,5"/>
+
+                                <Button x:Name="btnColorPicker"
+
+                                        Height="30"
+
+                                        Click="BtnColorPicker_Click"
+
+                                        Margin="0,0,0,8"
+
+                                        Padding="5,3"
+
+                                        BorderBrush="#DDD"
+
+                                        BorderThickness="1"
+
+                                        Cursor="Hand">
+
+                                    <Border x:Name="colorPreview"
+
+                                            Background="#CCCCCC"
+
+                                            Width="180"
+
+                                            Height="20"
+
+                                            CornerRadius="3"/>
+
+                                </Button>
+
+
+
+                                <!-- Opacity -->
+
+                                <TextBlock Text="Độ trong suốt" FontSize="10" Foreground="#666"/>
+
+                                <Slider x:Name="opacitySlider"
+
+                                        Minimum="0.1" Maximum="1.0" Value="1.0"
+
+                                        ValueChanged="OpacitySlider_ValueChanged"
+
+                                        TickFrequency="0.1" IsSnapToTickEnabled="True"
+
+                                        Margin="0,2,0,8"/>
+
+
+
+                                <!-- Shininess -->
+
+                                <TextBlock Text="Độ bóng" FontSize="10" Foreground="#666"/>
+
+                                <Slider x:Name="shininessSlider"
+
+                                        Minimum="0" Maximum="100" Value="40"
+
+                                        ValueChanged="ShininessSlider_ValueChanged"
+
+                                        TickFrequency="10" IsSnapToTickEnabled="True"
+
+                                        Margin="0,2,0,0"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Display Options -->
+
+                        <Border Background="#F9F9F9" 
+
+                                CornerRadius="5" 
+
+                                Padding="10">
+
+                            <StackPanel>
+
+                                <TextBlock Text="🖼️ Hiển Thị" 
+
+                                          FontSize="12" 
+
+                                          FontWeight="SemiBold"
+
+                                          Margin="0,0,0,10"/>
+
+
+
+                                <!-- Grid Toggle -->
+
+                                <CheckBox x:Name="chkShowGrid"
+
+                                          Content="Hiện lưới tham chiếu"
+
+                                          IsChecked="False"
+
+                                          Checked="ChkShowGrid_Changed"
+
+                                          Unchecked="ChkShowGrid_Changed"
+
+                                          FontSize="11"
+
+                                          Margin="0,0,0,5"/>
+
+
+
+                                <!-- Wireframe Toggle -->
+
+                                <CheckBox x:Name="chkWireframe"
+
+                                          Content="Chế độ khung dây"
+
+                                          IsChecked="False"
+
+                                          Checked="ChkWireframe_Changed"
+
+                                          Unchecked="ChkWireframe_Changed"
+
+                                          FontSize="11"
+
+                                          Margin="0,0,0,8"/>
+
+
+
+                                <!-- Background Color -->
+
+                                <TextBlock Text="Màu nền" FontSize="10" Foreground="#666" Margin="0,0,0,5"/>
+
+                                <Button x:Name="btnBgColorPicker"
+
+                                        Height="30"
+
+                                        Click="BtnBgColorPicker_Click"
+
+                                        Padding="5,3"
+
+                                        BorderBrush="#DDD"
+
+                                        BorderThickness="1"
+
+                                        Cursor="Hand">
+
+                                    <Border x:Name="bgColorPreview"
+
+                                            Background="#F9F9F9"
+
+                                            Width="180"
+
+                                            Height="20"
+
+                                            CornerRadius="3"/>
+
+                                </Button>
+
+
+
+                                <!-- Separator -->
+
+                                <Border Height="1" Background="#E0E0E0" Margin="0,15,0,10"/>
+
+
+
+                                <!-- Export Button -->
+
+                                <Button x:Name="btnExportPNG"
+
+                                        Content="💾 Xuất ảnh PNG"
+
+                                        Click="BtnExportPNG_Click"
+
+                                        Background="#10B981"
+
+                                        Foreground="White"
+
+                                        BorderThickness="0"
+
+                                        Padding="12,8"
+
+                                        FontSize="11"
+
+                                        FontWeight="SemiBold"
+
+                                        Cursor="Hand"
+
+                                        IsEnabled="False">
+
+                                    <Button.Style>
+
+                                        <Style TargetType="Button">
+
+                                            <Setter Property="Template">
+
+                                                <Setter.Value>
+
+                                                    <ControlTemplate TargetType="Button">
+
+                                                        <Border Background="{TemplateBinding Background}"
+
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+
+                                                                CornerRadius="6"
+
+                                                                Padding="{TemplateBinding Padding}">
+
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                                                        </Border>
+
+                                                        <ControlTemplate.Triggers>
+
+                                                            <Trigger Property="IsMouseOver" Value="True">
+
+                                                                <Setter Property="Background" Value="#059669"/>
+
+                                                            </Trigger>
+
+                                                            <Trigger Property="IsEnabled" Value="False">
+
+                                                                <Setter Property="Background" Value="#D1D5DB"/>
+
+                                                                <Setter Property="Foreground" Value="#9CA3AF"/>
+
+                                                            </Trigger>
+
+                                                        </ControlTemplate.Triggers>
+
+                                                    </ControlTemplate>
+
+                                                </Setter.Value>
+
+                                            </Setter>
+
+                                        </Style>
+
+                                    </Button.Style>
+
+                                </Button>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <Border Background="#E3F2FD" CornerRadius="5" Padding="10" Margin="0,15,0,0">
+                            <StackPanel>
+                                <TextBlock Text="💡 HƯỚNG DẪN TƯƠNG TÁC 3D" FontSize="11" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,5"/>
+                                <TextBlock Text="• Chuột trái: Kéo rê để xoay mô hình" FontSize="10" Foreground="#0D47A1" TextWrapping="Wrap"/>
+                                <TextBlock Text="• Cuộn chuột: Phóng to / Thu nhỏ" FontSize="10" Foreground="#0D47A1" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                <TextBlock Text="• Chuột phải: Kéo để di chuyển camera" FontSize="10" Foreground="#0D47A1" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+            </Border>
+
+
+
+            <!-- Preview Area (Right Side) -->
+
+            <Grid Grid.Column="1" Margin="20">
+
+                <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Background="White">
+
+                    <Grid>
+
+                        <!-- 3D Viewport -->
+
+                        <helix:HelixViewport3D x:Name="previewViewport"
+
+                                               ShowCoordinateSystem="True"
+
+                                               ShowViewCube="True"
+
+                                               CameraRotationMode="Trackball"
+
+                                               Background="#F9F9F9"
+
+                                               Visibility="Collapsed"
+
+                                               MouseDown="PreviewViewport_MouseDown"
+
+                                               MouseMove="PreviewViewport_MouseMove"
+
+                                               MouseUp="PreviewViewport_MouseUp"
+
+                                               MouseWheel="PreviewViewport_MouseWheel">
+
+                            <helix:DefaultLights/>
+
+                            <ModelVisual3D x:Name="previewModel"/>
+
+                        </helix:HelixViewport3D>
+
+
+
+                        <!-- Placeholder when no model loaded -->
+
+                        <StackPanel x:Name="placeholderPanel"
+
+                                    VerticalAlignment="Center" 
+
+                                    HorizontalAlignment="Center">
+
+                            <TextBlock Text="🎲" FontSize="80" HorizontalAlignment="Center" Opacity="0.3"/>
+
+                            <TextBlock Text="Chưa chọn mô hình 3D" 
+
+                                       FontSize="18" 
+
+                                       Foreground="#999" 
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,10,0,0"/>
+
+                            <TextBlock Text="Click nút 'Chọn file 3D' để bắt đầu" 
+
+                                       FontSize="14" 
+
+                                       Foreground="#BBB" 
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,5,0,0"/>
+
+                        </StackPanel>
+
+
+
+                        <!-- Loading indicator -->
+
+                        <StackPanel x:Name="loadingPanel"
+
+                                    VerticalAlignment="Center" 
+
+                                    HorizontalAlignment="Center"
+
+                                    Visibility="Collapsed">
+
+                            <TextBlock Text="⏳" FontSize="60" HorizontalAlignment="Center"/>
+
+                            <TextBlock Text="Đang tải mô hình..." 
+
+                                       FontSize="16" 
+
+                                       Foreground="#666" 
+
+                                       HorizontalAlignment="Center"
+
+                                       Margin="0,10,0,0"/>
+
+                        </StackPanel>
+
+
+
+                        <!-- Model info overlay -->
+
+                        <Border x:Name="modelInfoPanel"
+
+                                Background="#F0F0F0"
+
+                                CornerRadius="5"
+
+                                Padding="15,10"
+
+                                HorizontalAlignment="Left"
+
+                                VerticalAlignment="Top"
+
+                                Margin="15"
+
+                                Visibility="Collapsed">
+
+                            <StackPanel>
+
+                                <TextBlock x:Name="txtFileName" FontWeight="Bold" FontSize="13"/>
+
+                                <TextBlock x:Name="txtFileSize" FontSize="12" Foreground="#666" Margin="0,3,0,0"/>
+
+                                <TextBlock x:Name="txtVertexCount" FontSize="12" Foreground="#666" Margin="0,2,0,0"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+
+
+                        <!-- Toggle Panel Button (Overlay) -->
+
+                        <Button x:Name="btnTogglePanel"
+
+                                Content="◀ Ẩn"
+
+                                HorizontalAlignment="Left"
+
+                                VerticalAlignment="Top"
+
+                                Margin="10"
+
+                                Width="60"
+
+                                Height="32"
+
+                                FontSize="11"
+
+                                FontWeight="SemiBold"
+
+                                Click="BtnTogglePanel_Click"
+
+                                Style="{StaticResource PrimaryButton}"
+
+                                Padding="8,6"/>
+
+
+
+                        <!-- Camera Presets (Bottom) -->
+
+                        <StackPanel Orientation="Horizontal"
+
+                                    HorizontalAlignment="Center"
+
+                                    VerticalAlignment="Bottom"
+
+                                    Margin="0,0,0,20"
+
+                                    x:Name="cameraPresetsPanel"
+
+                                    Visibility="Collapsed">
+
+                            <Button Content="🔼 Top View" 
+
+                                    Click="BtnTopView_Click" 
+
+                                    Margin="5"
+
+                                    Padding="12,8"
+
+                                    FontSize="13"
+
+                                    FontWeight="SemiBold"
+
+                                    Style="{StaticResource PrimaryButton}"/>
+
+                            <Button Content="👁️ Front View" 
+
+                                    Click="BtnFrontView_Click" 
+
+                                    Margin="5"
+
+                                    Padding="12,8"
+
+                                    FontSize="13"
+
+                                    FontWeight="SemiBold"
+
+                                    Style="{StaticResource PrimaryButton}"/>
+
+                            <Button Content="➡️ Side View" 
+
+                                    Click="BtnSideView_Click" 
+
+                                    Margin="5"
+
+                                    Padding="12,8"
+
+                                    FontSize="13"
+
+                                    FontWeight="SemiBold"
+
+                                    Style="{StaticResource PrimaryButton}"/>
+
+                        </StackPanel>
+
+                    </Grid>
+
+                </Border>
+
+            </Grid>
+
+        </Grid>
+
+
+
+        <!-- Footer -->
+
+        <Border Grid.Row="2"  Background="White" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+
+            <StackPanel Orientation="Horizontal" 
+
+                        HorizontalAlignment="Right" 
+
+                        Margin="20,15">
+
+                <Button x:Name="btnCancel"
+
+                        Content="Hủy" 
+
+                        Click="btnCancel_Click" 
+
+                        Width="90" 
+
+                        Height="38"
+
+                        Margin="0,0,10,0"
+
+                        Style="{StaticResource SecondaryButton}"/>
+
+                <Button x:Name="btnInsert"
+
+                        Content="Chèn vào bảng" 
+
+                        Click="btnInsert_Click" 
+
+                        Width="140" 
+
+                        Height="38"
+
+                        IsEnabled="False"
+
+                        Style="{StaticResource PrimaryButton}"/>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</Window>
+

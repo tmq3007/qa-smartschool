@@ -1,0 +1,230 @@
+{
+  "metadata": {
+    "chapterId": "g12_ch02",
+    "chapterName": "Bài 2: Văn xuôi kháng chiến",
+    "grade": 12,
+    "totalProblems": 9,
+    "totalSections": 3,
+    "estimatedHours": 4,
+    "thptWeight": "Trọng tâm thi THPT Quốc Gia"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g12_ch1_0",
+      "sectionName": "Vợ Nhặt — Kim Lân",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-12-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g12_Vợ_Nhặt.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh",
+          "theorem": "Kim Lân (1920–2007) — nhà văn chuyên viết về nông thôn. 'Vợ nhặt' viết năm 1954-1955, lấy bối cảnh nạn đói khủng khiếp năm 1945 khiến hơn 2 triệu người chết đói.",
+          "imageUrls": ["Resources/LiteratureData/Images/kim_lan.png"]
+        },
+        {
+          "name": "Tình huống truyện độc đáo",
+          "definition": "Giữa cái cảnh tối sầm lại vì đói khát ấy, một buổi chiều người trong xóm bỗng thấy Tràng về với một người đàn bà nữa. Mặt hắn có một vẻ gì phớn phở khác thường. Hắn tủm tỉm cười nụ một mình và hai mắt thì sáng lên lấp lánh."
+        },
+        {
+          "name": "Phân tích nghệ thuật",
+          "examples": [
+            "**Tình huống 'nhặt vợ'**: Tràng 'nhặt' được vợ chỉ bằng vài câu hò và bốn bát bánh đúc — nghịch lý bi hài phản ánh sự rẻ rúng của thân phận con người trong nạn đói.",
+            "**'Phớn phở, sáng lên lấp lánh'**: Niềm hạnh phúc nhỏ nhoi nhưng đủ sức xua tan bóng tối của cái chết — thể hiện khát vọng sống mãnh liệt ngay trong hoàn cảnh tuyệt vọng.",
+            "**Hình ảnh nồi cháo cám**: Biểu tượng đắng cay của đói nghèo, nhưng đồng thời là tình người ấm áp của bà cụ Tứ đối với con dâu mới.",
+            "**Cờ đỏ sao vàng cuối truyện**: Chi tiết kết mở — ánh sáng của cách mạng le lói trong tâm trí Tràng, tạo nên kết thúc mở đầy hi vọng."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Tình huống Tràng 'nhặt' được vợ trong nạn đói mang ý nghĩa gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Phản ánh thân phận con người bị rẻ rúng trong nạn đói, đồng thời khẳng định khát vọng sống và hạnh phúc mãnh liệt",
+            "Cho thấy Tràng là người may mắn và tốt bụng trong xóm ngụ cư",
+            "Phê phán thói lười biếng của người đàn bà không chịu làm lụng",
+            "Ca ngợi tinh thần tương thân tương ái của người Việt trong hoạn nạn"
+          ],
+          "answer": "Phản ánh thân phận con người bị rẻ rúng trong nạn đói, đồng thời khẳng định khát vọng sống và hạnh phúc mãnh liệt",
+          "hints": ["Tại sao người phụ nữ lại 'theo không' Tràng về chỉ vì vài bát bánh đúc?"],
+          "explanation": "Kim Lân tạo ra nghịch lý bi hài: lấy vợ là chuyện trọng đại nhất đời người, nhưng trong nạn đói chỉ cần 4 bát bánh đúc. Điều đó vừa tố cáo tội ác của nạn đói, vừa khẳng định: dù đứng trước cái chết, con người vẫn khao khát tình yêu và hạnh phúc — đó là giá trị nhân văn sâu sắc."
+        },
+        {
+          "id": "p2",
+          "question": "Chi tiết 'nồi cháo cám' trong bữa cơm ngày đói mang ý nghĩa gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Vừa là hiện thực cùng cực của đói nghèo, vừa là biểu tượng tình người ấm áp của bà cụ Tứ",
+            "Cho thấy gia đình Tràng không biết nấu ăn ngon",
+            "Phê phán sự nghèo nàn lạc hậu của nông thôn Việt Nam",
+            "Minh chứng cho sự hà khắc của chế độ phong kiến"
+          ],
+          "answer": "Vừa là hiện thực cùng cực của đói nghèo, vừa là biểu tượng tình người ấm áp của bà cụ Tứ",
+          "hints": ["Tại sao bà cụ Tứ lại gọi cháo cám là 'chè khoán'?"],
+          "explanation": "Cháo cám đắng nghét nhưng bà cụ gọi là 'chè khoán' để giữ thể diện cho con dâu mới — chi tiết nhỏ nhưng chứa đựng tình yêu thương vô bờ của người mẹ nghèo. Đây là một trong những chi tiết đắt giá nhất của văn học Việt Nam thế kỷ XX."
+        },
+        {
+          "id": "p3",
+          "question": "Hình ảnh 'cờ đỏ sao vàng' xuất hiện trong suy nghĩ của Tràng ở cuối truyện có ý nghĩa gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Kết thúc mở — ánh sáng cách mạng le lói, gợi hi vọng đổi đời cho những người cùng khổ",
+            "Tràng đã từng tham gia cách mạng trước đó",
+            "Cờ đỏ xuất hiện để kết thúc câu chuyện theo hướng tích cực bắt buộc",
+            "Kim Lân muốn ca ngợi thành tích của Đảng Cộng Sản"
+          ],
+          "answer": "Kết thúc mở — ánh sáng cách mạng le lói, gợi hi vọng đổi đời cho những người cùng khổ",
+          "hints": ["Đây là chi tiết duy nhất Tràng nghĩ đến tương lai — ý nghĩa là gì?"],
+          "explanation": "Kim Lân không kết thúc bi kịch mà để lại kết thúc mở với hình ảnh cờ đỏ sao vàng trong ký ức mơ hồ của Tràng. Đây là tia sáng nhỏ — người nghèo bắt đầu nhận ra con đường thoát khỏi cảnh đói khổ là cách mạng. Thông điệp: chỉ có cách mạng mới cứu được những người như Tràng."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g12_ch1_1",
+      "sectionName": "Rừng Xà Nu — Nguyễn Trung Thành",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-12-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g12_Rừng_xà_nu.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh",
+          "theorem": "Nguyễn Trung Thành (bút danh Nguyên Ngọc, sinh 1932). 'Rừng xà nu' viết năm 1965 — đúng lúc Mỹ bắt đầu đổ quân ồ ạt vào miền Nam. Tác phẩm là bản anh hùng ca về sức sống bất diệt của người Tây Nguyên.",
+          "imageUrls": ["Resources/LiteratureData/Images/rung_xa_nu.png"]
+        },
+        {
+          "name": "Mở đầu — Rừng xà nu bất diệt",
+          "definition": "Làng ở trong tầm đại bác của đồn giặc... Hầu hết đạn đại bác đều rơi vào ngọn đồi xà nu cạnh con nước lớn. Cả rừng xà nu hàng vạn cây không có cây nào không bị thương. Có những cây bị chặt đứt ngang nửa thân mình, đổ ào ào như một trận bão. Nhưng cũng có những cây vượt lên được cao hơn đầu người, cành lá xum xuê như những con chim đã đủ lông mao, lông vũ."
+        },
+        {
+          "name": "Nhân vật Tnú và bàn tay",
+          "definition": "Tnú không cứu sống được vợ con. Tối đó Tnú bị giặc bắt... Một ngón tay Tnú bốc lửa. Hai ngón, ba ngón. Không có gì đượm bằng nhựa xà nu. Lửa bắt rất nhanh. Mười ngón tay đã thành mười ngọn đuốc."
+        },
+        {
+          "name": "Phân tích hình tượng xà nu",
+          "examples": [
+            "**Xà nu = biểu tượng kép**: Vừa là cây thực của Tây Nguyên, vừa là biểu tượng cho sức sống bất diệt của con người.",
+            "**'Không cây nào không bị thương'**: Mỗi người dân Tây Nguyên đều phải chịu đau thương — nhưng vẫn vươn lên.",
+            "**Bàn tay Tnú**: Bàn tay không cứu được vợ con → bàn tay cầm giáo chiến đấu. Từ đau thương cá nhân đến sức mạnh tập thể.",
+            "**Cụ Mết**: 'Chúng nó đã cầm súng, mình phải cầm giáo' — chân lý của cách mạng miền Nam được đúc kết bằng máu."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hình tượng cây xà nu trong tác phẩm mang ý nghĩa biểu tượng gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Biểu tượng cho sức sống bất diệt và tinh thần kiên cường bất khuất của người Tây Nguyên",
+            "Biểu tượng cho vẻ đẹp hùng vĩ của thiên nhiên Tây Nguyên",
+            "Biểu tượng cho nỗi đau thương mà chiến tranh gây ra cho con người",
+            "Biểu tượng cho sự hi sinh cao cả của những anh hùng cách mạng"
+          ],
+          "answer": "Biểu tượng cho sức sống bất diệt và tinh thần kiên cường bất khuất của người Tây Nguyên",
+          "hints": ["Xà nu bị đại bác bắn nhưng vẫn...? Liên hệ với số phận người dân làng Xô Man."],
+          "explanation": "Nguyễn Trung Thành xây dựng hình tượng song hành: cây xà nu bị thương nhưng vẫn vươn lên — tương ứng với người Tây Nguyên bị giặc tàn sát nhưng vẫn nổi dậy. Rừng xà nu trở thành linh hồn của tác phẩm, là bản anh hùng ca viết bằng hình ảnh thay vì lời kể."
+        },
+        {
+          "id": "p2",
+          "question": "Chi tiết 'mười ngón tay Tnú bốc lửa như mười ngọn đuốc' có ý nghĩa nghệ thuật như thế nào?",
+          "difficulty": "Hard",
+          "options": [
+            "Là đỉnh điểm bi kịch cá nhân đồng thời là ngòi nổ cho cuộc khởi nghĩa tập thể của làng Xô Man",
+            "Miêu tả sự tàn bạo cụ thể của kẻ thù để tố cáo tội ác chiến tranh",
+            "Thể hiện sức chịu đựng phi thường của người anh hùng Tây Nguyên",
+            "Là hình ảnh thơ mộng về ngọn lửa truyền thống của dân tộc Tây Nguyên"
+          ],
+          "answer": "Là đỉnh điểm bi kịch cá nhân đồng thời là ngòi nổ cho cuộc khởi nghĩa tập thể của làng Xô Man",
+          "hints": ["Tiếng hét của Tnú đã dẫn đến điều gì?"],
+          "explanation": "Khi Tnú bị đốt mười ngón tay, tiếng hét của anh như hiệu lệnh: cụ Mết và thanh niên làng Xô Man đồng loạt nổi dậy bằng giáo mác. Đau thương cá nhân trở thành chất xúc tác cho hành động tập thể — đây là logic của cách mạng: 'Chúng nó đã cầm súng, mình phải cầm giáo!'"
+        },
+        {
+          "id": "p3",
+          "question": "Câu nói của cụ Mết 'Chúng nó đã cầm súng, mình phải cầm giáo!' thể hiện chân lý gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Phải dùng bạo lực cách mạng để chống lại bạo lực của kẻ thù — chân lý của cuộc kháng chiến chống Mỹ",
+            "Người Tây Nguyên coi trọng vũ khí truyền thống hơn súng đạn hiện đại",
+            "Cụ Mết kêu gọi trả thù cá nhân cho những mất mát trong làng",
+            "Chỉ có bạo lực mới giải quyết được mọi mâu thuẫn trong xã hội"
+          ],
+          "answer": "Phải dùng bạo lực cách mạng để chống lại bạo lực của kẻ thù — chân lý của cuộc kháng chiến chống Mỹ",
+          "hints": ["Câu nói này được lặp đi lặp lại trong truyện — ý nghĩa là gì?"],
+          "explanation": "Nguyễn Trung Thành qua lời cụ Mết đã đúc kết chân lý lịch sử của thời đại chống Mỹ: kẻ thù dùng bạo lực, nhân dân phải dùng bạo lực cách mạng để đáp trả. Đây không phải kêu gọi báo thù mà là nhận thức về con đường duy nhất để tự giải phóng."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g12_ch1_2",
+      "sectionName": "Chiếc Thuyền Ngoài Xa — Nguyễn Minh Châu",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-12-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g12_Chiếc_thuyền_ngoài_xa.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh",
+          "theorem": "Nguyễn Minh Châu (1930–1989) — người tiên phong của văn học đổi mới. 'Chiếc thuyền ngoài xa' (1983) là một trong những truyện ngắn mở đầu cho văn học thời kỳ Đổi Mới — dám nhìn thẳng vào nghịch lý của cuộc sống.",
+          "imageUrls": ["Resources/LiteratureData/Images/nguyen_minh_chau.png"]
+        },
+        {
+          "name": "Tình huống nhận thức — Phùng và chiếc thuyền",
+          "definition": "Mũi thuyền in một nét mơ hồ lòe nhòe vào bầu sương mù trắng như sữa có pha đôi chút màu hồng hồng do ánh mặt trời chiếu vào... Trước mặt tôi là một bức tranh mực tàu của một danh họa thời cổ. Mũi thuyền... bỗng nhói lên trong tôi một cái gì đó như là nghệ thuật, như là đạo đức..."
+        },
+        {
+          "name": "Nghịch lý — Đằng sau vẻ đẹp",
+          "definition": "Từ trong chiếc thuyền lưới vó đã bước ra một người đàn bà... Lão đàn ông lại dùng chiếc thắt lưng quật tới tấp vào lưng người đàn bà, lão vừa đánh vừa thở hổn hển... Người đàn bà không kêu một tiếng, không chống trả."
+        },
+        {
+          "name": "Thông điệp nghệ thuật",
+          "examples": [
+            "**Chiếc thuyền ngoài xa**: Nghệ thuật (nhìn từ xa) thì đẹp nhưng cuộc đời (nhìn gần) lại ẩn chứa nghịch lý và đau khổ.",
+            "**Người đàn bà hàng chài**: Nhân vật phức tạp nhất — không phải nạn nhân đơn thuần; bà hiểu rõ hoàn cảnh hơn ai hết nhưng không thể thoát ra.",
+            "**Phùng và Đẩu**: Đại diện cho người nghệ sĩ và nhà chức trách — cả hai đều phải học lại cách nhìn cuộc đời."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hình ảnh 'chiếc thuyền ngoài xa' đẹp như tranh nhưng lại chứa đựng cảnh bạo lực nói lên điều gì về mối quan hệ giữa nghệ thuật và cuộc đời?",
+          "difficulty": "Hard",
+          "options": [
+            "Nghệ thuật nhìn từ xa thường chỉ thấy vẻ đẹp bề ngoài, cần phải đến gần mới thấy được sự thật phức tạp của cuộc đời",
+            "Nghệ thuật phải phản ánh những điều đẹp đẽ, tốt lành để truyền cảm hứng cho con người",
+            "Cuộc đời thực tế luôn xấu xa hơn nghệ thuật",
+            "Nghệ sĩ phải giữ khoảng cách với cuộc đời để bảo vệ tâm hồn trong sáng"
+          ],
+          "answer": "Nghệ thuật nhìn từ xa thường chỉ thấy vẻ đẹp bề ngoài, cần phải đến gần mới thấy được sự thật phức tạp của cuộc đời",
+          "hints": ["Phùng chụp được 'bức tranh đẹp nhất' nhưng sau đó nhìn thấy gì?"],
+          "explanation": "Nguyễn Minh Châu xây dựng biểu tượng hai tầng: nhìn từ xa (nghệ thuật thuần túy) chỉ thấy cái đẹp; đến gần (cuộc đời thực) mới thấy bạo lực và đau khổ. Đây là tuyên ngôn nghệ thuật của thời Đổi Mới: văn học không thể chỉ ca ngợi mà phải nhìn thẳng vào sự thật."
+        },
+        {
+          "id": "p2",
+          "question": "Tại sao người đàn bà hàng chài nhất quyết không chịu bỏ chồng dù bị đánh đập tàn nhẫn?",
+          "difficulty": "Medium",
+          "options": [
+            "Vì cần chồng chèo thuyền để nuôi con — sự chịu đựng xuất phát từ tình thương con và hoàn cảnh nghèo túng",
+            "Vì bà sợ chồng và không có đủ dũng cảm để bỏ đi",
+            "Vì phong tục làng chài không cho phép người vợ ly hôn chồng",
+            "Vì bà không biết pháp luật bảo vệ quyền của mình"
+          ],
+          "answer": "Vì cần chồng chèo thuyền để nuôi con — sự chịu đựng xuất phát từ tình thương con và hoàn cảnh nghèo túng",
+          "hints": ["Người đàn bà giải thích lý do của mình với Đẩu ở tòa án huyện như thế nào?"],
+          "explanation": "Người đàn bà không ngu ngốc — bà biết mình bị đánh. Nhưng trong cảnh ngộ của bà: thuyền cần hai người chèo mới ra khơi được, bỏ chồng thì con cái chết đói. Đây là sự lựa chọn đau đớn của người trong cuộc — khác hẳn cái nhìn của Phùng và Đẩu từ bên ngoài."
+        },
+        {
+          "id": "p3",
+          "question": "Thông điệp sâu xa nhất của 'Chiếc thuyền ngoài xa' dành cho người nghệ sĩ là gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Người nghệ sĩ phải đến gần cuộc đời, hiểu sâu sự thật phức tạp trước khi phán xét hay sáng tác",
+            "Người nghệ sĩ cần bảo vệ tâm hồn mình trước những xấu xa của cuộc đời",
+            "Nghệ thuật luôn đẹp hơn cuộc đời và đó là giá trị của nghệ thuật",
+            "Người nghệ sĩ phải can đảm tố cáo những bất công trong xã hội"
+          ],
+          "answer": "Người nghệ sĩ phải đến gần cuộc đời, hiểu sâu sự thật phức tạp trước khi phán xét hay sáng tác",
+          "hints": ["Phùng đã thay đổi nhận thức như thế nào sau chuyến công tác?"],
+          "explanation": "Nhân vật Phùng từ vị trí người ngoài cuộc (chụp ảnh từ xa) buộc phải trở thành người trong cuộc (chứng kiến, can thiệp). Nguyễn Minh Châu muốn nói: người làm nghệ thuật không thể hài lòng với vẻ đẹp bề mặt — phải có dũng khí nhìn thẳng vào sự thật, dù sự thật đó đau đớn và phức tạp."
+        }
+      ]
+    }
+  ]
+}

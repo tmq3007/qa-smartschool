@@ -1,0 +1,144 @@
+================================================================================
+  MÔ TẢ ẢNH NỀN ĐĂNG NHẬP - HỆ SINH THÁI GIÁO DỤC QA SMARTSCHOOL
+  Ngày tạo: 19/06/2026
+  Mục đích: Nhận diện thương hiệu cho Form0_LoginSelection
+================================================================================
+
+QUY CÁCH KỸ THUẬT CHUNG
+────────────────────────
+• Kích thước:       3840 × 2160 px (4K UHD)
+• Tỷ lệ:           16:9
+• Định dạng:        PNG-24 (không nén lossy) hoặc WebP lossless
+• Vùng an toàn:     Để trống / gradient nhạt trong khung 1120×620 px chính giữa
+                    (nơi card đăng nhập trắng sẽ đè lên)
+• Font chữ:         Segoe UI (tuyệt đối không dùng Consolas)
+• Hiển thị:         Stretch = UniformToFill trong XAML
+• Thiết bị mục tiêu: Bảng tương tác 86 inch (4K), máy tính (1080p-1440p), tablet (2K)
+
+================================================================================
+ẢNH 1: NỀN ĐĂNG NHẬP GIÁO VIÊN / NHÂN VIÊN
+File gợi ý: bg_login_teacher.png
+================================================================================
+
+TÔNG MÀU CHỦ ĐẠO:
+  - Gradient xanh dương đậm (Navy #0F172A) ở viền ngoài
+  - Chuyển dần sang xanh cobalt trung (#1E40AF) ở vùng giữa
+  - Nhạt dần sang xanh pastel rất nhẹ (#DBEAFE) ở vùng trung tâm
+  → Card trắng đăng nhập nổi bật, không bị cắt thô
+
+NỘI DUNG MINH HỌA (phân bổ theo vùng):
+
+  [Vùng trung tâm - bị card che]
+    Để trống hoặc gradient nhẹ. KHÔNG đặt nội dung quan trọng vì bị
+    card 1120×620 che phủ.
+
+  [Viền trên & dưới]
+    Các biểu tượng giáo dục dạng line-art (đường nét mảnh), bán trong suốt
+    (opacity 15-20%), phong cách tinh tế, sắc nét:
+    - Bóng đèn ý tưởng (lightbulb)
+    - Mũ cử nhân (graduation cap)
+    - Nguyên tử, ADN xoắn kép
+    - Công thức toán: ∑, ∫, π, √
+    - Bản đồ thế giới thu nhỏ
+    - Biểu đồ cột tăng trưởng
+    - Lăng kính quang học, kính hiển vi
+    - Nốt nhạc, thước kẻ, ê-ke
+    - Bảng tuần hoàn thu nhỏ
+
+  [Viền trái]
+    Dải dọc hình silhouette mờ nhạt của bảng tương tác thông minh
+    (interactive flat panel) đang hiển thị nội dung bài giảng,
+    phản chiếu ánh sáng xanh dương nhẹ.
+
+  [Viền phải]
+    Dải dọc mờ nhạt hình laptop mở với giao diện phần mềm,
+    bên cạnh là chồng sách giáo khoa.
+
+  [Góc trên bên trái]
+    Logo "QA SmartSchool" màu trắng mờ, rất nhỏ gọn
+    (logo chính nằm trên card đăng nhập).
+
+  [Góc dưới cùng]
+    Các đường mạch bo mạch (circuit board traces) rất mảnh,
+    màu #3B82F6 opacity 10%, chạy ngang tạo cảm giác công nghệ số.
+
+HIỆU ỨNG NỀN:
+  - Gaussian Blur nhẹ (radius 3-5px) cho toàn bộ icon line-art
+    → tạo chiều sâu (depth of field)
+  - Radial gradient trắng mờ ở chính giữa (vùng card đăng nhập)
+    → tạo hiệu ứng "vùng sáng" (spotlight), card nổi lên tự nhiên
+
+CẢM XÚC TRUYỀN TẢI:
+  Uy tín, chuyên nghiệp, công nghệ — một nhà giáo bước vào
+  không gian làm việc số thế hệ mới.
+
+
+================================================================================
+ẢNH 2: NỀN ĐĂNG NHẬP HỌC SINH
+File gợi ý: bg_login_student.png
+================================================================================
+
+TÔNG MÀU CHỦ ĐẠO:
+  - Gradient xanh ngọc (Teal #134E4A) ở viền ngoài
+  - Chuyển dần sang xanh lá biển (#0D9488) ở vùng giữa
+  - Nhạt dần sang xanh lá pastel (#CCFBF1) ở vùng trung tâm
+  - Điểm xuyết cam ấm (#FB923C, opacity 8%) ở góc phải dưới
+
+NỘI DUNG MINH HỌA (phân bổ theo vùng):
+
+  [Vùng trung tâm - bị card che]
+    Để trống / gradient nhẹ (lý do tương tự ảnh 1).
+
+  [Viền trên & dưới]
+    Các biểu tượng giáo dục dạng line-art, tương tự ảnh 1 nhưng thêm
+    các icon sinh động phù hợp học sinh (opacity 18-22%, nét mềm mại hơn):
+    - Tên lửa giấy (paper rocket)
+    - Game controller
+    - Emoji mặt cười
+    - Cúp vô địch, ngôi sao thành tích
+    - Hộp bút màu, bút chì
+    - Quả địa cầu xoay
+    - Robot nhỏ dễ thương
+    - Bóng đèn ý tưởng
+    - Công thức toán, nguyên tử
+
+  [Viền trái]
+    Silhouette mờ nhạt của một nhóm 2-3 học sinh (dáng đứng/ngồi,
+    mang cặp sách) đang nhìn về phía trung tâm, thể hiện sự hào hứng
+    bước vào lớp học.
+
+  [Viền phải]
+    Silhouette mờ nhạt của một tablet đang hiển thị bài quiz với
+    các nút A, B, C, D, bên cạnh là biểu tượng wifi phát sóng
+    (thể hiện kết nối SmartClass).
+
+  [Góc trên bên trái]
+    Logo "QA SmartSchool" màu trắng mờ.
+
+  [Góc dưới]
+    Sóng lượn nhẹ (wave pattern) hai lớp:
+    - Lớp 1: màu #14B8A6 opacity 8%
+    - Lớp 2: màu #5EEAD4 opacity 5%
+    → Tạo cảm giác năng động, tươi trẻ.
+
+HIỆU ỨNG NỀN:
+  - Gaussian Blur nhẹ tương tự ảnh 1.
+  - Radial gradient trắng mờ ở trung tâm cho vùng card nổi bật.
+  - Thêm vài hạt sáng bokeh nhỏ (chấm tròn trắng mờ, kích thước 3-8px,
+    opacity 5-12%) rải rác ở vùng viền trên → cảm giác rực rỡ, vui tươi.
+
+CẢM XÚC TRUYỀN TẢI:
+  Tươi trẻ, năng động, thân thiện — một học sinh háo hức bước vào
+  lớp học tương lai đầy thú vị.
+
+
+================================================================================
+  MÀU SẮC THƯƠNG HIỆU QA SMARTSCHOOL (THAM KHẢO)
+================================================================================
+  Xanh dương chính (Primary Blue):    #2563EB
+  Xanh lá chính (Primary Green):      #059669
+  Đen đậm (Dark):                     #0F172A
+  Xám nội dung (Content Gray):        #475569
+  Nền sáng (Light Background):        #F8FAFC
+  Viền nhạt (Border Light):           #E2E8F0
+================================================================================

@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "chapterId": "g12_ch04",
+    "chapterName": "Bài 4: Kịch — Hồn Trương Ba, da hàng thịt",
+    "grade": 12,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 4,
+    "thptWeight": "Trọng tâm thi THPT Quốc Gia — Phân tích nhân vật, xung đột kịch"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g12_ch3_0",
+      "sectionName": "Hồn Trương Ba, Da Hàng Thịt — Lưu Quang Vũ (Phần 1: Xung đột)",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-12-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g12_Hồn_Trương_Ba.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Lưu Quang Vũ (1948–1988) — nhà viết kịch tài năng nhất Việt Nam thế kỷ XX. 'Hồn Trương Ba, da hàng thịt' (1981) được coi là vở kịch xuất sắc nhất của ông, dựa trên cốt truyện dân gian nhưng mang triết lý hiện đại sâu sắc: con người không thể sống bằng sự vay mượn, phải được sống là chính mình.",
+          "imageUrls": ["Resources/LiteratureData/Images/luu_quang_vu.png"]
+        },
+        {
+          "name": "Tình huống kịch",
+          "definition": "Trương Ba — người đánh cờ giỏi, tâm hồn trong sáng — bị Nam Tào gạch nhầm tên, chết oan. Đế Thích thương tình, cho hồn Trương Ba nhập vào xác hàng thịt vừa chết. Từ đó Trương Ba phải sống trong thân xác thô lỗ, phàm tục của anh hàng thịt — xung đột bi kịch bắt đầu."
+        },
+        {
+          "name": "Đoạn trích — Hồn Trương Ba đối thoại với Xác Hàng Thịt",
+          "definition": "Hồn Trương Ba: Nhưng... nhưng tôi sống nhờ sự bố thí thương hại của đất trời đâu có phải lối sống? Tôi bắt đầu thèm ăn ngon, thèm rượu thịt...\n\nXác Hàng Thịt: Ha ha! Sao ông không thừa nhận đi? Nhiều lúc ông cũng thấy thèm. Cái thân xác này đòi hỏi, và ông không cưỡng lại được! Ông ngồi trong cái vỏ này rồi, ông phải chiều theo nó thôi!\n\nHồn Trương Ba: Không! Ta vẫn giữ nguyên được tâm hồn! Không ai bắt ta phải thay đổi!\n\nXác Hàng Thịt: Ông tưởng thế đấy! Nhưng chính ông ăn rất nhiều — cái miệng, cái lưỡi, cái bụng này... đều là của tôi! Và sớm muộn gì ông cũng sẽ giống tôi thôi."
+        },
+        {
+          "name": "Phân tích xung đột kịch",
+          "examples": [
+            "**Xung đột trung tâm**: Hồn (tâm hồn trong sáng) ↔ Xác (thân xác phàm tục) — ai sẽ chiến thắng? Đây là bi kịch triết học: liệu tâm hồn có giữ được bản chất khi sống trong thân xác không phải của mình?",
+            "**'Sống nhờ, sống gửi'**: Trương Ba sống nhờ xác người khác = sống bằng sự vay mượn — không phải cuộc đời thực của mình → mất dần bản sắc.",
+            "**Xác Hàng Thịt 'lên tiếng'**: Lưu Quang Vũ táo bạo cho xác nói — đây không phải xác vô tri mà là sức mạnh bản năng, vật chất. Thân xác cũng có 'tiếng nói' và nhu cầu riêng.",
+            "**Nghệ thuật đối thoại**: Hai nhân vật (Hồn và Xác) thực ra là hai phần của một con người — đối thoại ngoài = độc thoại trong — kỹ thuật kịch đỉnh cao."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Xung đột trung tâm trong vở kịch 'Hồn Trương Ba, da hàng thịt' là gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Xung đột giữa tâm hồn trong sáng và thân xác phàm tục — con người không thể sống nguyên vẹn khi phải 'mượn' cuộc đời người khác",
+            "Xung đột giữa Trương Ba và gia đình về việc ông thay đổi sau khi sống lại",
+            "Xung đột giữa thần linh (Đế Thích, Nam Tào) và con người về quyền sống chết",
+            "Xung đột giữa Trương Ba và anh hàng thịt về việc ai được sở hữu thân xác"
+          ],
+          "answer": "Xung đột giữa tâm hồn trong sáng và thân xác phàm tục — con người không thể sống nguyên vẹn khi phải 'mượn' cuộc đời người khác",
+          "hints": ["Vở kịch có tên 'Hồn... da...' — xung đột nằm ngay trong tên gọi. Hồn muốn gì? Xác muốn gì?"],
+          "explanation": "Tên vở kịch đã chứa xung đột: HỒN Trương Ba (thanh cao) bị giam trong DA hàng thịt (thô lỗ). Hồn muốn giữ bản chất trong sáng nhưng thân xác đòi hỏi bản năng (thèm ăn, thèm rượu). Đây là xung đột triết học kinh điển: liệu tâm hồn (tinh thần) có thể tồn tại độc lập với thể xác (vật chất) không? Lưu Quang Vũ trả lời: KHÔNG — phải sống là chính mình."
+        },
+        {
+          "id": "p2",
+          "question": "Khi Xác Hàng Thịt nói 'Sớm muộn gì ông cũng sẽ giống tôi thôi!' — điều này có ý nghĩa triết lý gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Thân xác (hoàn cảnh vật chất) có sức mạnh chi phối tâm hồn — con người không thể chỉ sống bằng ý chí mà bỏ qua thực tế",
+            "Xác Hàng Thịt thông minh hơn Hồn Trương Ba và sẽ chiến thắng",
+            "Thân xác mạnh hơn tâm hồn nên quyết định mọi hành vi con người",
+            "Lưu Quang Vũ phê phán những người sống quá coi trọng vật chất"
+          ],
+          "answer": "Thân xác (hoàn cảnh vật chất) có sức mạnh chi phối tâm hồn — con người không thể chỉ sống bằng ý chí mà bỏ qua thực tế",
+          "hints": ["Trương Ba ban đầu tự tin 'giữ nguyên tâm hồn' — nhưng thực tế ông có thay đổi không?"],
+          "explanation": "Lưu Quang Vũ đặt câu hỏi triết học sâu sắc: con người = hồn + xác. Nếu tách riêng, cả hai đều không trọn vẹn. Trương Ba tưởng ý chí đủ giữ tâm hồn, nhưng thực tế: sống trong xác hàng thịt, ông bắt đầu thèm ăn, nóng nảy, thô lỗ — hoàn cảnh vật chất đang thay đổi ông. Đây là bài học: đừng tự lừa mình rằng 'tôi khác hoàn cảnh' — hoàn cảnh có sức mạnh thay đổi con người."
+        },
+        {
+          "id": "p3",
+          "question": "Nghệ thuật đối thoại giữa Hồn và Xác thực chất là thủ pháp kịch nào?",
+          "difficulty": "Hard",
+          "options": [
+            "Đối thoại bên ngoài nhưng thực chất là độc thoại nội tâm — hai phần của một con người tranh luận với nhau",
+            "Đối thoại hai nhân vật độc lập có quan điểm đối lập",
+            "Kỹ thuật kịch cổ điển: nhân vật chính và nhân vật phản diện",
+            "Phương pháp tranh biện của kịch phương Tây về thiện và ác"
+          ],
+          "answer": "Đối thoại bên ngoài nhưng thực chất là độc thoại nội tâm — hai phần của một con người tranh luận với nhau",
+          "hints": ["Hồn và Xác cùng sống trong một cơ thể — khi 'hai người' nói chuyện, thực ra mấy người đang nói?"],
+          "explanation": "Đây là thủ pháp kịch đỉnh cao: Hồn Trương Ba và Xác Hàng Thịt không phải hai người mà là hai phần của MỘT con người. Cuộc đối thoại Hồn-Xác = cuộc đấu tranh nội tâm giữa lý tưởng (hồn) và bản năng (xác). Lưu Quang Vũ 'tách đôi' nhân vật ra để khán giả thấy rõ cuộc chiến bên trong mà bình thường chúng ta không nhìn thấy."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g12_ch3_1",
+      "sectionName": "Hồn Trương Ba, Da Hàng Thịt — Phần 2: Quyết định",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-12-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g12_Hồn_Trương_Ba_p2.mp3",
+      "concepts": [
+        {
+          "name": "Gia đình đau khổ",
+          "definition": "Vợ Trương Ba: Ông không còn là ông nữa! Ông ấy hiền lành, nhỏ nhẹ... Bây giờ ông thô lỗ, bỗ bã... Tôi sợ ông lắm.\n\nCháu gái: Ông tôi không phải thế! Ông tôi ngày trước không phải thế! Ông đi đi! Ông không phải là ông tôi!"
+        },
+        {
+          "name": "Trương Ba từ chối tiếp tục sống",
+          "definition": "Hồn Trương Ba: Không! Tôi không muốn sống như thế này nữa! Không thể sống bên trong một đằng, bên ngoài một nẻo được! Tôi muốn được là tôi toàn vẹn...\n\nĐế Thích: Nhưng... nếu không sống trong xác hàng thịt thì ngươi sẽ chết!\n\nHồn Trương Ba: Còn hơn sống mà không phải là mình!"
+        },
+        {
+          "name": "Ý nghĩa triết lý",
+          "examples": [
+            "**'Sống bên trong một đằng, bên ngoài một nẻo'**: Câu nói nổi tiếng nhất vở kịch — phê phán lối sống giả dối, đánh mất bản thân.",
+            "**Cháu gái nói 'Ông đi đi!'**: Chi tiết đau nhất — người thân yêu nhất cũng không nhận ra ông → Trương Ba mất tất cả.",
+            "**Từ chối sống**: Trương Ba chọn chết thật còn hơn sống giả — phẩm giá con người quý hơn sự tồn tại.",
+            "**Thông điệp hiện đại**: Đừng đánh mất bản thân vì bất cứ lý do gì — tiền bạc, quyền lực, hay áp lực xã hội. 'Sống là mình' là giá trị cao nhất."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Câu nói 'Không thể sống bên trong một đằng, bên ngoài một nẻo được!' thể hiện tư tưởng gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Con người phải được sống thống nhất giữa tâm hồn và thể xác — sống giả dối, đánh mất bản thân là bi kịch lớn nhất",
+            "Trương Ba phê phán thần linh đã bắt ông sống trong xác người khác",
+            "Cuộc sống hiện đại buộc con người phải đóng vai nhiều nhân vật khác nhau",
+            "Triết lý Phật giáo về sự hòa hợp giữa thân và tâm"
+          ],
+          "answer": "Con người phải được sống thống nhất giữa tâm hồn và thể xác — sống giả dối, đánh mất bản thân là bi kịch lớn nhất",
+          "hints": ["'Bên trong một đằng' = tâm hồn muốn A; 'bên ngoài một nẻo' = thể xác làm B — sống như vậy có hạnh phúc không?"],
+          "explanation": "Đây là thông điệp trung tâm của Lưu Quang Vũ: con người = thể xác + tâm hồn phải thống nhất. Khi 'bên trong' (tâm hồn thanh cao) và 'bên ngoài' (hành động thô lỗ) mâu thuẫn → không còn là chính mình nữa. Ý nghĩa hiện đại: đừng sống giả, đừng đóng vai người khác, đừng đánh mất bản thân vì bất cứ giá nào."
+        },
+        {
+          "id": "p2",
+          "question": "Tại sao chi tiết cháu gái nói 'Ông đi đi! Ông không phải là ông tôi!' lại là chi tiết đau đớn nhất vở kịch?",
+          "difficulty": "Hard",
+          "options": [
+            "Đứa cháu vô tư nhất, yêu ông nhất — lại là người đầu tiên nhận ra ông đã thay đổi hoàn toàn, và từ chối ông",
+            "Cháu gái sợ ngoại hình to lớn của xác hàng thịt nên không nhận ra ông",
+            "Chi tiết cho thấy Trương Ba đã hoàn toàn mất trí nhớ sau khi nhập xác",
+            "Đứa trẻ con nói thật, làm Trương Ba xấu hổ trước cả gia đình"
+          ],
+          "answer": "Đứa cháu vô tư nhất, yêu ông nhất — lại là người đầu tiên nhận ra ông đã thay đổi hoàn toàn, và từ chối ông",
+          "hints": ["Ai trong gia đình sẽ nhận ra thay đổi sớm nhất — người lớn hay trẻ con? Tại sao?"],
+          "explanation": "Trẻ con có trực giác nhạy bén nhất vì không có sự khoan nhượng hay giả vờ. Vợ có thể chịu đựng, con cái có thể im lặng — nhưng cháu gái (tượng trưng cho sự thuần khiết) từ chối thẳng: 'Ông đi đi!' Đây là giọt nước tràn ly: khi chính người thân yêu nhất cũng không nhận ra bạn → bạn đã mất mình hoàn toàn. Chi tiết này buộc Trương Ba phải đối mặt sự thật."
+        },
+        {
+          "id": "p3",
+          "question": "Trương Ba chọn chết thật thay vì tiếp tục sống trong xác hàng thịt. Quyết định này có ý nghĩa gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Phẩm giá con người quý hơn sự tồn tại — chết mà giữ được bản thân còn hơn sống mà đánh mất mình",
+            "Trương Ba quá mệt mỏi với cuộc đấu tranh nội tâm nên buông xuôi",
+            "Cái chết là hình phạt xứng đáng cho việc Trương Ba đã chấp nhận 'mượn xác'",
+            "Trương Ba tin rằng thần linh sẽ cho ông cơ hội sống lại lần nữa"
+          ],
+          "answer": "Phẩm giá con người quý hơn sự tồn tại — chết mà giữ được bản thân còn hơn sống mà đánh mất mình",
+          "hints": ["'Còn hơn sống mà không phải là mình' — Trương Ba đặt điều gì lên trên cả sự sống?"],
+          "explanation": "Trương Ba chọn chết = chọn phẩm giá. Ông hiểu: tồn tại ≠ sống. Sống mà mất bản sắc, mất tình thân, mất tất cả những gì làm nên 'Trương Ba' thì đó chỉ là tồn tại sinh học, không phải sống. Quyết định chết là hành động dũng cảm nhất — khẳng định: con người phải được là chính mình, dù cái giá phải trả là tính mạng."
+        }
+      ]
+    }
+  ]
+}

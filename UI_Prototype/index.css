@@ -1,0 +1,587 @@
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS & SYSTEM
+   ═══════════════════════════════════════════════════════════ */
+:root {
+    /* Brand Colors */
+    --brand-primary: #1565c0;
+    --brand-primary-light: rgba(21, 101, 192, 0.08);
+    --brand-primary-hover: rgba(21, 101, 192, 0.15);
+    --brand-secondary: #0d47a1;
+    --brand-accent: #e65100;
+    
+    /* Neutral Colors */
+    --bg-gray-50: #f8fafc;
+    --bg-gray-100: #f1f5f9;
+    --bg-gray-200: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-white: #ffffff;
+    --border-color: #cbd5e1;
+
+    /* Theme colors for panels */
+    --blue-bg: #e3f2fd;
+    --blue-border: #90caf9;
+    --blue-text: #0d47a1;
+    
+    --orange-bg: #fff3e0;
+    --orange-border: #ffb74d;
+    --orange-text: #e65100;
+
+    --green-bg: #e8f5e9;
+    --green-border: #a5d6a7;
+    --green-text: #2e7d32;
+
+    /* Fonts */
+    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-heading: 'Outfit', 'Segoe UI Semibold', sans-serif;
+
+    /* Shadows & Radii */
+    --radius-card: 12px;
+    --radius-chip: 8px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BASE STYLES & RESET
+   ═══════════════════════════════════════════════════════════ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-primary);
+    background-color: var(--bg-gray-100);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOP NAVBAR (Header)
+   ═══════════════════════════════════════════════════════════ */
+.top-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--brand-secondary) 0%, var(--brand-primary) 100%);
+    padding: 12px 24px;
+    color: var(--text-white);
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+    height: 72px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.back-link {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.12);
+    padding: 8px 16px;
+    border-radius: var(--radius-chip);
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-link:hover {
+    background: rgba(255, 255, 255, 0.22);
+    color: var(--text-white);
+    transform: translateX(-2px);
+}
+
+.app-title-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.badge-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #b3c4ff;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.app-title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.app-subtitle {
+    font-size: 12px;
+    color: #b3c4ff;
+    font-weight: 400;
+}
+
+.nav-right {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    border: none;
+    border-radius: var(--radius-chip);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: var(--shadow-sm);
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-focus {
+    background-color: #2e7d32;
+    color: var(--text-white);
+}
+.btn-focus:hover { background-color: #27682a; }
+
+.btn-unfocus {
+    background-color: #c62828;
+    color: var(--text-white);
+}
+.btn-unfocus:hover { background-color: #a82222; }
+
+.btn-whiteboard {
+    background-color: #7b1fa2;
+    color: var(--text-white);
+}
+.btn-whiteboard:hover { background-color: #661887; }
+
+.btn-project {
+    background-color: #e65100;
+    color: var(--text-white);
+}
+.btn-project:hover { background-color: #c44500; }
+
+/* ═══════════════════════════════════════════════════════════
+   THREE PANES MAIN LAYOUT
+   ═══════════════════════════════════════════════════════════ */
+.main-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ── CỘT 1: Main Sidebar Menu (Left) ── */
+.sidebar-main {
+    width: 250px;
+    background-color: #e8eaf6;
+    border-right: 2px solid #c5cae9;
+    padding: 12px 8px;
+    overflow-y: auto;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+}
+
+.menu-item:hover {
+    background-color: #c5cae9;
+    color: var(--text-primary);
+}
+
+.menu-item.active {
+    background-color: var(--brand-primary);
+    color: var(--text-white);
+    box-shadow: var(--shadow-sm);
+}
+
+.menu-icon {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+}
+
+/* ── CỘT 2: Sub Sidebar (Middle) ── */
+.sidebar-sub {
+    width: 260px;
+    background-color: var(--bg-gray-50);
+    border-right: 2px solid var(--bg-gray-200);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebar-sub-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 14px;
+    border-bottom: 1px solid var(--bg-gray-200);
+    background-color: #f8fafc;
+}
+
+.header-icon {
+    font-size: 18px;
+}
+
+.header-info h3 {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.header-info p {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.sub-menu {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* TỐI ƯU ĐỒNG NHẤT KÍCH THƯỚC (UNIFORM SIZING FOR TABS) */
+.sub-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: var(--transition-smooth);
+    width: 100%;
+    
+    /* Thiết lập kích thước đồng nhất cơ bản */
+    min-height: 52px; /* Đảm bảo chiều cao tối thiểu đồng đều cho các mục */
+    max-height: 60px; /* Tránh các mục phình to quá mức */
+    overflow: hidden;
+}
+
+.sub-item:hover {
+    background-color: var(--bg-gray-200);
+}
+
+.sub-item.active {
+    background-color: var(--brand-primary);
+    color: var(--text-white);
+    box-shadow: var(--shadow-sm);
+}
+
+.sub-icon {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+}
+
+.sub-text {
+    font-family: var(--font-primary);
+    font-size: 12px; /* Giảm nhẹ để vừa vặn hơn trên màn hình hẹp */
+    font-weight: 600;
+    color: inherit;
+    line-height: 1.35;
+    
+    /* Cắt chữ thông minh để duy trì đồng nhất kích thước */
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Tối đa 2 dòng */
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Khi item active, đảm bảo màu chữ kế thừa White */
+.sub-item.active .sub-text {
+    color: var(--text-white);
+}
+.sub-item:not(.active) .sub-text {
+    color: var(--text-secondary);
+}
+.sub-item:not(.active):hover .sub-text {
+    color: var(--text-primary);
+}
+
+/* ── CỘT 3: Content Area (Right) ── */
+.content-area {
+    flex: 1;
+    overflow-y: auto;
+    background-color: var(--text-white);
+    padding: 24px;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 24px;
+    height: 100%;
+    align-items: stretch;
+}
+
+/* Visual Panel (Left side of right pane) */
+.visual-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+}
+
+.image-card {
+    flex: 1;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-gray-50);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    min-height: 320px;
+    position: relative;
+    overflow: hidden;
+}
+
+.nn-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nn-svg {
+    max-height: 380px;
+}
+
+/* SVG Text Styles */
+.svg-title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 800;
+    fill: var(--brand-secondary);
+}
+
+.svg-header {
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 700;
+    fill: var(--text-primary);
+}
+
+.svg-sub-header {
+    font-family: var(--font-primary);
+    font-size: 10px;
+    font-weight: 500;
+    fill: var(--text-muted);
+}
+
+.flow-text {
+    font-family: var(--font-primary);
+    font-size: 9px;
+    font-weight: 600;
+}
+
+/* Concept Card below the image */
+.concept-card {
+    background-color: #fffde7;
+    border: 1px solid #ffe082;
+    border-radius: var(--radius-card);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.concept-badge {
+    display: inline-block;
+    background-color: #ffe082;
+    color: #f57c00;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.formula-display {
+    text-align: center;
+}
+
+.math-expr {
+    display: block;
+    font-size: 20px;
+    font-weight: 600;
+    color: #37474f;
+    margin: 8px 0;
+}
+
+.formula-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Detail Panel (Right side of right pane) */
+.detail-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.content-header h2 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.lead-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.accordion-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.accordion-item {
+    border-radius: 10px;
+    border: 1px solid;
+    padding: 14px 16px;
+    transition: var(--transition-smooth);
+}
+
+.accordion-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.accordion-icon {
+    font-size: 16px;
+}
+
+.accordion-header h4 {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.accordion-body {
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Accordion Specific Panels Theme */
+.panel-blue {
+    background-color: var(--blue-bg);
+    border-color: var(--blue-border);
+}
+.panel-blue .accordion-header h4,
+.panel-blue .accordion-icon {
+    color: var(--blue-text);
+}
+.panel-blue .accordion-body {
+    color: #1565c0;
+}
+
+.panel-orange {
+    background-color: var(--orange-bg);
+    border-color: var(--orange-border);
+}
+.panel-orange .accordion-header h4,
+.panel-orange .accordion-icon {
+    color: var(--orange-text);
+}
+.panel-orange .accordion-body {
+    color: #d84315;
+}
+
+.panel-green {
+    background-color: var(--green-bg);
+    border-color: var(--green-border);
+}
+.panel-green .accordion-header h4,
+.panel-green .accordion-icon {
+    color: var(--green-text);
+}
+.panel-green .accordion-body {
+    color: #1b5e20;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS & EFFECTS
+   ═══════════════════════════════════════════════════════════ */
+@keyframes dash {
+    to {
+        stroke-dashoffset: -40;
+    }
+}
+
+.nn-line-active {
+    stroke-dasharray: 5, 5;
+    animation: dash 2s linear infinite;
+}
+
+/* CSS for Glowing Active Nodes */
+.node-active {
+    filter: url(#glow);
+    transition: var(--transition-smooth);
+}
+
+.sub-item:active {
+    transform: scale(0.98);
+}

@@ -1,0 +1,24 @@
+{
+  "Categories": [
+    {
+      "Id": 1,
+      "Name": "Chương 1: Mệnh đề và Tập hợp",
+      "Subject": "Toán",
+      "Grade": "Lớp 10",
+      "Description": "Các câu hỏi cơ bản về mệnh đề đúng sai và phép toán tập hợp"
+    }
+  ],
+  "Items": [
+    {
+      "CategoryId": 1,
+      "QuestionType": "MCQ",
+      "Content": "Cho tập hợp A = {1, 2, 3} và B = {3, 4, 5}. Tập hợp giao A ∩ B là?",
+      "OptionsJson": "[\"{3}\", \"{1, 2, 3, 4, 5}\", \"{1, 2}\", \"{4, 5}\"]",
+      "CorrectAnswer": "{3}",
+      "Explanation": "Phần tử chung duy nhất của cả hai tập hợp là 3.",
+      "Points": 10,
+      "Difficulty": "Easy",
+      "TimeLimitSeconds": 60
+    }
+  ]
+}

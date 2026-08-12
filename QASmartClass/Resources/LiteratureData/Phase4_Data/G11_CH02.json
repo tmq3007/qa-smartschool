@@ -1,0 +1,230 @@
+{
+  "metadata": {
+    "chapterId": "g11_ch02",
+    "chapterName": "Bài 2: Truyện ngắn hiện thực",
+    "grade": 11,
+    "totalProblems": 9,
+    "totalSections": 3,
+    "estimatedHours": 4
+  },
+  "sections": [
+    {
+      "sectionId": "s_g11_ch1_0",
+      "sectionName": "Hai Đứa Trẻ — Thạch Lam",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-11-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g11_Hai_đứa_trẻ.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả",
+          "theorem": "Thạch Lam (1910–1942) — thành viên nhóm Tự Lực Văn Đoàn. Văn Thạch Lam nhẹ nhàng, giàu thi vị; khai thác thế giới nội tâm sâu sắc.",
+          "imageUrls": ["Resources/LiteratureData/Images/thach_lam.png"]
+        },
+        {
+          "name": "Cảnh chiều tàn — mở đầu",
+          "definition": "Chiều, chiều rồi. Một chiều êm ả như ru, văng vẳng tiếng ếch nhái kêu ran ngoài đồng ruộng theo gió nhẹ đưa vào. Trong cửa hàng hơi tối, muỗi đã bắt đầu vo ve. Liên ngồi yên lặng bên mấy quả thuốc sơn đen; đôi mắt chị bóng tối ngập đầy dần và cái buồn của buổi chiều quê thấm thía vào tâm hồn ngây thơ của chị."
+        },
+        {
+          "name": "Đoàn tàu đêm — chi tiết trung tâm",
+          "definition": "Một làn khói bừng sáng trắng lên đằng xa, tiếp đến tiếng còi xe lửa trong đêm khuya kéo dài ra theo ngọn gió xa xôi. Liên trông thấy ngọn lửa xanh biếc, sát mặt đất như ma trơi... Rồi tiếng hành khách ồn ào khe khẽ. Đèn các toa sáng trưng chiếu ánh cả xuống đường. Liên chỉ thoáng trông thấy những toa hạng trên sang trọng lố nhố những người."
+        },
+        {
+          "name": "Phân tích nghệ thuật",
+          "examples": [
+            "**Nhịp văn chậm rãi**: 'Chiều, chiều rồi' — dấu phẩy tạo khoảng ngừng, gợi thời gian trôi nặng nề.",
+            "**Bóng tối và ánh sáng**: Bóng tối = cuộc sống tăm tối của phố huyện; ánh đèn tàu = hi vọng le lói về một thế giới khác.",
+            "**Chuyến tàu đêm**: Biểu tượng trung tâm — vừa thực vừa mơ, mang đến ánh sáng và tiếng ồn của thành phố rồi lại vụt qua, để lại bóng đêm.",
+            "**Liên và An chờ tàu**: Không phải chờ ai — chờ để 'nhìn thấy chút thế giới khác đi qua' — khát vọng thoát khỏi sự đơn điệu của cuộc đời."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hình ảnh chuyến tàu đêm đi qua phố huyện mang ý nghĩa biểu tượng gì trong truyện ngắn của Thạch Lam?",
+          "difficulty": "Medium",
+          "options": [
+            "Biểu tượng của ánh sáng và hi vọng — thế giới xa hoa, sôi động thoáng qua rồi vụt mất, để lại bóng tối mênh mang",
+            "Phương tiện giao thông kết nối phố huyện nghèo với thành phố phồn hoa",
+            "Biểu tượng cho sự phát triển của đất nước dưới thời Pháp thuộc",
+            "Hình ảnh thực về đường sắt Bắc Nam mà tác giả quan sát trong cuộc sống"
+          ],
+          "answer": "Biểu tượng của ánh sáng và hi vọng — thế giới xa hoa, sôi động thoáng qua rồi vụt mất, để lại bóng tối mênh mang",
+          "hints": ["Liên và An chờ tàu để làm gì? Khi tàu đi rồi thì sao?"],
+          "explanation": "Chuyến tàu = 'một chút thế giới khác đi qua': ánh đèn sáng, tiếng ồn ào, hành khách sang trọng — tất cả vụt qua trong giây lát rồi trả lại bóng tối và sự im lặng cho phố huyện. Đây là biểu tượng tinh tế cho khát vọng thoát khỏi cuộc sống tẻ nhạt — ước mơ nhỏ nhoi nhưng cháy bỏng của những người nghèo."
+        },
+        {
+          "id": "p2",
+          "question": "Nhịp điệu văn xuôi chậm rãi, buồn man mác của Thạch Lam có tác dụng nghệ thuật gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Tạo không khí buồn bã, trầm lắng phù hợp với tâm trạng nhân vật và cuộc sống đơn điệu của phố huyện",
+            "Thể hiện sự lười biếng của các nhân vật không muốn thay đổi cuộc sống",
+            "Làm chậm tốc độ kể chuyện để miêu tả cảnh vật thiên nhiên chi tiết",
+            "Phong cách viết của Thạch Lam không cần chú ý đến nhịp điệu"
+          ],
+          "answer": "Tạo không khí buồn bã, trầm lắng phù hợp với tâm trạng nhân vật và cuộc sống đơn điệu của phố huyện",
+          "hints": ["Nhịp văn = nhịp sống của phố huyện — nhanh hay chậm?"],
+          "explanation": "Thạch Lam là bậc thầy về âm điệu. Nhịp văn chậm ('Chiều, chiều rồi') tương ứng với nhịp sống đơn điệu, không đổi thay của phố huyện. Người đọc cảm nhận được sự trôi qua vô vị của thời gian — đồng cảm với nỗi buồn của Liên mà không cần tác giả giải thích."
+        },
+        {
+          "id": "p3",
+          "question": "Giá trị nhân đạo của truyện ngắn 'Hai đứa trẻ' thể hiện qua điều gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Sự trân trọng những ước mơ nhỏ bé của người nghèo và nỗi đau của những kiếp người bị cuộc đời lãng quên",
+            "Lên án chế độ thực dân Pháp đã gây ra đói nghèo cho người dân",
+            "Ca ngợi vẻ đẹp tâm hồn trong sáng của hai đứa trẻ",
+            "Kêu gọi người nghèo đứng lên đấu tranh chống bất công"
+          ],
+          "answer": "Sự trân trọng những ước mơ nhỏ bé của người nghèo và nỗi đau của những kiếp người bị cuộc đời lãng quên",
+          "hints": ["Thạch Lam nhìn những nhân vật của mình bằng ánh mắt như thế nào?"],
+          "explanation": "Thạch Lam không lên án, không kêu gọi — ông lặng lẽ ghi lại những kiếp người nhỏ bé (chị Tý, bác Siêu, gia đình bác Xẩm) và trân trọng ước mơ nhỏ bé của họ. Ánh mắt nhân hậu đó là giá trị nhân đạo: nhắc nhở người đọc đừng quên những con người bị cuộc đời lãng quên bên những phố huyện nghèo."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g11_ch1_1",
+      "sectionName": "Chí Phèo — Nam Cao",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-11-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g11_Chí_Phèo.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả",
+          "theorem": "Nam Cao (1917–1951) — nhà văn hiện thực xuất sắc nhất của văn học Việt Nam trước 1945. 'Chí Phèo' (1941) là kiệt tác về số phận người nông dân bị tha hóa.",
+          "imageUrls": ["Resources/LiteratureData/Images/nam_cao.png"]
+        },
+        {
+          "name": "Sự xuất hiện của Chí Phèo",
+          "definition": "Hắn vừa đi vừa chửi. Bao giờ cũng thế, cứ rượu xong là hắn chửi. Bắt đầu hắn chửi trời. Có hề gì? Trời có của riêng nhà nào? Rồi hắn chửi đời. Thế cũng chẳng sao: đời là tất cả nhưng chẳng là ai... Nhưng cũng không ai ra điều. Mẹ kiếp! Thế thì có phí rượu không?"
+        },
+        {
+          "name": "Gặp Thị Nở — Thức tỉnh",
+          "definition": "Hắn thấy lòng mình bâng khuâng mà buồn. Hắn nhìn bàn tay của hắn. Hắn thấy nhói ở trong ngực. Ôi! Sao mà nghe tiếng chim hót vui vẻ thế. Hắn thấy lòng mình... hắn thấy như bây giờ hắn mới tỉnh dậy."
+        },
+        {
+          "name": "Phân tích",
+          "examples": [
+            "**Tiếng chửi mở đầu**: Chí Phèo chửi vì muốn giao tiếp với xã hội — nhưng không ai đáp lại. Bi kịch: muốn làm người nhưng bị tước quyền làm người.",
+            "**Bát cháo hành của Thị Nở**: Chi tiết đắt giá — tình người nhỏ bé đủ sức đánh thức bản năng người trong Chí Phèo.",
+            "**'Ai cho tao lương thiện?'**: Câu hỏi kết truyện — tố cáo xã hội đã tước đoạt quyền làm người và không có cách nào cứu vớt.",
+            "**Bi kịch tha hóa**: Chí Phèo không xấu bản chất — anh bị tha hóa bởi nhà tù và Bá Kiến. Đây là tội ác của xã hội."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Tiếng chửi của Chí Phèo ở đầu truyện có ý nghĩa gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Là nhu cầu giao tiếp tuyệt vọng — Chí Phèo chửi để được ai đó đáp lại, chứng tỏ mình còn tồn tại",
+            "Thể hiện tính cách hung hãn, côn đồ của một tên lưu manh",
+            "Là cách Chí Phèo biểu lộ sự say xỉn và mất kiểm soát",
+            "Phong tục chửi bới ở làng quê Việt Nam thời phong kiến"
+          ],
+          "answer": "Là nhu cầu giao tiếp tuyệt vọng — Chí Phèo chửi để được ai đó đáp lại, chứng tỏ mình còn tồn tại",
+          "hints": ["Chí Phèo chửi nhưng 'không ai ra điều' — điều đó nói lên gì?"],
+          "explanation": "Nam Cao xây dựng nghịch lý: Chí Phèo chửi hết trời đất đến từng người — nhưng không ai thèm đáp. Sự im lặng đó đau hơn mọi lời chửi mắng: Chí Phèo đã bị xã hội xóa sổ khỏi danh sách 'người'. Tiếng chửi là tiếng kêu cứu trong tuyệt vọng."
+        },
+        {
+          "id": "p2",
+          "question": "Bát cháo hành của Thị Nở có ý nghĩa gì trong cuộc đời Chí Phèo?",
+          "difficulty": "Medium",
+          "options": [
+            "Là tình người đầu tiên và duy nhất đánh thức bản năng người trong Chí Phèo sau nhiều năm bị tha hóa",
+            "Là phương thuốc trị bệnh khi Chí Phèo bị ốm sau đêm say rượu",
+            "Là lý do để Chí Phèo si mê Thị Nở và muốn cưới cô làm vợ",
+            "Là cử chỉ xã giao bình thường của người hàng xóm với người bệnh"
+          ],
+          "answer": "Là tình người đầu tiên và duy nhất đánh thức bản năng người trong Chí Phèo sau nhiều năm bị tha hóa",
+          "hints": ["Sau khi ăn cháo hành, Chí Phèo có những cảm xúc gì lần đầu tiên?"],
+          "explanation": "Bát cháo hành là chi tiết nhỏ nhưng vĩ đại: lần đầu tiên trong nhiều năm, có người quan tâm đến Chí Phèo như một con người. Hắn 'nghe tiếng chim hót vui vẻ', cảm thấy 'nhói ở trong ngực' — bản năng người thức dậy. Đây là khoảnh khắc duy nhất Chí Phèo được sống như người — trước khi bị đẩy vào bi kịch cuối cùng."
+        },
+        {
+          "id": "p3",
+          "question": "Câu hỏi 'Ai cho tao lương thiện?' của Chí Phèo trước khi chết tố cáo điều gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Xã hội phong kiến - thực dân đã tước đoạt quyền làm người và không có lối thoát cho người bị tha hóa",
+            "Bá Kiến là kẻ trực tiếp gây ra mọi tội lỗi của Chí Phèo",
+            "Chí Phèo nhận ra mình không xứng đáng được lương thiện",
+            "Xã hội cần có luật pháp để bảo vệ người nghèo khỏi cường hào ác bá"
+          ],
+          "answer": "Xã hội phong kiến - thực dân đã tước đoạt quyền làm người và không có lối thoát cho người bị tha hóa",
+          "hints": ["'Ai cho tao lương thiện' — có ai có thể trả lời câu hỏi đó không?"],
+          "explanation": "Câu hỏi không có câu trả lời — đó là điểm đau nhất. Nam Cao muốn nói: trong xã hội đó, không ai — không Thị Nở, không Bá Kiến, không ai — có thể 'trả' lại sự lương thiện cho Chí Phèo. Cái xã hội đã tạo ra Chí Phèo cũng chính là cái xã hội ngăn cản anh trở lại làm người. Đây là tiếng tố cáo mạnh mẽ nhất của Nam Cao."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g11_ch1_2",
+      "sectionName": "Chữ Người Tử Tù — Nguyễn Tuân",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-11-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g11_Chữ_người_tử_tù.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Nguyễn Tuân (1910–1987). 'Chữ người tử tù' rút từ tập 'Vang bóng một thời' (1940). Truyện xoay quanh cuộc gặp gỡ kỳ lạ giữa Huấn Cao — người tử tù có tài viết chữ đẹp — và viên quản ngục.",
+          "imageUrls": ["Resources/LiteratureData/Images/nguyen_tuan_cu.png"]
+        },
+        {
+          "name": "Cảnh cho chữ — Đỉnh điểm truyện",
+          "definition": "Trong một buồng tối chật hẹp, ẩm ướt, tường đầy mạng nhện, đất bừa bãi phân chuột phân gián, một người tù cổ đeo gông, chân vướng xiềng đang dậm tô nét chữ trên tấm lụa trắng tinh căng trên mảnh ván... Ở đây lẫn lộn không? Trong một buồng tối, ánh sáng đỏ rực của bó đuốc... ba cái đầu chụm lại."
+        },
+        {
+          "name": "Phân tích",
+          "examples": [
+            "**Tình huống đảo ngược**: Tử tù (kẻ bị giam cầm) lại cho chữ người cai ngục (kẻ có quyền) — vị thế đảo ngược hoàn toàn.",
+            "**'Cảnh xưa nay chưa từng thấy'**: Sự kỳ lạ của nghịch lý: cái đẹp được sáng tạo trong bóng tối và gông cùm.",
+            "**Lời khuyên của Huấn Cao**: 'Thầy hãy thoát khỏi chốn này đi... hãy về quê mà sống' — kẻ tử tù dạy đời cho người tự do.",
+            "**Cái đẹp thắng cái ác**: Trong cảnh nhà tù tối tăm, ánh sáng của tài hoa và nhân cách chiến thắng bóng tối vật chất."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Tình huống truyện 'tử tù cho chữ quản ngục' tạo ra nghịch lý gì độc đáo?",
+          "difficulty": "Medium",
+          "options": [
+            "Kẻ bị giam cầm lại có quyền năng tinh thần cao hơn kẻ giam giữ — cái tài và cái tâm chiến thắng quyền lực vật chất",
+            "Tù nhân có thể ảnh hưởng tốt đến cai ngục trong hệ thống nhà tù phong kiến",
+            "Nghề thư pháp được coi trọng hơn chức quyền trong xã hội xưa",
+            "Nguyễn Tuân muốn phê phán sự bất công của chế độ giam cầm người vô tội"
+          ],
+          "answer": "Kẻ bị giam cầm lại có quyền năng tinh thần cao hơn kẻ giam giữ — cái tài và cái tâm chiến thắng quyền lực vật chất",
+          "hints": ["Ai trong cuộc gặp này thực sự có 'quyền lực' và được tôn trọng?"],
+          "explanation": "Nguyễn Tuân xây dựng nghịch lý căng thẳng: về danh nghĩa, viên quản ngục có quyền sinh sát; nhưng trong thực tế, Huấn Cao mới là người quyết định — cho hay không cho chữ, nói hay không nói. Cái tài năng và nhân cách cao đẹp tạo ra một thứ quyền uy vô hình mạnh hơn xiềng xích và gông cùm."
+        },
+        {
+          "id": "p2",
+          "question": "Cảnh cho chữ diễn ra trong nhà tù tối tăm, ẩm ướt — điều này có ý nghĩa nghệ thuật gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Cái đẹp có thể nảy sinh và chiến thắng ngay trong môi trường tối tăm nhất — nghệ thuật bất tử trước mọi ràng buộc",
+            "Phê phán điều kiện nhà tù tàn tệ dưới chế độ phong kiến",
+            "Tạo sự tương phản mạnh mẽ về màu sắc để bức tranh thêm sinh động",
+            "Cho thấy Huấn Cao không quan tâm đến hoàn cảnh khi sáng tác"
+          ],
+          "answer": "Cái đẹp có thể nảy sinh và chiến thắng ngay trong môi trường tối tăm nhất — nghệ thuật bất tử trước mọi ràng buộc",
+          "hints": ["Bóng tối và gông xiềng đối lập với điều gì trong cảnh cho chữ?"],
+          "explanation": "Nguyễn Tuân xây dựng tương phản tối đa: buồng tối ẩm ướt, mạng nhện, phân chuột (môi trường xấu nhất) >< ánh đuốc đỏ rực, tấm lụa trắng tinh, nét chữ tươi tắn (cái đẹp thuần khiết). Thông điệp: nghệ thuật chân chính không thể bị khuất phục bởi bất cứ thứ quyền lực nào — kể cả tử hình."
+        },
+        {
+          "id": "p3",
+          "question": "Lời khuyên của Huấn Cao với viên quản ngục 'hãy về quê mà sống' thể hiện quan niệm gì của Nguyễn Tuân?",
+          "difficulty": "Hard",
+          "options": [
+            "Người có lòng yêu cái đẹp không nên sống trong môi trường dung tục — phải giữ gìn thiên lương trong sáng",
+            "Nguyễn Tuân phê phán nghề cai ngục là nghề xấu xa không xứng đáng",
+            "Huấn Cao muốn viên quản ngục trở về quê để tránh liên lụy vì biết ông sắp bị xử tử",
+            "Lời khuyên thực tế giúp viên quản ngục thoát khỏi công việc nhàm chán"
+          ],
+          "answer": "Người có lòng yêu cái đẹp không nên sống trong môi trường dung tục — phải giữ gìn thiên lương trong sáng",
+          "hints": ["Tại sao Huấn Cao lại cho chữ viên quản ngục — điều kiện là gì?"],
+          "explanation": "Huấn Cao chỉ cho chữ vì nhận ra viên quản ngục 'có lòng biệt nhỡn liên tài' — yêu cái đẹp chân thành. Lời khuyên 'về quê' là lời của kẻ tài hoa: người yêu cái đẹp không thể sống cùng với cái xấu. Đây là quan niệm 'thiên lương' — đạo đức và cái đẹp phải đi cùng nhau, không thể tách rời."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,351 @@
+{
+  "metadata": {
+    "chapterId": "g12_ch03",
+    "chapterName": "Nguyên Hàm, Tích Phân & Ứng Dụng",
+    "grade": 12,
+    "totalSections": 4,
+    "totalConcepts": 16,
+    "totalProblems": 12,
+    "toolMapping": [
+      "IntegralTool",
+      "CoordinateTool"
+    ],
+    "thptWeight": "10%",
+    "estimatedHours": 30,
+    "prerequisites": [
+      "calc_12_01",
+      "calc_12_02"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "calc_12_03_01",
+      "sectionName": "Nguyên hàm",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "tp_001",
+          "name": "Định nghĩa nguyên hàm",
+          "definition": "F(x) là nguyên hàm của f(x) nếu F'(x) = f(x)",
+          "notation": "∫f(x)dx = F(x) + C"
+        },
+        {
+          "id": "tp_002",
+          "name": "Bảng nguyên hàm cơ bản",
+          "formulas": [
+            "∫x^n dx = x^(n+1)/(n+1) + C (n≠-1)",
+            "∫1/x dx = ln|x| + C",
+            "∫e^x dx = e^x + C",
+            "∫a^x dx = a^x/ln(a) + C",
+            "∫sinx dx = -cosx + C",
+            "∫cosx dx = sinx + C",
+            "∫1/cos²x dx = tanx + C",
+            "∫1/sin²x dx = -cotx + C"
+          ]
+        },
+        {
+          "id": "tp_003",
+          "name": "Phương pháp đổi biến",
+          "formula": "∫f(u(x))·u'(x)dx = ∫f(u)du"
+        },
+        {
+          "id": "tp_004",
+          "name": "Phương pháp từng phần",
+          "formula": "∫u·dv = u·v - ∫v·du",
+          "mnemonic": "LIATE: Logarit → Inverse trig → Algebraic → Trig → Exponential"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tp_prob_001",
+          "difficulty": "Easy",
+          "question": "∫(3x² + 2x - 1)dx bằng:",
+          "options": [
+            "A) x³+x²-x+C",
+            "B) 6x+2+C",
+            "C) x³+x²+C",
+            "D) 3x³+x²-x+C"
+          ],
+          "correctAnswer": "A",
+          "solution": "∫3x²dx + ∫2xdx - ∫1dx = x³ + x² - x + C",
+          "points": 10
+        },
+        {
+          "problemId": "tp_prob_002",
+          "difficulty": "Medium",
+          "question": "∫sin(3x+1)dx bằng:",
+          "options": [
+            "A) -cos(3x+1)/3+C",
+            "B) cos(3x+1)+C",
+            "C) -3cos(3x+1)+C",
+            "D) cos(3x+1)/3+C"
+          ],
+          "correctAnswer": "A",
+          "solution": "Đặt u=3x+1, du=3dx. ∫sin(u)·du/3 = -cos(u)/3 + C",
+          "points": 15
+        },
+        {
+          "problemId": "tp_prob_003",
+          "difficulty": "Hard",
+          "question": "∫x·e^x dx bằng:",
+          "options": [
+            "A) xe^x-e^x+C",
+            "B) xe^x+C",
+            "C) e^x(x+1)+C",
+            "D) x²e^x/2+C"
+          ],
+          "correctAnswer": "A",
+          "solution": "Từng phần: u=x, dv=e^x dx → du=dx, v=e^x.\n∫xe^x dx = xe^x - ∫e^x dx = xe^x - e^x + C",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_03_02",
+      "sectionName": "Tích phân xác định",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "tp_005",
+          "name": "Công thức Newton-Leibniz",
+          "formula": "∫ₐᵇ f(x)dx = F(b) - F(a)"
+        },
+        {
+          "id": "tp_006",
+          "name": "Tính chất tích phân",
+          "properties": [
+            "∫ₐᵃ f(x)dx = 0",
+            "∫ₐᵇ f(x)dx = -∫ᵇₐ f(x)dx",
+            "∫ₐᵇ kf(x)dx = k·∫ₐᵇ f(x)dx",
+            "∫ₐᶜ f(x)dx = ∫ₐᵇ f(x)dx + ∫ᵇᶜ f(x)dx"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tp_prob_004",
+          "difficulty": "Easy",
+          "question": "∫₀² (2x+1)dx bằng:",
+          "options": [
+            "A) 6",
+            "B) 5",
+            "C) 4",
+            "D) 8"
+          ],
+          "correctAnswer": "A",
+          "solution": "[x²+x]₀² = (4+2) - 0 = 6",
+          "points": 10
+        },
+        {
+          "problemId": "tp_prob_005",
+          "difficulty": "Easy",
+          "question": "∫₀^π sinx dx bằng:",
+          "options": [
+            "A) 0",
+            "B) 1",
+            "C) 2",
+            "D) -2"
+          ],
+          "correctAnswer": "C",
+          "solution": "[-cosx]₀^π = -cosπ - (-cos0) = 1+1 = 2",
+          "points": 10
+        },
+        {
+          "problemId": "tp_prob_006",
+          "difficulty": "Medium",
+          "question": "∫₁ᵉ (1/x)dx bằng:",
+          "options": [
+            "A) 1",
+            "B) e",
+            "C) 0",
+            "D) ln(e)=1"
+          ],
+          "correctAnswer": "A",
+          "solution": "[ln|x|]₁ᵉ = ln(e) - ln(1) = 1 - 0 = 1",
+          "points": 15
+        },
+        {
+          "problemId": "tp_prob_007",
+          "difficulty": "Hard",
+          "question": "∫₀^(π/2) x·cosx dx bằng:",
+          "options": [
+            "A) π/2-1",
+            "B) 1",
+            "C) π/2",
+            "D) 0"
+          ],
+          "correctAnswer": "A",
+          "solution": "Từng phần: u=x, dv=cosx dx.\n= [x·sinx]₀^(π/2) - ∫₀^(π/2) sinx dx\n= π/2·1 - [-cosx]₀^(π/2)\n= π/2 - (0+1) = π/2 - 1",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_03_03",
+      "sectionName": "Ứng dụng: Diện tích hình phẳng",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "tp_007",
+          "name": "Diện tích giới hạn bởi đường cong và Ox",
+          "formula": "S = ∫ₐᵇ |f(x)| dx"
+        },
+        {
+          "id": "tp_008",
+          "name": "Diện tích giới hạn bởi 2 đường cong",
+          "formula": "S = ∫ₐᵇ |f(x) - g(x)| dx",
+          "note": "a, b là hoành độ giao điểm"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tp_prob_008",
+          "difficulty": "Easy",
+          "question": "Diện tích hình phẳng giới hạn bởi y=x², Ox, x=0, x=2 là:",
+          "options": [
+            "A) 4/3",
+            "B) 8/3",
+            "C) 4",
+            "D) 2"
+          ],
+          "correctAnswer": "B",
+          "solution": "S = ∫₀² x²dx = [x³/3]₀² = 8/3",
+          "points": 10
+        },
+        {
+          "problemId": "tp_prob_009",
+          "difficulty": "Medium",
+          "question": "Diện tích giới hạn bởi y=x² và y=2x là:",
+          "options": [
+            "A) 1/3",
+            "B) 2/3",
+            "C) 4/3",
+            "D) 1"
+          ],
+          "correctAnswer": "C",
+          "solution": "x²=2x → x=0,2. S=∫₀²(2x-x²)dx = [x²-x³/3]₀² = 4-8/3 = 4/3",
+          "points": 15
+        },
+        {
+          "problemId": "tp_prob_010",
+          "difficulty": "Hard",
+          "question": "Diện tích giới hạn bởi y=sinx, y=cosx, x=0, x=π/2 là:",
+          "options": [
+            "A) 2√2-2",
+            "B) 2-√2",
+            "C) √2",
+            "D) 2(√2-1)"
+          ],
+          "correctAnswer": "D",
+          "solution": "sinx=cosx tại x=π/4. Trên [0;π/4]: cosx>sinx. Trên [π/4;π/2]: sinx>cosx.\nS = ∫₀^(π/4)(cosx-sinx)dx + ∫_(π/4)^(π/2)(sinx-cosx)dx\n= [sinx+cosx]₀^(π/4) + [-cosx-sinx]_(π/4)^(π/2)\n= (√2-1) + (-1+√2) = 2√2-2 = 2(√2-1)",
+          "points": 25
+        }
+      ]
+    },
+    {
+      "sectionId": "calc_12_03_04",
+      "sectionName": "Ứng dụng: Thể tích vật thể tròn xoay",
+      "order": 4,
+      "concepts": [
+        {
+          "id": "tp_009",
+          "name": "Thể tích tròn xoay quanh Ox",
+          "formula": "V = π·∫ₐᵇ [f(x)]² dx"
+        },
+        {
+          "id": "tp_010",
+          "name": "Thể tích tròn xoay quanh Oy",
+          "formula": "V = π·∫_c^d [g(y)]² dy (với x = g(y))"
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tp_prob_011",
+          "difficulty": "Medium",
+          "question": "Thể tích khối tròn xoay khi quay y=√x (0≤x≤4) quanh Ox:",
+          "options": [
+            "A) 8π",
+            "B) 4π",
+            "C) 16π",
+            "D) 2π"
+          ],
+          "correctAnswer": "A",
+          "solution": "V = π∫₀⁴ (√x)²dx = π∫₀⁴ xdx = π[x²/2]₀⁴ = 8π",
+          "points": 15
+        },
+        {
+          "problemId": "tp_prob_012",
+          "difficulty": "Hard",
+          "question": "Thể tích khối tròn xoay khi quay y=x² và y=x quanh Ox:",
+          "options": [
+            "A) π/6",
+            "B) 2π/15",
+            "C) π/5",
+            "D) π/3"
+          ],
+          "correctAnswer": "B",
+          "solution": "V = π∫₀¹(x²-(x²)²)dx = π∫₀¹(x²-x⁴)dx = π[x³/3-x⁵/5]₀¹ = π(1/3-1/5) = 2π/15",
+          "points": 25
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Quên +C khi tìm nguyên hàm",
+      "correction": "Nguyên hàm LUÔN có +C"
+    },
+    {
+      "mistake": "Nhầm dấu khi tích phân sinx",
+      "correction": "∫sinx dx = -cosx + C (dấu trừ)"
+    },
+    {
+      "mistake": "Không lấy trị tuyệt đối khi tính diện tích",
+      "correction": "S = ∫|f(x)|dx, không phải ∫f(x)dx"
+    },
+    {
+      "mistake": "Quên bình phương khi tính thể tích tròn xoay",
+      "correction": "V = π∫[f(x)]²dx"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "tp_quiz_01",
+      "title": "Kiểm tra: Nguyên hàm & Tích phân",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "tp_prob_001"
+        },
+        {
+          "ref": "tp_prob_004"
+        },
+        {
+          "ref": "tp_prob_005"
+        },
+        {
+          "ref": "tp_prob_006"
+        },
+        {
+          "ref": "tp_prob_008"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

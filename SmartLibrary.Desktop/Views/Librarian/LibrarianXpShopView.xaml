@@ -1,0 +1,135 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Librarian.LibrarianXpShopView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Loaded="UserControl_Loaded" KeyDown="UserControl_KeyDown" Focusable="True">
+    <Grid Background="{DynamicResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="🎁 Phê duyệt và phát quà tích lũy XP" ActionButtonText=""/>
+
+        <Grid Grid.Row="1" Margin="24">
+            <Border Style="{StaticResource CardBorder}" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                        <TextBlock Text="📋 Danh sách học sinh chờ nhận quà" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Nhập mã SSO của học sinh hoặc kiểm tra danh sách bên dưới, trao quà thực tế rồi nhấn xác nhận." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Search & Controls Bar -->
+                    <Grid Grid.Row="1" Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Search Box -->
+                        <Grid Grid.Column="0" Margin="0,0,16,0">
+                            <TextBox x:Name="TxtSearch" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" 
+                                     Style="{StaticResource ModernInputStyle}" Height="38"
+                                     Padding="12,10" VerticalContentAlignment="Center" TabIndex="1"
+                                     ToolTip="Nhấn Ctrl+F để tìm kiếm nhanh (Giới hạn 100 ký tự)" MaxLength="100"/>
+                            <TextBlock Text="🔍 Nhập mã SSO, họ tên, hoặc tên quà tặng để tìm kiếm..." 
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="14" IsHitTestVisible="False"
+                                       VerticalAlignment="Center" Margin="14,0,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=TxtSearch}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+
+                        <Button Grid.Column="1" Content="🔄 Làm mới" Command="{Binding LoadPendingCommand}" Style="{StaticResource SecondaryButton}" Height="38" Padding="16,0" TabIndex="2"/>
+                    </Grid>
+
+                    <Grid Grid.Row="2">
+                        <DataGrid Style="{StaticResource ModernDataGrid}" ItemsSource="{Binding PendingCollections}" AutoGenerateColumns="False" IsReadOnly="True"
+                                  VirtualizingStackPanel.IsVirtualizing="True"
+                                  VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                  ScrollViewer.CanContentScroll="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Mã SSO" Binding="{Binding StudentSsoId}" Width="120">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Học sinh" Binding="{Binding StudentName}" Width="1.5*"/>
+                                <DataGridTextColumn Header="Món quà yêu cầu" Binding="{Binding RewardName}" Width="2*"/>
+                                <DataGridTextColumn Header="Chi phí XP" Binding="{Binding XpCost}" Width="110">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Thời gian đổi" Binding="{Binding FormattedDate}" Width="160">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTemplateColumn Header="Thao tác" Width="140">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="Xác nhận phát" 
+                                                    Command="{Binding DataContext.ApproveCollectionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource SuccessButton}" Padding="8,4" Cursor="Hand">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="4"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Empty State -->
+                        <TextBlock Text="🎁 Hiện tại chưa có yêu cầu đổi quà nào. Hãy khuyến khích các em tích cực đọc sách để tích lũy XP đổi những phần quà hấp dẫn nhé! 🌟"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" FontSize="14" FontStyle="Italic"
+                                   TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" Margin="24">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding PendingCollections.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

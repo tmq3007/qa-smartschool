@@ -1,0 +1,158 @@
+﻿{
+    "metadata": {
+        "chapterId": "g06_ch05",
+        "chapterName": "Bài 5: Điểm tựa tinh thần",
+        "grade": 6,
+        "totalProblems": 3,
+        "totalSections": 3
+    },
+    "sections": [
+        {
+            "sectionId": "s_g6_ch4_0",
+            "sectionName": "Thầy bói xem voi",
+            "concepts": [
+                {
+                    "name": "Giới Thiệu Tác Phẩm",
+                    "theorem": "Tác phẩm 'Thầy bói xem voi' là một phần quan trọng trong chương trình học, mang những nét nghệ thuật đặc trưng và giá trị nhân văn sâu sắc.",
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\deo_ngang.png"
+                    ]
+                },
+                {
+                    "name": "Nội Dung Chính",
+                    "definition": "Tác phẩm phản ánh góc nhìn tinh tế của tác giả về con người, thiên nhiên và xã hội. Qua 'Thầy bói xem voi', người đọc được bồi dưỡng tình yêu quê hương, gia đình và tinh thần vươn lên.",
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\bac_ho_thu.png"
+                    ]
+                },
+                {
+                    "name": "Giá Trị Nghệ Thuật & Bài Học",
+                    "examples": [
+                        "**Đặc sắc nghệ thuật**: Ngôn từ sống động, cấu trúc chặt chẽ, giàu sức gợi hình.",
+                        "**Bài học**: Rút ra những triết lý nhân sinh quan quý báu để hoàn thiện bản thân."
+                    ],
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\pham_tien_duat.png"
+                    ]
+                }
+            ],
+            "problems": [
+                {
+                    "id": "p_random",
+                    "question": "Đâu là giá trị lớn nhất trong bài học 'Thầy bói xem voi'?",
+                    "difficulty": "Medium",
+                    "options": [
+                        "Khám phá các quy luật tự nhiên, toán học.",
+                        "Giá trị nhân văn, nuôi dưỡng tình cảm và đạo đức tốt đẹp.",
+                        "Hướng dẫn thực hành các kỹ năng thực dụng.",
+                        "Tìm hiểu về không gian và vũ trụ."
+                    ],
+                    "answer": "Giá trị nhân văn, nuôi dưỡng tình cảm và đạo đức tốt đẹp.",
+                    "hints": [
+                        "Chú ý mục đích chính của môn Ngữ Văn."
+                    ],
+                    "explanation": "Môn Ngữ Văn luôn hướng tới việc bồi dưỡng tâm hồn và nhân cách con người."
+                }
+            ],
+            "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/"
+        },
+        {
+            "sectionId": "s_g6_ch4_1",
+            "sectionName": "Đẽo cày giữa đường",
+            "concepts": [
+                {
+                    "name": "Giới Thiệu Tác Phẩm",
+                    "theorem": "Tác phẩm 'Đẽo cày giữa đường' là một phần quan trọng trong chương trình học, mang những nét nghệ thuật đặc trưng và giá trị nhân văn sâu sắc.",
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\chinh_huu.png"
+                    ]
+                },
+                {
+                    "name": "Nội Dung Chính",
+                    "definition": "Tác phẩm phản ánh góc nhìn tinh tế của tác giả về con người, thiên nhiên và xã hội. Qua 'Đẽo cày giữa đường', người đọc được bồi dưỡng tình yêu quê hương, gia đình và tinh thần vươn lên.",
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\que_huong.png"
+                    ]
+                },
+                {
+                    "name": "Giá Trị Nghệ Thuật & Bài Học",
+                    "examples": [
+                        "**Đặc sắc nghệ thuật**: Ngôn từ sống động, cấu trúc chặt chẽ, giàu sức gợi hình.",
+                        "**Bài học**: Rút ra những triết lý nhân sinh quan quý báu để hoàn thiện bản thân."
+                    ],
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\de_men.png"
+                    ]
+                }
+            ],
+            "problems": [
+                {
+                    "id": "p_random",
+                    "question": "Đâu là giá trị lớn nhất trong bài học 'Đẽo cày giữa đường'?",
+                    "difficulty": "Medium",
+                    "options": [
+                        "Khám phá các quy luật tự nhiên, toán học.",
+                        "Giá trị nhân văn, nuôi dưỡng tình cảm và đạo đức tốt đẹp.",
+                        "Hướng dẫn thực hành các kỹ năng thực dụng.",
+                        "Tìm hiểu về không gian và vũ trụ."
+                    ],
+                    "answer": "Giá trị nhân văn, nuôi dưỡng tình cảm và đạo đức tốt đẹp.",
+                    "hints": [
+                        "Chú ý mục đích chính của môn Ngữ Văn."
+                    ],
+                    "explanation": "Môn Ngữ Văn luôn hướng tới việc bồi dưỡng tâm hồn và nhân cách con người."
+                }
+            ],
+            "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/"
+        },
+        {
+            "sectionId": "s_g6_ch4_2",
+            "sectionName": "Ếch ngồi đáy giếng",
+            "concepts": [
+                {
+                    "name": "Giới Thiệu Tác Phẩm",
+                    "theorem": "Tác phẩm 'Ếch ngồi đáy giếng' là một phần quan trọng trong chương trình học, mang những nét nghệ thuật đặc trưng và giá trị nhân văn sâu sắc.",
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\chinh_huu.png"
+                    ]
+                },
+                {
+                    "name": "Nội Dung Chính",
+                    "definition": "Tác phẩm phản ánh góc nhìn tinh tế của tác giả về con người, thiên nhiên và xã hội. Qua 'Ếch ngồi đáy giếng', người đọc được bồi dưỡng tình yêu quê hương, gia đình và tinh thần vươn lên.",
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\truong_em.png"
+                    ]
+                },
+                {
+                    "name": "Giá Trị Nghệ Thuật & Bài Học",
+                    "examples": [
+                        "**Đặc sắc nghệ thuật**: Ngôn từ sống động, cấu trúc chặt chẽ, giàu sức gợi hình.",
+                        "**Bài học**: Rút ra những triết lý nhân sinh quan quý báu để hoàn thiện bản thân."
+                    ],
+                    "imageUrls": [
+                        "d:\\JOB\\QA SmartSchool\\QA SmartClass_Document\\QASmartClass_Dev\\QASmartClass\\Resources\\LiteratureData\\Images\\rung_xa_nu.png"
+                    ]
+                }
+            ],
+            "problems": [
+                {
+                    "id": "p_random",
+                    "question": "Đâu là giá trị lớn nhất trong bài học 'Ếch ngồi đáy giếng'?",
+                    "difficulty": "Medium",
+                    "options": [
+                        "Khám phá các quy luật tự nhiên, toán học.",
+                        "Giá trị nhân văn, nuôi dưỡng tình cảm và đạo đức tốt đẹp.",
+                        "Hướng dẫn thực hành các kỹ năng thực dụng.",
+                        "Tìm hiểu về không gian và vũ trụ."
+                    ],
+                    "answer": "Giá trị nhân văn, nuôi dưỡng tình cảm và đạo đức tốt đẹp.",
+                    "hints": [
+                        "Chú ý mục đích chính của môn Ngữ Văn."
+                    ],
+                    "explanation": "Môn Ngữ Văn luôn hướng tới việc bồi dưỡng tâm hồn và nhân cách con người."
+                }
+            ],
+            "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-6-1/1/1/4/"
+        }
+    ]
+}

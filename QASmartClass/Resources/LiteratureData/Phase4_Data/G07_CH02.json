@@ -1,0 +1,140 @@
+{
+  "metadata": {
+    "chapterId": "g07_ch02",
+    "chapterName": "Bài 2: Thơ trữ tình",
+    "grade": 7,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 4
+  },
+  "sections": [
+    {
+      "sectionId": "s_g7_ch2_0",
+      "sectionName": "Cảnh khuya — Hồ Chí Minh",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-7-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g7_canh_khuya.mp3",
+      "concepts": [
+        {
+          "name": "Hoàn cảnh sáng tác",
+          "theorem": "Bài thơ được Bác Hồ sáng tác năm 1947 tại chiến khu Việt Bắc, trong những năm đầu của cuộc kháng chiến chống Pháp đầy gian khổ."
+        },
+        {
+          "name": "Hai câu đầu: Cảnh thiên nhiên",
+          "definition": "Tiếng suối trong như tiếng hát xa,\nTrăng lồng cổ thụ bóng lồng hoa.\n→ Bức tranh thiên nhiên Việt Bắc tuyệt đẹp, thơ mộng, mang âm hưởng cổ điển nhưng lại rất tươi mới, gần gũi."
+        },
+        {
+          "name": "Hai câu cuối: Tâm trạng nhà thơ",
+          "definition": "Cảnh khuya như vẽ người chưa ngủ,\nChưa ngủ vì lo nỗi nước nhà.\n→ Sự chuyển đổi bất ngờ từ thi sĩ (say mê cảnh đẹp) sang chiến sĩ (lo âu việc nước)."
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Biện pháp tu từ nào được sử dụng trong câu 'Tiếng suối trong như tiếng hát xa'?",
+          "difficulty": "Easy",
+          "options": [
+            "So sánh âm thanh của tự nhiên (tiếng suối) với âm thanh của con người (tiếng hát)",
+            "Nhân hóa dòng suối biết hát",
+            "Ẩn dụ tiếng suối cho tiếng nói của nhân dân",
+            "Nói quá về độ vang của tiếng suối"
+          ],
+          "answer": "So sánh âm thanh của tự nhiên (tiếng suối) với âm thanh của con người (tiếng hát)",
+          "hints": ["Có từ 'như' xuất hiện trong câu thơ."],
+          "explanation": "Bác Hồ dùng âm thanh của con người (tiếng hát) để so sánh với âm thanh tự nhiên (tiếng suối). Điều này làm cho cảnh rừng Việt Bắc không lạnh lẽo, hoang vu mà trở nên gần gũi, ấm áp và mang hơi thở của sự sống."
+        },
+        {
+          "id": "p2",
+          "question": "Điệp từ 'lồng' trong câu 'Trăng lồng cổ thụ bóng lồng hoa' gợi lên bức tranh thiên nhiên như thế nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Sự hòa quyện, đan xen chặt chẽ giữa các sự vật (trăng, cây, hoa) tạo nên một bức tranh huyền ảo, lung linh",
+            "Sự chia cắt, xa cách giữa ánh trăng và mặt đất",
+            "Hình ảnh những chiếc lồng chim treo trên cành cây cổ thụ",
+            "Sự tĩnh lặng tuyệt đối của đêm rừng"
+          ],
+          "answer": "Sự hòa quyện, đan xen chặt chẽ giữa các sự vật (trăng, cây, hoa) tạo nên một bức tranh huyền ảo, lung linh",
+          "hints": ["Từ 'lồng' có nghĩa là đan xen vào nhau, chồng lên nhau."],
+          "explanation": "Từ 'lồng' lặp lại 2 lần vẽ nên một bức tranh nhiều tầng lớp: ánh trăng chiếu qua tán cây, bóng lá in xuống những khóm hoa. Các sự vật không đứng rời rạc mà ôm ấp, đan xen vào nhau tạo nên vẻ đẹp lung linh, ấm áp của đêm rừng."
+        },
+        {
+          "id": "p3",
+          "question": "Tâm trạng 'chưa ngủ' của Bác trong hai câu cuối xuất phát từ những lý do nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Vừa say mê thao thức trước cảnh thiên nhiên tuyệt đẹp (tâm hồn thi sĩ), vừa trăn trở lo âu cho vận mệnh đất nước (trách nhiệm chiến sĩ)",
+            "Chỉ vì công việc quân cơ quá nhiều không có thời gian ngủ",
+            "Vì tiếng suối chảy quá ồn ào khiến Bác không ngủ được",
+            "Vì thời tiết chiến khu Việt Bắc quá lạnh"
+          ],
+          "answer": "Vừa say mê thao thức trước cảnh thiên nhiên tuyệt đẹp (tâm hồn thi sĩ), vừa trăn trở lo âu cho vận mệnh đất nước (trách nhiệm chiến sĩ)",
+          "hints": ["Chú ý hai từ 'chưa ngủ' được lặp lại ở cuối câu 3 và đầu câu 4 (điệp vòng)."],
+          "explanation": "Câu 3 (Chưa ngủ vì cảnh đẹp) là tâm hồn thi sĩ nhạy cảm. Câu 4 (Chưa ngủ vì lo việc nước) là trái tim người chiến sĩ vĩ đại. Hai con người này hòa quyện trong Bác, cho thấy dù bận trăm công nghìn việc, Bác vẫn không đánh mất tình yêu thiên nhiên."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g7_ch2_1",
+      "sectionName": "Tiếng gà trưa — Xuân Quỳnh",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-7-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g7_tieng_ga_trua.mp3",
+      "concepts": [
+        {
+          "name": "Giới thiệu",
+          "theorem": "Bài thơ được viết trong thời kỳ kháng chiến chống Mỹ. Tiếng gà trưa trên đường hành quân đã đánh thức những kỷ niệm tuổi thơ êm đềm bên người bà kính yêu."
+        },
+        {
+          "name": "Kỷ niệm tuổi thơ",
+          "definition": "Tiếng gà trưa\nỔ rơm hồng những trứng\nNày con gà mái mơ\nKhắp mình hoa đốm trắng...\nTiếng gà trưa\nCó tiếng bà vẫn mắng:\n— Gà đẻ mà mày nhìn\nRồi sau này lang mặt!"
+        },
+        {
+          "name": "Mục đích chiến đấu",
+          "definition": "Cháu chiến đấu hôm nay\nVì lòng yêu Tổ quốc\nVì xóm làng thân thuộc\nBà ơi, cũng vì bà\nVì tiếng gà cục tác\nỔ trứng hồng tuổi thơ."
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Âm thanh 'tiếng gà trưa' đóng vai trò gì trong bài thơ?",
+          "difficulty": "Easy",
+          "options": [
+            "Là sợi dây liên kết, gọi về những kỷ niệm tuổi thơ tươi đẹp và khơi gợi tình cảm bà cháu sâu nặng",
+            "Là âm thanh báo hiệu giờ nghỉ ngơi của bộ đội",
+            "Là tiếng gọi của quê hương giục giã người lính hành quân nhanh hơn",
+            "Là âm thanh làm người lính xao nhãng nhiệm vụ"
+          ],
+          "answer": "Là sợi dây liên kết, gọi về những kỷ niệm tuổi thơ tươi đẹp và khơi gợi tình cảm bà cháu sâu nặng",
+          "hints": ["Mỗi lần nghe tiếng gà, người chiến sĩ lại nhớ về ai?"],
+          "explanation": "Tiếng gà trưa là điểm tựa cảm xúc. Nó xuyên suốt bài thơ, xóa nhòa khoảng cách thời gian và không gian, đưa người chiến sĩ từ hiện tại gian khổ về với quá khứ êm đềm, ấm áp bên bà."
+        },
+        {
+          "id": "p2",
+          "question": "Hình ảnh người bà hiện lên qua những chi tiết nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Tần tảo, chắt chiu từng quả trứng, lo lắng cho cháu (mắng yêu khi cháu nhìn gà đẻ), soi bóng mùa đông để may quần áo mới cho cháu",
+            "Dũng cảm tham gia dân công hỏa tuyến để nuôi bộ đội",
+            "Nghiêm khắc, thường xuyên đánh mắng khi cháu làm sai",
+            "Giàu có, mua cho cháu nhiều đồ chơi đẹp"
+          ],
+          "answer": "Tần tảo, chắt chiu từng quả trứng, lo lắng cho cháu (mắng yêu khi cháu nhìn gà đẻ), soi bóng mùa đông để may quần áo mới cho cháu",
+          "hints": ["Nhớ lại chi tiết: 'Bà lo đàn gà toi / Mong trời đừng sương muối' và chi tiết cái quần chéo go."],
+          "explanation": "Người bà trong thơ Xuân Quỳnh là hiện thân của người phụ nữ nông thôn Việt Nam: nghèo khó nhưng chắt chiu, tần tảo, dành trọn vẹn tình yêu thương và sự hy sinh cho con cháu."
+        },
+        {
+          "id": "p3",
+          "question": "Khổ thơ cuối bài ('Cháu chiến đấu hôm nay...') cho ta hiểu gì về tình yêu nước của người lính?",
+          "difficulty": "Hard",
+          "options": [
+            "Tình yêu Tổ quốc lớn lao bắt nguồn từ những tình cảm vô cùng bình dị, gần gũi: tình yêu gia đình, yêu người bà và yêu 'ổ trứng hồng tuổi thơ'",
+            "Tình yêu nước chỉ nảy sinh khi quê hương bị xâm lăng",
+            "Người lính chiến đấu chỉ vì mong muốn trả thù cho xóm làng",
+            "Lòng yêu nước luôn phải gắn liền với những lý tưởng chính trị cao siêu"
+          ],
+          "answer": "Tình yêu Tổ quốc lớn lao bắt nguồn từ những tình cảm vô cùng bình dị, gần gũi: tình yêu gia đình, yêu người bà và yêu 'ổ trứng hồng tuổi thơ'",
+          "hints": ["Lý do chiến đấu được liệt kê từ lớn đến nhỏ: Tổ quốc -> xóm làng -> bà -> tiếng gà."],
+          "explanation": "Xuân Quỳnh đã cụ thể hóa khái niệm 'Tổ quốc' trừu tượng thành những gì thân thuộc nhất. Tổ quốc không xa xôi mà chính là xóm làng, là người bà, là tiếng gà trưa. Bảo vệ Tổ quốc chính là bảo vệ những điều bình dị và thiêng liêng ấy."
+        }
+      ]
+    }
+  ]
+}

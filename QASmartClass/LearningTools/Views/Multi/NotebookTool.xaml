@@ -1,0 +1,578 @@
+﻿<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Multi.NotebookTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="1200"
+             Background="{DynamicResource WindowBackgroundBrush}">
+             
+    <controls:BaseToolControl.Resources>
+        <Style x:Key="ColorBtn" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="15" 
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.3"/>
+                            </Border.Effect>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        
+        <Style x:Key="ActionBtn" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <Style x:Key="IconRadioBtn" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Opacity" Value="0.4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="15" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Opacity" Value="1.0"/>
+                    <Setter Property="Background" Value="#E3F2FD"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.8"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </controls:BaseToolControl.Resources>
+ 
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+ 
+        <!-- MAIN LAYOUT (Master-Detail) -->
+        <Grid Grid.Row="0" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU (Forest Green themed) -->
+            <Grid Grid.Column="0" Background="#1F3A24">
+                <!-- Multi Category: Orange hover/selected -->
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#FFE0B2"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#E65100"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📚" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextNotebook" Text="Sổ tay ghi chép" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#2E7D32"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="0">
+                <!-- VIEW 0: HƯỚNG DẪN & GHI CHÚ -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" Margin="16">
+                    <StackPanel Background="Transparent">
+<Border Background="White" CornerRadius="16" Padding="28,24" BorderBrush="#E0E0E0" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.06"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <TextBlock Text="❓ HƯỚNG DẪN SỬ DỤNG SỔ TAY MỞ RỘNG" FontSize="20" FontWeight="Bold" Foreground="#1976D2" Margin="0,0,0,16"/>
+                                <TextBlock Text="Chào mừng bạn đến với Sổ tay mở rộng (Extended Notebook)! Công cụ giúp giáo viên và học sinh ghi chép bài giảng, vẽ sơ đồ và lưu trữ tài liệu học tập một cách dễ dàng, bảo mật." TextWrapping="Wrap" FontSize="14" Foreground="#424242" Margin="0,0,0,15" LineHeight="20"/>
+
+                                <!-- Dành cho Giáo viên -->
+                                <Border BorderBrush="#1976D2" BorderThickness="4,0,0,0" Padding="12,5" Margin="0,0,0,15" Background="#E3F2FD">
+                                    <StackPanel>
+                                        <TextBlock Text="👩‍🏫 DÀNH CHO GIÁO VIÊN (HỖ TRỢ GIẢNG DẠY)" FontSize="15" FontWeight="Bold" Foreground="#0D47A1" Margin="0,0,0,8"/>
+                                        <TextBlock Text="• Giảng bài sinh động: Sử dụng loại giấy 'Bảng đen' (chủ đề Bảng đen) kết hợp với màu nét vẽ trắng để mô phỏng giống bảng viết phấn thực tế ở lớp học." TextWrapping="Wrap" FontSize="13" Foreground="#333333" Margin="0,0,0,6"/>
+                                        <TextBlock Text="• Xuất bài giảng: Sử dụng nút '💾 Xuất ảnh' để lưu nhanh trang viết hiện tại thành file ảnh PNG ra màn hình Desktop. Bạn có thể gửi file ảnh này qua Zalo, Email hoặc LMS để học sinh tự ôn bài tại nhà." TextWrapping="Wrap" FontSize="13" Foreground="#333333" Margin="0,0,0,6"/>
+                                        <TextBlock Text="• Phân phối bài mẫu: Tạo sẵn các cuốn sổ tay theo chủ đề môn học (Toán học, Vật lý, Ngữ văn) để làm tài liệu mẫu cho cả lớp." TextWrapping="Wrap" FontSize="13" Foreground="#333333"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Dành cho Học sinh -->
+                                <Border BorderBrush="#388E3C" BorderThickness="4,0,0,0" Padding="12,5" Margin="0,0,0,15" Background="#E8F5E9">
+                                    <StackPanel>
+                                        <TextBlock Text="🎒 DÀNH CHO HỌC SINH (HỌC TẬP VÀ GHI CHÚ)" FontSize="15" FontWeight="Bold" Foreground="#1B5E20" Margin="0,0,0,8"/>
+                                        <TextBlock Text="• Tạo vở theo môn học: Tạo các cuốn sổ riêng biệt cho từng môn. Chọn màu bìa da/mịn và màu giấy phù hợp (ví dụ: giấy Ô vuông cho Toán, giấy Chấm bi cho sơ đồ tư duy)." TextWrapping="Wrap" FontSize="13" Foreground="#333333" Margin="0,0,0,6"/>
+                                        <TextBlock Text="• Theo dõi cảm xúc học tập: Điền Ngày học, chọn Buổi học, và tích chọn biểu tượng Thời tiết ☀️/🌧️ cùng Tâm trạng 😊/😢 của mỗi ngày ở đầu trang giấy để tăng động lực học tập." TextWrapping="Wrap" FontSize="13" Foreground="#333333" Margin="0,0,0,6"/>
+                                        <TextBlock Text="• Sử dụng phím tắt nhanh: Khi viết vẽ, nhấn 'Ctrl + Z' để Hoàn tác (Undo) nét vẽ bị lỗi, hoặc 'Ctrl + Y' để Làm lại (Redo) nét vẽ." TextWrapping="Wrap" FontSize="13" Foreground="#333333"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Hướng dẫn kỹ thuật -->
+                                <Border BorderBrush="#FBC02D" BorderThickness="4,0,0,0" Padding="12,5" Margin="0,0,0,15" Background="#FFFDE7">
+                                    <StackPanel>
+                                        <TextBlock Text="⚙️ PHÍM TẮT &amp; THAO TÁC NHANH" FontSize="15" FontWeight="Bold" Foreground="#F57F17" Margin="0,0,0,8"/>
+                                        <TextBlock Text="• Ctrl + Z: Hoàn tác nét vẽ vừa vẽ." FontSize="13" Foreground="#333333" Margin="0,0,0,4"/>
+                                        <TextBlock Text="• Ctrl + Y: Làm lại nét vẽ vừa hoàn tác." FontSize="13" Foreground="#333333" Margin="0,0,0,4"/>
+                                        <TextBlock Text="• Bảng đen: Khi chọn giấy nền Bảng đen, màu bút tự động đổi sang màu Trắng để dễ viết vẽ. Khi chọn giấy sáng màu, bút tự đổi về màu Đen." TextWrapping="Wrap" FontSize="13" Foreground="#333333" Margin="0,0,0,4"/>
+                                        <TextBlock Text="• Lưu dữ liệu: Chương trình tự động lưu nét vẽ và thông tin trang ghi chú của bạn vào CSDL SQLite khi bạn lật trang hoặc quay về kệ sách." TextWrapping="Wrap" FontSize="13" Foreground="#333333"/>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <!-- Dữ liệu mẫu tương tác -->
+                                <TextBlock Text="💡 CÁC SỔ MẪU ĐÃ CÓ TRÊN KỆ SÁCH:" FontSize="14" FontWeight="Bold" Foreground="#424242" Margin="0,5,0,8"/>
+                                <TextBlock Text="1. Sổ Toán Học (Giấy kẻ ô vuông): Phù hợp làm toán, vẽ đồ thị hình học." FontSize="13" Foreground="#555555" Margin="0,0,0,4"/>
+                                <TextBlock Text="2. Nhật ký cá nhân (Giấy nền hồng, cute): Ghi chép nhật ký, rèn luyện cảm xúc học sinh." FontSize="13" Foreground="#555555" Margin="0,0,0,4"/>
+                                <TextBlock Text="3. Nháp Lý Hóa (Giấy bảng đen sẫm màu): Bảng viết nháp nhanh bằng mực trắng bảo vệ mắt." FontSize="13" Foreground="#555555" Margin="0,0,0,4"/>
+                                <TextBlock Text="4. Ghi chú họp &amp; Ý tưởng sáng tạo: Mẫu vở ghi chép thanh lịch hoặc giấy trơn vẽ tự do." FontSize="13" Foreground="#555555"/>
+                            </StackPanel>
+                        </Border>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: KỆ SÁCH VÀ EDITOR CHÍNH -->
+                <Grid x:Name="viewPractice" Visibility="Visible">
+                    <!-- LIBRARY SCREEN (KỆ SÁCH) -->
+                    <Grid x:Name="LibraryScreen" Visibility="Visible" Margin="40">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <DockPanel Margin="0,0,0,30">
+                            <TextBlock Text="📚 Kệ Sách Của Tôi" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            <Button x:Name="btnNewNotebook" Content="➕ Tạo sổ mới" DockPanel.Dock="Right" HorizontalAlignment="Right"
+                                      Padding="20,10" Background="#4CAF50" Foreground="White" BorderThickness="0" 
+                                      FontSize="16" FontWeight="SemiBold" Cursor="Hand" Click="BtnNewNotebook_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#43A047"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </DockPanel>
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="NotebookList">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <!-- Biểu diễn cuốn sổ -->
+                                        <Border Width="160" Height="220" Margin="15" CornerRadius="8,15,15,8" Cursor="Hand" MouseLeftButtonDown="Notebook_Click" Tag="{Binding Id}">
+                                            <Border.Background>
+                                                <SolidColorBrush Color="{Binding CoverColor}"/>
+                                            </Border.Background>
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="12" ShadowDepth="6" Opacity="0.3" Direction="315"/>
+                                            </Border.Effect>
+                                            
+                                            <Grid>
+                                                <!-- Texture Overlay -->
+                                                <Border CornerRadius="8,15,15,8">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding CoverType}" Value="Leather">
+                                                                    <Setter Property="Background">
+                                                                        <Setter.Value>
+                                                                            <RadialGradientBrush>
+                                                                                <GradientStop Color="#00000000" Offset="0"/>
+                                                                                <GradientStop Color="#40000000" Offset="1"/>
+                                                                            </RadialGradientBrush>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding CoverType}" Value="Texture">
+                                                                    <Setter Property="Background">
+                                                                        <Setter.Value>
+                                                                            <VisualBrush TileMode="Tile" Viewport="0,0,4,4" ViewportUnits="Absolute">
+                                                                                <VisualBrush.Visual>
+                                                                                    <Rectangle Width="2" Height="2" Fill="#10FFFFFF" Margin="1"/>
+                                                                                </VisualBrush.Visual>
+                                                                            </VisualBrush>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                </Border>
+                                                
+                                                <!-- Đường viền giả rãnh gáy sách -->
+                                                <Border Width="15" HorizontalAlignment="Left" Background="#30000000"/>
+                                                
+                                                <!-- Nút xóa sổ tay -->
+                                                <Button HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                                        Margin="0,8,8,0" Width="24" Height="24" Click="BtnDeleteNotebook_Click" 
+                                                        Tag="{Binding Id}" Cursor="Hand" ToolTip="Xóa sổ tay">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Background="#80FFFFFF" CornerRadius="12">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Content="❌"/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+                                                
+                                                <StackPanel VerticalAlignment="Center" Margin="25,10,10,10">
+                                                    <TextBlock Text="{Binding Title}" Foreground="White" FontWeight="Bold" FontSize="18" TextWrapping="Wrap" TextAlignment="Center"/>
+                                                    <Border Background="#40000000" CornerRadius="4" Padding="4,2" HorizontalAlignment="Center" Margin="0,10,0,0">
+                                                        <TextBlock Foreground="#EEEEEE" FontSize="11">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="Bìa mịn"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding CoverType}" Value="Leather">
+                                                                            <Setter Property="Text" Value="Bìa da"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding CoverType}" Value="Texture">
+                                                                            <Setter Property="Text" Value="Bìa nhám"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </Border>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!-- EDITOR SCREEN -->
+                    <Grid x:Name="EditorScreen" Visibility="Collapsed" Margin="24">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- TOOLBAR -->
+                        <Border Grid.Row="0" Background="{DynamicResource SurfaceBackground}" CornerRadius="12" Padding="16,12" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05" Color="Black"/>
+                            </Border.Effect>
+                            
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Theme Selector -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="⬅️ Trở lại" Click="BtnBackToLibrary_Click" Margin="0,0,15,0" Padding="8,4" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="14" FontWeight="SemiBold" Foreground="#1976D2"/>
+                                    <TextBlock Text="🎨 Giấy:" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0"/>
+                                    <ComboBox x:Name="cboTheme" Width="150" FontSize="14" Padding="8,4" SelectionChanged="CboTheme_SelectionChanged" VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="Dòng kẻ ngang" IsSelected="True"/>
+                                        <ComboBoxItem Content="Kẻ ô vuông"/>
+                                        <ComboBoxItem Content="Chấm bi"/>
+                                        <ComboBoxItem Content="Dễ thương"/>
+                                        <ComboBoxItem Content="Thanh lịch"/>
+                                        <ComboBoxItem Content="Bảng đen"/>
+                                        <ComboBoxItem Content="Giấy trơn"/>
+                                    </ComboBox>
+                                </StackPanel>
+                                <!-- Size Selector -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="15,0,0,0">
+                                    <TextBlock Text="📏 Khổ giấy:" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0"/>
+                                    <ComboBox x:Name="cboPaperSize" Width="130" FontSize="14" Padding="8,4" SelectionChanged="CboPaperSize_SelectionChanged" VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="Sổ ngang (A4)" IsSelected="True" Tag="1200x848"/>
+                                        <ComboBoxItem Content="Sổ dọc (A5)" Tag="848x1200"/>
+                                        <ComboBoxItem Content="Sổ vuông (1:1)" Tag="1000x1000"/>
+                                        <ComboBoxItem Content="Giấy Note dọc" Tag="600x1000"/>
+                                    </ComboBox>
+                                </StackPanel>
+                                <!-- Tools -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <TextBlock Text="Màu bút:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{DynamicResource TextPrimary}" FontWeight="SemiBold"/>
+                                    <StackPanel x:Name="PenColorPanel" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Style="{StaticResource ColorBtn}" Background="#212121" Width="30" Height="30" Margin="0,0,8,0" Click="PenColor_Click" Tag="#212121" ToolTip="Đen"/>
+                                        <Button Style="{StaticResource ColorBtn}" Background="#1976D2" Width="30" Height="30" Margin="0,0,8,0" Click="PenColor_Click" Tag="#1976D2" ToolTip="Xanh dương"/>
+                                        <Button Style="{StaticResource ColorBtn}" Background="#D32F2F" Width="30" Height="30" Margin="0,0,8,0" Click="PenColor_Click" Tag="#D32F2F" ToolTip="Đỏ"/>
+                                        <Button Style="{StaticResource ColorBtn}" Background="#388E3C" Width="30" Height="30" Margin="0,0,8,0" Click="PenColor_Click" Tag="#388E3C" ToolTip="Xanh lá"/>
+                                        <Button Style="{StaticResource ColorBtn}" Background="#FAFAFA" Width="30" Height="30" Margin="0,0,16,0" Click="PenColor_Click" Tag="#FAFAFA" ToolTip="Trắng (cho Bảng đen)"/>
+                                    </StackPanel>
+                                    
+                                    <Button x:Name="btnPen" Style="{StaticResource ActionBtn}" Content="🖊️ Viết" Margin="0,0,12,0" Click="Mode_Click" Tag="Ink" Background="#E3F2FD" BorderBrush="#2196F3"/>
+                                    <Button x:Name="btnRect" Style="{StaticResource ActionBtn}" Content="⬜ H.Chữ Nhật" Margin="0,0,12,0" Click="Mode_Click" Tag="Rectangle" ToolTip="Vẽ hình chữ nhật"/>
+                                    <Button x:Name="btnEllipse" Style="{StaticResource ActionBtn}" Content="⚪ H.Tròn" Margin="0,0,12,0" Click="Mode_Click" Tag="Ellipse" ToolTip="Vẽ hình tròn/elip"/>
+                                    <Button x:Name="btnLine" Style="{StaticResource ActionBtn}" Content="📏 Đ.Thẳng" Margin="0,0,12,0" Click="Mode_Click" Tag="Line" ToolTip="Vẽ đường thẳng"/>
+                                    <Button x:Name="btnArrow" Style="{StaticResource ActionBtn}" Content="🏹 Mũi tên" Margin="0,0,12,0" Click="Mode_Click" Tag="Arrow" ToolTip="Vẽ đường thẳng có đầu mũi tên"/>
+                                    <Button x:Name="btnText" Style="{StaticResource ActionBtn}" Content="🔤 Văn Bản" Margin="0,0,12,0" Click="Mode_Click" Tag="Text" ToolTip="Chèn hộp văn bản"/>
+                                    <Button x:Name="btnSelect" Style="{StaticResource ActionBtn}" Content="🔍 Chọn Vùng" Margin="0,0,12,0" Click="Mode_Click" Tag="Select" ToolTip="Chọn và di chuyển hình học/chữ"/>
+                                    <Button x:Name="btnHand" Style="{StaticResource ActionBtn}" Content="✋ Kéo Trang" Margin="0,0,12,0" Click="Mode_Click" Tag="Hand" ToolTip="Kéo cuộn trang giấy"/>
+                                    <Button x:Name="btnEraser" Style="{StaticResource ActionBtn}" Content="🧽 Tẩy" Margin="0,0,12,0" Click="Mode_Click" Tag="Eraser" ToolTip="Tẩy xóa nét vẽ và đối tượng"/>
+                                    <Button x:Name="btnUndo" Style="{StaticResource ActionBtn}" Content="↩️ Hoàn tác" Margin="0,0,12,0" Click="Undo_Click" ToolTip="Hoàn tác nét vẽ (Ctrl+Z)"/>
+                                    <Button x:Name="btnRedo" Style="{StaticResource ActionBtn}" Content="↪️ Làm lại" Margin="0,0,12,0" Click="Redo_Click" ToolTip="Làm lại nét vẽ (Ctrl+Y)"/>
+                                    <Button x:Name="btnExport" Style="{StaticResource ActionBtn}" Content="💾 Xuất ảnh" Margin="0,0,12,0" Click="Export_Click" ToolTip="Xuất trang ghi chú thành ảnh PNG"/>
+                                    <Button x:Name="btnHelp" Style="{StaticResource ActionBtn}" Content="❓ Hướng dẫn" Margin="0,0,12,0" Click="Help_Click" ToolTip="Hướng dẫn sử dụng công cụ" Foreground="#00796B"/>
+                                    <Button x:Name="btnClear" Style="{StaticResource ActionBtn}" Content="🗑️ Xóa trang" Click="Clear_Click" Foreground="#D32F2F"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- NOTEBOOK AREA (REALISTIC PAPER) -->
+                        <ScrollViewer Grid.Row="1" x:Name="NotebookScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#FAFAFA" Focusable="False">
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                                <Border x:Name="NotebookBorder" Width="1200" Height="848" CornerRadius="12,20,20,12" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="25" ShadowDepth="8" Opacity="0.25" Color="Black" Direction="315"/>
+                                    </Border.Effect>
+                                    
+                                    <Grid x:Name="NotebookBackgroundContainer" ClipToBounds="True">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="60" x:Name="ColBinder"/>
+                                            <ColumnDefinition Width="2" x:Name="ColMargin"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Binder / Gáy sổ -->
+                                        <Border Grid.Column="0" x:Name="BinderArea" BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
+                                            <!-- Lỗ còng sổ (Binder holes) using VisualBrush -->
+                                            <Border.Background>
+                                                <VisualBrush TileMode="Tile" Viewport="0,0,60,60" ViewportUnits="Absolute">
+                                                    <VisualBrush.Visual>
+                                                        <Grid Width="60" Height="60">
+                                                            <!-- Giấy nền (Để trống hoặc trong suốt để thấy màu giấy bên dưới) -->
+                                                            <Rectangle Fill="#12000000" Width="60" Height="60"/>
+                                                            <!-- Lỗ -->
+                                                            <Ellipse Width="15" Height="15" Fill="#E0E0E0" Stroke="#BDBDBD" StrokeThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            <!-- Bóng mờ trong lỗ -->
+                                                            <Ellipse Width="15" Height="15" Fill="#20000000" Margin="2,2,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                    </VisualBrush.Visual>
+                                                </VisualBrush>
+                                            </Border.Background>
+                                        </Border>
+
+                                        <!-- Lằn đỏ gáy giấy (Red Margin Line) -->
+                                        <Border Grid.Column="1" x:Name="MarginLine" Background="#FFCDD2"/>
+
+                                        <!-- Vùng viết (Writing Area) -->
+                                        <Grid Grid.Column="2" x:Name="WritingAreaBackground">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            
+                                            <!-- HEADER (Date, Weather, Mood) -->
+                                            <Grid Grid.Row="0" Margin="20,15,20,5" x:Name="PaperHeader" Panel.ZIndex="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <!-- Left: Date & Time -->
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <TextBlock x:Name="lblPaperDate" Text="Ngày:" FontSize="16" Foreground="{DynamicResource TextPrimary}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                    <TextBox x:Name="txtPaperDate" Background="Transparent" BorderThickness="0,0,0,1" BorderBrush="#9E9E9E" Width="120" FontSize="16" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,15,0" MaxLength="15"/>
+                                                    
+                                                    <TextBlock x:Name="lblPaperShift" Text="Buổi:" FontSize="14" Foreground="{DynamicResource TextPrimary}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                    <ComboBox x:Name="cboPaperShift" Background="Transparent" BorderThickness="0,0,0,1" BorderBrush="#9E9E9E" FontSize="14" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" SelectedIndex="0" Margin="0,0,15,0">
+                                                        <ComboBoxItem Content="Sáng 🌅"/>
+                                                        <ComboBoxItem Content="Chiều 🌇"/>
+                                                        <ComboBoxItem Content="Tối 🌙"/>
+                                                    </ComboBox>
+
+                                                    <TextBlock x:Name="lblPaperPattern" Text="Lưới:" FontSize="14" Foreground="{DynamicResource TextPrimary}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                    <ComboBox x:Name="cboPaperPattern" Background="Transparent" BorderThickness="0,0,0,1" BorderBrush="#9E9E9E" FontSize="14" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CboPaperPattern_SelectionChanged">
+                                                        <ComboBoxItem Content="Trơn ⬜" Tag="Blank"/>
+                                                        <ComboBoxItem Content="Kẻ ngang 📝" Tag="Lined"/>
+                                                        <ComboBoxItem Content="Ô vuông 🏁" Tag="Grid"/>
+                                                        <ComboBoxItem Content="Chấm bi 🎯" Tag="Dot"/>
+                                                        <ComboBoxItem Content="Hình học 3D 📐" Tag="Isometric"/>
+                                                    </ComboBox>
+                                                </StackPanel>
+                                                
+                                                <!-- Right: Weather, Mood -->
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <!-- Weather -->
+                                                    <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="5,2" Margin="0,0,10,0" Background="#80FFFFFF">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock x:Name="lblWeather" Text="Thời tiết:" FontSize="14" Foreground="{DynamicResource TextPrimary}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0,5,0"/>
+                                                            <RadioButton Style="{StaticResource IconRadioBtn}" x:Name="radSunny" Content="☀️" GroupName="WeatherGroup"/>
+                                                            <RadioButton Style="{StaticResource IconRadioBtn}" x:Name="radCloudy" Content="☁️" GroupName="WeatherGroup"/>
+                                                            <RadioButton Style="{StaticResource IconRadioBtn}" x:Name="radRainy" Content="🌧️" GroupName="WeatherGroup"/>
+                                                            <RadioButton Style="{StaticResource IconRadioBtn}" x:Name="radSnowy" Content="❄️" GroupName="WeatherGroup"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                    
+                                                    <!-- Mood -->
+                                                    <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="5,2" Background="#80FFFFFF">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock x:Name="lblMood" Text="Tâm trạng:" FontSize="14" Foreground="{DynamicResource TextPrimary}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0,5,0"/>
+                                                            <RadioButton Style="{StaticResource IconRadioBtn}" x:Name="radMoodLove" Content="✨" GroupName="MoodGroup" ToolTip="Sáng tạo"/>
+                                                            <RadioButton Style="{StaticResource IconRadioBtn}" x:Name="radMoodHappy" Content="🥰" GroupName="MoodGroup" ToolTip="Hào hứng"/>
+                                                            <RadioButton Style="{StaticResource IconRadioBtn}" x:Name="radMoodNeutral" Content="🧠" GroupName="MoodGroup" ToolTip="Tập trung"/>
+                                                            <RadioButton Style="{StaticResource IconRadioBtn}" x:Name="radMoodSad" Content="📝" GroupName="MoodGroup" ToolTip="Nỗ lực"/>
+                                                            <RadioButton Style="{StaticResource IconRadioBtn}" x:Name="radMoodAngry" Content="💪" GroupName="MoodGroup" ToolTip="Tự tin"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </StackPanel>
+                                            </Grid>
+                                            
+                                            <!-- InkCanvas Area (Grid.Row = 1) -->
+                                            <Grid Grid.Row="1" Margin="20,10,20,20">
+                                                <!-- Background Grid Lines Canvas -->
+                                                <Canvas x:Name="PaperPatternCanvas" IsHitTestVisible="False"/>
+                                                
+                                                <!-- The Main Drawing Canvas (Rich InkCanvas + Shape Renderer) -->
+                                                <InkCanvas x:Name="DrawingCanvas" Background="Transparent" EditingMode="Ink" UseCustomCursor="False"/>
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </ScrollViewer>
+
+                        <!-- PAGE NAVIGATION BAR -->
+                        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="16,8" Margin="0,10,0,0" BorderBrush="#E0E0E0" BorderThickness="1" HorizontalAlignment="Center">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05" Color="Black"/>
+                            </Border.Effect>
+                            
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button x:Name="btnPrevPage" Content="◀️ Trang trước" Click="BtnPrevPage_Click" Padding="12,6" Margin="0,0,15,0" Style="{StaticResource ActionBtn}" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="lblPageInfo" Text="Trang 1 / 1" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,15,0"/>
+                                <Button x:Name="btnNextPage" Content="▶️ Trang sau" Click="BtnNextPage_Click" Padding="12,6" Margin="0,0,15,0" Style="{StaticResource ActionBtn}" FontWeight="SemiBold"/>
+                                <Button x:Name="btnAddPage" Content="➕ Thêm trang" Click="BtnAddPage_Click" Padding="12,6" Margin="0,0,15,0" Style="{StaticResource ActionBtn}" Foreground="#2196F3" FontWeight="SemiBold"/>
+                                <Button x:Name="btnDeletePage" Content="🗑️ Xóa trang" Click="BtnDeletePage_Click" Padding="12,6" Style="{StaticResource ActionBtn}" Foreground="#D32F2F" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <!-- VIEW 2: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+        
+        <!-- NEW NOTEBOOK DIALOG OVERLAY -->
+        <Grid x:Name="DialogOverlay" Visibility="Collapsed" Background="#80000000" Panel.ZIndex="100">
+            <Border Background="{DynamicResource SurfaceBackground}" CornerRadius="12" Width="450" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="25">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" Opacity="0.3" ShadowDepth="5"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock x:Name="txtDialogHeader" Text="Tạo sổ tay mới" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,20"/>
+                    
+                    <TextBlock Text="Tên cuốn sổ:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="{DynamicResource TextSecondary}"/>
+                    <TextBox x:Name="txtNbTitle" FontSize="16" Padding="8,5" Margin="0,0,0,15" Background="{DynamicResource SurfaceBackground}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" MaxLength="30"/>
+
+                    <TextBlock Text="Màu bìa sổ:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="{DynamicResource TextSecondary}"/>
+                    <WrapPanel x:Name="CoverColorPanel" Margin="0,0,0,15">
+                        <Button Style="{StaticResource ColorBtn}" Background="#1976D2" Tag="#1976D2" Width="35" Height="35" Margin="0,0,10,0" Click="DialogCoverColor_Click" ToolTip="Xanh dương"/>
+                        <Button Style="{StaticResource ColorBtn}" Background="#D32F2F" Tag="#D32F2F" Width="35" Height="35" Margin="0,0,10,0" Click="DialogCoverColor_Click" ToolTip="Đỏ"/>
+                        <Button Style="{StaticResource ColorBtn}" Background="#388E3C" Tag="#388E3C" Width="35" Height="35" Margin="0,0,10,0" Click="DialogCoverColor_Click" ToolTip="Xanh lá"/>
+                        <Button Style="{StaticResource ColorBtn}" Background="#FBC02D" Tag="#FBC02D" Width="35" Height="35" Margin="0,0,10,0" Click="DialogCoverColor_Click" ToolTip="Vàng"/>
+                        <Button Style="{StaticResource ColorBtn}" Background="#8D6E63" Tag="#8D6E63" Width="35" Height="35" Margin="0,0,10,0" Click="DialogCoverColor_Click" ToolTip="Nâu"/>
+                        <Button Style="{StaticResource ColorBtn}" Background="#E91E63" Tag="#E91E63" Width="35" Height="35" Margin="0,0,10,0" Click="DialogCoverColor_Click" ToolTip="Hồng"/>
+                        <Button Style="{StaticResource ColorBtn}" Background="#424242" Tag="#424242" Width="35" Height="35" Margin="0,0,10,0" Click="DialogCoverColor_Click" ToolTip="Đen"/>
+                    </WrapPanel>
+
+                    <TextBlock Text="Chất liệu bìa:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="{DynamicResource TextSecondary}"/>
+                    <ComboBox x:Name="cboCoverType" FontSize="14" Padding="8,5" Margin="0,0,0,15" Foreground="{DynamicResource TextPrimary}">
+                        <ComboBoxItem Content="Bìa mịn" Tag="Smooth" IsSelected="True"/>
+                        <ComboBoxItem Content="Bìa da" Tag="Leather"/>
+                        <ComboBoxItem Content="Bìa nhám" Tag="Texture"/>
+                    </ComboBox>
+
+                    <TextBlock Text="Màu giấy (nền):" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="{DynamicResource TextSecondary}"/>
+                    <WrapPanel x:Name="PaperColorPanel" Margin="0,0,0,25">
+                        <Button Style="{StaticResource ColorBtn}" Background="#FFFFFF" Tag="#FFFFFF" Width="35" Height="35" Margin="0,0,10,0" Click="DialogPaperColor_Click" ToolTip="Trắng"/>
+                        <Button Style="{StaticResource ColorBtn}" Background="#FFF8E1" Tag="#FFF8E1" Width="35" Height="35" Margin="0,0,10,0" Click="DialogPaperColor_Click" ToolTip="Kem (Hoài cổ)"/>
+                        <Button Style="{StaticResource ColorBtn}" Background="#FCE4EC" Tag="#FCE4EC" Width="35" Height="35" Margin="0,0,10,0" Click="DialogPaperColor_Click" ToolTip="Hồng nhạt"/>
+                        <Button Style="{StaticResource ColorBtn}" Background="#E8F5E9" Tag="#E8F5E9" Width="35" Height="35" Margin="0,0,10,0" Click="DialogPaperColor_Click" ToolTip="Xanh mint"/>
+                        <Button Style="{StaticResource ColorBtn}" Background="#212121" Tag="#212121" Width="35" Height="35" Margin="0,0,10,0" Click="DialogPaperColor_Click" ToolTip="Bảng đen"/>
+                    </WrapPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Hủy" Click="BtnCancelDialog_Click" Background="Transparent" Foreground="{DynamicResource TextSecondary}" BorderThickness="0" Margin="0,0,15,0" Cursor="Hand" Padding="20,10" FontSize="15"/>
+                        <Button Content="Lưu &amp; Mở Sổ" Click="BtnSaveDialog_Click" Background="#2196F3" Foreground="White" BorderThickness="0" Padding="20,10" Cursor="Hand" FontSize="15" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+        
+        <!-- DUMMY HELP OVERLAY FOR CODE COMPATIBILITY -->
+        <Grid x:Name="HelpOverlay" Visibility="Collapsed"/>
+    </Grid>
+</controls:BaseToolControl>

@@ -1,0 +1,160 @@
+{
+  "metadata": {
+    "chapterId": "g08_ch02",
+    "chapterName": "Bài 2: Văn xuôi hiện thực Việt Nam",
+    "grade": 8,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 4
+  },
+  "sections": [
+    {
+      "sectionId": "s_g8_ch1_0",
+      "sectionName": "Lão Hạc — Nam Cao",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-8-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g8_Lão_Hạc.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh",
+          "theorem": "Nam Cao (1917–1951). 'Lão Hạc' (1943) là truyện ngắn xuất sắc về người nông dân nghèo trước Cách mạng. Lão Hạc bán con chó yêu quý, gửi tiền lại cho con trai, rồi tự kết liễu bằng bả chó để giữ nguyên mảnh vườn cho con.",
+          "imageUrls": ["Resources/LiteratureData/Images/nam_cao.png"]
+        },
+        {
+          "name": "Cảnh lão Hạc khóc sau khi bán chó Vàng",
+          "definition": "Mặt lão đột nhiên co rúm lại. Những nếp nhăn xô lại với nhau, ép cho nước mắt chảy ra. Cái đầu lão ngoẹo về một bên và cái miệng móm mém của lão mếu như con nít. Lão hu hu khóc...\n'Khốn nạn... Ông giáo ơi!... Nó có biết gì đâu? Nó thấy tôi gọi thì chạy ngay vào vẫy đuôi mừng. Tôi cho nó ăn cơm. Nó đang ăn thì thằng Mục nó tóm lấy...'"
+        },
+        {
+          "name": "Tâm sự với ông Giáo",
+          "definition": "Lão Hạc ơi! Lão hãy yên lòng mà nhắm mắt! Lão đừng lo lắng gì cho con lão nữa... Nó không lo được cho bố, thì hãy nhờ tôi tạm ứng vào tiền đó cho... bây giờ thì lão chẳng lo lắng gì nữa."
+        },
+        {
+          "name": "Phân tích nhân vật",
+          "examples": [
+            "**'Co rúm, nếp nhăn xô lại'**: Miêu tả ngoại hình chân thực — khuôn mặt già nua biến dạng hoàn toàn vì nỗi đau bán chó.",
+            "**'Mếu như con nít'**: So sánh bất ngờ — ông lão 60 tuổi khóc như đứa trẻ — nỗi đau vượt mọi sự kiềm chế.",
+            "**Bi kịch lão Hạc**: Không chết vì đói mà chết vì lòng tự trọng — không muốn tiêu tiền của con, không muốn làm phiền hàng xóm.",
+            "**Nam Cao vs Kim Lân**: Cùng viết về nông dân nghèo trước Cách mạng nhưng góc nhìn khác — Nam Cao thiên về bi kịch nhân cách, Kim Lân thiên về khát vọng sống."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Tại sao lão Hạc khóc nức nở sau khi bán con chó Vàng?",
+          "difficulty": "Easy",
+          "options": [
+            "Vì lão cảm thấy có lỗi — đã lừa con chó tin tưởng để bán đi, vi phạm lòng trung thực",
+            "Vì lão nhớ người con trai đang đi làm đồn điền xa nhà",
+            "Vì số tiền bán chó quá ít, không đủ mua gạo sống qua ngày",
+            "Vì lão sợ ông Giáo biết mình đã bán chó sẽ không còn kính trọng nữa"
+          ],
+          "answer": "Vì lão cảm thấy có lỗi — đã lừa con chó tin tưởng để bán đi, vi phạm lòng trung thực",
+          "hints": ["Lão nói 'Nó thấy tôi gọi thì chạy vào vẫy đuôi mừng' — điều đó làm lão đau vì sao?"],
+          "explanation": "Con chó Vàng tin tưởng chạy vào khi nghe lão gọi — rồi bị bán. Lão cảm thấy mình đã 'lừa' một sinh linh trung thành. Đây không chỉ là nỗi nhớ con vật yêu quý mà là sự dằn vặt lương tâm — Nam Cao khắc họa người nông dân có nhân cách cao đẹp, coi trọng đức trung thực ngay cả với một con chó."
+        },
+        {
+          "id": "p2",
+          "question": "Lão Hạc chọn tự kết liễu bằng bả chó thể hiện phẩm chất gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Lòng tự trọng cao — chết để giữ mảnh vườn cho con, không tiêu tiền của con, không làm phiền ai",
+            "Sự tuyệt vọng của người nông dân không có lối thoát trước đói nghèo",
+            "Hành động trả thù xã hội đã đẩy ông vào cảnh khốn cùng",
+            "Ông già mê tín dị đoan tự trừng phạt vì đã bán con chó"
+          ],
+          "answer": "Lòng tự trọng cao — chết để giữ mảnh vườn cho con, không tiêu tiền của con, không làm phiền ai",
+          "hints": ["Trước khi chết, lão Hạc đã gửi tiền và mảnh vườn cho ai qua ông Giáo?"],
+          "explanation": "Lão Hạc không chết vì đói (còn tiền và vườn) mà chết vì không muốn tiêu lỡ tiền của con, không muốn phải ăn bám hàng xóm, không muốn phải bán mảnh vườn của con. Cái chết chủ động đó là biểu hiện cao nhất của lòng tự trọng và tình yêu con — bi kịch của người có nhân cách quá cao so với hoàn cảnh xã hội."
+        },
+        {
+          "id": "p3",
+          "question": "Điểm nhìn trần thuật qua 'ông Giáo' trong truyện có tác dụng gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Tạo khoảng cách quan sát đồng cảm — người trí thức nghèo nhìn nhận và phát hiện vẻ đẹp khuất lấp trong người nông dân",
+            "Cho thấy ông Giáo là người duy nhất hiểu và giúp đỡ lão Hạc",
+            "Tạo tính khách quan khoa học khi nghiên cứu cuộc sống nông thôn",
+            "Nam Cao dùng nhân vật trí thức để phê phán xã hội phong kiến"
+          ],
+          "answer": "Tạo khoảng cách quan sát đồng cảm — người trí thức nghèo nhìn nhận và phát hiện vẻ đẹp khuất lấp trong người nông dân",
+          "hints": ["Ông Giáo nghĩ gì về lão Hạc — khinh hay kính trọng?"],
+          "explanation": "Ông Giáo là người trí thức nghèo, hiểu cả hai thế giới (trí thức và nông dân). Qua mắt ông, người đọc thấy được chiều sâu nhân cách của lão Hạc mà bề ngoài 'móm mém, hu hu khóc' không thể hiện rõ. Đây là kỹ thuật điểm nhìn tinh tế của Nam Cao: người kể chuyện phát hiện 'chất vàng' trong những người tưởng chừng bình thường."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g8_ch1_1",
+      "sectionName": "Tức Nước Vỡ Bờ (Trích Tắt Đèn — Ngô Tất Tố)",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-8-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g8_Tức_Nước_Vỡ_Bờ.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Ngô Tất Tố (1893–1954). 'Tắt Đèn' (1939) là tiểu thuyết hiện thực xuất sắc về cuộc sống nông dân dưới ách sưu thuế. 'Tức nước vỡ bờ' là đoạn trích nổi tiếng nhất.",
+          "imageUrls": ["Resources/LiteratureData/Images/ngo_tat_to.png"]
+        },
+        {
+          "name": "Cảnh chị Dậu chống cự tên cai lệ",
+          "definition": "Chị Dậu nghiến hai hàm răng: 'Mày trói ngay chồng bà đi, bà cho mày xem!'\nRồi chị túm lấy cổ hắn, ấn dúi ra cửa. Sức lẻo khẻo của anh chàng nghiện chạy không kịp với sức xô đẩy của người đàn bà lực điền, hắn ngã chỏng quèo trên mặt đất, miệng thét: 'Bỏ ra... bỏ ra...!'"
+        },
+        {
+          "name": "Lý giải tên đoạn trích",
+          "definition": "Chị Dậu run run: 'Cháu van ông, nhà cháu vừa mới tỉnh được một lúc, ông tha cho!'... Cai lệ tát vào mặt chị một cái đánh bốp, rồi hắn cứ nhảy vào cạnh anh Dậu. Chị Dậu nghiến hai hàm răng..."
+        },
+        {
+          "name": "Phân tích",
+          "examples": [
+            "**'Tức nước vỡ bờ'**: Thành ngữ dân gian = bị đè nén đến cực hạn thì phải bùng phát. Chị Dậu từ van xin → phản kháng.",
+            "**Quá trình xưng hô**: 'Cháu... ông' (nhún nhường) → 'Tôi... ông' (bình đẳng) → 'Bà... mày' (thách thức) — ba bước thay đổi cán cân quyền lực.",
+            "**Chị Dậu — người phụ nữ nông dân**: Vừa dịu dàng (van xin vì chồng) vừa quyết liệt (chống cự để bảo vệ chồng) — nhân vật phức tạp, chân thực.",
+            "**Hạn chế của sự phản kháng**: Chị Dậu thắng trận nhỏ nhưng không có lối thoát — bi kịch của người nông dân chưa có ý thức giai cấp."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Sự thay đổi xưng hô của chị Dậu từ 'cháu - ông' → 'tôi - ông' → 'bà - mày' cho thấy điều gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Quá trình từ nhún nhường → bình đẳng → thách thức — cán cân quyền lực đảo ngược khi con người bị đẩy đến giới hạn chịu đựng",
+            "Chị Dậu không biết cách ứng xử lịch sự với quan lại",
+            "Chị Dậu đang mất bình tĩnh vì quá lo lắng cho chồng bệnh",
+            "Phong tục xưng hô của người nông dân vùng đồng bằng Bắc Bộ"
+          ],
+          "answer": "Quá trình từ nhún nhường → bình đẳng → thách thức — cán cân quyền lực đảo ngược khi con người bị đẩy đến giới hạn chịu đựng",
+          "hints": ["Điều gì xảy ra khiến chị Dậu chuyển từ 'cháu' sang 'bà'?"],
+          "explanation": "Ba bước xưng hô phản ánh tâm lý tiệm tiến: 'cháu' = hạ mình van xin; 'tôi' = không còn coi hắn là bề trên; 'bà-mày' = hoàn toàn đảo ngược — chị là người trên, hắn là kẻ thấp hèn. Cái tát vào mặt là giọt nước tràn ly — 'tức nước vỡ bờ' xảy ra chính xác ở đây."
+        },
+        {
+          "id": "p2",
+          "question": "Đoạn trích thể hiện quan niệm xã hội nào của Ngô Tất Tố?",
+          "difficulty": "Hard",
+          "options": [
+            "Người nông dân bị áp bức đến cùng cực sẽ tự nhiên phản kháng — sức mạnh tiềm ẩn trong người bị trị",
+            "Phụ nữ nông thôn mạnh hơn đàn ông nên cần đứng lên lãnh đạo xã hội",
+            "Chế độ thuế khóa thực dân Pháp là nguồn gốc của mọi bất công",
+            "Người trí thức cần giúp đỡ nông dân nhận ra quyền lợi của mình"
+          ],
+          "answer": "Người nông dân bị áp bức đến cùng cực sẽ tự nhiên phản kháng — sức mạnh tiềm ẩn trong người bị trị",
+          "hints": ["'Tức nước vỡ bờ' — quy luật tự nhiên này áp dụng cho xã hội như thế nào?"],
+          "explanation": "Ngô Tất Tố phát hiện quy luật xã hội: áp bức quá sẽ dẫn đến phản kháng — không cần ai dạy, không cần tổ chức, chị Dậu tự nhiên bùng lên. Đây là niềm tin vào sức mạnh tiềm ẩn của người nông dân — tuy chưa có ý thức giai cấp nhưng bản năng bảo vệ gia đình đủ tạo ra sức mạnh phi thường."
+        },
+        {
+          "id": "p3",
+          "question": "So sánh bi kịch của chị Dậu và lão Hạc — điểm chung và khác biệt là gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Chung: đều là nạn nhân của chế độ sưu thuế; Khác: lão Hạc chọn im lặng chịu đựng, chị Dậu phản kháng mạnh mẽ",
+            "Chị Dậu thắng còn lão Hạc thua — cho thấy phụ nữ mạnh hơn đàn ông",
+            "Cả hai đều chọn cái chết để thoát khỏi áp bức của xã hội phong kiến",
+            "Hai nhân vật thuộc hai tầng lớp xã hội khác nhau nên không thể so sánh"
+          ],
+          "answer": "Chung: đều là nạn nhân của chế độ sưu thuế; Khác: lão Hạc chọn im lặng chịu đựng, chị Dậu phản kháng mạnh mẽ",
+          "hints": ["Cả hai đều sống trong xã hội thực dân phong kiến 1930–1945 — hoàn cảnh chung là gì?"],
+          "explanation": "Cả lão Hạc và chị Dậu đều bị bóc lột bởi chế độ sưu thuế và cường hào. Nhưng phản ứng khác nhau: lão Hạc hướng vào bên trong (tự trọng, hi sinh thầm lặng); chị Dậu hướng ra bên ngoài (phản kháng, chiến đấu). Hai hình tượng bổ sung cho nhau, cùng phản ánh sức chịu đựng và tiềm năng của người nông dân Việt Nam trước Cách mạng."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Shared.SmartBookDropView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000">
+    <Grid Background="{DynamicResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="📥 Mô phỏng Hộp trả sách thông minh Drop-box 24/7" ActionButtonText=""/>
+
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Cột trái: Sách đang mượn -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="20" Background="{DynamicResource CardBrush}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                        <TextBlock Text="📚 Tủ sách đang mượn cá nhân" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Dùng chuột kéo một cuốn sách bên dưới thả vào Drop-box bên phải để trả sách." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <ListBox Grid.Row="1" ItemsSource="{Binding BorrowedBooks}" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Margin" Value="0,0,0,12"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <ContentPresenter/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource CardBorder}" Padding="16" Background="{DynamicResource BackgroundBrush}" BorderBrush="{DynamicResource BorderBrush}" Cursor="Hand" MouseMove="BookItem_MouseMove">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Tay kéo / Trạng thái -->
+                                        <TextBlock Grid.Column="0" Text="↕️" FontSize="24" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding BookTitle}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="14" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Barcode, StringFormat='{}Mã vạch: {0}'}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                <TextBlock Text="Hạn trả: " Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+                                                <TextBlock Text="{Binding FormattedDueDate}" Foreground="{Binding DueColor}" FontSize="11" FontWeight="Bold"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Nút sơ cua bấm để thả (cho trường hợp không dùng kéo thả) -->
+                                        <Button Grid.Column="2" Content="Thả vào thùng" 
+                                                Command="{Binding DataContext.DropBookCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource PrimaryButton}" Height="30" Padding="10,2" Cursor="Hand" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- Cột phải: Thùng trả sách Drop-box -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" x:Name="DropZone" Style="{StaticResource CardBorder}" 
+                        Background="{DynamicResource CardBrush}" BorderBrush="#3B82F6" BorderThickness="3" 
+                        AllowDrop="True" DragOver="DropZone_DragOver" DragLeave="DropZone_DragLeave" Drop="DropZone_Drop"
+                        Padding="24">
+                    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel HorizontalAlignment="Center">
+                            <!-- Icon thùng sách -->
+                            <TextBlock Text="📥" FontSize="80" HorizontalAlignment="Center"/>
+                            
+                            <TextBlock Text="Thùng nhận sách Drop-box 24/7" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,16,0,8"/>
+                            <TextBlock Text="Quét tự động RFID UHF tầm xa" FontSize="12" Foreground="{DynamicResource StateInfo}" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                            
+                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrush}" CornerRadius="8" Padding="16" Width="280">
+                                <TextBlock Text="Kéo thả sách tại đây&#x0a;Hoặc click 'Thả vào thùng' để trả sách." Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Banner thông báo Zalo dạng điện thoại push -->
+                <Border Grid.Row="1" Background="{DynamicResource PrimaryBrush}" CornerRadius="12" Padding="16" Margin="0,16,0,0" 
+                        Visibility="{Binding ShowZaloNotification, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" Text="💬" FontSize="26" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Tin nhắn xác nhận (Zalo)" Foreground="White" FontSize="13" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding ZaloNotificationText}" Foreground="White" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

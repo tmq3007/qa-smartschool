@@ -1,0 +1,274 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Language.IrregularVerbsTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="{StaticResource Gray100}">
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER (Gradient + Search) ═══ -->
+        <Border Grid.Row="0" CornerRadius="0" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#E3F2FD" Offset="0"/>
+                    <GradientStop Color="#BBDEFB" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel>
+                <Border DockPanel.Dock="Right" Background="White" CornerRadius="8" Padding="10,6,10,6" Width="220" VerticalAlignment="Center">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Left" Text="🔍" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBox x:Name="txtVerbSearch" BorderThickness="0" Background="Transparent" FontSize="14"
+                                 VerticalAlignment="Center" TextChanged="VerbSearch_Changed"/>
+                    </DockPanel>
+                </Border>
+                <StackPanel>
+                    <TextBlock Text="Động Từ Bất Quy Tắc" FontSize="18" FontWeight="Bold" Foreground="{StaticResource BrandPrimary}"/>
+                    <TextBlock Text="Lớp 6-12 • 120+ động từ: Base → Past → Past Participle" FontSize="13" Foreground="#42A5F5" Margin="0,4,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#E3F2FD">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#E1BEE7"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#6A1B9A"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextTable" Text="Bảng tra cứu" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🎴" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextFlashcard" Text="Thẻ ghi nhớ (Flashcard)" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚡" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextQuiz" Text="Trắc nghiệm (Quiz)" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#BBDEFB"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 0: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#E1BEE7" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#6A1B9A" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#E1BEE7" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+<!-- Khối hướng dẫn -->
+                        <Border Background="#E3F2FD" CornerRadius="6" Padding="12" Margin="0,0,0,12" BorderBrush="#BBDEFB" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="💡 TẠI SAO CẦN HỌC ĐỘNG TỪ BẤT QUY TẮC?" FontWeight="Bold" Foreground="#1565C0" FontSize="14" Margin="0,0,0,6"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#424242" LineHeight="18">
+                                    Động từ bất quy tắc (Irregular Verbs) chiếm tới 70% các động từ tiếng Anh được sử dụng hàng ngày. Thuần thục nhóm từ này là chìa khóa để xây dựng nền tảng ngữ pháp vững chắc (Thì Quá khứ đơn V2, Hiện tại hoàn thành V3).
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="🎯 Quy trình học tập 3 bước:" FontSize="15" FontWeight="Bold" Foreground="#1565C0" Margin="0,4,0,8"/>
+                        <TextBlock Text="1. Tra cứu phân loại: Sử dụng bảng tra cứu với bộ lọc thông minh theo dạng (AAA, ABB, ABA, ABC) kết hợp tìm kiếm nhanh." FontSize="13.5" Foreground="#424242" Margin="4,2"/>
+                        <TextBlock Text="2. Thẻ ghi nhớ (Flashcard): Học ghi nhớ trực quan hai chiều (gõ, lật) kèm hệ thống phát âm giọng Anh chuẩn." FontSize="13.5" Foreground="#424242" Margin="4,2"/>
+                        <TextBlock Text="3. Luyện phản xạ (Quiz): Thử sức với bài trắc nghiệm 15 câu ngẫu nhiên để đánh giá khả năng phản xạ và ghi nhớ V2, V3." FontSize="13.5" Foreground="#424242" Margin="4,2"/>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: BẢNG TRA CỨU -->
+                <Grid x:Name="viewTable" HorizontalAlignment="Stretch" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Thanh bộ lọc nhóm -->
+                        <RowDefinition Height="*"/>    <!-- Bảng cuộn -->
+                    </Grid.RowDefinitions>
+                    
+                    <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+                        <TextBlock Text="Bộ lọc nhóm:" VerticalAlignment="Center" FontWeight="Bold" FontSize="14" Margin="0,0,12,0" Foreground="#1565C0"/>
+                        <RadioButton x:Name="radFilterAll" Content="Tất cả" IsChecked="True" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,6" Margin="0,0,6,0" Checked="Filter_Checked"/>
+                        <RadioButton x:Name="radFilterAAA" Content="Nhóm AAA" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,6" Margin="0,0,6,0" Checked="Filter_Checked"/>
+                        <RadioButton x:Name="radFilterABB" Content="Nhóm ABB" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,6" Margin="0,0,6,0" Checked="Filter_Checked"/>
+                        <RadioButton x:Name="radFilterABA" Content="Nhóm ABA" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,6" Margin="0,0,6,0" Checked="Filter_Checked"/>
+                        <RadioButton x:Name="radFilterABC" Content="Nhóm ABC" Style="{StaticResource {x:Type ToggleButton}}" Padding="12,6" Checked="Filter_Checked"/>
+                    </WrapPanel>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="4">
+                            <UniformGrid x:Name="formulaCardsPanel" Columns="4" Margin="0,0,0,12"/>
+                            <StackPanel x:Name="verbTablePanel"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- VIEW 2: FLASH CARD -->
+                <Grid x:Name="viewFlashcard" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="20" 
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            MinWidth="420" MinHeight="260" Padding="24" Cursor="Hand"
+                            MouseLeftButtonDown="VerbCard_Click">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.12" Color="Black"/>
+                        </Border.Effect>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock x:Name="txtVerbBase" Text="go" 
+                                           FontSize="42" FontWeight="Bold" Foreground="{StaticResource BrandPrimary}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Button x:Name="btnSpeakCard" Content="🔊" FontSize="20" Margin="12,0,0,0"
+                                        Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                        VerticalAlignment="Center" Click="SpeakCard_Click" ToolTip="Nghe phát âm"/>
+                            </StackPanel>
+                            <TextBlock x:Name="txtVerbMeaning" Text="đi"
+                                       FontSize="18" Foreground="#757575" HorizontalAlignment="Center"
+                                       Margin="0,8,0,16"/>
+                            <TextBlock x:Name="txtVerbPast" Text="Quá khứ (V2): ???"
+                                       FontSize="22" Foreground="#9E9E9E" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="txtVerbPP" Text="Phân từ II (V3): ???"
+                                       FontSize="22" Foreground="#9E9E9E" HorizontalAlignment="Center"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                        <Button Content="⏪ Quay lại" FontSize="15" Padding="20,10,20,10" Margin="6"
+                                Background="#E0E0E0" Foreground="#333333" BorderThickness="0"
+                                Cursor="Hand" Click="VerbPrev_Click"/>
+                        <Button Content="⏭️ Tiếp theo" FontSize="15" Padding="20,10,20,10" Margin="6"
+                                Background="#1976D2" Foreground="White" BorderThickness="0"
+                                Cursor="Hand" Click="VerbNext_Click"/>
+                        <Button Content="🔀 Ngẫu nhiên" FontSize="15" Padding="20,10,20,10" Margin="6"
+                                Background="#7B1FA2" Foreground="White" BorderThickness="0"
+                                Cursor="Hand" Click="VerbRandom_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- VIEW 3: QUIZ -->
+                <Grid x:Name="viewQuiz" Visibility="Collapsed" MaxWidth="800" HorizontalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="16,10,16,10" Margin="0,0,0,12" BorderBrush="#E2E8F0" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock x:Name="txtVerbQuizScore" Text="Điểm: 0/0" FontSize="18"
+                                       FontWeight="Bold" Foreground="#2E7D32" VerticalAlignment="Center"/>
+                            <TextBlock DockPanel.Dock="Right" x:Name="txtVerbQuizProgress" Text=""
+                                       FontSize="14" FontWeight="SemiBold" Foreground="#757575" VerticalAlignment="Center"/>
+                            <TextBlock/>
+                        </DockPanel>
+                    </Border>
+
+                    <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock x:Name="txtVerbQuizQ" Text="Nhấn 'Bắt đầu' để chơi"
+                                   FontSize="18" Foreground="#757575" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,16">
+                            <TextBlock x:Name="txtVerbQuizBase" Text=""
+                                       FontSize="36" FontWeight="Bold" Foreground="#1A237E" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Button x:Name="btnSpeakQuiz" Content="🔊" FontSize="20" Margin="12,0,0,0"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    VerticalAlignment="Center" Click="SpeakQuiz_Click" ToolTip="Nghe phát âm" Visibility="Collapsed"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+                            <StackPanel Margin="0,0,20,0">
+                                <TextBlock Text="Quá khứ đơn (V2):" FontSize="14" FontWeight="SemiBold" Foreground="#757575"/>
+                                <TextBox x:Name="txtVerbQuizPast" FontSize="22" Width="200" Padding="10,6,10,6"
+                                         BorderBrush="#42A5F5" BorderThickness="0,0,0,3" Background="Transparent"
+                                         TextAlignment="Center" Visibility="Collapsed"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Quá khứ phân từ (V3):" FontSize="14" FontWeight="SemiBold" Foreground="#757575"/>
+                                <TextBox x:Name="txtVerbQuizPP" FontSize="22" Width="200" Padding="10,6,10,6"
+                                         BorderBrush="#42A5F5" BorderThickness="0,0,0,3" Background="Transparent"
+                                         TextAlignment="Center" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Button x:Name="btnVerbQuizCheck" Content="✓ Kiểm tra" Visibility="Collapsed"
+                                Padding="24,10,24,10" Margin="0,16,0,0" FontSize="16"
+                                Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="VerbQuizCheck_Click"/>
+                        <TextBlock x:Name="txtVerbQuizFeedback" Text="" FontSize="16" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" Margin="0,12,0,0"
+                                   TextWrapping="Wrap" TextAlignment="Center"/>
+                    </StackPanel>
+
+                    <Button Grid.Row="2" x:Name="btnVerbQuizStart" Content="▶ Bắt đầu (15 câu)" 
+                            FontSize="16" Padding="24,12,24,12" Background="#4CAF50" Foreground="White" 
+                            BorderThickness="0" Cursor="Hand" HorizontalAlignment="Center"
+                            Click="VerbQuizStart_Click"/>
+                </Grid>
+
+                <!-- VIEW 4: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="contentApp" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

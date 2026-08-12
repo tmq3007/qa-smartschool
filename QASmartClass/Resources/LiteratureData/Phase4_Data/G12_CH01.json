@@ -1,0 +1,241 @@
+{
+  "metadata": {
+    "chapterId": "g12_ch01",
+    "chapterName": "Bài 1: Thơ ca kháng chiến",
+    "grade": 12,
+    "totalProblems": 9,
+    "totalSections": 3,
+    "estimatedHours": 4,
+    "thptWeight": "Trọng tâm thi THPT Quốc Gia"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g12_ch0_0",
+      "sectionName": "Tây Tiến — Quang Dũng",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-12-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g12_Tây_Tiến.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh",
+          "theorem": "Quang Dũng (1921–1988) — thi sĩ, nhạc sĩ, họa sĩ đa tài. Bài thơ viết năm 1948 tại Phù Lưu Chanh (Hà Tây) khi ông nhớ về đồng đội trong đoàn quân Tây Tiến.",
+          "imageUrls": [
+            "Resources/LiteratureData/Images/quang_dung.png"
+          ]
+        },
+        {
+          "name": "Đoạn 1 — Nỗi nhớ và hình ảnh núi rừng",
+          "definition": "Sông Mã xa rồi Tây Tiến ơi!\nNhớ về rừng núi nhớ chơi vơi\nSài Khao sương lấp đoàn quân mỏi\nMường Lát hoa về trong đêm hơi\n\nDốc lên khúc khuỷu dốc thăm thẳm\nHeo hút cồn mây súng ngửi trời\nNgàn thước lên cao, ngàn thước xuống\nNhà ai Pha Luông mưa xa khơi."
+        },
+        {
+          "name": "Đoạn 3 — Chân dung người lính",
+          "definition": "Tây Tiến đoàn binh không mọc tóc\nQuân xanh màu lá dữ oai hùm\nMắt trừng gửi mộng qua biên giới\nĐêm mơ Hà Nội dáng kiều thơm."
+        },
+        {
+          "name": "Phân tích nghệ thuật",
+          "examples": [
+            "**Nhớ chơi vơi**: Từ láy diễn tả nỗi nhớ mênh mang, vô hình nhưng da diết.",
+            "**Dốc lên khúc khuỷu dốc thăm thẳm**: Điệp từ + từ láy gợi địa hình hiểm trở.",
+            "**Súng ngửi trời**: Nhân hóa độc đáo — vừa khẩu khí ngang tàng vừa tả núi cao chất ngất.",
+            "**Không mọc tóc / quân xanh màu lá**: Hiện thực khốc liệt của bệnh tật nhưng được khắc họa bằng giọng điệu ngang tàng, không bi lụy."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Câu thơ 'Nhớ về rừng núi nhớ chơi vơi' sử dụng biện pháp nghệ thuật nào để diễn tả nỗi nhớ?",
+          "difficulty": "Medium",
+          "options": [
+            "Điệp từ 'nhớ' kết hợp từ láy 'chơi vơi' gợi nỗi nhớ mênh mang, vô hình",
+            "So sánh nỗi nhớ với rừng núi bao la",
+            "Nhân hóa núi rừng như người thân",
+            "Ẩn dụ rừng núi là đồng đội"
+          ],
+          "answer": "Điệp từ 'nhớ' kết hợp từ láy 'chơi vơi' gợi nỗi nhớ mênh mang, vô hình",
+          "hints": ["Xác định từ nào lặp lại và từ láy nào được dùng."],
+          "explanation": "Điệp từ 'nhớ' nhấn mạnh cảm xúc chủ đạo. Từ láy 'chơi vơi' tạo âm hưởng lan tỏa, gợi nỗi nhớ vừa cụ thể vừa mơ hồ — một đặc trưng ngôn ngữ rất riêng của Quang Dũng."
+        },
+        {
+          "id": "p2",
+          "question": "Hình ảnh 'Tây Tiến đoàn binh không mọc tóc / Quân xanh màu lá dữ oai hùm' thể hiện điều gì về người lính?",
+          "difficulty": "Hard",
+          "options": [
+            "Hiện thực gian khổ, bệnh tật nhưng vẫn toát lên khí phách kiêu hùng",
+            "Sự thất bại và tiêu điều của đoàn quân",
+            "Vẻ đẹp lãng mạn của người lính trong rừng",
+            "Sự dũng cảm chiến đấu không ngại hi sinh"
+          ],
+          "answer": "Hiện thực gian khổ, bệnh tật nhưng vẫn toát lên khí phách kiêu hùng",
+          "hints": ["Phân tích cặp đối lập giữa 'không mọc tóc, quân xanh' và 'dữ oai hùm'."],
+          "explanation": "Quang Dũng không né tránh hiện thực (bệnh sốt rét làm rụng tóc, da xanh xao) nhưng câu thơ không bi lụy mà ngược lại — 'dữ oai hùm' lại tôn lên tư thế hiên ngang. Đây là bút pháp lãng mạn kết hợp hiện thực đặc sắc."
+        },
+        {
+          "id": "p3",
+          "question": "Tư tưởng chủ đề xuyên suốt bài thơ 'Tây Tiến' là gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Vẻ đẹp bi tráng của người lính và tinh thần yêu nước lãng mạn",
+            "Sự khốc liệt và tàn bạo của chiến tranh",
+            "Nỗi nhớ quê hương của những người xa xứ",
+            "Ca ngợi thiên nhiên hùng vĩ vùng Tây Bắc"
+          ],
+          "answer": "Vẻ đẹp bi tráng của người lính và tinh thần yêu nước lãng mạn",
+          "hints": ["Bi tráng = bi thương + hùng tráng. Bài thơ có cả hai yếu tố đó không?"],
+          "explanation": "Tây Tiến kết hợp nhuần nhuyễn giữa bi (hi sinh, gian khổ) và tráng (hùng dũng, lãng mạn). Đây là đặc điểm nổi bật nhất của thơ ca thời kỳ đầu kháng chiến chống Pháp."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g12_ch0_1",
+      "sectionName": "Việt Bắc — Tố Hữu",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-12-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g12_Việt_Bắc.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh Sáng Tác",
+          "theorem": "Tố Hữu (1920–2002) — nhà thơ lớn của cách mạng Việt Nam. 'Việt Bắc' (1954) được viết nhân dịp Trung ương Đảng và Chính phủ rời chiến khu Việt Bắc về Hà Nội sau chiến thắng Điện Biên Phủ. Đây là tác phẩm tiêu biểu nhất của thơ ca kháng chiến chống Pháp.",
+          "imageUrls": [
+            "Resources/LiteratureData/Images/to_huu.png"
+          ]
+        },
+        {
+          "name": "Đoạn mở đầu — Lời hỏi của người ở lại",
+          "definition": "Mình về mình có nhớ ta\nMười lăm năm ấy thiết tha mặn nồng.\nMình về mình có nhớ không\nNhìn cây nhớ núi, nhìn sông nhớ nguồn?\n\nTiếng ai tha thiết bên cồn\nBâng khuâng trong dạ, bồn chồn bước đi\nÁo chàm đưa buổi phân ly\nCầm tay nhau biết nói gì hôm nay..."
+        },
+        {
+          "name": "Đoạn giữa — Hình ảnh Việt Bắc kháng chiến",
+          "definition": "Ta đi ta nhớ những ngày\nMình đây ta đó, đắng cay ngọt bùi...\nThương nhau chia củ sắn lùi\nBát cơm sẻ nửa, chăn sui đắp cùng.\n\nNhớ khi giặc đến giặc lùng\nRừng cây núi đá ta cùng đánh Tây.\nNúi giăng thành lũy sắt dày\nRừng che bộ đội rừng vây quân thù."
+        },
+        {
+          "name": "Phân tích nghệ thuật đặc sắc",
+          "examples": [
+            "**Thể thơ lục bát**: Âm điệu dân ca, gần gũi với tâm hồn người Việt — đặc điểm nổi bật nhất của bài thơ.",
+            "**Đại từ mình - ta**: Là sáng tạo độc đáo của Tố Hữu. 'Mình' = người cán bộ về xuôi; 'ta' = nhân dân Việt Bắc. Hai đại từ có thể hoán đổi tạo sự gắn kết không thể tách rời.",
+            "**Điệp cấu trúc 'Mình về mình có nhớ...'**: Câu hỏi tu từ tha thiết, tạo âm hưởng khắc khoải của cuộc chia tay.",
+            "**Hình ảnh thiên nhiên Việt Bắc**: 'Rừng che bộ đội, rừng vây quân thù' — thiên nhiên nhân hóa thành người đồng chí trung thành."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Đại từ 'mình' và 'ta' trong bài thơ 'Việt Bắc' biểu trưng cho điều gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Mình = người cán bộ về xuôi; Ta = nhân dân Việt Bắc — gắn kết như đôi lứa",
+            "Mình = Tố Hữu; Ta = đồng đội trong quân ngũ",
+            "Cả hai đại từ đều chỉ người Việt Bắc",
+            "Mình và ta là hai phe trong cuộc chiến"
+          ],
+          "answer": "Mình = người cán bộ về xuôi; Ta = nhân dân Việt Bắc — gắn kết như đôi lứa",
+          "hints": ["Bài thơ viết về cuộc chia tay giữa ai và ai?"],
+          "explanation": "Tố Hữu mượn cách xưng hô 'mình - ta' của ca dao tình yêu đôi lứa để diễn tả tình cảm gắn bó giữa cán bộ cách mạng và nhân dân Việt Bắc — tình nghĩa sâu nặng như tình yêu. Đây là sáng tạo đặc sắc nhất của bài thơ."
+        },
+        {
+          "id": "p2",
+          "question": "Câu thơ 'Rừng che bộ đội rừng vây quân thù' sử dụng biện pháp tu từ gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Nhân hóa — rừng được gán hành động của con người có ý thức",
+            "So sánh — rừng như bức tường thành",
+            "Ẩn dụ — rừng ẩn dụ cho sức mạnh nhân dân",
+            "Điệp từ — lặp từ 'rừng' hai lần"
+          ],
+          "answer": "Nhân hóa — rừng được gán hành động của con người có ý thức",
+          "hints": ["Rừng có thể 'che' và 'vây' với ý thức không?"],
+          "explanation": "Phép nhân hóa biến thiên nhiên Việt Bắc thành người đồng chí, người chiến sĩ tích cực tham gia kháng chiến. Đây là cách Tố Hữu thể hiện sự hòa quyện giữa con người và đất trời Việt Bắc trong cuộc chiến chống xâm lăng."
+        },
+        {
+          "id": "p3",
+          "question": "Hoàn cảnh sáng tác quyết định như thế nào đến chủ đề của 'Việt Bắc'?",
+          "difficulty": "Hard",
+          "options": [
+            "Cuộc chia tay 1954 tạo nên mạch cảm xúc nhớ thương và lời nhắn nhủ về ân tình cách mạng",
+            "Chiến thắng Điện Biên Phủ tạo nên khí thế hào hùng lạc quan",
+            "Nỗi đau mất mát khiến bài thơ mang màu sắc bi thương",
+            "Ngày hòa bình tạo nên niềm vui sum họp gia đình"
+          ],
+          "answer": "Cuộc chia tay 1954 tạo nên mạch cảm xúc nhớ thương và lời nhắn nhủ về ân tình cách mạng",
+          "hints": ["Điện Biên Phủ thắng lợi → Trung ương về Hà Nội → tâm trạng nào xuất hiện?"],
+          "explanation": "Tố Hữu chọn thể thơ lục bát (âm hưởng dân ca) và mạch cảm xúc chia ly để nhắn nhủ: dù về xuôi, người cán bộ không được quên ân tình của nhân dân và núi rừng Việt Bắc — cội nguồn của cách mạng."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g12_ch0_2",
+      "sectionName": "Đất Nước — Nguyễn Khoa Điềm",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-12-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g12_Đất_Nước.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Xuất Xứ",
+          "theorem": "Nguyễn Khoa Điềm (sinh 1943). Đoạn trích 'Đất Nước' thuộc chương V của trường ca 'Mặt đường khát vọng' (1971–1974). Tư tưởng cốt lõi: 'Đất Nước của Nhân dân' — Đất Nước không phải của vua chúa hay anh hùng mà thuộc về nhân dân.",
+          "imageUrls": [
+            "Resources/LiteratureData/Images/nguyen_khoa_diem.png"
+          ]
+        },
+        {
+          "name": "Phần 1 — Đất Nước có từ bao giờ?",
+          "definition": "Khi ta lớn lên Đất Nước đã có rồi\nĐất Nước có trong những cái ngày xửa ngày xưa mẹ thường hay kể\nĐất Nước bắt đầu với miếng trầu bây giờ bà ăn\nĐất Nước lớn lên khi dân mình biết trồng tre mà đánh giặc\nTóc mẹ thì bới sau đầu\nCha mẹ thương nhau bằng gừng cay muối mặn."
+        },
+        {
+          "name": "Phần 2 — Đất Nước là của Nhân dân",
+          "definition": "Để Đất Nước này là Đất Nước Nhân dân\nĐất Nước của Nhân dân, Đất Nước của ca dao thần thoại\nDạy anh biết 'yêu em từ thuở trong nôi'\nBiết quý công cầm vàng những ngày lặn lội\nBiết trồng tre đợi ngày thành gậy\nĐi trả thù mà không sợ dài lâu."
+        },
+        {
+          "name": "Chất liệu văn hóa dân gian",
+          "examples": [
+            "**'Ngày xửa ngày xưa'**: Chất liệu cổ tích, gợi Đất Nước từ trong huyền thoại.",
+            "**'Miếng trầu'**: Hình ảnh dân gian (Trầu Cau) — Đất Nước gắn với phong tục bình dị.",
+            "**'Trồng tre đánh giặc'**: Huyền thoại Thánh Gióng — Đất Nước gắn với tinh thần chống ngoại xâm.",
+            "**'Ca dao thần thoại'**: Tư tưởng trung tâm — Đất Nước thuộc về nhân dân sáng tạo văn hóa."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Tư tưởng cốt lõi của đoạn trích 'Đất Nước' (Nguyễn Khoa Điềm) là gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Đất Nước là của Nhân dân — được làm nên từ văn hóa và cuộc sống bình dị của nhân dân",
+            "Đất Nước được tạo dựng bởi các vị vua và anh hùng lịch sử",
+            "Đất Nước gắn liền với các cuộc chiến tranh chống ngoại xâm hào hùng",
+            "Đất Nước là thiên nhiên tươi đẹp của quê hương"
+          ],
+          "answer": "Đất Nước là của Nhân dân — được làm nên từ văn hóa và cuộc sống bình dị của nhân dân",
+          "hints": ["Chú ý câu thơ 'Để Đất Nước này là Đất Nước Nhân dân'."],
+          "explanation": "Nguyễn Khoa Điềm đưa ra quan niệm mới mẻ: Đất Nước không phải của các triều đại hay anh hùng mà là của NHÂN DÂN — những người bình thường sáng tạo ca dao, truyện cổ tích, giữ gìn phong tục và chiến đấu bảo vệ quê hương."
+        },
+        {
+          "id": "p2",
+          "question": "Hình ảnh 'miếng trầu bây giờ bà ăn' và 'trồng tre đánh giặc' trong bài thơ có tác dụng gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Gắn Đất Nước với chất liệu văn hóa dân gian — phong tục và huyền thoại của nhân dân",
+            "Miêu tả cuộc sống lao động vất vả của người nông dân",
+            "Kể lại các sự kiện lịch sử cụ thể của dân tộc",
+            "Tạo màu sắc cổ điển cho bài thơ hiện đại"
+          ],
+          "answer": "Gắn Đất Nước với chất liệu văn hóa dân gian — phong tục và huyền thoại của nhân dân",
+          "hints": ["'Miếng trầu' gợi đến truyện gì? 'Trồng tre đánh giặc' gợi đến huyền thoại nào?"],
+          "explanation": "'Miếng trầu' → sự tích Trầu Cau (tình nghĩa). 'Trồng tre đánh giặc' → Thánh Gióng (chống ngoại xâm). Nguyễn Khoa Điềm dệt chất liệu dân gian vào từng câu thơ để chứng minh: Đất Nước ra đời và lớn lên cùng với văn hóa của nhân dân."
+        },
+        {
+          "id": "p3",
+          "question": "So sánh cách cảm nhận về Đất Nước của Nguyễn Khoa Điềm với bài thơ 'Đất nước' của Nguyễn Đình Thi, điểm khác biệt lớn nhất là gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Nguyễn Khoa Điềm nhấn mạnh Đất Nước thuộc về nhân dân qua chất liệu văn hóa dân gian",
+            "Nguyễn Khoa Điềm tập trung vào cảnh vật thiên nhiên hơn",
+            "Nguyễn Khoa Điềm viết về Đất Nước trong bối cảnh thời bình",
+            "Cả hai bài thơ có quan niệm giống nhau về Đất Nước"
+          ],
+          "answer": "Nguyễn Khoa Điềm nhấn mạnh Đất Nước thuộc về nhân dân qua chất liệu văn hóa dân gian",
+          "hints": ["Tư tưởng 'Đất Nước của Nhân dân' xuất hiện ở đoạn nào?"],
+          "explanation": "Nguyễn Đình Thi cảm nhận Đất Nước qua khí thế chiến đấu và vẻ đẹp thiên nhiên. Nguyễn Khoa Điềm độc đáo hơn khi khai thác chiều sâu văn hóa — Đất Nước được tạo nên từ ca dao, phong tục, truyện cổ, tức là từ đời sống tinh thần của nhân dân bình thường."
+        }
+      ]
+    }
+  ]
+}

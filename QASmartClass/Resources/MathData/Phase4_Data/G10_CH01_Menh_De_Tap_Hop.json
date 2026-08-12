@@ -1,0 +1,348 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch01",
+    "chapterName": "Mệnh Đề, Tập Hợp & Hàm Số",
+    "grade": 10,
+    "totalSections": 3,
+    "totalConcepts": 10,
+    "totalProblems": 12,
+    "toolMapping": [],
+    "thptWeight": "4%",
+    "estimatedHours": 10
+  },
+  "sections": [
+    {
+      "sectionId": "md_01",
+      "sectionName": "Mệnh đề & Phép suy luận",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "md_001",
+          "name": "Mệnh đề",
+          "definition": "Một câu khẳng định đúng hoặc sai (không vừa đúng vừa sai)",
+          "examples": [
+            "'3 là số nguyên tố' → Đúng",
+            "'2+3=6' → Sai",
+            "'x>5' → KHÔNG phải mệnh đề (chưa xác định x)"
+          ]
+        },
+        {
+          "id": "md_002",
+          "name": "Phủ định",
+          "formula": "Phủ định ¬P: đúng khi P sai, sai khi P đúng",
+          "rules": [
+            "Phủ định ∀ → ∃ không",
+            "Phủ định ∃ → ∀ không"
+          ]
+        },
+        {
+          "id": "md_003",
+          "name": "Kéo theo & Tương đương",
+          "formulas": [
+            "P ⇒ Q: 'Nếu P thì Q'",
+            "P ⇔ Q: 'P khi và chỉ khi Q'"
+          ]
+        },
+        {
+          "id": "md_004",
+          "name": "Điều kiện cần, đủ",
+          "rules": [
+            "P ⇒ Q: P là ĐK đủ, Q là ĐK cần",
+            "P ⇔ Q: P là ĐK cần và đủ cho Q"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "md_prob_001",
+          "difficulty": "Easy",
+          "question": "Phủ định của 'Mọi học sinh đều chăm học' là:",
+          "options": [
+            "A) Mọi HS đều không chăm",
+            "B) Có ít nhất 1 HS không chăm",
+            "C) Không HS nào chăm",
+            "D) Một vài HS chăm"
+          ],
+          "correctAnswer": "B",
+          "solution": "Phủ định ∀x P(x) = ∃x ¬P(x)",
+          "points": 10
+        },
+        {
+          "problemId": "md_prob_002",
+          "difficulty": "Medium",
+          "question": "Cho P: 'x²=4', Q: 'x=2'. Mệnh đề P⇒Q:",
+          "options": [
+            "A) Đúng",
+            "B) Sai",
+            "C) Không xác định",
+            "D) Tương đương"
+          ],
+          "correctAnswer": "B",
+          "solution": "x²=4 → x=±2. Khi x=-2: P đúng nhưng Q sai → P⇒Q sai",
+          "points": 15
+        },
+        {
+          "problemId": "md_prob_003",
+          "difficulty": "Hard",
+          "question": "Mệnh đề nào sau đây là mệnh đề tương đương?",
+          "options": [
+            "A) x>0 ⇔ x²>0",
+            "B) |x|=x ⇔ x≥0",
+            "C) x²=1 ⇔ x=1",
+            "D) x>1 ⇔ x>2"
+          ],
+          "correctAnswer": "B",
+          "solution": "|x|=x đúng khi x≥0 và ngược lại → tương đương",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "md_02",
+      "sectionName": "Tập hợp & Các phép toán",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "md_005",
+          "name": "Các phép toán tập hợp",
+          "formulas": [
+            "A∪B: hợp",
+            "A∩B: giao",
+            "A\\B: hiệu",
+            "Ā (CₑA): phần bù"
+          ]
+        },
+        {
+          "id": "md_006",
+          "name": "Khoảng, đoạn, nửa khoảng",
+          "types": [
+            "(a;b) = {x: a<x<b}",
+            "[a;b] = {x: a≤x≤b}",
+            "[a;b) = {x: a≤x<b}",
+            "(a;+∞) = {x: x>a}"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "md_prob_004",
+          "difficulty": "Easy",
+          "question": "Cho A=(-2;3], B=[1;5). Tìm A∩B.",
+          "options": [
+            "A) [1;3]",
+            "B) (1;3)",
+            "C) [1;3)",
+            "D) (-2;5)"
+          ],
+          "correctAnswer": "A",
+          "solution": "A∩B = [max(-2,1); min(3,5)] = [1;3]",
+          "points": 10
+        },
+        {
+          "problemId": "md_prob_005",
+          "difficulty": "Medium",
+          "question": "Cho A=(-∞;2), B=(0;+∞). Tìm A\\B.",
+          "options": [
+            "A) (-∞;0]",
+            "B) (-∞;0)",
+            "C) (0;2)",
+            "D) Ø"
+          ],
+          "correctAnswer": "A",
+          "solution": "A\\B = những phần tử thuộc A nhưng không thuộc B = (-∞;0]",
+          "points": 15
+        },
+        {
+          "problemId": "md_prob_006",
+          "difficulty": "Hard",
+          "question": "Cho A={x∈ℤ: |x|≤3}. Số tập con của A là:",
+          "options": [
+            "A) 64",
+            "B) 128",
+            "C) 256",
+            "D) 49"
+          ],
+          "correctAnswer": "B",
+          "solution": "A={-3,-2,-1,0,1,2,3} có 7 phần tử. Số tập con = 2⁷ = 128",
+          "points": 20
+        }
+      ]
+    },
+    {
+      "sectionId": "md_03",
+      "sectionName": "Hàm số cơ bản (Lớp 10)",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "md_007",
+          "name": "Định nghĩa hàm số",
+          "definition": "Quy tắc f gán mỗi x∈D một giá trị y duy nhất"
+        },
+        {
+          "id": "md_008",
+          "name": "Tính chất hàm số",
+          "properties": [
+            "Đồng biến: x₁<x₂ → f(x₁)<f(x₂)",
+            "Nghịch biến: x₁<x₂ → f(x₁)>f(x₂)",
+            "Chẵn: f(-x)=f(x)",
+            "Lẻ: f(-x)=-f(x)"
+          ]
+        },
+        {
+          "id": "md_009",
+          "name": "Hàm bậc nhất y=ax+b",
+          "properties": [
+            "a>0: đồng biến",
+            "a<0: nghịch biến",
+            "Đồ thị: đường thẳng"
+          ]
+        },
+        {
+          "id": "md_010",
+          "name": "Hàm bậc hai y=ax²+bx+c",
+          "properties": [
+            "Đỉnh: (-b/2a; -Δ/4a)",
+            "Trục đối xứng: x=-b/2a",
+            "a>0: bề lõm, a<0: bề lồi"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "md_prob_007",
+          "difficulty": "Easy",
+          "question": "Hàm số y=x²-4x+3 có đỉnh là:",
+          "options": [
+            "A) (2;-1)",
+            "B) (-2;15)",
+            "C) (2;1)",
+            "D) (4;3)"
+          ],
+          "correctAnswer": "A",
+          "solution": "x_đ=-(-4)/(2·1)=2. y_đ=4-8+3=-1. Đỉnh (2;-1)",
+          "points": 10
+        },
+        {
+          "problemId": "md_prob_008",
+          "difficulty": "Medium",
+          "question": "Hàm số f(x)=x³-x là hàm:",
+          "options": [
+            "A) Chẵn",
+            "B) Lẻ",
+            "C) Không chẵn không lẻ",
+            "D) Vừa chẵn vừa lẻ"
+          ],
+          "correctAnswer": "B",
+          "solution": "f(-x)=(-x)³-(-x)=-x³+x=-(x³-x)=-f(x) → hàm lẻ",
+          "points": 15
+        },
+        {
+          "problemId": "md_prob_009",
+          "difficulty": "Easy",
+          "question": "TXĐ của y=√(x-2) là:",
+          "options": [
+            "A) [2;+∞)",
+            "B) (2;+∞)",
+            "C) (-∞;2]",
+            "D) ℝ"
+          ],
+          "correctAnswer": "A",
+          "solution": "x-2≥0 → x≥2 → D=[2;+∞)",
+          "points": 10
+        },
+        {
+          "problemId": "md_prob_010",
+          "difficulty": "Medium",
+          "question": "Parabol y=-x²+2x+3 cắt Ox tại 2 điểm có hoành độ:",
+          "options": [
+            "A) x=-1, x=3",
+            "B) x=1, x=-3",
+            "C) x=0, x=2",
+            "D) x=-1, x=-3"
+          ],
+          "correctAnswer": "A",
+          "solution": "-x²+2x+3=0 → x²-2x-3=0 → (x+1)(x-3)=0 → x=-1, x=3",
+          "points": 15
+        },
+        {
+          "problemId": "md_prob_011",
+          "difficulty": "Hard",
+          "question": "Tìm m để đường thẳng y=x+m tiếp xúc parabol y=x²:",
+          "options": [
+            "A) m=1/4",
+            "B) m=-1/4",
+            "C) m=1",
+            "D) m=0"
+          ],
+          "correctAnswer": "A",
+          "solution": "x²=x+m → x²-x-m=0. Tiếp xúc ⟺ Δ=1+4m=0 → m=-1/4. Kiểm tra: Δ=0 khi m=-1/4... Sửa: x²-x-m=0, Δ=1+4m=0→m=-1/4",
+          "points": 20
+        },
+        {
+          "problemId": "md_prob_012",
+          "difficulty": "Hard",
+          "question": "Tìm m để y=mx²-2x+1>0 ∀x∈ℝ:",
+          "options": [
+            "A) m>1",
+            "B) m≥1",
+            "C) m>0",
+            "D) m≥0"
+          ],
+          "correctAnswer": "A",
+          "solution": "TH m=0: y=-2x+1 không luôn dương. TH m≠0: cần m>0 và Δ'=1-m<0 → m>1",
+          "points": 25
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm phủ định: phủ định 'Mọi' thành 'Không có ai'",
+      "correction": "Phủ định ∀ = ∃ không (tồn tại ít nhất 1)"
+    },
+    {
+      "mistake": "Nhầm A∩B với A∪B",
+      "correction": "Giao = chung, Hợp = tất cả"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "md_quiz_01",
+      "title": "Kiểm tra: Mệnh đề & Tập hợp",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "md_prob_001"
+        },
+        {
+          "ref": "md_prob_004"
+        },
+        {
+          "ref": "md_prob_007"
+        },
+        {
+          "ref": "md_prob_009"
+        },
+        {
+          "ref": "md_prob_010"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

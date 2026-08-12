@@ -1,0 +1,456 @@
+<Window x:Class="QASmartClass.Admin.Views.AdminConsoleWindow"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        xmlns:controls="clr-namespace:QASmartClass.Admin.Controls"
+
+        Title="Bảng điều khiển Quản trị viên - QA SmartClass" Height="800" Width="1200"
+
+        WindowStartupLocation="CenterScreen" WindowStyle="None" ResizeMode="NoResize"
+
+        Background="#0F172A" AllowsTransparency="True" FontFamily="Inter, Segoe UI">
+
+    
+
+    <Window.Resources>
+
+        <!-- Hacker/Terminal Theme Styles -->
+
+        <Style x:Key="TitleText" TargetType="TextBlock">
+
+            <Setter Property="Foreground" Value="#10B981"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Setter Property="FontSize" Value="20"/>
+
+            <Setter Property="Margin" Value="0,0,0,16"/>
+
+        </Style>
+
+
+
+        <Style x:Key="ActionButton" TargetType="Button">
+
+            <Setter Property="Background" Value="#1E293B"/>
+
+            <Setter Property="Foreground" Value="#38BDF8"/>
+
+            <Setter Property="BorderBrush" Value="#334155"/>
+
+            <Setter Property="BorderThickness" Value="1"/>
+
+            <Setter Property="Padding" Value="16,10"/>
+
+            <Setter Property="Margin" Value="0,0,0,12"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+
+                                <Setter TargetName="bd" Property="Background" Value="#334155"/>
+
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#38BDF8"/>
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+
+            <Setter Property="Foreground" Value="#F87171"/>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#450A0A"/>
+
+                    <Setter Property="BorderBrush" Value="#EF4444"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </Window.Resources>
+
+
+
+    <Border BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8">
+
+        <Grid>
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="220"/>
+
+                <ColumnDefinition Width="*"/>
+
+            </Grid.ColumnDefinitions>
+
+
+
+            <!-- Sidebar -->
+
+            <Border Grid.Column="0" Background="#1E293B" CornerRadius="8,0,0,8" Padding="16">
+
+                <StackPanel>
+
+                    <!-- Header -->
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+
+                        <TextBlock Text="&#xE718;" FontFamily="Segoe MDL2 Assets" FontSize="20" Foreground="#6366F1" VerticalAlignment="Center" Margin="0,0,8,0"/>
+
+                        <TextBlock Text="QUẢN TRỊ HỆ THỐNG" FontSize="18" FontWeight="Black" Foreground="White" VerticalAlignment="Center"/>
+
+                    </StackPanel>
+
+
+
+                    <!-- Tabs -->
+
+                    <Button Content="🔄 Chuyển Chế Độ Máy" Tag="0" Style="{StaticResource ActionButton}" Click="Tab_Click"/>
+
+                    <Button Content="📁 Quản Lý Cơ Sở Dữ Liệu" Tag="1" Style="{StaticResource ActionButton}" Click="Tab_Click"/>
+
+                    <Button Content="🐛 Nhật Ký Sự Cố (Logs)" Tag="2" Style="{StaticResource ActionButton}" Click="Tab_Click"/>
+
+                    <Button Content="🗺️ Sơ Đồ Phòng Máy" Tag="3" Style="{StaticResource ActionButton}" Click="Tab_Click"/>
+
+                    <Button x:Name="btnTabSchool" Content="🏫 Quản Trị Dữ Liệu Trường" Tag="4" Style="{StaticResource ActionButton}" Click="Tab_Click"/>
+
+                    <Button x:Name="btnTabVendor" Content="🏢 Hệ Thống QA Vendor" Tag="5" Style="{StaticResource ActionButton}" Click="Tab_Click"/>
+
+                    <Button Content="📊 Thống Kê Hoạt Động" Tag="6" Style="{StaticResource ActionButton}" Click="Tab_Click"/>
+
+
+
+                    <!-- Role Indicator -->
+
+                    <Border Margin="0,24,0,0" Background="#0F172A" CornerRadius="6" Padding="10,8" BorderBrush="#334155" BorderThickness="1">
+
+                        <StackPanel>
+
+                            <TextBlock Text="Quyền truy cập" Foreground="#64748B" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
+
+                            <TextBlock x:Name="txtRoleDisplay" Text="L3 — Giáo viên" Foreground="#FBBF24" FontSize="13" FontWeight="Bold"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </StackPanel>
+
+            </Border>
+
+
+
+            <!-- Main Content Area -->
+
+            <Border Grid.Column="1" Padding="32">
+
+                <Grid>
+
+                    <!-- Close Button -->
+
+                    <Button Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top" 
+
+                            Background="Transparent" BorderThickness="0" Foreground="#64748B" FontSize="18" 
+
+                            Cursor="Hand" Click="Close_Click"/>
+
+
+
+                    <TabControl x:Name="MainTabControl" Background="Transparent" BorderThickness="0" Margin="0,20,0,0">
+
+                        <!-- Ẩn Header của TabControl để dùng Sidebar điều khiển -->
+
+                        <TabControl.Resources>
+
+                            <Style TargetType="TabItem">
+
+                                <Setter Property="Visibility" Value="Collapsed"/>
+
+                            </Style>
+
+                        </TabControl.Resources>
+
+
+
+                        <!-- Tab 0: Switcher -->
+
+                        <TabItem>
+
+                            <StackPanel>
+
+                                <TextBlock Text="CHUYỂN ĐỔI CHẾ ĐỘ" Style="{StaticResource TitleText}"/>
+
+                                <TextBlock Text="Mở ép buộc các giao diện độc lập. Tính năng này sẽ đóng giao diện hiện tại." Foreground="#94A3B8" Margin="0,0,0,24" TextWrapping="Wrap"/>
+
+                                
+
+                                <Button Content="👨‍🏫 Mở giao diện Giáo Viên (Teacher Mode)" Style="{StaticResource ActionButton}" Click="ForceTeacher_Click"/>
+
+                                <Button Content="🎓 Mở giao diện Học Sinh (Student Mode)" Style="{StaticResource ActionButton}" Click="ForceStudent_Click"/>
+
+                                <Button Content="🖊️ Mở Bảng Tương Tác (Smart Touch)" Style="{StaticResource ActionButton}" Click="ForceWhiteboard_Click"/>
+
+                            </StackPanel>
+
+                        </TabItem>
+
+
+
+                        <!-- Tab 1: Storage -->
+
+                        <TabItem>
+
+                            <StackPanel>
+
+                                <TextBlock Text="QUẢN LÝ LƯU TRỮ" Style="{StaticResource TitleText}"/>
+
+                                <TextBlock Text="Quản lý cấu hình cục bộ và dữ liệu SQLite." Foreground="#94A3B8" Margin="0,0,0,24" TextWrapping="Wrap"/>
+
+                                
+
+                                <Button Content="Mở thư mục Database (smartclass.db)" Style="{StaticResource ActionButton}" Click="OpenDbFolder_Click"/>
+
+                                <Button Content="Mở thư mục Logs" Style="{StaticResource ActionButton}" Click="OpenLogsFolder_Click"/>
+
+                                <Button Content="Mở file Cấu hình Học sinh (Notepad)" Style="{StaticResource ActionButton}" Click="OpenStudentProfile_Click"/>
+
+                                <Button Content="Khôi phục từ Backup" Style="{StaticResource ActionButton}" Click="RestoreBackup_Click"/>
+
+                                
+
+                                <Rectangle Height="1" Fill="#334155" Margin="0,16,0,16"/>
+
+                                <TextBlock Text="Vùng Nguy Hiểm (Danger Zone)" Foreground="#F87171" FontWeight="Bold" Margin="0,0,0,12"/>
+
+                                <Button Content="⚠️ Xóa sạch Database (Factory Reset)" Style="{StaticResource DangerButton}" Click="FactoryReset_Click"/>
+
+                            </StackPanel>
+
+                        </TabItem>
+
+
+
+                        <!-- Tab 2: Logs -->
+
+                        <TabItem>
+
+                            <StackPanel>
+
+                                <TextBlock Text="GIÁM SÁT LỖI (LIVE LOGS)" Style="{StaticResource TitleText}"/>
+
+                                <Grid Height="400">
+
+                                    <Grid.RowDefinitions>
+
+                                        <RowDefinition Height="*"/>
+
+                                        <RowDefinition Height="Auto"/>
+
+                                    </Grid.RowDefinitions>
+
+                                    <TextBox x:Name="txtLogs" Grid.Row="0" Background="#1E293B" Foreground="#F8FAFC" 
+
+                                             FontFamily="Segoe UI" FontSize="12" IsReadOnly="True" 
+
+                                             VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+
+                                             Padding="8" BorderBrush="#334155" BorderThickness="1" TextWrapping="NoWrap"/>
+
+                                    
+
+                                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,12,0,0" HorizontalAlignment="Right">
+
+                                        <Button Content="Tải lại Log" Style="{StaticResource ActionButton}" Margin="0,0,12,0" Padding="12,6" Click="RefreshLogs_Click"/>
+
+                                        <Button Content="Ping Giáo Viên" Style="{StaticResource ActionButton}" Padding="12,6" Click="PingTeacher_Click"/>
+
+                                    </StackPanel>
+
+                                </Grid>
+
+                            </StackPanel>
+
+                        </TabItem>
+
+
+
+                        <!-- Tab 3: Topology -->
+
+                        <TabItem>
+
+                            <controls:NetworkTopologyControl Margin="-32"/>
+
+                        </TabItem>
+
+                        
+
+                        <!-- Tab 4: School Admin -->
+
+                        <TabItem>
+
+                            <controls:SchoolAdminDashboardControl Margin="-32"/>
+
+                        </TabItem>
+
+                        
+
+                        <!-- Tab 5: QA Vendor Admin -->
+
+                        <TabItem>
+
+                            <controls:QAVendorAdminControl Margin="-32"/>
+
+                        </TabItem>
+
+                        
+
+                        <!-- Tab 6: Telemetry Stats -->
+
+                        <TabItem>
+
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                                <StackPanel Margin="0,0,0,20">
+
+                                    <TextBlock Text="📊 THỐNG KÊ Sử DỤNG (TELEMETRY)" Style="{StaticResource TitleText}"/>
+
+                                    <TextBlock Text="Dữ liệu được thu thập tự động từ TelemetryService. Nhấn Làm mới để cập nhật." Foreground="#94A3B8" Margin="0,0,0,16" TextWrapping="Wrap"/>
+
+                                    <Button Content="🔄 Làm mới dữ liệu" Style="{StaticResource ActionButton}" Click="RefreshStats_Click" Margin="0,0,0,20"/>
+
+
+
+                                    <!-- KPI Summary Cards -->
+
+                                    <Grid Margin="0,0,0,20">
+
+                                        <Grid.ColumnDefinitions>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                            <ColumnDefinition Width="*"/>
+
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" Background="#1E293B" CornerRadius="8" Padding="15" Margin="0,0,10,0" BorderBrush="#334155" BorderThickness="1">
+
+                                            <StackPanel>
+
+                                                <TextBlock Text="Tổng Phiên" Foreground="#94A3B8" FontSize="13"/>
+
+                                                <TextBlock x:Name="txtTotalSessions" Text="0" Foreground="White" FontSize="28" FontWeight="Black" Margin="0,5,0,0"/>
+
+                                            </StackPanel>
+
+                                        </Border>
+
+                                        <Border Grid.Column="1" Background="#1E293B" CornerRadius="8" Padding="15" Margin="5,0" BorderBrush="#334155" BorderThickness="1">
+
+                                            <StackPanel>
+
+                                                <TextBlock Text="Tổng Giờ Sử Dụng" Foreground="#94A3B8" FontSize="13"/>
+
+                                                <TextBlock x:Name="txtTotalHours" Text="0h" Foreground="White" FontSize="28" FontWeight="Black" Margin="0,5,0,0"/>
+
+                                            </StackPanel>
+
+                                        </Border>
+
+                                        <Border Grid.Column="2" Background="#1E293B" CornerRadius="8" Padding="15" Margin="10,0,0,0" BorderBrush="#334155" BorderThickness="1">
+
+                                            <StackPanel>
+
+                                                <TextBlock Text="Tổng Sự Kiện" Foreground="#94A3B8" FontSize="13"/>
+
+                                                <TextBlock x:Name="txtTotalEvents" Text="0" Foreground="White" FontSize="28" FontWeight="Black" Margin="0,5,0,0"/>
+
+                                            </StackPanel>
+
+                                        </Border>
+
+                                    </Grid>
+
+
+
+                                    <!-- Top Tools -->
+
+                                    <TextBlock Text="Top Công Cụ Sử Dụng" Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                    <Border Background="#1E293B" CornerRadius="8" Padding="15" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,20">
+
+                                        <TextBlock x:Name="txtTopTools" Text="Chưa có dữ liệu. Nhấn Làm mới." Foreground="#CBD5E1" TextWrapping="Wrap"/>
+
+                                    </Border>
+
+
+
+                                    <!-- Recent Events -->
+
+                                    <TextBlock Text="Sự Kiện Gần Đây" Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                                    <Border Background="#0F172A" CornerRadius="8" Padding="10" BorderBrush="#334155" BorderThickness="1">
+
+                                        <TextBlock x:Name="txtRecentEvents" Text="Chưa có dữ liệu." Foreground="#4ADE80" FontFamily="Segoe UI" FontSize="12" TextWrapping="Wrap"/>
+
+                                    </Border>
+
+                                </StackPanel>
+
+                            </ScrollViewer>
+
+                        </TabItem>
+
+                    </TabControl>
+
+                </Grid>
+
+            </Border>
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

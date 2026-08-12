@@ -1,0 +1,45 @@
+
+                case "SCREEN_BROADCAST_STOP":
+                    // GV Táº®T cháº¿ Ä‘á»™ phÃ¡t â†’ HS Ä‘Ã³ng overlay
+                    CloseScreenBroadcast();
+                    ShowNotification("ðŸ“º Dá»«ng phÃ¡t báº£ng", "GV Ä‘Ã£ táº¯t cháº¿ Ä‘á»™ phÃ¡t báº£ng tráº¯ng.", "#666");
+                    Log.Information("Screen broadcast STOP received");
+                    break;
+
+                case "LESSON_END":
+                    // GV káº¿t thÃºc tiáº¿t há»c
+                    ShowNotification("ðŸ Káº¿t thÃºc tiáº¿t há»c", "GV Ä‘Ã£ káº¿t thÃºc tiáº¿t há»c. Cáº£m Æ¡n em!", "#2E7D32");
+                    txtPageTitle.Text = _currentPage == "S2" ? "ðŸ“– BÃ i giáº£ng â€” ÄÃ£ káº¿t thÃºc" : txtPageTitle.Text;
+                    Log.Information("Lesson ended by teacher");
+                    break;
+
+                case "HOMEWORK":
+                    // GV gá»­i BTVN
+                    string hwText = parts.Length >= 3 ? parts[2] : "BÃ i táº­p vá» nhÃ ";
+                    ShowNotification("ðŸ“ BÃ i táº­p vá» nhÃ ", hwText, "#E65100");
+                    Log.Information("Homework received: {Text}", hwText);
+                    break;
+
+                case "FILE_BROADCAST":
+                    // GV phÃ¡t file â†’ auto-detect type from extension
+                    if (parts.Length >= 3)
+                    {
+                        string filePath = parts.Length >= 4 ? parts[3] : parts[2];
+                        string ext = System.IO.Path.GetExtension(filePath).ToLower();
+                        string fileType = ext switch
+                        {
+                            ".png" or ".jpg" or ".jpeg" or ".gif" or ".bmp" => "IMAGE",
+                            ".mp4" or ".avi" or ".mkv" => "VIDEO",
+                            ".pdf" => "PDF",
+                            _ => "FILE"
+                        };
+                        ShowFileBroadcast(fileType, filePath);
+                        string typeLabel = fileType switch
+                        {
+                            "IMAGE" => "ðŸ–¼ï¸ áº¢nh",
+                            "VIDEO" => "ðŸŽ¬ Video",
+                            "PDF" => "ðŸ“„ PDF",
+                            _ => "ðŸ“ TÃ i liá»‡u"
+                        };
+                        ShowNotification($"{typeLabel} tá»« GV",
+                            $"GV Ä‘Ã£ phÃ¡t {System.IO.Path.GetFileName(filePath)}", "#1976D2");

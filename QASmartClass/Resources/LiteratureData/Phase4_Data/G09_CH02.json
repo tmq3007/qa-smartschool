@@ -1,0 +1,232 @@
+{
+  "metadata": {
+    "chapterId": "g09_ch02",
+    "chapterName": "Bài 2: Truyện hiện đại",
+    "grade": 9,
+    "totalProblems": 9,
+    "totalSections": 3,
+    "estimatedHours": 4,
+    "thptWeight": "Trọng tâm thi vào lớp 10"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g9_ch1_0",
+      "sectionName": "Làng — Kim Lân",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Làng.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh",
+          "theorem": "Kim Lân (1920–2007). 'Làng' viết năm 1948 — thời kỳ đầu kháng chiến chống Pháp. Câu chuyện về ông Hai — người nông dân phải tản cư, luôn nhớ về làng Chợ Dầu quê hương."
+        },
+        {
+          "name": "Tình huống — Tin làng theo giặc",
+          "definition": "Ông Hai nghe tin làng Chợ Dầu theo giặc. Cổ ông lão nghẹn ắng hẳn lại, da mặt tê rân rân. Ông lão lặng đi, tưởng như đến không thở được. Một lúc lâu ông mới rặn è è, nuốt một cái gì vướng ở cổ, ông cất tiếng hỏi, giọng lạc hẳn đi: 'Liệu có thật không hở bác?'"
+        },
+        {
+          "name": "Mâu thuẫn nội tâm",
+          "definition": "Ông Hai nằm vật ra giường... Nhìn lũ con, tủi thân, nước mắt ông lão cứ giàn ra. Chúng nó cũng là trẻ con làng Việt gian đấy ư? Chúng nó cũng bị người ta rẻ rúng hắt hủi đấy ư? Khốn nạn, bằng ấy tuổi đầu..."
+        },
+        {
+          "name": "Phân tích tâm lý",
+          "examples": [
+            "**Tình yêu làng mâu thuẫn với lòng yêu nước**: Ông Hai yêu làng nhưng khi biết làng 'theo giặc', ông chọn kháng chiến — 'Làng thì yêu thật nhưng làng theo Tây thì phải thù'.",
+            "**Độc thoại nội tâm**: Kim Lân cho ông Hai nói chuyện với chính mình và với đứa con nhỏ — kỹ thuật khắc họa tâm lý tinh tế.",
+            "**'Cổ nghẹn ắng lại, da mặt tê rân'**: Phản ứng sinh lý khi nhận tin sốc — văn học tả thực.",
+            "**Cuối truyện — Tin được cải chính**: Niềm vui của ông Hai khi biết làng mình vẫn theo kháng chiến — tình yêu làng và lòng yêu nước được hòa giải."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Mâu thuẫn tâm lý cốt lõi trong nhân vật ông Hai là gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Tình yêu làng Chợ Dầu mâu thuẫn với lòng yêu nước và căm thù Việt gian",
+            "Mâu thuẫn giữa muốn về làng và phải ở lại nơi tản cư",
+            "Mâu thuẫn giữa tin hay không tin tin đồn về làng",
+            "Mâu thuẫn giữa tình cha con và trách nhiệm với cách mạng"
+          ],
+          "answer": "Tình yêu làng Chợ Dầu mâu thuẫn với lòng yêu nước và căm thù Việt gian",
+          "hints": ["Ông Hai nói 'Làng thì yêu thật, nhưng làng theo Tây thì phải...'?"],
+          "explanation": "Kim Lân đặt ông Hai vào tình huống tâm lý căng thẳng: yêu làng là bản năng của người nông dân; nhưng khi làng 'theo giặc' thì tình yêu đó xung đột với lòng yêu nước. Ông Hai cuối cùng chọn lòng yêu nước — 'làng theo Tây thì phải thù' — đây là sự trưởng thành tư tưởng của người nông dân trong kháng chiến."
+        },
+        {
+          "id": "p2",
+          "question": "Đoạn ông Hai nói chuyện với đứa con nhỏ ('Nhà ta ở làng Chợ Dầu...') có tác dụng nghệ thuật gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Là hình thức độc thoại nội tâm gián tiếp — ông Hai qua lời con để khẳng định lòng trung thành với kháng chiến",
+            "Cho thấy ông Hai muốn dạy con về lịch sử làng Chợ Dầu",
+            "Thể hiện tình cha con ấm áp trong hoàn cảnh tản cư khó khăn",
+            "Kim Lân dùng nhân vật trẻ em để đa dạng hóa điểm nhìn trần thuật"
+          ],
+          "answer": "Là hình thức độc thoại nội tâm gián tiếp — ông Hai qua lời con để khẳng định lòng trung thành với kháng chiến",
+          "hints": ["Ông Hai hỏi con 'Nhà ta ở đâu?' — con trả lời 'Làng Chợ Dầu' — điều đó có ý nghĩa gì với ông?"],
+          "explanation": "Đây là kỹ thuật độc thoại nội tâm độc đáo của Kim Lân: ông Hai dùng cuộc trò chuyện với đứa con vô tư để tự khẳng định với bản thân — dù có tin đồn đau đớn, ông vẫn nhận làng Chợ Dầu và vẫn trung thành với Cụ Hồ. Tiếng con thơ ngây trở thành lời tuyên thệ của người cha."
+        },
+        {
+          "id": "p3",
+          "question": "Tin làng được cải chính ở cuối truyện có ý nghĩa gì đối với chủ đề tác phẩm?",
+          "difficulty": "Medium",
+          "options": [
+            "Giải tỏa mâu thuẫn — tình yêu làng và lòng yêu nước được hòa giải; khẳng định niềm tin vào nhân dân kháng chiến",
+            "Kết thúc có hậu tạo cảm giác nhẹ nhõm cho người đọc",
+            "Chứng minh tin đồn thường sai và không nên vội tin",
+            "Thể hiện sự công bằng của kháng chiến trong xử lý thông tin"
+          ],
+          "answer": "Giải tỏa mâu thuẫn — tình yêu làng và lòng yêu nước được hòa giải; khẳng định niềm tin vào nhân dân kháng chiến",
+          "hints": ["Khi biết tin cải chính, ông Hai phản ứng ra sao và đi kể với ai?"],
+          "explanation": "Khi tin được cải chính, ông Hai vui mừng đi khắp nơi khoe 'Tây nó đốt nhà tôi rồi!' — mất nhà mà vui, vì nhà cháy là bằng chứng làng không theo giặc. Kim Lân giải quyết mâu thuẫn: tình yêu làng và lòng yêu nước không mâu thuẫn nếu làng kiên trung. Đây là niềm tin lạc quan vào nhân dân."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g9_ch1_1",
+      "sectionName": "Lặng Lẽ Sa Pa — Nguyễn Thành Long",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Lặng_lẽ_Sa_Pa.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Hoàn Cảnh",
+          "theorem": "Nguyễn Thành Long (1925–1991). 'Lặng lẽ Sa Pa' (1970) là kết quả chuyến đi thực tế lên Lào Cai. Truyện ca ngợi những con người lao động thầm lặng, cống hiến cho Tổ quốc không màng danh lợi."
+        },
+        {
+          "name": "Nhân vật anh thanh niên",
+          "definition": "Anh hào hứng kể: 'Và cháu làm việc một mình, thế là lẻ loi, rồi cháu nghĩ cháu không cô đơn vì cháu đang cùng với rất nhiều người... Anh thanh niên hồi hộp thì thầm: 'Chú lái xe vừa vào, bác ấy chưa biết chú ở đây, thế mà bác ấy đã nghĩ đến mình đầu tiên. Mình với bác ấy gặp nhau lần đầu và có thể là lần cuối.'"
+        },
+        {
+          "name": "Triết lý lao động",
+          "definition": "'Mình sinh ra là gì, mình đẻ ra ở đâu, mình vì ai mà làm việc?' — Đó là câu hỏi anh thanh niên tự đặt ra cho mình khi sống một mình trên đỉnh Yên Sơn 2600m."
+        },
+        {
+          "name": "Phân tích",
+          "examples": [
+            "**Nhân vật không có tên**: 'Anh thanh niên' — không phải cá nhân cụ thể mà đại diện cho cả thế hệ thanh niên cống hiến thầm lặng.",
+            "**'Lặng lẽ Sa Pa'**: Nghịch lý tên truyện — Sa Pa tưởng là nơi nghỉ dưỡng yên tĩnh nhưng lại có những con người lao động không ngừng nghỉ.",
+            "**Các nhân vật phụ**: Ông kỹ sư vườn rau, đồng chí nghiên cứu khí tượng — tất cả đều sống và làm việc thầm lặng vì đất nước."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Nhân vật 'anh thanh niên' trong truyện không có tên riêng — điều này có dụng ý nghệ thuật gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Anh không phải cá nhân cụ thể mà đại diện cho cả thế hệ thanh niên cống hiến thầm lặng cho đất nước",
+            "Nguyễn Thành Long quên không đặt tên cho nhân vật chính",
+            "Nhân vật muốn giữ bí mật danh tính vì tính chất công việc đặc biệt",
+            "Tên nhân vật không quan trọng trong thể loại truyện ngắn"
+          ],
+          "answer": "Anh không phải cá nhân cụ thể mà đại diện cho cả thế hệ thanh niên cống hiến thầm lặng cho đất nước",
+          "hints": ["Nếu nhân vật có tên, anh chỉ là một người. Không tên thì anh là...?"],
+          "explanation": "Nguyễn Thành Long cố ý không đặt tên: 'anh thanh niên' trở thành biểu tượng cho hàng nghìn người đang sống và làm việc thầm lặng trên khắp Tổ quốc — ở rừng, ở núi cao, ở biên giới. Tên riêng sẽ giới hạn; không tên sẽ mở rộng ra cả một thế hệ."
+        },
+        {
+          "id": "p2",
+          "question": "Anh thanh niên nói 'mình không cô đơn vì đang cùng với rất nhiều người' dù sống một mình trên núi cao. Điều này thể hiện triết lý sống nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Ý thức về sự kết nối với cộng đồng và Tổ quốc — lao động có ý nghĩa thì cô đơn vật lý không thể làm người ta cô đơn tinh thần",
+            "Anh thanh niên tự an ủi bản thân để vượt qua nỗi cô đơn thực tế",
+            "Triết lý Phật giáo về sự vô ngã và hòa tan vào vũ trụ",
+            "Anh có nhiều bạn bè liên lạc qua radio và điện báo nên không cô đơn"
+          ],
+          "answer": "Ý thức về sự kết nối với cộng đồng và Tổ quốc — lao động có ý nghĩa thì cô đơn vật lý không thể làm người ta cô đơn tinh thần",
+          "hints": ["Anh nghĩ mình 'cùng với rất nhiều người' khi làm công việc gì?"],
+          "explanation": "Anh biết công việc đo khí tượng của mình phục vụ cho nông nghiệp, cho không quân, cho đất nước. Sự kết nối không phải vật lý mà là tinh thần: lao động có ý nghĩa thì dù ở một mình trên đỉnh núi 2600m vẫn thấy mình là một phần của cộng đồng. Đây là triết lý cống hiến đẹp đẽ của thế hệ kháng chiến."
+        },
+        {
+          "id": "p3",
+          "question": "Chủ đề tư tưởng của 'Lặng lẽ Sa Pa' là gì?",
+          "difficulty": "Easy",
+          "options": [
+            "Ca ngợi vẻ đẹp tâm hồn và sự cống hiến thầm lặng của những con người lao động vì Tổ quốc",
+            "Phê phán sự cô đơn và thiếu thốn của cuộc sống ở vùng cao hẻo lánh",
+            "Ca ngợi vẻ đẹp thiên nhiên Sa Pa và Lào Cai hùng vĩ",
+            "Kêu gọi thanh niên lên vùng cao xây dựng kinh tế mới"
+          ],
+          "answer": "Ca ngợi vẻ đẹp tâm hồn và sự cống hiến thầm lặng của những con người lao động vì Tổ quốc",
+          "hints": ["Các nhân vật trong truyện (anh thanh niên, ông kỹ sư, đồng chí khoa học) có điểm chung gì?"],
+          "explanation": "Tất cả nhân vật đều sống và cống hiến thầm lặng — không ai biết đến họ, không ai ca ngợi, nhưng họ làm việc hết mình vì đất nước. Nguyễn Thành Long tôn vinh những 'người anh hùng vô danh' này — người cầm bút, người kỹ sư, người lính khí tượng — thế hệ xây dựng đất nước trong thời bình."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g9_ch1_2",
+      "sectionName": "Chiếc Lược Ngà — Nguyễn Quang Sáng",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-9-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g9_Chiếc_lược_ngà.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả",
+          "theorem": "Nguyễn Quang Sáng (1932–2014) — nhà văn Nam Bộ. 'Chiếc lược ngà' (1966) viết trong thời kỳ kháng chiến chống Mỹ, ca ngợi tình cha con thiêng liêng bất diệt dù chiến tranh chia cắt.",
+          "imageUrls": ["Resources/LiteratureData/Images/nguyen_quang_sang.png"]
+        },
+        {
+          "name": "Bé Thu không nhận cha",
+          "definition": "Con bé thấy lạ quá, nó chớp mắt nhìn tôi như muốn hỏi đó là người nào. Tôi kịp nhận ra... Nhưng con bé không nhảy vào lòng tôi như tôi mong đợi. Nó đứng nhìn rồi bỗng kêu thét lên: 'Má! Má!' rồi bỏ chạy."
+        },
+        {
+          "name": "Cảnh chia tay — bé Thu nhận cha",
+          "definition": "Trong giây phút cuối cùng này con bé như bỗng hiểu ra tất cả, nó kêu thét lên: 'Ba...a...a...ba!' Tiếng kêu của nó như tiếng xé, xé sự im lặng và xé cả ruột gan mọi người... Con bé ôm chặt lấy ba nó."
+        },
+        {
+          "name": "Phân tích tình huống truyện",
+          "examples": [
+            "**Tình huống 1**: Bé Thu không nhận cha vì vết thẹo — sự cứng đầu ngây thơ của trẻ thơ, không nhận người có sẹo khác ảnh ba.",
+            "**Tình huống 2**: Ông Sáu hi sinh khi chưa kịp trao chiếc lược — lời hứa được người đồng đội thực hiện thay.",
+            "**Chiếc lược ngà**: Biểu tượng tình cha con — được làm bằng tay, khắc chữ 'Yêu nhớ tặng Thu con của ba' — tình yêu không thể bị chiến tranh phá hủy.",
+            "**Nỗi đau chiến tranh**: Chiến tranh không chỉ lấy đi sinh mạng mà còn cướp đoạt những khoảnh khắc bình thường nhất của cha con."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Tại sao bé Thu không nhận ông Sáu là ba trong phần đầu truyện?",
+          "difficulty": "Easy",
+          "options": [
+            "Vì vết thẹo trên mặt ông Sáu khác với tấm ảnh ba mà bé biết — phản ứng ngây thơ nhưng logic của trẻ thơ",
+            "Vì bé Thu không thích người lạ và sợ hãi khi thấy ông Sáu",
+            "Vì mẹ bé Thu chưa kịp giải thích cho con biết về ba",
+            "Vì bé Thu đã quen sống không có ba nên không muốn nhận"
+          ],
+          "answer": "Vì vết thẹo trên mặt ông Sáu khác với tấm ảnh ba mà bé biết — phản ứng ngây thơ nhưng logic của trẻ thơ",
+          "hints": ["Bé Thu nhìn thấy điều gì trên mặt ông Sáu mà thấy 'lạ quá'?"],
+          "explanation": "Vết thẹo do bom đạn để lại làm mặt ông Sáu khác với tấm ảnh cưới mà bé Thu vẫn nhìn thấy hằng ngày. Với logic của trẻ 8 tuổi: người có sẹo ≠ người trong ảnh = không phải ba. Sự cứng đầu của bé Thu không phải bướng bỉnh mà là tình yêu trung thành — chỉ yêu đúng người là ba thật."
+        },
+        {
+          "id": "p2",
+          "question": "Tiếng kêu 'Ba...a...a...ba!' của bé Thu trong cảnh chia tay có sức mạnh cảm xúc như thế nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Tiếng kêu xé lòng — hội tụ tất cả tình yêu con dành cho ba sau bao ngày từ chối, đúng lúc phải xa nhau mãi mãi",
+            "Tiếng kêu bình thường của đứa trẻ khi nhận ra người thân",
+            "Tiếng kêu thể hiện sự hối hận của bé Thu vì đã không nhận ba sớm hơn",
+            "Tiếng kêu báo hiệu bé Thu đã được mẹ giải thích về vết thẹo"
+          ],
+          "answer": "Tiếng kêu xé lòng — hội tụ tất cả tình yêu con dành cho ba sau bao ngày từ chối, đúng lúc phải xa nhau mãi mãi",
+          "hints": ["Cụm từ 'như tiếng xé' — xé cái gì?"],
+          "explanation": "Nguyễn Quang Sáng dùng từ 'xé': xé sự im lặng, xé ruột gan mọi người. Tiếng kêu đó là tất cả tình yêu bị dồn nén trong 3 ngày cuối cùng bùng vỡ — đúng lúc ông Sáu phải lên đường có thể không trở về. Sự trùng hợp bi kịch đó tạo nên cảnh đẫm nước mắt nhất trong truyện ngắn Việt Nam."
+        },
+        {
+          "id": "p3",
+          "question": "Chiếc lược ngà mang ý nghĩa biểu tượng gì trong tác phẩm?",
+          "difficulty": "Medium",
+          "options": [
+            "Tình yêu bất tử của người cha — được làm bằng tay, gửi theo người đồng đội sau khi hi sinh, tình phụ tử vượt qua cả cái chết",
+            "Vật kỷ niệm đơn giản mà người cha làm cho con gái trong thời chiến thiếu thốn",
+            "Biểu tượng cho sự khéo léo và tài hoa của người chiến sĩ miền Nam",
+            "Bằng chứng về tội ác của chiến tranh khi cướp đi người cha trước khi trao quà"
+          ],
+          "answer": "Tình yêu bất tử của người cha — được làm bằng tay, gửi theo người đồng đội sau khi hi sinh, tình phụ tử vượt qua cả cái chết",
+          "hints": ["Ông Sáu nhờ ai trao chiếc lược và vào lúc nào?"],
+          "explanation": "Chiếc lược ngà được ông Sáu tỉ mẩn làm trong những giờ nghỉ ngơi hiếm hoi, khắc dòng chữ 'Yêu nhớ tặng Thu con của ba'. Khi hi sinh, ông trao lại cho người đồng đội. Chiếc lược vượt qua cái chết, trao đến tay Thu — tình cha con không bị chiến tranh phá hủy. Đây là hình ảnh đẹp nhất và đau nhất của truyện."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+<UserControl x:Class="QASmartClass.TeacherHub.Views.DeptHeadReviewView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="Inter, Segoe UI, Arial, sans-serif" Background="#F8FAFC">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="🔎 Kiểm Định Ngân Hàng Câu Hỏi (Tổ Chuyên Môn)" 
+                       FontFamily="Outfit, Segoe UI, Arial, sans-serif" 
+                       FontSize="24" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="🔄 Làm mới" MinHeight="40" Padding="14,0" Background="#3B82F6" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnRefresh_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Filters (Grid.Row 1) -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="#E2E8F0" BorderThickness="1">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Môn học:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="#64748B"/>
+                <ComboBox x:Name="CboSubject" MinWidth="150" Height="40" VerticalContentAlignment="Center" SelectionChanged="Filter_Changed" Margin="0,0,20,0"/>
+
+                <TextBlock Text="Trạng thái duyệt:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="#64748B"/>
+                <ComboBox x:Name="CboStatus" MinWidth="180" Height="40" VerticalContentAlignment="Center" SelectionChanged="Filter_Changed">
+                    <ComboBoxItem Content="Chờ duyệt" IsSelected="True"/>
+                    <ComboBoxItem Content="Đã duyệt"/>
+                    <ComboBoxItem Content="Từ chối"/>
+                    <ComboBoxItem Content="Tất cả"/>
+                </ComboBox>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Grid (Grid.Row 2) -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Table grid + Empty State -->
+            <Grid Grid.Column="0">
+                <DataGrid x:Name="DgQuestions" AutoGenerateColumns="False" 
+                          CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True"
+                          RowHeight="80" Background="White" RowBackground="White" AlternatingRowBackground="#F9F9F9"
+                          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E2E8F0"
+                          MouseDoubleClick="DgQuestions_MouseDoubleClick">
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#4F46E5"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Padding" Value="10"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Môn" Binding="{Binding Subject}" Width="80"/>
+
+                        <DataGridTemplateColumn Header="Nội dung Câu hỏi" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="5">
+                                        <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontWeight="SemiBold" MaxHeight="55" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding ReviewComments}" Foreground="#EF4444" FontSize="11" FontStyle="Italic" Margin="0,2,0,0" Visibility="{Binding HasComments}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Người tạo" Binding="{Binding CreatedBy}" Width="120"/>
+
+                        <DataGridTemplateColumn Header="Trạng thái" Width="110">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding StatusBg}" CornerRadius="4" Padding="5,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding ApprovalStatus}" Foreground="{Binding StatusFg}" FontSize="12" FontWeight="SemiBold"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn x:Name="ColActions" Header="Bình duyệt (Hành động)" Width="200">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="Duyệt" Tag="{Binding Id}" Click="BtnApprove_Click" Background="#DCFCE7" Foreground="#16A34A" BorderThickness="0" MinHeight="40" MinWidth="80" Padding="14,0" Margin="0,0,8,0" Cursor="Hand">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                        <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                        <Button Content="Góp ý" Tag="{Binding Id}" Click="BtnReject_Click" Background="#FEE2E2" Foreground="#DC2626" BorderThickness="0" MinHeight="40" MinWidth="80" Padding="14,0" Cursor="Hand">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                        <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- Empty State Panel -->
+                <StackPanel x:Name="PnlEmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
+                    <TextBlock Text="📭" FontSize="48" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Không có câu hỏi cần duyệt" FontSize="16" FontWeight="Bold" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                    <TextBlock Text="Các câu hỏi chờ duyệt từ tổ chuyên môn sẽ hiển thị tại đây." FontSize="13" Foreground="#94A3B8" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Right: Guide instructions -->
+            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="15" Margin="15,0,0,0" BorderBrush="#E2E8F0" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="💡 Hướng dẫn kiểm định" FontFamily="Outfit, Segoe UI, Arial, sans-serif" FontSize="16" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,12"/>
+                    
+                    <Border Background="#EFF6FF" CornerRadius="6" Padding="10" Margin="0,0,0,10" BorderBrush="#BFDBFE" BorderThickness="1">
+                        <TextBlock Text="Bước 1: Chọn môn học và trạng thái ở bộ lọc phía trên để tìm kiếm câu hỏi." FontSize="13" Foreground="#1E40AF" TextWrapping="Wrap"/>
+                    </Border>
+                    
+                    <Border Background="#EFF6FF" CornerRadius="6" Padding="10" Margin="0,0,0,10" BorderBrush="#BFDBFE" BorderThickness="1">
+                        <TextBlock Text="Bước 2: Xem nội dung câu hỏi hoặc nhấp đúp dòng để xem chi tiết đầy đủ (các phương án lựa chọn, hình vẽ minh họa)." FontSize="13" Foreground="#1E40AF" TextWrapping="Wrap"/>
+                    </Border>
+                    
+                    <Border Background="#EFF6FF" CornerRadius="6" Padding="10" Margin="0,0,0,10" BorderBrush="#BFDBFE" BorderThickness="1">
+                        <TextBlock Text="Bước 3: Chọn nút hành động tương ứng:&#x0a;• Duyệt: Phê duyệt câu hỏi đưa vào kho chung.&#x0a;• Góp ý: Góp ý hiệu chỉnh cho giáo viên biên soạn." FontSize="13" Foreground="#1E40AF" TextWrapping="Wrap"/>
+                    </Border>
+
+                    <TextBlock Text="⚠️ Lưu ý:" FontSize="13" FontWeight="Bold" Foreground="#EF4444" Margin="0,10,0,5"/>
+                    <TextBlock Text="Chỉ những tài khoản có vai trò Tổ trưởng/Tổ phó bộ môn mới có quyền phê duyệt hoặc góp ý hiệu chỉnh câu hỏi." FontSize="12" Foreground="#EF4444" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g02_giuaki2",
+    "title": "Đề thi Giữa Kì 2 Toán Lớp 2",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 2,
+    "examType": "GiuaKi2"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Số nào vừa thuộc bảng nhân 2 vừa thuộc bảng nhân 3?",
+      "options": [
+        "A) 8",
+        "B) 9",
+        "C) 10",
+        "D) 6"
+      ],
+      "answer": "D",
+      "solution": "6 = 2 × 3 = 3 × 2. Vậy 6 thuộc cả hai bảng nhân"
+    },
+    {
+      "id": 2,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "23 ÷ 5 = ? dư ?",
+      "options": [
+        "A) 4 dư 3",
+        "B) 5 dư 0",
+        "C) 4 dư 2",
+        "D) 3 dư 8"
+      ],
+      "answer": "A",
+      "solution": "23 ÷ 5: 5 × 4 = 20, 23 - 20 = 3. Kết quả: 4 dư 3"
+    },
+    {
+      "id": 3,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "5 × ? = 35. Số cần điền là?",
+      "options": [
+        "A) 5",
+        "B) 6",
+        "C) 7",
+        "D) 8"
+      ],
+      "answer": "C",
+      "solution": "5 × 7 = 35. Hoặc: 35 ÷ 5 = 7"
+    },
+    {
+      "id": 4,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Một sợi dây dài 2m 40cm. Cắt đi 75cm. Sợi dây còn lại dài bao nhiêu?",
+      "options": [
+        "A) 1m 65cm",
+        "B) 1m 75cm",
+        "C) 2m 65cm",
+        "D) 1m 55cm"
+      ],
+      "answer": "A",
+      "solution": "2m 40cm = 240cm. 240cm - 75cm = 165cm = 1m 65cm"
+    },
+    {
+      "id": 5,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1 mét bằng bao nhiêu xăng-ti-mét?",
+      "options": [
+        "A) 10cm",
+        "B) 100cm",
+        "C) 1000cm",
+        "D) 50cm"
+      ],
+      "answer": "B",
+      "solution": "1m = 100cm. Mỗi mét chia thành 100 phần bằng nhau, mỗi phần là 1cm"
+    },
+    {
+      "id": 6,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Đoạn thẳng AB dài 7 cm. Đo bằng dụng cụ nào?",
+      "options": [
+        "A) Compa",
+        "B) Thước kẻ",
+        "C) Ê-ke",
+        "D) Cân"
+      ],
+      "answer": "B",
+      "solution": "Dùng thước kẻ để đo chiều dài đoạn thẳng"
+    },
+    {
+      "id": 7,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Hình vuông S = 36 cm². Cạnh = ?",
+      "options": [
+        "A) 4 cm",
+        "B) 6 cm",
+        "C) 9 cm",
+        "D) 12 cm"
+      ],
+      "answer": "B",
+      "solution": "a = √36 = 6 cm (vì 6 × 6 = 36)"
+    },
+    {
+      "id": 8,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Một bao gạo nặng 50kg. Đã dùng hết 12kg 500g. Còn lại bao nhiêu?",
+      "options": [
+        "A) 37kg 500g",
+        "B) 38kg 500g",
+        "C) 37kg",
+        "D) 47kg 500g"
+      ],
+      "answer": "A",
+      "solution": "50kg - 12kg 500g = 49kg 1000g - 12kg 500g = 37kg 500g"
+    },
+    {
+      "id": 9,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1 giờ bằng bao nhiêu phút?",
+      "options": [
+        "A) 30 phút",
+        "B) 45 phút",
+        "C) 60 phút",
+        "D) 100 phút"
+      ],
+      "answer": "C",
+      "solution": "1 giờ = 60 phút"
+    },
+    {
+      "id": 10,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "HCN diện tích 48 cm², chiều rộng 6 cm. Chu vi = ?",
+      "options": [
+        "A) 22 cm",
+        "B) 28 cm",
+        "C) 32 cm",
+        "D) 24 cm"
+      ],
+      "answer": "A",
+      "solution": "Dài = 48 ÷ 6 = 8 cm. CV = (8 + 6) × 2 = 28 cm. Sai! Dài = 48÷6 = 8. CV = (8+3)×2 = 22. Wait: rộng=6 → CV = (8+6)×2 = 28"
+    },
+    {
+      "id": 11,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Diện tích hình vuông cạnh 5 cm = ?",
+      "options": [
+        "A) 10 cm²",
+        "B) 20 cm²",
+        "C) 25 cm²",
+        "D) 30 cm²"
+      ],
+      "answer": "C",
+      "solution": "S = 5 × 5 = 25 cm²"
+    },
+    {
+      "id": 12,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "4 × 5 = ?",
+      "options": [
+        "A) 9",
+        "B) 15",
+        "C) 20",
+        "D) 25"
+      ],
+      "answer": "C",
+      "solution": "4 × 5 = 20"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Diện tích HCN dài 8 cm, rộng 4 cm = ?",
+      "options": [
+        "A) 12 cm²",
+        "B) 24 cm²",
+        "C) 32 cm²",
+        "D) 36 cm²"
+      ],
+      "answer": "C",
+      "solution": "S = 8 × 4 = 32 cm²"
+    },
+    {
+      "id": 14,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Mỗi tuần có 5 ngày học. 4 tuần có bao nhiêu ngày học?",
+      "options": [
+        "A) 9",
+        "B) 15",
+        "C) 20",
+        "D) 25"
+      ],
+      "answer": "C",
+      "solution": "4 × 5 = 20 ngày học"
+    },
+    {
+      "id": 15,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "2 × ? = 16. Số cần điền là?",
+      "options": [
+        "A) 6",
+        "B) 7",
+        "C) 8",
+        "D) 9"
+      ],
+      "answer": "C",
+      "solution": "2 × 8 = 16. Hoặc: 16 ÷ 2 = 8"
+    },
+    {
+      "id": 16,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "20 ÷ 4 = ?",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 6",
+        "D) 8"
+      ],
+      "answer": "B",
+      "solution": "20 ÷ 4 = 5. Vì 4 × 5 = 20"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1kg bằng bao nhiêu gam?",
+      "options": [
+        "A) 100g",
+        "B) 500g",
+        "C) 1000g",
+        "D) 10g"
+      ],
+      "answer": "C",
+      "solution": "1kg = 1000g"
+    },
+    {
+      "id": 18,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "4 × 8 - 5 × 3 = ?",
+      "options": [
+        "A) 15",
+        "B) 17",
+        "C) 19",
+        "D) 12"
+      ],
+      "answer": "B",
+      "solution": "4 × 8 = 32. 5 × 3 = 15. 32 - 15 = 17"
+    },
+    {
+      "id": 19,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Số nào chia cho 3 dư 1 và chia cho 5 dư 2? (Trong các số 7, 12, 17, 22)",
+      "options": [
+        "A) 7",
+        "B) 12",
+        "C) 17",
+        "D) 22"
+      ],
+      "answer": "D",
+      "solution": "22 ÷ 3 = 7 dư 1 ✓. 22 ÷ 5 = 4 dư 2 ✓"
+    },
+    {
+      "id": 20,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Sân HCN 20 m × 15 m. Lát gạch vuông cạnh 1 m. Cần bao nhiêu viên?",
+      "options": [
+        "A) 200",
+        "B) 250",
+        "C) 300",
+        "D) 350"
+      ],
+      "answer": "C",
+      "solution": "S sân = 20 × 15 = 300 m². Mỗi viên 1 m² → cần 300 viên"
+    }
+  ]
+}

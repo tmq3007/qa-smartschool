@@ -1,0 +1,285 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Science.DensityTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="{StaticResource Gray100}">
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Border Grid.Row="0" CornerRadius="0" Padding="16,12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#EFEBE9" Offset="0"/>
+                    <GradientStop Color="#D7CCC8" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <DockPanel>
+                <Border DockPanel.Dock="Right" Background="#4E342E" CornerRadius="8" Padding="14,8" VerticalAlignment="Center" Cursor="Hand"
+                        MouseLeftButtonDown="ResetAll_Click" ToolTip="Đặt lại tất cả">
+                    <TextBlock Text="🔄 Reset" FontSize="14" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel>
+                    <TextBlock Text="⚖️ Khối Lượng Riêng" FontSize="20" FontWeight="Bold" Foreground="#4E342E"/>
+                    <TextBlock Text="Lớp 9-12 • ρ = m/V • 30+ chất liệu • Nổi/Chìm" FontSize="14" Foreground="#8D6E63" Margin="0,3,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- === MAIN CONTENT (Master-Detail) === -->
+        <Grid Grid.Row="1" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU -->
+            <Grid Grid.Column="0" Background="#EFEBE9">
+                <!-- TODO Phase 3: Đổi sang Science GREEN (#E8F5E9, #C8E6C9, #2E7D32) -->
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#D7CCC8"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#4E342E"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Quy trình" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🧮" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextCalculator" Text="Tính toán" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextTable" Text="Bảng tra cứu" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌊" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextFloat" Text="Nổi/Chìm" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🎯" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#D7CCC8"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="16">
+                <!-- VIEW 0: HƯỚNG DẪN & QUY TRÌNH -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Visible">
+                    <StackPanel Background="White" Margin="12">
+                        <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#C8E6C9" BorderThickness="1">
+                            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Cột 1: Dành cho Giáo viên -->
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="👩‍🏫 Dành cho Giáo viên (Teacher Mode)" FontSize="16" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Rê chuột vào nội dung cần trình chiếu, bấm [🎯 Focus] để phóng to trên màn hình học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Bấm [🖊️ Bảng trắng] để chụp ảnh nội dung đưa vào bảng vẽ minh họa." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Bấm [📊 Xuất lịch sử (Excel)] ở tiêu đề để xuất kết quả làm bài của học sinh." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                                <!-- Đường chia giữa -->
+                                <Border Grid.Column="1" Background="#C8E6C9" Width="1" Margin="10,0" VerticalAlignment="Stretch"/>
+                                <!-- Cột 2: Dành cho Học sinh -->
+                                <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                    <TextBlock Text="🧑‍🎓 Dành cho Học sinh (Student Mode)" FontSize="16" FontWeight="Bold" Foreground="#1565C0" Margin="0,0,0,16"/>
+                                    <TextBlock Text="• Bước 1: Đọc hướng dẫn bên dưới, sau đó chọn tab chức năng phù hợp trên sidebar." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 2: Thực hành các bài tập theo yêu cầu của giáo viên." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                    <TextBlock Text="• Bước 3: Kiểm tra kết quả và hoàn thành bài tập." FontSize="13.5" TextWrapping="Wrap" Margin="0,4"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+<Border Background="#EFEBE9" CornerRadius="6" Padding="12" Margin="0,0,0,12" BorderBrush="#D7CCC8" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="💡 KHÁI NIỆM KHỐI LƯỢNG RIÊNG VÀ SỰ NỔI CHÌM" FontWeight="Bold" Foreground="#4E342E" FontSize="14" Margin="0,0,0,6"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#424242" LineHeight="18">
+                                    Khối lượng riêng (ρ) là đại lượng đo bằng thương số giữa khối lượng (m) của một vật làm bằng chất đó và thể tích (V) của vật: ρ = m/V. Một vật sẽ nổi trên chất lỏng nếu khối lượng riêng của nó nhỏ hơn khối lượng riêng của chất lỏng, và chìm nếu ngược lại.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="🎯 Các khu vực thực hành chính:" FontSize="15" FontWeight="Bold" Foreground="#4E342E" Margin="0,4,0,8"/>
+                        <TextBlock Text="1. Tính toán khối lượng riêng: Nhập 2 trong 3 đại lượng (m, V, ρ) để tự động tính toán giá trị còn lại kèm đổi đơn vị đo chuẩn." FontSize="13.5" Foreground="#424242" Margin="4,2"/>
+                        <TextBlock Text="2. Bảng tra cứu khoa học: Khảo sát thông số khối lượng riêng của hơn 30 vật liệu phổ biến bao gồm thể khí, thể lỏng và thể rắn." FontSize="13.5" Foreground="#424242" Margin="4,2"/>
+                        <TextBlock Text="3. Mô phỏng Nổi/Chìm: Thả các vật có khối lượng riêng khác nhau vào bể nước để kiểm tra cơ học chất lưu trực quan." FontSize="13.5" Foreground="#424242" Margin="4,2"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: CALCULATOR -->
+                <ScrollViewer x:Name="viewCalculator" VerticalScrollBarVisibility="Auto" Padding="12" Visibility="Collapsed">
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT COLUMN: Input -->
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <!-- Formula card -->
+                            <Border Background="White" CornerRadius="14" Padding="20,16" Margin="0,0,0,16" BorderBrush="#D7CCC8" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Width="60" Height="60" CornerRadius="30" Margin="0,0,16,0" VerticalAlignment="Center">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#4E342E" Offset="0"/>
+                                                <GradientStop Color="#8D6E63" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <TextBlock Text="ρ" FontSize="28" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock FontSize="28" FontWeight="Bold" Foreground="#4E342E">
+                                            <Run Text="ρ = m / V"/>
+                                        </TextBlock>
+                                        <TextBlock Text="Khối lượng riêng = Khối lượng / Thể tích" FontSize="14" Foreground="#90A4AE" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Input fields -->
+                            <Border Background="White" CornerRadius="14" Padding="24,20" Margin="0,0,0,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <StackPanel>
+                                    <TextBlock Text="📝 Nhập 2 trong 3 đại lượng – giá trị còn lại sẽ tự tính" FontSize="16" FontWeight="SemiBold" Foreground="#757575" Margin="0,0,0,16"/>
+
+                                    <Border Background="#F5F7FA" CornerRadius="12" Padding="16,12" Margin="0,0,0,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="160"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="Khối lượng  m" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource BrandAccent}"/>
+                                                <TextBlock Text="mass" FontSize="12" Foreground="#FFAB91" FontStyle="Italic"/>
+                                            </StackPanel>
+                                            <TextBox x:Name="txtMass" Grid.Column="1" FontSize="20" Padding="10,8" FontWeight="SemiBold" TextChanged="Calc_Changed" BorderBrush="#FFAB91" BorderThickness="0,0,0,2" Background="Transparent" VerticalContentAlignment="Center"/>
+                                            <ComboBox x:Name="cmbMassUnit" Grid.Column="2" Width="90" Margin="10,0,0,0" FontSize="16" VerticalContentAlignment="Center" SelectionChanged="Calc_Changed" SelectedIndex="0">
+                                                <ComboBoxItem Content="kg"/>
+                                                <ComboBoxItem Content="g"/>
+                                                <ComboBoxItem Content="tấn"/>
+                                            </ComboBox>
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Background="#F5F7FA" CornerRadius="12" Padding="16,12" Margin="0,0,0,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="160"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="Thể tích  V" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}"/>
+                                                <TextBlock Text="volume" FontSize="12" Foreground="#90CAF9" FontStyle="Italic"/>
+                                            </StackPanel>
+                                            <TextBox x:Name="txtVolume" Grid.Column="1" FontSize="20" Padding="10,8" FontWeight="SemiBold" TextChanged="Calc_Changed" BorderBrush="#90CAF9" BorderThickness="0,0,0,2" Background="Transparent" VerticalContentAlignment="Center"/>
+                                            <ComboBox x:Name="cmbVolUnit" Grid.Column="2" Width="90" Margin="10,0,0,0" FontSize="16" VerticalContentAlignment="Center" SelectionChanged="Calc_Changed" SelectedIndex="0">
+                                                <ComboBoxItem Content="m³"/>
+                                                <ComboBoxItem Content="cm³"/>
+                                                <ComboBoxItem Content="L"/>
+                                                <ComboBoxItem Content="mL"/>
+                                            </ComboBox>
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Background="#F5F7FA" CornerRadius="12" Padding="16,12" Margin="0,0,0,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="160"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="Khối lượng riêng  ρ" FontSize="16" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                                                <TextBlock Text="density" FontSize="12" Foreground="#A5D6A7" FontStyle="Italic"/>
+                                            </StackPanel>
+                                            <TextBox x:Name="txtDensity" Grid.Column="1" FontSize="20" Padding="10,8" FontWeight="SemiBold" TextChanged="Calc_Changed" BorderBrush="#A5D6A7" BorderThickness="0,0,0,2" Background="Transparent" VerticalContentAlignment="Center"/>
+                                            <ComboBox x:Name="cmbDensUnit" Grid.Column="2" Width="90" Margin="10,0,0,0" FontSize="16" VerticalContentAlignment="Center" SelectionChanged="Calc_Changed" SelectedIndex="0">
+                                                <ComboBoxItem Content="kg/m³"/>
+                                                <ComboBoxItem Content="g/cm³"/>
+                                            </ComboBox>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Quick presets -->
+                            <Border Background="White" CornerRadius="14" Padding="20,16" BorderBrush="#E0E0E0" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.08"/></Border.Effect>
+                                <StackPanel>
+                                    <TextBlock Text="⚡ Tính nhanh – chọn chất liệu" FontSize="16" FontWeight="SemiBold" Foreground="#424242" Margin="0,0,0,12"/>
+                                    <WrapPanel x:Name="presetPanel"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- RIGHT COLUMN: Results -->
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <StackPanel x:Name="calcResultPanel" Margin="0,0,0,16"/>
+
+                            <!-- Graph -->
+                            <Border Background="#E3F2FD" CornerRadius="14" Padding="16,12" Margin="0,0,0,0" Cursor="Hand" MouseLeftButtonDown="OpenGraph_Click" BorderBrush="#90CAF9" BorderThickness="1">
+                                <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.06"/></Border.Effect>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="📈" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Xem đồ thị" FontSize="16" FontWeight="Bold" Foreground="{StaticResource BrandPrimary}"/>
+                                        <TextBlock Text="m = ρ × V – so sánh các chất" FontSize="13" Foreground="#1976D2"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+
+                <!-- VIEW 2: TEMPERATURE TABLE -->
+                <ScrollViewer x:Name="viewTable" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel x:Name="tablePanel" Margin="12"/>
+                </ScrollViewer>
+
+                <!-- VIEW 3: FLOAT / SINK -->
+                <ScrollViewer x:Name="viewFloat" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel x:Name="floatPanel" Margin="12"/>
+                </ScrollViewer>
+
+                <!-- VIEW 4: PRACTICAL APPLICATIONS -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

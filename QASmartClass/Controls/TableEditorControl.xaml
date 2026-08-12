@@ -1,0 +1,932 @@
+<UserControl x:Class="QASmartTouch.Controls.TableEditorControl"
+
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+
+             mc:Ignorable="d" 
+
+             d:DesignHeight="450" d:DesignWidth="800"
+
+             Background="White">
+
+    
+
+    <UserControl.Resources>
+
+        <!-- TextBox style for table cells -->
+
+        <Style x:Key="CellTextBoxStyle" TargetType="TextBox">
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Background" Value="Transparent"/>
+
+            <Setter Property="Padding" Value="8"/>
+
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+            <Setter Property="TextWrapping" Value="Wrap"/>
+
+            <Setter Property="AcceptsReturn" Value="True"/>
+
+            <Setter Property="FontSize" Value="14"/>
+
+            <Setter Property="CaretBrush" Value="#2E86DE"/>
+
+        </Style>
+
+
+
+        <!-- Add Column Button Style -->
+
+        <Style x:Key="AddColumnButtonStyle" TargetType="Button">
+
+            <Setter Property="Background" Value="#E3F2FD"/>
+
+            <Setter Property="Foreground" Value="#2E86DE"/>
+
+            <Setter Property="BorderThickness" Value="1"/>
+
+            <Setter Property="BorderBrush" Value="#2E86DE"/>
+
+            <Setter Property="FontSize" Value="16"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Width" Value="30"/>
+
+            <Setter Property="Height" Value="30"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}" 
+
+                               BorderBrush="{TemplateBinding BorderBrush}"
+
+                               BorderThickness="{TemplateBinding BorderThickness}"
+
+                               CornerRadius="15">
+
+                            <ContentPresenter HorizontalAlignment="Center" 
+
+                                            VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#2E86DE"/>
+
+                    <Setter Property="Foreground" Value="White"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+
+
+        <!-- Add Row Button Style -->
+
+        <Style x:Key="AddRowButtonStyle" TargetType="Button">
+
+            <Setter Property="Background" Value="#E8F5E9"/>
+
+            <Setter Property="Foreground" Value="#4CAF50"/>
+
+            <Setter Property="BorderThickness" Value="1"/>
+
+            <Setter Property="BorderBrush" Value="#4CAF50"/>
+
+            <Setter Property="FontSize" Value="16"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Width" Value="30"/>
+
+            <Setter Property="Height" Value="30"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}" 
+
+                               BorderBrush="{TemplateBinding BorderBrush}"
+
+                               BorderThickness="{TemplateBinding BorderThickness}"
+
+                               CornerRadius="15">
+
+                            <ContentPresenter HorizontalAlignment="Center" 
+
+                                            VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#4CAF50"/>
+
+                    <Setter Property="Foreground" Value="White"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </UserControl.Resources>
+
+
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <!-- Toolbar -->
+
+            <RowDefinition Height="*"/>
+
+            <!-- Table -->
+
+            <RowDefinition Height="Auto"/>
+
+            <!-- Footer -->
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- TOOLBAR -->
+
+        <Border Grid.Row="0" 
+
+                Background="#F8F9FA" 
+
+                BorderBrush="#E1E8ED" 
+
+                BorderThickness="0,0,0,1"
+
+                Padding="10">
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                <Button x:Name="btnBold" 
+
+                        Content="B" 
+
+                        Width="32" Height="32"
+
+                        Margin="3"
+
+                        FontWeight="Bold"
+
+                        FontSize="14"
+
+                        ToolTip="Đậm (Ctrl+B)"
+
+                        Click="btnBold_Click"/>
+
+                
+
+                <Button x:Name="btnItalic" 
+
+                        Content="I" 
+
+                        Width="32" Height="32"
+
+                        Margin="3"
+
+                        FontStyle="Italic"
+
+                        FontSize="14"
+
+                        ToolTip="Nghiêng (Ctrl+I)"
+
+                        Click="btnItalic_Click"/>
+
+                
+
+                <Button x:Name="btnUnderline" 
+
+                        Content="U" 
+
+                        Width="32" Height="32"
+
+                        Margin="3"
+
+                        FontSize="14"
+
+                        ToolTip="Gạch chân (Ctrl+U)"
+
+                        Click="btnUnderline_Click">
+
+                    <Button.Template>
+
+                        <ControlTemplate TargetType="Button">
+
+                            <Border Background="{TemplateBinding Background}" 
+
+                                   BorderBrush="{TemplateBinding BorderBrush}"
+
+                                   BorderThickness="{TemplateBinding BorderThickness}">
+
+                                <TextBlock Text="U" 
+
+                                          TextDecorations="Underline"
+
+                                          HorizontalAlignment="Center"
+
+                                          VerticalAlignment="Center"
+
+                                          FontSize="14"/>
+
+                            </Border>
+
+                        </ControlTemplate>
+
+                    </Button.Template>
+
+                </Button>
+
+
+
+                <Separator Width="1" Margin="8,4" Background="#E1E8ED"/>
+
+
+
+                <Button x:Name="btnAlignLeft" 
+
+                        Content="⬅" 
+
+                        Width="32" Height="32"
+
+                        Margin="3"
+
+                        FontSize="14"
+
+                        ToolTip="Căn trái"
+
+                        Click="btnAlignLeft_Click"/>
+
+                
+
+                <Button x:Name="btnAlignCenter" 
+
+                        Content="↔" 
+
+                        Width="32" Height="32"
+
+                        Margin="3"
+
+                        FontSize="14"
+
+                        ToolTip="Căn giữa"
+
+                        Click="btnAlignCenter_Click"/>
+
+                
+
+                <Button x:Name="btnAlignRight" 
+
+                        Content="➡" 
+
+                        Width="32" Height="32"
+
+                        Margin="3"
+
+                        FontSize="14"
+
+                        ToolTip="Căn phải"
+
+                        Click="btnAlignRight_Click"/>
+
+
+
+                <Separator Width="1" Margin="8,4" Background="#E1E8ED"/>
+
+
+
+                <!-- Color pickers -->
+
+                <Button x:Name="btnTextColor" 
+
+                        Width="32" Height="32"
+
+                        Margin="3"
+
+                        FontSize="14"
+
+                        ToolTip="Màu chữ"
+
+                        Click="btnTextColor_Click">
+
+                    <StackPanel Orientation="Vertical">
+
+                        <TextBlock Text="A" FontWeight="Bold" FontSize="16"/>
+
+                        <Rectangle Height="3" Fill="Black" Margin="0,-2,0,0"/>
+
+                    </StackPanel>
+
+                </Button>
+
+                
+
+                <Button x:Name="btnBackgroundColor" 
+
+                        Width="32" Height="32"
+
+                        Margin="3"
+
+                        FontSize="14"
+
+                        ToolTip="Màu nền"
+
+                        Click="btnBackgroundColor_Click">
+
+                    <Grid>
+
+                        <Rectangle Fill="LightGray" Stroke="Gray" StrokeThickness="1"/>
+
+                        <Path Data="M 8,4 L 20,20 L 8,20 Z" Fill="Yellow" Stroke="Orange" StrokeThickness="1" Margin="6"/>
+
+                    </Grid>
+
+                </Button>
+
+
+
+                <Separator Width="1" Margin="8,4" Background="#E1E8ED"/>
+
+
+
+                <Button x:Name="btnAddRow" 
+
+                        Content="+ Dòng" 
+
+                        Height="32"
+
+                        Margin="3"
+
+                        Padding="12,4"
+
+                        FontSize="12"
+
+                        Background="#E8F5E9"
+
+                        Foreground="#4CAF50"
+
+                        BorderBrush="#4CAF50"
+
+                        ToolTip="Thêm dòng"
+
+                        Click="btnAddRow_Click"/>
+
+                
+
+                <Button x:Name="btnAddColumn" 
+
+                        Content="+ Cột" 
+
+                        Height="32"
+
+                        Margin="3"
+
+                        Padding="12,4"
+
+                        FontSize="12"
+
+                        Background="#E3F2FD"
+
+                        Foreground="#2E86DE"
+
+                        BorderBrush="#2E86DE"
+
+                        ToolTip="Thêm cột"
+
+                        Click="btnAddColumn_Click"/>
+
+
+
+                <Button x:Name="btnDeleteRow" 
+
+                        Content="− Dòng" 
+
+                        Height="32"
+
+                        Margin="3"
+
+                        Padding="12,4"
+
+                        FontSize="12"
+
+                        Background="#FFEBEE"
+
+                        Foreground="#EE5A6F"
+
+                        BorderBrush="#EE5A6F"
+
+                        ToolTip="Xóa dòng"
+
+                        Click="btnDeleteRow_Click"/>
+
+                
+
+                <Button x:Name="btnDeleteColumn" 
+
+                        Content="− Cột" 
+
+                        Height="32"
+
+                        Margin="3"
+
+                        Padding="12,4"
+
+                        FontSize="12"
+
+                        Background="#FFEBEE"
+
+                        Foreground="#EE5A6F"
+
+                        BorderBrush="#EE5A6F"
+
+                        ToolTip="Xóa cột"
+
+                        Click="btnDeleteColumn_Click"/>
+
+
+
+                <Separator Width="1" Margin="8,4" Background="#E1E8ED"/>
+
+
+
+                <Button x:Name="btnAutoFit" 
+
+                        Content="⚡ Vừa khít" 
+
+                        Height="32"
+
+                        Margin="3"
+
+                        Padding="12,4"
+
+                        FontSize="12"
+
+                        Background="#E8EAF6"
+
+                        Foreground="#5C6BC0"
+
+                        BorderBrush="#5C6BC0"
+
+                        ToolTip="Tự động điều chỉnh kích thước vừa khít nội dung"
+
+                        Click="btnAutoFit_Click"/>
+
+
+
+                <CheckBox x:Name="chkAutoHeight" 
+
+                         Content="Tự động giãn dòng"
+
+                         VerticalAlignment="Center"
+
+                         Margin="8,0"
+
+                         ToolTip="Tự động tăng chiều cao dòng theo nội dung"
+
+                         Checked="chkAutoHeight_Checked"
+
+                         Unchecked="chkAutoHeight_Unchecked"/>
+
+                
+
+                <Separator Width="1" Margin="8,4" Background="#E1E8ED"/>
+
+                
+
+                <StackPanel Orientation="Vertical" Margin="8,0">
+
+                    <TextBlock Text="💡 Chọn nhiều ô:" 
+
+                              FontSize="11"
+
+                              FontWeight="Bold"
+
+                              Foreground="#2E86DE"/>
+
+                    <TextBlock Margin="15,2,0,0">
+
+                        <Run Text="Giữ " Foreground="#666" FontSize="10"/>
+
+                        <Run Text="Ctrl" Foreground="#FF5722" FontWeight="Bold" FontSize="10"/>
+
+                        <Run Text=" + Click vào ô đầu" Foreground="#666" FontSize="10"/>
+
+                    </TextBlock>
+
+                    <TextBlock Text="→ Kéo qua các ô khác" 
+
+                              Foreground="#666" 
+
+                              FontSize="10" 
+
+                              Margin="15,0,0,0"/>
+
+                </StackPanel>
+
+            </StackPanel>
+
+        </Border>
+
+
+
+        <!-- TABLE CONTAINER -->
+
+        <ScrollViewer Grid.Row="1" 
+
+                     VerticalScrollBarVisibility="Auto"
+
+                     HorizontalScrollBarVisibility="Auto"
+
+                     Padding="20">
+
+            <!-- Wrapper với resize handles -->
+
+            <Grid x:Name="tableWrapper" 
+
+                  HorizontalAlignment="Left" 
+
+                  VerticalAlignment="Top">
+
+                <!-- Main table border -->
+
+                <Border x:Name="tableBorder"
+
+                        BorderBrush="#2E86DE"
+
+                        BorderThickness="2"
+
+                        Background="Transparent">
+
+                    <Grid x:Name="tableContainer">
+
+                        <!-- Dynamic table will be generated here -->
+
+                    </Grid>
+
+                </Border>
+
+
+
+                <!-- Resize handles - 8 handles (4 corners + 4 edges) -->
+
+                
+
+                <!-- Corner handles -->
+
+                <Border x:Name="handleTopLeft"
+
+                        Width="12" Height="12"
+
+                        Background="#2E86DE"
+
+                        CornerRadius="6"
+
+                        HorizontalAlignment="Left"
+
+                        VerticalAlignment="Top"
+
+                        Margin="-6,-6,0,0"
+
+                        Cursor="SizeNWSE"
+
+                        MouseLeftButtonDown="Handle_MouseLeftButtonDown"
+
+                        MouseLeftButtonUp="Handle_MouseLeftButtonUp"
+
+                        MouseMove="Handle_MouseMove"
+
+                        Tag="TopLeft"/>
+
+
+
+                <Border x:Name="handleTopRight"
+
+                        Width="12" Height="12"
+
+                        Background="#2E86DE"
+
+                        CornerRadius="6"
+
+                        HorizontalAlignment="Right"
+
+                        VerticalAlignment="Top"
+
+                        Margin="0,-6,-6,0"
+
+                        Cursor="SizeNESW"
+
+                        MouseLeftButtonDown="Handle_MouseLeftButtonDown"
+
+                        MouseLeftButtonUp="Handle_MouseLeftButtonUp"
+
+                        MouseMove="Handle_MouseMove"
+
+                        Tag="TopRight"/>
+
+
+
+                <Border x:Name="handleBottomLeft"
+
+                        Width="12" Height="12"
+
+                        Background="#2E86DE"
+
+                        CornerRadius="6"
+
+                        HorizontalAlignment="Left"
+
+                        VerticalAlignment="Bottom"
+
+                        Margin="-6,0,0,-6"
+
+                        Cursor="SizeNESW"
+
+                        MouseLeftButtonDown="Handle_MouseLeftButtonDown"
+
+                        MouseLeftButtonUp="Handle_MouseLeftButtonUp"
+
+                        MouseMove="Handle_MouseMove"
+
+                        Tag="BottomLeft"/>
+
+
+
+                <Border x:Name="handleBottomRight"
+
+                        Width="12" Height="12"
+
+                        Background="#2E86DE"
+
+                        CornerRadius="6"
+
+                        HorizontalAlignment="Right"
+
+                        VerticalAlignment="Bottom"
+
+                        Margin="0,0,-6,-6"
+
+                        Cursor="SizeNWSE"
+
+                        MouseLeftButtonDown="Handle_MouseLeftButtonDown"
+
+                        MouseLeftButtonUp="Handle_MouseLeftButtonUp"
+
+                        MouseMove="Handle_MouseMove"
+
+                        Tag="BottomRight"/>
+
+
+
+                <!-- Edge handles -->
+
+                <Border x:Name="handleTop"
+
+                        Width="40" Height="8"
+
+                        Background="#2E86DE"
+
+                        CornerRadius="4"
+
+                        HorizontalAlignment="Center"
+
+                        VerticalAlignment="Top"
+
+                        Margin="0,-4,0,0"
+
+                        Cursor="SizeNS"
+
+                        MouseLeftButtonDown="Handle_MouseLeftButtonDown"
+
+                        MouseLeftButtonUp="Handle_MouseLeftButtonUp"
+
+                        MouseMove="Handle_MouseMove"
+
+                        Tag="Top"/>
+
+
+
+                <Border x:Name="handleBottom"
+
+                        Width="40" Height="8"
+
+                        Background="#2E86DE"
+
+                        CornerRadius="4"
+
+                        HorizontalAlignment="Center"
+
+                        VerticalAlignment="Bottom"
+
+                        Margin="0,0,0,-4"
+
+                        Cursor="SizeNS"
+
+                        MouseLeftButtonDown="Handle_MouseLeftButtonDown"
+
+                        MouseLeftButtonUp="Handle_MouseLeftButtonUp"
+
+                        MouseMove="Handle_MouseMove"
+
+                        Tag="Bottom"/>
+
+
+
+                <Border x:Name="handleLeft"
+
+                        Width="8" Height="40"
+
+                        Background="#2E86DE"
+
+                        CornerRadius="4"
+
+                        HorizontalAlignment="Left"
+
+                        VerticalAlignment="Center"
+
+                        Margin="-4,0,0,0"
+
+                        Cursor="SizeWE"
+
+                        MouseLeftButtonDown="Handle_MouseLeftButtonDown"
+
+                        MouseLeftButtonUp="Handle_MouseLeftButtonUp"
+
+                        MouseMove="Handle_MouseMove"
+
+                        Tag="Left"/>
+
+
+
+                <Border x:Name="handleRight"
+
+                        Width="8" Height="40"
+
+                        Background="#2E86DE"
+
+                        CornerRadius="4"
+
+                        HorizontalAlignment="Right"
+
+                        VerticalAlignment="Center"
+
+                        Margin="0,0,-4,0"
+
+                        Cursor="SizeWE"
+
+                        MouseLeftButtonDown="Handle_MouseLeftButtonDown"
+
+                        MouseLeftButtonUp="Handle_MouseLeftButtonUp"
+
+                        MouseMove="Handle_MouseMove"
+
+                        Tag="Right"/>
+
+            </Grid>
+
+        </ScrollViewer>
+
+
+
+        <!-- FOOTER -->
+
+        <Border Grid.Row="2" 
+
+                Background="#F8F9FA" 
+
+                BorderBrush="#E1E8ED" 
+
+                BorderThickness="0,1,0,0"
+
+                Padding="15">
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+                <Button x:Name="btnCancel" 
+
+                        Content="Hủy" 
+
+                        Width="100" Height="36"
+
+                        Margin="0,0,10,0"
+
+                        Background="White"
+
+                        BorderBrush="#E1E8ED"
+
+                        BorderThickness="1"
+
+                        Foreground="#57606F"
+
+                        FontSize="13"
+
+                        Cursor="Hand"
+
+                        Click="btnCancel_Click"/>
+
+                
+
+                <Button x:Name="btnInsert" 
+
+                        Content="Chèn bảng" 
+
+                        Width="120" Height="36"
+
+                        Background="#2E86DE"
+
+                        BorderThickness="0"
+
+                        Foreground="White"
+
+                        FontSize="13"
+
+                        FontWeight="SemiBold"
+
+                        Cursor="Hand"
+
+                        Click="btnInsert_Click">
+
+                    <Button.Template>
+
+                        <ControlTemplate TargetType="Button">
+
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+
+                                    CornerRadius="6">
+
+                                <ContentPresenter HorizontalAlignment="Center" 
+
+                                                 VerticalAlignment="Center"/>
+
+                            </Border>
+
+                            <ControlTemplate.Triggers>
+
+                                <Trigger Property="IsMouseOver" Value="True">
+
+                                    <Setter TargetName="border" Property="Background" Value="#1F70C5"/>
+
+                                </Trigger>
+
+                            </ControlTemplate.Triggers>
+
+                        </ControlTemplate>
+
+                    </Button.Template>
+
+                </Button>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</UserControl>
+

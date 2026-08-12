@@ -1,0 +1,248 @@
+<Page x:Class="QASmartClass.Leadership.Views.Evaluation360Page"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+
+      mc:Ignorable="d" 
+
+      d:DesignHeight="720" d:DesignWidth="1280"
+
+      Title="Đánh giá 360 độ nhân sự" FontFamily="Segoe UI" Background="#F1F5F9">
+
+
+
+    <Grid Margin="20">
+
+        <Grid.ColumnDefinitions>
+
+            <ColumnDefinition Width="2*"/>
+
+            <ColumnDefinition Width="1*"/>
+
+        </Grid.ColumnDefinitions>
+
+
+
+        <!-- EVALUATION FORM -->
+
+        <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="30" Margin="0,0,10,0">
+
+            <Border.Effect>
+
+                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04"/>
+
+            </Border.Effect>
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+
+                    <RowDefinition Height="Auto"/>
+
+                    <RowDefinition Height="*"/>
+
+                    <RowDefinition Height="Auto"/>
+
+                </Grid.RowDefinitions>
+
+
+
+                <TextBlock Grid.Row="0" Text="📝 Đánh giá 360° (Nội bộ &amp; Đồng nghiệp)" FontSize="24" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,20"/>
+
+
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+
+                    <StackPanel>
+
+                        <!-- Đối tượng đánh giá -->
+
+                        <TextBlock Text="1. Chọn đối tượng đánh giá:" FontSize="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,10"/>
+
+                        <ComboBox x:Name="CbTarget" Height="40" FontSize="16" Padding="10,5" Margin="0,0,0,20">
+
+                            <ComboBoxItem Content="GV. Nguyễn Văn A (Tổ Toán-Tin)" Tag="GV_NguyenVanA" IsSelected="True"/>
+
+                            <ComboBoxItem Content="GV. Trần Thị B (Tổ Văn-Sử)" Tag="GV_TranThiB"/>
+
+                            <ComboBoxItem Content="Tổ trưởng Lê Văn C" Tag="TT_LeVanC"/>
+
+                        </ComboBox>
+
+
+
+                        <!-- Vai trò đánh giá -->
+
+                        <TextBlock Text="2. Vai trò của bạn đối với người được đánh giá:" FontSize="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,10"/>
+
+                        <ComboBox x:Name="CbRole" Height="40" FontSize="16" Padding="10,5" Margin="0,0,0,20">
+
+                            <ComboBoxItem Content="Đồng nghiệp" Tag="Peer" IsSelected="True"/>
+
+                            <ComboBoxItem Content="Quản lý cấp trên" Tag="Manager"/>
+
+                            <ComboBoxItem Content="Học sinh" Tag="Student"/>
+
+                        </ComboBox>
+
+
+
+                        <!-- Tiêu chí Rating -->
+
+                        <TextBlock Text="3. Mức độ đánh giá chung (1-5 Sao):" FontSize="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,10"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+
+                            <RadioButton x:Name="RbRate1" Content="1 ⭐" FontSize="16" Margin="0,0,15,0" GroupName="RatingGroup"/>
+
+                            <RadioButton x:Name="RbRate2" Content="2 ⭐" FontSize="16" Margin="0,0,15,0" GroupName="RatingGroup"/>
+
+                            <RadioButton x:Name="RbRate3" Content="3 ⭐" FontSize="16" Margin="0,0,15,0" GroupName="RatingGroup"/>
+
+                            <RadioButton x:Name="RbRate4" Content="4 ⭐" FontSize="16" Margin="0,0,15,0" GroupName="RatingGroup"/>
+
+                            <RadioButton x:Name="RbRate5" Content="5 ⭐" FontSize="16" IsChecked="True" GroupName="RatingGroup"/>
+
+                        </StackPanel>
+
+
+
+                        <!-- Nhận xét chi tiết -->
+
+                        <TextBlock Text="4. Nhận xét chi tiết (Điểm mạnh / Cần cải thiện):" FontSize="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,10"/>
+
+                        <TextBox x:Name="TxtComments" Height="120" TextWrapping="Wrap" AcceptsReturn="True" FontSize="16" Padding="10" Background="#F8FAFC" BorderBrush="#CBD5E1"/>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+
+
+                <!-- Nút Submit -->
+
+                <Button Grid.Row="2" x:Name="BtnSubmit" Content="Gửi Đánh Giá" Height="45" Background="#10B981" Foreground="White" FontSize="16" FontWeight="Bold" BorderThickness="0" Margin="0,20,0,0" Click="BtnSubmit_Click" Cursor="Hand"/>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- INSTRUCTIONS -->
+
+        <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="25" Margin="10,0,0,0">
+
+            <Border.Effect>
+
+                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.04"/>
+
+            </Border.Effect>
+
+            <StackPanel>
+
+                <TextBlock Text="💡 Hướng dẫn Đánh giá" FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,15"/>
+
+                
+
+                <TextBlock Text="Đánh giá 360 độ nhằm mục đích thu thập ý kiến đa chiều để hỗ trợ sự phát triển cá nhân và tập thể." FontSize="14" Foreground="#475569" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                
+
+                <TextBlock Text="Tiêu chí chấm điểm:" FontSize="16" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,0,0,10"/>
+
+                
+
+                <Grid Margin="0,0,0,10">
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="5 ⭐" FontSize="14" FontWeight="Bold" Foreground="#10B981" Margin="0,0,10,0"/>
+
+                    <TextBlock Grid.Column="1" Text="Xuất sắc, vượt kỳ vọng" FontSize="14" Foreground="#475569"/>
+
+                </Grid>
+
+                
+
+                <Grid Margin="0,0,0,10">
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="4 ⭐" FontSize="14" FontWeight="Bold" Foreground="#3B82F6" Margin="0,0,10,0"/>
+
+                    <TextBlock Grid.Column="1" Text="Tốt, đáp ứng đầy đủ yêu cầu" FontSize="14" Foreground="#475569"/>
+
+                </Grid>
+
+                
+
+                <Grid Margin="0,0,0,10">
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="3 ⭐" FontSize="14" FontWeight="Bold" Foreground="#F59E0B" Margin="0,0,10,0"/>
+
+                    <TextBlock Grid.Column="1" Text="Khá, cần cải thiện một số mặt" FontSize="14" Foreground="#475569"/>
+
+                </Grid>
+
+                
+
+                <Grid Margin="0,0,0,10">
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="1-2 ⭐" FontSize="14" FontWeight="Bold" Foreground="#EF4444" Margin="0,0,10,0"/>
+
+                    <TextBlock Grid.Column="1" Text="Chưa đạt yêu cầu" FontSize="14" Foreground="#475569"/>
+
+                </Grid>
+
+                
+
+                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,20,0,0">
+
+                    <TextBlock Text="Lưu ý: Mọi đánh giá đều được bảo mật và ẩn danh đối với người được đánh giá (chỉ BGH xem được nguồn)." FontSize="13" Foreground="#991B1B" TextWrapping="Wrap"/>
+
+                </Border>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</Page>
+
+
+

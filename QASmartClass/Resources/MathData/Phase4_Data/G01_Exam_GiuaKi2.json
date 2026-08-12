@@ -1,0 +1,294 @@
+﻿{
+  "metadata": {
+    "examId": "g01_giuaki2",
+    "title": "Đề thi Giữa Kì 2 Toán Lớp 1",
+    "totalQuestions": 20,
+    "timeLimit": 45,
+    "totalPoints": 10,
+    "pointsPerQuestion": 0.5,
+    "grade": 1,
+    "examType": "GiuaKi2"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Bình A chứa 3 lít, bình B chứa 1 lít 500 ml. Tổng cộng bao nhiêu ml?",
+      "options": [
+        "A) 4000 ml",
+        "B) 4500 ml",
+        "C) 5000 ml",
+        "D) 3500 ml"
+      ],
+      "answer": "B",
+      "solution": "3 lít = 3000 ml. 1 lít 500 ml = 1500 ml. Tổng: 3000 + 1500 = 4500 ml"
+    },
+    {
+      "id": 2,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Chai nước suối thường chứa bao nhiêu lít?",
+      "options": [
+        "A) 0.5 lít",
+        "B) 5 lít",
+        "C) 50 lít",
+        "D) 500 lít"
+      ],
+      "answer": "A",
+      "solution": "Chai nước suối phổ biến chứa khoảng 0.5 lít (500 ml)"
+    },
+    {
+      "id": 3,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Đếm số hình tam giác trong hình: một tam giác lớn chia bởi 1 đường từ đỉnh xuống đáy",
+      "options": [
+        "A) 1",
+        "B) 2",
+        "C) 3",
+        "D) 4"
+      ],
+      "answer": "C",
+      "solution": "2 tam giác nhỏ + 1 tam giác lớn = 3 tam giác"
+    },
+    {
+      "id": 4,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Dùng ca 500 ml múc nước đổ vào xô. Múc 8 lần thì đầy xô. Xô chứa bao nhiêu lít?",
+      "options": [
+        "A) 3 lít",
+        "B) 4 lít",
+        "C) 5 lít",
+        "D) 8 lít"
+      ],
+      "answer": "B",
+      "solution": "8 × 500 ml = 4000 ml = 4 lít"
+    },
+    {
+      "id": 5,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "1 m bằng bao nhiêu cm?",
+      "options": [
+        "A) 10 cm",
+        "B) 50 cm",
+        "C) 100 cm",
+        "D) 1000 cm"
+      ],
+      "answer": "C",
+      "solution": "1 m = 100 cm"
+    },
+    {
+      "id": 6,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Hình tam giác có mấy cạnh?",
+      "options": [
+        "A) 2",
+        "B) 3",
+        "C) 4",
+        "D) 5"
+      ],
+      "answer": "B",
+      "solution": "Tam giác = 3 cạnh, 3 đỉnh, 3 góc"
+    },
+    {
+      "id": 7,
+      "topic": "multiple_choice",
+      "difficulty": "Hard",
+      "question": "Nhà An ở giữa nhà Bình (bên trái) và nhà Châu (bên phải). Nhà Dũng ở bên phải nhà Châu. Thứ tự từ trái sang phải là?",
+      "options": [
+        "A) Bình - An - Châu - Dũng",
+        "B) An - Bình - Châu - Dũng",
+        "C) Dũng - Châu - An - Bình",
+        "D) Bình - Châu - An - Dũng"
+      ],
+      "answer": "A",
+      "solution": "Từ trái: Bình → An (giữa) → Châu → Dũng (phải Châu)"
+    },
+    {
+      "id": 8,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Hình nào có 4 cạnh bằng nhau?",
+      "options": [
+        "A) Hình tròn",
+        "B) Hình vuông",
+        "C) Hình tam giác",
+        "D) Hình chữ nhật"
+      ],
+      "answer": "B",
+      "solution": "Hình vuông có 4 cạnh bằng nhau và 4 góc vuông"
+    },
+    {
+      "id": 9,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Số nào đứng sau số 7?",
+      "options": [
+        "A) 6",
+        "B) 9",
+        "C) 8",
+        "D) 5"
+      ],
+      "answer": "C",
+      "solution": "Dãy số tự nhiên: ...6, 7, 8, 9... Số đứng sau 7 là 8"
+    },
+    {
+      "id": 10,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Tính: 36 + 27 = ?",
+      "options": [
+        "A) 53",
+        "B) 63",
+        "C) 62",
+        "D) 73"
+      ],
+      "answer": "B",
+      "solution": "36 + 27: 6+7=13, viết 3 nhớ 1. 3+2+1=6. Kết quả: 63"
+    },
+    {
+      "id": 11,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Có 20 viên kẹo chia đều cho 5 bạn. Mỗi bạn được mấy viên?",
+      "options": [
+        "A) 3",
+        "B) 4",
+        "C) 5",
+        "D) 10"
+      ],
+      "answer": "B",
+      "solution": "20 ÷ 5 = 4 viên kẹo mỗi bạn"
+    },
+    {
+      "id": 12,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Vật nào nặng hơn: quả cam hay xe đạp?",
+      "options": [
+        "A) Quả cam",
+        "B) Xe đạp",
+        "C) Bằng nhau",
+        "D) Không so sánh được"
+      ],
+      "answer": "B",
+      "solution": "Xe đạp nặng khoảng 12 kg, quả cam khoảng 200 g → xe đạp nặng hơn"
+    },
+    {
+      "id": 13,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Tính: 7 × 8 = ?",
+      "options": [
+        "A) 54",
+        "B) 56",
+        "C) 58",
+        "D) 48"
+      ],
+      "answer": "B",
+      "solution": "7 × 8 = 56 (bảng cửu chương 7)"
+    },
+    {
+      "id": 14,
+      "topic": "calculation",
+      "difficulty": "Easy",
+      "question": "Tính: 9 - 4 = ?",
+      "options": [
+        "A) 4",
+        "B) 5",
+        "C) 6",
+        "D) 3"
+      ],
+      "answer": "B",
+      "solution": "9 - 4 = 5. Duỗi 9 ngón tay, gập 4 ngón, còn 5 ngón"
+    },
+    {
+      "id": 15,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Đoạn dây dài 2 m 30 cm. Đổi ra cm = ?",
+      "options": [
+        "A) 203 cm",
+        "B) 230 cm",
+        "C) 2030 cm",
+        "D) 23 cm"
+      ],
+      "answer": "B",
+      "solution": "2 m = 200 cm. 200 + 30 = 230 cm"
+    },
+    {
+      "id": 16,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Bút chì dài 15 cm hay 15 m?",
+      "options": [
+        "A) 15 cm",
+        "B) 15 m",
+        "C) 15 km",
+        "D) 15 mm"
+      ],
+      "answer": "A",
+      "solution": "Bút chì là vật nhỏ → đo bằng cm: khoảng 15 cm"
+    },
+    {
+      "id": 17,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Sắp xếp các số sau theo thứ tự từ bé đến lớn: 15, 8, 23, 11",
+      "options": [
+        "A) 8, 11, 15, 23",
+        "B) 23, 15, 11, 8",
+        "C) 8, 15, 11, 23",
+        "D) 11, 8, 15, 23"
+      ],
+      "answer": "A",
+      "solution": "So sánh: 8 < 11 < 15 < 23"
+    },
+    {
+      "id": 18,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Chữ cái nào KHÔNG có trục đối xứng? A, B, F, M",
+      "options": [
+        "A) A",
+        "B) B",
+        "C) F",
+        "D) M"
+      ],
+      "answer": "C",
+      "solution": "F không có trục đối xứng. A, B, M đều có ít nhất 1 trục"
+    },
+    {
+      "id": 19,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Quả bóng nằm dưới bàn. Vị trí của quả bóng là?",
+      "options": [
+        "A) Trên bàn",
+        "B) Bên phải bàn",
+        "C) Dưới bàn",
+        "D) Trong bàn"
+      ],
+      "answer": "C",
+      "solution": "Quả bóng nằm ở phía dưới mặt bàn → vị trí: dưới bàn"
+    },
+    {
+      "id": 20,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "Bánh xe ô tô có hình gì?",
+      "options": [
+        "A) Hình vuông",
+        "B) Hình tam giác",
+        "C) Hình tròn",
+        "D) Hình chữ nhật"
+      ],
+      "answer": "C",
+      "solution": "Bánh xe có dạng hình tròn"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+﻿{
+  "metadata": {
+    "examId": "g09_tuyensinh10_05",
+    "title": "Đề thi Tuyển Sinh vào Lớp 10 - Đề số 05",
+    "totalQuestions": 5,
+    "timeLimit": 120,
+    "totalPoints": 10,
+    "pointsPerQuestion": 2,
+    "grade": 9,
+    "examType": "TuyenSinh10"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "Xe A đi từ Hà Nội, xe B từ Huế. Ngược chiều, gặp nhau sau 5h. A: 60 km/h, B: 40 km/h. Khoảng cách HN-Huế = ?",
+      "options": [
+        "A) 400 km",
+        "B) 500 km",
+        "C) 600 km",
+        "D) 700 km"
+      ],
+      "answer": "B",
+      "solution": "Ngược chiều: s = (v1+v2)×t = (60+40)×5 = 500 km"
+    },
+    {
+      "id": 2,
+      "topic": "multiple_choice",
+      "difficulty": "Medium",
+      "question": "Hai tam giác có 2 góc 40° và 60° bằng nhau. Chúng:",
+      "options": [
+        "A) Bằng nhau",
+        "B) Đồng dạng",
+        "C) Không liên quan",
+        "D) Chưa đủ dữ kiện"
+      ],
+      "answer": "B",
+      "solution": "Có 2 góc bằng nhau (g-g) → đồng dạng"
+    },
+    {
+      "id": 3,
+      "topic": "calculation",
+      "difficulty": "Hard",
+      "question": "Chứng minh: sin²α + cos²α = 1 khi α=45°:",
+      "options": [
+        "A) (√2/2)² + (√2/2)² = 1/2+1/2 = 1",
+        "B) 1+0 = 1",
+        "C) 0+1 = 1",
+        "D) (1/2)²+(√3/2)² = 1"
+      ],
+      "answer": "A",
+      "solution": "sin45°=cos45°=√2/2. (√2/2)²+(√2/2)² = 2/4+2/4 = 1"
+    },
+    {
+      "id": 4,
+      "topic": "multiple_choice",
+      "difficulty": "Easy",
+      "question": "ΔABC ~ ΔDEF với tỉ số k=2. AB=6cm thì DE=?",
+      "options": [
+        "A) 3cm",
+        "B) 12cm",
+        "C) 6cm",
+        "D) 4cm"
+      ],
+      "answer": "A",
+      "solution": "k=AB/DE=2 → DE=AB/2=3cm"
+    },
+    {
+      "id": 5,
+      "topic": "calculation",
+      "difficulty": "Medium",
+      "question": "ΔABC vuông tại A, B=60°, BC=12. Tìm AB:",
+      "options": [
+        "A) 6",
+        "B) 6√3",
+        "C) 4",
+        "D) 8"
+      ],
+      "answer": "A",
+      "solution": "cosB = AB/BC → AB = 12×cos60° = 12×1/2 = 6"
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch02",
+    "chapterName": "Bài 2: Thơ Nôm trung đại",
+    "grade": 10,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 3
+  },
+  "sections": [
+    {
+      "sectionId": "s_g10_ch1_0",
+      "sectionName": "Cảnh Ngày Hè — Nguyễn Trãi",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-10-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g10_Cảnh_ngày_hè.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Thể Loại",
+          "theorem": "Nguyễn Trãi (1380–1442). 'Cảnh ngày hè' (Bảo Kính Cảnh Giới, bài 43) là thơ Nôm Đường luật biến thể — bài thơ duy nhất trong kho tàng thơ chữ Hán của ông dùng tiếng Việt thuần.",
+          "imageUrls": ["Resources/LiteratureData/Images/nguyen_trai.png"]
+        },
+        {
+          "name": "Bài thơ",
+          "definition": "Rồi hóng mát thuở ngày trường,\nHòe lục đùn đùn tán rợp giương.\nThạch lựu hiên còn phun thức đỏ,\nHồng liên trì đã tiễn mùi hương.\nLao xao chợ cá làng ngư phủ,\nDắng dỏi cầm ve lầu tịch dương.\nDẽ có Ngu cầm đàn một tiếng,\nDân giàu đủ khắp đòi phương."
+        },
+        {
+          "name": "Phân tích nghệ thuật",
+          "examples": [
+            "**'Đùn đùn, phun, tiễn'**: Động từ mạnh — thiên nhiên không tĩnh lặng mà đang căng tràn sức sống, chủ động vươn ra.",
+            "**Hình ảnh đa giác quan**: Màu sắc (hòe lục đỏ, hoa sen hồng) + âm thanh (lao xao chợ, ve kêu) — bức tranh hè sống động nhiều chiều.",
+            "**'Ngu cầm'**: Điển tích vua Nghiêu đàn ca ngợi đất nước thái bình — Nguyễn Trãi ước được sống trong thời thịnh trị.",
+            "**Câu cuối 6 chữ**: Thơ Đường 7 chữ nhưng câu cuối chỉ 6 chữ — biến thể sáng tạo nhấn mạnh ước vọng 'dân giàu đủ'."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Các động từ 'đùn đùn, phun, tiễn' trong bài thơ tạo hiệu quả nghệ thuật gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Thiên nhiên mùa hè căng tràn sức sống — không tĩnh lặng mà đang chủ động vươn ra, tỏa ra",
+            "Diễn tả sức nóng oi bức của mùa hè khiến vạn vật héo úa",
+            "Tả màu sắc rực rỡ của hoa hòe và hoa sen ngày hè",
+            "Thể hiện sự chuyển động nhanh chóng của thời gian trong mùa hè"
+          ],
+          "answer": "Thiên nhiên mùa hè căng tràn sức sống — không tĩnh lặng mà đang chủ động vươn ra, tỏa ra",
+          "hints": ["'Đùn đùn' (hòe đang nở mạnh), 'phun thức đỏ' (lựu đang ra hoa), 'tiễn mùi hương' (sen đang tỏa hương) — thiên nhiên đang làm gì?"],
+          "explanation": "Nguyễn Trãi dùng động từ mạnh để biến thiên nhiên từ thụ động thành chủ động: hòe không chỉ xanh mà 'đùn đùn' (nở mạnh liên tục), thạch lựu không chỉ đỏ mà 'phun thức đỏ' (phun ra màu đỏ), sen 'tiễn mùi hương' (chủ động đưa hương). Bức tranh hè sống động, căng tràn — phản ánh tâm hồn nhạy cảm và yêu đời của Nguyễn Trãi."
+        },
+        {
+          "id": "p2",
+          "question": "Câu kết 'Dân giàu đủ khắp đòi phương' thể hiện tư tưởng gì của Nguyễn Trãi?",
+          "difficulty": "Hard",
+          "options": [
+            "Lý tưởng chính trị lấy dân làm gốc — người anh hùng cứu nước không quên lý tưởng nhân dân ngay cả khi thưởng ngoạn thiên nhiên",
+            "Ước mơ cá nhân được hưởng thái bình sau chiến tranh",
+            "Ca ngợi nền kinh tế phát triển của nhà Lê sau khi đánh Minh",
+            "Lời cầu nguyện theo tín ngưỡng dân gian cho đất nước thịnh vượng"
+          ],
+          "answer": "Lý tưởng chính trị lấy dân làm gốc — người anh hùng cứu nước không quên lý tưởng nhân dân ngay cả khi thưởng ngoạn thiên nhiên",
+          "hints": ["Trong bài thơ về cảnh thiên nhiên, sao lại xuất hiện câu về 'dân giàu đủ'?"],
+          "explanation": "Nguyễn Trãi ngồi hóng mát ngắm cảnh hè đẹp nhưng lòng không yên vì vẫn nghĩ đến dân. 'Ngu cầm' (đàn vua Nghiêu) gợi ước vọng đất nước thái bình, dân giàu đủ. Đây là tư tưởng nhân dân xuyên suốt cuộc đời Nguyễn Trãi: dù ở cảnh nào, người trí thức chân chính không quên trách nhiệm với nhân dân."
+        },
+        {
+          "id": "p3",
+          "question": "Câu cuối của bài thơ chỉ có 6 chữ (thay vì 7 chữ theo quy định thơ Đường) — điều này có ý nghĩa gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Sáng tạo có chủ ý — phá vỡ nhịp điệu quen thuộc để câu ý nghĩa nhất được nhấn mạnh đặc biệt",
+            "Nguyễn Trãi không thuần thục thể thơ Đường luật nên đếm thiếu chữ",
+            "Thơ Nôm không cần tuân thủ nghiêm ngặt quy tắc thơ Đường của Trung Hoa",
+            "Câu 6 chữ là quy định đặc biệt của thể thơ Bảo Kính Cảnh Giới"
+          ],
+          "answer": "Sáng tạo có chủ ý — phá vỡ nhịp điệu quen thuộc để câu ý nghĩa nhất được nhấn mạnh đặc biệt",
+          "hints": ["Nếu câu cuối rút ngắn thì người đọc sẽ chú ý nhiều hơn hay ít hơn?"],
+          "explanation": "Nguyễn Trãi hoàn toàn thành thạo thơ Đường (hàng trăm bài chữ Hán). Câu 6 chữ là lựa chọn nghệ thuật có chủ ý: kết thúc đột ngột nhấn mạnh điều ông muốn nói nhất — 'dân giàu đủ'. Kỹ thuật này làm câu kết trở thành điểm hội tụ của toàn bài, không thể quên được."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g10_ch1_1",
+      "sectionName": "Nhàn — Nguyễn Bỉnh Khiêm",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-10-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g10_Nhàn.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả",
+          "theorem": "Nguyễn Bỉnh Khiêm (1491–1585) — trạng nguyên, nhà thơ, nhà tiên tri lớn thế kỷ XVI. Cáo quan về ở ẩn tại Bạch Vân Am, sống cuộc đời nhàn tản giữa thiên nhiên.",
+          "imageUrls": ["Resources/LiteratureData/Images/nguyen_binh_khiem.png"]
+        },
+        {
+          "name": "Bài thơ",
+          "definition": "Một mai, một cuốc, một cần câu,\nThơ thẩn dầu ai vui thú nào.\nTa dại, ta tìm nơi vắng vẻ,\nNgười khôn, người đến chốn lao xao.\nThu ăn măng trúc, đông ăn giá,\nXuân tắm hồ sen, hạ tắm ao.\nRượu, đến cội cây, ta sẽ uống,\nNhìn xem phú quý tựa chiêm bao."
+        },
+        {
+          "name": "Phân tích triết lý",
+          "examples": [
+            "**'Một mai, một cuốc, một cần câu'**: Điệp từ 'một' — cuộc sống giản dị tối thiểu nhưng đủ; không tham lam, không cần nhiều.",
+            "**'Ta dại - người khôn' nghịch lý**: Ta 'dại' tìm nơi vắng vẻ; người 'khôn' đến chốn lao xao (bon chen). Nhưng ai mới thực sự khôn? — Đây là nghịch lý Lão Trang.",
+            "**Ăn theo mùa**: Măng, giá, hồ sen — thức ăn tự nhiên, đơn giản, hòa điệu với thiên nhiên.",
+            "**'Phú quý tựa chiêm bao'**: Triết lý Phật-Lão: danh lợi phú quý chỉ là ảo mộng — nhàn mới là thực."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Câu 'Ta dại, ta tìm nơi vắng vẻ / Người khôn, người đến chốn lao xao' có ý nghĩa thực sự là gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Nghịch lý sâu sắc: 'ta dại' mà tìm được bình yên thực sự; 'người khôn' nhưng chỉ tìm thấy bon chen — ai mới thực sự khôn?",
+            "Nguyễn Bỉnh Khiêm thừa nhận mình kém cỏi hơn những người thành đạt",
+            "Phê phán xã hội không trân trọng người ở ẩn như ông",
+            "Lời khuyên người đọc nên chọn cuộc sống yên tĩnh thay vì bon chen"
+          ],
+          "answer": "Nghịch lý sâu sắc: 'ta dại' mà tìm được bình yên thực sự; 'người khôn' nhưng chỉ tìm thấy bon chen — ai mới thực sự khôn?",
+          "hints": ["Nếu 'ta' thực sự dại, tại sao ông vẫn hạnh phúc? Nếu 'người' thực sự khôn, tại sao họ ở 'chốn lao xao'?"],
+          "explanation": "Đây là kỹ thuật nghịch lý (paradox) của văn học Lão Trang: kẻ bị coi là 'dại' (từ quan về ở ẩn) lại tìm được hạnh phúc thực sự; kẻ 'khôn' (theo đuổi danh lợi) lại sống trong 'lao xao' xô bồ. Nguyễn Bỉnh Khiêm đặt câu hỏi ngầm: khôn và dại, thực sự là ai?"
+        },
+        {
+          "id": "p2",
+          "question": "Câu kết 'Phú quý tựa chiêm bao' phản ánh triết lý sống nào của Nguyễn Bỉnh Khiêm?",
+          "difficulty": "Hard",
+          "options": [
+            "Triết lý Phật-Lão: danh lợi phú quý chỉ là ảo mộng — nhàn tản thuận với tự nhiên mới là cuộc sống thực",
+            "Nguyễn Bỉnh Khiêm thất vọng vì sự nghiệp không thành nên coi danh lợi là vô nghĩa",
+            "Lời răn dạy người trẻ không nên theo đuổi vật chất",
+            "Quan niệm Nho gia: người quân tử khinh thường tiền bạc và địa vị"
+          ],
+          "answer": "Triết lý Phật-Lão: danh lợi phú quý chỉ là ảo mộng — nhàn tản thuận với tự nhiên mới là cuộc sống thực",
+          "hints": ["'Chiêm bao' = giấc mơ. Phú quý như giấc mơ có nghĩa là gì?"],
+          "explanation": "Nguyễn Bỉnh Khiêm ảnh hưởng Phật giáo và Lão giáo: phú quý như giấc mơ — khi tỉnh dậy không còn gì. Điều thực sự có giá trị là cuộc sống nhàn tản, hòa hợp với thiên nhiên. Đây không phải bi quan mà là triết lý giải thoát: thoát khỏi vòng tham lam danh lợi để sống thực sự."
+        },
+        {
+          "id": "p3",
+          "question": "So sánh quan niệm 'nhàn' của Nguyễn Bỉnh Khiêm với quan niệm 'nhàn' trong câu ca dao 'Nhàn cư vi bất thiện' (nhàn rỗi sinh ra điều xấu) — có mâu thuẫn không?",
+          "difficulty": "Hard",
+          "options": [
+            "Không mâu thuẫn: Nguyễn Bỉnh Khiêm 'nhàn' = sống giản dị hòa với thiên nhiên; ca dao 'nhàn' = lười biếng vô công rồi nghề",
+            "Có mâu thuẫn — Nguyễn Bỉnh Khiêm sai vì ca dao là triết lý dân gian chân thực hơn",
+            "Nguyễn Bỉnh Khiêm dùng 'nhàn' theo nghĩa tiêu cực giống ca dao",
+            "Cả hai đều có nghĩa giống nhau — nhàn là không làm gì cả"
+          ],
+          "answer": "Không mâu thuẫn: Nguyễn Bỉnh Khiêm 'nhàn' = sống giản dị hòa với thiên nhiên; ca dao 'nhàn' = lười biếng vô công rồi nghề",
+          "hints": ["Nguyễn Bỉnh Khiêm có lười biếng không? (Ông vẫn cuốc đất, câu cá)"],
+          "explanation": "Hai nghĩa 'nhàn' hoàn toàn khác nhau: Ca dao: nhàn = vô công rồi nghề, không làm gì → sinh xấu. Nguyễn Bỉnh Khiêm: nhàn = thoát khỏi vòng danh lợi, sống giản dị, hòa với thiên nhiên — ông vẫn lao động (mai, cuốc, câu cá) nhưng không bon chen. Đây là 'nhàn' về tâm hồn, không phải nhàn về thể xác."
+        }
+      ]
+    }
+  ]
+}

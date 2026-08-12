@@ -1,0 +1,305 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Admin.GreenMetricsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="750" d:DesignWidth="1000"
+             KeyDown="UserControl_KeyDown" Focusable="True">
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="🌱 Thống kê carbon và trường học xanh (Green Campus)" />
+
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- KPI Cards -->
+                <RowDefinition Height="24"/>
+                <RowDefinition Height="*"/>    <!-- Details & Leaderboard -->
+            </Grid.RowDefinitions>
+
+            <!-- 1. KPI CARDS (4 Chỉ số sinh thái) -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Card 1: CO2 Saved -->
+                <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="16" Background="{DynamicResource CardBrush}" Height="120">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="🍃 CO2 giảm thiểu" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Co2SavedKg, StringFormat='{}{0:N1}'}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource SuccessTextBrush}"/>
+                            <TextBlock Text=" kg" FontSize="14" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="4,0,0,4"/>
+                        </StackPanel>
+                        <TextBlock Grid.Row="2" Text="eBook và sách quyên góp" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </Grid>
+                </Border>
+
+                <!-- Card 2: Trees Saved -->
+                <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="16" Background="{DynamicResource CardBrush}" Height="120">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="🌲 Cây xanh bảo tồn" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding TreesSaved, StringFormat='{}{0:N1}'}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource CyanTextBrush}"/>
+                            <TextBlock Text=" cây" FontSize="14" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="4,0,0,4"/>
+                        </StackPanel>
+                        <TextBlock Grid.Row="2" Text="Tương đương giấy tiết kiệm" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </Grid>
+                </Border>
+
+                <!-- Card 3: Ebook pages -->
+                <Border Grid.Column="4" Style="{StaticResource CardBorder}" Padding="16" Background="{DynamicResource CardBrush}" Height="120">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="📖 Trang ebook đã đọc" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding EbookPagesRead, StringFormat='{}{0:N0}'}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource WarningTextBrush}"/>
+                            <TextBlock Text=" trang" FontSize="14" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="4,0,0,4"/>
+                        </StackPanel>
+                        <TextBlock Grid.Row="2" Text="Từ đầu năm học" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </Grid>
+                </Border>
+
+                <!-- Card 4: Donated Books -->
+                <Border Grid.Column="6" Style="{StaticResource CardBorder}" Padding="16" Background="{DynamicResource CardBrush}" Height="120">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="🎁 Sách cũ tái tuần hoàn" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding DonatedBooksCount, StringFormat='{}{0:N0}'}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource BlueTextBrush}"/>
+                            <TextBlock Text=" cuốn" FontSize="14" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="4,0,0,4"/>
+                        </StackPanel>
+                        <TextBlock Grid.Row="2" Text="Đã được duyệt bổ sung kho" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- 2. DETAILS & LEADERBOARD -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="1.5*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Tổng quan thuyết minh bảo vệ môi trường -->
+                <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="24" Background="{DynamicResource CardBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Grid.Row="0" Text="🏆 Đạt chuẩn thư viện xanh vàng" Foreground="{DynamicResource WarningTextBrush}" FontSize="16" FontWeight="Bold" Margin="0,0,0,16"/>
+                        
+                        <StackPanel Grid.Row="1">
+                            <TextBlock Text="Chiến dịch chuyển đổi số thư viện:" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                            <TextBlock Text="● Mỗi trang sách điện tử (Ebook) được đọc giúp bảo vệ môi trường bằng cách cắt giảm lượng giấy in ấn, giảm thiểu hóa chất sản xuất bột giấy." Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                            <TextBlock Text="● Việc tặng lại sách cũ (Book Donation) giúp kéo dài vòng đời vật lý của tài sản tri thức, xây dựng nền kinh tế tuần hoàn trong môi trường sư phạm." Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,16"/>
+                            
+                            <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="8" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="🌱 Công thức tính lượng CO2 giảm thiểu:" FontSize="11" Foreground="{DynamicResource BlueTextBrush}" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <TextBlock Text="- Đọc Ebook: 0.02 kg CO2 / trang" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="- Quyên góp sách: 1.50 kg CO2 / cuốn sách giấy" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+ 
+                        <!-- Refresh status -->
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+                            <Button Content="🔄 Làm mới dữ liệu" Command="{Binding LoadMetricsCommand}" Style="{StaticResource SecondaryButton}" Padding="16,6" FontSize="11" Cursor="Hand" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Bảng xếp hạng thi đua sinh thái (TabControl) -->
+                <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="20" Background="{DynamicResource CardBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
+                            <!-- Tab 1: Liên trường -->
+                            <TabItem Header="🏁 Thi đua liên trường" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}">
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="🏁 Giải đua sinh thái liên trường" Style="{StaticResource CardTitleText}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl ItemsSource="{Binding SchoolLeaderboard}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Margin="0,0,0,8" Padding="12" CornerRadius="8">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
+                                                                <Setter Property="BorderBrush" Value="#334155"/>
+                                                                <Setter Property="BorderThickness" Value="1"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsMySchool}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource SuccessBgBrush}"/> <!-- Green highlight -->
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource SuccessTextBrush}"/>
+                                                                        <Setter Property="BorderThickness" Value="2"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="40"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="100"/>
+                                                                <ColumnDefinition Width="80"/>
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <!-- Rank badge -->
+                                                            <Border Grid.Column="0" CornerRadius="4" Width="24" Height="24" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <Setter Property="Background" Value="#334155"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Rank}" Value="1">
+                                                                                <Setter Property="Background" Value="#D97706"/> <!-- Vàng -->
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Rank}" Value="2">
+                                                                                <Setter Property="Background" Value="#475569"/> <!-- Bạc -->
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Rank}" Value="3">
+                                                                                <Setter Property="Background" Value="#78350F"/> <!-- Đồng -->
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                                <TextBlock Text="{Binding Rank}" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+
+                                                            <!-- School name -->
+                                                            <TextBlock Grid.Column="1" Text="{Binding SchoolName}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+
+                                                            <!-- CO2 saved text -->
+                                                            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0">
+                                                                <TextBlock Text="{Binding Co2Saved, StringFormat='{}{0:N0} kg'}" Foreground="{DynamicResource SuccessTextBrush}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right"/>
+                                                                <TextBlock Text="CO2 giảm" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="10" HorizontalAlignment="Right"/>
+                                                            </StackPanel>
+
+                                                            <!-- Trees saved text -->
+                                                            <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                                <TextBlock Text="{Binding TreesSaved, StringFormat='{}{0} cây'}" Foreground="{DynamicResource CyanTextBrush}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right"/>
+                                                                <TextBlock Text="Bảo tồn" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="10" HorizontalAlignment="Right"/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Grid>
+                            </TabItem>
+                            
+                            <!-- Tab 2: Liên lớp -->
+                            <TabItem Header="🏆 Thi đua liên lớp (Eco-Reading)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextSecondaryBrush}">
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="🏆 Bảng xếp hạng thi đua lớp xanh" Style="{StaticResource CardTitleText}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl ItemsSource="{Binding ClassLeaderboard}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Margin="0,0,0,8" Padding="12" CornerRadius="8" Background="{DynamicResource BackgroundBrush}" BorderBrush="#334155" BorderThickness="1">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="40"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="100"/>
+                                                                <ColumnDefinition Width="80"/>
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <!-- Rank badge -->
+                                                            <Border Grid.Column="0" CornerRadius="4" Width="24" Height="24" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <Setter Property="Background" Value="#334155"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Rank}" Value="1">
+                                                                                <Setter Property="Background" Value="#D97706"/> <!-- Vàng -->
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Rank}" Value="2">
+                                                                                <Setter Property="Background" Value="#475569"/> <!-- Bạc -->
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Rank}" Value="3">
+                                                                                <Setter Property="Background" Value="#78350F"/> <!-- Đồng -->
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                                <TextBlock Text="{Binding Rank}" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+
+                                                            <!-- Class ID -->
+                                                            <TextBlock Grid.Column="1" Text="{Binding ClassId, StringFormat='{}Lớp {0}'}" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+
+                                                            <!-- Pages read -->
+                                                            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0">
+                                                                <TextBlock Text="{Binding Pages, StringFormat='{}{0:N0} trg'}" Foreground="{DynamicResource WarningTextBrush}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right"/>
+                                                                <TextBlock Text="Đã đọc" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="10" HorizontalAlignment="Right"/>
+                                                            </StackPanel>
+
+                                                            <!-- Trees saved -->
+                                                            <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                                <TextBlock Text="{Binding TreesSaved, StringFormat='{}{0:N2} cây'}" Foreground="{DynamicResource SuccessTextBrush}" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right"/>
+                                                                <TextBlock Text="Cứu sống" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="10" HorizontalAlignment="Right"/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

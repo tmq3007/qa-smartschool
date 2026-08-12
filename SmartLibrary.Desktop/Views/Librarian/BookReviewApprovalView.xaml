@@ -1,0 +1,101 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Librarian.BookReviewApprovalView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Loaded="UserControl_Loaded" KeyDown="UserControl_KeyDown" Focusable="True">
+    <Grid Background="{DynamicResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="⭐ Phê duyệt đánh giá sách của học sinh" />
+
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Công cụ điều khiển và refresh -->
+            <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="16" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="280"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0" Text="Danh sách các bài viết cảm nghĩ, đánh giá sách của học sinh đang chờ kiểm duyệt trước khi hiển thị công khai." 
+                               VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                    <!-- TextBox Tìm kiếm nhanh với Placeholder chìm -->
+                    <Grid Grid.Column="1">
+                        <TextBox x:Name="SearchBox" Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" 
+                                 Height="36" VerticalContentAlignment="Center" Padding="8,0,28,0" TabIndex="1"
+                                 ToolTip="Nhấn Ctrl+F để tìm kiếm nhanh (Giới hạn 100 ký tự)" MaxLength="100"/>
+                        <TextBlock Text="🔍 Nhập tên học sinh, mã số, tựa sách..." IsHitTestVisible="False" Foreground="{DynamicResource TextSecondaryBrush}" 
+                                   VerticalAlignment="Center" Margin="10,0,0,0" FontSize="12">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                    
+                    <Button Grid.Column="3" Content="🔄 Làm mới" Command="{Binding LoadPendingReviewsCommand}" 
+                            Style="{StaticResource SecondaryButton}" Height="36" Padding="16,0" Cursor="Hand" TabIndex="2"/>
+                </Grid>
+            </Border>
+ 
+            <!-- Bảng Danh sách chờ duyệt -->
+            <Border Grid.Row="1" Style="{StaticResource CardBorder}">
+                <Grid>
+                    <DataGrid Style="{StaticResource ModernDataGrid}" ItemsSource="{Binding FilteredReviews}" AutoGenerateColumns="False" IsReadOnly="True"
+                              VirtualizingStackPanel.IsVirtualizing="True"
+                              VirtualizingStackPanel.VirtualizationMode="Recycling"
+                              ScrollViewer.CanContentScroll="True"
+                              Visibility="{Binding IsListEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Học sinh" Binding="{Binding BorrowerName}" Width="150"/>
+                            <DataGridTextColumn Header="Mã học sinh" Binding="{Binding BorrowerSsoId}" Width="100"/>
+                            <DataGridTextColumn Header="Cuốn sách" Binding="{Binding BookTitle}" Width="200"/>
+                            <DataGridTextColumn Header="Điểm sao" Binding="{Binding RatingStarsText}" Width="100" Foreground="{DynamicResource WarningTextBrush}"/>
+                            <DataGridTextColumn Header="Thời gian" Binding="{Binding FormattedDate}" Width="130"/>
+                            <DataGridTextColumn Header="Nội dung đánh giá" Binding="{Binding Content}" Width="3*"/>
+                            <DataGridTemplateColumn Header="Hành động" Width="260">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button Content="✔️ Duyệt" Command="{Binding DataContext.ApproveReviewCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource SuccessButton}" Height="26" Padding="10,0" Margin="0,0,8,0" Cursor="Hand"/>
+                                            <Button Content="🎖️ Tiêu điểm" Command="{Binding DataContext.ApproveFeaturedReviewCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource WarningButton}" Height="26" Padding="10,0" Margin="0,0,8,0" Cursor="Hand" ToolTip="Phê duyệt bài viết xuất sắc làm tiêu điểm để vinh danh trên bảng trình chiếu và cộng +100 XP cho học sinh (Yêu cầu nhận xét tối thiểu 50 ký tự)"/>
+                                            <Button Content="❌ Từ chối" Command="{Binding DataContext.RejectReviewCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource DangerButton}" Height="26" Padding="10,0" Cursor="Hand"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Hiển thị khi trống -->
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24"
+                                Visibility="{Binding IsListEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="✨ Tuyệt vời! Không có đánh giá nào đang chờ phê duyệt. ✨" 
+                                   FontSize="16" FontStyle="Italic" Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

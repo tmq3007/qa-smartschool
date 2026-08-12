@@ -1,0 +1,44 @@
+# ============================================
+# HƯỚNG DẪN CÀI ĐẶT NUGET PACKAGES
+# ============================================
+
+# Bước 1: Mở Package Manager Console trong Visual Studio
+# Tools → NuGet Package Manager → Package Manager Console
+
+# Bước 2: Chạy 2 lệnh sau:
+
+# 1. Cài đặt Microsoft.Web.WebView2
+Install-Package Microsoft.Web.WebView2 -Version 1.0.2535.41
+
+# 2. Cài đặt Newtonsoft.Json (nếu chưa có)
+Install-Package Newtonsoft.Json -Version 13.0.3
+
+# ============================================
+# SAU KHI CÀI XONG
+# ============================================
+
+# 1. Rebuild Solution:
+#    Build → Rebuild Solution (hoặc Ctrl+Shift+B)
+
+# 2. Kiểm tra Output window xem có lỗi không
+
+# 3. Nếu thành công, chạy ứng dụng (F5)
+
+# ============================================
+# LƯU Ý
+# ============================================
+
+# - WebView2 cần Microsoft Edge WebView2 Runtime
+# - Nếu chưa có, tải tại: https://developer.microsoft.com/microsoft-edge/webview2/
+# - Hoặc sẽ tự động tải khi chạy lần đầu
+
+# ============================================
+# KIỂM TRA SAU KHI CÀI
+# ============================================
+
+# 1. Mở menu "Chèn nội dung"
+# 2. Click tab "Sách GK"
+# 3. Click "Mở sách giáo khoa"
+# 4. Sẽ thấy danh sách 20 cuốn sách
+# 5. Double-click vào sách để mở WebView2
+

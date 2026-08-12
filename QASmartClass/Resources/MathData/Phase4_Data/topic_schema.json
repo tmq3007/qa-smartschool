@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QA SmartClass Math Topic Schema v2.0",
+  "description": "Schema chuẩn cho mỗi chương/chủ đề Toán Lớp 1-12 (GDPT 2018)",
+  
+  "type": "object",
+  "required": ["metadata", "sections"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["chapterId", "chapterName", "grade", "totalSections", "totalProblems", "toolMapping"],
+      "properties": {
+        "chapterId": {"type": "string", "pattern": "^g\\d{2}_ch\\d{2}$"},
+        "chapterName": {"type": "string"},
+        "grade": {"type": "integer", "minimum": 1, "maximum": 12},
+        "totalSections": {"type": "integer"},
+        "totalConcepts": {"type": "integer"},
+        "totalProblems": {"type": "integer"},
+        "toolMapping": {"type": "array", "items": {"type": "string"}},
+        "thptWeight": {"type": "string"},
+        "estimatedHours": {"type": "number"},
+        "prerequisites": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sectionId", "sectionName", "order", "concepts", "problems"],
+        "properties": {
+          "sectionId": {"type": "string"},
+          "sectionName": {"type": "string"},
+          "order": {"type": "integer"},
+          "concepts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "name"],
+              "properties": {
+                "id": {"type": "string"},
+                "name": {"type": "string"},
+                "definition": {"type": "string"},
+                "formula": {"type": "string"},
+                "formulas": {"type": "array"},
+                "properties": {"type": "array"},
+                "examples": {"type": "array"}
+              }
+            }
+          },
+          "problems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["problemId", "difficulty", "question", "solution", "points"],
+              "properties": {
+                "problemId": {"type": "string"},
+                "difficulty": {"enum": ["Easy", "Medium", "Hard", "Extreme"]},
+                "type": {"enum": ["multiple_choice", "calculation", "proof"]},
+                "question": {"type": "string"},
+                "options": {"type": "array", "items": {"type": "string"}},
+                "correctAnswer": {"type": "string"},
+                "solution": {"type": "string"},
+                "answer": {"type": "string"},
+                "hints": {"type": "array", "items": {"type": "string"}, "description": "Gợi ý từng bước cho học sinh"},
+                "graphExpression": {"type": "string", "description": "Biểu thức Desmos hoặc ID hình học (ví dụ: 'cube', 'x^2+y^2=25')"},
+                "points": {"type": "integer", "minimum": 5, "maximum": 50}
+              }
+            }
+          }
+        }
+      }
+    },
+    "commonMistakes": {"type": "array"},
+    "quizBank": {"type": "array"},
+    "historyNote": {"type": "string", "description": "Lịch sử hình thành kiến thức toán học"},
+    "realWorldApp": {"type": "string", "description": "Ứng dụng thực tế của chương này"}
+  }
+}

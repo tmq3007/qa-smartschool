@@ -1,0 +1,51 @@
+private void SortOnline_Click(object sender, RoutedEventArgs e) => ApplyChannelFilter();
+        private void SortName_Click(object sender, RoutedEventArgs e) => SortChannels("NAME");
+        private void SortRecent_Click(object sender, RoutedEventArgs e) => SortChannels("RECENT");
+        private void SortUnread_Click(object sender, RoutedEventArgs e) => SortChannels("UNREAD");
+
+        private void SortChannels(string mode)
+        {
+            var items = _channels.ToList();
+            switch (mode)
+            {
+                case "NAME":
+                    items = items.OrderBy(c => c.DisplayName).ToList();
+                    break;
+                case "RECENT":
+                    items = items.OrderByDescending(c => c.LastMessage?.Length > 0 ? 1 : 0).ToList();
+                    break;
+                case "UNREAD":
+                    items = items.OrderByDescending(c => c.UnreadCount).ToList();
+                    break;
+            }
+            _channels.Clear();
+            foreach (var c in items) _channels.Add(c);
+        }
+
+        private void ApplyChannelFilter()
+        {
+            string search = txtSearch?.Text?.Trim().ToLower() ?? "";
+            var all = new List<StudentChannel>();
+
+            // Rebuild from scratch
+            BuildChannelsInternal(all);
+
+            // Apply tab filter
+            var filtered = all.Where(c =>
+            {
+                if (_filterTab == "GROUP")
+                    return c.Code == "ALL" || c.Code.StartsWith("GROUP_") || c.Code.StartsWith("STUDY_");
+                if (_filterTab == "PRIVATE")
+                    return c.Code == "TEACHER";
+                return true; // ALL
+            });
+
+            // Apply search
+            if (!string.IsNullOrEmpty(search))
+                filtered = filtered.Where(c =>
+                    c.DisplayName.ToLower().Contains(search) ||
+                    c.Subtitle.ToLower().Contains(search));
+
+            _channels.Clear();
+            foreach (var c in filtered) _channels.Add(c);
+        }

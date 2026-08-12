@@ -1,0 +1,230 @@
+﻿<Window x:Class="QASmartTouch.Forms.Form2_5_SubMenuDrawShapes"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="3. Vẽ hình" 
+
+        Width="350" Height="500"
+
+        WindowStyle="None"
+
+        AllowsTransparency="True"
+
+        Background="Transparent"
+
+        ResizeMode="NoResize"
+
+        Topmost="True"
+
+        ShowInTaskbar="False">
+
+
+
+    <Border Background="White" 
+
+            CornerRadius="15" 
+
+            BorderBrush="#E1E8ED" 
+
+            BorderThickness="1">
+
+        <Border.Effect>
+
+            <DropShadowEffect Color="#CCCCCC" 
+
+                            Direction="270" 
+
+                            ShadowDepth="3" 
+
+                            BlurRadius="15" 
+
+                            Opacity="0.3"/>
+
+        </Border.Effect>
+
+
+
+        <Grid Margin="15">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Header -->
+
+                <RowDefinition Height="Auto" MinHeight="45"/>
+
+                <!-- Categories -->
+
+                <RowDefinition/>
+
+                <!-- Shape Gallery -->
+
+                <RowDefinition Height="Auto"/>
+
+                <!-- Footer -->
+
+            </Grid.RowDefinitions>
+
+
+
+            <!-- HEADER -->
+
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+
+                <StackPanel Orientation="Horizontal">
+
+                    <Path Fill="#2E86DE" 
+
+                          Data="M12,2L15.09,8.26L22,9.27L17,14.14L18.18,21.02L12,17.77L5.82,21.02L7,14.14L2,9.27L8.91,8.26L12,2Z"
+
+                          Width="20" Height="20"
+
+                          VerticalAlignment="Center"
+
+                          Margin="0,0,8,0" Stretch="Fill"/>
+
+                    <TextBlock Text="3. Vẽ hình" 
+
+                              FontSize="16" 
+
+                              FontWeight="Bold" 
+
+                              Foreground="#2F3542"
+
+                              VerticalAlignment="Center"/>
+
+                </StackPanel>
+
+                <Button x:Name="btnClose" 
+
+                       Style="{StaticResource CloseButton}"
+
+                       Click="btnClose_Click"/>
+
+            </Grid>
+
+
+
+            <!-- CATEGORIES -->
+
+            <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,1">
+
+                <Button x:Name="btn2D" Content="2D" 
+
+                       Height="40" Margin="2"
+
+                       Background="#E3F2FD"
+
+                       BorderThickness="0"
+
+                   Cursor="Hand"
+
+                   Click="btnCategory_Click"
+
+                   Tag="2D"/>
+
+                <Button x:Name="btn3D" Content="3D" 
+
+                       Height="40" Margin="2"
+
+                       Background="#F3E5F5"
+
+                       BorderThickness="0"
+
+                       Cursor="Hand"
+
+                       Click="btnCategory_Click"
+
+                       Tag="3D"/>
+
+            </UniformGrid>
+
+            <!-- SHAPE GALLERY -->
+
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+
+                <WrapPanel x:Name="ShapeGallery" Orientation="Horizontal">
+
+                    <!-- Shapes will be populated dynamically -->
+
+                </WrapPanel>
+
+            </ScrollViewer>
+
+
+
+            <!-- FOOTER INFO -->
+
+            <Border Grid.Row="3" 
+
+                   Background="#F8F9FA"
+
+                   CornerRadius="8"
+
+                   Padding="12"
+
+                   Margin="0,15,0,0">
+
+                <Grid>
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                    </Grid.ColumnDefinitions>
+
+
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+
+                        <Path Fill="#57606F" 
+
+                             Data="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"
+
+                             Width="21" Height="25"
+
+                             VerticalAlignment="Center"
+
+                             Margin="0,0,6,0" Stretch="Fill"/>
+
+                        <TextBlock Text="Click để chèn hình" 
+
+                                  FontSize="11"
+
+                                  Foreground="#57606F"
+
+                                  VerticalAlignment="Center" Width="114"/>
+
+                    </StackPanel>
+
+
+
+                    <TextBlock Grid.Column="1"
+
+                              Text="Ctrl + Shift + S" 
+
+                              FontSize="11"
+
+                              FontWeight="Bold"
+
+                              Foreground="#2E86DE"
+
+                              VerticalAlignment="Center"
+
+                              Margin="8,0,0,0"/>
+
+                </Grid>
+
+            </Border>
+
+        </Grid>
+
+    </Border>
+
+</Window>
+

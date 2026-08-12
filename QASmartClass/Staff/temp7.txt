@@ -1,0 +1,35 @@
+    public partial class StudentChatPage : Page
+    {
+        // ─── Data models (matching teacher side) ─────────
+        private class ChatGroup
+        {
+            public string Id { get; set; } = "";
+            public string Name { get; set; } = "";
+            public string Emoji { get; set; } = "👥";
+            public List<string> MemberCodes { get; set; } = new();
+        }
+
+        // ─── State ──────────────────────────────────────────
+        private readonly ObservableCollection<StudentChannel> _channels = new();
+        private readonly List<StudentChatMsg> _allMessages = new();
+        private List<ChatGroup> _customGroups = new();
+        private string _activeChannel = "ALL";
+        private string _myCode = "Student";
+        private string _myName = "Học sinh";
+        private DispatcherTimer _unreadTimer;
+        private int _lastKnownDbCount = 0;
+
+        public StudentChatPage()
+        {
+            InitializeComponent();
+            Loaded += (_, _) =>
+            {
+                ResolveStudentIdentity();
+                LoadCustomGroupsFromDB();
+                BuildChannels();
+                LoadChatHistoryFromDB();
+                WireMessageReceiver();
+                StartUnreadTimer();
+
+                // Select first channel
+                if (channelList.Items.Count > 0)

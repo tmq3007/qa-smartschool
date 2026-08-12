@@ -1,0 +1,135 @@
+<Page x:Class="QASmartClass.YouthUnion.Views.MemberListView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="clr-namespace:QASmartClass.YouthUnion.Views"
+      Title="Danh sách Đoàn Đội" Background="{StaticResource AppBackground}" Language="vi-VN">
+
+    <Page.Resources>
+        <local:MemberStatusConverter x:Key="MemberStatusConverter"/>
+        <local:MemberTypeConverter x:Key="MemberTypeConverter"/>
+        <local:PositionConverter x:Key="PositionConverter"/>
+    </Page.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Header -->
+            <RowDefinition Height="Auto"/> <!-- Hướng dẫn nghiệp vụ -->
+            <RowDefinition Height="Auto"/> <!-- Filter Bar -->
+            <RowDefinition Height="*"/> <!-- Data Grid -->
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <DockPanel Margin="0,0,0,15">
+            <TextBlock Text="🌟 Quản lý Đoàn viên — Đội viên" Style="{StaticResource StaffPageTitle}"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="BtnAdd" Content="➕ Thêm Thành viên" Style="{StaticResource StaffPrimaryBtn}" Margin="0,0,10,0" Click="BtnAdd_Click"/>
+                <Button x:Name="BtnExport" Content="📤 Xuất Excel" Style="{StaticResource StaffSuccessBtn}" Margin="0,0,10,0" Click="BtnExport_Click"/>
+                <Button x:Name="BtnImport" Content="📥 Nhập Excel" Style="{StaticResource StaffOutlineBtn}" Margin="0,0,10,0" Click="BtnImport_Click"/>
+                <Button x:Name="BtnRefresh" Content="🔄 Làm mới" Style="{StaticResource StaffOutlineBtn}" Click="BtnRefresh_Click"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Lớp phủ Hướng dẫn Nghiệp vụ Từng bước (v4.1) -->
+        <Expander Grid.Row="1" Header="💡 Hướng dẫn nghiệp vụ quản lý Đoàn viên - Đội viên" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" Margin="0,0,0,15" IsExpanded="False">
+            <StackPanel Margin="15">
+                <TextBlock Text="Quy trình quản lý hồ sơ:" FontWeight="Bold" Foreground="#1E40AF" FontSize="13" Margin="0,0,0,8"/>
+                <TextBlock Text="• Bước 1: Sử dụng thanh tìm kiếm hoặc bộ lọc lớp/trạng thái ở dưới để hiển thị học sinh cần xử lý." Foreground="#1E3A8A" FontSize="13" Margin="0,0,0,4"/>
+                <TextBlock Text="• Bước 2: Bấm đúp vào học sinh hoặc chọn '✏️' để chỉnh sửa thông tin chi tiết (Số sổ Đoàn, SĐT, Email)." Foreground="#1E3A8A" FontSize="13" Margin="0,0,0,4"/>
+                <TextBlock Text="• Bước 3: Sử dụng 'Nhập Excel' / 'Xuất Excel' để đồng bộ danh sách hàng loạt nhanh chóng." Foreground="#1E3A8A" FontSize="13"/>
+            </StackPanel>
+        </Expander>
+
+        <!-- Filter Bar -->
+        <Border Grid.Row="2" Style="{StaticResource StaffFormCard}" Margin="0,0,0,15">
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="TxtSearch" Width="250" Height="35" TextChanged="TxtSearch_TextChanged">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox" BasedOn="{StaticResource StaffTextBox}">
+                            <Setter Property="Tag" Value="🔍 Tìm theo tên..."/>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+                <ComboBox x:Name="CbFilterClass" Width="120" Height="35" Style="{StaticResource StaffComboBox}" Margin="10,0,0,0" SelectedIndex="0" SelectionChanged="Filter_Changed">
+                    <ComboBoxItem Content="Tất cả lớp" Tag="All"/>
+                </ComboBox>
+                <ComboBox x:Name="CbFilterType" Width="130" Height="35" Style="{StaticResource StaffComboBox}" Margin="10,0,0,0" SelectedIndex="0" SelectionChanged="Filter_Changed">
+                    <ComboBoxItem Content="Tất cả loại" Tag="All"/>
+                    <ComboBoxItem Content="Đoàn viên" Tag="Doan vien"/>
+                    <ComboBoxItem Content="Đội viên" Tag="Doi vien"/>
+                </ComboBox>
+                <ComboBox x:Name="CbFilterStatus" Width="140" Height="35" Style="{StaticResource StaffComboBox}" Margin="10,0,0,0" SelectedIndex="0" SelectionChanged="Filter_Changed">
+                    <ComboBoxItem Content="Tất cả trạng thái" Tag="All"/>
+                    <ComboBoxItem Content="Đang sinh hoạt" Tag="Active"/>
+                    <ComboBoxItem Content="Tạm ngưng" Tag="Inactive"/>
+                    <ComboBoxItem Content="Chuyển đi" Tag="Transferred"/>
+                </ComboBox>
+                <TextBlock Text="" Margin="15,0,0,0" VerticalAlignment="Center" FontSize="14" Foreground="#64748B">
+                    <Run Text="Tổng:"/>
+                    <Run x:Name="RunTotal" Text="0" FontWeight="Bold" Foreground="#3B82F6"/>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <!-- Data Grid -->
+        <Border Grid.Row="3" Style="{StaticResource StaffFormCard}">
+            <DataGrid x:Name="DgMembers" AutoGenerateColumns="False" IsReadOnly="True" 
+                      BorderThickness="0" Background="White" HeadersVisibility="Column" 
+                      RowHeight="42" FontSize="14" GridLinesVisibility="Horizontal"
+                      RowBackground="White" AlternatingRowBackground="#F8FAFC"
+                      MouseDoubleClick="DgMembers_DoubleClick">
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource StaffDataGridHeader}"/>
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource StaffDataGridRow}"/>
+                </DataGrid.Resources>
+
+                <DataGrid.Columns>
+
+                    <DataGridTextColumn Header="Lớp" Binding="{Binding ClassName}" Width="70"/>
+
+                    <DataGridTextColumn Header="Họ và Tên" Binding="{Binding StudentName}" Width="2*"/>
+
+                    <DataGridTextColumn Header="Loại" Binding="{Binding MemberType, Converter={StaticResource MemberTypeConverter}}" Width="100"/>
+                    <DataGridTextColumn Header="Chức vụ" Binding="{Binding Position, Converter={StaticResource PositionConverter}}" Width="120"/>
+
+                    <DataGridTextColumn Header="Số sổ Đoàn" Binding="{Binding DoanCardNo}" Width="110"/>
+
+                    <DataGridTextColumn Header="Ngày vào" Binding="{Binding JoinDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+
+                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status, Converter={StaticResource MemberStatusConverter}}" Width="100"/>
+
+                    <DataGridTextColumn Header="Điểm" Binding="{Binding TotalScore}" Width="60"/>
+
+                    <DataGridTextColumn Header="Phí" Binding="{Binding FeeStatus}" Width="80"/>
+
+                    <DataGridTemplateColumn Header="" Width="80">
+
+                        <DataGridTemplateColumn.CellTemplate>
+
+                            <DataTemplate>
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <Button Content="✏️" ToolTip="Sửa" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="14" Tag="{Binding Id}" Click="BtnEdit_Click"/>
+
+                                    <Button Content="🗑️" ToolTip="Xóa" Background="Transparent" BorderThickness="0" Cursor="Hand" FontSize="14" Tag="{Binding Id}" Click="BtnDelete_Click" Margin="5,0,0,0"/>
+
+                                </StackPanel>
+
+                            </DataTemplate>
+
+                        </DataGridTemplateColumn.CellTemplate>
+
+                    </DataGridTemplateColumn>
+
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+        </Border>
+
+    </Grid>
+
+</Page>
+
+
+

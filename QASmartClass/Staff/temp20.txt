@@ -1,0 +1,17 @@
+            switch (parts[1])
+            {
+                case "LOCK":
+                    MessageBox.Show("âš ï¸ GiÃ¡o viÃªn Ä‘Ã£ khÃ³a mÃ n hÃ¬nh!", "ThÃ´ng bÃ¡o",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    break;
+
+                case "UNLOCK":
+                    Log.Information("Screen unlocked by teacher");
+                    break;
+
+                case "QUIZ_START":
+                    NavigateTo("S3"); // Go to Quiz page
+                    ShowNotification("ðŸ“ BÃ i kiá»ƒm tra", "GV Ä‘Ã£ phÃ¡t bÃ i kiá»ƒm tra má»›i!", "#E65100");
+                    break;
+
+                case "QUIZ_END":

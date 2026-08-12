@@ -1,0 +1,154 @@
+<Page x:Class="QASmartClass.HealthRoom.Views.EpidemicMonitorView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:conv="clr-namespace:QASmartClass.Converters"
+      Title="Phòng Dịch Bệnh" Background="#F8FAFC" FontFamily="Segoe UI">
+
+    <Page.Resources>
+        <conv:EpidemicStatusConverter x:Key="EpidemicStatusConverter"/>
+        <conv:IsolationLocationConverter x:Key="IsolationLocationConverter"/>
+    </Page.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Margin="0,0,0,20">
+            <TextBlock Text="🦠 Giám sát Dịch bệnh Học đường" FontSize="24" FontWeight="Bold" Foreground="#1E293B"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="BtnAdd" Content="➕ Ghi nhận Ca bệnh" Background="#EF4444" Foreground="White" Padding="15,8" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="BtnAdd_Click" FontWeight="Bold"/>
+                <Button x:Name="BtnExport" Content="📄 Xuất Báo cáo" Background="#F59E0B" Foreground="White" Padding="15,8" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="BtnExport_Click" FontWeight="Bold"/>
+                <Button x:Name="BtnRefresh" Content="🔄 Làm mới" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Padding="15,8" Cursor="Hand" Click="BtnRefresh_Click"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Chart / Alert Panel -->
+            <StackPanel Grid.Column="0" Margin="0,0,15,0">
+                <!-- Alert Box -->
+                <Border Background="#FEE2E2" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,15" Visibility="{Binding AlertVisibility}">
+                    <StackPanel>
+                        <TextBlock Text="⚠️ CẢNH BÁO Ổ DỊCH" FontSize="16" FontWeight="Bold" Foreground="#B91C1C" Margin="0,0,0,5"/>
+                        <TextBlock x:Name="TxtAlertMessage" Text="Phát hiện ca truyền nhiễm trong tuần qua. Đề nghị phun thuốc muỗi!" TextWrapping="Wrap" Foreground="#991B1B"/>
+                    </StackPanel>
+                </Border>
+                
+                <Border Background="White" CornerRadius="12" Padding="15" Margin="0,0,0,15">
+                    <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Thống kê theo Tuần" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15" Foreground="#1E293B"/>
+                        
+                        <!-- Pseudo-Chart using ProgressBars -->
+                        <TextBlock Text="Sốt xuất huyết: 3 ca" Margin="0,0,0,5" Foreground="#475569"/>
+                        <ProgressBar Value="3" Maximum="10" Height="10" Foreground="#EF4444" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="Cúm A: 1 ca" Margin="0,0,0,5" Foreground="#475569"/>
+                        <ProgressBar Value="1" Maximum="10" Height="10" Foreground="#F59E0B" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="Thủy đậu: 0 ca" Margin="0,0,0,5" Foreground="#475569"/>
+                        <ProgressBar Value="0" Maximum="10" Height="10" Foreground="#3B82F6"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Step-by-Step Guidance Box -->
+                <Border Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Padding="12">
+                    <StackPanel>
+                        <TextBlock Text="📋 Chỉ dẫn Giám sát dịch bệnh:" FontWeight="Bold" FontSize="12" Foreground="#334155" Margin="0,0,0,8"/>
+                        <TextBlock Text="1. Khi nhận thông tin ca bệnh mới, click '➕ Ghi nhận Ca bệnh'." FontSize="11" Foreground="#475569" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                        <TextBlock Text="2. Hệ thống tự động kiểm tra ngưỡng dịch (>= 3 ca SXH trong 7 ngày) và bật cảnh báo đỏ." FontSize="11" Foreground="#475569" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                        <TextBlock Text="3. Khi dập dịch hoặc ca bệnh khỏi hẳn, cập nhật trạng thái 'Đã khỏi bệnh'." FontSize="11" Foreground="#475569" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- DataGrid -->
+            <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="20">
+                <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+                <DataGrid x:Name="DgCases" AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="1" BorderBrush="#E2E8F0" Background="White" HeadersVisibility="Column" RowHeight="40">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Lớp" Binding="{Binding ClassName}" Width="80"/>
+                        <DataGridTextColumn Header="Họ và Tên" Binding="{Binding StudentName}" Width="2*"/>
+                        <DataGridTextColumn Header="Bệnh" Binding="{Binding Disease}" Width="1.5*"/>
+                        <DataGridTextColumn Header="Ngày phát" Binding="{Binding OnsetDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+                        <DataGridTemplateColumn Header="Cách ly tại" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding IsolatedAt, Converter={StaticResource IsolationLocationConverter}}" VerticalAlignment="Center" Margin="5,0"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Trạng thái" Width="110">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Status, Converter={StaticResource EpidemicStatusConverter}}" FontWeight="Bold" VerticalAlignment="Center" Margin="5,0"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+
+        <!-- Popup Overlay for Adding Case -->
+        <Grid x:Name="PopupAddCase" Grid.Row="0" Grid.RowSpan="2" Background="#80000000" Visibility="Collapsed">
+            <Border Background="White" CornerRadius="12" Padding="20" Width="400" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.3"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="Ghi nhận Ca bệnh mới" FontSize="18" FontWeight="Bold" Margin="0,0,0,15" HorizontalAlignment="Center" Foreground="#1E293B"/>
+                    
+                    <TextBlock Text="Chọn học sinh *:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+                    <ComboBox x:Name="CboStudent" Margin="0,0,0,10" Height="36" Padding="6" IsEditable="True" IsTextSearchEnabled="True" SelectionChanged="CboStudent_SelectionChanged"/>
+                    
+                    <TextBlock Text="Lớp:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+                    <TextBox x:Name="TxtClassName" Padding="8" Margin="0,0,0,10" BorderThickness="1" BorderBrush="#CBD5E1" IsReadOnly="True" Background="#E2E8F0"/>
+                    
+                    <TextBlock Text="Bệnh truyền nhiễm:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+                    <ComboBox x:Name="CbDisease" Padding="8" Margin="0,0,0,10" Height="36">
+                        <ComboBoxItem Content="Sốt xuất huyết" IsSelected="True"/>
+                        <ComboBoxItem Content="Cúm A"/>
+                        <ComboBoxItem Content="Thủy đậu"/>
+                        <ComboBoxItem Content="Sởi"/>
+                        <ComboBoxItem Content="Khác"/>
+                    </ComboBox>
+                    
+                    <TextBlock Text="Ngày phát bệnh:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+                    <DatePicker x:Name="DpOnsetDate" Padding="8" Margin="0,0,0,10" Height="36"/>
+                    
+                    <TextBlock Text="Cách ly tại:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+                    <ComboBox x:Name="CbIsolatedAt" Padding="8" Margin="0,0,0,10" Height="36">
+                        <ComboBoxItem Content="Tại nhà" Tag="Home" IsSelected="True"/>
+                        <ComboBoxItem Content="Tại bệnh viện" Tag="Hospital"/>
+                    </ComboBox>
+                    
+                    <TextBlock Text="Trạng thái:" Margin="0,5,0,2" Foreground="#475569" FontWeight="SemiBold"/>
+                    <ComboBox x:Name="CbStatus" Padding="8" Margin="0,0,0,15" Height="36">
+                        <ComboBoxItem Content="Đang điều trị" Tag="Active" IsSelected="True"/>
+                        <ComboBoxItem Content="Đã khỏi bệnh" Tag="Recovered"/>
+                    </ComboBox>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Hủy" Grid.Column="0" Margin="0,0,5,0" Padding="10" Background="#F1F5F9" Foreground="#475569" BorderThickness="0" Cursor="Hand" Click="BtnCancelAddCase_Click"/>
+                        <Button Content="Lưu" Grid.Column="1" Margin="5,0,0,0" Padding="10" Background="#EF4444" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnSaveCase_Click" FontWeight="Bold"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>
+
+
+

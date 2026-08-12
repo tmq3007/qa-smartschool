@@ -1,0 +1,354 @@
+<controls:BaseToolControl x:Class="QASmartClass.LearningTools.Views.Multi.MindmapTool"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:QASmartClass.LearningTools.Controls"
+             Background="White">
+
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- MAIN LAYOUT (Master-Detail) -->
+        <Grid Grid.Row="0" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: SIDEBAR MENU (Light/Orange themed) -->
+            <Grid Grid.Column="0" Background="#F8F9FA">
+                <!-- Multi Category: Orange hover/selected -->
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#FFE0B2"/>
+                    <SolidColorBrush x:Key="SidebarSelectedBrush" Color="#E65100"/>
+                </Grid.Resources>
+                <ListBox x:Name="sideMenu" BorderThickness="0" Background="Transparent" 
+                         SelectionChanged="SideMenu_SelectionChanged" Margin="4"
+                         ItemContainerStyle="{StaticResource SidebarListBoxItemStyle}">
+
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📖" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextGuide" Text="Hướng dẫn &amp; Ghi chú" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🧠" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextMindmap" Text="Bản đồ tư duy" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌍" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock x:Name="menuTextPractical" Text="Ứng dụng thực tế" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </Grid>
+
+            <!-- ĐƯỜNG PHÂN TÁCH -->
+            <Border Grid.Column="1" Background="#E65100"/>
+
+            <!-- CỘT PHẢI: NỘI DUNG CHI TIẾT -->
+            <Grid Grid.Column="2" Margin="0">
+                <!-- VIEW 0: HƯỚNG DẪN & GHI CHÚ -->
+                <ScrollViewer x:Name="viewGuide" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" Margin="16">
+                    <StackPanel Background="Transparent">
+<Border Background="White" CornerRadius="16" Padding="28,24" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.06"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <TextBlock Text="🧠 Hướng Dẫn Sử Dụng Sơ Đồ Tư Duy" FontSize="18" FontWeight="Bold" Foreground="#E65100" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                                
+                                <!-- Step 1 -->
+                                <Border Background="#FFF3E0" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#FFE0B2" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="26" Height="26" CornerRadius="13" Background="#E65100" VerticalAlignment="Top" Margin="0,0,12,0">
+                                            <TextBlock Text="1" Foreground="White" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Tạo chủ đề gốc của bài học" FontWeight="Bold" FontSize="14" Foreground="#D84315" Margin="0,0,0,3"/>
+                                            <TextBlock Text="Nhấn nút '🎯 Chủ đề trung tâm' ở thanh công cụ để tạo node gốc ở giữa bảng vẽ." FontSize="13" Foreground="#555" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Step 2 -->
+                                <Border Background="#FFF3E0" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#FFE0B2" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="26" Height="26" CornerRadius="13" Background="#E65100" VerticalAlignment="Top" Margin="0,0,12,0">
+                                            <TextBlock Text="2" Foreground="White" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Phát triển các nhánh ý tưởng con" FontWeight="Bold" FontSize="14" Foreground="#D84315" Margin="0,0,0,3"/>
+                                            <TextBlock Text="Nhấp chuột chọn một node bất kỳ và nhấn '➕ Thêm nhánh' hoặc dùng phím Enter để tạo nhánh con mới." FontSize="13" Foreground="#555" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Step 3 -->
+                                <Border Background="#FFF3E0" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#FFE0B2" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="26" Height="26" CornerRadius="13" Background="#E65100" VerticalAlignment="Top" Margin="0,0,12,0">
+                                            <TextBlock Text="3" Foreground="White" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Chỉnh sửa nội dung &amp; Kéo thả tự do" FontWeight="Bold" FontSize="14" Foreground="#D84315" Margin="0,0,0,3"/>
+                                            <TextBlock Text="Nhấp đúp chuột vào node để sửa chữ nhanh. Bạn có thể nhấn giữ và kéo thả node đến mọi vị trí tùy ý." FontSize="13" Foreground="#555" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Pedagogical Tip -->
+                                <Border Background="#E8F5E9" CornerRadius="10" Padding="12" BorderBrush="#C8E6C9" BorderThickness="1" Margin="0,6,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="💡" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Top"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Gợi ý hoạt động dạy học tích cực" FontWeight="Bold" FontSize="13.5" Foreground="#2E7D32" Margin="0,0,0,3"/>
+                                            <TextBlock Text="Giáo viên sử dụng làm công cụ khởi động bài học (Brainstorming), hướng dẫn học sinh lập dàn ý sơ đồ tư duy theo nhóm, hoặc tóm tắt nội dung bài học ôn tập cuối giờ để học sinh dễ nhớ." FontSize="12.5" Foreground="#1B5E20" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    
+</StackPanel>
+                </ScrollViewer>
+
+                <!-- VIEW 1: BẢNG VẼ CHÍNH -->
+                <Grid x:Name="viewPractice" Visibility="Visible">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- === TOOLBAR RESTRUCTURED === -->
+                    <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Left Zone: Editing Tools & Templates -->
+                            <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,8,0,8">
+                                <TextBlock Text="🧠 Sơ đồ tư duy" FontSize="16" FontWeight="Bold" Foreground="#333" VerticalAlignment="Center" Margin="0,0,16,6"/>
+                                <Button x:Name="btnAddCenter" Content="🎯 Chủ đề trung tâm" Style="{StaticResource ModernButton}" Padding="10,6" Margin="0,0,8,6" FontSize="12" FontWeight="SemiBold" Cursor="Hand" Click="AddCenter_Click" ToolTip="Tạo node gốc ở giữa"/>
+                                <Button x:Name="btnAddChild" Content="➕ Thêm nhánh" Style="{StaticResource ModernButton}" Padding="10,6" Margin="0,0,8,6" FontSize="12" Cursor="Hand" Click="AddChild_Click" ToolTip="Thêm nhánh con cho node đang chọn" IsEnabled="False"/>
+                                <Button x:Name="btnDeleteNode" Content="❌ Xóa nhánh" Style="{StaticResource DangerButton}" Padding="10,6" Margin="0,0,8,6" FontSize="12" Cursor="Hand" Click="DeleteNode_Click" ToolTip="Xóa nhánh đang chọn" IsEnabled="False"/>
+
+                                <Border Height="24" Width="1" Background="#D0D0D0" Margin="4,0,8,6" VerticalAlignment="Center"/>
+                                <Button x:Name="btnUndo" Content="↩️ Hoàn tác" Style="{StaticResource ModernButton}" Padding="10,6" Margin="0,0,4,6" FontSize="12" Cursor="Hand" Click="Undo_Click" ToolTip="Hoàn tác thao tác trước" IsEnabled="False"/>
+                                <Button x:Name="btnRedo" Content="↪️ Làm lại" Style="{StaticResource ModernButton}" Padding="10,6" Margin="0,0,8,6" FontSize="12" Cursor="Hand" Click="Redo_Click" ToolTip="Làm lại thao tác vừa hoàn tác" IsEnabled="False"/>
+
+                                <Border Height="24" Width="1" Background="#D0D0D0" Margin="4,0,8,6" VerticalAlignment="Center"/>
+                                <ToggleButton x:Name="btnEmojiToggle" Content="😊 Biểu tượng ▾" Padding="8,5" Margin="0,0,8,6" FontSize="12" Cursor="Hand" ToolTip="Mở bảng chọn biểu tượng ngộ nghĩnh"/>
+                                <Popup x:Name="popEmoji" IsOpen="{Binding IsChecked, ElementName=btnEmojiToggle}" StaysOpen="False" PlacementTarget="{Binding ElementName=btnEmojiToggle}" Placement="Bottom" Margin="0,4,0,0">
+                                    <Border Background="White" BorderBrush="#1976D2" BorderThickness="1.5" CornerRadius="8" Padding="10" Width="260">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+                                            
+                                            <!-- Search bar -->
+                                            <TextBox x:Name="txtEmojiSearch" Grid.Row="0" Margin="0,0,0,8" Padding="6,4" FontSize="12" ToolTip="Nhập từ khóa để lọc biểu tượng (ví dụ: sách, cúp, sao...)"/>
+                                            
+                                            <!-- Categories -->
+                                            <UniformGrid Rows="1" Grid.Row="1" Margin="0,0,0,8">
+                                                <Button x:Name="btnTabAll" Content="Tất cả" FontSize="10" Padding="2" Click="EmojiTab_Click" Tag="All" Background="#E3F2FD" BorderBrush="#90CAF9" Cursor="Hand"/>
+                                                <Button x:Name="btnTabStudy" Content="Học tập" FontSize="10" Padding="2" Click="EmojiTab_Click" Tag="Study" Background="Transparent" BorderThickness="1" BorderBrush="#E0E0E0" Margin="2,0,0,0" Cursor="Hand"/>
+                                                <Button x:Name="btnTabAward" Content="Đánh giá" FontSize="10" Padding="2" Click="EmojiTab_Click" Tag="Award" Background="Transparent" BorderThickness="1" BorderBrush="#E0E0E0" Margin="2,0,0,0" Cursor="Hand"/>
+                                                <Button x:Name="btnTabFace" Content="Cảm xúc" FontSize="10" Padding="2" Click="EmojiTab_Click" Tag="Face" Background="Transparent" BorderThickness="1" BorderBrush="#E0E0E0" Margin="2,0,0,0" Cursor="Hand"/>
+                                            </UniformGrid>
+                                            
+                                            <!-- Emojis WrapPanel inside ScrollViewer -->
+                                            <ScrollViewer Grid.Row="2" MaxHeight="140" VerticalScrollBarVisibility="Auto">
+                                                <WrapPanel x:Name="wpEmojis" ItemWidth="36" ItemHeight="36" Orientation="Horizontal"/>
+                                            </ScrollViewer>
+                                        </Grid>
+                                    </Border>
+                                </Popup>
+
+                                <Border Height="24" Width="1" Background="#D0D0D0" Margin="8,0,8,6" VerticalAlignment="Center"/>
+
+                                <!-- Template presets -->
+                                <TextBlock Text="Template mẫu:" FontSize="12" FontWeight="SemiBold" Foreground="#757575" VerticalAlignment="Center" Margin="0,0,6,6"/>
+                                <Button Content="📚 Văn học" Style="{StaticResource SecondaryButton}" Padding="8,5" Margin="0,0,4,6" FontSize="11" Cursor="Hand" Click="Template_Literature" ToolTip="Phân tích tác phẩm văn học"/>
+                                <Button Content="🔬 STEM" Style="{StaticResource SecondaryButton}" Padding="8,5" Margin="0,0,4,6" FontSize="11" Cursor="Hand" Click="Template_STEM" ToolTip="Tóm tắt bài học STEM"/>
+                                <Button Content="📋 Dự án" Style="{StaticResource SecondaryButton}" Padding="8,5" Margin="0,0,4,6" FontSize="11" Cursor="Hand" Click="Template_Project" ToolTip="Lập kế hoạch dự án"/>
+                                <Button Content="🏛️ Lịch sử" Style="{StaticResource SecondaryButton}" Padding="8,5" Margin="0,0,4,6" FontSize="11" Cursor="Hand" Click="Template_History" ToolTip="Tóm tắt sự kiện lịch sử"/>
+                                <Button Content="📐 Toán học" Style="{StaticResource SecondaryButton}" Padding="8,5" Margin="0,0,4,6" FontSize="11" Cursor="Hand" Click="Template_Math" ToolTip="Phân loại tư duy Toán học"/>
+                                <Button Content="🗓️ Kế hoạch" Style="{StaticResource SecondaryButton}" Padding="8,5" Margin="0,0,8,6" FontSize="11" Cursor="Hand" Click="Template_Weekly" ToolTip="Lập kế hoạch học tập tuần"/>
+
+                                <Border Height="24" Width="1" Background="#D0D0D0" Margin="4,0,8,6" VerticalAlignment="Center"/>
+                                <Button Content="📂 Thư viện 20 mẫu" Style="{StaticResource ModernButton}" Padding="10,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Click="OpenTemplateGallery_Click" ToolTip="Mở thư viện 20 mẫu sơ đồ tư duy đa cấp" Margin="0,0,12,6"/>
+                            </WrapPanel>
+
+                            <!-- Right Zone: Canvas Operations -->
+                            <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,8,12,8">
+                                <Button x:Name="btnToggleLayout" Content="🔀 Đổi cấu trúc" Style="{StaticResource SecondaryButton}" Padding="10,6" Margin="0,0,6,6" FontSize="12" Cursor="Hand" Click="ToggleLayout_Click" ToolTip="Chuyển đổi kiểu sắp xếp (Tỏa tròn / Ngang / Dọc)"/>
+                                <Button x:Name="btnToggleStyle" Content="🖌️ Đổi nét vẽ" Style="{StaticResource SecondaryButton}" Padding="10,6" Margin="0,0,6,6" FontSize="12" Cursor="Hand" Click="ToggleStyle_Click" ToolTip="Chuyển đổi độ đậm nhạt và kiểu nét nối"/>
+                                <Button x:Name="btnChangeColor" Content="🎨 Đổi màu" Style="{StaticResource SecondaryButton}" Padding="10,6" Margin="0,0,6,6" FontSize="12" Cursor="Hand" Click="ChangeColor_Click" ToolTip="Đổi màu nhánh đang chọn hoặc đồng nhất toàn bộ"/>
+                                <Button x:Name="btnSave" Content="💾 Lưu" Style="{StaticResource ModernButton}" Padding="10,6" Margin="0,0,6,6" FontSize="12" Cursor="Hand" Click="Save_Click" ToolTip="Lưu sơ đồ tư duy vào database"/>
+                                <Button x:Name="btnLoad" Content="📂 Mở" Style="{StaticResource ModernButton}" Padding="10,6" Margin="0,0,16,6" FontSize="12" Cursor="Hand" Click="Load_Click" ToolTip="Tải sơ đồ tư duy đã lưu từ database"/>
+                                
+                                <Button x:Name="btnExport" Content="📸 Xuất ảnh" Style="{StaticResource ModernButton}" Padding="10,6" Margin="0,0,6,6" FontSize="12" Cursor="Hand" Click="Export_Click" ToolTip="Xuất sơ đồ thành ảnh PNG hoặc ảnh Vector SVG"/>
+                                <Button x:Name="btnClearAll" Content="🗑️ Xóa tất cả" Style="{StaticResource DangerButton}" Padding="10,6" Margin="0,0,0,6" FontSize="12" Cursor="Hand" Click="ClearAll_Click" ToolTip="Xóa toàn bộ sơ đồ"/>
+                            </WrapPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- === CANVAS === -->
+                    <Border Grid.Row="1" Background="#FAFBFC" ClipToBounds="True">
+                        <Grid>
+                            <ScrollViewer x:Name="mindmapScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" IsManipulationEnabled="True" ManipulationStarting="ScrollViewer_ManipulationStarting" ManipulationDelta="ScrollViewer_ManipulationDelta">
+                                <Canvas x:Name="mindmapCanvas"
+                                        MouseLeftButtonDown="Canvas_MouseDown"
+                                        Background="Transparent"/>
+                            </ScrollViewer>
+
+                            <!-- Floating Zoom Panel -->
+                            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Background="White" CornerRadius="18" Padding="6" BorderBrush="#E0E0E0" BorderThickness="1" Panel.ZIndex="500">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.1"/>
+                                </Border.Effect>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button x:Name="btnZoomOut" Width="28" Height="28" Cursor="Hand" Click="BtnZoomOut_Click" ToolTip="Thu nhỏ sơ đồ">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="b" Background="Transparent" CornerRadius="14">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="b" Property="Background" Value="#F0F0F0"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="b" Property="Background" Value="#E0E0E0"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <TextBlock Text="➖" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Button>
+                                    
+                                    <Button x:Name="btnZoomReset" Width="50" Height="28" Cursor="Hand" Click="BtnZoomReset_Click" ToolTip="Reset tỷ lệ về 100%">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="b" Background="Transparent" CornerRadius="14">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="b" Property="Background" Value="#F0F0F0"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="b" Property="Background" Value="#E0E0E0"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <TextBlock x:Name="txtZoomPercent" Text="100%" FontSize="11" FontWeight="SemiBold" Foreground="#1976D2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Button>
+
+                                    <Button x:Name="btnZoomIn" Width="28" Height="28" Cursor="Hand" Click="BtnZoomIn_Click" ToolTip="Phóng to sơ đồ">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="b" Background="Transparent" CornerRadius="14">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="b" Property="Background" Value="#F0F0F0"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="b" Property="Background" Value="#E0E0E0"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <TextBlock Text="➕" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- === EMPTY STATE === -->
+                    <StackPanel x:Name="emptyState" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" MaxWidth="600">
+                        <Border Background="White" CornerRadius="16" Padding="28,24" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.06"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <TextBlock Text="🧠" FontSize="44" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                <TextBlock Text="Hướng Dẫn Sử Dụng Sơ Đồ Tư Duy" FontSize="18" FontWeight="Bold" Foreground="#E65100" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                                
+                                <!-- Step 1 -->
+                                <Border Background="#FFF3E0" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#FFE0B2" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="26" Height="26" CornerRadius="13" Background="#E65100" VerticalAlignment="Top" Margin="0,0,12,0">
+                                            <TextBlock Text="1" Foreground="White" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Tạo chủ đề gốc của bài học" FontWeight="Bold" FontSize="14" Foreground="#D84315" Margin="0,0,0,3"/>
+                                            <TextBlock Text="Nhấn nút '🎯 Chủ đề trung tâm' ở thanh công cụ để tạo node gốc ở giữa bảng vẽ." FontSize="13" Foreground="#555" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Step 2 -->
+                                <Border Background="#FFF3E0" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#FFE0B2" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="26" Height="26" CornerRadius="13" Background="#E65100" VerticalAlignment="Top" Margin="0,0,12,0">
+                                            <TextBlock Text="2" Foreground="White" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Phát triển các nhánh ý tưởng con" FontWeight="Bold" FontSize="14" Foreground="#D84315" Margin="0,0,0,3"/>
+                                            <TextBlock Text="Nhấp chuột chọn một node bất kỳ và nhấn '➕ Thêm nhánh' hoặc dùng phím Enter để tạo nhánh con mới." FontSize="13" Foreground="#555" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <!-- VIEW 2: ỨNG DỤNG THỰC TẾ -->
+                <Border x:Name="viewPractical" HorizontalAlignment="Stretch" Margin="20" Visibility="Collapsed">
+                    <controls:PracticalAppViewer x:Name="practicalAppViewer" Margin="0"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:BaseToolControl>

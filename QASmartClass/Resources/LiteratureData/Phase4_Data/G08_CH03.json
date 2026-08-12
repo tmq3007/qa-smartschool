@@ -1,0 +1,140 @@
+{
+  "metadata": {
+    "chapterId": "g08_ch03",
+    "chapterName": "Bài 3: Thơ mới Việt Nam",
+    "grade": 8,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 4
+  },
+  "sections": [
+    {
+      "sectionId": "s_g8_ch3_0",
+      "sectionName": "Ông đồ — Vũ Đình Liên",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-8-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g8_ong_do.mp3",
+      "concepts": [
+        {
+          "name": "Hoàn cảnh ra đời",
+          "theorem": "Bài thơ sáng tác năm 1936, thời kỳ nền Hán học suy tàn, chữ Quốc ngữ và văn hóa phương Tây chiếm ưu thế. Ông đồ (người dạy chữ Nho) từ chỗ được tôn vinh trở thành những người bị lãng quên."
+        },
+        {
+          "name": "Thời hoàng kim của ông đồ",
+          "definition": "Mỗi năm hoa đào nở,\nLại thấy ông đồ già...\nBao nhiêu người thuê viết,\nTấm tắc ngợi khen tài:\n'Hoa tay thảo những nét\nNhư phượng múa rồng bay'."
+        },
+        {
+          "name": "Sự tàn lụi và xót xa",
+          "definition": "Nhưng mỗi năm mỗi vắng,\nNgười thuê viết nay đâu?\nGiấy đỏ buồn không thắm,\nMực đọng trong nghiên sầu...\nNăm nay đào lại nở,\nKhông thấy ông đồ xưa."
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hình ảnh 'Giấy đỏ buồn không thắm / Mực đọng trong nghiên sầu' sử dụng biện pháp tu từ gì và có tác dụng ra sao?",
+          "difficulty": "Medium",
+          "options": [
+            "Nhân hóa — gán cho những vật vô tri (giấy, mực) nỗi buồn tủi, cô đơn của chính ông đồ khi bị thời cuộc lãng quên",
+            "So sánh — so sánh màu đỏ của giấy với màu của sự buồn bã",
+            "Nói quá — làm nổi bật sự tàn lụi nhanh chóng của nghề viết chữ nho",
+            "Ẩn dụ — chỉ những người học trò cũ không còn đến thăm thầy"
+          ],
+          "answer": "Nhân hóa — gán cho những vật vô tri (giấy, mực) nỗi buồn tủi, cô đơn của chính ông đồ khi bị thời cuộc lãng quên",
+          "hints": ["'Giấy buồn', 'Nghiên sầu' — vật vô tri có biết buồn sầu không? Nỗi sầu đó thực chất là của ai?"],
+          "explanation": "Đây là thủ pháp 'tả cảnh ngụ tình'. Giấy phơi lâu ngày màu nhạt phai (không thắm), mực mài ra không ai dùng nên đọng lại cạn khô (nghiên sầu). Nỗi buồn của con người đã thấm sâu vào từng đồ vật, tạo nên một không gian ảm đạm, xót xa."
+        },
+        {
+          "id": "p2",
+          "question": "Sự đối lập giữa khổ thơ đầu (bao nhiêu người thuê viết) và khổ thơ 3, 4 (mỗi năm mỗi vắng) phản ánh điều gì?",
+          "difficulty": "Easy",
+          "options": [
+            "Sự thay đổi tàn nhẫn của thời thế: từ chỗ được tôn trọng, ngưỡng mộ, ông đồ trở nên lạc lõng, bị xã hội vứt bỏ",
+            "Ông đồ đã già yếu nên viết chữ không còn đẹp như trước",
+            "Sự thay đổi của thời tiết làm ít người đi chơi xuân hơn",
+            "Chữ Quốc ngữ quá đắt đỏ nên người dân không mua nổi"
+          ],
+          "answer": "Sự thay đổi tàn nhẫn của thời thế: từ chỗ được tôn trọng, ngưỡng mộ, ông đồ trở nên lạc lõng, bị xã hội vứt bỏ",
+          "hints": ["Hán học suy tàn thay thế bằng chữ Quốc ngữ. Ông đồ có thay đổi không, hay xã hội đã thay đổi?"],
+          "explanation": "Ông đồ không làm gì sai, nét chữ của ông vẫn 'như phượng múa rồng bay', nhưng xã hội đã thay đổi. Nền Tây học lấn át Hán học, khiến những giá trị văn hóa cổ truyền bị lãng quên, đẩy ông đồ vào bi kịch của sự 'thừa thãi'."
+        },
+        {
+          "id": "p3",
+          "question": "Câu hỏi tu từ cuối bài 'Những người muôn năm cũ / Hồn ở đâu bây giờ?' thể hiện cảm xúc gì của nhà thơ?",
+          "difficulty": "Medium",
+          "options": [
+            "Sự hoài niệm xót xa, thương tiếc cho một thế hệ tinh hoa đã lùi vào dĩ vãng và cho những giá trị văn hóa truyền thống đang bị mai một",
+            "Sự tò mò muốn biết những người khách cũ của ông đồ đã đi đâu",
+            "Sự oán trách những người dân đã vô tình lãng quên ông đồ",
+            "Lời kêu gọi khôi phục lại các kỳ thi Nho học thời xưa"
+          ],
+          "answer": "Sự hoài niệm xót xa, thương tiếc cho một thế hệ tinh hoa đã lùi vào dĩ vãng và cho những giá trị văn hóa truyền thống đang bị mai một",
+          "hints": ["'Những người muôn năm cũ' không chỉ là ông đồ, mà còn là những người từng biết trân trọng cái đẹp của chữ Nho."],
+          "explanation": "Câu hỏi tu từ rơi vào cõi hư không, không có câu trả lời. Tiếng thở dài của Vũ Đình Liên không chỉ dành riêng cho một cá nhân ông đồ, mà là niềm ngậm ngùi cho cả một thế hệ, một nền văn hóa truyền thống đang lặng lẽ biến mất khỏi cuộc đời."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g8_ch3_1",
+      "sectionName": "Quê hương — Tế Hanh",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-8-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g8_que_huong.mp3",
+      "concepts": [
+        {
+          "name": "Cảm hứng sáng tác",
+          "theorem": "Tế Hanh sáng tác bài thơ khi đang đi học xa nhà. Nỗi nhớ da diết về làng chài ven biển nghèo nhưng khỏe khoắn, tràn đầy sức sống đã tạo nên thi phẩm này."
+        },
+        {
+          "name": "Cảnh đoàn thuyền ra khơi",
+          "definition": "Khi trời trong, gió nhẹ, sớm mai hồng,\nDân trai tráng bơi thuyền đi đánh cá.\nChiếc thuyền nhẹ hăng như con tuấn mã\nPhăng mái chèo, mạnh mẽ vượt trường giang.\nCánh buồm giương to như mảnh hồn làng\nRướn thân trắng bao la thâu góp gió..."
+        },
+        {
+          "name": "Nỗi nhớ quê hương",
+          "definition": "Nay xa cách lòng tôi luôn tưởng nhớ\nMàu nước xanh, cá bạc, chiếc buồm vôi,\nThoáng con thuyền rẽ sóng chạy ra khơi,\nTôi thấy nhớ cái mùi nồng mặn quá!"
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hình ảnh 'Cánh buồm giương to như mảnh hồn làng / Rướn thân trắng bao la thâu góp gió' có ý nghĩa gì đặc sắc?",
+          "difficulty": "Hard",
+          "options": [
+            "Vật hóa khái niệm trừu tượng: so sánh cái cụ thể (cánh buồm) với cái trừu tượng vô hình (hồn làng), làm cho hồn quê trở nên thiêng liêng, lớn lao nhưng vẫn gần gũi",
+            "Chỉ đơn thuần miêu tả kích thước rất to của cánh buồm căng gió",
+            "So sánh cánh buồm với màu trắng của mây trời",
+            "Nhân hóa cánh buồm biết rướn thân để chạy thi với gió"
+          ],
+          "answer": "Vật hóa khái niệm trừu tượng: so sánh cái cụ thể (cánh buồm) với cái trừu tượng vô hình (hồn làng), làm cho hồn quê trở nên thiêng liêng, lớn lao nhưng vẫn gần gũi",
+          "hints": ["Bình thường người ta lấy cái cụ thể so sánh với cái cụ thể. Ở đây lấy cái cụ thể (cánh buồm) so sánh với cái gì?"],
+          "explanation": "Đây là 2 câu thơ xuất thần nhất của Tế Hanh. Ông không chỉ thấy cánh buồm bằng mắt, mà bằng cả trái tim. Cánh buồm trở thành biểu tượng thiêng liêng, chứa đựng linh hồn, sức sống, ước mơ và hy vọng của những người dân chài."
+        },
+        {
+          "id": "p2",
+          "question": "Vẻ đẹp của những người dân chài được miêu tả qua các câu thơ 'Dân chài lưới làn da ngăm rám nắng / Cả thân hình nồng thở vị xa xăm' là vẻ đẹp như thế nào?",
+          "difficulty": "Medium",
+          "options": [
+            "Vẻ đẹp khỏe khoắn, vạm vỡ, lãng mạn, mang hơi thở và sức sống mặn mòi của biển cả đại dương",
+            "Vẻ đẹp gầy gò, lam lũ, đáng thương do phải làm việc vất vả",
+            "Vẻ đẹp sang trọng, quý phái của những người làm chủ biển cả",
+            "Vẻ đẹp yếu ớt nhưng dẻo dai trước sóng gió"
+          ],
+          "answer": "Vẻ đẹp khỏe khoắn, vạm vỡ, lãng mạn, mang hơi thở và sức sống mặn mòi của biển cả đại dương",
+          "hints": ["'Ngăm rám nắng', 'vị xa xăm' (vị muối, vị biển) tạo nên hình ảnh những người đàn ông yếu ớt hay cường tráng?"],
+          "explanation": "Người dân chài hiện lên không hề lam lũ tăm tối, mà mang vẻ đẹp tạc tượng, đầy chất lãng mạn (vị xa xăm). Da rám nắng là dấu ấn của đại dương, sức khỏe của họ vạm vỡ như thiên nhiên biển cả."
+        },
+        {
+          "id": "p3",
+          "question": "Câu thơ cuối 'Tôi thấy nhớ cái mùi nồng mặn quá!' thể hiện nỗi nhớ quê hương ở phương diện nào?",
+          "difficulty": "Easy",
+          "options": [
+            "Nỗi nhớ cụ thể, gắn liền với mùi vị đặc trưng của quê hương — mùi của biển, cá, và gió muối",
+            "Nỗi nhớ những món ăn ngon của quê hương",
+            "Sự ám ảnh vì mùi khó ngửi của làng chài",
+            "Khát vọng muốn nhanh chóng được ăn hải sản quê nhà"
+          ],
+          "answer": "Nỗi nhớ cụ thể, gắn liền với mùi vị đặc trưng của quê hương — mùi của biển, cá, và gió muối",
+          "hints": ["'Mùi nồng mặn' là mùi đặc trưng của vùng quê nào?"],
+          "explanation": "Nỗi nhớ không chung chung mà được đọng lại ở một cảm giác rất cụ thể: khứu giác ('mùi nồng mặn'). Mùi của muối, của cá, của mồ hôi dân chài — đó là mùi của quê hương, thứ không thể nhầm lẫn với bất kỳ nơi nào khác. Qua đó thấy được sự gắn bó ruột thịt của Tế Hanh với làng quê."
+        }
+      ]
+    }
+  ]
+}

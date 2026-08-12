@@ -1,0 +1,347 @@
+<Page x:Class="QASmartClass.Classroom.Views.LibraryPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+      Title="Thư viện" Background="#FAFAFA">
+    <Grid Margin="16,12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,10">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="📂 Mở thư mục" Padding="12,8" FontSize="12" Background="#E3F2FD" Foreground="#1565C0"
+                        BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="OpenFolder_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}" BorderBrush="#1976D2" BorderThickness="1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#BBDEFB"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="🗑️ Xóa" Padding="12,8" FontSize="12" Background="#FFEBEE" Foreground="#C62828"
+                        BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="DeleteFile_Click" ToolTip="Xóa file đang chọn">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}" BorderBrush="#EF5350" BorderThickness="1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#FFCDD2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="📥 Thêm file" Padding="12,8" FontSize="13" Background="#1976D2" Foreground="White"
+                        BorderThickness="0" Cursor="Hand" Click="AddFile_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="📚 Thư viện tài nguyên" FontSize="20" FontWeight="Bold" FontFamily="Segoe UI" Foreground="#212121"/>
+                <TextBlock x:Name="txtLibInfo" Text="Tài liệu, hình ảnh, video phục vụ giảng dạy"
+                           FontSize="13" Foreground="#757575" Margin="0,2,0,0"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Category Filter + Search -->
+        <Grid Grid.Row="1" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="220"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="btnAll" Content="📋 Tất cả" Tag="all" Padding="10,6" FontSize="12"
+                        Background="#1976D2" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="Filter_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="📄 PDF" Tag="pdf" Padding="10,6" FontSize="12"
+                        Background="#F5F5F5" Foreground="#424242" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="Filter_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="📝 Văn bản" Tag="document" Padding="10,6" FontSize="12"
+                        Background="#F5F5F5" Foreground="#424242" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="Filter_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="🖼️ Hình ảnh" Tag="image" Padding="10,6" FontSize="12"
+                        Background="#F5F5F5" Foreground="#424242" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="Filter_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="🎬 Video" Tag="video" Padding="10,6" FontSize="12"
+                        Background="#F5F5F5" Foreground="#424242" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0" Click="Filter_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                </Button>
+                <Button Content="⚙️ Khác" Tag="other" Padding="10,6" FontSize="12"
+                        Background="#F5F5F5" Foreground="#424242" BorderThickness="0" Cursor="Hand" Click="Filter_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                </Button>
+            </StackPanel>
+            <TextBox Grid.Column="1" x:Name="txtSearch" Text="🔍  Tìm tài nguyên..."
+                     FontSize="13" Padding="8,5" BorderBrush="#E0E0E0" BorderThickness="1"
+                     TextChanged="Search_Changed"/>
+        </Grid>
+
+        <!-- Main: File List (left) + Preview (right) -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="colFileList" Width="280" MinWidth="200" MaxWidth="500"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Column Splitter -->
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#E0E0E0" Cursor="SizeWE"/>
+
+            <!-- LEFT: File list -->
+            <Border Grid.Column="0" Background="White" CornerRadius="10" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,4,0">
+                <DockPanel>
+                    <!-- Panel header -->
+                    <Border DockPanel.Dock="Top" Background="#455A64" CornerRadius="10,10,0,0" Padding="8,6">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" x:Name="txtFileCount" Text="0" FontSize="12" Foreground="White" Opacity="0.8" VerticalAlignment="Center"/>
+                            <TextBlock Text="📁 Danh sách tài nguyên" FontSize="13" FontWeight="SemiBold" Foreground="White"/>
+                        </DockPanel>
+                    </Border>
+                    <!-- Breadcrumb navigation -->
+                    <Border DockPanel.Dock="Top" Background="#ECEFF1" Padding="6,4" BorderBrush="#CFD8DC" BorderThickness="0,0,0,1">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <StackPanel x:Name="breadcrumbPanel" Orientation="Horizontal"/>
+                        </ScrollViewer>
+                    </Border>
+                    <!-- Sort + folder actions -->
+                    <Border DockPanel.Dock="Top" Background="#F5F5F5" Padding="6,3" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Content="📁+" FontSize="12" Padding="4,2" Background="Transparent" Foreground="#1976D2"
+                                        BorderThickness="0" Cursor="Hand" Click="NewFolder_Click" ToolTip="Tạo thư mục mới">
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="3" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#E3F2FD"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                                </Button>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Sắp xếp:" FontSize="11" Foreground="#757575" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <ComboBox x:Name="cmbSort" FontSize="11" Width="105" Padding="3,2"
+                                          BorderBrush="#BDBDBD" SelectionChanged="Sort_Changed" SelectedIndex="0">
+                                    <ComboBoxItem Content="📋 Tên A→Z"/>
+                                    <ComboBoxItem Content="📋 Tên Z→A"/>
+                                    <ComboBoxItem Content="📦 Kích thước ↑"/>
+                                    <ComboBoxItem Content="📦 Kích thước ↓"/>
+                                    <ComboBoxItem Content="📅 Ngày mới nhất"/>
+                                    <ComboBoxItem Content="📂 Loại file"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="fileListPanel" Margin="4,4,4,4"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!-- RIGHT: Preview area -->
+            <Border Grid.Column="2" Background="White" CornerRadius="10" BorderBrush="#E0E0E0" BorderThickness="1">
+                <DockPanel>
+                    <!-- Preview header -->
+                    <Border DockPanel.Dock="Top" Background="#37474F" CornerRadius="10,10,0,0" Padding="10,7">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button x:Name="btnAnnotate" Content="✏️ Ghi chú" Padding="8,4" FontSize="11"
+                                        Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                        Margin="0,0,4,0" Click="ToggleAnnotation_Click" ToolTip="Bật/tắt chế độ ghi chú">
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}" BorderBrush="#78909C" BorderThickness="1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#546E7A"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                                </Button>
+                                <Button x:Name="btnOpenExternal" Content="📂 Mở ngoài" Padding="8,4" FontSize="11"
+                                        Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                        Margin="0,0,4,0" Click="OpenExternal_Click">
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}" BorderBrush="#78909C" BorderThickness="1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#546E7A"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                                </Button>
+                                <Button x:Name="btnFullscreen" Content="🔲 Toàn màn hình" Padding="8,4" FontSize="11"
+                                        Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                        Click="Fullscreen_Click">
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}" BorderBrush="#78909C" BorderThickness="1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#546E7A"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                                </Button>
+                            </StackPanel>
+                            <TextBlock x:Name="txtPreviewTitle" Text="📄 Chọn file để xem trước" FontSize="13" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- ═══ ANNOTATION TOOLBAR (shared, docked OUTSIDE drawing area) ═══ -->
+                    <Border x:Name="annotationToolbar" DockPanel.Dock="Top" Visibility="Collapsed"
+                            Background="#455A64" Padding="4,3">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="btnPen" Content="✏️ Bút vẽ" FontSize="10" Padding="6,3" Background="#1976D2"
+                                    Foreground="White" BorderThickness="0" Cursor="Hand" Click="AnnotPen_Click" Margin="1">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Opacity" Value="0.85"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button x:Name="btnHighlight" Content="🖍️ Nhấn" FontSize="10" Padding="6,3" Background="Transparent"
+                                    Foreground="White" BorderThickness="0" Cursor="Hand" Click="AnnotHighlight_Click" Margin="1">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#546E7A"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button x:Name="btnEraser" Content="🧹 Tẩy" FontSize="10" Padding="6,3" Background="Transparent"
+                                    Foreground="White" BorderThickness="0" Cursor="Hand" Click="AnnotEraser_Click" Margin="1">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#546E7A"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                            </Button>
+                            <Border Width="1" Background="#78909C" Margin="6,4"/>
+                            <Button Tag="#F44336" Width="20" Height="20" Margin="2" Cursor="Hand" Click="AnnotColor_Click" ToolTip="Đỏ">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border Background="#F44336" CornerRadius="10" BorderBrush="White" BorderThickness="1.5"/></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Tag="#2196F3" Width="20" Height="20" Margin="2" Cursor="Hand" Click="AnnotColor_Click" ToolTip="Xanh">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border Background="#2196F3" CornerRadius="10" BorderBrush="White" BorderThickness="1.5"/></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Tag="#4CAF50" Width="20" Height="20" Margin="2" Cursor="Hand" Click="AnnotColor_Click" ToolTip="Xanh lá">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border Background="#4CAF50" CornerRadius="10" BorderBrush="White" BorderThickness="1.5"/></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Tag="#FF9800" Width="20" Height="20" Margin="2" Cursor="Hand" Click="AnnotColor_Click" ToolTip="Cam">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border Background="#FF9800" CornerRadius="10" BorderBrush="White" BorderThickness="1.5"/></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Tag="#000000" Width="20" Height="20" Margin="2" Cursor="Hand" Click="AnnotColor_Click" ToolTip="Đen">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border Background="#000000" CornerRadius="10" BorderBrush="White" BorderThickness="1.5"/></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Tag="#FFFFFF" Width="20" Height="20" Margin="2" Cursor="Hand" Click="AnnotColor_Click" ToolTip="Trắng">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border Background="#FFFFFF" CornerRadius="10" BorderBrush="#999" BorderThickness="1.5"/></ControlTemplate></Button.Template>
+                            </Button>
+                            <Border Width="1" Background="#78909C" Margin="6,4"/>
+                            <Button Tag="2" Content="·" FontSize="10" Width="22" Height="22" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="AnnotSize_Click" ToolTip="2px" Margin="1" FontWeight="Bold">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="3" BorderBrush="#78909C" BorderThickness="1"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Tag="4" Content="●" FontSize="7" Width="22" Height="22" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="AnnotSize_Click" ToolTip="4px" Margin="1">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="3" BorderBrush="#78909C" BorderThickness="1"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Tag="8" Content="●" FontSize="12" Width="22" Height="22" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="AnnotSize_Click" ToolTip="8px" Margin="1">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="3" BorderBrush="#78909C" BorderThickness="1"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                            </Button>
+                            <Border Width="1" Background="#78909C" Margin="6,4"/>
+                            <Button Content="↩" FontSize="13" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="AnnotUndo_Click" ToolTip="Hoàn tác" Margin="1">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="4"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#546E7A"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Content="🗑️" FontSize="11" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="AnnotClear_Click" ToolTip="Xóa tất cả" Margin="1">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="4"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#C62828"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                            </Button>
+                            <Button Content="💾" FontSize="11" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="AnnotSave_Click" ToolTip="Lưu ảnh ghi chú" Margin="1">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="4"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#2E7D32"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Preview content -->
+                    <Grid x:Name="previewArea" Background="#F5F5F5">
+                        <!-- Empty state -->
+                        <StackPanel x:Name="emptyPreview" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="📄" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                            <TextBlock Text="Chọn file bên trái để xem trước" FontSize="14" Foreground="#9E9E9E" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                            <TextBlock Text="Hỗ trợ: Hình ảnh, PDF, Video  |  ✏️ Ghi chú = Vẽ lên tài liệu" FontSize="11" Foreground="#BDBDBD" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <!-- ═══ IMAGE PREVIEW ═══ -->
+                        <Grid x:Name="imagePreview" Visibility="Collapsed" ClipToBounds="True">
+                            <Border x:Name="imageContainer" Background="Transparent"
+                                    MouseWheel="Image_MouseWheel"
+                                    MouseLeftButtonDown="Image_MouseLeftButtonDown"
+                                    MouseLeftButtonUp="Image_MouseLeftButtonUp"
+                                    MouseMove="Image_MouseMove" Cursor="Hand">
+                                <!-- Grid cha áp dụng dịch chuyển và thu phóng đồng thời cho Ảnh và Nét vẽ -->
+                                <Grid x:Name="imgTransformGrid" RenderTransformOrigin="0.5,0.5">
+                                    <Grid.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform x:Name="imgScale" ScaleX="1" ScaleY="1"/>
+                                            <TranslateTransform x:Name="imgTranslate" X="0" Y="0"/>
+                                        </TransformGroup>
+                                    </Grid.RenderTransform>
+                                    <Image x:Name="previewImage" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <InkCanvas x:Name="inkOverlay" Visibility="Collapsed" Background="Transparent"
+                                               IsHitTestVisible="False" EditingMode="None">
+                                        <InkCanvas.DefaultDrawingAttributes>
+                                            <DrawingAttributes Color="Red" Width="3" Height="3" StylusTip="Ellipse" IsHighlighter="False"/>
+                                        </InkCanvas.DefaultDrawingAttributes>
+                                    </InkCanvas>
+                                </Grid>
+                            </Border>
+                            <!-- Zoom bar at bottom -->
+                            <Border VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,10"
+                                    Background="#E0263238" CornerRadius="18" Padding="6,3">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="➖" FontSize="12" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="ImgZoomOut_Click">
+                                        <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="13"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                    </Button>
+                                    <TextBlock x:Name="txtZoomLevel" Text="100%" FontSize="11" Foreground="White" VerticalAlignment="Center" MinWidth="36" TextAlignment="Center" Margin="2,0"/>
+                                    <Button Content="➕" FontSize="12" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="ImgZoomIn_Click">
+                                        <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="13"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                    </Button>
+                                    <Border Width="1" Background="#546E7A" Margin="4,4"/>
+                                    <Button Content="⊞" FontSize="13" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="ImgFit_Click">
+                                        <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="13"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                    </Button>
+                                    <Button Content="1:1" FontSize="10" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="ImgOriginal_Click" FontWeight="Bold">
+                                        <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="13"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                    </Button>
+                                    <Button Content="↺" FontSize="13" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="ImgReset_Click">
+                                        <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="13"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- ═══ VIDEO PREVIEW ═══ -->
+                        <Grid x:Name="videoPreview" Visibility="Collapsed">
+                            <MediaElement x:Name="previewVideo" LoadedBehavior="Manual" UnloadedBehavior="Stop" Stretch="Uniform"/>
+                            <Border VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,15" Background="#80000000" Padding="12,8" CornerRadius="12">
+                                <StackPanel>
+                                    <!-- Seek bar -->
+                                    <Grid Margin="10,0,10,6" MinWidth="320">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" x:Name="txtVideoCurrentTime" Text="00:00" Foreground="White" FontSize="11" VerticalAlignment="Center"/>
+                                        <Slider Grid.Column="1" x:Name="sliderVideoProgress" Margin="8,0" Minimum="0" Maximum="100" VerticalAlignment="Center" 
+                                                PreviewMouseLeftButtonDown="SliderVideo_MouseDown" PreviewMouseLeftButtonUp="SliderVideo_MouseUp" ValueChanged="SliderVideo_ValueChanged"/>
+                                        <TextBlock Grid.Column="2" x:Name="txtVideoTotalTime" Text="00:00" Foreground="White" FontSize="11" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <!-- Playback Controls -->
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="⏮" FontSize="16" Width="36" Height="36" Background="#263238" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="2" Click="VideoRewind_Click">
+                                            <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="18" Padding="2"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                        </Button>
+                                        <Button x:Name="btnVideoPlay" Content="▶" FontSize="18" Width="44" Height="44" Background="#1976D2" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="4" Click="VideoPlayPause_Click">
+                                            <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="22" Padding="2"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                        </Button>
+                                        <Button Content="⏭" FontSize="16" Width="36" Height="36" Background="#263238" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="2" Click="VideoForward_Click">
+                                            <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="18" Padding="2"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Text/Other preview -->
+                        <ScrollViewer x:Name="textPreview" Visibility="Collapsed" Padding="16">
+                            <TextBlock x:Name="previewText" FontSize="13" TextWrapping="Wrap" Foreground="#424242"/>
+                        </ScrollViewer>
+
+                        <!-- ═══ PDF PREVIEW ═══ -->
+                        <Grid x:Name="pdfPreviewContainer" Visibility="Collapsed">
+                            <wv2:WebView2 x:Name="pdfPreview"/>
+                            <!-- Viewbox co giãn thống nhất nét vẽ và hình chụp tĩnh để chống lệch vị trí -->
+                            <Viewbox x:Name="pdfAnnotViewbox" Visibility="Collapsed" Stretch="Uniform">
+                                <Grid x:Name="pdfAnnotGrid" Width="900" Height="1270" Background="White">
+                                    <Image x:Name="pdfCapturedImage" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <InkCanvas x:Name="pdfInkOverlay" Background="Transparent" IsHitTestVisible="False" EditingMode="None">
+                                        <InkCanvas.DefaultDrawingAttributes>
+                                            <DrawingAttributes Color="Red" Width="3" Height="3" StylusTip="Ellipse" IsHighlighter="False"/>
+                                        </InkCanvas.DefaultDrawingAttributes>
+                                    </InkCanvas>
+                                </Grid>
+                            </Viewbox>
+                            <!-- PDF zoom bar -->
+                            <Border VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,10"
+                                    Background="#E0263238" CornerRadius="18" Padding="6,3">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="➖" FontSize="12" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="PdfZoomOut_Click">
+                                        <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="13"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                    </Button>
+                                    <TextBlock x:Name="txtPdfZoom" Text="100%" FontSize="11" Foreground="White" VerticalAlignment="Center" MinWidth="36" TextAlignment="Center" Margin="2,0"/>
+                                    <Button Content="➕" FontSize="12" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="PdfZoomIn_Click">
+                                        <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="13"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                    </Button>
+                                    <Border Width="1" Background="#546E7A" Margin="4,4"/>
+                                    <Button Content="↺" FontSize="13" Width="26" Height="26" Background="Transparent" Foreground="White" BorderThickness="0" Cursor="Hand" Click="PdfZoomReset_Click">
+                                        <Button.Template><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" CornerRadius="13"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

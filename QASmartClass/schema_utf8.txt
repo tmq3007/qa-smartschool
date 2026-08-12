@@ -1,0 +1,2080 @@
+﻿CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+
+    "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+
+    "ProductVersion" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Classrooms" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Classrooms" PRIMARY KEY AUTOINCREMENT,
+
+    "Name" TEXT NOT NULL,
+
+    "TeacherName" TEXT NOT NULL,
+
+    "ClassCode" TEXT NOT NULL,
+
+    "MaxStudents" INTEGER NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE sqlite_sequence(name,seq);
+CREATE TABLE IF NOT EXISTS "EventLogs" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_EventLogs" PRIMARY KEY AUTOINCREMENT,
+
+    "Timestamp" TEXT NOT NULL,
+
+    "EventType" TEXT NOT NULL,
+
+    "Actor" TEXT NOT NULL,
+
+    "Details" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "FileTransfers" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_FileTransfers" PRIMARY KEY AUTOINCREMENT,
+
+    "FileName" TEXT NOT NULL,
+
+    "FileSizeBytes" INTEGER NOT NULL,
+
+    "Direction" TEXT NOT NULL,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "ProgressPercent" REAL NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+, "AssignmentId" INTEGER NULL);
+CREATE TABLE IF NOT EXISTS "Lessons" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Lessons" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "Grade" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "IsFavorite" INTEGER NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "UpdatedAt" TEXT NOT NULL
+
+, "ClassName" TEXT NOT NULL DEFAULT '', "DayOfWeek" TEXT NOT NULL DEFAULT '', "DurationMinutes" INTEGER NOT NULL DEFAULT 0, "HasHomework" INTEGER NOT NULL DEFAULT 0, "HomeworkText" TEXT NOT NULL DEFAULT '', "LastTaughtAt" TEXT NULL, "LessonType" TEXT NOT NULL DEFAULT '', "Period" INTEGER NOT NULL DEFAULT 0, "ReviewNotes" TEXT NOT NULL DEFAULT '', "ScheduledFor" TEXT NULL, "Semester" TEXT NOT NULL DEFAULT '', "Status" TEXT NOT NULL DEFAULT '', "SubstituteReason" TEXT NOT NULL DEFAULT '', "SubstituteTeacher" TEXT NOT NULL DEFAULT '', "Tags" TEXT NOT NULL DEFAULT '', "TeacherName" TEXT NOT NULL DEFAULT '', "UseCount" INTEGER NOT NULL DEFAULT 0, "WeekNumber" INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS "QuizResults" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_QuizResults" PRIMARY KEY AUTOINCREMENT,
+
+    "QuizId" INTEGER NOT NULL,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "Score" INTEGER NOT NULL,
+
+    "TotalPoints" INTEGER NOT NULL,
+
+    "CorrectCount" INTEGER NOT NULL,
+
+    "TotalQuestions" INTEGER NOT NULL,
+
+    "TimeSpentSeconds" REAL NOT NULL,
+
+    "AnswersJson" TEXT NOT NULL,
+
+    "SubmittedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Quizzes" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Quizzes" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "QuizType" TEXT NOT NULL,
+
+    "TimeLimitSeconds" INTEGER NOT NULL,
+
+    "LessonId" INTEGER NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Students" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Students" PRIMARY KEY AUTOINCREMENT,
+
+    "FullName" TEXT NOT NULL,
+
+    "StudentCode" TEXT NOT NULL,
+
+    "ClassroomId" INTEGER NOT NULL,
+
+    "PCName" TEXT NOT NULL,
+
+    "IPAddress" TEXT NOT NULL,
+
+    "IsOnline" INTEGER NOT NULL,
+
+    "LastSeen" TEXT NOT NULL
+
+, "AvatarPath" TEXT NOT NULL DEFAULT '', "ClassName" TEXT NOT NULL DEFAULT '', "Cohort" TEXT NOT NULL DEFAULT '', "ConductScore" INTEGER NOT NULL DEFAULT 0, "IsAtRisk" INTEGER NOT NULL DEFAULT 0, "ParentName" TEXT NOT NULL DEFAULT '', "ParentPhone" TEXT NOT NULL DEFAULT '', "PasswordHash" TEXT NOT NULL DEFAULT '', "RiskReason" TEXT NOT NULL DEFAULT '', "Role" TEXT NOT NULL DEFAULT '', "SchoolName" TEXT NOT NULL DEFAULT '', "Status" TEXT NOT NULL DEFAULT '', "TotalXp" INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS "LessonContents" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_LessonContents" PRIMARY KEY AUTOINCREMENT,
+
+    "LessonId" INTEGER NOT NULL,
+
+    "ContentType" TEXT NOT NULL,
+
+    "Data" TEXT NOT NULL,
+
+    "SortOrder" INTEGER NOT NULL,
+
+    CONSTRAINT "FK_LessonContents_Lessons_LessonId" FOREIGN KEY ("LessonId") REFERENCES "Lessons" ("Id") ON DELETE CASCADE
+
+);
+CREATE TABLE IF NOT EXISTS "Questions" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Questions" PRIMARY KEY AUTOINCREMENT,
+
+    "QuizId" INTEGER NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "QuestionType" TEXT NOT NULL,
+
+    "OptionsJson" TEXT NOT NULL,
+
+    "CorrectAnswer" TEXT NOT NULL,
+
+    "Points" INTEGER NOT NULL,
+
+    "Difficulty" TEXT NOT NULL,
+
+    "SortOrder" INTEGER NOT NULL,
+
+    CONSTRAINT "FK_Questions_Quizzes_QuizId" FOREIGN KEY ("QuizId") REFERENCES "Quizzes" ("Id") ON DELETE CASCADE
+
+);
+CREATE INDEX "IX_LessonContents_LessonId" ON "LessonContents" ("LessonId");
+CREATE INDEX "IX_Questions_QuizId" ON "Questions" ("QuizId");
+CREATE TABLE IF NOT EXISTS "AnonymousQueries" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_AnonymousQueries" PRIMARY KEY AUTOINCREMENT,
+
+    "EncryptedStudentId" TEXT NOT NULL,
+
+    "Category" TEXT NOT NULL,
+
+    "Question" TEXT NOT NULL,
+
+    "Answer" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Assets" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Assets" PRIMARY KEY AUTOINCREMENT,
+
+    "Name" TEXT NOT NULL,
+
+    "Category" TEXT NOT NULL,
+
+    "SerialNumber" TEXT NOT NULL,
+
+    "PurchaseDate" TEXT NOT NULL,
+
+    "Value" REAL NOT NULL,
+
+    "Location" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "AssignedTo" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "AssetTransfers" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_AssetTransfers" PRIMARY KEY AUTOINCREMENT,
+
+    "AssetId" INTEGER NOT NULL,
+
+    "FromDept" TEXT NOT NULL,
+
+    "ToDept" TEXT NOT NULL,
+
+    "TransferDate" TEXT NOT NULL,
+
+    "Reason" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Assignments" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Assignments" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "Deadline" TEXT NOT NULL,
+
+    "RosterId" INTEGER NOT NULL,
+
+    "AllowResubmit" INTEGER NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "AttendanceRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_AttendanceRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "RosterId" INTEGER NOT NULL,
+
+    "Date" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "Note" TEXT NOT NULL,
+
+    "UpdatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "AuditLogs" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_AuditLogs" PRIMARY KEY AUTOINCREMENT,
+
+    "Action" TEXT NOT NULL,
+
+    "ActorName" TEXT NOT NULL,
+
+    "Details" TEXT NOT NULL,
+
+    "Timestamp" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "BackupLogs" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_BackupLogs" PRIMARY KEY AUTOINCREMENT,
+
+    "FileName" TEXT NOT NULL,
+
+    "FileSizeBytes" REAL NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "TriggeredBy" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Badges" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Badges" PRIMARY KEY AUTOINCREMENT,
+
+    "Name" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "IconPath" TEXT NOT NULL,
+
+    "RequiredPoints" INTEGER NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "BulletinComments" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_BulletinComments" PRIMARY KEY AUTOINCREMENT,
+
+    "BulletinId" INTEGER NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "CreatedBy" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Bulletins" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Bulletins" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "Audience" TEXT NOT NULL,
+
+    "Priority" TEXT NOT NULL,
+
+    "CreatedBy" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "AttachmentPath" TEXT NOT NULL,
+
+    "ImageUrl" TEXT NOT NULL,
+
+    "ScheduledAt" TEXT NULL,
+
+    "ExpiresAt" TEXT NULL,
+
+    "IsScheduled" INTEGER NOT NULL,
+
+    "ViewCount" INTEGER NOT NULL,
+
+    "LikeCount" INTEGER NOT NULL,
+
+    "QrCodePath" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "BulletinTemplates" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_BulletinTemplates" PRIMARY KEY AUTOINCREMENT,
+
+    "Name" TEXT NOT NULL,
+
+    "Theme" TEXT NOT NULL,
+
+    "HtmlContent" TEXT NOT NULL,
+
+    "ThumbnailPath" TEXT NOT NULL,
+
+    "Category" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "CareerTestResults" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_CareerTestResults" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "TestType" TEXT NOT NULL,
+
+    "ResultCode" TEXT NOT NULL,
+
+    "Careers" TEXT NOT NULL,
+
+    "TakenAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "ClassObservations" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_ClassObservations" PRIMARY KEY AUTOINCREMENT,
+
+    "TeacherId" INTEGER NOT NULL,
+
+    "TeacherName" TEXT NOT NULL,
+
+    "ObserverName" TEXT NOT NULL,
+
+    "ClassName" TEXT NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "ObservedAt" TEXT NOT NULL,
+
+    "LessonPlanScore" INTEGER NOT NULL,
+
+    "DeliveryScore" INTEGER NOT NULL,
+
+    "StudentEngagementScore" INTEGER NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "Recommendation" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "ClassRosters" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_ClassRosters" PRIMARY KEY AUTOINCREMENT,
+
+    "ClassName" TEXT NOT NULL,
+
+    "GradeLevel" TEXT NOT NULL,
+
+    "SchoolYear" TEXT NOT NULL,
+
+    "Semester" TEXT NOT NULL,
+
+    "TeacherName" TEXT NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "StudentCount" INTEGER NOT NULL,
+
+    "IsActive" INTEGER NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "LastUsedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "CleaningTasks" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_CleaningTasks" PRIMARY KEY AUTOINCREMENT,
+
+    "Area" TEXT NOT NULL,
+
+    "TaskDate" TEXT NOT NULL,
+
+    "Shift" TEXT NOT NULL,
+
+    "JanitorName" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "Note" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "ClubActivities" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_ClubActivities" PRIMARY KEY AUTOINCREMENT,
+
+    "ClubId" INTEGER NOT NULL,
+
+    "Title" TEXT NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "ActivityDate" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "ClubMembers" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_ClubMembers" PRIMARY KEY AUTOINCREMENT,
+
+    "ClubId" INTEGER NOT NULL,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "ClassName" TEXT NOT NULL,
+
+    "Role" TEXT NOT NULL,
+
+    "JoinedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Clubs" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Clubs" PRIMARY KEY AUTOINCREMENT,
+
+    "Name" TEXT NOT NULL,
+
+    "Category" TEXT NOT NULL,
+
+    "TeacherId" TEXT NOT NULL,
+
+    "MaxMembers" INTEGER NOT NULL,
+
+    "Description" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "ConductRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_ConductRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "RosterId" INTEGER NOT NULL,
+
+    "PointsDelta" INTEGER NOT NULL,
+
+    "Reason" TEXT NOT NULL,
+
+    "TeacherName" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Contracts" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Contracts" PRIMARY KEY AUTOINCREMENT,
+
+    "StaffId" INTEGER NOT NULL,
+
+    "ContractNumber" TEXT NOT NULL,
+
+    "ContractType" TEXT NOT NULL,
+
+    "StartDate" TEXT NOT NULL,
+
+    "EndDate" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "CounselingProfiles" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_CounselingProfiles" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "ClassName" TEXT NOT NULL,
+
+    "CounselorId" TEXT NOT NULL,
+
+    "ProblemType" TEXT NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "CounselingSessions" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_CounselingSessions" PRIMARY KEY AUTOINCREMENT,
+
+    "ProfileId" INTEGER NOT NULL,
+
+    "SessionDate" TEXT NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "Solution" TEXT NOT NULL,
+
+    "FollowUpDate" TEXT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "DeptMeetingActions" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_DeptMeetingActions" PRIMARY KEY AUTOINCREMENT,
+
+    "MeetingId" INTEGER NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "AssignedTo" TEXT NOT NULL,
+
+    "DueDate" TEXT NOT NULL,
+
+    "IsCompleted" INTEGER NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "DeptMeetings" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_DeptMeetings" PRIMARY KEY AUTOINCREMENT,
+
+    "DeptName" TEXT NOT NULL,
+
+    "MeetingDate" TEXT NOT NULL,
+
+    "Agenda" TEXT NOT NULL,
+
+    "Minutes" TEXT NOT NULL,
+
+    "Attendees" TEXT NOT NULL,
+
+    "CreatedBy" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "DisciplineRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_DisciplineRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "ClassName" TEXT NOT NULL,
+
+    "Type" TEXT NOT NULL,
+
+    "Reason" TEXT NOT NULL,
+
+    "Date" TEXT NOT NULL,
+
+    "ReportedBy" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "DocumentRoutes" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_DocumentRoutes" PRIMARY KEY AUTOINCREMENT,
+
+    "DocumentTitle" TEXT NOT NULL,
+
+    "Sender" TEXT NOT NULL,
+
+    "Receiver" TEXT NOT NULL,
+
+    "SentAt" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "MaxApprovalLevel" INTEGER NOT NULL,
+
+    "CurrentApprovalLevel" INTEGER NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "EmergencyLogs" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_EmergencyLogs" PRIMARY KEY AUTOINCREMENT,
+
+    "Timestamp" TEXT NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "IncidentType" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "FirstAidApplied" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "EpidemicCases" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_EpidemicCases" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "ClassName" TEXT NOT NULL,
+
+    "Disease" TEXT NOT NULL,
+
+    "OnsetDate" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "IsolatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "EvaluationRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_EvaluationRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "EvaluatorId" TEXT NOT NULL,
+
+    "TargetId" TEXT NOT NULL,
+
+    "RoleRelation" TEXT NOT NULL,
+
+    "Rating" INTEGER NOT NULL,
+
+    "Comments" TEXT NOT NULL,
+
+    "EvaluatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "FamilyGameSessions" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_FamilyGameSessions" PRIMARY KEY AUTOINCREMENT,
+
+    "ParentId" INTEGER NOT NULL,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "Score" INTEGER NOT NULL,
+
+    "CompletedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "FoodAllergies" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_FoodAllergies" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentName" TEXT NOT NULL,
+
+    "Allergen" TEXT NOT NULL,
+
+    "Severity" TEXT NOT NULL,
+
+    "ActionPlan" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "FoodSafetyRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_FoodSafetyRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "Date" TEXT NOT NULL,
+
+    "MenuItems" TEXT NOT NULL,
+
+    "SampleKept" INTEGER NOT NULL,
+
+    "Inspector" TEXT NOT NULL,
+
+    "Result" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "GameSessions" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_GameSessions" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "GameType" TEXT NOT NULL,
+
+    "Score" INTEGER NOT NULL,
+
+    "XpEarned" INTEGER NOT NULL,
+
+    "QuestionsTotal" INTEGER NOT NULL,
+
+    "QuestionsCorrect" INTEGER NOT NULL,
+
+    "PlayedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "GradeTypeMasters" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_GradeTypeMasters" PRIMARY KEY AUTOINCREMENT,
+
+    "Code" TEXT NOT NULL,
+
+    "DisplayName" TEXT NOT NULL,
+
+    "ShortName" TEXT NOT NULL,
+
+    "Weight" INTEGER NOT NULL,
+
+    "MaxAttempts" INTEGER NOT NULL,
+
+    "SortOrder" INTEGER NOT NULL,
+
+    "IsActive" INTEGER NOT NULL,
+
+    "Notes" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "HealthRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_HealthRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "ClassName" TEXT NOT NULL,
+
+    "Height" REAL NOT NULL,
+
+    "Weight" REAL NOT NULL,
+
+    "VisionLeft" REAL NOT NULL,
+
+    "VisionRight" REAL NOT NULL,
+
+    "ChronicConditions" TEXT NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "ExamDate" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "HomeroomDiaries" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_HomeroomDiaries" PRIMARY KEY AUTOINCREMENT,
+
+    "RosterId" INTEGER NOT NULL,
+
+    "Date" TEXT NOT NULL,
+
+    "AbsentCount" INTEGER NOT NULL,
+
+    "DisciplineNotes" TEXT NOT NULL,
+
+    "Events" TEXT NOT NULL,
+
+    "Reminders" TEXT NOT NULL,
+
+    "UpdatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "InboxMessages" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_InboxMessages" PRIMARY KEY AUTOINCREMENT,
+
+    "SenderId" TEXT NOT NULL,
+
+    "SenderName" TEXT NOT NULL,
+
+    "ReceiverId" TEXT NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "IsRead" INTEGER NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "ThreadId" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "LearningAnalytics" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_LearningAnalytics" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "Topic" TEXT NOT NULL,
+
+    "Score" REAL NOT NULL,
+
+    "MaxScore" REAL NOT NULL,
+
+    "QuizId" INTEGER NULL,
+
+    "AssessmentType" TEXT NOT NULL,
+
+    "RecordedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "LearningDiaries" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_LearningDiaries" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "Date" TEXT NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "Mood" TEXT NOT NULL,
+
+    "Goals" TEXT NOT NULL,
+
+    "Reflection" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "LeaveRequests" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_LeaveRequests" PRIMARY KEY AUTOINCREMENT,
+
+    "StaffId" INTEGER NOT NULL,
+
+    "StaffName" TEXT NOT NULL,
+
+    "LeaveType" TEXT NOT NULL,
+
+    "StartDate" TEXT NOT NULL,
+
+    "EndDate" TEXT NOT NULL,
+
+    "Reason" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "LessonHistories" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_LessonHistories" PRIMARY KEY AUTOINCREMENT,
+
+    "LessonId" INTEGER NOT NULL,
+
+    "TitleSnapshot" TEXT NOT NULL,
+
+    "StatusSnapshot" TEXT NOT NULL,
+
+    "ContentsJson" TEXT NOT NULL,
+
+    "ChangedBy" TEXT NOT NULL,
+
+    "ChangeNote" TEXT NOT NULL,
+
+    "SavedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "LessonPlans" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_LessonPlans" PRIMARY KEY AUTOINCREMENT,
+
+    "TeacherId" TEXT NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "Grade" TEXT NOT NULL,
+
+    "Title" TEXT NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "Template" TEXT NOT NULL,
+
+    "WeekDate" TEXT NOT NULL,
+
+    "Period" INTEGER NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "MathQuizHistories" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_MathQuizHistories" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentCode" TEXT NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "Grade" TEXT NOT NULL,
+
+    "ChapterId" TEXT NOT NULL,
+
+    "ChapterName" TEXT NOT NULL,
+
+    "Difficulty" TEXT NOT NULL,
+
+    "TotalQuestions" INTEGER NOT NULL,
+
+    "CorrectAnswers" INTEGER NOT NULL,
+
+    "TimeSpentSeconds" REAL NOT NULL,
+
+    "CompletedAt" TEXT NOT NULL,
+
+    "QuizType" TEXT NOT NULL,
+
+    "Topic" TEXT NOT NULL,
+
+    "ProblemResultsJson" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "MedicalSupplies" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_MedicalSupplies" PRIMARY KEY AUTOINCREMENT,
+
+    "Name" TEXT NOT NULL,
+
+    "Category" TEXT NOT NULL,
+
+    "Quantity" INTEGER NOT NULL,
+
+    "Unit" TEXT NOT NULL,
+
+    "ExpiryDate" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "MobileTokens" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_MobileTokens" PRIMARY KEY AUTOINCREMENT,
+
+    "UserId" INTEGER NOT NULL,
+
+    "Role" TEXT NOT NULL,
+
+    "DeviceToken" TEXT NOT NULL,
+
+    "DeviceName" TEXT NOT NULL,
+
+    "Platform" TEXT NOT NULL,
+
+    "LastActive" TEXT NOT NULL,
+
+    "IsActive" INTEGER NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "OfficialDocuments" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_OfficialDocuments" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "DocumentNumber" TEXT NOT NULL,
+
+    "IssuedDate" TEXT NOT NULL,
+
+    "Type" TEXT NOT NULL,
+
+    "FilePath" TEXT NOT NULL,
+
+    "Recipient" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "ParentApprovals" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_ParentApprovals" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "DocumentType" TEXT NOT NULL,
+
+    "ReferenceId" INTEGER NOT NULL,
+
+    "ParentName" TEXT NOT NULL,
+
+    "SignatureToken" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "IPAddress" TEXT NOT NULL,
+
+    "SignedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "PayrollRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_PayrollRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "StaffName" TEXT NOT NULL,
+
+    "Month" INTEGER NOT NULL,
+
+    "Year" INTEGER NOT NULL,
+
+    "BaseSalary" TEXT NOT NULL,
+
+    "Allowance" TEXT NOT NULL,
+
+    "Deduction" TEXT NOT NULL,
+
+    "Tax" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "PortfolioItems" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_PortfolioItems" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "Title" TEXT NOT NULL,
+
+    "Category" TEXT NOT NULL,
+
+    "FilePath" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "PushMessageLogs" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_PushMessageLogs" PRIMARY KEY AUTOINCREMENT,
+
+    "RecipientId" INTEGER NOT NULL,
+
+    "RecipientRole" TEXT NOT NULL,
+
+    "Title" TEXT NOT NULL,
+
+    "Body" TEXT NOT NULL,
+
+    "Type" TEXT NOT NULL,
+
+    "SentAt" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "QuestionBankCategories" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_QuestionBankCategories" PRIMARY KEY AUTOINCREMENT,
+
+    "Name" TEXT NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "Grade" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "RemedialPlans" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_RemedialPlans" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "Goal" TEXT NOT NULL,
+
+    "StartDate" TEXT NOT NULL,
+
+    "EndDate" TEXT NOT NULL,
+
+    "Progress" INTEGER NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "RemedialSessions" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_RemedialSessions" PRIMARY KEY AUTOINCREMENT,
+
+    "PlanId" INTEGER NOT NULL,
+
+    "SessionDate" TEXT NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "Improvement" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "RememberedDevices" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_RememberedDevices" PRIMARY KEY AUTOINCREMENT,
+
+    "PCName" TEXT NOT NULL,
+
+    "DeviceId" TEXT NOT NULL,
+
+    "LastKnownIP" TEXT NOT NULL,
+
+    "MACAddress" TEXT NOT NULL,
+
+    "StudentCode" TEXT NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "ClientVersion" TEXT NOT NULL,
+
+    "ClassroomId" INTEGER NOT NULL,
+
+    "FirstSeen" TEXT NOT NULL,
+
+    "LastConnected" TEXT NOT NULL,
+
+    "ConnectionCount" INTEGER NOT NULL,
+
+    "IsActive" INTEGER NOT NULL,
+
+    "Notes" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "RubricGrades" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_RubricGrades" PRIMARY KEY AUTOINCREMENT,
+
+    "RubricId" INTEGER NOT NULL,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "CriteriaId" INTEGER NOT NULL,
+
+    "Level" INTEGER NOT NULL,
+
+    "Points" REAL NOT NULL,
+
+    "Feedback" TEXT NOT NULL,
+
+    "GradedAt" TEXT NOT NULL,
+
+    "GradedBy" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Rubrics" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Rubrics" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "Grade" TEXT NOT NULL,
+
+    "CreatedBy" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "SchoolAssets" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_SchoolAssets" PRIMARY KEY AUTOINCREMENT,
+
+    "AssetType" TEXT NOT NULL,
+
+    "AssetCode" TEXT NOT NULL,
+
+    "Location" TEXT NOT NULL,
+
+    "PurchaseDate" TEXT NOT NULL,
+
+    "NextMaintenanceDate" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "SchoolEvents" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_SchoolEvents" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "StartTime" TEXT NOT NULL,
+
+    "EndTime" TEXT NOT NULL,
+
+    "Location" TEXT NOT NULL,
+
+    "Organizer" TEXT NOT NULL,
+
+    "Department" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "SchoolMenus" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_SchoolMenus" PRIMARY KEY AUTOINCREMENT,
+
+    "Date" TEXT NOT NULL,
+
+    "MealType" TEXT NOT NULL,
+
+    "Items" TEXT NOT NULL,
+
+    "NutritionInfo" TEXT NOT NULL,
+
+    "Allergens" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "SecurityLogs" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_SecurityLogs" PRIMARY KEY AUTOINCREMENT,
+
+    "Timestamp" TEXT NOT NULL,
+
+    "EventType" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "PersonInvolved" TEXT NOT NULL,
+
+    "GuardName" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "SelfEvaluations" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_SelfEvaluations" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "Semester" TEXT NOT NULL,
+
+    "Competency" TEXT NOT NULL,
+
+    "Character" TEXT NOT NULL,
+
+    "TeacherComment" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "Skkns" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Skkns" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "AuthorName" TEXT NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "Level" TEXT NOT NULL,
+
+    "FilePath" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "ReviewNote" TEXT NOT NULL,
+
+    "SubmittedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "SocialComments" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_SocialComments" PRIMARY KEY AUTOINCREMENT,
+
+    "PostId" INTEGER NOT NULL,
+
+    "AuthorName" TEXT NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "SocialPosts" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_SocialPosts" PRIMARY KEY AUTOINCREMENT,
+
+    "AuthorName" TEXT NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "ImageUrl" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "Likes" INTEGER NOT NULL,
+
+    "Status" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "SoftSkillRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_SoftSkillRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "ProjectName" TEXT NOT NULL,
+
+    "TeamworkScore" REAL NOT NULL,
+
+    "PresentationScore" REAL NOT NULL,
+
+    "CriticalThinkingScore" REAL NOT NULL,
+
+    "AssessorName" TEXT NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "StaffAttendances" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_StaffAttendances" PRIMARY KEY AUTOINCREMENT,
+
+    "StaffId" INTEGER NOT NULL,
+
+    "Date" TEXT NOT NULL,
+
+    "CheckIn" TEXT NULL,
+
+    "CheckOut" TEXT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "WorkingHours" REAL NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "StaffProfiles" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_StaffProfiles" PRIMARY KEY AUTOINCREMENT,
+
+    "StaffCode" TEXT NOT NULL,
+
+    "FullName" TEXT NOT NULL,
+
+    "Department" TEXT NOT NULL,
+
+    "Position" TEXT NOT NULL,
+
+    "Email" TEXT NOT NULL,
+
+    "Phone" TEXT NOT NULL,
+
+    "BaseSalary" REAL NOT NULL,
+
+    "JoinedDate" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "StudentAchievements" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_StudentAchievements" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "AchievementType" TEXT NOT NULL,
+
+    "AchievementName" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "Icon" TEXT NOT NULL,
+
+    "EarnedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "StudentGoals" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_StudentGoals" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "TargetScore" REAL NOT NULL,
+
+    "Semester" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "ActualScore" REAL NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "StudentGrades" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_StudentGrades" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "RosterId" INTEGER NOT NULL,
+
+    "GradeTypeId" INTEGER NOT NULL,
+
+    "Attempt" INTEGER NOT NULL,
+
+    "Score" REAL NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "EnteredBy" TEXT NOT NULL,
+
+    "UpdatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "StudentLeaveRequests" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_StudentLeaveRequests" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "ClassName" TEXT NOT NULL,
+
+    "LeaveDate" TEXT NOT NULL,
+
+    "Reason" TEXT NOT NULL,
+
+    "ParentName" TEXT NOT NULL,
+
+    "ParentPhone" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "StudentMentalHealthRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_StudentMentalHealthRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "MoodScore" INTEGER NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "RiskLevel" TEXT NOT NULL,
+
+    "DetectedKeywords" TEXT NOT NULL,
+
+    "RecordedAt" TEXT NOT NULL,
+
+    "InterventionLevel" INTEGER NOT NULL,
+
+    "InterventionNotes" TEXT NOT NULL,
+
+    "FollowUpDate" TEXT NULL,
+
+    "ResolvedAt" TEXT NULL,
+
+    "IsNotified" INTEGER NOT NULL,
+
+    "NotifiedAt" TEXT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "SystemSettings" (
+
+    "Id" TEXT NOT NULL CONSTRAINT "PK_SystemSettings" PRIMARY KEY,
+
+    "Value" TEXT NOT NULL,
+
+    "Category" TEXT NOT NULL,
+
+    "LastUpdated" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "TaskCategories" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_TaskCategories" PRIMARY KEY AUTOINCREMENT,
+
+    "Name" TEXT NOT NULL,
+
+    "ColorCode" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "TaskItems" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_TaskItems" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "AssignedBy" TEXT NOT NULL,
+
+    "AssignedTo" TEXT NOT NULL,
+
+    "Priority" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "Deadline" TEXT NOT NULL,
+
+    "CompletedAt" TEXT NULL,
+
+    "ParentTaskId" INTEGER NULL,
+
+    "Attachments" TEXT NOT NULL,
+
+    "Department" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "TeacherFeedbacks" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_TeacherFeedbacks" PRIMARY KEY AUTOINCREMENT,
+
+    "TeacherId" INTEGER NOT NULL,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "Score" REAL NOT NULL,
+
+    "Comment" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "TeacherProfiles" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_TeacherProfiles" PRIMARY KEY AUTOINCREMENT,
+
+    "TeacherCode" TEXT NOT NULL,
+
+    "PasswordHash" TEXT NOT NULL,
+
+    "FullName" TEXT NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "School" TEXT NOT NULL,
+
+    "Title" TEXT NOT NULL,
+
+    "AvatarPath" TEXT NOT NULL,
+
+    "TeacherPassword" TEXT NOT NULL,
+
+    "Phone" TEXT NOT NULL,
+
+    "Email" TEXT NOT NULL,
+
+    "IsActive" INTEGER NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "Role" TEXT NOT NULL,
+
+    "UpdatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "TimetableEntries" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_TimetableEntries" PRIMARY KEY AUTOINCREMENT,
+
+    "RosterId" INTEGER NOT NULL,
+
+    "TeacherName" TEXT NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "DayOfWeek" INTEGER NOT NULL,
+
+    "Period" INTEGER NOT NULL,
+
+    "Room" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "TuitionRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_TuitionRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "ClassName" TEXT NOT NULL,
+
+    "Amount" REAL NOT NULL,
+
+    "DueDate" TEXT NOT NULL,
+
+    "PaidDate" TEXT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "PaymentMethod" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "UsageLogs" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_UsageLogs" PRIMARY KEY AUTOINCREMENT,
+
+    "EventType" TEXT NOT NULL,
+
+    "EventData" TEXT NOT NULL,
+
+    "UserRole" TEXT NOT NULL,
+
+    "Timestamp" TEXT NOT NULL,
+
+    "DurationMs" INTEGER NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "UserBadges" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_UserBadges" PRIMARY KEY AUTOINCREMENT,
+
+    "UserId" TEXT NOT NULL,
+
+    "BadgeId" INTEGER NOT NULL,
+
+    "AwardedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthActivities" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthActivities" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "Date" TEXT NOT NULL,
+
+    "Participants" TEXT NOT NULL,
+
+    "Points" INTEGER NOT NULL,
+
+    "Evidence" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "Budget" TEXT NOT NULL,
+
+    "Location" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "CreatedBy" TEXT NOT NULL,
+
+    "MaxParticipants" INTEGER NOT NULL,
+
+    "PlanId" INTEGER NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthAttendances" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthAttendances" PRIMARY KEY AUTOINCREMENT,
+
+    "MemberId" INTEGER NOT NULL,
+
+    "SessionDate" TEXT NOT NULL,
+
+    "SessionType" TEXT NOT NULL,
+
+    "SessionTitle" TEXT NOT NULL,
+
+    "IsPresent" INTEGER NOT NULL,
+
+    "Note" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthAwardProposals" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthAwardProposals" PRIMARY KEY AUTOINCREMENT,
+
+    "MemberId" INTEGER NOT NULL,
+
+    "ProposalType" TEXT NOT NULL,
+
+    "Reason" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "ProposedBy" TEXT NOT NULL,
+
+    "ApprovedBy" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "EvidencePath" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthAwardRecords" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthAwardRecords" PRIMARY KEY AUTOINCREMENT,
+
+    "MemberId" INTEGER NOT NULL,
+
+    "AwardTitle" TEXT NOT NULL,
+
+    "DecisionNo" TEXT NOT NULL,
+
+    "FilePath" TEXT NOT NULL,
+
+    "AwardDate" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthBudgets" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthBudgets" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "Type" TEXT NOT NULL,
+
+    "Amount" TEXT NOT NULL,
+
+    "Date" TEXT NOT NULL,
+
+    "Category" TEXT NOT NULL,
+
+    "Note" TEXT NOT NULL,
+
+    "CreatedBy" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthDocuments" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthDocuments" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "Category" TEXT NOT NULL,
+
+    "FilePath" TEXT NOT NULL,
+
+    "UploadedBy" TEXT NOT NULL,
+
+    "UploadedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthEventRegistrations" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthEventRegistrations" PRIMARY KEY AUTOINCREMENT,
+
+    "ActivityId" INTEGER NOT NULL,
+
+    "MemberId" INTEGER NOT NULL,
+
+    "RegisteredAt" TEXT NOT NULL,
+
+    "AttendedAt" TEXT NULL,
+
+    "Role" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthFees" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthFees" PRIMARY KEY AUTOINCREMENT,
+
+    "MemberId" INTEGER NOT NULL,
+
+    "Amount" TEXT NOT NULL,
+
+    "Period" TEXT NOT NULL,
+
+    "PaidDate" TEXT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "CollectedBy" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthPlans" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthPlans" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "PeriodType" TEXT NOT NULL,
+
+    "StartDate" TEXT NOT NULL,
+
+    "EndDate" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "CreatedBy" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthVotes" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthVotes" PRIMARY KEY AUTOINCREMENT,
+
+    "VotingId" INTEGER NOT NULL,
+
+    "VoterId" INTEGER NOT NULL,
+
+    "CandidateId" INTEGER NOT NULL,
+
+    "VotedAt" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthVotings" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthVotings" PRIMARY KEY AUTOINCREMENT,
+
+    "Title" TEXT NOT NULL,
+
+    "Description" TEXT NOT NULL,
+
+    "StartDate" TEXT NOT NULL,
+
+    "EndDate" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "Candidates" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "ClassRosterStudents" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_ClassRosterStudents" PRIMARY KEY AUTOINCREMENT,
+
+    "RosterId" INTEGER NOT NULL,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "SeatNumber" INTEGER NOT NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    CONSTRAINT "FK_ClassRosterStudents_ClassRosters_RosterId" FOREIGN KEY ("RosterId") REFERENCES "ClassRosters" ("Id") ON DELETE CASCADE
+
+);
+CREATE TABLE IF NOT EXISTS "QuestionBankItems" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_QuestionBankItems" PRIMARY KEY AUTOINCREMENT,
+
+    "CategoryId" INTEGER NOT NULL,
+
+    "QuestionType" TEXT NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "OptionsJson" TEXT NOT NULL,
+
+    "CorrectAnswer" TEXT NOT NULL,
+
+    "Explanation" TEXT NOT NULL,
+
+    "Points" INTEGER NOT NULL,
+
+    "Difficulty" TEXT NOT NULL,
+
+    "TimeLimitSeconds" INTEGER NOT NULL,
+
+    "Subject" TEXT NOT NULL,
+
+    "Grade" TEXT NOT NULL,
+
+    "Tags" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "IsPublicToDepartment" INTEGER NOT NULL,
+
+    "WrongCount" INTEGER NOT NULL,
+
+    "TotalAttempts" INTEGER NOT NULL,
+
+    "ApprovalStatus" TEXT NOT NULL,
+
+    "ApprovedBy" TEXT NOT NULL,
+
+    "ReviewComments" TEXT NOT NULL,
+
+    "CreatedBy" TEXT NOT NULL,
+
+    CONSTRAINT "FK_QuestionBankItems_QuestionBankCategories_CategoryId" FOREIGN KEY ("CategoryId") REFERENCES "QuestionBankCategories" ("Id") ON DELETE CASCADE
+
+);
+CREATE TABLE IF NOT EXISTS "RubricCriteria" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_RubricCriteria" PRIMARY KEY AUTOINCREMENT,
+
+    "RubricId" INTEGER NOT NULL,
+
+    "CriteriaName" TEXT NOT NULL,
+
+    "MaxPoints" REAL NOT NULL,
+
+    "Level1Desc" TEXT NOT NULL,
+
+    "Level2Desc" TEXT NOT NULL,
+
+    "Level3Desc" TEXT NOT NULL,
+
+    "Level4Desc" TEXT NOT NULL,
+
+    "SortOrder" INTEGER NOT NULL,
+
+    CONSTRAINT "FK_RubricCriteria_Rubrics_RubricId" FOREIGN KEY ("RubricId") REFERENCES "Rubrics" ("Id") ON DELETE CASCADE
+
+);
+CREATE UNIQUE INDEX "IX_Students_StudentCode" ON "Students" ("StudentCode");
+CREATE UNIQUE INDEX "IX_ClassRosterStudents_RosterId_StudentId" ON "ClassRosterStudents" ("RosterId", "StudentId");
+CREATE UNIQUE INDEX "IX_GradeTypeMasters_Code" ON "GradeTypeMasters" ("Code");
+CREATE INDEX "IX_MathQuizHistories_StudentCode" ON "MathQuizHistories" ("StudentCode");
+CREATE INDEX "IX_LiteratureQuizHistories_StudentCode" ON "LiteratureQuizHistories" ("StudentCode");
+CREATE INDEX "IX_QuestionBankItems_CategoryId" ON "QuestionBankItems" ("CategoryId");
+CREATE INDEX "IX_RubricCriteria_RubricId" ON "RubricCriteria" ("RubricId");
+CREATE UNIQUE INDEX "IX_StudentGrades_StudentId_RosterId_GradeTypeId_Attempt" ON "StudentGrades" ("StudentId", "RosterId", "GradeTypeId", "Attempt");
+CREATE UNIQUE INDEX "IX_TeacherProfiles_TeacherCode" ON "TeacherProfiles" ("TeacherCode");
+CREATE TABLE IF NOT EXISTS "DailyTasks" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_DailyTasks" PRIMARY KEY AUTOINCREMENT,
+
+    "AssignedBy" TEXT NOT NULL,
+
+    "AssignedTo" TEXT NOT NULL,
+
+    "Department" TEXT NOT NULL,
+
+    "DueDate" TEXT NOT NULL,
+
+    "EventId" INTEGER NULL,
+
+    "Notes" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "Title" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "TaskComments" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_TaskComments" PRIMARY KEY AUTOINCREMENT,
+
+    "Author" TEXT NOT NULL,
+
+    "Content" TEXT NOT NULL,
+
+    "CreatedAt" TEXT NOT NULL,
+
+    "TaskId" INTEGER NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthMembers" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthMembers" PRIMARY KEY AUTOINCREMENT,
+
+    "AvatarPath" TEXT NOT NULL,
+
+    "ClassName" TEXT NOT NULL,
+
+    "DoanCardNo" TEXT NOT NULL,
+
+    "Email" TEXT NOT NULL,
+
+    "JoinDate" TEXT NOT NULL,
+
+    "MemberType" TEXT NOT NULL,
+
+    "PhoneNumber" TEXT NOT NULL,
+
+    "Position" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "StudentId" INTEGER NOT NULL,
+
+    "StudentName" TEXT NOT NULL,
+
+    "TotalScore" INTEGER NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthRecruitments" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthRecruitments" PRIMARY KEY AUTOINCREMENT,
+
+    "ApplyDate" TEXT NOT NULL,
+
+    "ApproveDate" TEXT NULL,
+
+    "ApprovedBy" TEXT NOT NULL,
+
+    "ClassName" TEXT NOT NULL,
+
+    "Note" TEXT NOT NULL,
+
+    "Reason" TEXT NOT NULL,
+
+    "Status" TEXT NOT NULL,
+
+    "StudentId" INTEGER NULL,
+
+    "StudentName" TEXT NOT NULL
+
+);
+CREATE TABLE IF NOT EXISTS "YouthEmulationScores" (
+
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_YouthEmulationScores" PRIMARY KEY AUTOINCREMENT,
+
+    "ActivityId" INTEGER NULL,
+
+    "AwardedBy" TEXT NOT NULL,
+
+    "AwardedDate" TEXT NOT NULL,
+
+    "Category" TEXT NOT NULL,
+
+    "MemberId" INTEGER NOT NULL,
+
+    "Reason" TEXT NOT NULL,
+
+    "Score" INTEGER NOT NULL
+
+);

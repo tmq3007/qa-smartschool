@@ -1,0 +1,241 @@
+<UserControl x:Class="QASmartTouch.Controls.MoreMenu"
+
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+
+             mc:Ignorable="d"
+
+             d:DesignHeight="520" d:DesignWidth="280">
+
+    
+
+    <UserControl.Resources>
+
+        <!-- Drop Shadow Effect -->
+
+        <DropShadowEffect x:Key="DropShadowEffect" 
+
+                        Color="Black" 
+
+                        Opacity="0.25" 
+
+                        BlurRadius="20" 
+
+                        ShadowDepth="6"/>
+
+        
+
+        <!-- Menu Item Style -->
+
+        <Style x:Key="MenuItemStyle" TargetType="Button">
+
+            <Setter Property="Height" Value="40"/>
+
+            <Setter Property="Background" Value="Transparent"/>
+
+            <Setter Property="BorderThickness" Value="0"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Padding" Value="12,0"/>
+
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                               Padding="{TemplateBinding Padding}"
+
+                               CornerRadius="6">
+
+                            <ContentPresenter HorizontalAlignment="Left"
+
+                                            VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#f0f0f0"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+        
+
+        <!-- Section Title Style -->
+
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+
+            <Setter Property="FontSize" Value="11"/>
+
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Setter Property="Foreground" Value="#95a5a6"/>
+
+            <Setter Property="Margin" Value="12,12,12,6"/>
+
+        </Style>
+
+        
+
+        <!-- Separator Style -->
+
+        <Style x:Key="SeparatorStyle" TargetType="Separator">
+
+            <Setter Property="Margin" Value="8,6"/>
+
+            <Setter Property="Background" Value="#e0e0e0"/>
+
+        </Style>
+
+    </UserControl.Resources>
+
+    
+
+    <Border Background="White"
+
+            CornerRadius="12"
+
+            Padding="8"
+
+            Effect="{StaticResource DropShadowEffect}">
+
+        
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+
+                     HorizontalScrollBarVisibility="Disabled"
+
+                     ScrollViewer.PanningMode="VerticalOnly"
+
+                     MaxHeight="500">
+
+            <StackPanel>
+
+                
+
+                <!-- Section 1: Transform Operations -->
+
+                <TextBlock Text="BIẾN ĐỔI" Style="{StaticResource SectionTitleStyle}"/>
+
+                <Button Content="↔️ Lật ngang" Style="{StaticResource MenuItemStyle}" Click="btnFlipHorizontal_Click"/>
+
+                <Button Content="↕️ Lật dọc" Style="{StaticResource MenuItemStyle}" Click="btnFlipVertical_Click"/>
+
+                <Button Content="🔄 Xoay 180°" Style="{StaticResource MenuItemStyle}" Click="btnRotate180_Click"/>
+
+                <Button Content="⤵️ Xoay trái 90°" Style="{StaticResource MenuItemStyle}" Click="btnRotateLeft90_Click"/>
+
+                <Button Content="📐 Xoay tùy chỉnh..." Style="{StaticResource MenuItemStyle}" Click="btnRotateCustom_Click"/>
+
+                
+
+                <Separator Style="{StaticResource SeparatorStyle}"/>
+
+                
+
+                <!-- Section 2: Text Operations -->
+
+                <TextBlock Text="VĂN BẢN" Style="{StaticResource SectionTitleStyle}"/>
+
+                <Button Content="🔤 VIẾT HOA" Style="{StaticResource MenuItemStyle}" Click="btnUpperCase_Click"/>
+
+                <Button Content="🔡 viết thường" Style="{StaticResource MenuItemStyle}" Click="btnLowerCase_Click"/>
+
+                <Button Content="🔠 Viết Hoa Đầu Từ" Style="{StaticResource MenuItemStyle}" Click="btnTitleCase_Click"/>
+
+                <Button Content="📝 Chỉnh sửa văn bản..." Style="{StaticResource MenuItemStyle}" Click="btnEditText_Click"/>
+
+                
+
+                <Separator Style="{StaticResource SeparatorStyle}"/>
+
+                
+
+                <!-- Section 3: Advanced Actions -->
+
+                <TextBlock Text="THAO TÁC" Style="{StaticResource SectionTitleStyle}"/>
+
+                <Button Content="📦 Nhóm đối tượng" Style="{StaticResource MenuItemStyle}" Click="btnGroup_Click"/>
+
+                <Button Content="📂 Bỏ nhóm" Style="{StaticResource MenuItemStyle}" Click="btnUngroup_Click"/>
+
+                <Button Content="📋 Sao chép nhiều lần..." Style="{StaticResource MenuItemStyle}" Click="btnDuplicate_Click"/>
+
+                <Button Content="🔗 Tạo liên kết..." Style="{StaticResource MenuItemStyle}" Click="btnCreateLink_Click"/>
+
+                <Button Content="💾 Xuất thành ảnh..." Style="{StaticResource MenuItemStyle}" Click="btnExportImage_Click"/>
+
+                
+
+                <Separator Style="{StaticResource SeparatorStyle}"/>
+
+                
+
+                <!-- Section 4: Smart Features -->
+
+                <TextBlock Text="TÍNH NĂNG THÔNG MINH" Style="{StaticResource SectionTitleStyle}"/>
+
+                <Button Content="👁️ Nhận diện văn bản (OCR)" Style="{StaticResource MenuItemStyle}" Click="btnOCR_Click"/>
+
+                <Button Content="🌐 Dịch văn bản..." Style="{StaticResource MenuItemStyle}" Click="btnTranslate_Click"/>
+
+                <Button Content="🔊 Đọc văn bản" Style="{StaticResource MenuItemStyle}" Click="btnTextToSpeech_Click"/>
+
+                <Button Content="🎤 Nhập bằng giọng nói" Style="{StaticResource MenuItemStyle}" Click="btnVoiceInput_Click"/>
+
+                <Button Content="📐 Nhận diện công thức" Style="{StaticResource MenuItemStyle}" Click="btnFormulaRecognition_Click"/>
+
+                <Button Content="✍️ Nhận diện chữ viết tay" Style="{StaticResource MenuItemStyle}" Click="btnHandwriting_Click"/>
+
+                <Button Content="🔍 Tìm kiếm trên Web" Style="{StaticResource MenuItemStyle}" Click="btnWebSearch_Click"/>
+                <Button Content="🤖 Hỏi AI Trợ Giảng..." Style="{StaticResource MenuItemStyle}" Click="btnAskAI_Click"/>
+
+                
+
+                <Separator Style="{StaticResource SeparatorStyle}"/>
+
+                
+
+                <!-- Section 5: Properties -->
+
+                <TextBlock Text="THUỘC TÍNH" Style="{StaticResource SectionTitleStyle}"/>
+
+                <Button Content="ℹ️ Thông tin đối tượng" Style="{StaticResource MenuItemStyle}" Click="btnObjectInfo_Click"/>
+
+                <Button Content="📏 Kích thước &amp; vị trí..." Style="{StaticResource MenuItemStyle}" Click="btnSizePosition_Click"/>
+
+                <Button Content="🎨 Kiểu đường nét..." Style="{StaticResource MenuItemStyle}" Click="btnStrokeStyle_Click"/>
+
+                
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+    </Border>
+
+</UserControl>
+

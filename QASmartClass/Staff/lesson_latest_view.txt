@@ -1,0 +1,94 @@
+Created At: 2026-06-04T10:00:59Z
+Completed At: 2026-06-04T10:01:00Z
+File Path: `file:///D:/JOB/QA%20SmartSchool/QA%20SmartClass_Document/QASmartClass_Dev/QASmartClass/StudentClient/Views/StudentLessonPage.xaml.cs`
+Total Lines: 726
+Total Bytes: 35729
+Showing lines 1 to 726
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: using System;
+2: using System.Linq;
+3: using System.Windows;
+4: using System.Windows.Controls;
+5: using System.Windows.Documents;
+6: using System.Windows.Media;
+7: using QASmartClass.Data;
+8: using QASmartTouch.Services;
+9: using Serilog;
+10: 
+11: namespace QASmartClass.StudentClient.Views
+12: {
+13:     public partial class StudentLessonPage : Page
+14:     {
+15:         public StudentLessonPage()
+16:         {
+17:             InitializeComponent();
+18:             Loaded += (_, _) => LoadTodaysLesson();
+19:         }
+20: 
+21:         private void LoadTodaysLesson()
+22:         {
+23:             try
+24:             {
+25:                 var app = (QASmartTouch.App)Application.Current;
+26:                 if (app?.Database == null) return;
+27: 
+28:                 var db = app.Database;
+29: 
+30:                 // Load latest approved lesson
+31:                 var lesson = db.Lessons
+32:                     .Where(l => l.Status == "Approved" || l.Status == "Taught")
+33:                     .OrderByDescending(l => l.UpdatedAt)
+34:                     .FirstOrDefault();
+35: 
+36:                 if (lesson != null)
+37:                 {
+38:                     txtLessonTitle.Text = $"📖 {lesson.Title}";
+39:                     txtLessonInfo.Text = $"Môn: {lesson.Subject}  •  Lớp: {lesson.ClassName ?? lesson.Grade}  •  "
+40:                         + $"GV: {lesson.TeacherName}  •  {lesson.DurationMinutes} phút";
+41: 
+42:                     // Status badge
+
+<truncated 35753 bytes>
+c Mô phỏng sẽ hiển thị tự động.";
+686:                         // Vẫn hiện bài giảng bên dưới để tham khảo
+687:                         if (lessonContentPanel.Children.Count > 0)
+688:                             lessonContentPanel.Visibility = Visibility.Visible;
+689:                         break;
+690: 
+691:                     case 5: // Đánh giá
+692:                         stageActivityPanel.Visibility = Visibility.Visible;
+693:                         txtStageIcon.Text = "🏆";
+694:                         txtStageName.Text = "Đánh Giá Kết Quả";
+695:                         txtStageHint.Text = "GV đang tổng hợp điểm số.\nChờ kết quả Leaderboard trên SmartScreen!";
+696:                         break;
+697: 
+698:                     case 6: // Tổng kết
+699:                         stageActivityPanel.Visibility = Visibility.Visible;
+700:                         txtStageIcon.Text = "📝";
+701:                         txtStageName.Text = "Tổng Kết Tiết Học";
+702:                         txtStageHint.Text = "GV đang giao bài tập về nhà.\nKiểm tra thông báo bài tập!";
+703:                         // Hiện bài giảng để HS xem lại
+704:                         if (lessonContentPanel.Children.Count > 0)
+705:                             lessonContentPanel.Visibility = Visibility.Visible;
+706:                         break;
+707: 
+708:                     default:
+709:                         emptyState.Visibility = Visibility.Visible;
+710:                         break;
+711:                 }
+712: 
+713:                 Log.Information("Student stage view set to: {Stage}", stage);
+714:             }
+715:             catch (Exception ex)
+716:             {
+717:                 Log.Warning("SetStageView error: {Err}", ex.Message);
+718:             }
+719:         }
+720:     }
+721: }
+722: 
+723: 
+724: 
+725: 
+726: 
+The above content shows the entire, complete file contents of the requested file.

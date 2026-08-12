@@ -1,0 +1,59 @@
+
+==================================================
+ SCANNING CATEGORY: MULTI-DISCIPLINARY TOOLS
+==================================================
+[BrainstormTool.xaml] Hardcoded fonts: ['Segoe UI']
+[BrainstormTool.xaml.cs:410] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI"),
+[BrainstormTool.xaml.cs:430] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI")
+[CountriesTool.xaml] Hardcoded fonts: ['Segoe UI']
+[FormulasTool.xaml] Hardcoded fonts: ['Segoe UI']
+[FormulasTool.xaml.cs:391] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI"),
+[FormulasTool.xaml.cs:945] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI"),
+[FormulasTool.xaml.cs:1005] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI"),
+[FormulasTool.xaml.cs:1236] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI")
+[HistoryTimelineTool.xaml] Hardcoded fonts: ['Segoe UI']
+[LiteratureTool.xaml] Hardcoded fonts: ['Segoe UI']
+[MathSymbolsTool.xaml] Hardcoded fonts: ['Segoe UI']
+[MathSymbolsTool.xaml.cs:379] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI")
+[MathSymbolsTool.xaml.cs:438] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI")
+[MindmapTool.xaml.cs:302] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI")
+[MindmapTool.xaml.cs:1007] Potential English MessageBox: MessageBox.Show("Đã có chủ đề trung tâm.\nHãy chọn node và nhấn '➕ Thêm nhánh' để mở rộng.",
+[MindmapTool.xaml.cs:1084] Potential English MessageBox: var result = MessageBox.Show("Bạn chắc chắn muốn xóa toàn bộ sơ đồ?",
+[MindmapTool.xaml.cs:1106] Potential English MessageBox: MessageBox.Show("Sơ đồ trống. Hãy tạo nội dung trước khi export.",
+[MindmapTool.xaml.cs:1124] Potential English MessageBox: var result = MessageBox.Show("Bạn có muốn xuất ảnh SVG với nền trong suốt (không có nền trắng) không?\n\n- Chọn 'Yes' để làm trong suốt nền.\n- Chọn 'No' để giữ nền trắng mặc định.",
+[MindmapTool.xaml.cs:1158] Potential English MessageBox: MessageBox.Show($"Đã lưu sơ đồ tại:\n{dlg.FileName}",
+[MindmapTool.xaml.cs:1352] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI")
+[MindmapTool.xaml.cs:1538] Potential English MessageBox: MessageBox.Show("Sơ đồ trống. Hãy tạo nội dung trước khi lưu.",
+[MindmapTool.xaml.cs:1619] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI")
+[MindmapTool.xaml.cs:1685] Potential English MessageBox: MessageBox.Show("Không tìm thấy sơ đồ nào đã lưu trong cơ sở dữ liệu.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+[MindmapTool.xaml.cs:1695] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI")
+[MindmapTool.xaml.cs:1781] Potential English MessageBox: MessageBox.Show("Vui lòng chọn một sơ đồ để mở.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+[MindmapTool.xaml.cs:1813] Potential English MessageBox: MessageBox.Show("Vui lòng chọn một sơ đồ để xóa.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+[MindmapTool.xaml.cs:2238] Potential English MessageBox: MessageBox.Show("Vui lòng chọn một nhánh để chèn biểu tượng.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+[NoiseMonitorTool.xaml] WARNING: StackPanel found but no ScrollViewer in file. Content might overflow.
+[NotebookTool.xaml] Hardcoded fonts: ['Segoe UI']
+[PeriodicTableTool.xaml] Hardcoded fonts: ['Segoe UI']
+[PeriodicTableTool.xaml.cs:46] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI"), Margin = new Thickness(0, 0, 0, 10)
+[PeriodicTableTool.xaml.cs:126] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI"), FontStyle = FontStyles.Italic,
+[PeriodicTableTool.xaml.cs:175] Hardcoded font in C#: Segoe UI in line Foreground = new SolidColorBrush(fg), FontFamily = new FontFamily("Segoe UI"),
+[PeriodicTableTool.xaml.cs:181] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI"), VerticalAlignment = VerticalAlignment.Center
+[PeriodicTableTool.xaml.cs:201] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI"), VerticalAlignment = VerticalAlignment.Center
+[PhysicsSandboxTool.xaml] Hardcoded fonts: ['Segoe UI']
+[PhysicsSandboxTool.xaml.cs:367] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI"),
+[PlanetsTool.xaml] Hardcoded fonts: ['Segoe UI']
+[PlanetsTool.xaml] WARNING: StackPanel found but no ScrollViewer in file. Content might overflow.
+[PlanetsTool.xaml.cs:685] Hardcoded font in C#: Segoe UI in line FontFamily = new FontFamily("Segoe UI")
+
+==================================================
+ SCANNING CATEGORY: WORKPLACE / VOCATIONAL TOOLS
+==================================================
+[EisenhowerTool.xaml] Hardcoded fonts: ['Segoe UI']
+[FishboneTool.xaml.cs:187] Potential English MessageBox: MessageBox.Show($"Đã lưu: {dlg.FileName}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+[FiveSTool.xaml.cs:430] Potential English MessageBox: MessageBox.Show("Vui lòng nhập tên Khu vực đánh giá trước khi xuất ảnh để thông tin báo cáo đầy đủ nhất.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+[FiveSTool.xaml.cs:473] Potential English MessageBox: MessageBox.Show($"Đã lưu: {dlg.FileName}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+[FiveWhyTool.xaml.cs:253] Potential English MessageBox: MessageBox.Show("Tối đa 9 cấp Why. Nếu chưa tìm được nguyên nhân gốc, hãy xem lại logic phân tích.",
+[KanbanTool.xaml.cs:789] Potential English MessageBox: MessageBox.Show("🔔 Đã hoàn thành 25 phút tập trung Pomodoro! Hãy nghỉ ngơi 5 phút nhé.", "Pomodoro Timer", MessageBoxButton.OK, MessageBoxImage.Information);
+[ParetoTool.xaml.cs:189] Potential English MessageBox: MessageBox.Show("Vui lòng nhập ít nhất 1 dòng dữ liệu hợp lệ (Tần suất > 0).", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+[ParetoTool.xaml.cs:645] Potential English MessageBox: MessageBox.Show($"Đã lưu biểu đồ: {dlg.FileName}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+[PdcaTool.xaml.cs:171] Potential English MessageBox: MessageBox.Show($"Đã lưu: {dlg.FileName}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+[SwotTool.xaml.cs:132] Potential English MessageBox: MessageBox.Show("Hãy nhập ít nhất 1 mục vào bất kỳ ô SWOT nào trước khi xem gợi ý chiến lược.",

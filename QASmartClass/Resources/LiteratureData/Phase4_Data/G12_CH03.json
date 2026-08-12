@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "chapterId": "g12_ch03",
+    "chapterName": "Bài 3: Tùy bút",
+    "grade": 12,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 3
+  },
+  "sections": [
+    {
+      "sectionId": "s_g12_ch2_0",
+      "sectionName": "Người Lái Đò Sông Đà — Nguyễn Tuân",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-12-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g12_Người_lái_đò_Sông_Đà.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Thể Loại",
+          "theorem": "Nguyễn Tuân (1910–1987) — bậc thầy tùy bút Việt Nam. 'Người lái đò sông Đà' (1960) thể hiện phong cách tài hoa, uyên bác; ca ngợi vẻ đẹp hùng vĩ của sông Đà và tài năng của người lái đò."
+        },
+        {
+          "name": "Sông Đà hung bạo",
+          "definition": "Mặt ghềnh Hát Loóng, dài hàng cây số, nước xô đá, đá xô sóng, sóng xô gió, cuồn cuộn luồng gió gùn ghè suốt năm như lúc nào cũng đòi nợ xuýt bất cứ người lái đò Sông Đà nào tóm được vào tay nó. Thạch trận dàn bày vừa xong thì cái thuyền vụt tới... những hòn bệ vệ ngồi im một chỗ như là tướng trận đứng đầy trong cửa ải."
+        },
+        {
+          "name": "Sông Đà trữ tình",
+          "definition": "Con Sông Đà tuôn dài tuôn dài như một áng tóc trữ tình, đầu tóc chân tóc ẩn hiện trong mây trời Tây Bắc... Bờ sông hoang dại như một bờ tiền sử. Bờ sông hồn nhiên như một nỗi niềm cổ tích tuổi xưa."
+        },
+        {
+          "name": "Phân tích phong cách",
+          "examples": [
+            "**Ngôn ngữ quân sự**: 'Thạch trận', 'tướng trận' — biến cuộc vượt thác thành trận đánh, tôn vinh người lái đò thành dũng tướng.",
+            "**Hai tính cách sông Đà**: Hung bạo (ghềnh thác) và trữ tình (áng tóc) — vẻ đẹp toàn diện.",
+            "**Người lái đò = nghệ sĩ**: Điều khiển thuyền vượt thác bằng tài hoa và bản lĩnh — chất 'vàng mười' trong người lao động bình thường."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Nguyễn Tuân dùng ngôn ngữ quân sự ('thạch trận', 'tướng trận') để miêu tả sông Đà nhằm mục đích gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Tạo không khí trận đánh — làm nổi bật sức hung bạo của sông và tôn vinh người lái đò như dũng tướng",
+            "Cho thấy sông Đà nguy hiểm như chiến trường trong thời chiến",
+            "Thể hiện kiến thức quân sự uyên bác của tác giả",
+            "Làm cho bài tùy bút thêm hấp dẫn và kịch tính hơn"
+          ],
+          "answer": "Tạo không khí trận đánh — làm nổi bật sức hung bạo của sông và tôn vinh người lái đò như dũng tướng",
+          "hints": ["Nếu đá là 'tướng trận' thì người lái đò là ai trong cuộc chiến đó?"],
+          "explanation": "Nguyễn Tuân biến cuộc vượt thác thành trận đánh: đá = kẻ thù dàn quân, người lái đò = dũng tướng. Phong cách này phản ánh quan niệm của ông: lao động tài hoa là nghệ thuật, người thợ giỏi là nghệ sĩ — 'chất vàng mười' cần tìm ở người lao động bình thường."
+        },
+        {
+          "id": "p2",
+          "question": "Sông Đà được khắc họa với hai 'tính cách' đối lập: hung bạo và trữ tình. Điều này thể hiện quan niệm nghệ thuật nào của Nguyễn Tuân?",
+          "difficulty": "Hard",
+          "options": [
+            "Vẻ đẹp thực sự của thiên nhiên và con người luôn đa chiều, phức tạp — không thể nhìn một chiều",
+            "Thiên nhiên Tây Bắc vừa nguy hiểm vừa thơ mộng cần được khám phá",
+            "Sông Đà chảy qua nhiều địa hình khác nhau nên có các tính cách khác nhau",
+            "Nguyễn Tuân muốn tả sông Đà toàn diện từ góc độ khoa học địa lý"
+          ],
+          "answer": "Vẻ đẹp thực sự của thiên nhiên và con người luôn đa chiều, phức tạp — không thể nhìn một chiều",
+          "hints": ["Nếu chỉ tả hung bạo hoặc chỉ trữ tình thì hình tượng sông Đà có đầy đủ không?"],
+          "explanation": "Nguyễn Tuân là bậc thầy xây dựng hình tượng đa chiều. Sông Đà hung bạo (thách thức con người) và trữ tình (quyến rũ con người) — hai tính cách tạo nên vẻ đẹp toàn vẹn. Quan niệm này áp dụng cả cho người lái đò: vừa gan góc vượt thác vừa có tâm hồn nghệ sĩ."
+        },
+        {
+          "id": "p3",
+          "question": "Hình tượng người lái đò trong tùy bút của Nguyễn Tuân tiêu biểu cho điều gì trong tư tưởng của ông?",
+          "difficulty": "Hard",
+          "options": [
+            "Người lao động bình thường có thể là anh hùng, nghệ sĩ khi thực hiện công việc bằng tài hoa và trí tuệ",
+            "Lao động nguy hiểm cần được xã hội trân trọng và tôn vinh",
+            "Người Tây Bắc có bản lĩnh phi thường hơn người ở đồng bằng",
+            "Nghề lái đò trên sông Đà là nghề quý giá cần bảo tồn"
+          ],
+          "answer": "Người lao động bình thường có thể là anh hùng, nghệ sĩ khi thực hiện công việc bằng tài hoa và trí tuệ",
+          "hints": ["Trước Cách mạng, Nguyễn Tuân tìm 'chất vàng mười' ở đâu? Sau 1945 thì sao?"],
+          "explanation": "Sau 1945, Nguyễn Tuân mở rộng quan niệm về 'cái đẹp': không chỉ ở nghệ nhân quý tộc xưa mà còn ở người lao động bình thường. Ông lái đò vô danh vượt thác sông Đà bằng kinh nghiệm, bản lĩnh và sự điêu luyện — đó chính là nghệ thuật, là 'chất vàng mười' trong cuộc sống mới."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g12_ch2_1",
+      "sectionName": "Ai Đã Đặt Tên Cho Dòng Sông? — Hoàng Phủ Ngọc Tường",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-12-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g12_Ai_đã_đặt_tên_cho_dòng_sông.mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Hoàng Phủ Ngọc Tường (sinh 1937) — nhà văn xứ Huế. 'Ai đã đặt tên cho dòng sông?' (1981) là áng văn xuôi trữ tình về sông Hương — linh hồn của xứ Huế."
+        },
+        {
+          "name": "Sông Hương ở thượng nguồn",
+          "definition": "Trước khi về đến vùng châu thổ êm đềm, nó đã là một bản trường ca của rừng già, rầm rộ giữa bóng cây đại ngàn... Như cô gái Di-gan phóng khoáng và man dại, rừng già đã hun đúc cho nó một bản lĩnh gan dạ, một tâm hồn tự do và trong sáng."
+        },
+        {
+          "name": "Sông Hương trong lòng Huế",
+          "definition": "Sông Hương vui tươi hẳn lên giữa những biền bãi xanh biếc của vùng ngoại ô Kim Long... Đây là điệu slow tình cảm dành riêng cho Huế, có thể cảm nhận được bằng xúc giác trên những con thuyền chòng chành."
+        },
+        {
+          "name": "Phân tích nghệ thuật",
+          "examples": [
+            "**Nhân hóa xuyên suốt**: Sông Hương = người con gái: hoang dại ở thượng nguồn → dịu dàng khi về Huế.",
+            "**'Bản trường ca của rừng già'**: So sánh sông với âm nhạc — ẩn dụ thính giác tài hoa.",
+            "**'Điệu slow'**: Kết hợp văn hóa châu Âu vào miêu tả nhịp chảy sông — phong cách uyên bác."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Sông Hương trong tùy bút được nhân hóa thay đổi như thế nào từ thượng nguồn về đến Huế?",
+          "difficulty": "Medium",
+          "options": [
+            "Từ 'cô gái Digan phóng khoáng man dại' ở rừng già → người thiếu nữ dịu dàng điềm tĩnh khi về Huế",
+            "Từ dòng sông hung bạo → dòng sông hiền hòa khi qua vùng dân cư đông đúc",
+            "Từ 'bản trường ca' mạnh mẽ → 'điệu slow' chậm rãi theo địa hình",
+            "Từ dòng sông bí ẩn → dòng sông nổi tiếng khi gắn với Cố đô Huế"
+          ],
+          "answer": "Từ 'cô gái Digan phóng khoáng man dại' ở rừng già → người thiếu nữ dịu dàng điềm tĩnh khi về Huế",
+          "hints": ["Tìm hai hình ảnh nhân hóa sông Hương ở hai đoạn khác nhau."],
+          "explanation": "Hoàng Phủ Ngọc Tường nhân hóa sông Hương như một người con gái trưởng thành: ở rừng núi thượng nguồn — hoang dại, tự do; về đến Huế — trở nên điềm tĩnh, dịu dàng. Phép nhân hóa này tạo nên hồn của tác phẩm — sông Hương không phải là vật vô tri mà là sinh linh sống động."
+        },
+        {
+          "id": "p2",
+          "question": "Câu hỏi tu từ 'Ai đã đặt tên cho dòng sông?' dùng làm nhan đề thể hiện điều gì của tác giả?",
+          "difficulty": "Medium",
+          "options": [
+            "Sự ngưỡng mộ và tri ân với tiền nhân đã đặt tên đẹp — gợi mở trí tưởng tượng về chiều sâu văn hóa sông Hương",
+            "Câu hỏi lịch sử cần được trả lời về nguồn gốc địa danh sông Hương",
+            "Sự tò mò của tác giả về lịch sử hình thành con sông",
+            "Lời mời gọi bạn đọc tìm hiểu văn hóa địa phương xứ Huế"
+          ],
+          "answer": "Sự ngưỡng mộ và tri ân với tiền nhân đã đặt tên đẹp — gợi mở trí tưởng tượng về chiều sâu văn hóa sông Hương",
+          "hints": ["Câu hỏi này có cần đáp án thực tế không?"],
+          "explanation": "Đây là câu hỏi tu từ không cần đáp án. Hoàng Phủ Ngọc Tường muốn khơi gợi: ai đó ngày xưa đã có tâm hồn thơ mộng và sự tinh tế để đặt tên 'Hương' (thơm) cho dòng sông này. Nhan đề mở ra cuộc hành trình khám phá vẻ đẹp văn hóa — không chỉ là địa lý."
+        },
+        {
+          "id": "p3",
+          "question": "So sánh phong cách tùy bút của Hoàng Phủ Ngọc Tường với Nguyễn Tuân — điểm khác biệt lớn nhất là gì?",
+          "difficulty": "Hard",
+          "options": [
+            "Hoàng Phủ Ngọc Tường: chất thơ trữ tình gắn văn hóa Huế; Nguyễn Tuân: hùng vĩ, tài hoa, bách khoa",
+            "Hoàng Phủ Ngọc Tường dùng nhiều số liệu khoa học hơn Nguyễn Tuân",
+            "Nguyễn Tuân viết về thiên nhiên còn Hoàng Phủ Ngọc Tường viết về con người",
+            "Cả hai tác giả có phong cách viết giống nhau vì cùng viết tùy bút"
+          ],
+          "answer": "Hoàng Phủ Ngọc Tường: chất thơ trữ tình gắn văn hóa Huế; Nguyễn Tuân: hùng vĩ, tài hoa, bách khoa",
+          "hints": ["Cảm xúc nào là chủ đạo trong mỗi tùy bút?"],
+          "explanation": "Hai phong cách tùy bút tiêu biểu: Nguyễn Tuân — mạnh mẽ, uyên bác, dùng tri thức từ nhiều lĩnh vực, đi tìm cái hùng tráng. Hoàng Phủ Ngọc Tường — tinh tế, thơ mộng, thấm đẫm văn hóa Huế, thiên về cái trữ tình và nỗi niềm. Cả hai đều là đỉnh cao của thể loại tùy bút."
+        }
+      ]
+    }
+  ]
+}

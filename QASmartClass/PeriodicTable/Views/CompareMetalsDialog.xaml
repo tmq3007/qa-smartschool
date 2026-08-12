@@ -1,0 +1,284 @@
+<Window FontFamily="Segoe UI" x:Class="QASmartTouch.PeriodicTable.Views.CompareMetalsDialog"
+
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        Title="⚖️ So sánh 2 kim loại" 
+
+        Height="1030" Width="1350"
+
+        WindowStartupLocation="CenterOwner"
+
+        Background="#F5F5F5"
+
+        ResizeMode="NoResize">
+
+
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- Header -->
+
+        <Border Grid.Row="0" Background="#4CAF50" Padding="30,22">
+
+            <TextBlock Text="⚖️ SO SÁNH HOẠT ĐỘNG HÓA HỌC CỦA 2 KIM LOẠI" 
+
+                      FontSize="28" FontWeight="Bold" 
+
+                      Foreground="White"
+
+                      HorizontalAlignment="Center"/>
+
+        </Border>
+
+
+
+        <!-- Selection Panel -->
+
+        <Border Grid.Row="1" Background="White" Padding="30" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <!-- Metal 1 Selection -->
+
+                <StackPanel Grid.Column="0">
+
+                    <TextBlock Text="🔸 Kim loại thứ nhất:" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"/>
+
+                    <ComboBox Name="Metal1Combo" 
+
+                             Height="45" FontSize="18"
+
+                             SelectionChanged="MetalCombo_SelectionChanged"/>
+
+                </StackPanel>
+
+
+
+                <!-- VS Icon -->
+
+                <TextBlock Grid.Column="1" Text="⚡ VS ⚡" 
+
+                          FontSize="36" FontWeight="Bold" 
+
+                          Foreground="#FF6B00"
+
+                          VerticalAlignment="Center"
+
+                          Margin="40,0"/>
+
+
+
+                <!-- Metal 2 Selection -->
+
+                <StackPanel Grid.Column="2">
+
+                    <TextBlock Text="🔸 Kim loại thứ hai:" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"/>
+
+                    <ComboBox Name="Metal2Combo" 
+
+                             Height="45" FontSize="18"
+
+                             SelectionChanged="MetalCombo_SelectionChanged"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+
+
+        <!-- Comparison Result -->
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0">
+
+            <StackPanel Name="ComparisonPanel" Margin="25">
+
+                <TextBlock Text="👆 Vui lòng chọn 2 kim loại để so sánh" 
+
+                          FontSize="18" 
+
+                          Foreground="#757575"
+
+                          FontStyle="Italic"
+
+                          HorizontalAlignment="Center"
+
+                          VerticalAlignment="Center"
+
+                          Margin="0,100,0,0"/>
+
+            </StackPanel>
+
+        </ScrollViewer>
+
+
+
+        <!-- Footer Buttons -->
+
+        <Border Grid.Row="3" Background="White" Padding="30,22" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                <Button Content="🔄 Đổi chỗ" 
+
+                        Width="160" Height="50"
+
+                        Background="#2196F3" 
+
+                        Foreground="White"
+
+                        FontSize="16"
+
+                        FontWeight="Bold"
+
+                        Margin="0,0,10,0"
+
+                        BorderThickness="0"
+
+                        Cursor="Hand"
+
+                        Click="SwapButton_Click">
+
+                    <Button.Style>
+
+                        <Style TargetType="Button">
+
+                            <Setter Property="Template">
+
+                                <Setter.Value>
+
+                                    <ControlTemplate TargetType="Button">
+
+                                        <Border Background="{TemplateBinding Background}" 
+
+                                                CornerRadius="5">
+
+                                            <ContentPresenter HorizontalAlignment="Center" 
+
+                                                            VerticalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate>
+
+                                </Setter.Value>
+
+                            </Setter>
+
+                            <Style.Triggers>
+
+                                <Trigger Property="IsMouseOver" Value="True">
+
+                                    <Setter Property="Background" Value="#1976D2"/>
+
+                                </Trigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </Button.Style>
+
+                </Button>
+
+
+
+                <Button Content="✖️ Đóng" 
+
+                        Width="160" Height="50"
+
+                        Background="#E64A19" 
+
+                        Foreground="White"
+
+                        FontWeight="Bold"
+
+                        FontSize="16"
+
+                        BorderThickness="0"
+
+                        Cursor="Hand"
+
+                        Click="CloseButton_Click">
+
+                    <Button.Style>
+
+                        <Style TargetType="Button">
+
+                            <Setter Property="Template">
+
+                                <Setter.Value>
+
+                                    <ControlTemplate TargetType="Button">
+
+                                        <Border Background="{TemplateBinding Background}" 
+
+                                                CornerRadius="5">
+
+                                            <ContentPresenter HorizontalAlignment="Center" 
+
+                                                            VerticalAlignment="Center"/>
+
+                                        </Border>
+
+                                    </ControlTemplate>
+
+                                </Setter.Value>
+
+                            </Setter>
+
+                            <Style.Triggers>
+
+                                <Trigger Property="IsMouseOver" Value="True">
+
+                                    <Setter Property="Background" Value="#D84315"/>
+
+                                </Trigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </Button.Style>
+
+                </Button>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</Window>
+
+
+

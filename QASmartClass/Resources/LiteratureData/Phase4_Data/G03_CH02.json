@@ -1,0 +1,60 @@
+﻿{
+  "metadata": {
+    "chapterId": "g03_ch02",
+    "chapterName": "Bài 2: Chính tả Lớp 3",
+    "grade": 3,
+    "totalProblems": 2,
+    "totalSections": 1,
+    "estimatedHours": 2,
+    "thptWeight": "Kiến thức nền tảng Tiếng Việt Tiểu Học"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g3_ch2_0",
+      "sectionName": "Chính tả",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/tieng-viet-3-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g3_Chính_tả.mp3",
+      "concepts": [
+        {
+          "name": "Mục tiêu bài học",
+          "theorem": "Nắm vững kiến thức cơ bản về phân môn Chính tả theo chương trình GDPT 2018.",
+          "definition": "Buổi sớm, sương đọng trên lá cỏ lấp lánh như những hạt ngọc. Mặt nước hồ trong vắt soi bóng hàng tre xanh."
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Chọn từ viết đúng chính tả:",
+          "difficulty": "Easy",
+          "options": [
+            "Xuất sắc",
+            "Suất sắc",
+            "Xuất xắc",
+            "Suất xắc"
+          ],
+          "answer": "Xuất sắc",
+          "hints": [
+            "Chú ý âm s/x"
+          ],
+          "explanation": "Từ đúng là 'xuất sắc' (tài giỏi vượt trội)."
+        },
+        {
+          "id": "p2",
+          "question": "Điền ch/tr vào chỗ trống: ...ong vắt",
+          "difficulty": "Medium",
+          "options": [
+            "Tr",
+            "Ch",
+            "Gi",
+            "R"
+          ],
+          "answer": "Tr",
+          "hints": [
+            "Màu nước hồ..."
+          ],
+          "explanation": "Trong vắt: rất trong, không có vẩn đục."
+        }
+      ]
+    }
+  ]
+}

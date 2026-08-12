@@ -1,0 +1,434 @@
+<Page x:Class="QASmartClass.Classroom.Views.QuizPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Kiểm tra &amp; Quiz Battle" Background="#FAFAFA">
+
+    <Page.Resources>
+        <Style x:Key="ModeBtnStyle" TargetType="Border">
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="20,14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Header + mode tabs -->
+            <RowDefinition Height="*"/>     <!-- Content -->
+            <RowDefinition Height="Auto"/>  <!-- Export bar -->
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,12"
+                Margin="0,0,0,14" BorderBrush="#E0E0E0" BorderThickness="1">
+            <DockPanel>
+                <!-- Controls -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="txtTimer" Text="⏱ 30s" FontSize="24" FontWeight="Bold"
+                               Foreground="#1A237E" VerticalAlignment="Center" Margin="0,0,16,0"
+                               FontFamily="Segoe UI"/>
+                    <Button x:Name="btnStartQuiz" Content="🚀 Bắt đầu" FontSize="15" FontWeight="Bold"
+                            Padding="20,10" Background="#FF9800" Foreground="White"
+                            BorderThickness="0" Cursor="Hand" Click="StartQuiz_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="b" Property="Background" Value="#F57C00"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+
+                <!-- Mode tabs -->
+                <StackPanel>
+                    <TextBlock Text="🏆 Kiểm tra &amp; Quiz Battle" FontSize="22" FontWeight="Bold" Foreground="#212121"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Border x:Name="tabSolo" Style="{StaticResource ModeBtnStyle}"
+                                Background="#1976D2" MouseLeftButtonDown="TabSolo_Click">
+                            <TextBlock Text="👤 Solo Quiz" FontSize="14" Foreground="White" FontWeight="SemiBold"/>
+                        </Border>
+                        <Border x:Name="tabBattle" Style="{StaticResource ModeBtnStyle}"
+                                MouseLeftButtonDown="TabBattle_Click">
+                            <TextBlock Text="⚔️ Quiz Battle" FontSize="14" Foreground="#616161" FontWeight="SemiBold"/>
+                        </Border>
+                        <Border x:Name="tabPoll" Style="{StaticResource ModeBtnStyle}"
+                                MouseLeftButtonDown="TabPoll_Click">
+                            <TextBlock Text="📊 Quick Poll" FontSize="14" Foreground="#616161" FontWeight="SemiBold"/>
+                        </Border>
+                        <!-- Navigation sub-flow: Đi đến Ngân hàng câu hỏi -->
+                        <Border Background="#FFF3E0" CornerRadius="8" Padding="16,10" Cursor="Hand" Margin="0,0,8,0" MouseLeftButtonDown="GoToQuestionBank_Click" ToolTip="Quản lý Ngân hàng câu hỏi (F14)">
+                            <TextBlock Text="📚 Ngân hàng câu hỏi" FontSize="14" Foreground="#E65100" FontWeight="SemiBold"/>
+                        </Border>
+                        
+                        <TextBlock x:Name="txtProgress" Text="Sẵn sàng" FontSize="14"
+                                   Foreground="#757575" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ═══ CONTENT AREA ═══ -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ── SOLO: Question panel ── -->
+            <Border x:Name="panelSolo" Grid.Column="0" Margin="0,0,12,0" Background="White"
+                    CornerRadius="12" BorderBrush="#E0E0E0" BorderThickness="1" Padding="24">
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <Border Background="#FF9800" CornerRadius="6" Padding="12,5" Margin="0,0,8,0">
+                            <TextBlock x:Name="txtQuestionNum" Text="Câu 1/5" FontSize="14" Foreground="White" FontWeight="SemiBold"/>
+                        </Border>
+                        <Border Background="#E3F2FD" CornerRadius="6" Padding="12,5">
+                            <TextBlock Text="Trắc nghiệm" FontSize="14" Foreground="#1565C0"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock x:Name="txtQuestionContent" Text="Nhấn 'Bắt đầu' để hiển thị câu hỏi..."
+                               FontSize="20" FontWeight="SemiBold" Foreground="#212121"
+                               TextWrapping="Wrap" Margin="0,0,0,24" LineHeight="30"/>
+                    <Button x:Name="optionA" Content="A. ..." FontSize="16" Padding="18,14" Margin="0,0,0,10"
+                            Background="White" Foreground="#212121" BorderThickness="0" Cursor="Hand"
+                            HorizontalContentAlignment="Left" Click="OptionA_Click">
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}" BorderBrush="#E0E0E0" BorderThickness="1.5"><ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="BorderBrush" Value="#1976D2"/><Setter TargetName="b" Property="Background" Value="#E3F2FD"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                    </Button>
+                    <Button x:Name="optionB" Content="B. ..." FontSize="16" Padding="18,14" Margin="0,0,0,10"
+                            Background="White" Foreground="#212121" BorderThickness="0" Cursor="Hand"
+                            HorizontalContentAlignment="Left" Click="OptionB_Click">
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}" BorderBrush="#E0E0E0" BorderThickness="1.5"><ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="BorderBrush" Value="#1976D2"/><Setter TargetName="b" Property="Background" Value="#E3F2FD"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                    </Button>
+                    <Button x:Name="optionC" Content="C. ..." FontSize="16" Padding="18,14" Margin="0,0,0,10"
+                            Background="White" Foreground="#212121" BorderThickness="0" Cursor="Hand"
+                            HorizontalContentAlignment="Left" Click="OptionC_Click">
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}" BorderBrush="#E0E0E0" BorderThickness="1.5"><ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="BorderBrush" Value="#1976D2"/><Setter TargetName="b" Property="Background" Value="#E3F2FD"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                    </Button>
+                    <Button x:Name="optionD" Content="D. ..." FontSize="16" Padding="18,14"
+                            Background="White" Foreground="#212121" BorderThickness="0" Cursor="Hand"
+                            HorizontalContentAlignment="Left" Click="OptionD_Click">
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}" BorderBrush="#E0E0E0" BorderThickness="1.5"><ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="BorderBrush" Value="#1976D2"/><Setter TargetName="b" Property="Background" Value="#E3F2FD"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- ── BATTLE MODE Panel ── -->
+            <Border x:Name="panelBattle" Grid.Column="0" Margin="0,0,12,0" Visibility="Collapsed"
+                    Background="White" CornerRadius="12" BorderBrush="#E0E0E0" BorderThickness="1" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="⚔️ Quiz Battle — 4 Nhóm Thi Đua" FontSize="18" FontWeight="Bold"
+                               Foreground="#1A237E" Margin="0,0,0,14"/>
+                    <!-- Current question for battle -->
+                    <Border Background="#F3E5F5" CornerRadius="10" Padding="16,14" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock x:Name="txtBattleQuestion" Text="Nhấn 'Bắt đầu' để phát câu hỏi..."
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#4A148C"
+                                       TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Border Background="#7B1FA2" CornerRadius="6" Padding="10,4" Margin="0,0,8,0">
+                                    <TextBlock x:Name="txtBattleQNum" Text="Câu 1/5" FontSize="13" Foreground="White" FontWeight="SemiBold"/>
+                                </Border>
+                                <Border Background="#E1BEE7" CornerRadius="6" Padding="10,4">
+                                    <TextBlock x:Name="txtBattleSubmitted" Text="Đã nộp: 0/4 nhóm" FontSize="13" Foreground="#4A148C"/>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <!-- Group answer bars -->
+                    <TextBlock Text="Đáp án nhóm (click để ghi điểm):" FontSize="14" FontWeight="SemiBold"
+                               Foreground="#333" Margin="0,0,0,10"/>
+                    <ItemsControl x:Name="groupAnswerPanel">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,8" CornerRadius="8" Padding="14,12"
+                                        Cursor="Hand" MouseLeftButtonDown="GroupAnswer_Click"
+                                        Background="{Binding BgColor}">
+                                    <DockPanel>
+                                        <TextBlock Text="{Binding Score, StringFormat='{}{0} điểm'}"
+                                                   DockPanel.Dock="Right" FontSize="14" FontWeight="Bold"
+                                                   Foreground="{Binding FgColor}" VerticalAlignment="Center"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{Binding FgColor}"/>
+                                            <TextBlock Text="{Binding Status}" FontSize="12" Foreground="{Binding FgColor}" Opacity="0.75"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <!-- Next question button -->
+                    <Button x:Name="btnNextBattleQ" Content="▶ Câu tiếp theo" Background="#7B1FA2"
+                            Foreground="White" BorderThickness="0" Padding="16,10" FontSize="14"
+                            HorizontalAlignment="Left" Cursor="Hand" Margin="0,14,0,0"
+                            Click="NextBattleQuestion_Click">
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#4A148C"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- ── POLL Panel ── -->
+            <Border x:Name="panelPoll" Grid.Column="0" Margin="0,0,12,0" Visibility="Collapsed"
+                    Background="White" CornerRadius="12" BorderBrush="#E0E0E0" BorderThickness="1" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="📊 Quick Poll — Khảo Sát Nhanh" FontSize="18" FontWeight="Bold"
+                               Foreground="#1A237E" Margin="0,0,0,14"/>
+                    <TextBlock Text="Câu hỏi Poll:" FontSize="13" Foreground="#757575" Margin="0,0,0,6"/>
+                    <TextBox x:Name="txtPollQuestion" FontSize="15" Padding="12,10" TextWrapping="Wrap"
+                             AcceptsReturn="False" BorderBrush="#E0E0E0" MaxHeight="72" Margin="0,0,0,12"
+                             Text="Bạn hiểu bài hôm nay không?">
+                        <TextBox.Template><ControlTemplate TargetType="TextBox"><Border Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8"><ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/></Border></ControlTemplate></TextBox.Template>
+                    </TextBox>
+                    <TextBlock Text="Các lựa chọn:" FontSize="13" Foreground="#757575" Margin="0,0,0,6"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                        <TextBox x:Name="pollOpt1" Grid.Column="0" Grid.Row="0" Text="✅ Hiểu rõ" Padding="10,8" Margin="0,0,6,6" BorderBrush="#E0E0E0" FontSize="14"><TextBox.Template><ControlTemplate TargetType="TextBox"><Border Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6"><ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/></Border></ControlTemplate></TextBox.Template></TextBox>
+                        <TextBox x:Name="pollOpt2" Grid.Column="1" Grid.Row="0" Text="🤔 Còn chưa hiểu" Padding="10,8" Margin="0,0,0,6" BorderBrush="#E0E0E0" FontSize="14"><TextBox.Template><ControlTemplate TargetType="TextBox"><Border Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6"><ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/></Border></ControlTemplate></TextBox.Template></TextBox>
+                        <TextBox x:Name="pollOpt3" Grid.Column="0" Grid.Row="1" Text="😕 Không hiểu" Padding="10,8" Margin="0,0,6,0" BorderBrush="#E0E0E0" FontSize="14"><TextBox.Template><ControlTemplate TargetType="TextBox"><Border Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6"><ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/></Border></ControlTemplate></TextBox.Template></TextBox>
+                        <TextBox x:Name="pollOpt4" Grid.Column="1" Grid.Row="1" Text="💡 Cần ví dụ thêm" Padding="10,8" Margin="0" BorderBrush="#E0E0E0" FontSize="14"><TextBox.Template><ControlTemplate TargetType="TextBox"><Border Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6"><ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/></Border></ControlTemplate></TextBox.Template></TextBox>
+                    </Grid>
+                    <Button Content="📡 Phát Poll tới HS" Background="#7B1FA2" Foreground="White"
+                            BorderThickness="0" Padding="20,10" FontSize="14" FontWeight="SemiBold"
+                            HorizontalAlignment="Left" Cursor="Hand" Click="LaunchPoll_Click">
+                        <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#4A148C"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                    </Button>
+                    <!-- Poll results bars -->
+                    <Border x:Name="pollResultsPanel" Visibility="Collapsed" Margin="0,16,0,0"
+                            Background="#F8F9FA" CornerRadius="10" Padding="14">
+                        <StackPanel>
+                            <TextBlock Text="📊 Kết Quả Poll (Real-time)" FontSize="15" FontWeight="Bold"
+                                       Foreground="#333" Margin="0,0,0,12"/>
+                            <ItemsControl x:Name="pollResultsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,0,0,8">
+                                            <DockPanel>
+                                                <TextBlock Text="{Binding Percent, StringFormat='{}{0}%'}"
+                                                           DockPanel.Dock="Right" FontSize="14" FontWeight="Bold"
+                                                           Foreground="#1976D2"/>
+                                                <TextBlock Text="{Binding Label}" FontSize="14" Foreground="#333"/>
+                                            </DockPanel>
+                                            <Border Height="12" CornerRadius="6" Background="#E0E0E0" Margin="0,4,0,0">
+                                                <Border CornerRadius="6" Background="#1976D2"
+                                                        HorizontalAlignment="Left"
+                                                        Width="{Binding BarWidth}"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- ── RIGHT: Leaderboard ── -->
+            <Border Grid.Column="1" Background="White" CornerRadius="12"
+                    BorderBrush="#E0E0E0" BorderThickness="1" Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,12">
+                                <Button Content="🔄" DockPanel.Dock="Right" Background="#F5F5F5"
+                                        BorderThickness="0" Padding="8,6" Cursor="Hand"
+                                        Click="RefreshLeaderboard_Click">
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                                </Button>
+                                <TextBlock Text="🏆 Bảng Xếp Hạng" FontSize="16" FontWeight="SemiBold" Foreground="#212121"/>
+                            </DockPanel>
+
+                            <!-- Live leaderboard list (clickable to review) -->
+                            <ItemsControl x:Name="leaderboardList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,0,6" CornerRadius="8" Padding="12,10"
+                                                Background="{Binding CardBg}" Cursor="Hand"
+                                                MouseLeftButtonDown="LeaderboardItem_Click"
+                                                ToolTip="Click để xem chi tiết bài làm">
+                                            <DockPanel>
+                                                <TextBlock Text="{Binding ScoreText}" DockPanel.Dock="Right"
+                                                           FontSize="14" FontWeight="Bold" Foreground="{Binding ScoreFg}"
+                                                           VerticalAlignment="Center"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Medal}" FontSize="18" Margin="0,0,8,0"
+                                                               VerticalAlignment="Center"/>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"
+                                                                   Foreground="#212121"/>
+                                                        <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="#9E9E9E"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <Border Height="1" Background="#E0E0E0" Margin="0,10,0,10"/>
+
+                            <!-- Stats panel -->
+                            <TextBlock Text="📊 Thống Kê" FontSize="15" FontWeight="SemiBold"
+                                       Foreground="#212121" Margin="0,0,0,8"/>
+                            <Border Background="#E3F2FD" CornerRadius="6" Padding="12,8" Margin="0,0,0,6">
+                                <TextBlock x:Name="txtStatSubmitted" Text="📝 Đã nộp: —/— HS"
+                                           FontSize="13" Foreground="#1565C0"/>
+                            </Border>
+                            <Border Background="#E8F5E9" CornerRadius="6" Padding="12,8" Margin="0,0,0,6">
+                                <TextBlock x:Name="txtStatCorrect" Text="✅ Đúng TB: —%"
+                                           FontSize="13" Foreground="#2E7D32"/>
+                            </Border>
+                            <Border Background="#FFF3E0" CornerRadius="6" Padding="12,8" Margin="0,0,0,6">
+                                <TextBlock x:Name="txtStatTime" Text="⏱ Thời gian TB: —s"
+                                           FontSize="13" Foreground="#E65100"/>
+                            </Border>
+
+                            <Border Height="1" Background="#E0E0E0" Margin="0,10,0,10"/>
+
+                            <!-- ═══ BAO CAO CAU SAI ═══ -->
+                            <DockPanel Margin="0,0,0,8">
+                                <Button Content="🔄" DockPanel.Dock="Right" Background="#F5F5F5"
+                                        BorderThickness="0" Padding="6,4" Cursor="Hand" FontSize="10"
+                                        Click="RefreshErrorReport_Click">
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                                </Button>
+                                <TextBlock Text="⚠️ Báo Cáo Câu Sai" FontSize="15" FontWeight="SemiBold"
+                                           Foreground="#C62828"/>
+                            </DockPanel>
+                            <TextBlock x:Name="txtErrorSummary" Text="Chưa có dữ liệu"
+                                       FontSize="12" Foreground="#9E9E9E" Margin="0,0,0,6"/>
+
+                            <!-- Error items list -->
+                            <ItemsControl x:Name="errorReportList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,0,6" CornerRadius="8" Padding="12,8"
+                                                Background="{Binding CardBg}"
+                                                BorderBrush="{Binding BorderColor}" BorderThickness="1">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <!-- Rank badge -->
+                                                <Border Grid.Column="0" Width="26" Height="26"
+                                                        CornerRadius="13" Margin="0,0,8,0"
+                                                        Background="{Binding RankBg}"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Rank}" FontSize="12"
+                                                               FontWeight="Bold" Foreground="White"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                                <!-- Question info + bar -->
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                    <TextBlock Text="{Binding QuestionLabel}" FontSize="13"
+                                                               FontWeight="SemiBold" Foreground="#212121"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                    <Grid Margin="0,4,0,0" Height="8">
+                                                        <Border Background="#EEEEEE" CornerRadius="4"/>
+                                                        <Border Background="{Binding BarColor}" CornerRadius="4"
+                                                                HorizontalAlignment="Left"
+                                                                Width="{Binding BarWidth}"/>
+                                                    </Grid>
+                                                    <TextBlock Text="{Binding DetailText}" FontSize="11"
+                                                               Foreground="#9E9E9E" Margin="0,2,0,0"/>
+                                                </StackPanel>
+                                                <!-- Error rate -->
+                                                <StackPanel Grid.Column="2" VerticalAlignment="Center"
+                                                            HorizontalAlignment="Right" Margin="6,0,0,0">
+                                                    <TextBlock Text="{Binding ErrorPercent}" FontSize="15"
+                                                               FontWeight="Bold" Foreground="{Binding PercentColor}"
+                                                               HorizontalAlignment="Right"/>
+                                                    <TextBlock Text="sai" FontSize="10" Foreground="#9E9E9E"
+                                                               HorizontalAlignment="Right"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Buttons -->
+                    <StackPanel Grid.Row="1">
+                        <Button Content="📥 Xuất Kết Quả" Background="#1976D2" Foreground="White"
+                                BorderThickness="0" Padding="0,12" FontSize="14" FontWeight="SemiBold"
+                                Cursor="Hand" Click="ExportResults_Click" Margin="0,0,0,6">
+                            <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0D47A1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══ REVIEW OVERLAY — Xem bai lam cua HS + Trinh chieu ═══ -->
+        <Grid x:Name="panelReview" Grid.Row="0" Grid.RowSpan="3" Visibility="Collapsed">
+            <!-- Dim background -->
+            <Border Background="#AA000000" MouseLeftButtonDown="CloseReview_Click"/>
+            <!-- Review card -->
+            <Border Background="White" CornerRadius="16" Padding="0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Width="720" MaxHeight="620"
+                    BorderBrush="#1976D2" BorderThickness="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" ShadowDepth="4" Opacity="0.3"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <!-- Header -->
+                    <Border Grid.Row="0" Background="#1976D2" CornerRadius="14,14,0,0" Padding="20,14">
+                        <DockPanel>
+                            <Button Content="✖" DockPanel.Dock="Right" Foreground="White"
+                                    Background="Transparent" BorderThickness="0" FontSize="16"
+                                    Cursor="Hand" Click="CloseReview_Click" Padding="8,2">
+                                <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#1565C0"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                            </Button>
+                            <StackPanel>
+                                <TextBlock x:Name="txtReviewTitle" Text="Xem bài làm" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock x:Name="txtReviewSubtitle" Text="" FontSize="14" Foreground="#BBDEFB"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <!-- Questions list -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20,12">
+                        <StackPanel x:Name="reviewQuestionsList"/>
+                    </ScrollViewer>
+                    <!-- Footer buttons -->
+                    <Border Grid.Row="2" Background="#F5F5F5" CornerRadius="0,0,14,14" Padding="16,12">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button x:Name="btnBroadcastReview" Content="📡 Trình chiếu cho lớp"
+                                        Background="#FF9800" Foreground="White" BorderThickness="0"
+                                        Padding="20,10" FontSize="14" FontWeight="SemiBold"
+                                        Cursor="Hand" Click="BroadcastReview_Click">
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#F57C00"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                                </Button>
+                            </StackPanel>
+                            <TextBlock x:Name="txtReviewStats" Text="" FontSize="13" Foreground="#757575"
+                                       VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

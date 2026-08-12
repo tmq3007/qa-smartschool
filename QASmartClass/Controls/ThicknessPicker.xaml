@@ -1,0 +1,236 @@
+﻿<UserControl x:Class="QASmartTouch.Controls.ThicknessPicker"
+
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+
+             mc:Ignorable="d"
+
+             d:DesignHeight="120" d:DesignWidth="200">
+
+    
+
+    <UserControl.Resources>
+
+        <!-- Drop Shadow Effect -->
+
+        <DropShadowEffect x:Key="DropShadowEffect" 
+
+                        Color="Black" 
+
+                        Opacity="0.2" 
+
+                        BlurRadius="16" 
+
+                        ShadowDepth="4"/>
+
+        
+
+        <!-- Button Style -->
+
+        <Style x:Key="ThicknessButtonStyle" TargetType="Button">
+
+            <Setter Property="Background" Value="#f8f9fa"/>
+
+            <Setter Property="Foreground" Value="#2c3e50"/>
+
+            <Setter Property="BorderBrush" Value="#ddd"/>
+
+            <Setter Property="BorderThickness" Value="1"/>
+
+            <Setter Property="Margin" Value="2,0"/>
+
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+
+                               BorderBrush="{TemplateBinding BorderBrush}"
+
+                               BorderThickness="{TemplateBinding BorderThickness}"
+
+                               CornerRadius="4"
+
+                               Padding="4">
+
+                            <ContentPresenter HorizontalAlignment="Center"
+
+                                            VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+
+                    <Setter Property="Background" Value="#3498db"/>
+
+                    <Setter Property="Foreground" Value="White"/>
+
+                    <Setter Property="BorderBrush" Value="#2980b9"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </UserControl.Resources>
+
+    
+
+    <Border Background="White"
+
+            CornerRadius="8"
+
+            Padding="12"
+
+            Effect="{StaticResource DropShadowEffect}">
+
+        
+
+        <StackPanel>
+
+            <!-- Title -->
+
+            <TextBlock Text="Độ dày nét:"
+
+                      FontSize="13"
+
+                      FontWeight="SemiBold"
+
+                      Foreground="#2c3e50"
+
+                      Margin="0,0,0,8"/>
+
+            
+
+            <!-- Quick Select Buttons -->
+
+            <StackPanel Orientation="Horizontal"
+
+                       HorizontalAlignment="Center"
+
+                       Margin="0,0,0,12">
+
+                
+
+                <Button Content="▬" FontSize="8" Width="36" Height="32"
+
+                       Click="btnThickness1_Click" Tag="1"
+
+                       Style="{StaticResource ThicknessButtonStyle}"/>
+
+                
+
+                <Button Content="▬" FontSize="10" Width="36" Height="32"
+
+                       Click="btnThickness2_Click" Tag="2"
+
+                       Style="{StaticResource ThicknessButtonStyle}"/>
+
+                
+
+                <Button Content="▬" FontSize="14" Width="36" Height="32"
+
+                       Click="btnThickness4_Click" Tag="4"
+
+                       Style="{StaticResource ThicknessButtonStyle}"/>
+
+                
+
+                <Button Content="▬" FontSize="18" Width="36" Height="32"
+
+                       Click="btnThickness8_Click" Tag="8"
+
+                       Style="{StaticResource ThicknessButtonStyle}"/>
+
+                
+
+                <Button Content="▬" FontSize="22" Width="36" Height="32"
+
+                       Click="btnThickness12_Click" Tag="12"
+
+                       Style="{StaticResource ThicknessButtonStyle}"/>
+
+            </StackPanel>
+
+            
+
+            <!-- Slider -->
+
+            <Grid Margin="0,4,0,0">
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="Auto"/>
+
+                </Grid.ColumnDefinitions>
+
+                
+
+                <Slider x:Name="ThicknessSlider"
+
+                       Grid.Column="0"
+
+                       Minimum="1"
+
+                       Maximum="20"
+
+                       Value="2"
+
+                       TickFrequency="1"
+
+                       IsSnapToTickEnabled="True"
+
+                       VerticalAlignment="Center"
+
+                       ValueChanged="ThicknessSlider_ValueChanged"/>
+
+                
+
+                <TextBlock x:Name="txtThicknessValue"
+
+                          Grid.Column="1"
+
+                          Text="2px"
+
+                          FontSize="12"
+
+                          FontWeight="Bold"
+
+                          Foreground="#3498db"
+
+                          VerticalAlignment="Center"
+
+                          Margin="8,0,0,0"
+
+                          MinWidth="35"
+
+                          TextAlignment="Right"/>
+
+            </Grid>
+
+        </StackPanel>
+
+    </Border>
+
+</UserControl>
+

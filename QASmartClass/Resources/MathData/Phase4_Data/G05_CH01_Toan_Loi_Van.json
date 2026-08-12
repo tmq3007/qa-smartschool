@@ -1,0 +1,359 @@
+{
+  "metadata": {
+    "chapterId": "g05_ch01",
+    "chapterName": "Giải Toán Có Lời Văn",
+    "grade": 5,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 14,
+    "toolMapping": [],
+    "thptWeight": "0%",
+    "estimatedHours": 10,
+    "prerequisites": [
+      "g01_ch01",
+      "g03_ch01",
+      "g04_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "lv_01",
+      "sectionName": "Toán tìm số (Tìm x)",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "lv_001",
+          "name": "Tìm số chưa biết trong phép cộng",
+          "definition": "x + a = b → x = b - a",
+          "examples": [
+            "x + 12 = 35 → x = 35 - 12 = 23"
+          ]
+        },
+        {
+          "id": "lv_002",
+          "name": "Tìm số chưa biết trong phép nhân",
+          "definition": "x × a = b → x = b ÷ a",
+          "examples": [
+            "x × 7 = 56 → x = 56 ÷ 7 = 8"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lv_prob_001",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Tìm x: x + 25 = 61",
+          "options": [
+            "A) 36",
+            "B) 86",
+            "C) 46",
+            "D) 35"
+          ],
+          "correctAnswer": "A",
+          "solution": "x = 61 - 25 = 36. Kiểm tra: 36 + 25 = 61 ✓",
+          "points": 5
+        },
+        {
+          "problemId": "lv_prob_002",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "Tìm x: x × 8 = 72",
+          "options": [
+            "A) 8",
+            "B) 9",
+            "C) 7",
+            "D) 64"
+          ],
+          "correctAnswer": "B",
+          "solution": "x = 72 ÷ 8 = 9. Kiểm tra: 9 × 8 = 72 ✓",
+          "points": 5
+        },
+        {
+          "problemId": "lv_prob_003",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Tìm x: 120 ÷ x = 15",
+          "options": [
+            "A) 6",
+            "B) 8",
+            "C) 10",
+            "D) 12"
+          ],
+          "correctAnswer": "B",
+          "solution": "x = 120 ÷ 15 = 8. Kiểm tra: 120 ÷ 8 = 15 ✓",
+          "points": 10
+        },
+        {
+          "problemId": "lv_prob_004",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm x: x × 4 + 15 = 63",
+          "options": [
+            "A) 10",
+            "B) 12",
+            "C) 8",
+            "D) 16"
+          ],
+          "correctAnswer": "B",
+          "solution": "x × 4 = 63 - 15 = 48. x = 48 ÷ 4 = 12",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "lv_02",
+      "sectionName": "Bài toán về tỉ số & tỉ lệ",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "lv_003",
+          "name": "Bài toán tìm hai số khi biết tổng và hiệu",
+          "definition": "Số lớn = (Tổng + Hiệu) ÷ 2. Số bé = Tổng - Số lớn",
+          "examples": [
+            "Tổng 2 số = 50, hiệu = 10 → Số lớn = (50+10)÷2 = 30, Số bé = 20"
+          ]
+        },
+        {
+          "id": "lv_004",
+          "name": "Bài toán tìm hai số khi biết tổng và tỉ số",
+          "definition": "Nếu a/b = m/n thì a = Tổng × m/(m+n)",
+          "examples": [
+            "Tổng 2 số = 35, tỉ số 2:5 → Số thứ nhất = 35 × 2/7 = 10"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lv_prob_005",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Tổng 2 số là 80, hiệu 2 số là 20. Tìm số lớn:",
+          "options": [
+            "A) 40",
+            "B) 50",
+            "C) 60",
+            "D) 30"
+          ],
+          "correctAnswer": "B",
+          "solution": "Số lớn = (80 + 20) ÷ 2 = 100 ÷ 2 = 50",
+          "points": 5
+        },
+        {
+          "problemId": "lv_prob_006",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Hai lớp có tổng cộng 72 học sinh. Lớp 5A nhiều hơn lớp 5B là 8 học sinh. Hỏi mỗi lớp có bao nhiêu học sinh?",
+          "options": [
+            "A) 5A: 40, 5B: 32",
+            "B) 5A: 38, 5B: 34",
+            "C) 5A: 44, 5B: 28",
+            "D) 5A: 36, 5B: 36"
+          ],
+          "correctAnswer": "A",
+          "solution": "Lớp 5A (lớn) = (72+8)÷2 = 40. Lớp 5B = 72 - 40 = 32",
+          "points": 10
+        },
+        {
+          "problemId": "lv_prob_007",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Chia 45 viên bi cho 2 bạn theo tỉ lệ 2:3. Bạn nhận nhiều hơn có bao nhiêu viên?",
+          "options": [
+            "A) 18",
+            "B) 27",
+            "C) 20",
+            "D) 25"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tổng tỉ lệ = 2+3=5. Bạn nhiều hơn = 45 × 3/5 = 27 viên bi",
+          "points": 10
+        },
+        {
+          "problemId": "lv_prob_008",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Tuổi mẹ và tuổi con cộng lại được 48 tuổi. Tuổi mẹ gấp 3 lần tuổi con. Tuổi con là:",
+          "options": [
+            "A) 10",
+            "B) 12",
+            "C) 14",
+            "D) 16"
+          ],
+          "correctAnswer": "B",
+          "solution": "Gọi tuổi con = x → tuổi mẹ = 3x. x + 3x = 48 → 4x = 48 → x = 12",
+          "points": 15
+        },
+        {
+          "problemId": "lv_prob_009",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Ba bạn có tổng cộng 120 viên kẹo. Bạn A có số kẹo gấp đôi bạn B, bạn C có 30 viên. Hỏi bạn A có bao nhiêu viên?",
+          "options": [
+            "A) 50",
+            "B) 60",
+            "C) 45",
+            "D) 40"
+          ],
+          "correctAnswer": "B",
+          "solution": "A + B + 30 = 120 → A + B = 90. A = 2B → 2B + B = 90 → 3B = 90 → B = 30 → A = 60",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "lv_03",
+      "sectionName": "Bài toán thực tế (Vận tốc, Năng suất)",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "lv_005",
+          "name": "Bài toán chuyển động đều",
+          "definition": "Vận tốc = Quãng đường ÷ Thời gian. S = v × t",
+          "examples": [
+            "Đi 60km trong 2 giờ → v = 60÷2 = 30km/h"
+          ]
+        },
+        {
+          "id": "lv_006",
+          "name": "Bài toán năng suất",
+          "definition": "Năng suất = Công việc ÷ Thời gian",
+          "examples": [
+            "Làm 120 sản phẩm trong 3 ngày → Năng suất = 40 sp/ngày"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "lv_prob_010",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Ô tô đi 150km trong 3 giờ. Vận tốc ô tô là:",
+          "options": [
+            "A) 50km/h",
+            "B) 45km/h",
+            "C) 60km/h",
+            "D) 30km/h"
+          ],
+          "correctAnswer": "A",
+          "solution": "v = S ÷ t = 150 ÷ 3 = 50km/h",
+          "points": 5
+        },
+        {
+          "problemId": "lv_prob_011",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Xe máy đi với vận tốc 40km/h trong 2 giờ 30 phút. Quãng đường đi được là:",
+          "options": [
+            "A) 80km",
+            "B) 100km",
+            "C) 90km",
+            "D) 120km"
+          ],
+          "correctAnswer": "B",
+          "solution": "2 giờ 30 phút = 2,5 giờ. S = 40 × 2,5 = 100km",
+          "points": 10
+        },
+        {
+          "problemId": "lv_prob_012",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Hai thành phố cách nhau 300km. Ô tô đi với vận tốc 60km/h. Hỏi ô tô đi mất bao lâu?",
+          "options": [
+            "A) 4 giờ",
+            "B) 5 giờ",
+            "C) 6 giờ",
+            "D) 3 giờ"
+          ],
+          "correctAnswer": "B",
+          "solution": "t = S ÷ v = 300 ÷ 60 = 5 giờ",
+          "points": 10
+        },
+        {
+          "problemId": "lv_prob_013",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Hai ô tô xuất phát cùng lúc từ A và B cách nhau 200km, đi ngược chiều nhau. Xe từ A đi 50km/h, xe từ B đi 30km/h. Sau bao lâu 2 xe gặp nhau?",
+          "options": [
+            "A) 2 giờ",
+            "B) 2,5 giờ",
+            "C) 3 giờ",
+            "D) 4 giờ"
+          ],
+          "correctAnswer": "B",
+          "solution": "Vận tốc tiến lại gần = 50 + 30 = 80km/h. t = 200 ÷ 80 = 2,5 giờ",
+          "points": 15
+        },
+        {
+          "problemId": "lv_prob_014",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Một xưởng may 3 ngày may được 150 áo. Hỏi 5 ngày may được bao nhiêu áo?",
+          "options": [
+            "A) 200",
+            "B) 225",
+            "C) 250",
+            "D) 300"
+          ],
+          "correctAnswer": "C",
+          "solution": "Năng suất = 150 ÷ 3 = 50 áo/ngày. Trong 5 ngày: 50 × 5 = 250 áo",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "Nhầm tổng-hiệu: Số lớn = (Tổng - Hiệu) ÷ 2",
+      "correction": "Số LỚN = (Tổng + Hiệu) ÷ 2. Số BÉ = (Tổng - Hiệu) ÷ 2"
+    },
+    {
+      "mistake": "Quên đổi đơn vị thời gian: 2 giờ 30 phút = 2,30 giờ",
+      "correction": "2 giờ 30 phút = 2,5 giờ (30 phút = 30/60 = 0,5 giờ)"
+    },
+    {
+      "mistake": "Nhầm công thức vận tốc: v = s × t",
+      "correction": "v = s ÷ t (Vận tốc = Quãng đường chia Thời gian)"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "lv_quiz_01",
+      "title": "Kiểm tra: Giải toán có lời văn",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "lv_prob_001"
+        },
+        {
+          "ref": "lv_prob_005"
+        },
+        {
+          "ref": "lv_prob_007"
+        },
+        {
+          "ref": "lv_prob_010"
+        },
+        {
+          "ref": "lv_prob_012"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

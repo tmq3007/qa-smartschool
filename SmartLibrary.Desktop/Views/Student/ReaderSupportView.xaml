@@ -1,0 +1,122 @@
+<UserControl x:Class="SmartLibrary.Desktop.Views.Student.ReaderSupportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:shared="clr-namespace:SmartLibrary.Desktop.Views.Shared"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000">
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <shared:TopBarControl Title="📞 Hỗ trợ độc giả và dịch vụ thư viện" ActionButtonText=""/>
+
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CỘT TRÁI: THÔNG TIN LIÊN HỆ & HOTLINE -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Text="📞 THÔNG TIN HỖ TRỢ TRỰC TUYẾN" Style="{StaticResource CardTitleText}" Foreground="{StaticResource PrimaryBrush}"/>
+                    
+                    <Border Background="{DynamicResource HoverBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="☎️ Đường dây nóng (Hotline Kiosk)" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding HotlineText}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="Thời gian trực hotline: 7:30 - 21:00 (Thứ Hai - Thứ Bảy)" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{DynamicResource HoverBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="📧 Hộp thư điện tử (Email)" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding EmailText}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="Phản hồi trong vòng 4 giờ làm việc của thủ thư." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{DynamicResource HoverBackgroundBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="🏫 Văn phòng Thư viện QA Smart School" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding OfficeLocation}" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="Giờ mở cửa đón tiếp trực tiếp:" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding MorningHours, StringFormat='• {0}'}" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" Margin="8,2,0,0"/>
+                            <TextBlock Text="{Binding AfternoonHours, StringFormat='• {0}'}" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" Margin="8,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="💡 Nếu gặp sự cố với Kiosk hoặc thiết bị RFID, độc giả vui lòng bấm nút báo sự cố trực tiếp trên màn hình Kiosk hoặc liên hệ ngay với Thủ thư trực ca." 
+                               FontSize="12" Foreground="{StaticResource WarningTextBrush}" TextWrapping="Wrap" Margin="4,8,4,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- CỘT PHẢI: HƯỚNG DẪN DÙNG THẺ & CÔNG NGHỆ -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Text="💳 Hướng dẫn liên kết và dùng thẻ thư viện" Style="{StaticResource CardTitleText}" Foreground="{StaticResource SuccessTextBrush}"/>
+                    
+                    <TextBlock Text="Hệ thống Thư viện thông minh hỗ trợ 3 hình thức nhận diện độc giả:" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                     <!-- Hình thức 1: Thẻ cứng RFID -->
+                    <Border Background="{DynamicResource SuccessBgBrush}" CornerRadius="12" Padding="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="💳" FontSize="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="1. Thẻ học sinh thông minh (RFID)" FontWeight="Bold" FontSize="13" Foreground="{StaticResource SuccessTextBrush}"/>
+                                <TextBlock Text="Đặt trực tiếp thẻ lên khay đọc thẻ RFID tại Kiosk tự phục vụ để đăng nhập hoặc mượn trả nhanh." FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                     <!-- Hình thức 2: Thẻ ảo NFC -->
+                    <Border Background="{DynamicResource SelectedBackgroundBrush}" CornerRadius="12" Padding="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="📱" FontSize="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="2. Thẻ ảo NFC trên điện thoại di động" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource PrimaryBrush}"/>
+                                <TextBlock Text="Sử dụng ứng dụng QA Smart School trên smartphone, chạm điện thoại vào cảm biến NFC của Kiosk." FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                     <!-- Hình thức 3: Mã vạch / QR Code -->
+                    <Border Background="{DynamicResource WarningBgBrush}" CornerRadius="12" Padding="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="📷" FontSize="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="3. Mã QR định danh độc giả" FontWeight="Bold" FontSize="13" Foreground="{StaticResource WarningTextBrush}"/>
+                                <TextBlock Text="Đưa mã QR định danh học sinh trên màn hình điện thoại hoặc thẻ in giấy trước camera quét QR tại Kiosk." FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                     <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="8" Padding="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="🛠️ Yêu cầu cấp mới / Kích hoạt lại thẻ:" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Nếu làm mất thẻ cứng hoặc không kết nối được thẻ với tài khoản, học sinh vui lòng đến phòng Thiết bị công nghệ (Phòng 104) để được hướng dẫn nạp lại mã RFID miễn phí." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,149 @@
+{
+  "metadata": {
+    "chapterId": "g10_ch03",
+    "chapterName": "Bài 3: Bình Ngô Đại Cáo — Nguyễn Trãi",
+    "grade": 10,
+    "totalProblems": 6,
+    "totalSections": 2,
+    "estimatedHours": 4,
+    "thptWeight": "Tác phẩm trọng tâm lớp 10 — Tuyên ngôn độc lập thứ 2"
+  },
+  "sections": [
+    {
+      "sectionId": "s_g10_ch2_0",
+      "sectionName": "Bình Ngô Đại Cáo (Phần 1) — Nguyên lý nhân nghĩa",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-10-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g10_Bình_Ngô_Đại_Cáo_(Phần_1).mp3",
+      "concepts": [
+        {
+          "name": "Tác Giả & Tác Phẩm",
+          "theorem": "Nguyễn Trãi (1380–1442). 'Bình Ngô đại cáo' (1428) được xem là bản Tuyên ngôn độc lập thứ 2 của dân tộc Việt Nam (sau 'Nam quốc sơn hà'). Tác phẩm tổng kết cuộc kháng chiến chống Minh mười năm gian khổ và tuyên bố hòa bình."
+        },
+        {
+          "name": "Nguyên lý nhân nghĩa",
+          "definition": "Từng nghe:\nViệc nhân nghĩa cốt ở yên dân,\nQuân điếu phạt trước lo trừ bạo.\nNhư nước Đại Việt ta từ trước,\nVốn xưng nền văn hiến đã lâu,\nNúi sông bờ cõi đã chia,\nPhong tục Bắc Nam cũng khác.\nTừ Triệu, Đinh, Lý, Trần bao đời gây nền độc lập,\nCùng Hán, Đường, Tống, Nguyên mỗi bên xưng đế một phương."
+        },
+        {
+          "name": "Phân tích nghệ thuật & tư tưởng",
+          "examples": [
+            "**Cốt ở yên dân**: Chân lý của Nguyễn Trãi. Nhân nghĩa không phải là lòng thương người chung chung của Nho giáo, mà là hành động thực tiễn: mang lại cuộc sống yên bình cho nhân dân.",
+            "**Trừ bạo**: Kẻ thù của nhân nghĩa là giặc bạo tàn (giặc Minh). Đánh giặc cứu nước chính là thực hành nhân nghĩa lớn nhất.",
+            "**Văn hiến, phong tục, lịch sử, đế vương**: 5 yếu tố cốt lõi khẳng định nền độc lập, chủ quyền. Đại Việt có đủ mọi điều kiện để sánh ngang hàng ('xưng đế') với phương Bắc."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Tư tưởng 'nhân nghĩa' trong 'Bình Ngô đại cáo' của Nguyễn Trãi mang nội dung cốt lõi là gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Yên dân và trừ bạo — bảo vệ cuộc sống bình yên cho nhân dân bằng cách đánh đuổi giặc ngoại xâm",
+            "Lòng thương người, vị tha đối với tất cả mọi người theo quan điểm Phật giáo",
+            "Mối quan hệ vua - tôi, cha - con theo chuẩn mực Nho giáo",
+            "Kêu gọi sự đoàn kết giữa các dân tộc để cùng nhau chống lại thiên tai"
+          ],
+          "answer": "Yên dân và trừ bạo — bảo vệ cuộc sống bình yên cho nhân dân bằng cách đánh đuổi giặc ngoại xâm",
+          "hints": ["Đọc câu 'Việc nhân nghĩa cốt ở yên dân / Quân điếu phạt trước lo trừ bạo'."],
+          "explanation": "Nguyễn Trãi đã nâng tầm tư tưởng nhân nghĩa của Nho giáo thành tư tưởng yêu nước thương dân. Nhân nghĩa đối với ông là những hành động cụ thể: diệt trừ giặc bạo tàn (trừ bạo) để mang lại cuộc sống ấm no, hòa bình cho nhân dân (yên dân)."
+        },
+        {
+          "id": "p2",
+          "question": "So với 'Nam quốc sơn hà', Nguyễn Trãi đã bổ sung thêm những yếu tố nào để khẳng định độc lập chủ quyền của Đại Việt?",
+          "difficulty": "Hard",
+          "options": [
+            "Nền văn hiến lâu đời, phong tục tập quán riêng và các triều đại lịch sử ngang hàng với phương Bắc",
+            "Giới hạn lãnh thổ rạch ròi tại các con sông lớn",
+            "Sức mạnh quân sự vô địch có thể đánh bại mọi kẻ thù",
+            "Sự bảo hộ của các vị thần linh sông núi"
+          ],
+          "answer": "Nền văn hiến lâu đời, phong tục tập quán riêng và các triều đại lịch sử ngang hàng với phương Bắc",
+          "hints": ["'Nam quốc sơn hà' chỉ nói về 'Đế Nam cư' và 'Tiệt nhiên định phận tại thiên thư'. Cáo Bình Ngô nói thêm về 'văn hiến', 'phong tục', 'Triệu, Đinh, Lý, Trần'."],
+          "explanation": "Trong 'Nam quốc sơn hà' (Lý Thường Kiệt), độc lập chủ yếu dựa vào lãnh thổ (sơn hà) và sách trời (thiên thư). Đến Nguyễn Trãi, ông phát triển toàn diện hơn: một quốc gia độc lập phải có Văn hiến (văn hóa), Phong tục, và Lịch sử các triều đại ngang hàng (xưng đế) với kẻ thù. Đây là một bước tiến vĩ đại trong nhận thức về dân tộc."
+        },
+        {
+          "id": "p3",
+          "question": "Việc sử dụng các từ ngữ 'từ trước', 'đã lâu', 'đã chia', 'cũng khác', 'bao đời' có tác dụng gì?",
+          "difficulty": "Medium",
+          "options": [
+            "Khẳng định sự tồn tại hiển nhiên, vững chắc, lâu đời của một quốc gia Đại Việt độc lập",
+            "Tạo nhịp điệu dồn dập cho bài Cáo để kích thích tinh thần chiến đấu",
+            "Thể hiện sự hoài niệm về một quá khứ huy hoàng đã mất",
+            "Cho thấy sự yếu kém của Đại Việt vì chỉ biết dựa vào quá khứ"
+          ],
+          "answer": "Khẳng định sự tồn tại hiển nhiên, vững chắc, lâu đời của một quốc gia Đại Việt độc lập",
+          "hints": ["Các từ này đều mang ý nghĩa chỉ thời gian dài và sự thật không thể chối cãi."],
+          "explanation": "Các trạng từ chỉ thời gian và sự xác định ('từ trước', 'vốn', 'đã lâu', 'đã chia') là những lập luận đanh thép, khẳng định tư cách độc lập của Đại Việt là một chân lý hiển nhiên, một thực tại khách quan có từ ngàn xưa, không ai có quyền phủ nhận."
+        }
+      ]
+    },
+    {
+      "sectionId": "s_g10_ch2_1",
+      "sectionName": "Bình Ngô Đại Cáo (Phần 2) — Tố cáo tội ác giặc Minh",
+      "sgkUrl": "https://www.hoc10.vn/doc-sach/ngu-van-10-1/1/1/4/",
+      "audioUrl": "https://api.qasmartclass.vn/audio/g10_Bình_Ngô_Đại_Cáo_(Phần_2).mp3",
+      "concepts": [
+        {
+          "name": "Tội ác man rợ",
+          "definition": "Nướng dân đen trên ngọn lửa hung tàn,\nVùi con đỏ xuống dưới hầm tai vạ.\nDối trời lừa dân đủ muôn ngàn kế,\nGây binh kết oán trải hai mươi năm.\nBại nhân nghĩa nát cả đất trời,\nNặng thuế khóa sạch không đầm núi."
+        },
+        {
+          "name": "Nỗi đau của nhân dân",
+          "definition": "Người bị ép xuống biển dòng lưng mạn cá, ngán thay cá mập thuồng luồng.\nKẻ bị đem vào núi đãi cát tìm vàng, khốn nỗi rừng sâu nước độc.\n... Độc ác thay, trúc Nam Sơn không ghi hết tội,\nDơ bẩn thay, nước Đông Hải không rửa sạch mùi."
+        },
+        {
+          "name": "Nghệ thuật tố cáo",
+          "examples": [
+            "**Dân đen, con đỏ**: Hình ảnh ẩn dụ chỉ người dân vô tội, yếu ớt bị chà đạp tàn nhẫn.",
+            "**Nướng / Vùi**: Động từ mạnh, tố cáo hành động hủy diệt man rợ của giặc Minh (như loài dã thú).",
+            "**Trúc Nam Sơn / Nước Đông Hải**: Lấy cái vô hạn của tự nhiên (rừng Nam Sơn, biển Đông Hải) để đo lường cái vô hạn của tội ác và sự dơ bẩn của giặc."
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "id": "p1",
+          "question": "Hình ảnh 'Nướng dân đen trên ngọn lửa hung tàn / Vùi con đỏ xuống dưới hầm tai vạ' phản ánh điều gì?",
+          "difficulty": "Easy",
+          "options": [
+            "Sự tàn ác, vô nhân đạo đến mức man rợ của giặc Minh đối với nhân dân Đại Việt vô tội",
+            "Các phương pháp xử phạt tội phạm của triều đại nhà Minh",
+            "Những tai nạn tự nhiên thường xuyên xảy ra do hỏa hoạn và sạt lở đất",
+            "Việc giặc Minh bắt dân ta phải nấu ăn và đào hầm cho chúng"
+          ],
+          "answer": "Sự tàn ác, vô nhân đạo đến mức man rợ của giặc Minh đối với nhân dân Đại Việt vô tội",
+          "hints": ["'Dân đen', 'con đỏ' là ai? Động từ 'nướng', 'vùi' thể hiện mức độ tàn bạo như thế nào?"],
+          "explanation": "'Dân đen', 'con đỏ' là những người dân đen đúa lầm than, những đứa trẻ vô tội đỏ hỏn. Kẻ thù đã dùng những cách giết người man rợ nhất ('nướng', 'vùi') để hủy diệt dân tộc ta. Đây là bản án đanh thép tố cáo tội ác trời không dung, đất không tha của kẻ xâm lược."
+        },
+        {
+          "id": "p2",
+          "question": "Câu văn 'Độc ác thay, trúc Nam Sơn không ghi hết tội / Dơ bẩn thay, nước Đông Hải không rửa sạch mùi' sử dụng biện pháp nghệ thuật gì và có ý nghĩa ra sao?",
+          "difficulty": "Medium",
+          "options": [
+            "Phóng đại (nói quá) kết hợp với điển cố — mượn cái vô cùng của thiên nhiên để khẳng định tội ác của giặc là tột đỉnh, không thể đo đếm và không bao giờ gột rửa được",
+            "Nhân hóa rừng trúc và nước biển biết ghi chép và rửa trôi tội ác",
+            "So sánh ngang bằng tội ác của giặc với rừng núi và biển cả",
+            "Liệt kê các danh lam thắng cảnh bị giặc Minh phá hoại"
+          ],
+          "answer": "Phóng đại (nói quá) kết hợp với điển cố — mượn cái vô cùng của thiên nhiên để khẳng định tội ác của giặc là tột đỉnh, không thể đo đếm và không bao giờ gột rửa được",
+          "hints": ["Có bao nhiêu cây trúc trên núi Nam Sơn? Có bao nhiêu nước ở biển Đông? Giặc làm gì mà đến thiên nhiên cũng không chứa hết?"],
+          "explanation": "Nguyễn Trãi mượn hai hình tượng vô cực của không gian (rừng trúc Nam Sơn, nước biển Đông Hải) để đo lường giới hạn tội ác. Tội của giặc nhiều đến mức chặt hết trúc làm thẻ tre cũng không ghi hết, bẩn đến mức dùng toàn bộ nước biển cũng không rửa sạch. Đó là sự phẫn nộ tột cùng của cả một dân tộc."
+        },
+        {
+          "id": "p3",
+          "question": "Việc Nguyễn Trãi lên án giặc Minh 'Bại nhân nghĩa nát cả đất trời' có sự liên hệ như thế nào với đoạn mở đầu bài Cáo?",
+          "difficulty": "Hard",
+          "options": [
+            "Lật tẩy sự giả dối của giặc Minh: chúng mượn cớ 'phù Trần diệt Hồ' (nhân nghĩa) để xâm lược, nhưng thực chất là làm những điều phi nhân nghĩa tàn bạo nhất",
+            "Khẳng định giặc Minh đã làm thay đổi thời tiết, khí hậu của đất trời Đại Việt",
+            "Thừa nhận rằng quân Minh mạnh đến mức có thể phá nát cả bầu trời",
+            "Kêu gọi nhân dân bỏ khái niệm nhân nghĩa vì nó đã bị phá nát"
+          ],
+          "answer": "Lật tẩy sự giả dối của giặc Minh: chúng mượn cớ 'phù Trần diệt Hồ' (nhân nghĩa) để xâm lược, nhưng thực chất là làm những điều phi nhân nghĩa tàn bạo nhất",
+          "hints": ["Đoạn đầu ta đề cao Nhân Nghĩa. Đoạn này chỉ ra kẻ thù làm 'Bại' nhân nghĩa. Vậy kẻ thù là phe nào?"],
+          "explanation": "Giặc Minh mượn cớ sang giúp nhà Trần đánh nhà Hồ để tỏ ra mình là đội quân 'điếu phạt' (nhân nghĩa). Nguyễn Trãi đã xé toạc mặt nạ đó: chúng cướp nước, giết người, vơ vét tài sản — đó là tận cùng của sự 'Bại nhân nghĩa'. Cuộc chiến của ta chống lại chúng mới thực sự là cuộc chiến vì Nhân Nghĩa."
+        }
+      ]
+    }
+  ]
+}

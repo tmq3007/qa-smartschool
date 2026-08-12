@@ -1,0 +1,72 @@
+﻿<Page x:Class="QASmartClass.HRModule.Views.LeaveRequestView"
+
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+      Title="Quản lý Nghỉ phép" Background="#F0F2F5" FontFamily="Segoe UI">
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto"/>
+
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <DockPanel Margin="0,0,0,20">
+
+            <TextBlock Text="📅 Đơn xin Nghỉ phép" FontSize="24" FontWeight="Bold" Foreground="#1E293B"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+                <Button x:Name="BtnApprove" Content="✔️ Duyệt" Background="#10B981" Foreground="White" Padding="15,8" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="BtnApprove_Click"/>
+
+                <Button x:Name="BtnReject" Content="❌ Từ chối" Background="#EF4444" Foreground="White" Padding="15,8" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="BtnReject_Click"/>
+
+                <Button x:Name="BtnRefresh" Content="🔄 Làm mới" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Padding="15,8" Cursor="Hand" Click="BtnRefresh_Click"/>
+
+            </StackPanel>
+
+        </DockPanel>
+
+
+
+        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="20">
+
+            <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.05"/></Border.Effect>
+
+            <DataGrid x:Name="DgLeaves" AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="1" BorderBrush="#E2E8F0" Background="White" HeadersVisibility="Column" RowHeight="40">
+
+                <DataGrid.Columns>
+
+                    <DataGridTextColumn Header="Mã NV" Binding="{Binding StaffId}" Width="100"/>
+
+                    <DataGridTextColumn Header="Họ và Tên" Binding="{Binding StaffName}" Width="2*"/>
+
+                    <DataGridTextColumn Header="Loại Nghỉ" Binding="{Binding LeaveType}" Width="1.5*"/>
+
+                    <DataGridTextColumn Header="Từ ngày" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" Width="120"/>
+
+                    <DataGridTextColumn Header="Đến ngày" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" Width="120"/>
+
+                    <DataGridTextColumn Header="Lý do" Binding="{Binding Reason}" Width="3*"/>
+
+                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="120"/>
+
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+        </Border>
+
+    </Grid>
+
+</Page>
+
+
+

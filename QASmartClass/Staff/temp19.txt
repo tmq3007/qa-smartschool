@@ -1,0 +1,11 @@
+            <!-- Content + Toast Overlay -->
+            <Grid Grid.Row="1">
+                <Frame x:Name="contentFrame" NavigationUIVisibility="Hidden"/>
+                <!-- Toast Notification Panel -->
+                <StackPanel x:Name="stuToastPanel" HorizontalAlignment="Right" VerticalAlignment="Top"
+                            Margin="0,12,20,0" Width="360"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
+

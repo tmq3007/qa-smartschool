@@ -1,0 +1,364 @@
+{
+  "metadata": {
+    "chapterId": "g04_ch03",
+    "chapterName": "Biểu Đồ & Thống Kê Cơ Bản",
+    "grade": 4,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 15,
+    "toolMapping": [
+      "StatisticsTool"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 10,
+    "prerequisites": []
+  },
+  "sections": [
+    {
+      "sectionId": "tk4_01",
+      "sectionName": "Biểu đồ cột & biểu đồ tranh",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "tk4_001",
+          "name": "Biểu đồ cột",
+          "definition": "Cột cao hơn = giá trị lớn hơn",
+          "examples": [
+            "Điểm kiểm tra lớp: cột cao nhất = điểm nhiều HS nhất"
+          ]
+        },
+        {
+          "id": "tk4_002",
+          "name": "Biểu đồ tranh",
+          "definition": "Dùng hình ảnh đại diện số lượng",
+          "examples": [
+            "🍎 = 5 quả. 🍎🍎🍎 = 15 quả"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tk4_p01",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Biểu đồ cột: Toán=8, Văn=6, Anh=9. Môn nào điểm cao nhất?",
+          "options": [
+            "A) Toán",
+            "B) Văn",
+            "C) Anh",
+            "D) Bằng nhau"
+          ],
+          "correctAnswer": "C",
+          "solution": "9 > 8 > 6 → Anh cao nhất",
+          "points": 5
+        },
+        {
+          "problemId": "tk4_p02",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Biểu đồ: T2=12, T3=8, T4=15, T5=10, T6=5. Trung bình mỗi ngày = ?",
+          "options": [
+            "A) 8",
+            "B) 10",
+            "C) 12",
+            "D) 15"
+          ],
+          "correctAnswer": "B",
+          "solution": "TB = (12+8+15+10+5)/5 = 50/5 = 10",
+          "points": 10
+        },
+        {
+          "problemId": "tk4_p03",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "🍎=5 quả. Hình: 🍎🍎🍎🍎 cho An, 🍎🍎🍎 cho Bình. An nhiều hơn Bình bao nhiêu?",
+          "options": [
+            "A) 1 quả",
+            "B) 5 quả",
+            "C) 10 quả",
+            "D) 15 quả"
+          ],
+          "correctAnswer": "B",
+          "solution": "An: 4×5=20. Bình: 3×5=15. Chênh: 20-15=5 quả",
+          "points": 15
+        },
+        {
+          "problemId": "tk4_p04",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Dùng biểu đồ gì để so sánh doanh thu 4 quý?",
+          "options": [
+            "A) Biểu đồ tròn",
+            "B) Biểu đồ cột",
+            "C) Biểu đồ đường",
+            "D) Biểu đồ tranh"
+          ],
+          "correctAnswer": "B",
+          "solution": "Biểu đồ cột dùng để so sánh giá trị giữa các nhóm",
+          "points": 5
+        },
+        {
+          "problemId": "tk4_p05",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Biểu đồ cột hiển thị: Lớp 4A=35 HS, 4B=38 HS, 4C=32 HS. Tổng HS khối 4 = ?",
+          "options": [
+            "A) 100",
+            "B) 105",
+            "C) 110",
+            "D) 95"
+          ],
+          "correctAnswer": "B",
+          "solution": "35 + 38 + 32 = 105 HS",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "tk4_02",
+      "sectionName": "Trung bình cộng",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "tk4_003",
+          "name": "Trung bình cộng",
+          "definition": "TBC = Tổng các số ÷ Số lượng",
+          "examples": [
+            "TBC(4,6,8) = 18÷3 = 6"
+          ]
+        },
+        {
+          "id": "tk4_004",
+          "name": "Tìm số khi biết TBC",
+          "definition": "Tổng = TBC × Số lượng",
+          "examples": [
+            "TBC 3 số = 7 → Tổng = 21"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tk4_p06",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "TBC của 5, 8, 11 = ?",
+          "options": [
+            "A) 6",
+            "B) 7",
+            "C) 8",
+            "D) 9"
+          ],
+          "correctAnswer": "C",
+          "solution": "TBC = (5+8+11)/3 = 24/3 = 8",
+          "points": 5
+        },
+        {
+          "problemId": "tk4_p07",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Điểm 4 bài kiểm tra: 7, 8, 6, 9. Điểm trung bình = ?",
+          "options": [
+            "A) 7",
+            "B) 7,5",
+            "C) 8",
+            "D) 8,5"
+          ],
+          "correctAnswer": "B",
+          "solution": "TBC = (7+8+6+9)/4 = 30/4 = 7,5",
+          "points": 10
+        },
+        {
+          "problemId": "tk4_p08",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "TBC 5 số là 12. Bỏ 1 số = 8, TBC 4 số còn lại = ?",
+          "options": [
+            "A) 12",
+            "B) 13",
+            "C) 14",
+            "D) 11"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tổng 5 số = 12×5 = 60. Bỏ 8: tổng 4 số = 52. TBC = 52/4 = 13",
+          "points": 15
+        },
+        {
+          "problemId": "tk4_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "TBC 3 số là 15. Biết 2 số là 12 và 18. Số thứ 3 = ?",
+          "options": [
+            "A) 13",
+            "B) 14",
+            "C) 15",
+            "D) 16"
+          ],
+          "correctAnswer": "C",
+          "solution": "Tổng = 15×3 = 45. Số 3 = 45-12-18 = 15",
+          "points": 10
+        },
+        {
+          "problemId": "tk4_p10",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "An: 8đ, Bình: 7đ, Châu: ?. TBC 3 bạn = 8. Châu được mấy điểm?",
+          "options": [
+            "A) 8",
+            "B) 9",
+            "C) 10",
+            "D) 7"
+          ],
+          "correctAnswer": "B",
+          "solution": "Tổng = 8×3 = 24. Châu = 24-8-7 = 9 điểm",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "tk4_03",
+      "sectionName": "Biểu đồ tròn (đọc)",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "tk4_005",
+          "name": "Biểu đồ tròn",
+          "definition": "Hình tròn chia thành phần, mỗi phần = tỉ lệ %",
+          "examples": [
+            "Toán 40%, Văn 30%, Anh 30% = 100%"
+          ]
+        },
+        {
+          "id": "tk4_006",
+          "name": "Đọc biểu đồ tròn",
+          "definition": "Phần lớn hơn = chiếm nhiều hơn",
+          "examples": [
+            "Nếu Toán chiếm 1/2 hình tròn → 50%"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "tk4_p11",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Biểu đồ tròn: phần A chiếm 1/4. A = bao nhiêu %?",
+          "options": [
+            "A) 20%",
+            "B) 25%",
+            "C) 30%",
+            "D) 50%"
+          ],
+          "correctAnswer": "B",
+          "solution": "1/4 = 25%",
+          "points": 5
+        },
+        {
+          "problemId": "tk4_p12",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Lớp 40 HS. Biểu đồ tròn: Giỏi 30%, Khá 45%, TB 25%. Số HS giỏi = ?",
+          "options": [
+            "A) 10",
+            "B) 12",
+            "C) 15",
+            "D) 18"
+          ],
+          "correctAnswer": "B",
+          "solution": "30% × 40 = 12 HS",
+          "points": 10
+        },
+        {
+          "problemId": "tk4_p13",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "Biểu đồ tròn 360°. Phần A = 90°. A chiếm bao nhiêu %?",
+          "options": [
+            "A) 20%",
+            "B) 25%",
+            "C) 30%",
+            "D) 40%"
+          ],
+          "correctAnswer": "B",
+          "solution": "90/360 = 1/4 = 25%",
+          "points": 10
+        },
+        {
+          "problemId": "tk4_p14",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Doanh thu: Q1=20%, Q2=30%, Q3=35%, Q4=?%. Tổng DT = 200 tỷ. Q4 = ? tỷ",
+          "options": [
+            "A) 20 tỷ",
+            "B) 25 tỷ",
+            "C) 30 tỷ",
+            "D) 35 tỷ"
+          ],
+          "correctAnswer": "C",
+          "solution": "Q4 = 100-20-30-35 = 15%. 15% × 200 = 30 tỷ",
+          "points": 15
+        },
+        {
+          "problemId": "tk4_p15",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "Nước chiếm 70% bề mặt Trái Đất. Đất chiếm bao nhiêu %?",
+          "options": [
+            "A) 20%",
+            "B) 25%",
+            "C) 30%",
+            "D) 35%"
+          ],
+          "correctAnswer": "C",
+          "solution": "100% - 70% = 30% là đất liền",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "TBC = (a+b)/2 cho mọi trường hợp",
+      "correction": "TBC = Tổng ÷ SỐ LƯỢNG. Nếu có 4 số thì chia 4, không phải chia 2"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "tk4_quiz_01",
+      "title": "Kiểm tra: Biểu đồ & Thống kê Lớp 4",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "tk4_p01"
+        },
+        {
+          "ref": "tk4_p06"
+        },
+        {
+          "ref": "tk4_p11"
+        },
+        {
+          "ref": "tk4_p08"
+        },
+        {
+          "ref": "tk4_p14"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}

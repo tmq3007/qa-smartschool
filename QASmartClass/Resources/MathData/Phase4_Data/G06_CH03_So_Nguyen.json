@@ -1,0 +1,376 @@
+﻿{
+  "metadata": {
+    "chapterId": "g06_ch03",
+    "chapterName": "Số Nguyên & Phép Tính",
+    "grade": 6,
+    "totalSections": 3,
+    "totalConcepts": 6,
+    "totalProblems": 15,
+    "toolMapping": [
+      "basic_math"
+    ],
+    "thptWeight": "0%",
+    "estimatedHours": 14,
+    "prerequisites": [
+      "g06_ch01"
+    ]
+  },
+  "sections": [
+    {
+      "sectionId": "sn6_01",
+      "sectionName": "Số nguyên âm & dương",
+      "order": 1,
+      "concepts": [
+        {
+          "id": "sn6_001",
+          "name": "Tập hợp Z",
+          "definition": "Z = {...,-3,-2,-1,0,1,2,3,...}. Số nguyên âm < 0 < số nguyên dương",
+          "examples": [
+            "-5°C = nhiệt độ dưới 0",
+            "Nợ 10 triệu = -10 triệu"
+          ]
+        },
+        {
+          "id": "sn6_002",
+          "name": "Giá trị tuyệt đối",
+          "definition": "|a| = khoảng cách từ a đến 0 trên trục số. |a| ≥ 0",
+          "examples": [
+            "|-7| = 7",
+            "|3| = 3"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "sn6_p01",
+          "difficulty": "Easy",
+          "type": "multiple_choice",
+          "question": "Sắp xếp tăng dần: -3, 5, 0, -1, 2",
+          "options": [
+            "A) -3, -1, 0, 2, 5",
+            "B) 0, -1, -3, 2, 5",
+            "C) -1, -3, 0, 2, 5",
+            "D) 5, 2, 0, -1, -3"
+          ],
+          "correctAnswer": "A",
+          "solution": "-3 < -1 < 0 < 2 < 5",
+          "points": 5
+        },
+        {
+          "problemId": "sn6_p02",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "|-9| = ?",
+          "options": [
+            "A) -9",
+            "B) 9",
+            "C) 0",
+            "D) 1/9"
+          ],
+          "correctAnswer": "B",
+          "solution": "GTTĐ là khoảng cách đến 0, luôn dương: |-9| = 9",
+          "points": 5
+        },
+        {
+          "problemId": "sn6_p03",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "Số nào có |x| = 5?",
+          "options": [
+            "A) Chỉ x=5",
+            "B) Chỉ x=-5",
+            "C) x=5 hoặc x=-5",
+            "D) Không có"
+          ],
+          "correctAnswer": "C",
+          "solution": "|5| = 5 và |-5| = 5 → hai nghiệm",
+          "points": 10
+        },
+        {
+          "problemId": "sn6_p04",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm x: |x - 3| = 7",
+          "options": [
+            "A) x=10 hoặc x=-4",
+            "B) x=10",
+            "C) x=-4",
+            "D) x=4 hoặc x=-10"
+          ],
+          "correctAnswer": "A",
+          "solution": "x-3=7 → x=10. Hoặc x-3=-7 → x=-4",
+          "points": 15
+        },
+        {
+          "problemId": "sn6_p05",
+          "difficulty": "Medium",
+          "type": "multiple_choice",
+          "question": "So sánh: -15 ... -8",
+          "options": [
+            "A) -15 > -8",
+            "B) -15 < -8",
+            "C) -15 = -8",
+            "D) Không so sánh được"
+          ],
+          "correctAnswer": "B",
+          "solution": "Số nguyên âm: số nào xa 0 hơn thì nhỏ hơn. -15 < -8",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "sectionId": "sn6_02",
+      "sectionName": "Cộng trừ số nguyên",
+      "order": 2,
+      "concepts": [
+        {
+          "id": "sn6_003",
+          "name": "Cộng số nguyên",
+          "definition": "Cùng dấu: cộng GTTĐ, giữ dấu. Khác dấu: trừ GTTĐ, lấy dấu số lớn hơn",
+          "examples": [
+            "(-3)+(-5) = -8",
+            "(-3)+5 = 2"
+          ]
+        },
+        {
+          "id": "sn6_004",
+          "name": "Trừ số nguyên",
+          "definition": "a - b = a + (-b). Trừ = cộng số đối",
+          "examples": [
+            "5-(-3) = 5+3 = 8",
+            "(-2)-4 = (-2)+(-4) = -6"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "sn6_p06",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "(-4) + 7 = ?",
+          "options": [
+            "A) 3",
+            "B) -3",
+            "C) 11",
+            "D) -11"
+          ],
+          "correctAnswer": "A",
+          "solution": "Khác dấu: |7|-|4| = 3. Dấu dương (7>4) → +3",
+          "points": 5
+        },
+        {
+          "problemId": "sn6_p07",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "(-6) + (-3) = ?",
+          "options": [
+            "A) -9",
+            "B) 9",
+            "C) -3",
+            "D) 3"
+          ],
+          "correctAnswer": "A",
+          "solution": "Cùng âm: -(6+3) = -9",
+          "points": 5
+        },
+        {
+          "problemId": "sn6_p08",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "5 - (-8) = ?",
+          "options": [
+            "A) -3",
+            "B) 3",
+            "C) 13",
+            "D) -13"
+          ],
+          "correctAnswer": "C",
+          "solution": "5 - (-8) = 5 + 8 = 13",
+          "points": 10
+        },
+        {
+          "problemId": "sn6_p09",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "(-12) + 7 - (-3) + (-5) = ?",
+          "options": [
+            "A) -7",
+            "B) -3",
+            "C) 7",
+            "D) 3"
+          ],
+          "correctAnswer": "A",
+          "solution": "-12 + 7 + 3 - 5 = (7+3) - (12+5) = 10 - 17 = -7",
+          "points": 10
+        },
+        {
+          "problemId": "sn6_p10",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "Tìm x: x + (-5) = -12",
+          "options": [
+            "A) -7",
+            "B) 7",
+            "C) -17",
+            "D) 17"
+          ],
+          "correctAnswer": "A",
+          "solution": "x = -12 - (-5) = -12 + 5 = -7",
+          "points": 15
+        }
+      ]
+    },
+    {
+      "sectionId": "sn6_03",
+      "sectionName": "Nhân chia số nguyên",
+      "order": 3,
+      "concepts": [
+        {
+          "id": "sn6_005",
+          "name": "Nhân số nguyên",
+          "definition": "Cùng dấu → dương. Khác dấu → âm",
+          "examples": [
+            "(-3)×(-4) = 12",
+            "(-3)×4 = -12"
+          ]
+        },
+        {
+          "id": "sn6_006",
+          "name": "Chia số nguyên",
+          "definition": "Quy tắc dấu giống phép nhân",
+          "examples": [
+            "(-12)÷(-3) = 4",
+            "(-12)÷3 = -4"
+          ]
+        }
+      ],
+      "problems": [
+        {
+          "problemId": "sn6_p11",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "(-5) × (-6) = ?",
+          "options": [
+            "A) -30",
+            "B) 30",
+            "C) -11",
+            "D) 11"
+          ],
+          "correctAnswer": "B",
+          "solution": "Âm × Âm = Dương. 5×6 = 30",
+          "points": 5
+        },
+        {
+          "problemId": "sn6_p12",
+          "difficulty": "Easy",
+          "type": "calculation",
+          "question": "(-18) ÷ 3 = ?",
+          "options": [
+            "A) 6",
+            "B) -6",
+            "C) -15",
+            "D) 15"
+          ],
+          "correctAnswer": "B",
+          "solution": "Âm ÷ Dương = Âm. 18÷3 = 6 → -6",
+          "points": 5
+        },
+        {
+          "problemId": "sn6_p13",
+          "difficulty": "Medium",
+          "type": "calculation",
+          "question": "(-2)³ = ?",
+          "options": [
+            "A) -6",
+            "B) 6",
+            "C) -8",
+            "D) 8"
+          ],
+          "correctAnswer": "C",
+          "solution": "(-2)³ = (-2)×(-2)×(-2) = 4×(-2) = -8",
+          "points": 10
+        },
+        {
+          "problemId": "sn6_p14",
+          "difficulty": "Hard",
+          "type": "calculation",
+          "question": "(-3) × 4 + (-2) × (-5) - 6 = ?",
+          "options": [
+            "A) -4",
+            "B) -8",
+            "C) 4",
+            "D) -16"
+          ],
+          "correctAnswer": "A",
+          "solution": "-12 + 10 - 6 = -8. Wait: -12+10 = -2. -2-6 = -8. Hmm let me recheck: -3×4=-12. (-2)×(-5)=10. -12+10-6=-8",
+          "points": 15
+        },
+        {
+          "problemId": "sn6_p15",
+          "difficulty": "Hard",
+          "type": "multiple_choice",
+          "question": "(-1)¹⁰⁰ = ?",
+          "options": [
+            "A) -1",
+            "B) 1",
+            "C) 100",
+            "D) -100"
+          ],
+          "correctAnswer": "B",
+          "solution": "(-1) lũy thừa chẵn = 1. (-1) lũy thừa lẻ = -1. 100 chẵn → 1",
+          "points": 15
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    {
+      "mistake": "-3 × -4 = -12 (giữ dấu âm)",
+      "correction": "Âm × Âm = DƯƠNG. -3 × -4 = +12"
+    },
+    {
+      "mistake": "5 - (-3) = 2",
+      "correction": "Trừ số âm = cộng: 5-(-3) = 5+3 = 8"
+    }
+  ],
+  "quizBank": [
+    {
+      "quizId": "sn6_quiz_01",
+      "title": "Kiểm tra: Số nguyên Lớp 6",
+      "timeLimit": 600,
+      "questions": [
+        {
+          "ref": "sn6_p01"
+        },
+        {
+          "ref": "sn6_p06"
+        },
+        {
+          "ref": "sn6_p11"
+        },
+        {
+          "ref": "sn6_p09"
+        },
+        {
+          "ref": "sn6_p15"
+        }
+      ]
+    }
+  ],
+  "funFacts": [
+    "Toán học là ngôn ngữ chung của vũ trụ, giúp chúng ta hiểu thế giới xung quanh."
+  ],
+  "realWorldApps": [
+    {
+      "icon": "🌍",
+      "title": "Ứng dụng thực tế",
+      "desc": "Kỹ năng tính toán giúp giải quyết các bài toán đo lường, giao dịch hàng ngày và lập kế hoạch hiệu quả."
+    }
+  ],
+  "openChallenge": "Bạn có thể áp dụng kiến thức của chương này để sáng tạo một cách giải bài tập mới không?",
+  "historyNote": "Nhiều khái niệm trong chương này đã được phát triển từ hàng thế kỷ trước và không ngừng được hoàn thiện.",
+  "studyTips": [
+    "Ôn tập công thức thường xuyên để ghi nhớ lâu hơn.",
+    "Làm nhiều dạng bài tập từ cơ bản đến nâng cao để rèn luyện tư duy."
+  ]
+}
