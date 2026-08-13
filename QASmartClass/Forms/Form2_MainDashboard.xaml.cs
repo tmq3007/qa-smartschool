@@ -1462,22 +1462,33 @@ namespace QASmartTouch.Forms
             _selectionManager?.DeselectAll();
             _selectionManager?.RebuildQuadTree();
             
-            // Reset button backgrounds to default
+            // Reset button backgrounds & icon colors to default
             var defaultBrush = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+            var defaultIconColor = Color.FromRgb(0x2F, 0x35, 0x42); // #2F3542
+            
+            if (_selectedTool != null)
+            {
+                _selectedTool.Background = defaultBrush;
+                UpdateIconColor(_selectedTool, defaultIconColor);
+                _selectedTool = null;
+            }
             
             if (btn1_Pen != null)
             {
                 btn1_Pen.Background = defaultBrush;
+                UpdateIconColor(btn1_Pen, defaultIconColor);
             }
             
             if (btn2_Eraser != null)
             {
                 btn2_Eraser.Background = defaultBrush;
+                UpdateIconColor(btn2_Eraser, defaultIconColor);
             }
             
             if (btn8_Select != null)
             {
                 btn8_Select.Background = defaultBrush;
+                UpdateIconColor(btn8_Select, defaultIconColor);
             }
             
             // Reset cursor to default
@@ -1549,6 +1560,7 @@ namespace QASmartTouch.Forms
             {
                 var defaultBrush = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
                 _activeSubMenuButton.Background = defaultBrush;
+                UpdateIconColor(_activeSubMenuButton, Color.FromRgb(0x2F, 0x35, 0x42));
                 _activeSubMenuButton = null;
             }
             
@@ -1671,6 +1683,7 @@ namespace QASmartTouch.Forms
                 if (button != null)
                 {
                     button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                 }
                 _selectedTool = null;
             };
@@ -1857,6 +1870,7 @@ namespace QASmartTouch.Forms
                 if (button != null)
                 {
                     button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                 }
                 _selectedTool = null;
             };
@@ -2215,6 +2229,7 @@ namespace QASmartTouch.Forms
                 if (button != null)
                 {
                     button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                 }
                 _selectedTool = null;
             };
@@ -2296,6 +2311,7 @@ namespace QASmartTouch.Forms
                 if (button != null)
                 {
                     button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                 }
                 _selectedTool = null;
             };
@@ -2363,6 +2379,7 @@ namespace QASmartTouch.Forms
                 if (button != null)
                 {
                     button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                 }
                 _selectedTool = null;
             };
@@ -3661,6 +3678,7 @@ namespace QASmartTouch.Forms
                 if (button != null)
                 {
                     button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                 }
                 _selectedTool = null;
             };
@@ -3825,6 +3843,7 @@ namespace QASmartTouch.Forms
                 if (button != null)
                 {
                     button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                 }
                 _selectedTool = null;
             };
@@ -3944,6 +3963,8 @@ namespace QASmartTouch.Forms
             if (_selectedTool != null)
             {
                 _selectedTool.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6"));
+                // KHẮC PHỤC: Reset màu icon của công cụ cũ về màu tối mặc định (#2F3542)
+                UpdateIconColor(_selectedTool, Color.FromRgb(0x2F, 0x35, 0x42));
             }
 
             // Set new selected tool
