@@ -20,7 +20,35 @@
 
         ShowInTaskbar="False">
 
-
+    <Window.Resources>
+        <!-- Style tùy chỉnh cho các nút chọn màu để không bị mất màu khi click/hover -->
+        <Style x:Key="ColorPaletteButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="buttonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Thay đổi viền thay vì đè lên màu nền gốc -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="buttonBorder" Property="BorderBrush" Value="#2E86DE"/>
+                                <Setter TargetName="buttonBorder" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="buttonBorder" Property="BorderBrush" Value="#2E86DE"/>
+                                <Setter TargetName="buttonBorder" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
     <Border Background="White" 
 
@@ -642,43 +670,44 @@
 
                     <!-- Row 1 -->
 
-                    <Button Background="#FFB7B2" Click="btnColor_Click" Tag="#FFB7B2" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#FFB7B2" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#FFB7B2" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#FFDAC1" Click="btnColor_Click" Tag="#FFDAC1" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#FFDAC1" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#FFDAC1" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#E2F0CB" Click="btnColor_Click" Tag="#E2F0CB" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#E2F0CB" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#E2F0CB" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#B5EAD7" Click="btnColor_Click" Tag="#B5EAD7" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#B5EAD7" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#B5EAD7" Margin="3" Cursor="Hand"/>
 
                     <!-- Row 2 -->
 
-                    <Button Background="#C7CEEA" Click="btnColor_Click" Tag="#C7CEEA" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#C7CEEA" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#C7CEEA" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#F4CCCC" Click="btnColor_Click" Tag="#F4CCCC" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#F4CCCC" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#F4CCCC" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#FCE5CD" Click="btnColor_Click" Tag="#FCE5CD" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#FCE5CD" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#FCE5CD" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#D9EAD3" Click="btnColor_Click" Tag="#D9EAD3" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#D9EAD3" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#D9EAD3" Margin="3" Cursor="Hand"/>
 
                     <!-- Row 3 -->
 
-                    <Button Background="#D0E0E3" Click="btnColor_Click" Tag="#D0E0E3" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#D0E0E3" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#D0E0E3" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#CFE2F3" Click="btnColor_Click" Tag="#CFE2F3" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#CFE2F3" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#CFE2F3" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#D9D2E9" Click="btnColor_Click" Tag="#D9D2E9" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#D9D2E9" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#D9D2E9" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#F4D8F3" Click="btnColor_Click" Tag="#F4D8F3" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#F4D8F3" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#F4D8F3" Margin="3" Cursor="Hand"/>
 
                     <!-- Row 4 -->
 
-                    <Button Background="#EAD1DC" Click="btnColor_Click" Tag="#EAD1DC" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#EAD1DC" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#EAD1DC" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#FFF2CC" Click="btnColor_Click" Tag="#FFF2CC" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#FFF2CC" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#FFF2CC" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#D0F0C0" Click="btnColor_Click" Tag="#D0F0C0" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#D0F0C0" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#D0F0C0" Margin="3" Cursor="Hand"/>
 
-                    <Button Background="#AEEEEE" Click="btnColor_Click" Tag="#AEEEEE" Margin="3" BorderThickness="0" Cursor="Hand"/>
+                    <Button Background="#AEEEEE" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Click="btnColor_Click" Tag="#AEEEEE" Margin="3" Cursor="Hand"/>
+
 
                 </UniformGrid>
 
