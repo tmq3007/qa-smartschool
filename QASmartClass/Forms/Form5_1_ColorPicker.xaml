@@ -1,4 +1,4 @@
-﻿<Window x:Class="QASmartTouch.Forms.Form5_1_ColorPicker"
+<Window x:Class="QASmartTouch.Forms.Form5_1_ColorPicker"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -22,7 +22,33 @@
 
         ShowInTaskbar="False">
 
-
+    <Window.Resources>
+        <Style x:Key="ColorPaletteButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="buttonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="buttonBorder" Property="BorderBrush" Value="#2E86DE"/>
+                                <Setter TargetName="buttonBorder" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="buttonBorder" Property="BorderBrush" Value="#2E86DE"/>
+                                <Setter TargetName="buttonBorder" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
     <Border Background="White" 
 
@@ -196,61 +222,62 @@
 
                 <WrapPanel>
 
-                    <Button Width="35" Height="35" Background="#FF0000" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#FF0000" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#FF0000" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#FF0000" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#FF5722" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#FF5722" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#FF5722" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#FF5722" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#FF9800" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#FF9800" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#FF9800" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#FF9800" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#FFC107" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#FFC107" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#FFC107" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#FFC107" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#FFEB3B" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#FFEB3B" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#FFEB3B" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#FFEB3B" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#CDDC39" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#CDDC39" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#CDDC39" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#CDDC39" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#8BC34A" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#8BC34A" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#8BC34A" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#8BC34A" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#4CAF50" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#4CAF50" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#4CAF50" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#4CAF50" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#009688" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#009688" Cursor="Hand"/>
-
-                    
-
-                    <Button Width="35" Height="35" Background="#00BCD4" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#00BCD4" Cursor="Hand"/>
-
-                    <Button Width="35" Height="35" Background="#03A9F4" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#03A9F4" Cursor="Hand"/>
-
-                    <Button Width="35" Height="35" Background="#2196F3" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#2196F3" Cursor="Hand"/>
-
-                    <Button Width="35" Height="35" Background="#3F51B5" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#3F51B5" Cursor="Hand"/>
-
-                    <Button Width="35" Height="35" Background="#673AB7" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#673AB7" Cursor="Hand"/>
-
-                    <Button Width="35" Height="35" Background="#9C27B0" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#9C27B0" Cursor="Hand"/>
-
-                    <Button Width="35" Height="35" Background="#E91E63" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#E91E63" Cursor="Hand"/>
-
-                    <Button Width="35" Height="35" Background="#F44336" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#F44336" Cursor="Hand"/>
-
-                    <Button Width="35" Height="35" Background="#795548" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#795548" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#009688" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#009688" Cursor="Hand"/>
 
                     
 
-                    <Button Width="35" Height="35" Background="#FFFFFF" Margin="0,0,4,4" BorderThickness="1" BorderBrush="#DFE4EA" Click="btnQuickColor_Click" Tag="#FFFFFF" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#00BCD4" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#00BCD4" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#F1F2F6" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#F1F2F6" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#03A9F4" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#03A9F4" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#DFE4EA" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#DFE4EA" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#2196F3" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#2196F3" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#A4B0BE" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#A4B0BE" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#3F51B5" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#3F51B5" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#747D8C" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#747D8C" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#673AB7" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#673AB7" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#57606F" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#57606F" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#9C27B0" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#9C27B0" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#2F3542" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#2F3542" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#E91E63" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#E91E63" Cursor="Hand"/>
 
-                    <Button Width="35" Height="35" Background="#000000" Margin="0,0,4,4" BorderThickness="0" Click="btnQuickColor_Click" Tag="#000000" Cursor="Hand"/>
+                    <Button Width="35" Height="35" Background="#F44336" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#F44336" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#795548" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#795548" Cursor="Hand"/>
+
+                    
+
+                    <Button Width="35" Height="35" Background="#FFFFFF" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#FFFFFF" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#F1F2F6" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#F1F2F6" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#DFE4EA" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#DFE4EA" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#A4B0BE" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#A4B0BE" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#747D8C" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#747D8C" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#57606F" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#57606F" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#2F3542" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#2F3542" Cursor="Hand"/>
+
+                    <Button Width="35" Height="35" Background="#000000" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,4" Click="btnQuickColor_Click" Tag="#000000" Cursor="Hand"/>
+
 
                 </WrapPanel>
 
@@ -396,15 +423,16 @@
 
                 <WrapPanel x:Name="panelRecentColors">
 
-                    <Button Width="35" Height="35" Background="#2E86DE" Margin="0,0,4,0" BorderThickness="0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#2E86DE"/>
+                    <Button Width="35" Height="35" Background="#2E86DE" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#2E86DE"/>
 
-                    <Button Width="35" Height="35" Background="#4CAF50" Margin="0,0,4,0" BorderThickness="0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#4CAF50"/>
+                    <Button Width="35" Height="35" Background="#4CAF50" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#4CAF50"/>
 
-                    <Button Width="35" Height="35" Background="#FF9800" Margin="0,0,4,0" BorderThickness="0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#FF9800"/>
+                    <Button Width="35" Height="35" Background="#FF9800" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#FF9800"/>
 
-                    <Button Width="35" Height="35" Background="#E91E63" Margin="0,0,4,0" BorderThickness="0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#E91E63"/>
+                    <Button Width="35" Height="35" Background="#E91E63" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#E91E63"/>
 
-                    <Button Width="35" Height="35" Background="#9C27B0" Margin="0,0,4,0" BorderThickness="0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#9C27B0"/>
+                    <Button Width="35" Height="35" Background="#9C27B0" Style="{StaticResource ColorPaletteButtonStyle}" BorderBrush="#DFE4EA" BorderThickness="1" Margin="0,0,4,0" Cursor="Hand" Click="btnQuickColor_Click" Tag="#9C27B0"/>
+
 
                 </WrapPanel>
 

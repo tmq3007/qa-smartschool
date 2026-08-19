@@ -9,6 +9,8 @@ description: >-
 
 Tài liệu hướng dẫn và ràng buộc quy chuẩn khi thực hiện các thao tác Git (tạo branch, viết commit message) trong dự án.
 
+> **🚨 RÀNG BUỘC QUAN TRỌNG:** KHÔNG ĐƯỢC tự động thực thi các lệnh thay đổi hệ thống, mã nguồn hoặc các lệnh Git (như `git checkout`, `git commit`, `git push`...). Bạn PHẢI trình bày câu lệnh/phương án dự kiến và yêu cầu người dùng REVIEW, cho phép trước khi thực sự chạy lệnh hoặc áp dụng thay đổi.
+
 ---
 
 ## 1. QUY ƯỚC ĐẶT TÊN BRANCH NGẮN HẠN
