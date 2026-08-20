@@ -150,15 +150,15 @@
                     </Button.Template>
                 </Button>
 
-                <!-- Mode 2: Erase by Drag -->
-                <Button x:Name="btnEraseByDrag" 
+                <!-- Mode 2: Erase by Point -->
+                <Button x:Name="btnEraseByPoint" 
                         Height="65"
                         Margin="0,0,0,8"
                         Background="#F3E5F5"
                         BorderThickness="0"
                         Cursor="Hand"
                         Click="btnEraseMode_Click"
-                        Tag="Drag">
+                        Tag="Point">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="border" 
@@ -190,12 +190,12 @@
                                     
                                     <!-- Text -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="Xóa theo vùng kéo" 
+                                        <TextBlock Text="Xóa theo điểm" 
                                                    FontSize="13"
                                                    FontWeight="SemiBold"
                                                    Foreground="{TemplateBinding Foreground}"
                                                    Margin="0,0,0,1"/>
-                                        <TextBlock Text="Kéo để chọn vùng cần xóa" 
+                                        <TextBlock Text="Xóa một phần của nét vẽ (cắt nét)" 
                                                    FontSize="10"
                                                    Foreground="{TemplateBinding Foreground}"
                                                    TextWrapping="Wrap"

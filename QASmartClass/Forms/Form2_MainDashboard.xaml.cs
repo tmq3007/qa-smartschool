@@ -36,7 +36,8 @@ namespace QASmartTouch.Forms
         Remove,     // Xóa element (erasing, delete)
         Modify,     // Sửa element (move, rotate, resize)
         ClearAll,   // Xóa tất cả elements
-        Batch       // Nhóm nhiều actions (compound operations)
+        Batch,      // Nhóm nhiều actions (compound operations)
+        StrokeSnapshot // Toàn bộ nét vẽ được lưu lại sau khi vẽ/tẩy (cho InkCanvas native)
     }
 
     /// <summary>
@@ -46,9 +47,12 @@ namespace QASmartTouch.Forms
     {
         public ActionType Type { get; set; }
         public UIElement? Element { get; set; }
+        public System.Windows.Ink.Stroke? Stroke { get; set; }
         public UIElement? Parent { get; set; }
         public object? OldValue { get; set; }    // For modify operations
         public object? NewValue { get; set; }    // For modify operations
+        public byte[]? OldStrokeSnapshot { get; set; } // Dữ liệu nét vẽ TRƯỚC khi thay đổi
+        public byte[]? NewStrokeSnapshot { get; set; } // Dữ liệu nét vẽ SAU khi thay đổi
         public List<UndoRedoAction> BatchActions { get; set; } // For batch operations
         public DateTime Timestamp { get; set; }
         public string Description { get; set; } // For debugging
@@ -281,6 +285,8 @@ namespace QASmartTouch.Forms
             // ── WhiteboardCore: Khởi tạo Façade ──
             _whiteboardManager = new WhiteboardManager();
             _whiteboardManager.ToolManager.ToolChanged += OnWhiteboardToolChanged;
+            
+            InitializeStrokeHistory(); // Initialize InkCanvas Undo/Redo debounce timer
 
             // =====================================================
             // PHASE 2: DPI AWARENESS - Handle DPI changes
@@ -1523,6 +1529,12 @@ namespace QASmartTouch.Forms
 
             // Đồng bộ con trỏ ScrollViewer cha về Arrow
             MainScrollViewer.Cursor = System.Windows.Input.Cursors.Arrow;
+            
+            if (InkDrawingLayer != null)
+            {
+                InkDrawingLayer.EditingMode = InkCanvasEditingMode.None;
+                InkDrawingLayer.IsHitTestVisible = false;
+            }
         }
 
         /// <summary>

@@ -519,54 +519,9 @@ namespace QASmartTouch.Forms
                     _selectionManager.DeselectAll();
                 }
 
-                _isDrawing = true;
-                _lastPoint = e.GetPosition(MainInteractiveBoard);
-                
-                // âœ¨ Multi-user mode: Override color based on zone
-                Color drawingColor = _currentPenColor;
-                StudentProfile? assignedStudent = null;
-                
-                if (_isMultiUserModeActive)
-                {
-                    assignedStudent = GetStudentByPosition(_lastPoint);
-                    
-                    // 🔒 Zone Isolation: Block drawing outside assigned zone
-                    if (_zoneIsolationEnabled && assignedStudent == null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"🚫 Zone isolation: Drawing blocked outside zones");
-                        return;
-                    }
-                    
-                    if (assignedStudent != null)
-                    {
-                        drawingColor = assignedStudent.Color;
-                        System.Diagnostics.Debug.WriteLine($"✏️ {assignedStudent.Name} drawing at ({_lastPoint.X:F0}, {_lastPoint.Y:F0})");
-                    }
-                }
-                
-                // âœ¨ OPTIMIZATION: Initialize temporary point collection
-                _tempStrokePoints.Clear();
-                _tempStrokePoints.Add(_lastPoint);
-                
-                // Create new stroke based on brush type
-                _currentStroke = CreateStrokeByBrushType();
-                
-                // âœ¨ Override stroke color for multi-user mode
-                if (_isMultiUserModeActive && assignedStudent != null)
-                {
-                    _currentStroke.Stroke = new SolidColorBrush(drawingColor);
-                }
-                
-                // Add first point
-                _currentStroke.Points.Add(_lastPoint);
-                
-                // Add stroke to canvas
-                MainInteractiveBoard.Children.Add(_currentStroke);
-                // ✅ QC_4.2_STROKE_ABOVE_TABLE (NV-1): Nét vẽ hiển thị TRÊN Table/TextBox (500) nhưng DƯỚI Widget nhúng (1000+)
-                Panel.SetZIndex(_currentStroke, ZIndexConstants.UserContentMax);
-                
-                // Capture mouse to continue tracking even if it leaves the canvas
-                MainInteractiveBoard.CaptureMouse();
+                // ✅ Giai đoạn 2: Trả lại quyền xử lý vẽ nét cho Native InkCanvas
+                // Dừng toàn bộ logic vẽ Polyline cũ tại đây
+                return;
             }
         }
 
@@ -900,6 +855,78 @@ namespace QASmartTouch.Forms
             }
         }
 
+        private byte[]? _lastStrokeSnapshot;
+        private System.Windows.Threading.DispatcherTimer? _strokeDebounceTimer;
+        private bool _isRestoringStroke = false;
+
+        private void InitializeStrokeHistory()
+        {
+            if (_strokeDebounceTimer == null)
+            {
+                _strokeDebounceTimer = new System.Windows.Threading.DispatcherTimer();
+                _strokeDebounceTimer.Interval = TimeSpan.FromMilliseconds(400);
+                _strokeDebounceTimer.Tick += StrokeDebounceTimer_Tick;
+            }
+            
+            // Lấy snapshot ban đầu
+            if (_lastStrokeSnapshot == null && InkDrawingLayer != null)
+            {
+                using (var ms = new System.IO.MemoryStream())
+                {
+                    InkDrawingLayer.Strokes.Save(ms);
+                    _lastStrokeSnapshot = ms.ToArray();
+                }
+                
+                // Lắng nghe mọi sự thay đổi nét (Vẽ, Xóa nét, Xóa điểm)
+                InkDrawingLayer.Strokes.StrokesChanged += InkDrawingLayer_StrokesChanged;
+            }
+        }
+
+        private void InkDrawingLayer_StrokesChanged(object sender, System.Windows.Ink.StrokeCollectionChangedEventArgs e)
+        {
+            if (_isRestoringStroke) return;
+            
+            _strokeDebounceTimer?.Stop();
+            _strokeDebounceTimer?.Start();
+        }
+
+        private void StrokeDebounceTimer_Tick(object? sender, EventArgs e)
+        {
+            _strokeDebounceTimer?.Stop();
+            if (InkDrawingLayer == null || _isRestoringStroke) return;
+
+            // Xóa selection khi có thay đổi nét
+            _selectionManager?.DeselectAll();
+
+            byte[] newSnapshot;
+            using (var ms = new System.IO.MemoryStream())
+            {
+                InkDrawingLayer.Strokes.Save(ms);
+                newSnapshot = ms.ToArray();
+            }
+
+            var action = new UndoRedoAction
+            {
+                Type = ActionType.StrokeSnapshot,
+                OldStrokeSnapshot = _lastStrokeSnapshot,
+                NewStrokeSnapshot = newSnapshot,
+                Description = "InkCanvas Stroke Change"
+            };
+            
+            RecordAction(action);
+            _lastStrokeSnapshot = newSnapshot;
+        }
+
+        private void InkDrawingLayer_StrokeCollected(object sender, System.Windows.Controls.InkCanvasStrokeCollectedEventArgs e)
+        {
+            // (StrokeCollected and StrokeErasing are ignored as we use StrokesChanged instead)
+        }
+
+        private void InkDrawingLayer_StrokeErasing(object sender, System.Windows.Controls.InkCanvasStrokeErasingEventArgs e)
+        {
+            // Ignored, using StrokesChanged instead
+        }
+
         /// <summary>
         /// ✅ G4.1 & G4.2: Hiển thị thanh chỉ dẫn trạng thái sư phạm Tiếng Việt
         /// </summary>
@@ -918,6 +945,23 @@ namespace QASmartTouch.Forms
             {
                 MainInteractiveBoard.Children.Remove(_smartStatusBadge);
                 _smartStatusBadge = null;
+            }
+        }
+
+
+        private void InkDrawingLayer_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_eraserEnabled && (_eraserMode == "Point" || _eraserMode == "Stroke") && e.LeftButton == MouseButtonState.Pressed)
+            {
+                EraseStrokeAt(e.GetPosition(MainInteractiveBoard));
+            }
+        }
+
+        private void InkDrawingLayer_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (_eraserEnabled && (_eraserMode == "Point" || _eraserMode == "Stroke"))
+            {
+                EraseStrokeAt(e.GetTouchPoint(MainInteractiveBoard).Position);
             }
         }
 
@@ -966,6 +1010,27 @@ namespace QASmartTouch.Forms
                 _touchHandler.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Drawing);
             }
 
+            // ✅ Giai đoạn 2: Bật Native InkCanvas
+            if (InkDrawingLayer != null)
+            {
+                InkDrawingLayer.EditingMode = InkCanvasEditingMode.Ink;
+                InkDrawingLayer.IsHitTestVisible = true;
+                InkDrawingLayer.UseCustomCursor = true; // Use the Canvas Cursor (Pen)
+                InkDrawingLayer.DefaultDrawingAttributes.Color = penColor;
+                InkDrawingLayer.DefaultDrawingAttributes.Width = penSize;
+                InkDrawingLayer.DefaultDrawingAttributes.Height = penSize;
+                InkDrawingLayer.DefaultDrawingAttributes.FitToCurve = true;
+                if (brushType == "Highlighter")
+                {
+                    InkDrawingLayer.DefaultDrawingAttributes.IsHighlighter = true;
+                    InkDrawingLayer.DefaultDrawingAttributes.Width = penSize * 2;
+                    InkDrawingLayer.DefaultDrawingAttributes.Height = penSize * 2;
+                }
+                else
+                {
+                    InkDrawingLayer.DefaultDrawingAttributes.IsHighlighter = false;
+                }
+            }
         }
 
         private void EnableEraserMode(int eraserSize, string eraserMode)
@@ -1025,6 +1090,21 @@ namespace QASmartTouch.Forms
                 _touchHandler.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Eraser);
                 _touchHandler.SetEraserProperties(eraserSize, eraserMode);
             }
+
+            // ✅ Giai đoạn 2: Bật Native InkCanvas Eraser
+            if (InkDrawingLayer != null)
+            {
+                InkDrawingLayer.IsHitTestVisible = true;
+                if (eraserMode == "Point")
+                {
+                    InkDrawingLayer.EditingMode = InkCanvasEditingMode.EraseByPoint;
+                    InkDrawingLayer.EraserShape = new System.Windows.Ink.EllipseStylusShape(eraserSize, eraserSize);
+                }
+                else // Stroke or Drag
+                {
+                    InkDrawingLayer.EditingMode = InkCanvasEditingMode.EraseByStroke;
+                }
+            }
         }
 
         private void DisableEraserMode()
@@ -1038,6 +1118,12 @@ namespace QASmartTouch.Forms
             if (_touchHandler != null)
             {
                 _touchHandler.SetToolMode(QASmartTouch.Handlers.TouchToolMode.None);
+            }
+            
+            if (InkDrawingLayer != null && !_drawingEnabled)
+            {
+                InkDrawingLayer.EditingMode = InkCanvasEditingMode.None;
+                InkDrawingLayer.IsHitTestVisible = false;
             }
         }
 

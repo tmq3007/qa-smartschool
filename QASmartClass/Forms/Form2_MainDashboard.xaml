@@ -145,6 +145,18 @@
                                      SnapsToDevicePixels="True"/>
 
                     </Canvas.CacheMode>
+                    
+                    <InkCanvas x:Name="InkDrawingLayer" 
+                               Panel.ZIndex="9999"
+                               Width="1920"
+                               Height="1080"
+                               Stylus.IsPressAndHoldEnabled="False"
+                               Background="Transparent"
+                               EditingMode="None"
+                               StrokeCollected="InkDrawingLayer_StrokeCollected"
+                               StrokeErasing="InkDrawingLayer_StrokeErasing"
+                               MouseMove="InkDrawingLayer_MouseMove"
+                               TouchMove="InkDrawingLayer_TouchMove" />
 
                 </Canvas>
 

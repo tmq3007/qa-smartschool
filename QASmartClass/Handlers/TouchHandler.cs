@@ -215,9 +215,11 @@ namespace QASmartTouch.Handlers
             // Allow touch promotion to mouse events when tool mode is None/Selection
             // OR when in Eraser tool mode but the active eraser mode is Drag (marquee select) or ClearAll
             // [BUG_DRAG_MOVE] Selection mode: pass through so SelectionBox ManipulationDelta can handle drag
+            // ✅ Giai đoạn 2: Trả lại quyền vẽ và xóa cho Native InkCanvas
             if (_toolMode == TouchToolMode.None || 
                 _toolMode == TouchToolMode.Selection ||
-                (_toolMode == TouchToolMode.Eraser && _eraserMode == "ClearAll"))
+                _toolMode == TouchToolMode.Drawing ||
+                _toolMode == TouchToolMode.Eraser)
                 return;
 
             try

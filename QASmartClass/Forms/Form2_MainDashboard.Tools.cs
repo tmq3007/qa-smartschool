@@ -524,17 +524,39 @@ namespace QASmartTouch.Forms
                     // Undo Add = Remove from canvas and selection manager
                     if (action.Element != null)
                         _selectionManager?.RemoveObjectByElement(action.Element);
+                    else if (action.Stroke != null && InkDrawingLayer != null)
+                        InkDrawingLayer.Strokes.Remove(action.Stroke);
                     break;
                     
                 case ActionType.Remove:
                     // Undo Remove = Add back to canvas and register selection
                     if (action.Element != null)
                         RegisterNewObjectWithSelectionManager(action.Element);
+                    else if (action.Stroke != null && InkDrawingLayer != null)
+                        InkDrawingLayer.Strokes.Add(action.Stroke);
                     break;
                     
                 case ActionType.Modify:
                     // Undo Modify = Restore old value
                     // TODO: Implement when needed (move, rotate, resize)
+                    break;
+                    
+                case ActionType.StrokeSnapshot:
+                    // Restore OldStrokeSnapshot
+                    if (action.OldStrokeSnapshot != null && InkDrawingLayer != null)
+                    {
+                        using (var ms = new System.IO.MemoryStream(action.OldStrokeSnapshot))
+                        {
+                            try {
+                                _isRestoringStroke = true;
+                                InkDrawingLayer.Strokes = new System.Windows.Ink.StrokeCollection(ms);
+                                InkDrawingLayer.Strokes.StrokesChanged += InkDrawingLayer_StrokesChanged; // Re-hook
+                                _lastStrokeSnapshot = action.OldStrokeSnapshot; // Update last snapshot so we don't save diffs relative to old future
+                            } finally {
+                                _isRestoringStroke = false;
+                            }
+                        }
+                    }
                     break;
                     
                 case ActionType.Batch:
@@ -567,17 +589,39 @@ namespace QASmartTouch.Forms
                     // Redo Add = Add back to canvas and register selection
                     if (action.Element != null)
                         RegisterNewObjectWithSelectionManager(action.Element);
+                    else if (action.Stroke != null && InkDrawingLayer != null)
+                        InkDrawingLayer.Strokes.Add(action.Stroke);
                     break;
                     
                 case ActionType.Remove:
                     // Redo Remove = Remove from canvas and selection manager
                     if (action.Element != null)
                         _selectionManager?.RemoveObjectByElement(action.Element);
+                    else if (action.Stroke != null && InkDrawingLayer != null)
+                        InkDrawingLayer.Strokes.Remove(action.Stroke);
                     break;
                     
                 case ActionType.Modify:
                     // Redo Modify = Apply new value
                     // TODO: Implement when needed (move, rotate, resize)
+                    break;
+                    
+                case ActionType.StrokeSnapshot:
+                    // Restore NewStrokeSnapshot
+                    if (action.NewStrokeSnapshot != null && InkDrawingLayer != null)
+                    {
+                        using (var ms = new System.IO.MemoryStream(action.NewStrokeSnapshot))
+                        {
+                            try {
+                                _isRestoringStroke = true;
+                                InkDrawingLayer.Strokes = new System.Windows.Ink.StrokeCollection(ms);
+                                InkDrawingLayer.Strokes.StrokesChanged += InkDrawingLayer_StrokesChanged; // Re-hook
+                                _lastStrokeSnapshot = action.NewStrokeSnapshot; // Update last snapshot
+                            } finally {
+                                _isRestoringStroke = false;
+                            }
+                        }
+                    }
                     break;
                     
                 case ActionType.Batch:
