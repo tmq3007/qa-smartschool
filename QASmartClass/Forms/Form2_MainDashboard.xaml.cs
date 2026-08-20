@@ -637,6 +637,7 @@ namespace QASmartTouch.Forms
             // Wire up Passthrough Touch Focus events
             MainInteractiveBoard.PreviewMouseDown += MainInteractiveBoard_PreviewMouseDown;
             MainInteractiveBoard.PreviewTouchDown += MainInteractiveBoard_PreviewTouchDown;
+            MainInteractiveBoard.PreviewTouchUp += MainInteractiveBoard_PreviewTouchUp;
             MainInteractiveBoard.PreviewStylusDown += MainInteractiveBoard_PreviewStylusDown;
 
             // Wire up SelectionManager events

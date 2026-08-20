@@ -153,6 +153,20 @@ namespace QASmartTouch.Forms
             AutoDismissKeyboardIfNeeded(e.OriginalSource);
         }
 
+        private void MainInteractiveBoard_PreviewTouchUp(object? sender, TouchEventArgs e)
+        {
+            // ✅ TOUCH-FIX SAFETY NET: Tránh trường hợp màn hình kẹt trạng thái kéo đối tượng.
+            // Nếu người dùng đã nhấc ngón tay lên (TouchUp) mà hệ thống vẫn nghĩ đang kéo (do lỗi nuốt MouseUp),
+            // ta ép kết thúc kéo và nhả capture.
+            if (_objectSelectionMode && _isDraggingSelection)
+            {
+                System.Diagnostics.Debug.WriteLine("🛠️ TouchUp Safety Net: Forcing Drag End");
+                MainBoard_SelectionMouseUp(sender, null!);
+                if (MainInteractiveBoard.IsMouseCaptured)
+                    MainInteractiveBoard.ReleaseMouseCapture();
+            }
+        }
+
         private void MainInteractiveBoard_PreviewStylusDown(object? sender, StylusDownEventArgs e)
         {
             EnsurePassthroughFocusAndPenMode(e.OriginalSource);
@@ -395,7 +409,18 @@ namespace QASmartTouch.Forms
                 // thực sự khởi tạo hành động (kéo đối tượng hoặc chờ chọn/vẽ khung chọn).
                 // Tránh capture vô nghĩa khi chạm vào nút bấm/thân bảng StackPanel.
                 if (_draggedSelectionObject != null || _pendingHitObject != null)
-                    MainInteractiveBoard.CaptureMouse();
+                {
+                    // ✅ TOUCH-FIX: Chỉ capture cho Chuột thật. Touch/Stylus đã tự động capture bởi cơ chế implicit của WPF.
+                    // Việc gọi CaptureMouse cho Touch sẽ làm hỏng promotion pipeline, nuốt mất sự kiện MouseUp.
+                    if (e.StylusDevice == null) 
+                    {
+                        MainInteractiveBoard.CaptureMouse();
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("👆 Touch/Stylus detected: Bỏ qua CaptureMouse để tránh Touch Leak");
+                    }
+                }
                 return;
             }
             
