@@ -206,6 +206,14 @@ namespace QASmartTouch.Forms
             if (!_objectSelectionMode || _selectionManager == null || _isLassoMode)
                 return;
 
+            // ✅ QC_4.2_TOUCH_TELEPORT_FIX: Safety guard
+            // Đảm bảo reset trạng thái drag cũ trước khi xử lý click mới, tránh lỗi Teleport
+            if (_draggedSelectionObject != null)
+            {
+                _draggedSelectionObject = null;
+                _isDraggingSelection = false;
+            }
+
             Point clickPoint = e.GetPosition(MainInteractiveBoard);
             bool isCtrlPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
             var hitObject = _selectionManager.HitTest(clickPoint);
@@ -218,6 +226,7 @@ namespace QASmartTouch.Forms
                 _draggedSelectionObject = null;
                 _pendingHitObject = hitObject;
                 _pendingIsCtrl = isCtrlPressed;
+                _isPreparingRectangleSelection = true; // ✅ Mở khóa bảo vệ
                 return;
             }
             
@@ -226,6 +235,17 @@ namespace QASmartTouch.Forms
             var currentSelection = _selectionManager.GetSelectedObjects();
             bool isClickOnSelectedObject = hitObject != null && currentSelection != null && currentSelection.Contains(hitObject);
 
+            // ✅ FIX CẢM ỨNG: Nếu chạm vào bất kỳ đâu bên trong khung SelectionBox đang hiển thị,
+            // xác định chắc chắn là thao tác kéo di chuyển vùng chọn hiện tại (kể cả chạm vào khoảng trống giữa các nét)
+            if (!isClickOnSelectedObject && _selectionBox != null && _selectionBox.Visibility == Visibility.Visible && _selectionBox.AttachedObject != null)
+            {
+                if (_selectionBox.AttachedObject.Bounds.Contains(clickPoint))
+                {
+                    isClickOnSelectedObject = true;
+                    hitObject = _selectionBox.AttachedObject;
+                }
+            }
+
             if (isClickOnSelectedObject && !isCtrlPressed)
             {
                 // Nếu bấm vào nút chức năng cụ thể (như nút Edit ✏️, Move 🖐️ hay Delete ❌), nhường event cho nút xử lý
@@ -233,6 +253,7 @@ namespace QASmartTouch.Forms
                 {
                     _isDraggingSelection = false;
                     _draggedSelectionObject = null;
+                    _isPreparingRectangleSelection = false; // ✅ Khóa vẽ vùng chọn
                     return;
                 }
 
@@ -244,6 +265,7 @@ namespace QASmartTouch.Forms
                     _draggedSelectionObject = null;
                     _isDraggingSelection = false;
                     _pendingHitObject = null;
+                    _isPreparingRectangleSelection = false; // ✅ Khóa vẽ vùng chọn
                     return;
                 }
 
@@ -252,6 +274,7 @@ namespace QASmartTouch.Forms
                 _selectionDragStartPoint = clickPoint;
                 _isDraggingSelection = false;
                 _pendingHitObject = null;
+                _isPreparingRectangleSelection = false; // ✅ Khóa vẽ vùng chọn
                 System.Diagnostics.Debug.WriteLine($"🔒 Dragging existing selection - anchor: {hitObject.Type}");
                 return;
             }
@@ -261,6 +284,7 @@ namespace QASmartTouch.Forms
             {
                 _isDraggingSelection = false;
                 _draggedSelectionObject = null;
+                _isPreparingRectangleSelection = false; // ✅ Khóa vẽ vùng chọn
                 return;
             }
 
@@ -271,6 +295,7 @@ namespace QASmartTouch.Forms
             _draggedSelectionObject = null;
             _pendingHitObject = hitObject;
             _pendingIsCtrl = isCtrlPressed;
+            _isPreparingRectangleSelection = true; // ✅ Mở khóa để cho phép vẽ vùng chọn
             
             System.Diagnostics.Debug.WriteLine($"🖱️ Selection click at ({clickPoint.X:F0}, {clickPoint.Y:F0}), hit={hitObject?.Type.ToString() ?? "null"}, Ctrl={isCtrlPressed}");
         }
@@ -281,7 +306,21 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void MoveSelectableObject(SelectableObject obj, Vector dragVector)
         {
-            if (obj?.Element == null) return;
+            if (obj == null) return;
+            
+            // Xử lý nhóm đối tượng (Group / Multi-selection) kể cả khi Element == null
+            if (obj.IsGroup || obj.Type == ObjectType.Group || (obj.GroupMembers != null && obj.GroupMembers.Count > 0))
+            {
+                foreach (var member in obj.GroupMembers)
+                {
+                    if (member == null || member.IsLocked) continue;
+                    MoveSelectableObject(member, dragVector);
+                }
+                obj.UpdateBounds();
+                return;
+            }
+
+            if (obj.Element == null) return;
             
             if (obj.Element is Polyline polyline)
             {
@@ -462,7 +501,7 @@ namespace QASmartTouch.Forms
             }
             
             // 2. Handle Rectangle Selection Drag (when dragging on canvas)
-            if (e.LeftButton == MouseButtonState.Pressed && _draggedSelectionObject == null)
+            if (e.LeftButton == MouseButtonState.Pressed && _draggedSelectionObject == null && _isPreparingRectangleSelection)
             {
                 // ✅ CRITICAL FIX: Đang kéo chốt resize hoặc xoay SelectionBox -> Không tạo khung khoanh vùng chọn rectangle
                 if (_selectionBox != null && _selectionBox.IsTransforming)
@@ -574,14 +613,25 @@ namespace QASmartTouch.Forms
                 }
             }
             
-            // 2. Handle Single Click Selection (if user released mouse without dragging a rectangle)
-            if (_isDraggingSelection)
+            // 2. Xử lý kết thúc thao tác với đối tượng đã chọn (Kéo di chuyển hoặc Chạm giữ)
+            if (_draggedSelectionObject != null)
             {
+                if (_isDraggingSelection)
+                {
+                    // ✅ N23 FIX: Rebuild QuadTree spatial index ngay khi kết thúc kéo di chuyển
+                    _selectionManager?.RebuildQuadTree();
+                    System.Diagnostics.Debug.WriteLine("🌳 Selection drag ended: Rebuilt QuadTree spatial index.");
+                }
+
+                // Reset toàn bộ cờ kéo di chuyển
                 _isDraggingSelection = false;
                 _draggedSelectionObject = null;
-                // ✅ N23 FIX: Rebuild QuadTree spatial index immediately after dragging objects finish
-                _selectionManager?.RebuildQuadTree();
-                System.Diagnostics.Debug.WriteLine("🌳 Selection drag ended: Rebuilt QuadTree spatial index.");
+                _isPreparingRectangleSelection = false;
+                _pendingHitObject = null;
+
+                // ✅ FIX TRIỆT ĐỂ: Thao tác trên đối tượng đã chọn xong thì RETURN NGAY,
+                // TUYỆT ĐỐI KHÔNG để rơi xuống nhánh DeselectAll() bên dưới!
+                return;
             }
 
             if (_isMagicWandMode && !_isRectangleSelecting)
@@ -591,25 +641,23 @@ namespace QASmartTouch.Forms
                 return;
             }
 
-            if (!_isDraggingSelection)
+            // 3. Xử lý Single Click Selection (khi người dùng click chọn đối tượng mới hoặc click ra ngoài để hủy chọn)
+            if (_pendingHitObject != null)
             {
-                if (_pendingHitObject != null)
+                if (_pendingIsCtrl)
                 {
-                    if (_pendingIsCtrl)
-                    {
-                        _selectionManager?.ToggleSelection(_pendingHitObject);
-                    }
-                    else
-                    {
-                        _selectionManager?.SelectObject(_pendingHitObject);
-                    }
+                    _selectionManager?.ToggleSelection(_pendingHitObject);
                 }
                 else
                 {
-                    if (!_pendingIsCtrl)
-                    {
-                        _selectionManager?.DeselectAll();
-                    }
+                    _selectionManager?.SelectObject(_pendingHitObject);
+                }
+            }
+            else
+            {
+                if (!_pendingIsCtrl)
+                {
+                    _selectionManager?.DeselectAll();
                 }
             }
             
@@ -617,6 +665,7 @@ namespace QASmartTouch.Forms
             _isDraggingSelection = false;
             _draggedSelectionObject = null;
             _pendingHitObject = null;
+            _isPreparingRectangleSelection = false; // ✅ Khóa lại cờ hiệu sau khi xong việc
         }
 
         /// <summary>
@@ -624,13 +673,17 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void OnObjectTransformed(object? sender, SelectableObject transformedObject)
         {
+            // ✅ Rebuild QuadTree spatial index ngay sau khi transform (kéo di chuyển, resize, rotate)
+            _selectionManager?.RebuildQuadTree();
+
             // Refresh context toolbar position after transform
-            if (_selectionManager?.SelectedObject != null)
+            var targetObj = _selectionManager?.SelectedObject ?? transformedObject;
+            if (targetObj != null && targetObj.Bounds != Rect.Empty)
             {
-                var bounds = _selectionManager.SelectedObject.Bounds;
+                var bounds = targetObj.Bounds;
                 // ✅ G2.1: Auto-Flip toolbar position
                 var toolbarPosition = CalculateOptimalToolbarPosition(bounds);
-                _contextToolbar?.ShowAt(toolbarPosition, _selectionManager.SelectedObject);
+                _contextToolbar?.ShowAt(toolbarPosition, targetObj);
             }
         }
 

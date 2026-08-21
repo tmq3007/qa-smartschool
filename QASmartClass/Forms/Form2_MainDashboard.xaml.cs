@@ -200,6 +200,7 @@ namespace QASmartTouch.Forms
         
         // Rectangle Drag Selection (NG-1 Fix)
         private bool _isRectangleSelecting = false;
+        private bool _isPreparingRectangleSelection = false; // ✅ Khóa bảo vệ chống Ghost Rectangle
         private Point _rectangleSelectionStartPoint;
         private Rectangle? _rectangleSelectionPreview;
         private Border? _smartStatusBadge; // ✅ G4.1: Thanh chỉ dẫn trạng thái sư phạm
@@ -452,6 +453,15 @@ namespace QASmartTouch.Forms
                 return;
             }
             
+            // ✅ CRITICAL FIX CẢM ỨNG: Trong chế độ Chọn đối tượng (_objectSelectionMode),
+            // việc chọn / di chuyển / hủy chọn được quản lý 100% bởi MainBoard_SelectionMouseDown & MouseUp.
+            // KHÔNG ĐƯỢC tự ý gọi DeselectAll() ở đây vì sự kiện chạm cảm ứng sẽ luôn có e.Source == sender,
+            // dẫn đến việc lập tức hủy chọn toàn bộ đối tượng ngay khi ngón tay vừa chạm vào màn hình!
+            if (_objectSelectionMode)
+            {
+                return;
+            }
+
             // Only process if clicked directly on canvas (not on child elements)
             if (e.Source == sender)
             {

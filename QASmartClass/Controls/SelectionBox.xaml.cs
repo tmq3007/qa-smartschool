@@ -26,13 +26,14 @@ namespace QASmartTouch.Controls
         private bool _isDragging = false;
         private bool _isRotating = false;
         private bool _isMoving = false; // [BUG_DRAG_MOVE] Drag-to-move state
+        private bool _isManipulating = false;
 
         private const double SnapAngleThresholdDegrees = 3.5;
 
         /// <summary>
         /// True nếu đang trong quá trình kéo chốt resize hoặc xoay
         /// </summary>
-        public bool IsTransforming => _isDragging || _isRotating || _isMoving;
+        public bool IsTransforming => _isDragging || _isRotating || _isMoving || _isManipulating;
 
         /// <summary>
         /// Object đang được attach bởi SelectionBox (Object đơn hoặc Group Object)
@@ -60,7 +61,8 @@ namespace QASmartTouch.Controls
         public SelectionBox()
         {
             InitializeComponent();
-            QASmartTouch.Helpers.InputValidationHelper.ApplyTouchIsolation(this);
+            // ✅ QC_4.2_TOUCH_SELECTION_BOX_FIX: Gỡ bỏ ApplyTouchIsolation khỏi SelectionBox
+            // để cho phép cảm ứng tương tác trực tiếp với SelectionBorder và các chốt kéo/xoay
             _transformService = new TransformService();
             this.Visibility = Visibility.Collapsed;
 
@@ -71,6 +73,10 @@ namespace QASmartTouch.Controls
             SelectionBorder.MouseMove += SelectionBorder_MouseMove;
             SelectionBorder.MouseLeftButtonUp += SelectionBorder_MouseLeftButtonUp;
 
+            // ✅ TOUCH FIX: Bắt thêm sự kiện nhấc bút/ngón tay để dọn dẹp trạng thái
+            // Đề phòng Windows "nuốt" mất MouseUp trên màn hình cảm ứng hồng ngoại
+            SelectionBorder.TouchUp += (s, e) => ResetMoveState();
+            SelectionBorder.StylusUp += (s, e) => ResetMoveState();
             // QC_4.2_TOUCH_RESIZE_GUARD: Đảm bảo khi kéo chốt vuông mở rộng/thu nhỏ (Resize) bằng ngón tay hoặc bút cảm ứng, không bị phát nét vẽ theo
             this.Loaded += (s, e) =>
             {
@@ -110,6 +116,7 @@ namespace QASmartTouch.Controls
                 _lastMovePoint = _dragStartPoint;
                 _originalPosition = _attachedObject.Position;
                 SelectionBorder.CaptureMouse();
+                e.Handled = true; // Ngăn sự kiện lọt xuống Canvas nền
             }
         }
 
@@ -159,6 +166,7 @@ namespace QASmartTouch.Controls
 
                 ObjectTransformed?.Invoke(this, _attachedObject);
             }
+            e.Handled = true; // Ngăn sự kiện lọt xuống Canvas nền
         }
 
         /// <summary>
@@ -169,13 +177,19 @@ namespace QASmartTouch.Controls
             if (_isMoving)
             {
                 _isMoving = false;
-                SelectionBorder.ReleaseMouseCapture();
 
                 // Cập nhật bounds trong QuadTree
                 _attachedObject?.UpdateBounds();
-
-                e.Handled = true;
             }
+
+            if (SelectionBorder.IsMouseCaptured)
+            {
+                SelectionBorder.ReleaseMouseCapture();
+            }
+
+            // [FIX] Luôn chặn MouseUp bubble lên Canvas để tránh mất chọn (Deselect) 
+            // khi màn hình cảm ứng phát sinh sự kiện kép TouchUp/MouseUp
+            e.Handled = true;
         }
 
         #endregion
@@ -221,8 +235,22 @@ namespace QASmartTouch.Controls
         public void ResetMoveState()
         {
             _isMoving = false;
-            _isDragging = false;
-            _isRotating = false;
+            _isManipulating = false;
+            
+            if (_isDragging)
+            {
+                _isDragging = false;
+                _currentResizeMode = Models.ResizeMode.None;
+                ScaleTooltip.Visibility = Visibility.Collapsed;
+            }
+            
+            if (_isRotating)
+            {
+                _isRotating = false;
+                AngleTooltip.Visibility = Visibility.Collapsed;
+                SnapLine.Visibility = Visibility.Collapsed;
+            }
+            
             if (SelectionBorder.IsMouseCaptured)
                 SelectionBorder.ReleaseMouseCapture();
         }
@@ -318,14 +346,14 @@ namespace QASmartTouch.Controls
             {
                 _isDragging = false;
                 _currentResizeMode = Models.ResizeMode.None;
-
                 ScaleTooltip.Visibility = Visibility.Collapsed;
-
-                var handle = sender as Rectangle;
-                handle?.ReleaseMouseCapture();
-
-                e.Handled = true;
             }
+
+            var handle = sender as Rectangle;
+            handle?.ReleaseMouseCapture();
+
+            // [FIX] Luôn chặn MouseUp bubble lên Canvas để tránh mất chọn (Deselect)
+            e.Handled = true;
         }
 
         private void UpdateScaleTooltipText()
@@ -421,12 +449,13 @@ namespace QASmartTouch.Controls
                 _isRotating = false;
                 SnapLine.Visibility = Visibility.Collapsed;
                 AngleTooltip.Visibility = Visibility.Collapsed;
-
-                var handle = sender as Ellipse;
-                handle?.ReleaseMouseCapture();
-
-                e.Handled = true;
             }
+
+            var handle = sender as Ellipse;
+            handle?.ReleaseMouseCapture();
+
+            // [FIX] Luôn chặn MouseUp bubble lên Canvas để tránh mất chọn (Deselect)
+            e.Handled = true;
         }
 
         #endregion
@@ -440,6 +469,7 @@ namespace QASmartTouch.Controls
 
             // ✅ REVIEW-FIX #2: Ghi nhận kích thước gốc khi bắt đầu Pinch gesture
             _originalSize = _attachedObject.Size;
+            _isManipulating = true;
 
             e.Handled = true;
         }
@@ -498,7 +528,11 @@ namespace QASmartTouch.Controls
             ResetMoveState();
 
             // Cập nhật bounds cho QuadTree spatial index sau khi di chuyển/zoom bằng touch
-            _attachedObject?.UpdateBounds();
+            if (_attachedObject != null)
+            {
+                _attachedObject.UpdateBounds();
+                ObjectTransformed?.Invoke(this, _attachedObject);
+            }
 
             e.Handled = true;
         }

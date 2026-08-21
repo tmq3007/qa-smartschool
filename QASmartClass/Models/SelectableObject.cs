@@ -158,6 +158,32 @@ namespace QASmartTouch.Models
         /// </summary>
         public virtual void UpdateBounds()
         {
+            // ✅ FIX CẢM ỨNG: Cập nhật bounds cho Virtual Group Container từ các thành viên GroupMembers
+            if (IsGroup && GroupMembers != null && GroupMembers.Count > 0)
+            {
+                double minX = double.MaxValue, minY = double.MaxValue;
+                double maxX = double.MinValue, maxY = double.MinValue;
+                foreach (var member in GroupMembers)
+                {
+                    if (member == null) continue;
+                    var b = member.Bounds;
+                    if (!b.IsEmpty && b.Width > 0 && b.Height > 0)
+                    {
+                        minX = Math.Min(minX, b.Left);
+                        minY = Math.Min(minY, b.Top);
+                        maxX = Math.Max(maxX, b.Right);
+                        maxY = Math.Max(maxY, b.Bottom);
+                    }
+                }
+                if (minX < double.MaxValue && minY < double.MaxValue)
+                {
+                    Position = new Point(minX, minY);
+                    Size = new Size(maxX - minX, maxY - minY);
+                    Bounds = new Rect(minX, minY, maxX - minX, maxY - minY);
+                    return;
+                }
+            }
+
             if (Element != null)
             {
                 // Thử lấy Canvas cha để dùng BoundsHelper
@@ -176,6 +202,11 @@ namespace QASmartTouch.Models
                 
                 // Fallback: dùng Position/Size hiện tại
                 Bounds = new Rect(Position.X, Position.Y, Size.Width, Size.Height);
+            }
+            else
+            {
+                // Fallback khi Element == null
+                Bounds = new Rect(Position.X, Position.Y, Math.Max(0, Size.Width), Math.Max(0, Size.Height));
             }
         }
 
