@@ -50,8 +50,7 @@ namespace QASmartTouch.Services
                     if (member == null || member.IsLocked) continue;
                     MoveBy(member, delta);
                 }
-                obj.Position = new Point(obj.Position.X + delta.X, obj.Position.Y + delta.Y);
-                obj.UpdateBounds();
+                RecalculateGroupBounds(obj);
                 return;
             }
 

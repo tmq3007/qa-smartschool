@@ -156,6 +156,10 @@ namespace QASmartTouch.Forms
         private void MainInteractiveBoard_PreviewTouchUp(object? sender, TouchEventArgs e)
         {
             // ✅ TOUCH-FIX SAFETY NET: Tránh trường hợp màn hình kẹt trạng thái kéo đối tượng.
+            // Giải phóng trạng thái di chuyển của SelectionBox (nếu có kẹt do nuốt MouseUp)
+            _selectionBox?.ResetMoveState();
+            _isPreparingRectangleSelection = false; // ✅ Dọn dẹp cờ hiệu vùng chọn
+
             // Nếu người dùng đã nhấc ngón tay lên (TouchUp) mà hệ thống vẫn nghĩ đang kéo (do lỗi nuốt MouseUp),
             // ta ép kết thúc kéo và nhả capture.
             if (_objectSelectionMode && _isDraggingSelection)
