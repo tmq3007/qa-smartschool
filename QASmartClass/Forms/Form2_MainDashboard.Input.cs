@@ -504,38 +504,18 @@ namespace QASmartTouch.Forms
             else if (_eraserEnabled && e.LeftButton == MouseButtonState.Pressed)
             {
                 Point clickPoint = e.GetPosition(MainInteractiveBoard);
+                _isDrawing = true;
+                MainInteractiveBoard.CaptureMouse();
+                _eraserEngine?.StartMouseSession();
                 
-                if (_eraserMode == "Stroke")
+                if (_eraserMode == "Point" || _eraserMode == "Drag")
                 {
-                    // Stroke mode: hold & drag to erase strokes under cursor
-                    _isDrawing = true;
-                    MainInteractiveBoard.CaptureMouse();
+                    EraseByPointAt(clickPoint);
+                }
+                else // Stroke
+                {
                     EraseStrokeAt(clickPoint);
                 }
-                else if (_eraserMode == "Drag")
-                {
-                    // Drag mode: draw selection rectangle, erase all on mouse-up
-                    _dragEraseStartPoint = clickPoint;
-                    _isDrawing = true;
-
-                    _dragErasePreview = new Rectangle
-                    {
-                        Stroke = new SolidColorBrush(Color.FromRgb(220, 53, 69)),   // Red border
-                        StrokeThickness = 2,
-                        StrokeDashArray = new DoubleCollection { 6, 3 },
-                        Fill = new SolidColorBrush(Color.FromArgb(40, 220, 53, 69)) // Light red fill
-                    };
-
-                    Canvas.SetLeft(_dragErasePreview, clickPoint.X);
-                    Canvas.SetTop(_dragErasePreview, clickPoint.Y);
-                    _dragErasePreview.Width = 0;
-                    _dragErasePreview.Height = 0;
-
-                    MainInteractiveBoard.Children.Add(_dragErasePreview);
-                    Canvas.SetZIndex(_dragErasePreview, 9998);
-                    MainInteractiveBoard.CaptureMouse();
-                }
-                // Note: ClearAll mode is handled immediately when selected in submenu
             }
             // Drawing mode
             else if (_drawingEnabled && e.LeftButton == MouseButtonState.Pressed)
@@ -654,35 +634,27 @@ namespace QASmartTouch.Forms
             {
                 UpdateShapePreview(_previewShape, _shapeStartPoint, currentPoint);
             }
-            // Eraser Stroke mode: erase while mouse is held & dragged
-            else if (_eraserEnabled && _eraserMode == "Stroke" && _isDrawing && e.LeftButton == MouseButtonState.Pressed)
+            // Eraser mode: erase while mouse is held & dragged
+            else if (_eraserEnabled && _isDrawing && e.LeftButton == MouseButtonState.Pressed)
             {
                 var canvasBounds = new Rect(0, 0, MainInteractiveBoard.ActualWidth, MainInteractiveBoard.ActualHeight);
                 if (!canvasBounds.Contains(currentPoint))
                 {
                     _isDrawing = false;
                     MainInteractiveBoard.ReleaseMouseCapture();
+                    var session = _eraserEngine?.EndMouseSession();
+                    FinalizeEraseSession(session, "Mouse erase");
                     return;
                 }
-                EraseStrokeAt(currentPoint);
-            }
-            // Eraser Drag mode: update selection rectangle preview only (erase happens on MouseUp)
-            else if (_eraserEnabled && _eraserMode == "Drag" && _isDrawing && _dragErasePreview != null && e.LeftButton == MouseButtonState.Pressed)
-            {
-                // Clamp current position to canvas boundaries to avoid sudden cancel if pen leaves screen edge
-                double clampedX = Math.Clamp(currentPoint.X, 0, MainInteractiveBoard.ActualWidth);
-                double clampedY = Math.Clamp(currentPoint.Y, 0, MainInteractiveBoard.ActualHeight);
-
-                // Update preview rectangle to show selected area
-                double x = Math.Min(_dragEraseStartPoint.X, clampedX);
-                double y = Math.Min(_dragEraseStartPoint.Y, clampedY);
-                double w = Math.Abs(clampedX - _dragEraseStartPoint.X);
-                double h = Math.Abs(clampedY - _dragEraseStartPoint.Y);
-
-                Canvas.SetLeft(_dragErasePreview, x);
-                Canvas.SetTop(_dragErasePreview, y);
-                _dragErasePreview.Width = w;
-                _dragErasePreview.Height = h;
+                
+                if (_eraserMode == "Point" || _eraserMode == "Drag")
+                {
+                    EraseByPointAt(currentPoint);
+                }
+                else // Stroke
+                {
+                    EraseStrokeAt(currentPoint);
+                }
             }
             // Continue drawing if mouse is pressed and drawing is enabled
             else if (_isDrawing && e.LeftButton == MouseButtonState.Pressed && _currentStroke != null)
@@ -767,40 +739,15 @@ namespace QASmartTouch.Forms
                 _isDraggingElement = false;
                 MainInteractiveBoard.ReleaseMouseCapture();
             }
-            // Eraser Drag mode - erase all objects inside selection rectangle on release
-            else if (_eraserEnabled && _eraserMode == "Drag" && _isDrawing)
-            {
-                _isDrawing = false;
-                MainInteractiveBoard.ReleaseMouseCapture();
-
-                if (_dragErasePreview != null)
-                {
-                    // Get final selection rectangle
-                    Point endPoint = e.GetPosition(MainInteractiveBoard);
-                    double left   = Math.Min(_dragEraseStartPoint.X, endPoint.X);
-                    double top    = Math.Min(_dragEraseStartPoint.Y, endPoint.Y);
-                    double width  = Math.Abs(endPoint.X - _dragEraseStartPoint.X);
-                    double height = Math.Abs(endPoint.Y - _dragEraseStartPoint.Y);
-
-                    // Remove preview rectangle first
-                    MainInteractiveBoard.Children.Remove(_dragErasePreview);
-                    _dragErasePreview = null;
-
-                    // Only erase if selection is meaningful (> 5px)
-                    if (width > 5 && height > 5)
-                    {
-                        var eraseRect = new Rect(left, top, width, height);
-                        EraseElementsInRect(eraseRect);
-                        System.Diagnostics.Debug.WriteLine($"🧹 Drag erase: removed objects in ({left:F0},{top:F0}) {width:F0}×{height:F0}");
-                    }
-                }
-            }
-            // Eraser Stroke mode - always release capture and reset drawing state
-            else if (_eraserEnabled && _eraserMode == "Stroke")
+            // Eraser mode - release capture and reset drawing state
+            else if (_eraserEnabled)
             {
                 _isDrawing = false;
                 if (MainInteractiveBoard.IsMouseCaptured)
                     MainInteractiveBoard.ReleaseMouseCapture();
+
+                var session = _eraserEngine?.EndMouseSession();
+                FinalizeEraseSession(session, "Mouse erase");
             }
             // Shape drawing mode - finalize shape
             else if (_shapeDrawingEnabled && _isDrawing && _previewShape != null)
@@ -1034,15 +981,8 @@ namespace QASmartTouch.Forms
             // Create visual eraser cursor preview
             CreateEraserCursorPreview();
             
-            // Hide default cursor, we'll use the preview instead (except in Drag/Marquee mode where we use a crosshair)
-            if (_eraserMode == "Drag")
-            {
-                MainInteractiveBoard.Cursor = Cursors.Cross;
-            }
-            else
-            {
-                MainInteractiveBoard.Cursor = Cursors.None;
-            }
+            // Hide default cursor, we'll use the circular preview instead
+            MainInteractiveBoard.Cursor = Cursors.None;
 
             // QC_4.2_TOUCH_HITTEST_FIX: Giữ ScrollViewer cha có con trỏ Mũi tên (Arrow)
             // để không làm ẩn/ảnh hưởng tới hit-testing cảm ứng của các nút bấm trên thanh công cụ toolbar
@@ -1058,6 +998,14 @@ namespace QASmartTouch.Forms
 
         private void DisableEraserMode()
         {
+            if (_eraserEngine != null)
+            {
+                var session = _eraserEngine.EndMouseSession();
+                if (session != null && session.HasChanges)
+                {
+                    FinalizeEraseSession(session, "Mouse erase");
+                }
+            }
             _eraserEnabled = false;
             RemoveEraserCursorPreview();
             MainInteractiveBoard.Cursor = Cursors.Arrow;
@@ -1075,13 +1023,7 @@ namespace QASmartTouch.Forms
             // Remove existing preview if any
             RemoveEraserCursorPreview();
             
-            if (_eraserMode == "Drag")
-            {
-                // Drag-erase (marquee) mode does not use a circular brush preview
-                return;
-            }
-            
-            // Create a circular preview showing eraser size
+            // Create a circular preview showing eraser size (used for Stroke and Point mode)
             _eraserPreview = new Ellipse
             {
                 Width = _eraserSize * 2,
@@ -1135,6 +1077,14 @@ namespace QASmartTouch.Forms
             {
                 MainInteractiveBoard.Children.Remove(_eraserPreview);
                 _eraserPreview = null;
+            }
+        }
+
+        private void HideEraserCursorPreview()
+        {
+            if (_eraserPreview != null)
+            {
+                _eraserPreview.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -7806,257 +7756,56 @@ namespace QASmartTouch.Forms
 
         private void EraseStrokeAt(Point point)
         {
-            // Find elements to remove (within eraser radius)
-            var elementsToRemove = new System.Collections.Generic.List<UIElement>();
-            
-            foreach (UIElement element in MainInteractiveBoard.Children)
-            {
-                // Skip eraser preview cursor
-                if (element == _eraserPreview)
-                    continue;
-                
-                // Skip background layer elements (grid, dots, lines, background canvas)
-                if (SelectionManager.IsBackgroundElement(element, Rect.Empty, MainInteractiveBoard.ActualWidth, MainInteractiveBoard.ActualHeight))
-                    continue;
-                
-                bool shouldRemove = false;
-                
-                // Check Polyline (pen strokes)
-                if (element is Polyline polyline)
-                {
-                    // Check if any point in the polyline is within eraser radius
-                    foreach (Point p in polyline.Points)
-                    {
-                        double distance = Math.Sqrt(Math.Pow(p.X - point.X, 2) + Math.Pow(p.Y - point.Y, 2));
-                        if (distance <= _eraserSize)
-                        {
-                            shouldRemove = true;
-                            break;
-                        }
-                    }
-                }
-                // Check Line (2D shape)
-                else if (element is Line line)
-                {
-                    // Check distance from point to line segment
-                    Point lineStart = new Point(line.X1, line.Y1);
-                    Point lineEnd = new Point(line.X2, line.Y2);
-                    double distance = DistanceFromPointToLineSegment(point, lineStart, lineEnd);
-                    if (distance <= _eraserSize)
-                    {
-                        shouldRemove = true;
-                    }
-                }
-                // Check Rectangle (2D shape)
-                else if (element is Rectangle rectangle)
-                {
-                    double left = Canvas.GetLeft(rectangle);
-                    double top = Canvas.GetTop(rectangle);
-                    if (double.IsNaN(left)) left = 0;
-                    if (double.IsNaN(top)) top = 0;
-                    
-                    double right = left + rectangle.Width;
-                    double bottom = top + rectangle.Height;
-                    
-                    // Check if eraser point hits the rectangle edges or inside
-                    bool hitTopEdge = Math.Abs(point.Y - top) <= _eraserSize && point.X >= left - _eraserSize && point.X <= right + _eraserSize;
-                    bool hitBottomEdge = Math.Abs(point.Y - bottom) <= _eraserSize && point.X >= left - _eraserSize && point.X <= right + _eraserSize;
-                    bool hitLeftEdge = Math.Abs(point.X - left) <= _eraserSize && point.Y >= top - _eraserSize && point.Y <= bottom + _eraserSize;
-                    bool hitRightEdge = Math.Abs(point.X - right) <= _eraserSize && point.Y >= top - _eraserSize && point.Y <= bottom + _eraserSize;
-                    bool hitInside = point.X >= left && point.X <= right && point.Y >= top && point.Y <= bottom;
-                    
-                    if (hitTopEdge || hitBottomEdge || hitLeftEdge || hitRightEdge || hitInside)
-                    {
-                        shouldRemove = true;
-                    }
-                }
-                // Check Ellipse/Circle (2D shape)
-                else if (element is Ellipse ellipse)
-                {
-                    double left = Canvas.GetLeft(ellipse);
-                    double top = Canvas.GetTop(ellipse);
-                    if (double.IsNaN(left)) left = 0;
-                    if (double.IsNaN(top)) top = 0;
-                    
-                    double centerX = left + ellipse.Width / 2;
-                    double centerY = top + ellipse.Height / 2;
-                    
-                    // For filled shapes, check if point is inside
-                    bool isFilled = ellipse.Fill != null && ellipse.Fill != Brushes.Transparent;
-                    
-                    if (isFilled)
-                    {
-                        // Check if point is inside or near the ellipse
-                        double dx = (point.X - centerX) / (ellipse.Width / 2);
-                        double dy = (point.Y - centerY) / (ellipse.Height / 2);
-                        double distance = Math.Sqrt(dx * dx + dy * dy);
-                        
-                        if (distance <= 1.0 + (_eraserSize / Math.Min(ellipse.Width, ellipse.Height)))
-                        {
-                            shouldRemove = true;
-                        }
-                    }
-                    else
-                    {
-                        // For outline only, check distance to edge
-                        double dx = (point.X - centerX) / (ellipse.Width / 2);
-                        double dy = (point.Y - centerY) / (ellipse.Height / 2);
-                        double distance = Math.Sqrt(dx * dx + dy * dy);
-                        
-                        // Hit if near the edge (within eraser size)
-                        if (Math.Abs(distance - 1.0) * Math.Min(ellipse.Width, ellipse.Height) / 2 <= _eraserSize)
-                        {
-                            shouldRemove = true;
-                        }
-                    }
-                }
-                // Check Polygon (complex 2D shapes, 3D shapes, charts)
-                else if (element is Polygon polygon)
-                {
-                    // Check if any point in the polygon is within eraser radius
-                    foreach (Point p in polygon.Points)
-                    {
-                        // Get polygon position offset
-                        double offsetX = Canvas.GetLeft(polygon);
-                        double offsetY = Canvas.GetTop(polygon);
-                        if (double.IsNaN(offsetX)) offsetX = 0;
-                        if (double.IsNaN(offsetY)) offsetY = 0;
-                        
-                        Point actualPoint = new Point(p.X + offsetX, p.Y + offsetY);
-                        double distance = Math.Sqrt(Math.Pow(actualPoint.X - point.X, 2) + Math.Pow(actualPoint.Y - point.Y, 2));
-                        if (distance <= _eraserSize)
-                        {
-                            shouldRemove = true;
-                            break;
-                        }
-                    }
-                }
-                // Check Path (arrows, complex shapes from gallery)
-                else if (element is System.Windows.Shapes.Path path)
-                {
-                    // Get path bounds
-                    double left = Canvas.GetLeft(path);
-                    double top = Canvas.GetTop(path);
-                    if (double.IsNaN(left)) left = 0;
-                    if (double.IsNaN(top)) top = 0;
-                    
-                    // Check if eraser point is within path bounds (expanded by eraser size)
-                    Rect bounds = new Rect(left, top, path.ActualWidth, path.ActualHeight);
-                    bounds.Inflate(_eraserSize, _eraserSize);
-                    
-                    if (bounds.Contains(point))
-                    {
-                        shouldRemove = true;
-                    }
-                }
-                
-                if (shouldRemove)
-                {
-                    elementsToRemove.Add(element);
-                }
-            }
-            
-            // Remove marked elements and record to undo stack
-            foreach (var element in elementsToRemove)
-            {
-                MainInteractiveBoard.Children.Remove(element);
-                RecordRemoveAction(element, $"Erase {element.GetType().Name}");
-            }
+            _eraserEngine ??= new EraserEngine(MainInteractiveBoard);
+            _eraserEngine.EraseByStrokeAtPoint(point, _eraserSize, _eraserEngine.CurrentMouseSession);
+        }
+
+        private void EraseByPointAt(Point point)
+        {
+            _eraserEngine ??= new EraserEngine(MainInteractiveBoard);
+            _eraserEngine.EraseByPoint(point, _eraserSize, _eraserEngine.CurrentMouseSession);
         }
 
         /// <summary>
-        /// Erase all canvas elements that intersect with the given rectangle.
-        /// Used by Drag-erase (marquee) mode.
+        /// Combines all removed and newly added elements from an eraser gesture session into ONE atomic Undo/Redo batch action.
+        /// Also syncs removed and newly generated sub-stroke elements with SelectionManager.
         /// </summary>
-        private void EraseElementsInRect(Rect eraseRect)
+        private void FinalizeEraseSession(EraseSession? session, string description)
         {
-            var elementsToRemove = new System.Collections.Generic.List<UIElement>();
+            if (session == null || !session.HasChanges) return;
 
-            foreach (UIElement element in MainInteractiveBoard.Children)
+            var batchAction = new UndoRedoAction
             {
-                // Skip system elements
-                if (element == _eraserPreview) continue;
-                if (element == _dragErasePreview) continue;
-                if (SelectionManager.IsBackgroundElement(element, Rect.Empty, MainInteractiveBoard.ActualWidth, MainInteractiveBoard.ActualHeight)) continue;
+                Type = ActionType.Batch,
+                Description = description,
+                Parent = MainInteractiveBoard
+            };
 
-                bool intersects = false;
-
-                if (element is Polyline polyline && polyline.Points.Count > 0)
+            foreach (var orig in session.OriginalRemovedElements)
+            {
+                batchAction.BatchActions.Add(new UndoRedoAction
                 {
-                    // Check if any polyline point falls inside the erase rect
-                    foreach (Point p in polyline.Points)
-                    {
-                        if (eraseRect.Contains(p)) { intersects = true; break; }
-                    }
-                }
-                else if (element is System.Windows.Shapes.Path path)
-                {
-                    // Use rendered geometry bounds for Path (covers smooth-path strokes)
-                    try
-                    {
-                        var geo = path.RenderedGeometry;
-                        if (geo != null)
-                        {
-                            var geoBounds = geo.Bounds;
-                            // Transform bounds to canvas coordinates
-                            var transform = path.TransformToVisual(MainInteractiveBoard);
-                            var topLeft  = transform.Transform(new Point(geoBounds.X, geoBounds.Y));
-                            var bottomRight = transform.Transform(new Point(geoBounds.Right, geoBounds.Bottom));
-                            var pathRect = new Rect(topLeft, bottomRight);
-                            intersects = eraseRect.IntersectsWith(pathRect);
-                        }
-                    }
-                    catch
-                    {
-                        // Fallback: use Canvas position
-                        double l = Canvas.GetLeft(path); if (double.IsNaN(l)) l = 0;
-                        double t = Canvas.GetTop(path);  if (double.IsNaN(t)) t = 0;
-                        intersects = eraseRect.IntersectsWith(new Rect(l, t, path.ActualWidth, path.ActualHeight));
-                    }
-                }
-                else if (element is Line line)
-                {
-                    // Check both endpoints and midpoint
-                    var p1 = new Point(line.X1, line.Y1);
-                    var p2 = new Point(line.X2, line.Y2);
-                    var mid = new Point((line.X1 + line.X2) / 2, (line.Y1 + line.Y2) / 2);
-                    intersects = eraseRect.Contains(p1) || eraseRect.Contains(p2) || eraseRect.Contains(mid)
-                                 || eraseRect.IntersectsWith(new Rect(p1, p2));
-                }
-                else if (element is FrameworkElement fe)
-                {
-                    double l = Canvas.GetLeft(fe); if (double.IsNaN(l)) l = 0;
-                    double t = Canvas.GetTop(fe);  if (double.IsNaN(t)) t = 0;
-                    intersects = eraseRect.IntersectsWith(new Rect(l, t, fe.ActualWidth, fe.ActualHeight));
-                }
-
-                if (intersects)
-                    elementsToRemove.Add(element);
+                    Type = ActionType.Remove,
+                    Element = orig,
+                    Parent = MainInteractiveBoard,
+                    Description = $"Erase {orig.GetType().Name}"
+                });
+                _selectionManager?.RemoveObjectByElement(orig);
             }
 
-            if (elementsToRemove.Count > 0)
+            foreach (var gen in session.ActiveGeneratedElements)
             {
-                var batchAction = new UndoRedoAction
+                batchAction.BatchActions.Add(new UndoRedoAction
                 {
-                    Type = ActionType.Batch,
-                    Description = $"Drag erase {elementsToRemove.Count} elements"
-                };
-
-                foreach (var element in elementsToRemove)
-                {
-                    MainInteractiveBoard.Children.Remove(element);
-                    batchAction.BatchActions.Add(new UndoRedoAction
-                    {
-                        Type = ActionType.Remove,
-                        Element = element,
-                        Parent = MainInteractiveBoard,
-                        Description = $"Drag erase sub-item {element.GetType().Name}"
-                    });
-                }
-                RecordAction(batchAction);
+                    Type = ActionType.Add,
+                    Element = gen,
+                    Parent = MainInteractiveBoard,
+                    Description = $"Sub-stroke {gen.GetType().Name}"
+                });
+                RegisterNewObjectWithSelectionManager(gen);
             }
 
-            System.Diagnostics.Debug.WriteLine($"🧹 EraseElementsInRect: removed {elementsToRemove.Count} elements");
+            RecordAction(batchAction);
         }
 
         // Helper method to calculate distance from point to line segment

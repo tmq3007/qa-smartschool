@@ -43,10 +43,13 @@ namespace QASmartClass.WhiteboardCore.Enums
     /// </summary>
     public enum EraserMode
     {
-        /// <summary>Xóa theo nét: chạm vào nét nào thì xóa nét đó.</summary>
+        /// <summary>Xóa từng nét: chạm vào nét nào thì xóa toàn bộ nét đó.</summary>
         Stroke,
 
-        /// <summary>Kéo vùng (Marquee): kéo khoanh vùng rồi xóa tất cả bên trong.</summary>
+        /// <summary>Xóa theo điểm: di chuyển đầu tẩy để xóa/cắt mẩu nét vẽ nằm trong bán kính tẩy.</summary>
+        Point,
+
+        /// <summary>Kéo vùng (Marquee / Legacy): giữ để tương thích ngược.</summary>
         Drag,
 
         /// <summary>Xóa tất cả nội dung trên bảng.</summary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -245,7 +245,8 @@ namespace QASmartTouch.Services.Canvas
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
                 Opacity = stroke.Opacity,
-                UseLayoutRounding = false
+                UseLayoutRounding = false,
+                Tag = new PointCollection(stroke.Points)
             };
 
             // Copy any Canvas positioning

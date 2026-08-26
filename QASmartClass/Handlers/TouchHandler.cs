@@ -33,7 +33,9 @@ namespace QASmartTouch.Handlers
         private Managers.TouchManager _touchManager;
         private Action<UIElement, string>? _recordAddAction;
         private Action<UIElement, string>? _recordRemoveAction;
+        private Action<Managers.EraseSession, string>? _recordEraseSessionAction;
         private Action<Point>? _updateEraserPreview;
+        private Action? _hideEraserPreview;
         private Action<Point>? _updatePointerAction;
         private Action? _onCanvasTouchDown; // ✅ Callback to notify MainDashboard of touch on canvas (for closing SubMenus)
         
@@ -55,13 +57,8 @@ namespace QASmartTouch.Handlers
         
         // Eraser properties
         private int _eraserSize = 20;
-        private string _eraserMode = "Stroke";  // "Stroke" or "Drag"
+        private string _eraserMode = "Stroke";  // "Stroke" or "Point"
         
-        // ENGINE A: Drag Erase support for Touch
-        private Point? _dragTouchStartPoint;
-        private Point? _dragTouchLastPosition;
-        private System.Windows.Shapes.Rectangle? _dragTouchPreviewRect;
-
         private Color _currentPenColor = Colors.White;
         private double _currentPenSize = 2;
         private string _currentBrushType = "Normal";
@@ -79,11 +76,11 @@ namespace QASmartTouch.Handlers
         }
 
         /// <summary>
-        /// Returns true if any touch strokes are currently being drawn.
+        /// Returns true if any touch contacts are currently active on canvas (drawing, erasing, etc.).
         /// Used by mouse handlers to detect when mouse events are promoted
-        /// from touch input (prevents duplicate strokes on interactive screens).
+        /// from touch input (prevents duplicate strokes/erase sessions on interactive screens).
         /// </summary>
-        public bool HasActiveTouches => _touchManager.GetActiveTouchCount() > 0;
+        public bool HasActiveTouches => _touchManager.GetActiveTouchCount() > 0 || _lastTouchPoints.Count > 0;
 
         public TouchHandler(Canvas canvas)
         {
@@ -123,6 +120,14 @@ namespace QASmartTouch.Handlers
         }
 
         /// <summary>
+        /// Set callback for recording atomic erase session batch actions
+        /// </summary>
+        public void SetRecordEraseSessionAction(Action<Managers.EraseSession, string> recordAction)
+        {
+            _recordEraseSessionAction = recordAction;
+        }
+
+        /// <summary>
         /// Set callback for updating pointer arrow position during touch pointer mode.
         /// </summary>
         public void SetUpdatePointerAction(Action<Point> updateAction)
@@ -138,6 +143,14 @@ namespace QASmartTouch.Handlers
         public void SetUpdateEraserPreviewAction(Action<Point> updateAction)
         {
             _updateEraserPreview = updateAction;
+        }
+
+        /// <summary>
+        /// Set callback for hiding eraser cursor preview when touch ends.
+        /// </summary>
+        public void SetHideEraserPreviewAction(Action hideAction)
+        {
+            _hideEraserPreview = hideAction;
         }
         
         /// <summary>
@@ -275,37 +288,26 @@ namespace QASmartTouch.Handlers
                 }
                 else if (_toolMode == TouchToolMode.Eraser)
                 {
-                    if (_eraserMode == "Drag")
+                    _lastTouchPoints[touchId] = position;
+                    if (_updateEraserPreview != null)
                     {
-                        // --- DRAG ERASE MODE (Touch) ---
-                        _canvas.CaptureTouch(e.TouchDevice);
-                        _dragTouchStartPoint = position;
-                        _dragTouchPreviewRect = new System.Windows.Shapes.Rectangle
-                        {
-                            Stroke = System.Windows.Media.Brushes.Red,
-                            StrokeThickness = 2,
-                            StrokeDashArray = new System.Windows.Media.DoubleCollection { 4, 4 },
-                            Fill = new System.Windows.Media.SolidColorBrush(
-                                System.Windows.Media.Color.FromArgb(25, 255, 0, 0)),
-                            IsHitTestVisible = false,
-                            Width = 0,
-                            Height = 0
-                        };
-                        Canvas.SetLeft(_dragTouchPreviewRect, position.X);
-                        Canvas.SetTop(_dragTouchPreviewRect, position.Y);
-                        Canvas.SetZIndex(_dragTouchPreviewRect, 9999);
-                        _canvas.Children.Add(_dragTouchPreviewRect);
-                        System.Diagnostics.Debug.WriteLine(
-                            $"🧹 Touch Drag erase started at ({position.X:F0}, {position.Y:F0})");
+                        _updateEraserPreview.Invoke(position);
                     }
                     else
                     {
-                        // --- STROKE ERASE MODE (existing) ---
-                        _lastTouchPoints[touchId] = position;
-                        _updateEraserPreview?.Invoke(position);
-                        EraseAtPoint(position);
-                        System.Diagnostics.Debug.WriteLine($"🧹 Touch {touchId} ERASE at ({position.X:F0}, {position.Y:F0})");
+                        _eraserEngine?.UpdateEraserPreview(position);
                     }
+                    _eraserEngine?.StartTouchSession(touchId);
+
+                    if (_eraserMode == "Point" || _eraserMode == "Drag")
+                    {
+                        EraseByPointAt(position, touchId);
+                    }
+                    else
+                    {
+                        EraseAtPoint(position, touchId);
+                    }
+                    System.Diagnostics.Debug.WriteLine($"🧹 Touch {touchId} ERASE at ({position.X:F0}, {position.Y:F0})");
                 }
                 // None mode: do nothing but still capture touch
             }
@@ -337,41 +339,35 @@ namespace QASmartTouch.Handlers
                 // ✅ QC_4.2_SMART_TOUCH_ERASER_PREVIEW_FIX: Luôn cập nhật vị trí vệt tẩy bám sát 100% điểm chạm bút cảm ứng
                 if (_toolMode == TouchToolMode.Eraser)
                 {
-                    _updateEraserPreview?.Invoke(position);
-                    if (_eraserEngine != null)
+                    if (_updateEraserPreview != null)
                     {
-                        _eraserEngine.UpdateEraserPreview(position);
+                        _updateEraserPreview.Invoke(position);
+                    }
+                    else
+                    {
+                        _eraserEngine?.UpdateEraserPreview(position);
                     }
 
-                    if (_eraserMode == "Drag" && _dragTouchStartPoint.HasValue && _dragTouchPreviewRect != null)
+                    if (_lastTouchPoints.TryGetValue(touchId, out var lastPt))
                     {
-                        // --- DRAG ERASE PREVIEW UPDATE ---
-                        _dragTouchLastPosition = position;
-                        double x = Math.Min(_dragTouchStartPoint.Value.X, position.X);
-                        double y = Math.Min(_dragTouchStartPoint.Value.Y, position.Y);
-                        double w = Math.Abs(position.X - _dragTouchStartPoint.Value.X);
-                        double h = Math.Abs(position.Y - _dragTouchStartPoint.Value.Y);
-                        Canvas.SetLeft(_dragTouchPreviewRect, x);
-                        Canvas.SetTop(_dragTouchPreviewRect, y);
-                        _dragTouchPreviewRect.Width = w;
-                        _dragTouchPreviewRect.Height = h;
-                    }
-                    else if (_eraserMode == "Stroke" && e.TouchDevice.Captured == _canvas)
-                    {
-                        // --- STROKE ERASE MODE ---
-                        if (_lastTouchPoints.TryGetValue(touchId, out var lastPt))
+                        double dx = position.X - lastPt.X;
+                        double dy = position.Y - lastPt.Y;
+                        double dist = Math.Sqrt(dx * dx + dy * dy);
+                        if (dist < TOUCH_ERASE_THROTTLE) // Minimum move distance for erase
                         {
-                            double dx = position.X - lastPt.X;
-                            double dy = position.Y - lastPt.Y;
-                            double dist = Math.Sqrt(dx * dx + dy * dy);
-                            if (dist < TOUCH_ERASE_THROTTLE) // Minimum move distance for erase
-                            {
-                                e.Handled = true;
-                                return;
-                            }
+                            e.Handled = true;
+                            return;
                         }
-                        _lastTouchPoints[touchId] = position;
-                        EraseAtPoint(position);
+                    }
+                    _lastTouchPoints[touchId] = position;
+
+                    if (_eraserMode == "Point" || _eraserMode == "Drag")
+                    {
+                        EraseByPointAt(position, touchId);
+                    }
+                    else
+                    {
+                        EraseAtPoint(position, touchId);
                     }
 
                     e.Handled = true;
@@ -416,101 +412,28 @@ namespace QASmartTouch.Handlers
             e.Handled = true;
         }
 
-        /// <summary>
-        /// ✅ QC_4.2_SMART_TOUCH_ERASER_FIX: Thu dọn và thực thi xóa vùng Drag Erase an toàn 100% trên IFP
-        /// </summary>
-        private void CompleteDragTouchErase(Point? endPosition = null)
-        {
-            if (_dragTouchStartPoint.HasValue)
-            {
-                var startPt = _dragTouchStartPoint.Value;
-                var endPt = endPosition ?? _dragTouchLastPosition ?? startPt;
-
-                double x = Math.Min(startPt.X, endPt.X);
-                double y = Math.Min(startPt.Y, endPt.Y);
-                double w = Math.Abs(endPt.X - startPt.X);
-                double h = Math.Abs(endPt.Y - startPt.Y);
-
-                if (_dragTouchPreviewRect != null)
-                {
-                    _canvas.Children.Remove(_dragTouchPreviewRect);
-                    _dragTouchPreviewRect = null;
-                }
-                _dragTouchStartPoint = null;
-                _dragTouchLastPosition = null;
-
-                if (w >= 5 && h >= 5)
-                {
-                    var eraseRect = new Rect(x, y, w, h);
-                    
-                    // ✅ QC_4.2_SMART_TOUCH_DRAG_ERASE_FIX: Đảm bảo EraserEngine không bao giờ null khi Drag Erase trên màn hình cảm ứng
-                    _eraserEngine ??= new Managers.EraserEngine(_canvas);
-
-                    var erased = _eraserEngine.EraseByDrag(eraseRect);
-                    System.Diagnostics.Debug.WriteLine(
-                        $"🧹 [SMART TOUCH ERASE FIX] Drag erase completed: ({x:F0},{y:F0}) {w:F0}x{h:F0} — {erased.Count} elements erased");
-
-                    if (erased != null && erased.Count > 0)
-                    {
-                        foreach (var el in erased)
-                        {
-                            _recordRemoveAction?.Invoke(el, "Touch drag erase");
-                        }
-                    }
-                    else
-                    {
-                        // Fallback xóa trực tiếp trên Canvas đối với các phần tử đặc biệt
-                        var elementsToRemove = new List<UIElement>();
-                        foreach (UIElement child in _canvas.Children)
-                        {
-                            if (child is FrameworkElement fe && fe.Tag?.ToString() == "BackgroundLayer") continue;
-                            if (!child.IsHitTestVisible) continue;
-                            if (child is Rectangle rect && rect.IsHitTestVisible == false && rect.StrokeDashArray != null) continue;
-
-                            Rect bounds = QASmartTouch.Helpers.BoundsHelper.GetAbsoluteBounds(child, _canvas);
-                            if (!bounds.IsEmpty && eraseRect.IntersectsWith(bounds))
-                            {
-                                elementsToRemove.Add(child);
-                            }
-                        }
-
-                        foreach (var element in elementsToRemove)
-                        {
-                            _canvas.Children.Remove(element);
-                            _recordRemoveAction?.Invoke(element, "Touch drag erase fallback");
-                            System.Diagnostics.Debug.WriteLine($"🧹 [SMART TOUCH ERASE FALLBACK] Erased element: {element.GetType().Name}");
-                        }
-                    }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("🧹 [SMART TOUCH ERASE FIX] Drag erase cancelled (area too small)");
-                }
-            }
-            else if (_dragTouchPreviewRect != null)
-            {
-                _canvas.Children.Remove(_dragTouchPreviewRect);
-                _dragTouchPreviewRect = null;
-            }
-        }
-
         private void Canvas_TouchLeave(object sender, TouchEventArgs e)
         {
-            if (_dragTouchStartPoint.HasValue || _dragTouchPreviewRect != null)
+            Canvas_TouchUp(sender, e);
+
+            if (_toolMode == TouchToolMode.Eraser)
             {
-                CompleteDragTouchErase();
-            }
-            else
-            {
-                Canvas_TouchUp(sender, e);
+                _eraserEngine?.HideEraserPreview();
+                _hideEraserPreview?.Invoke();
             }
         }
 
         private void Canvas_LostTouchCapture(object sender, TouchEventArgs e)
         {
-            if (_dragTouchStartPoint.HasValue || _dragTouchPreviewRect != null)
+            if (e.TouchDevice != null)
             {
-                CompleteDragTouchErase();
+                _lastTouchPoints.Remove(e.TouchDevice.Id);
+            }
+
+            if (_toolMode == TouchToolMode.Eraser)
+            {
+                _eraserEngine?.HideEraserPreview();
+                _hideEraserPreview?.Invoke();
             }
         }
 
@@ -519,16 +442,6 @@ namespace QASmartTouch.Handlers
             try
             {
                 if (!_isEnabled) return;
-
-                // ✅ QC_4.2_SMART_TOUCH_ERASER_FIX: FOR DRAG ERASE, DO NOT early-return on Captured != _canvas!
-                // Driver màn hình cảm ứng Smart Touch (IFP) giải phóng TouchCapture trước khi dispatch TouchUp.
-                if (_toolMode == TouchToolMode.Eraser && _eraserMode == "Drag" && _dragTouchStartPoint.HasValue)
-                {
-                    Point upPos = e.GetTouchPoint(_canvas).Position;
-                    CompleteDragTouchErase(upPos);
-                    e.Handled = true;
-                    return;
-                }
 
                 if (_toolMode == TouchToolMode.None || 
                     (_toolMode == TouchToolMode.Eraser && _eraserMode == "ClearAll"))
@@ -562,9 +475,16 @@ namespace QASmartTouch.Handlers
                 }
                 else if (_toolMode == TouchToolMode.Eraser)
                 {
-                    // --- STROKE ERASE MODE cleanup ---
-                    _touchManager.CompleteStroke(e.TouchDevice.Id);
-                    System.Diagnostics.Debug.WriteLine($"🧹 Touch {e.TouchDevice.Id} erase completed");
+                    // --- STROKE / POINT ERASE MODE cleanup & atomic batch record ---
+                    _touchManager.CompleteStroke(touchId);
+                    var session = _eraserEngine?.EndTouchSession(touchId);
+                    if (session != null && session.HasChanges)
+                    {
+                        _recordEraseSessionAction?.Invoke(session, $"Touch erase (ID: {touchId})");
+                    }
+                    _eraserEngine?.HideEraserPreview();
+                    _hideEraserPreview?.Invoke();
+                    System.Diagnostics.Debug.WriteLine($"🧹 Touch {touchId} erase completed");
                 }
 
                 // Clean up smoother and last-point tracker for this touch
@@ -652,193 +572,24 @@ namespace QASmartTouch.Handlers
         /// </summary>
         // ═══════════════════════════════════════════════════════
         // ENGINE A: SMART TOUCH MODULE — Touch Eraser
-        // Thuật toán: Hình học thủ công 8 nhánh (Polyline/Path/Line/Rect/Ellipse/Polygon/Image/TextBlock)
-        // Bán kính: _eraserSize (mặc định 20px)
-        // Reference: eraser_tool_specification.md v2.1 Mục III.B
-        // ═══════════════════════════════════════════════════════
-        private void EraseAtPoint(Point point)
+        /// <summary>
+        /// Erases entire stroke/object at given point (Stroke Erase mode).
+        /// </summary>
+        private void EraseAtPoint(Point point, int touchId = -1)
         {
-            var elementsToRemove = new List<UIElement>();
-
-            foreach (UIElement element in _canvas.Children)
-            {
-                // Skip non-removable elements
-                if (element is FrameworkElement fwElement && fwElement.Tag?.ToString() == "BackgroundLayer")
-                    continue;
-                
-                // ✅ Phase 0.3: Skip non-hittestable elements (e.g., eraser preview cursor)
-                if (!element.IsHitTestVisible)
-                    continue;
-
-                bool shouldRemove = false;
-
-                // Check Polyline (raw pen strokes)
-                if (element is Polyline polyline)
-                {
-                    foreach (Point p in polyline.Points)
-                    {
-                        double dx = p.X - point.X;
-                        double dy = p.Y - point.Y;
-                        if (dx * dx + dy * dy <= _eraserSize * _eraserSize)
-                        {
-                            shouldRemove = true;
-                            break;
-                        }
-                    }
-                }
-                // Check Path (smooth Bezier strokes created by ConvertToSmoothPath)
-                else if (element is System.Windows.Shapes.Path path && path.Data != null)
-                {
-                    // Check if point is within the path's rendered bounds + eraser radius
-                    var bounds = path.Data.Bounds;
-                    var inflated = new Rect(
-                        bounds.X - _eraserSize,
-                        bounds.Y - _eraserSize,
-                        bounds.Width + _eraserSize * 2,
-                        bounds.Height + _eraserSize * 2);
-
-                    if (inflated.Contains(point))
-                    {
-                        // More precise check: use path geometry hit test
-                        var pen = new Pen(Brushes.Black, (path.StrokeThickness > 0 ? path.StrokeThickness : 2) + _eraserSize * 2);
-                        bool hit = path.Data.StrokeContains(pen, point);
-                        if (hit)
-                        {
-                            shouldRemove = true;
-                        }
-                    }
-                }
-                // Check Line
-                else if (element is Line line)
-                {
-                    double dist = DistanceFromPointToLine(point, new Point(line.X1, line.Y1), new Point(line.X2, line.Y2));
-                    if (dist <= _eraserSize)
-                    {
-                        shouldRemove = true;
-                    }
-                }
-                // ✅ Phase 0.3: Check Rectangle
-                else if (element is Rectangle rectangle)
-                {
-                    double left = Canvas.GetLeft(rectangle);
-                    double top = Canvas.GetTop(rectangle);
-                    if (double.IsNaN(left)) left = 0;
-                    if (double.IsNaN(top)) top = 0;
-                    
-                    double right = left + rectangle.ActualWidth;
-                    double bottom = top + rectangle.ActualHeight;
-                    
-                    // Hit if point is near any edge or inside the rectangle
-                    bool hitInside = point.X >= left && point.X <= right && point.Y >= top && point.Y <= bottom;
-                    bool hitEdge = (Math.Abs(point.Y - top) <= _eraserSize && point.X >= left - _eraserSize && point.X <= right + _eraserSize)
-                                || (Math.Abs(point.Y - bottom) <= _eraserSize && point.X >= left - _eraserSize && point.X <= right + _eraserSize)
-                                || (Math.Abs(point.X - left) <= _eraserSize && point.Y >= top - _eraserSize && point.Y <= bottom + _eraserSize)
-                                || (Math.Abs(point.X - right) <= _eraserSize && point.Y >= top - _eraserSize && point.Y <= bottom + _eraserSize);
-                    
-                    if (hitEdge || hitInside)
-                    {
-                        shouldRemove = true;
-                    }
-                }
-                // ✅ Phase 0.3: Check Ellipse
-                else if (element is Ellipse ellipse)
-                {
-                    double left = Canvas.GetLeft(ellipse);
-                    double top = Canvas.GetTop(ellipse);
-                    if (double.IsNaN(left)) left = 0;
-                    if (double.IsNaN(top)) top = 0;
-                    
-                    double cx = left + ellipse.ActualWidth / 2;
-                    double cy = top + ellipse.ActualHeight / 2;
-                    double rx = ellipse.ActualWidth / 2;
-                    double ry = ellipse.ActualHeight / 2;
-                    
-                    if (rx > 0 && ry > 0)
-                    {
-                        // Normalized distance from center (1.0 = on edge)
-                        double ndx = (point.X - cx) / rx;
-                        double ndy = (point.Y - cy) / ry;
-                        double dist = Math.Sqrt(ndx * ndx + ndy * ndy);
-                        
-                        bool isFilled = ellipse.Fill != null && ellipse.Fill != Brushes.Transparent;
-                        if (isFilled && dist <= 1.0 + (_eraserSize / Math.Min(rx * 2, ry * 2)))
-                        {
-                            shouldRemove = true;
-                        }
-                        else if (!isFilled && Math.Abs(dist - 1.0) * Math.Min(rx * 2, ry * 2) / 2 <= _eraserSize)
-                        {
-                            shouldRemove = true;
-                        }
-                    }
-                }
-                // ✅ Phase 0.3: Check Polygon
-                else if (element is Polygon polygon)
-                {
-                    double offsetX = Canvas.GetLeft(polygon);
-                    double offsetY = Canvas.GetTop(polygon);
-                    if (double.IsNaN(offsetX)) offsetX = 0;
-                    if (double.IsNaN(offsetY)) offsetY = 0;
-                    
-                    foreach (Point p in polygon.Points)
-                    {
-                        Point actual = new Point(p.X + offsetX, p.Y + offsetY);
-                        double dx = actual.X - point.X;
-                        double dy = actual.Y - point.Y;
-                        if (dx * dx + dy * dy <= _eraserSize * _eraserSize)
-                        {
-                            shouldRemove = true;
-                            break;
-                        }
-                    }
-                }
-                // ✅ Phase 0.3: Catch-all for FrameworkElement (Image, Grid, etc.)
-                else if (element is FrameworkElement genericFe)
-                {
-                    double feLeft = Canvas.GetLeft(genericFe);
-                    double feTop = Canvas.GetTop(genericFe);
-                    if (double.IsNaN(feLeft)) feLeft = 0;
-                    if (double.IsNaN(feTop)) feTop = 0;
-                    
-                    var feBounds = new Rect(feLeft, feTop, genericFe.ActualWidth, genericFe.ActualHeight);
-                    feBounds.Inflate(_eraserSize, _eraserSize);
-                    if (feBounds.Contains(point))
-                    {
-                        shouldRemove = true;
-                    }
-                }
-
-                if (shouldRemove)
-                {
-                    elementsToRemove.Add(element);
-                }
-            }
-
-            // Remove elements from canvas
-            foreach (var element in elementsToRemove)
-            {
-                _canvas.Children.Remove(element);
-                _recordRemoveAction?.Invoke(element, "Touch erase");
-                System.Diagnostics.Debug.WriteLine($"🧹 Touch erased element: {element.GetType().Name}");
-            }
+            _eraserEngine ??= new Managers.EraserEngine(_canvas);
+            var session = touchId >= 0 ? _eraserEngine.GetTouchSession(touchId) : null;
+            _eraserEngine.EraseByStrokeAtPoint(point, _eraserSize, session);
         }
 
         /// <summary>
-        /// Calculate distance from point to line segment
+        /// Slices/cuts strokes under touch point (Point Erase mode).
         /// </summary>
-        private static double DistanceFromPointToLine(Point p, Point a, Point b)
+        private void EraseByPointAt(Point point, int touchId = -1)
         {
-            double dx = b.X - a.X;
-            double dy = b.Y - a.Y;
-            double lengthSq = dx * dx + dy * dy;
-
-            if (lengthSq == 0)
-                return Math.Sqrt((p.X - a.X) * (p.X - a.X) + (p.Y - a.Y) * (p.Y - a.Y));
-
-            double t = Math.Max(0, Math.Min(1, ((p.X - a.X) * dx + (p.Y - a.Y) * dy) / lengthSq));
-            double projX = a.X + t * dx;
-            double projY = a.Y + t * dy;
-
-            return Math.Sqrt((p.X - projX) * (p.X - projX) + (p.Y - projY) * (p.Y - projY));
+            _eraserEngine ??= new Managers.EraserEngine(_canvas);
+            var session = touchId >= 0 ? _eraserEngine.GetTouchSession(touchId) : null;
+            _eraserEngine.EraseByPoint(point, _eraserSize, session);
         }
 
         /// <summary>

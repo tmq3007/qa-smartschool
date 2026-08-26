@@ -730,6 +730,8 @@ namespace QASmartTouch.Forms
                         double.TryParse(txtW.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double newW) && newW > 0 &&
                         double.TryParse(txtH.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double newH) && newH > 0)
                     {
+                        var initialStates = CaptureTargetTransformStates(obj);
+
                         // Apply position
                         if (_transformService != null)
                         {
@@ -743,11 +745,11 @@ namespace QASmartTouch.Forms
                         var toolbarPos = CalculateOptimalToolbarPosition(obj.Bounds);
                         _contextToolbar?.ShowAt(toolbarPos, obj);
 
-                        RecordModifyAction(obj.Element, "SizePosition",
-                            $"({newX:F0},{newY:F0}) {newW:F0}×{newH:F0}", "Edit Size & Position");
+                        var finalStates = CaptureTargetTransformStates(obj);
+                        RecordTransformAction(initialStates, finalStates, "Edit Size & Position");
 
                         System.Diagnostics.Debug.WriteLine(
-                            $"📏 Size/Position set: ({newX:F0},{newY:F0}) {newW:F0}×{newH:F0}");
+                            $"📏 Size/Position set & recorded Undo: ({newX:F0},{newY:F0}) {newW:F0}×{newH:F0}");
                     }
                     else
                     {
