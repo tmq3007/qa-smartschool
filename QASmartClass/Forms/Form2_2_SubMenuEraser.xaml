@@ -150,15 +150,15 @@
                     </Button.Template>
                 </Button>
 
-                <!-- Mode 2: Erase by Drag -->
-                <Button x:Name="btnEraseByDrag" 
+                <!-- Mode 2: Erase by Point -->
+                <Button x:Name="btnEraseByPoint" 
                         Height="65"
                         Margin="0,0,0,8"
                         Background="#F3E5F5"
                         BorderThickness="0"
                         Cursor="Hand"
                         Click="btnEraseMode_Click"
-                        Tag="Drag">
+                        Tag="Point">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="border" 
@@ -167,13 +167,13 @@
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     CornerRadius="12"
                                     Padding="10">
-                                <Grid>
+                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     
-                                    <!-- ✅ Phase 2.2: Icon: Selection Rectangle (hình chữ nhật chọn vùng) -->
+                                    <!-- Icon: Eraser Tip / Point (xóa theo điểm) -->
                                     <Border Grid.Column="0" 
                                             Width="36" Height="36"
                                             Background="#9C27B0"
@@ -183,19 +183,19 @@
                                         <Viewbox Width="20" Height="20">
                                             <Canvas Width="24" Height="24">
                                                 <Path Fill="White" 
-                                                      Data="M2,4H8V6H4V10H2V4M22,4V10H20V6H16V4H22M2,20V14H4V18H8V20H2M16,20V18H20V14H22V20H16M9,7V9H7V15H9V17H15V15H17V9H15V7H9M9,9H15V15H9V9Z"/>
+                                                      Data="M15.14,3C14.63,3 14.12,3.2 13.73,3.59L2.59,14.73C1.81,15.5 1.81,16.77 2.59,17.56L6.44,21.41C7.22,22.2 8.49,22.2 9.27,21.41L20.41,10.27C21.2,9.49 21.2,8.22 20.41,7.44L16.56,3.59C16.17,3.2 15.65,3 15.14,3M15.14,5.41L18.59,8.86L14.73,12.73L11.27,9.27L15.14,5.41M9.86,10.68L13.32,14.14L9.27,18.19L5.81,14.73L9.86,10.68Z"/>
                                             </Canvas>
                                         </Viewbox>
                                     </Border>
                                     
                                     <!-- Text -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="Xóa theo vùng kéo" 
+                                        <TextBlock Text="Xóa theo điểm" 
                                                    FontSize="13"
                                                    FontWeight="SemiBold"
                                                    Foreground="{TemplateBinding Foreground}"
                                                    Margin="0,0,0,1"/>
-                                        <TextBlock Text="Kéo để chọn vùng cần xóa" 
+                                        <TextBlock Text="Xóa từng mẩu nét theo vệt tẩy" 
                                                    FontSize="10"
                                                    Foreground="{TemplateBinding Foreground}"
                                                    TextWrapping="Wrap"
@@ -203,7 +203,7 @@
                                     </StackPanel>
                                 </Grid>
                             </Border>
-                            <!-- ✅ Phase 2.1: Hover effect -->
+                            <!-- Hover effect -->
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="border" Property="Background" Value="#E1BEE7"/>

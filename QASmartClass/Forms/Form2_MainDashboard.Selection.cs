@@ -198,6 +198,89 @@ namespace QASmartTouch.Forms
             }
         }
 
+        #region Transform Snapshot Helpers for Canvas Drag & Toolbar
+
+        private System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> _canvasDragInitialStates = new();
+
+        /// <summary>
+        /// Chụp lại snapshot trạng thái hình học của toàn bộ các đối tượng đang được chọn
+        /// </summary>
+        private System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> CaptureSelectedObjectsTransformStates()
+        {
+            var dict = new System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState>();
+            var selected = _selectionManager?.GetSelectedObjects();
+            if (selected != null && selected.Count > 0)
+            {
+                foreach (var obj in selected)
+                {
+                    if (obj != null)
+                    {
+                        if (obj.IsGroup && obj.GroupMembers != null && obj.GroupMembers.Count > 0)
+                        {
+                            foreach (var m in obj.GroupMembers)
+                            {
+                                if (m != null) dict[m] = ElementTransformState.Create(m);
+                            }
+                        }
+                        else
+                        {
+                            dict[obj] = ElementTransformState.Create(obj);
+                        }
+                    }
+                }
+            }
+            else if (_draggedSelectionObject != null)
+            {
+                if (_draggedSelectionObject.IsGroup && _draggedSelectionObject.GroupMembers != null && _draggedSelectionObject.GroupMembers.Count > 0)
+                {
+                    foreach (var m in _draggedSelectionObject.GroupMembers)
+                    {
+                        if (m != null) dict[m] = ElementTransformState.Create(m);
+                    }
+                }
+                else
+                {
+                    dict[_draggedSelectionObject] = ElementTransformState.Create(_draggedSelectionObject);
+                }
+            }
+            return dict;
+        }
+
+        /// <summary>
+        /// Chụp snapshot cho một đối tượng đơn hoặc toàn bộ thành viên nếu là nhóm
+        /// </summary>
+        private System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> CaptureTargetTransformStates(SelectableObject? targetObj)
+        {
+            var dict = new System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState>();
+            if (targetObj == null) return dict;
+
+            if (targetObj.IsGroup || targetObj.Type == ObjectType.Group || (targetObj.GroupMembers != null && targetObj.GroupMembers.Count > 0))
+            {
+                foreach (var m in targetObj.GroupMembers)
+                {
+                    if (m != null) dict[m] = ElementTransformState.Create(m);
+                }
+            }
+            else
+            {
+                dict[targetObj] = ElementTransformState.Create(targetObj);
+            }
+            return dict;
+        }
+
+        /// <summary>
+        /// Xử lý khi SelectionBox hoàn thành thao tác Move/Resize/Rotate
+        /// </summary>
+        private void OnSelectionBoxTransformCompleted(object? sender, SelectionBox.TransformCompletedEventArgs e)
+        {
+            if (e != null && e.InitialStates != null && e.FinalStates != null && e.InitialStates.Count > 0)
+            {
+                RecordTransformAction(e.InitialStates, e.FinalStates, e.Description);
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// Mouse down handler for object selection & rectangle selection
         /// </summary>
@@ -275,6 +358,7 @@ namespace QASmartTouch.Forms
                 _isDraggingSelection = false;
                 _pendingHitObject = null;
                 _isPreparingRectangleSelection = false; // ✅ Khóa vẽ vùng chọn
+                _canvasDragInitialStates = CaptureSelectedObjectsTransformStates();
                 System.Diagnostics.Debug.WriteLine($"🔒 Dragging existing selection - anchor: {hitObject.Type}");
                 return;
             }
@@ -620,7 +704,9 @@ namespace QASmartTouch.Forms
                 {
                     // ✅ N23 FIX: Rebuild QuadTree spatial index ngay khi kết thúc kéo di chuyển
                     _selectionManager?.RebuildQuadTree();
-                    System.Diagnostics.Debug.WriteLine("🌳 Selection drag ended: Rebuilt QuadTree spatial index.");
+                    var finalStates = CaptureSelectedObjectsTransformStates();
+                    RecordTransformAction(_canvasDragInitialStates, finalStates, "Move object(s)");
+                    System.Diagnostics.Debug.WriteLine("🌳 Selection drag ended: Rebuilt QuadTree & recorded Undo action.");
                 }
 
                 // Reset toàn bộ cờ kéo di chuyển
@@ -628,6 +714,7 @@ namespace QASmartTouch.Forms
                 _draggedSelectionObject = null;
                 _isPreparingRectangleSelection = false;
                 _pendingHitObject = null;
+                _canvasDragInitialStates.Clear();
 
                 // ✅ FIX TRIỆT ĐỂ: Thao tác trên đối tượng đã chọn xong thì RETURN NGAY,
                 // TUYỆT ĐỐI KHÔNG để rơi xuống nhánh DeselectAll() bên dưới!
@@ -1111,7 +1198,7 @@ namespace QASmartTouch.Forms
 
             System.Diagnostics.Debug.WriteLine($"🔄 Rotate90: IsGroup={targetObj.IsGroup}, Members={targetObj.GroupMembers?.Count ?? 0}");
 
-            var oldAngle = targetObj.RotationAngle;
+            var initialStates = CaptureTargetTransformStates(targetObj);
             _transformService.RotateInPlace(targetObj, 90);
 
             // Cập nhật SelectionBox và Toolbar vị trí mới
@@ -1124,9 +1211,9 @@ namespace QASmartTouch.Forms
                 _contextToolbar.ShowAt(pos, targetObj);
             }
 
-            if (targetObj.Element != null)
-                RecordModifyAction(targetObj.Element, "RotationAngle", oldAngle, targetObj.RotationAngle, "Rotate 90°");
-            System.Diagnostics.Debug.WriteLine($"🔄 Rotated 90° in-place applied");
+            var finalStates = CaptureTargetTransformStates(targetObj);
+            RecordTransformAction(initialStates, finalStates, "Rotate 90°");
+            System.Diagnostics.Debug.WriteLine($"🔄 Rotated 90° in-place applied & recorded Undo");
         }
 
         private void OnToolbarFlipHorizontalClicked(object? sender, EventArgs e)
@@ -1137,6 +1224,7 @@ namespace QASmartTouch.Forms
 
             System.Diagnostics.Debug.WriteLine($"↔️ FlipH: IsGroup={targetObj.IsGroup}, Members={targetObj.GroupMembers?.Count ?? 0}");
 
+            var initialStates = CaptureTargetTransformStates(targetObj);
             _transformService.FlipHorizontal(targetObj);
 
             if (_selectionBox != null) _selectionBox.AttachTo(targetObj);
@@ -1148,9 +1236,9 @@ namespace QASmartTouch.Forms
                 _contextToolbar.ShowAt(pos, targetObj);
             }
 
-            if (targetObj.Element != null)
-                RecordAddAction(targetObj.Element, "Flip Horizontal");
-            System.Diagnostics.Debug.WriteLine("↔️ Flip Horizontal in-place applied");
+            var finalStates = CaptureTargetTransformStates(targetObj);
+            RecordTransformAction(initialStates, finalStates, "Flip Horizontal");
+            System.Diagnostics.Debug.WriteLine("↔️ Flip Horizontal in-place applied & recorded Undo");
         }
 
         private void OnToolbarFlipVerticalClicked(object? sender, EventArgs e)
@@ -1161,6 +1249,7 @@ namespace QASmartTouch.Forms
 
             System.Diagnostics.Debug.WriteLine($"↕️ FlipV: IsGroup={targetObj.IsGroup}, Members={targetObj.GroupMembers?.Count ?? 0}");
 
+            var initialStates = CaptureTargetTransformStates(targetObj);
             _transformService.FlipVertical(targetObj);
 
             if (_selectionBox != null) _selectionBox.AttachTo(targetObj);
@@ -1172,10 +1261,11 @@ namespace QASmartTouch.Forms
                 _contextToolbar.ShowAt(pos, targetObj);
             }
 
-            if (targetObj.Element != null)
-                RecordAddAction(targetObj.Element, "Flip Vertical");
-            System.Diagnostics.Debug.WriteLine("↕️ Flip Vertical in-place applied");
+            var finalStates = CaptureTargetTransformStates(targetObj);
+            RecordTransformAction(initialStates, finalStates, "Flip Vertical");
+            System.Diagnostics.Debug.WriteLine("↕️ Flip Vertical in-place applied & recorded Undo");
         }
+
 
         private void OnToolbarThicknessClicked(object? sender, EventArgs e)
         {
@@ -1462,20 +1552,19 @@ namespace QASmartTouch.Forms
             if (_selectionManager?.SelectedObject != null && _transformService != null)
             {
                 var obj = _selectionManager.SelectedObject;
-                var oldScaleX = obj.Scale?.ScaleX ?? 1;
+                var initialStates = CaptureTargetTransformStates(obj);
                 
                 // Apply flip
                 _transformService.FlipHorizontal(obj);
                 _selectionBox?.UpdatePosition();
                 
-                // Record for undo/redo
-                var newScaleX = obj.Scale?.ScaleX ?? 1;
-                RecordModifyAction(obj.Element, oldScaleX, newScaleX, "Flip Horizontal");
+                var finalStates = CaptureTargetTransformStates(obj);
+                RecordTransformAction(initialStates, finalStates, "Flip Horizontal");
                 
                 // Visual feedback
                 AnimateFlip(obj.Element, true);
                 
-                System.Diagnostics.Debug.WriteLine($"↔️ Flipped horizontally: ScaleX {oldScaleX} → {newScaleX}");
+                System.Diagnostics.Debug.WriteLine("↔️ Flipped horizontally & recorded Undo");
             }
         }
 
@@ -1484,20 +1573,19 @@ namespace QASmartTouch.Forms
             if (_selectionManager?.SelectedObject != null && _transformService != null)
             {
                 var obj = _selectionManager.SelectedObject;
-                var oldScaleY = obj.Scale?.ScaleY ?? 1;
+                var initialStates = CaptureTargetTransformStates(obj);
                 
                 // Apply flip
                 _transformService.FlipVertical(obj);
                 _selectionBox?.UpdatePosition();
                 
-                // Record for undo/redo
-                var newScaleY = obj.Scale?.ScaleY ?? 1;
-                RecordModifyAction(obj.Element, oldScaleY, newScaleY, "Flip Vertical");
+                var finalStates = CaptureTargetTransformStates(obj);
+                RecordTransformAction(initialStates, finalStates, "Flip Vertical");
                 
                 // Visual feedback
                 AnimateFlip(obj.Element, false);
                 
-                System.Diagnostics.Debug.WriteLine($"↕️ Flipped vertically: ScaleY {oldScaleY} → {newScaleY}");
+                System.Diagnostics.Debug.WriteLine("↕️ Flipped vertically & recorded Undo");
             }
         }
 
@@ -1509,7 +1597,7 @@ namespace QASmartTouch.Forms
             var targetObj = selectedObjects.Count == 1 ? selectedObjects[0] : _selectionBox?.AttachedObject;
             if (targetObj != null && _transformService != null)
             {
-                var oldAngle = targetObj.RotationAngle;
+                var initialStates = CaptureTargetTransformStates(targetObj);
                 _transformService.RotateInPlace(targetObj, 180);
                 
                 if (_selectionBox != null) _selectionBox.AttachTo(targetObj);
@@ -1521,8 +1609,9 @@ namespace QASmartTouch.Forms
                     _contextToolbar.ShowAt(pos, targetObj);
                 }
 
-                RecordModifyAction(targetObj.Element, "RotationAngle", oldAngle, targetObj.RotationAngle, "Rotate 180°");
-                System.Diagnostics.Debug.WriteLine($"🔄 Rotated 180° in-place");
+                var finalStates = CaptureTargetTransformStates(targetObj);
+                RecordTransformAction(initialStates, finalStates, "Rotate 180°");
+                System.Diagnostics.Debug.WriteLine($"🔄 Rotated 180° in-place & recorded Undo");
             }
         }
 
@@ -1534,7 +1623,7 @@ namespace QASmartTouch.Forms
             var targetObj = selectedObjects.Count == 1 ? selectedObjects[0] : _selectionBox?.AttachedObject;
             if (targetObj != null && _transformService != null)
             {
-                var oldAngle = targetObj.RotationAngle;
+                var initialStates = CaptureTargetTransformStates(targetObj);
                 _transformService.RotateInPlace(targetObj, -90);
                 
                 if (_selectionBox != null) _selectionBox.AttachTo(targetObj);
@@ -1546,8 +1635,9 @@ namespace QASmartTouch.Forms
                     _contextToolbar.ShowAt(pos, targetObj);
                 }
 
-                RecordModifyAction(targetObj.Element, "RotationAngle", oldAngle, targetObj.RotationAngle, "Rotate Left 90°");
-                System.Diagnostics.Debug.WriteLine($"↩️ Rotated Left 90° in-place");
+                var finalStates = CaptureTargetTransformStates(targetObj);
+                RecordTransformAction(initialStates, finalStates, "Rotate Left 90°");
+                System.Diagnostics.Debug.WriteLine($"↩️ Rotated Left 90° in-place & recorded Undo");
             }
         }
 
@@ -1573,7 +1663,7 @@ namespace QASmartTouch.Forms
                 
                 var labelCurrent = new TextBlock
                 {
-                    Text = $"Current angle: {oldAngle:F0}Â°",
+                    Text = $"Current angle: {oldAngle:F0}°",
                     Foreground = Brushes.White,
                     FontSize = 14,
                     Margin = new Thickness(0, 0, 0, 10)
@@ -1640,6 +1730,8 @@ namespace QASmartTouch.Forms
                     // Clamp to 0-360
                     newAngle = ((newAngle % 360) + 360) % 360;
                     
+                    var initialStates = CaptureTargetTransformStates(obj);
+
                     // Apply rotation
                     double delta = newAngle - oldAngle;
                     _transformService.RotateInPlace(obj, delta);
@@ -1652,13 +1744,13 @@ namespace QASmartTouch.Forms
                         _contextToolbar.ShowAt(pos, obj);
                     }
                     
-                    // Record for undo/redo
-                    RecordModifyAction(obj.Element, "RotationAngle", oldAngle, newAngle, $"Rotate Custom {newAngle:F0}°");
+                    var finalStates = CaptureTargetTransformStates(obj);
+                    RecordTransformAction(initialStates, finalStates, $"Rotate Custom {newAngle:F0}°");
                     
                     // Visual feedback
                     AnimateRotation(obj.Element, oldAngle, newAngle);
                     
-                    System.Diagnostics.Debug.WriteLine($"🔄 Rotated custom: {oldAngle:F0}° → {newAngle:F0}°");
+                    System.Diagnostics.Debug.WriteLine($"🔄 Rotated custom: {oldAngle:F0}° → {newAngle:F0}° & recorded Undo");
                 }
                 
                 _moreMenu?.Hide();

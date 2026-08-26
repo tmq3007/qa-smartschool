@@ -28,7 +28,7 @@ namespace QASmartTouch.Controls
         private bool _isMoving = false; // [BUG_DRAG_MOVE] Drag-to-move state
         private bool _isManipulating = false;
 
-        private const double SnapAngleThresholdDegrees = 3.5;
+        private System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> _activeTransformInitialStates = new();
 
         /// <summary>
         /// True nếu đang trong quá trình kéo chốt resize hoặc xoay
@@ -42,7 +42,99 @@ namespace QASmartTouch.Controls
 
         #endregion
 
-        #region Events
+        #region Transform Snapshot Helpers
+
+        /// <summary>
+        /// Chụp lại snapshot trạng thái hình học hiện tại của đối tượng đang attach (hoặc toàn bộ thành viên nhóm)
+        /// </summary>
+        private System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> CaptureCurrentTransformStates()
+        {
+            var states = new System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState>();
+            if (_attachedObject == null) return states;
+
+            if (_attachedObject.IsGroup || _attachedObject.Type == ObjectType.Group || (_attachedObject.GroupMembers != null && _attachedObject.GroupMembers.Count > 0))
+            {
+                foreach (var member in _attachedObject.GroupMembers)
+                {
+                    if (member != null)
+                    {
+                        states[member] = ElementTransformState.Create(member);
+                    }
+                }
+            }
+            else
+            {
+                states[_attachedObject] = ElementTransformState.Create(_attachedObject);
+            }
+            return states;
+        }
+
+        /// <summary>
+        /// Hoàn tất thao tác biến đổi, so sánh snapshot ban đầu và kết thúc. Nếu có sự thay đổi thì phát sinh event TransformCompleted
+        /// </summary>
+        private void FinishTransformOperation(string description)
+        {
+            if (_attachedObject == null || _activeTransformInitialStates == null || _activeTransformInitialStates.Count == 0)
+            {
+                _activeTransformInitialStates?.Clear();
+                return;
+            }
+
+            var finalStates = CaptureCurrentTransformStates();
+            bool hasChanges = false;
+
+            foreach (var kvp in _activeTransformInitialStates)
+            {
+                var obj = kvp.Key;
+                var oldState = kvp.Value;
+                if (finalStates.TryGetValue(obj, out var newState))
+                {
+                    if (oldState.IsDifferentFrom(newState))
+                    {
+                        hasChanges = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    hasChanges = true;
+                    break;
+                }
+            }
+
+            if (hasChanges)
+            {
+                TransformCompleted?.Invoke(this, new TransformCompletedEventArgs
+                {
+                    TargetObject = _attachedObject,
+                    InitialStates = new System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState>(_activeTransformInitialStates),
+                    FinalStates = finalStates,
+                    Description = description
+                });
+            }
+
+            _activeTransformInitialStates.Clear();
+        }
+
+        #endregion
+
+        #region Transform Event Args & Events
+
+        /// <summary>
+        /// Event args chứa thông tin snapshot trước và sau khi hoàn tất một thao tác biến đổi
+        /// </summary>
+        public class TransformCompletedEventArgs : EventArgs
+        {
+            public SelectableObject? TargetObject { get; set; }
+            public System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> InitialStates { get; set; } = new();
+            public System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> FinalStates { get; set; } = new();
+            public string Description { get; set; } = "Transform object";
+        }
+
+        /// <summary>
+        /// Event khi hoàn thành thao tác transform (move/resize/rotate) để lưu vào Undo/Redo
+        /// </summary>
+        public event EventHandler<TransformCompletedEventArgs>? TransformCompleted;
 
         /// <summary>
         /// Event khi object bị transform (resize/rotate)
@@ -115,6 +207,7 @@ namespace QASmartTouch.Controls
                 _dragStartPoint = e.GetPosition(this.Parent as UIElement);
                 _lastMovePoint = _dragStartPoint;
                 _originalPosition = _attachedObject.Position;
+                _activeTransformInitialStates = CaptureCurrentTransformStates();
                 SelectionBorder.CaptureMouse();
                 e.Handled = true; // Ngăn sự kiện lọt xuống Canvas nền
             }
@@ -180,6 +273,7 @@ namespace QASmartTouch.Controls
 
                 // Cập nhật bounds trong QuadTree
                 _attachedObject?.UpdateBounds();
+                FinishTransformOperation("Move object");
             }
 
             if (SelectionBorder.IsMouseCaptured)
@@ -221,6 +315,7 @@ namespace QASmartTouch.Controls
             if (SelectionBorder.IsMouseCaptured)
                 SelectionBorder.ReleaseMouseCapture();
 
+            _activeTransformInitialStates.Clear();
             _attachedObject = null;
             ScaleTooltip.Visibility = Visibility.Collapsed;
             AngleTooltip.Visibility = Visibility.Collapsed;
@@ -234,6 +329,11 @@ namespace QASmartTouch.Controls
         /// </summary>
         public void ResetMoveState()
         {
+            if (_isMoving) FinishTransformOperation("Move object");
+            if (_isDragging) FinishTransformOperation("Resize object");
+            if (_isRotating) FinishTransformOperation("Rotate object");
+            if (_isManipulating) FinishTransformOperation("Transform object");
+
             _isMoving = false;
             _isManipulating = false;
             
@@ -253,6 +353,8 @@ namespace QASmartTouch.Controls
             
             if (SelectionBorder.IsMouseCaptured)
                 SelectionBorder.ReleaseMouseCapture();
+
+            _activeTransformInitialStates.Clear();
         }
 
         /// <summary>
@@ -305,6 +407,7 @@ namespace QASmartTouch.Controls
                 _dragStartPoint = e.GetPosition(this.Parent as UIElement);
                 _originalPosition = _attachedObject.Position;
                 _originalSize = _attachedObject.Size;
+                _activeTransformInitialStates = CaptureCurrentTransformStates();
 
                 _memberSnapshots.Clear();
                 if (_attachedObject.GroupMembers != null && _attachedObject.GroupMembers.Count > 0)
@@ -347,6 +450,7 @@ namespace QASmartTouch.Controls
                 _isDragging = false;
                 _currentResizeMode = Models.ResizeMode.None;
                 ScaleTooltip.Visibility = Visibility.Collapsed;
+                FinishTransformOperation("Resize object");
             }
 
             var handle = sender as Rectangle;
@@ -375,17 +479,20 @@ namespace QASmartTouch.Controls
             // ✅ MODULE 2 UPGRADE: Double-Click Reset góc xoay về 0° ngay lập tức
             if (e.ClickCount == 2)
             {
+                _activeTransformInitialStates = CaptureCurrentTransformStates();
                 _transformService.Rotate(_attachedObject, 0);
                 UpdatePosition();
                 ObjectTransformed?.Invoke(this, _attachedObject);
                 AngleTooltip.Visibility = Visibility.Collapsed;
                 SnapLine.Visibility = Visibility.Collapsed;
+                FinishTransformOperation("Reset rotation to 0°");
                 e.Handled = true;
                 return;
             }
 
             _isRotating = true;
             _dragStartPoint = e.GetPosition(this.Parent as UIElement);
+            _activeTransformInitialStates = CaptureCurrentTransformStates();
 
             var handle = sender as Ellipse;
             handle?.CaptureMouse();
@@ -449,6 +556,7 @@ namespace QASmartTouch.Controls
                 _isRotating = false;
                 SnapLine.Visibility = Visibility.Collapsed;
                 AngleTooltip.Visibility = Visibility.Collapsed;
+                FinishTransformOperation("Rotate object");
             }
 
             var handle = sender as Ellipse;
@@ -469,6 +577,7 @@ namespace QASmartTouch.Controls
 
             // ✅ REVIEW-FIX #2: Ghi nhận kích thước gốc khi bắt đầu Pinch gesture
             _originalSize = _attachedObject.Size;
+            _activeTransformInitialStates = CaptureCurrentTransformStates();
             _isManipulating = true;
 
             e.Handled = true;
@@ -522,17 +631,15 @@ namespace QASmartTouch.Controls
         {
             ScaleTooltip.Visibility = Visibility.Collapsed;
 
-            // QC_4.2_TOUCH_SELECTION_FIX: Reset trạng thái khi touch manipulation kết thúc
-            // Tránh _isMoving bị kẹt true → con trỏ bị giữ ở chế độ kéo vĩnh viễn trên cảm ứng
-            // Khi nhấc tay khỏi màn hình, phải giải phóng hoàn toàn để cho phép chuyển tool
-            ResetMoveState();
-
             // Cập nhật bounds cho QuadTree spatial index sau khi di chuyển/zoom bằng touch
             if (_attachedObject != null)
             {
                 _attachedObject.UpdateBounds();
                 ObjectTransformed?.Invoke(this, _attachedObject);
             }
+
+            FinishTransformOperation("Transform object");
+            ResetMoveState();
 
             e.Handled = true;
         }

@@ -514,6 +514,68 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
+        /// Ghi nhận hành động biến đổi (Move, Resize, Rotate) của một hoặc nhiều đối tượng vào Undo stack
+        /// </summary>
+        public void RecordTransformAction(System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> initialStates,
+                                          System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> finalStates,
+                                          string description = "Transform object")
+        {
+            if (initialStates == null || finalStates == null || initialStates.Count == 0) return;
+
+            var changedPairs = new System.Collections.Generic.List<(SelectableObject Obj, ElementTransformState OldState, ElementTransformState NewState)>();
+            foreach (var kvp in initialStates)
+            {
+                var obj = kvp.Key;
+                var oldState = kvp.Value;
+                if (finalStates.TryGetValue(obj, out var newState))
+                {
+                    if (oldState.IsDifferentFrom(newState))
+                    {
+                        changedPairs.Add((obj, oldState, newState));
+                    }
+                }
+            }
+
+            if (changedPairs.Count == 0) return;
+
+            if (changedPairs.Count == 1)
+            {
+                var (obj, oldState, newState) = changedPairs[0];
+                var action = new UndoRedoAction
+                {
+                    Type = ActionType.Modify,
+                    Element = obj.Element,
+                    Parent = MainInteractiveBoard,
+                    OldValue = oldState,
+                    NewValue = newState,
+                    Description = description
+                };
+                RecordAction(action);
+            }
+            else
+            {
+                var batchAction = new UndoRedoAction
+                {
+                    Type = ActionType.Batch,
+                    Description = description
+                };
+                foreach (var (obj, oldState, newState) in changedPairs)
+                {
+                    batchAction.BatchActions.Add(new UndoRedoAction
+                    {
+                        Type = ActionType.Modify,
+                        Element = obj.Element,
+                        Parent = MainInteractiveBoard,
+                        OldValue = oldState,
+                        NewValue = newState,
+                        Description = description
+                    });
+                }
+                RecordAction(batchAction);
+            }
+        }
+
+        /// <summary>
         /// Execute an undo action
         /// </summary>
         private void ExecuteUndoAction(UndoRedoAction action)
@@ -534,7 +596,7 @@ namespace QASmartTouch.Forms
                     
                 case ActionType.Modify:
                     // Undo Modify = Restore old value
-                    // TODO: Implement when needed (move, rotate, resize)
+                    ApplyModifyValue(action.Element, action.OldValue, true);
                     break;
                     
                 case ActionType.Batch:
@@ -577,7 +639,7 @@ namespace QASmartTouch.Forms
                     
                 case ActionType.Modify:
                     // Redo Modify = Apply new value
-                    // TODO: Implement when needed (move, rotate, resize)
+                    ApplyModifyValue(action.Element, action.NewValue, false);
                     break;
                     
                 case ActionType.Batch:
@@ -596,6 +658,124 @@ namespace QASmartTouch.Forms
                             _selectionManager?.RemoveObjectByElement(batchAction.Element);
                     }
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Áp dụng giá trị sửa đổi (snapshot hình học hoặc thuộc tính) cho UIElement và SelectableObject
+        /// </summary>
+        private void ApplyModifyValue(UIElement? element, object? value, bool isUndo)
+        {
+            if (value == null) return;
+
+            var obj = element != null ? _selectionManager?.GetSelectableObjectForElement(element) : null;
+
+            // 1. Biến đổi hình học (ElementTransformState)
+            if (value is ElementTransformState transformState)
+            {
+                transformState.ApplyTo(element, obj);
+                return;
+            }
+
+            // 2. Thuộc tính cụ thể từ anonymous object { Property = "...", Value = ... }
+            var valType = value.GetType();
+            var propInfo = valType.GetProperty("Property");
+            var valueInfo = valType.GetProperty("Value");
+            if (propInfo != null && valueInfo != null)
+            {
+                string? propName = propInfo.GetValue(value)?.ToString();
+                object? propVal = valueInfo.GetValue(value);
+
+                if (!string.IsNullOrEmpty(propName) && propVal != null)
+                {
+                    switch (propName)
+                    {
+                        case "IsLocked":
+                            bool isLocked = Convert.ToBoolean(propVal);
+                            if (obj != null) obj.IsLocked = isLocked;
+                            _contextToolbar?.UpdateLockIcon(isLocked);
+                            break;
+
+                        case "ZIndex":
+                            int zIndex = Convert.ToInt32(propVal);
+                            if (element != null) Panel.SetZIndex(element, zIndex);
+                            if (obj != null) obj.ZIndex = zIndex;
+                            break;
+
+                        case "RotationAngle":
+                            double angle = Convert.ToDouble(propVal);
+                            if (obj != null)
+                            {
+                                obj.RotationAngle = angle;
+                                obj.ApplyTransform();
+                                obj.UpdateBounds();
+                            }
+                            break;
+
+                        case "StrokeStyle":
+                            if (element is System.Windows.Shapes.Shape shape)
+                            {
+                                shape.StrokeDashArray = propVal as DoubleCollection;
+                            }
+                            break;
+                    }
+                    return;
+                }
+            }
+
+            // 3. Màu sắc (Color)
+            if (value is Color color)
+            {
+                if (obj != null) obj.StrokeColor = color;
+                if (element is Polyline polyline)
+                {
+                    polyline.Stroke = new SolidColorBrush(color);
+                }
+                else if (element is System.Windows.Shapes.Shape shape)
+                {
+                    shape.Stroke = new SolidColorBrush(color);
+                }
+                else if (element is Border border)
+                {
+                    border.BorderBrush = new SolidColorBrush(color);
+                }
+                _contextToolbar?.UpdateColorPreview(color);
+                return;
+            }
+
+            // 4. Độ dày nét (double)
+            if (value is double dVal)
+            {
+                if (obj != null) obj.StrokeThickness = dVal;
+                if (element is System.Windows.Shapes.Shape shape)
+                {
+                    shape.StrokeThickness = dVal;
+                }
+                else if (element is Border border)
+                {
+                    border.BorderThickness = new Thickness(dVal);
+                }
+                return;
+            }
+
+            // 5. Nội dung văn bản (string)
+            if (value is string textVal)
+            {
+                if (obj != null) obj.TextContent = textVal;
+                if (element is TextBlock tb)
+                {
+                    tb.Text = textVal;
+                }
+                else if (element is TextBox tbx)
+                {
+                    tbx.Text = textVal;
+                }
+                else if (element is Border b)
+                {
+                    var ctb = FindVisualChild<TextBlock>(b);
+                    if (ctb != null) ctb.Text = textVal;
+                }
+                return;
             }
         }
 

@@ -52,22 +52,22 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void HighlightMode(Button selectedButton)
         {
-            if (btnEraseByStroke == null || btnEraseByDrag == null || btnClearAll == null) return;
+            if (btnEraseByStroke == null || btnEraseByPoint == null || btnClearAll == null) return;
 
             // Reset backgrounds to default soft pastel colors
             btnEraseByStroke.Background = new SolidColorBrush(Color.FromRgb(227, 242, 253)); // #E3F2FD
-            btnEraseByDrag.Background = new SolidColorBrush(Color.FromRgb(243, 229, 245));   // #F3E5F5
+            btnEraseByPoint.Background = new SolidColorBrush(Color.FromRgb(243, 229, 245));   // #F3E5F5
             btnClearAll.Background = new SolidColorBrush(Color.FromRgb(255, 235, 238));      // #FFEBEE
 
             // Reset borders (remove selection outline)
             btnEraseByStroke.BorderThickness = new Thickness(0);
-            btnEraseByDrag.BorderThickness = new Thickness(0);
+            btnEraseByPoint.BorderThickness = new Thickness(0);
             btnClearAll.BorderThickness = new Thickness(0);
 
             // Set uniform dark slate foreground for high contrast text readability
             var textDarkSlate = new SolidColorBrush(Color.FromRgb(47, 53, 66)); // #2F3542
             btnEraseByStroke.Foreground = textDarkSlate;
-            btnEraseByDrag.Foreground = textDarkSlate;
+            btnEraseByPoint.Foreground = textDarkSlate;
             btnClearAll.Foreground = textDarkSlate;
 
             // Highlight selected button with a distinct thick border of its brand color
@@ -76,7 +76,7 @@ namespace QASmartTouch.Forms
                 selectedButton.BorderBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243)); // #2196F3
                 selectedButton.BorderThickness = new Thickness(2);
             }
-            else if (selectedButton == btnEraseByDrag)
+            else if (selectedButton == btnEraseByPoint)
             {
                 selectedButton.BorderBrush = new SolidColorBrush(Color.FromRgb(156, 39, 176)); // #9C27B0
                 selectedButton.BorderThickness = new Thickness(2);
@@ -174,7 +174,8 @@ namespace QASmartTouch.Forms
             Button? targetButton = currentEraserMode switch
             {
                 "Stroke" => btnEraseByStroke,
-                "Drag" => btnEraseByDrag,
+                "Point" => btnEraseByPoint,
+                "Drag" => btnEraseByPoint,
                 "ClearAll" => btnClearAll,
                 _ => btnEraseByStroke
             };

@@ -158,7 +158,8 @@ namespace QASmartClass.WhiteboardCore.Tools
             return CurrentEraserMode switch
             {
                 Enums.EraserMode.Stroke => "Stroke",
-                Enums.EraserMode.Drag => "Drag",
+                Enums.EraserMode.Point => "Point",
+                Enums.EraserMode.Drag => "Point", // Map legacy drag to point
                 Enums.EraserMode.ClearAll => "ClearAll",
                 _ => "Stroke"
             };
@@ -176,7 +177,8 @@ namespace QASmartClass.WhiteboardCore.Tools
             return mode?.ToLowerInvariant() switch
             {
                 "stroke" => Enums.EraserMode.Stroke,
-                "drag" => Enums.EraserMode.Drag,
+                "point" => Enums.EraserMode.Point,
+                "drag" => Enums.EraserMode.Point, // Map legacy drag to point
                 "clearall" => Enums.EraserMode.ClearAll,
                 _ => Enums.EraserMode.Stroke
             };

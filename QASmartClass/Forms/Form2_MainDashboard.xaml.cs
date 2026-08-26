@@ -98,6 +98,7 @@ namespace QASmartTouch.Forms
         private int _eraserSize = 20;
         private string _eraserMode = "Stroke";
         private Ellipse? _eraserPreview; // Visual indicator for eraser
+        private EraserEngine? _eraserEngine;
         
         // Ruler Tool
         private Form2_15_RulerTool? _activeRulerTool;
@@ -290,11 +291,24 @@ namespace QASmartTouch.Forms
             this.DpiChanged += OnDpiChanged;
             System.Diagnostics.Debug.WriteLine("✅ DPI change handler registered");
 
+            // Initialize Eraser Engine
+            _eraserEngine = new EraserEngine(MainInteractiveBoard);
+            _eraserEngine.ObjectErased += (s, args) =>
+            {
+                if (args.Element != null)
+                {
+                    _selectionManager?.RemoveObjectByElement(args.Element);
+                }
+            };
+
             // Initialize Touch Handler
             _touchHandler = new TouchHandler(MainInteractiveBoard);
+            _touchHandler.SetEraserEngine(_eraserEngine);
             _touchHandler.SetRecordAddAction(RecordAddAction);
             _touchHandler.SetRecordRemoveAction(RecordRemoveAction); // QC_4.2_TOUCH_ERASER_FIX: Wire undo cho touch erase
+            _touchHandler.SetRecordEraseSessionAction(FinalizeEraseSession); // Wire atomic batch undo for touch erase
             _touchHandler.SetUpdateEraserPreviewAction(UpdateEraserCursorPreview); // ✅ Wire eraser preview callback for touch
+            _touchHandler.SetHideEraserPreviewAction(HideEraserCursorPreview); // ✅ Wire hide eraser preview callback for touch
             _touchHandler.SetOnCanvasTouchDownAction(() => { if (_activeSubMenu != null) CloseAllSubmenus(); }); // ✅ Close SubMenus on touch canvas
             _touchHandler.SetDrawingProperties(_currentPenColor, _currentPenSize, _currentBrushType);
             _touchHandler.GetColorForPosition = (pos) => _isMultiUserModeActive ? GetStudentByPosition(pos)?.Color : null;
@@ -569,6 +583,25 @@ namespace QASmartTouch.Forms
                 return;
             }
 
+            // ✅ Shortcut Ctrl + Z: Undo
+            if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                btn3_Undo_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+Z: Triggered Undo");
+                return;
+            }
+
+            // ✅ Shortcut Ctrl + Y hoặc Ctrl + Shift + Z: Redo
+            if ((e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control) ||
+                (e.Key == Key.Z && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift)))
+            {
+                btn4_Redo_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+Y / Ctrl+Shift+Z: Triggered Redo");
+                return;
+            }
+
             // ❌ All OTHER keyboard shortcuts vẫn DISABLED cho touch-only interface
             System.Diagnostics.Debug.WriteLine($"⚠️ Keyboard shortcut disabled: {e.Key}");
             System.Diagnostics.Debug.WriteLine($"   Use Context Toolbar buttons for touch interaction");
@@ -657,6 +690,7 @@ namespace QASmartTouch.Forms
             // Wire up SelectionBox events
             _selectionBox.ObjectTransformed += OnObjectTransformed;
             _selectionBox.TextEditRequested += OnTextEditRequested;
+            _selectionBox.TransformCompleted += OnSelectionBoxTransformCompleted;
             
             // Wire up ContextToolbar events
             _contextToolbar.CopyClicked += OnToolbarCopyClicked;
@@ -1441,6 +1475,16 @@ namespace QASmartTouch.Forms
 
             System.Diagnostics.Debug.WriteLine("🔄 DeactivateAllTools called");
             
+            // Finalize and end active mouse erase session if switching tools while dragging
+            if (_eraserEngine != null)
+            {
+                var eraseSession = _eraserEngine.EndMouseSession();
+                if (eraseSession != null && eraseSession.HasChanges)
+                {
+                    FinalizeEraseSession(eraseSession, "Mouse erase (tool switched)");
+                }
+            }
+
             // Reset drawing state
             _isDrawing = false;
             
