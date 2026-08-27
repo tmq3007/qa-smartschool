@@ -62,6 +62,27 @@ namespace QASmartTouch.Helpers
                     }
                 }
 
+                // Đối với Polygon (hình tam giác, đa giác, ngôi sao, v.v.)
+                if (element is Polygon polygonCheck && polygonCheck.Points.Count > 0)
+                {
+                    double minX = double.MaxValue, minY = double.MaxValue;
+                    double maxX = double.MinValue, maxY = double.MinValue;
+                    foreach (var pt in polygonCheck.Points)
+                    {
+                        if (pt.X < minX) minX = pt.X;
+                        if (pt.Y < minY) minY = pt.Y;
+                        if (pt.X > maxX) maxX = pt.X;
+                        if (pt.Y > maxY) maxY = pt.Y;
+                    }
+                    double pad = Math.Max(polygonCheck.StrokeThickness / 2, 2);
+                    Rect polyLocal = new Rect(minX, minY, Math.Max(maxX - minX, 1), Math.Max(maxY - minY, 1));
+                    Rect polyTransformed = transform.TransformBounds(polyLocal);
+                    if (!polyTransformed.IsEmpty && polyTransformed.Width > 0 && polyTransformed.Height > 0)
+                    {
+                        return new Rect(polyTransformed.X - pad, polyTransformed.Y - pad, polyTransformed.Width + pad * 2, polyTransformed.Height + pad * 2);
+                    }
+                }
+
                 // Đối với Path (nét vẽ mượt Bezier, hình học dạng Path)
                 if (element is Path pathCheck && pathCheck.Data != null)
                 {
@@ -113,7 +134,7 @@ namespace QASmartTouch.Helpers
             }
             catch { }
 
-            // === Fallback 2: Polyline tính từ Points + Canvas.GetLeft/Top ===
+            // === Fallback 2: Polyline / Polygon tính từ Points + Canvas.GetLeft/Top ===
             if (element is Polyline polyline && polyline.Points.Count > 0)
             {
                 double minX = double.MaxValue, minY = double.MaxValue;
@@ -133,6 +154,31 @@ namespace QASmartTouch.Helpers
 
                 double cX = Canvas.GetLeft(polyline);
                 double cY = Canvas.GetTop(polyline);
+                if (double.IsNaN(cX)) cX = 0;
+                if (double.IsNaN(cY)) cY = 0;
+
+                return new Rect(cX + minX - pad, cY + minY - pad, width + pad * 2, height + pad * 2);
+            }
+
+            if (element is Polygon polygon && polygon.Points.Count > 0)
+            {
+                double minX = double.MaxValue, minY = double.MaxValue;
+                double maxX = double.MinValue, maxY = double.MinValue;
+
+                foreach (var pt in polygon.Points)
+                {
+                    if (pt.X < minX) minX = pt.X;
+                    if (pt.Y < minY) minY = pt.Y;
+                    if (pt.X > maxX) maxX = pt.X;
+                    if (pt.Y > maxY) maxY = pt.Y;
+                }
+
+                double width = Math.Max(maxX - minX, 1);
+                double height = Math.Max(maxY - minY, 1);
+                double pad = Math.Max(polygon.StrokeThickness / 2, 2);
+
+                double cX = Canvas.GetLeft(polygon);
+                double cY = Canvas.GetTop(polygon);
                 if (double.IsNaN(cX)) cX = 0;
                 if (double.IsNaN(cY)) cY = 0;
 

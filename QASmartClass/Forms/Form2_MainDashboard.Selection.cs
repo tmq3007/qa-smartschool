@@ -428,6 +428,30 @@ namespace QASmartTouch.Forms
                     obj.Size = new Size(maxX - minX, maxY - minY);
                 }
             }
+            else if (obj.Element is Polygon polygon)
+            {
+                if (polygon.Points != null && polygon.Points.Count > 0)
+                {
+                    for (int i = 0; i < polygon.Points.Count; i++)
+                    {
+                        Point oldPoint = polygon.Points[i];
+                        polygon.Points[i] = new Point(oldPoint.X + dragVector.X, oldPoint.Y + dragVector.Y);
+                    }
+                    double minX = double.MaxValue, minY = double.MaxValue;
+                    double maxX = double.MinValue, maxY = double.MinValue;
+                    foreach (var p in polygon.Points)
+                    {
+                        minX = Math.Min(minX, p.X); minY = Math.Min(minY, p.Y);
+                        maxX = Math.Max(maxX, p.X); maxY = Math.Max(maxY, p.Y);
+                    }
+                    if (!double.IsNaN(Canvas.GetLeft(polygon))) Canvas.SetLeft(polygon, double.NaN);
+                    if (!double.IsNaN(Canvas.GetTop(polygon))) Canvas.SetTop(polygon, double.NaN);
+
+                    obj.Position = new Point(minX, minY);
+                    obj.Size = new Size(maxX - minX, maxY - minY);
+                    obj.Bounds = new Rect(minX, minY, maxX - minX, maxY - minY);
+                }
+            }
             else if (obj.Element is System.Windows.Shapes.Line line)
             {
                 // Di chuyển Line endpoints
@@ -438,11 +462,12 @@ namespace QASmartTouch.Forms
                 double w = Math.Max(Math.Abs(line.X2 - line.X1), line.StrokeThickness);
                 double h = Math.Max(Math.Abs(line.Y2 - line.Y1), line.StrokeThickness);
 
-                if (!double.IsNaN(Canvas.GetLeft(line))) Canvas.SetLeft(line, minX);
-                if (!double.IsNaN(Canvas.GetTop(line))) Canvas.SetTop(line, minY);
+                if (!double.IsNaN(Canvas.GetLeft(line))) Canvas.SetLeft(line, double.NaN);
+                if (!double.IsNaN(Canvas.GetTop(line))) Canvas.SetTop(line, double.NaN);
 
                 obj.Position = new Point(minX, minY);
                 obj.Size = new Size(w, h);
+                obj.Bounds = new Rect(minX, minY, w, h);
             }
             else if (obj.Element is System.Windows.Shapes.Path path && path.Data != null)
             {
@@ -1746,9 +1771,6 @@ namespace QASmartTouch.Forms
                     
                     var finalStates = CaptureTargetTransformStates(obj);
                     RecordTransformAction(initialStates, finalStates, $"Rotate Custom {newAngle:F0}°");
-                    
-                    // Visual feedback
-                    AnimateRotation(obj.Element, oldAngle, newAngle);
                     
                     System.Diagnostics.Debug.WriteLine($"🔄 Rotated custom: {oldAngle:F0}° → {newAngle:F0}° & recorded Undo");
                 }

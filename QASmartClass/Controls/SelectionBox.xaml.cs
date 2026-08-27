@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Shapes;
 using QASmartTouch.Models;
 using QASmartTouch.Services;
@@ -22,6 +23,9 @@ namespace QASmartTouch.Controls
         private Point _lastMovePoint;
         private Point _originalPosition;
         private Size _originalSize;
+        private Point _rotationCenter;
+        private double _startPointerAngle;
+        private double _initialObjectAngle;
         private System.Collections.Generic.Dictionary<SelectableObject, (Point pos, Size size)> _memberSnapshots = new();
         private bool _isDragging = false;
         private bool _isRotating = false;
@@ -169,7 +173,7 @@ namespace QASmartTouch.Controls
             // Đề phòng Windows "nuốt" mất MouseUp trên màn hình cảm ứng hồng ngoại
             SelectionBorder.TouchUp += (s, e) => ResetMoveState();
             SelectionBorder.StylusUp += (s, e) => ResetMoveState();
-            // QC_4.2_TOUCH_RESIZE_GUARD: Đảm bảo khi kéo chốt vuông mở rộng/thu nhỏ (Resize) bằng ngón tay hoặc bút cảm ứng, không bị phát nét vẽ theo
+            // QC_4.2_TOUCH_RESIZE_GUARD: Đảm bảo khi kéo chốt vuông mở rộng/thu nhỏ (Resize) hoặc chốt xoay bằng ngón tay/bút cảm ứng không bị phát nét vẽ theo
             this.Loaded += (s, e) =>
             {
                 Rectangle[] handles = new Rectangle[] { TopLeftHandle, TopRightHandle, BottomLeftHandle, BottomRightHandle };
@@ -180,6 +184,11 @@ namespace QASmartTouch.Controls
                         h.PreviewTouchDown += (snd, touchArgs) => { touchArgs.Handled = true; };
                         h.PreviewStylusDown += (snd, stylusArgs) => { stylusArgs.Handled = true; };
                     }
+                }
+                if (RotateHandle != null)
+                {
+                    RotateHandle.PreviewTouchDown += (snd, touchArgs) => { touchArgs.Handled = true; };
+                    RotateHandle.PreviewStylusDown += (snd, stylusArgs) => { stylusArgs.Handled = true; };
                 }
             };
         }
@@ -317,6 +326,7 @@ namespace QASmartTouch.Controls
 
             _activeTransformInitialStates.Clear();
             _attachedObject = null;
+            this.RenderTransform = Transform.Identity;
             ScaleTooltip.Visibility = Visibility.Collapsed;
             AngleTooltip.Visibility = Visibility.Collapsed;
             SnapLine.Visibility = Visibility.Collapsed;
@@ -366,8 +376,8 @@ namespace QASmartTouch.Controls
                 return;
 
             // Set size và position của selection box
-            this.Width = _attachedObject.Size.Width + 4;  // +4 for border
-            this.Height = _attachedObject.Size.Height + 4;
+            this.Width = Math.Max(20, _attachedObject.Size.Width + 4);  // +4 for border
+            this.Height = Math.Max(20, _attachedObject.Size.Height + 4);
 
             Canvas.SetLeft(this, _attachedObject.Position.X - 2);
             Canvas.SetTop(this, _attachedObject.Position.Y - 2);
@@ -375,6 +385,16 @@ namespace QASmartTouch.Controls
             // Update rotate handle line
             RotateConnectionLine.X1 = this.Width / 2;
             RotateConnectionLine.X2 = this.Width / 2;
+
+            // Đồng bộ góc xoay cho SelectionBox
+            if (_attachedObject.RotationAngle != 0)
+            {
+                this.RenderTransform = new RotateTransform(_attachedObject.RotationAngle, this.Width / 2.0, this.Height / 2.0);
+            }
+            else
+            {
+                this.RenderTransform = Transform.Identity;
+            }
         }
 
         #endregion
@@ -435,7 +455,7 @@ namespace QASmartTouch.Controls
                 return;
 
             Point currentPoint = e.GetPosition(this.Parent as UIElement);
-            _transformService.ResizeFromHandle(_attachedObject, _currentResizeMode, currentPoint, _dragStartPoint, _originalSize, _originalPosition, _memberSnapshots);
+            _transformService.ResizeFromHandle(_attachedObject, _currentResizeMode, currentPoint, _dragStartPoint, _originalSize, _originalPosition, _memberSnapshots, _activeTransformInitialStates);
 
             UpdatePosition();
             UpdateScaleTooltipText();
@@ -480,7 +500,14 @@ namespace QASmartTouch.Controls
             if (e.ClickCount == 2)
             {
                 _activeTransformInitialStates = CaptureCurrentTransformStates();
-                _transformService.Rotate(_attachedObject, 0);
+                _originalPosition = _attachedObject.Position;
+                _originalSize = _attachedObject.Size;
+                _rotationCenter = new Point(_originalPosition.X + (_originalSize.Width / 2.0), _originalPosition.Y + (_originalSize.Height / 2.0));
+                _transformService.RotateFromInitialState(_attachedObject, _rotationCenter, 0, _activeTransformInitialStates);
+                _attachedObject.RotationAngle = 0;
+                _attachedObject.Position = _originalPosition;
+                _attachedObject.Size = _originalSize;
+                _attachedObject.UpdateBounds();
                 UpdatePosition();
                 ObjectTransformed?.Invoke(this, _attachedObject);
                 AngleTooltip.Visibility = Visibility.Collapsed;
@@ -492,6 +519,11 @@ namespace QASmartTouch.Controls
 
             _isRotating = true;
             _dragStartPoint = e.GetPosition(this.Parent as UIElement);
+            _originalPosition = _attachedObject.Position;
+            _originalSize = _attachedObject.Size;
+            _rotationCenter = new Point(_originalPosition.X + (_originalSize.Width / 2.0), _originalPosition.Y + (_originalSize.Height / 2.0));
+            _startPointerAngle = _transformService.CalculateRotationAngle(_rotationCenter, _dragStartPoint);
+            _initialObjectAngle = _attachedObject.RotationAngle;
             _activeTransformInitialStates = CaptureCurrentTransformStates();
 
             var handle = sender as Ellipse;
@@ -511,21 +543,30 @@ namespace QASmartTouch.Controls
                 return;
 
             Point currentPoint = e.GetPosition(this.Parent as UIElement);
-            Point center = _transformService.GetCenter(_attachedObject);
 
-            // Calculate raw rotation angle
-            double angle = _transformService.CalculateRotationAngle(center, currentPoint);
+            // Tính góc chuột hiện tại so với tâm bất biến đã lưu lúc MouseDown
+            double currentPointerAngle = _transformService.CalculateRotationAngle(_rotationCenter, currentPoint);
+            double pointerDelta = currentPointerAngle - _startPointerAngle;
+
+            double targetAngle = (_initialObjectAngle + pointerDelta) % 360;
+            if (targetAngle < 0) targetAngle += 360;
 
             // Smart Angle Snapping (Toán học & Lượng giác: 0, 30, 45, 60, 90, 120, 135, 150, 180, ...)
-            double snappedAngle = ApplySmartAngleSnappingExtended(angle);
+            double snappedAngle = ApplySmartAngleSnappingExtended(targetAngle);
 
-            _transformService.Rotate(_attachedObject, snappedAngle);
+            _transformService.RotateFromInitialState(_attachedObject, _rotationCenter, snappedAngle, _activeTransformInitialStates);
+            _attachedObject.RotationAngle = snappedAngle;
+            _attachedObject.Position = _originalPosition;
+            _attachedObject.Size = _originalSize;
+
+            UpdatePosition();
 
             // Update live degree tooltip
             txtAngleTooltip.Text = $"{Math.Round(snappedAngle, 0)}°";
             AngleTooltip.Visibility = Visibility.Visible;
 
             ObjectTransformed?.Invoke(this, _attachedObject);
+            e.Handled = true;
         }
 
         private double ApplySmartAngleSnappingExtended(double rawAngle)
@@ -556,6 +597,8 @@ namespace QASmartTouch.Controls
                 _isRotating = false;
                 SnapLine.Visibility = Visibility.Collapsed;
                 AngleTooltip.Visibility = Visibility.Collapsed;
+                _attachedObject?.UpdateBounds();
+                UpdatePosition();
                 FinishTransformOperation("Rotate object");
             }
 

@@ -27,6 +27,9 @@ namespace QASmartTouch.Models
         // Dành cho Polyline (nét vẽ tay)
         public Point[]? PolylinePoints { get; set; }
 
+        // Dành cho Polygon (đa giác, hình tam giác, ngôi sao, ...)
+        public Point[]? PolygonPoints { get; set; }
+
         // Dành cho Line (đoạn thẳng)
         public double LineX1 { get; set; }
         public double LineY1 { get; set; }
@@ -72,6 +75,14 @@ namespace QASmartTouch.Models
                         state.RenderTransform = polyline.RenderTransform.Clone();
                     }
                 }
+                else if (obj.Element is Polygon polygon && polygon.Points != null && polygon.Points.Count > 0)
+                {
+                    state.PolygonPoints = polygon.Points.ToArray();
+                    if (polygon.RenderTransform != null && polygon.RenderTransform != Transform.Identity)
+                    {
+                        state.RenderTransform = polygon.RenderTransform.Clone();
+                    }
+                }
                 else if (obj.Element is Line line)
                 {
                     state.LineX1 = line.X1;
@@ -107,6 +118,14 @@ namespace QASmartTouch.Models
                     polyline.Points = new PointCollection(PolylinePoints);
                 }
                 polyline.RenderTransform = RenderTransform != null ? RenderTransform.Clone() : Transform.Identity;
+            }
+            else if (element is Polygon polygon)
+            {
+                if (PolygonPoints != null)
+                {
+                    polygon.Points = new PointCollection(PolygonPoints);
+                }
+                polygon.RenderTransform = RenderTransform != null ? RenderTransform.Clone() : Transform.Identity;
             }
             else if (element is Line line)
             {
@@ -168,6 +187,21 @@ namespace QASmartTouch.Models
                 }
             }
             else if ((PolylinePoints == null) != (other.PolylinePoints == null))
+            {
+                return true;
+            }
+
+            if (PolygonPoints != null && other.PolygonPoints != null)
+            {
+                if (PolygonPoints.Length != other.PolygonPoints.Length) return true;
+                if (PolygonPoints.Length > 0 && other.PolygonPoints.Length > 0)
+                {
+                    if (Math.Abs(PolygonPoints[0].X - other.PolygonPoints[0].X) > 0.5 || Math.Abs(PolygonPoints[0].Y - other.PolygonPoints[0].Y) > 0.5) return true;
+                    int lastIdx = PolygonPoints.Length - 1;
+                    if (Math.Abs(PolygonPoints[lastIdx].X - other.PolygonPoints[lastIdx].X) > 0.5 || Math.Abs(PolygonPoints[lastIdx].Y - other.PolygonPoints[lastIdx].Y) > 0.5) return true;
+                }
+            }
+            else if ((PolygonPoints == null) != (other.PolygonPoints == null))
             {
                 return true;
             }
