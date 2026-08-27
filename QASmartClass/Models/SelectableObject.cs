@@ -177,29 +177,138 @@ namespace QASmartTouch.Models
                 }
                 if (minX < double.MaxValue && minY < double.MaxValue)
                 {
-                    Position = new Point(minX, minY);
-                    Size = new Size(maxX - minX, maxY - minY);
-                    Bounds = new Rect(minX, minY, maxX - minX, maxY - minY);
+                    var aabb = new Rect(minX, minY, maxX - minX, maxY - minY);
+                    Bounds = aabb;
+                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
+                    {
+                        Position = new Point(minX, minY);
+                        Size = new Size(maxX - minX, maxY - minY);
+                    }
                     return;
                 }
             }
 
             if (Element != null)
             {
-                // Thử lấy Canvas cha để dùng BoundsHelper
-                var parentCanvas = FindParentCanvas(Element);
-                if (parentCanvas != null)
+                // 1. Polyline (nét vẽ tay)
+                if (Element is System.Windows.Shapes.Polyline polyline && polyline.Points != null && polyline.Points.Count > 0)
                 {
-                    var absoluteBounds = BoundsHelper.GetAbsoluteBounds(Element, parentCanvas);
-                    if (!absoluteBounds.IsEmpty)
+                    double minX = double.MaxValue, minY = double.MaxValue;
+                    double maxX = double.MinValue, maxY = double.MinValue;
+                    foreach (var pt in polyline.Points)
                     {
-                        Bounds = absoluteBounds;
-                        Position = new Point(absoluteBounds.X, absoluteBounds.Y);
-                        Size = new Size(absoluteBounds.Width, absoluteBounds.Height);
-                        return;
+                        minX = Math.Min(minX, pt.X); minY = Math.Min(minY, pt.Y);
+                        maxX = Math.Max(maxX, pt.X); maxY = Math.Max(maxY, pt.Y);
                     }
+                    double pad = Math.Max(polyline.StrokeThickness / 2.0, 2.0);
+                    var aabb = new Rect(minX - pad, minY - pad, Math.Max(maxX - minX + pad * 2, 1), Math.Max(maxY - minY + pad * 2, 1));
+                    Bounds = aabb;
+                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
+                    {
+                        Position = new Point(aabb.X, aabb.Y);
+                        Size = new Size(aabb.Width, aabb.Height);
+                    }
+                    return;
                 }
-                
+
+                // 2. Polygon (đa giác)
+                if (Element is System.Windows.Shapes.Polygon polygon && polygon.Points != null && polygon.Points.Count > 0)
+                {
+                    double minX = double.MaxValue, minY = double.MaxValue;
+                    double maxX = double.MinValue, maxY = double.MinValue;
+                    foreach (var pt in polygon.Points)
+                    {
+                        minX = Math.Min(minX, pt.X); minY = Math.Min(minY, pt.Y);
+                        maxX = Math.Max(maxX, pt.X); maxY = Math.Max(maxY, pt.Y);
+                    }
+                    double pad = Math.Max(polygon.StrokeThickness / 2.0, 2.0);
+                    var aabb = new Rect(minX - pad, minY - pad, Math.Max(maxX - minX + pad * 2, 1), Math.Max(maxY - minY + pad * 2, 1));
+                    Bounds = aabb;
+                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
+                    {
+                        Position = new Point(aabb.X, aabb.Y);
+                        Size = new Size(aabb.Width, aabb.Height);
+                    }
+                    return;
+                }
+
+                // 3. Line (đoạn thẳng)
+                if (Element is System.Windows.Shapes.Line line)
+                {
+                    double minX = Math.Min(line.X1, line.X2);
+                    double minY = Math.Min(line.Y1, line.Y2);
+                    double maxX = Math.Max(line.X1, line.X2);
+                    double maxY = Math.Max(line.Y1, line.Y2);
+                    double pad = Math.Max(line.StrokeThickness / 2.0, 2.0);
+                    var aabb = new Rect(minX - pad, minY - pad, Math.Max(maxX - minX + pad * 2, 1), Math.Max(maxY - minY + pad * 2, 1));
+                    Bounds = aabb;
+                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
+                    {
+                        Position = new Point(aabb.X, aabb.Y);
+                        Size = new Size(aabb.Width, aabb.Height);
+                    }
+                    return;
+                }
+
+                // 4. Path (nét mượt Bezier / Shape Path / ArrowLine)
+                if (Element is System.Windows.Shapes.Path path && path.Data != null)
+                {
+                    var dataBounds = path.Data.Bounds;
+                    Rect transformedBounds = dataBounds;
+                    if (path.RenderTransform != null && path.RenderTransform != Transform.Identity)
+                    {
+                        transformedBounds = path.RenderTransform.TransformBounds(dataBounds);
+                    }
+                    else
+                    {
+                        double left = Canvas.GetLeft(path);
+                        double top = Canvas.GetTop(path);
+                        if (!double.IsNaN(left) && !double.IsNaN(top))
+                        {
+                            transformedBounds = new Rect(left, top, Math.Max(dataBounds.Width, 1), Math.Max(dataBounds.Height, 1));
+                        }
+                    }
+
+                    double pad = Math.Max(path.StrokeThickness / 2.0, 2.0);
+                    var aabb = new Rect(transformedBounds.X - pad, transformedBounds.Y - pad, Math.Max(transformedBounds.Width + pad * 2, 1), Math.Max(transformedBounds.Height + pad * 2, 1));
+                    Bounds = aabb;
+                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
+                    {
+                        Position = new Point(aabb.X, aabb.Y);
+                        Size = new Size(aabb.Width, aabb.Height);
+                    }
+                    return;
+                }
+
+                // 5. FrameworkElement (Image, TextBlock, Border, Rectangle, Ellipse...)
+                if (Element is FrameworkElement fe)
+                {
+                    double left = Canvas.GetLeft(fe);
+                    double top = Canvas.GetTop(fe);
+                    if (double.IsNaN(left)) left = Position.X;
+                    if (double.IsNaN(top)) top = Position.Y;
+                    double w = fe.ActualWidth > 0 ? fe.ActualWidth : fe.Width;
+                    double h = fe.ActualHeight > 0 ? fe.ActualHeight : fe.Height;
+                    if (double.IsNaN(w) || w <= 0) w = fe.RenderSize.Width > 0 ? fe.RenderSize.Width : Size.Width;
+                    if (double.IsNaN(h) || h <= 0) h = fe.RenderSize.Height > 0 ? fe.RenderSize.Height : Size.Height;
+
+                    Position = new Point(left, top);
+                    Size = new Size(Math.Max(w, 1), Math.Max(h, 1));
+
+                    var parentCanvas = FindParentCanvas(Element);
+                    if (parentCanvas != null)
+                    {
+                        var absoluteBounds = BoundsHelper.GetAbsoluteBounds(Element, parentCanvas);
+                        if (!absoluteBounds.IsEmpty && absoluteBounds.Width > 0 && absoluteBounds.Height > 0)
+                        {
+                            Bounds = absoluteBounds;
+                            return;
+                        }
+                    }
+                    Bounds = new Rect(left, top, Size.Width, Size.Height);
+                    return;
+                }
+
                 // Fallback: dùng Position/Size hiện tại
                 Bounds = new Rect(Position.X, Position.Y, Size.Width, Size.Height);
             }
@@ -253,20 +362,42 @@ namespace QASmartTouch.Models
         {
             if (Element != null)
             {
+                // Bảo toàn TranslateTransform hiện tại của Path nếu có
+                TranslateTransform? existingTranslate = null;
+                if (Element is System.Windows.Shapes.Path path)
+                {
+                    if (path.RenderTransform is TransformGroup existingTg)
+                    {
+                        existingTranslate = existingTg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                    }
+                    else if (path.RenderTransform is TranslateTransform tt)
+                    {
+                        existingTranslate = tt;
+                    }
+                }
+
                 var transformGroup = new TransformGroup();
 
                 double left = System.Windows.Controls.Canvas.GetLeft(Element);
                 double top = System.Windows.Controls.Canvas.GetTop(Element);
                 bool isCanvasPositioned = !double.IsNaN(left) && !double.IsNaN(top);
 
-                // Rotation
+                // 1. Existing translation for Path
+                if (existingTranslate != null)
+                {
+                    transformGroup.Children.Add(new TranslateTransform(existingTranslate.X, existingTranslate.Y));
+                }
+
+                // 2. Rotation
                 if (RotationAngle != 0)
                 {
                     var rotateTransform = new RotateTransform(RotationAngle);
-                    if (isCanvasPositioned)
+                    if (isCanvasPositioned && Element is FrameworkElement fe)
                     {
-                        rotateTransform.CenterX = Size.Width / 2.0;
-                        rotateTransform.CenterY = Size.Height / 2.0;
+                        double w = fe.ActualWidth > 0 ? fe.ActualWidth : (double.IsNaN(fe.Width) ? Size.Width : fe.Width);
+                        double h = fe.ActualHeight > 0 ? fe.ActualHeight : (double.IsNaN(fe.Height) ? Size.Height : fe.Height);
+                        rotateTransform.CenterX = w / 2.0;
+                        rotateTransform.CenterY = h / 2.0;
                     }
                     else
                     {
@@ -276,23 +407,26 @@ namespace QASmartTouch.Models
                     transformGroup.Children.Add(rotateTransform);
                 }
 
-                // Scale / Flip
-                if (Scale != null)
+                // 3. Scale / Flip
+                if (Scale != null && (Scale.ScaleX != 1 || Scale.ScaleY != 1))
                 {
-                    if (isCanvasPositioned)
+                    var scaleTransform = new ScaleTransform(Scale.ScaleX, Scale.ScaleY);
+                    if (isCanvasPositioned && Element is FrameworkElement fe)
                     {
-                        Scale.CenterX = Size.Width / 2.0;
-                        Scale.CenterY = Size.Height / 2.0;
+                        double w = fe.ActualWidth > 0 ? fe.ActualWidth : (double.IsNaN(fe.Width) ? Size.Width : fe.Width);
+                        double h = fe.ActualHeight > 0 ? fe.ActualHeight : (double.IsNaN(fe.Height) ? Size.Height : fe.Height);
+                        scaleTransform.CenterX = w / 2.0;
+                        scaleTransform.CenterY = h / 2.0;
                     }
                     else
                     {
-                        Scale.CenterX = Position.X + (Size.Width / 2.0);
-                        Scale.CenterY = Position.Y + (Size.Height / 2.0);
+                        scaleTransform.CenterX = Position.X + (Size.Width / 2.0);
+                        scaleTransform.CenterY = Position.Y + (Size.Height / 2.0);
                     }
-                    transformGroup.Children.Add(Scale);
+                    transformGroup.Children.Add(scaleTransform);
                 }
 
-                Element.RenderTransform = transformGroup;
+                Element.RenderTransform = transformGroup.Children.Count > 0 ? transformGroup : Transform.Identity;
             }
         }
 

@@ -496,6 +496,33 @@ namespace QASmartTouch.Services
                 
                 clonedElement = newPolyline;
             }
+            // Support Polygon (Triangle, Star, Arrow, Pentagon, etc.)
+            else if (original.Element is Polygon polygon)
+            {
+                var newPolygon = new Polygon
+                {
+                    Stroke = polygon.Stroke,
+                    StrokeThickness = polygon.StrokeThickness,
+                    StrokeLineJoin = polygon.StrokeLineJoin,
+                    StrokeStartLineCap = polygon.StrokeStartLineCap,
+                    StrokeEndLineCap = polygon.StrokeEndLineCap,
+                    Fill = polygon.Fill,
+                    Opacity = polygon.Opacity
+                };
+
+                if (polygon.Points.Count > 0)
+                {
+                    double offsetX = position.X - polygon.Points[0].X;
+                    double offsetY = position.Y - polygon.Points[0].Y;
+
+                    foreach (var point in polygon.Points)
+                    {
+                        newPolygon.Points.Add(new Point(point.X + offsetX, point.Y + offsetY));
+                    }
+                }
+
+                clonedElement = newPolygon;
+            }
             // NG-2: Support Rectangle (shapes, flowchart)
             else if (original.Element is System.Windows.Shapes.Rectangle rectangle)
             {
@@ -530,21 +557,20 @@ namespace QASmartTouch.Services
                 
                 clonedElement = newEllipse;
             }
-            // NG-2: Support Line (straight lines, arrows)
+            // NG-2: Support Line (straight lines, arrows, dashed lines)
             else if (original.Element is System.Windows.Shapes.Line line)
             {
-                // Calculate offset to maintain line's relative position
-                double originalLeft = CanvasControl.GetLeft(original.Element);
-                double originalTop = CanvasControl.GetTop(original.Element);
-                double offsetX = position.X - originalLeft;
-                double offsetY = position.Y - originalTop;
+                double minX = Math.Min(line.X1, line.X2);
+                double minY = Math.Min(line.Y1, line.Y2);
+                double offsetX = position.X - minX;
+                double offsetY = position.Y - minY;
                 
                 var newLine = new System.Windows.Shapes.Line
                 {
-                    X1 = line.X1,
-                    Y1 = line.Y1,
-                    X2 = line.X2,
-                    Y2 = line.Y2,
+                    X1 = line.X1 + offsetX,
+                    Y1 = line.Y1 + offsetY,
+                    X2 = line.X2 + offsetX,
+                    Y2 = line.Y2 + offsetY,
                     Stroke = line.Stroke,
                     StrokeThickness = line.StrokeThickness,
                     StrokeDashArray = line.StrokeDashArray?.Clone(),
@@ -639,7 +665,7 @@ namespace QASmartTouch.Services
             clone.Element = clonedElement;
             clone.Position = position;
             
-            // BUGFIX: Calculate bounds properly for Polyline
+            // BUGFIX: Calculate bounds properly for Polyline and Polygon
             if (clonedElement is Polyline pastedPolyline && pastedPolyline.Points.Count > 0)
             {
                 // Calculate bounds from Points
@@ -676,6 +702,65 @@ namespace QASmartTouch.Services
                 clone.Bounds = new Rect(minX, minY, width, height);
                 
                 System.Diagnostics.Debug.WriteLine($"   Calculated Polyline bounds: ({minX:F0},{minY:F0},{width:F0},{height:F0})");
+            }
+            else if (clonedElement is Polygon pastedPolygon && pastedPolygon.Points.Count > 0)
+            {
+                // Calculate bounds from Points
+                double minX = double.MaxValue;
+                double minY = double.MaxValue;
+                double maxX = double.MinValue;
+                double maxY = double.MinValue;
+
+                foreach (var point in pastedPolygon.Points)
+                {
+                    minX = Math.Min(minX, point.X);
+                    minY = Math.Min(minY, point.Y);
+                    maxX = Math.Max(maxX, point.X);
+                    maxY = Math.Max(maxY, point.Y);
+                }
+
+                double width = maxX - minX;
+                double height = maxY - minY;
+                
+                // Add padding for stroke thickness
+                double padding = Math.Max(pastedPolygon.StrokeThickness / 2.0, 2.0);
+                minX -= padding;
+                minY -= padding;
+                width += padding * 2;
+                height += padding * 2;
+                
+                // Ensure minimum size for selection
+                if (width < 10) width = 10;
+                if (height < 10) height = 10;
+
+                // Update clone with calculated bounds
+                clone.Position = new Point(minX, minY);
+                clone.Size = new Size(width, height);
+                clone.Bounds = new Rect(minX, minY, width, height);
+                
+                System.Diagnostics.Debug.WriteLine($"   Calculated Polygon bounds: ({minX:F0},{minY:F0},{width:F0},{height:F0})");
+            }
+            else if (clonedElement is System.Windows.Shapes.Line pastedLine)
+            {
+                double minX = Math.Min(pastedLine.X1, pastedLine.X2);
+                double minY = Math.Min(pastedLine.Y1, pastedLine.Y2);
+                double maxX = Math.Max(pastedLine.X1, pastedLine.X2);
+                double maxY = Math.Max(pastedLine.Y1, pastedLine.Y2);
+
+                double width = Math.Max(maxX - minX, 5);
+                double height = Math.Max(maxY - minY, 5);
+                double padding = Math.Max(pastedLine.StrokeThickness / 2.0, 2.0);
+
+                minX -= padding;
+                minY -= padding;
+                width += padding * 2;
+                height += padding * 2;
+
+                clone.Position = new Point(minX, minY);
+                clone.Size = new Size(width, height);
+                clone.Bounds = new Rect(minX, minY, width, height);
+
+                System.Diagnostics.Debug.WriteLine($"   Calculated Line bounds: ({minX:F0},{minY:F0},{width:F0},{height:F0})");
             }
             else
             {
@@ -804,6 +889,29 @@ namespace QASmartTouch.Services
                 }
                 return newPolyline;
             }
+            else if (original.Element is Polygon polygon)
+            {
+                var newPolygon = new Polygon
+                {
+                    Stroke = polygon.Stroke,
+                    StrokeThickness = polygon.StrokeThickness,
+                    StrokeLineJoin = polygon.StrokeLineJoin,
+                    StrokeStartLineCap = polygon.StrokeStartLineCap,
+                    StrokeEndLineCap = polygon.StrokeEndLineCap,
+                    Fill = polygon.Fill,
+                    Opacity = polygon.Opacity
+                };
+                if (polygon.Points.Count > 0)
+                {
+                    double oX = newPosition.X - original.Position.X;
+                    double oY = newPosition.Y - original.Position.Y;
+                    foreach (var p in polygon.Points)
+                    {
+                        newPolygon.Points.Add(new Point(p.X + oX, p.Y + oY));
+                    }
+                }
+                return newPolygon;
+            }
             else if (original.Element is System.Windows.Shapes.Rectangle rectangle)
             {
                 return new System.Windows.Shapes.Rectangle
@@ -829,10 +937,19 @@ namespace QASmartTouch.Services
             }
             else if (original.Element is System.Windows.Shapes.Line line)
             {
+                double minX = Math.Min(line.X1, line.X2);
+                double minY = Math.Min(line.Y1, line.Y2);
+                double oX = newPosition.X - minX;
+                double oY = newPosition.Y - minY;
+
                 return new System.Windows.Shapes.Line
                 {
-                    X1 = line.X1, Y1 = line.Y1, X2 = line.X2, Y2 = line.Y2,
-                    Stroke = line.Stroke, StrokeThickness = line.StrokeThickness,
+                    X1 = line.X1 + oX,
+                    Y1 = line.Y1 + oY,
+                    X2 = line.X2 + oX,
+                    Y2 = line.Y2 + oY,
+                    Stroke = line.Stroke,
+                    StrokeThickness = line.StrokeThickness,
                     StrokeDashArray = line.StrokeDashArray?.Clone(),
                     StrokeStartLineCap = line.StrokeStartLineCap,
                     StrokeEndLineCap = line.StrokeEndLineCap,
@@ -1056,7 +1173,7 @@ namespace QASmartTouch.Services
             foreach (var obj in sortedObjects)
             {
                 // For unfilled shapes (like Compa circles with Fill == null), check stroke edge proximity instead of entire interior
-                if (obj.Element is System.Windows.Shapes.Shape shape && shape.Fill == null)
+                if (obj.Element is System.Windows.Shapes.Ellipse ellipse && ellipse.Fill == null)
                 {
                     var center = new Point(obj.Bounds.X + obj.Bounds.Width / 2, obj.Bounds.Y + obj.Bounds.Height / 2);
                     double dist = Math.Sqrt(Math.Pow(point.X - center.X, 2) + Math.Pow(point.Y - center.Y, 2));
@@ -1065,7 +1182,7 @@ namespace QASmartTouch.Services
                     // Only hit if within tolerance of edge stroke
                     if (Math.Abs(dist - radius) <= touchTolerance)
                     {
-                        System.Diagnostics.Debug.WriteLine($"   ✅ HIT (Unfilled Shape Edge)! Type: {obj.Type}");
+                        System.Diagnostics.Debug.WriteLine($"   ✅ HIT (Unfilled Ellipse Edge)! Type: {obj.Type}");
                         return obj;
                     }
                     continue;

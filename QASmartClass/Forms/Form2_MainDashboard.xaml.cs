@@ -1144,6 +1144,29 @@ namespace QASmartTouch.Forms
                     RegisterPolylineWithBounds(polyline);
                 }
             }
+            // Register Polygon (Triangle, Star, Arrow, Pentagon, Hexagon, 2D/3D polygon shapes)
+            else if (element is Polygon polygon)
+            {
+                if (polygon.Points != null && polygon.Points.Count > 0)
+                {
+                    RegisterPolygonWithBounds(polygon);
+                }
+                else
+                {
+                    polygon.Loaded += (s, ev) =>
+                    {
+                        if (polygon.Points != null && polygon.Points.Count > 0)
+                        {
+                            RegisterPolygonWithBounds(polygon);
+                        }
+                    };
+                }
+            }
+            // Register Line (StraightLine, DashedLine, ruler lines)
+            else if (element is System.Windows.Shapes.Line line)
+            {
+                RegisterLineWithBounds(line);
+            }
             // BUG-1603: Register Text objects (Border containing TextBlock/TextBox)
             // Phải đặt TRƯỚC nhánh Shape vì Border không phải Shape.
             else if (element is Border border && (border.Child is TextBlock || border.Child is TextBox))
@@ -1159,7 +1182,7 @@ namespace QASmartTouch.Forms
                 RegisterTextElement(textBox);
             }
             // Register Shape (Rectangle, Ellipse, etc.)
-            else if (element is System.Windows.Shapes.Shape shape && !(shape is Polyline))
+            else if (element is System.Windows.Shapes.Shape shape && !(shape is Polyline) && !(shape is Polygon) && !(shape is System.Windows.Shapes.Line))
             {
                 // BUG-1603 FIX: Nếu size = 0 (chưa qua Layout Pass), hook Loaded event
                 // thay vì return bỏ qua đăng ký.
@@ -1255,31 +1278,6 @@ namespace QASmartTouch.Forms
                         }
                     };
                 }
-            }
-            // Register Line (ruler/tool drawn lines)
-            else if (element is System.Windows.Shapes.Line line)
-            {
-                double minX = Math.Min(line.X1, line.X2);
-                double minY = Math.Min(line.Y1, line.Y2);
-                double width = Math.Abs(line.X2 - line.X1);
-                double height = Math.Abs(line.Y2 - line.Y1);
-                if (width < 5) width = 5;
-                if (height < 5) height = 5;
-
-                var selectableObj = new SelectableObject
-                {
-                    Element = line,
-                    Type = ObjectType.Shape,
-                    Bounds = new Rect(minX, minY, width, height),
-                    Position = new Point(minX, minY),
-                    Size = new Size(width, height),
-                    ZIndex = Panel.GetZIndex(line),
-                    StrokeColor = (line.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
-                    StrokeThickness = line.StrokeThickness
-                };
-
-                _selectionManager.AddObject(selectableObj);
-                System.Diagnostics.Debug.WriteLine($"✅ Auto-registered Line: ({line.X1:F0},{line.Y1:F0}) → ({line.X2:F0},{line.Y2:F0})");
             }
         }
 
@@ -1435,6 +1433,103 @@ namespace QASmartTouch.Forms
 
             _selectionManager.AddObject(selectableObj);
             System.Diagnostics.Debug.WriteLine($"✅ Registered Polyline: Points={polyline.Points.Count}, Bounds=({minX:F0},{minY:F0},{width:F0},{height:F0})");
+        }
+
+        private void RegisterPolygonWithBounds(Polygon polygon)
+        {
+            if (_selectionManager == null || polygon == null)
+                return;
+
+            if (polygon.Points == null || polygon.Points.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ Cannot register Polygon: Points.Count = {polygon.Points?.Count ?? 0}");
+                return;
+            }
+
+            double minX = double.MaxValue;
+            double minY = double.MaxValue;
+            double maxX = double.MinValue;
+            double maxY = double.MinValue;
+
+            foreach (var point in polygon.Points)
+            {
+                minX = Math.Min(minX, point.X);
+                minY = Math.Min(minY, point.Y);
+                maxX = Math.Max(maxX, point.X);
+                maxY = Math.Max(maxY, point.Y);
+            }
+
+            double width = maxX - minX;
+            double height = maxY - minY;
+
+            if (double.IsInfinity(minX) || double.IsInfinity(minY) || 
+                double.IsInfinity(maxX) || double.IsInfinity(maxY) ||
+                double.IsNaN(width) || double.IsNaN(height) ||
+                width < 0 || height < 0)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Invalid bounds calculation for Polygon: minX={minX}, minY={minY}, width={width}, height={height}");
+                return;
+            }
+
+            double padding = Math.Max(polygon.StrokeThickness / 2.0, 2.0);
+            minX -= padding;
+            minY -= padding;
+            width += padding * 2;
+            height += padding * 2;
+
+            if (width < 10) width = 10;
+            if (height < 10) height = 10;
+
+            var bounds = new Rect(minX, minY, width, height);
+
+            var selectableObj = new SelectableObject
+            {
+                Element = polygon,
+                Type = ObjectType.Shape,
+                Bounds = bounds,
+                Position = new Point(minX, minY),
+                Size = new Size(width, height),
+                ZIndex = Panel.GetZIndex(polygon),
+                StrokeColor = (polygon.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
+                StrokeThickness = polygon.StrokeThickness,
+                FillColor = (polygon.Fill as SolidColorBrush)?.Color ?? Colors.Transparent
+            };
+
+            _selectionManager.AddObject(selectableObj);
+            System.Diagnostics.Debug.WriteLine($"✅ Registered Polygon: Points={polygon.Points.Count}, Bounds=({minX:F0},{minY:F0},{width:F0},{height:F0})");
+        }
+
+        private void RegisterLineWithBounds(System.Windows.Shapes.Line line)
+        {
+            if (_selectionManager == null || line == null)
+                return;
+
+            double minX = Math.Min(line.X1, line.X2);
+            double minY = Math.Min(line.Y1, line.Y2);
+            double maxX = Math.Max(line.X1, line.X2);
+            double maxY = Math.Max(line.Y1, line.Y2);
+
+            double width = Math.Max(maxX - minX, 5);
+            double height = Math.Max(maxY - minY, 5);
+            double padding = Math.Max(line.StrokeThickness / 2.0, 2.0);
+
+            var bounds = new Rect(minX - padding, minY - padding, width + padding * 2, height + padding * 2);
+
+            var selectableObj = new SelectableObject
+            {
+                Element = line,
+                Type = ObjectType.Shape,
+                Bounds = bounds,
+                Position = new Point(minX, minY),
+                Size = new Size(width, height),
+                ZIndex = Panel.GetZIndex(line),
+                StrokeColor = (line.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
+                StrokeThickness = line.StrokeThickness,
+                FillColor = Colors.Transparent
+            };
+
+            _selectionManager.AddObject(selectableObj);
+            System.Diagnostics.Debug.WriteLine($"✅ Registered Line: ({line.X1:F0},{line.Y1:F0}) → ({line.X2:F0},{line.Y2:F0}), Bounds=({minX:F0},{minY:F0},{width:F0},{height:F0})");
         }
         
         private void Window_Loaded(object sender, RoutedEventArgs e)
