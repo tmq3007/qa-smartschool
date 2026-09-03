@@ -292,6 +292,30 @@ namespace QASmartTouch.Models
                     if (double.IsNaN(w) || w <= 0) w = fe.RenderSize.Width > 0 ? fe.RenderSize.Width : Size.Width;
                     if (double.IsNaN(h) || h <= 0) h = fe.RenderSize.Height > 0 ? fe.RenderSize.Height : Size.Height;
 
+                    // ✅ QC_4.2_CANVAS_SCALE_SYNC: Đồng bộ kích thước cho Canvas khối 3D khi có ScaleTransform
+                    if (fe is Canvas)
+                    {
+                        double scaleX = 1.0, scaleY = 1.0;
+                        if (fe.RenderTransform is ScaleTransform st)
+                        {
+                            scaleX = st.ScaleX;
+                            scaleY = st.ScaleY;
+                        }
+                        else if (fe.RenderTransform is TransformGroup tg)
+                        {
+                            var foundSt = tg.Children.OfType<ScaleTransform>().FirstOrDefault();
+                            if (foundSt != null)
+                            {
+                                scaleX = foundSt.ScaleX;
+                                scaleY = foundSt.ScaleY;
+                            }
+                        }
+                        double baseWidth = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : 200);
+                        double baseHeight = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : 200);
+                        w = Math.Abs(baseWidth * scaleX);
+                        h = Math.Abs(baseHeight * scaleY);
+                    }
+
                     Position = new Point(left, top);
                     Size = new Size(Math.Max(w, 1), Math.Max(h, 1));
 
@@ -388,16 +412,42 @@ namespace QASmartTouch.Models
                     transformGroup.Children.Add(new TranslateTransform(existingTranslate.X, existingTranslate.Y));
                 }
 
-                // 2. Rotation
+                // 2. Scale / Flip (Thực hiện trước Rotation)
+                ScaleTransform? existingScale = null;
+                if (Element.RenderTransform is TransformGroup currentTg)
+                {
+                    existingScale = currentTg.Children.OfType<ScaleTransform>().FirstOrDefault();
+                }
+                else if (Element.RenderTransform is ScaleTransform st)
+                {
+                    existingScale = st;
+                }
+
+                double scaleFactorX = 1.0, scaleFactorY = 1.0;
+                if (Scale != null && (Scale.ScaleX != 1 || Scale.ScaleY != 1))
+                {
+                    scaleFactorX = Scale.ScaleX;
+                    scaleFactorY = Scale.ScaleY;
+                    var scaleTransform = new ScaleTransform(Scale.ScaleX, Scale.ScaleY);
+                    transformGroup.Children.Add(scaleTransform);
+                }
+                else if (existingScale != null)
+                {
+                    scaleFactorX = existingScale.ScaleX;
+                    scaleFactorY = existingScale.ScaleY;
+                    transformGroup.Children.Add(existingScale.Clone());
+                }
+
+                // 3. Rotation (Xoay quanh tâm sau khi đã áp dụng tỉ lệ Scale)
                 if (RotationAngle != 0)
                 {
                     var rotateTransform = new RotateTransform(RotationAngle);
                     if (isCanvasPositioned && Element is FrameworkElement fe)
                     {
-                        double w = fe.ActualWidth > 0 ? fe.ActualWidth : (double.IsNaN(fe.Width) ? Size.Width : fe.Width);
-                        double h = fe.ActualHeight > 0 ? fe.ActualHeight : (double.IsNaN(fe.Height) ? Size.Height : fe.Height);
-                        rotateTransform.CenterX = w / 2.0;
-                        rotateTransform.CenterY = h / 2.0;
+                        double w = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : Size.Width);
+                        double h = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : Size.Height);
+                        rotateTransform.CenterX = (w * scaleFactorX) / 2.0;
+                        rotateTransform.CenterY = (h * scaleFactorY) / 2.0;
                     }
                     else
                     {
@@ -405,25 +455,6 @@ namespace QASmartTouch.Models
                         rotateTransform.CenterY = Position.Y + (Size.Height / 2.0);
                     }
                     transformGroup.Children.Add(rotateTransform);
-                }
-
-                // 3. Scale / Flip
-                if (Scale != null && (Scale.ScaleX != 1 || Scale.ScaleY != 1))
-                {
-                    var scaleTransform = new ScaleTransform(Scale.ScaleX, Scale.ScaleY);
-                    if (isCanvasPositioned && Element is FrameworkElement fe)
-                    {
-                        double w = fe.ActualWidth > 0 ? fe.ActualWidth : (double.IsNaN(fe.Width) ? Size.Width : fe.Width);
-                        double h = fe.ActualHeight > 0 ? fe.ActualHeight : (double.IsNaN(fe.Height) ? Size.Height : fe.Height);
-                        scaleTransform.CenterX = w / 2.0;
-                        scaleTransform.CenterY = h / 2.0;
-                    }
-                    else
-                    {
-                        scaleTransform.CenterX = Position.X + (Size.Width / 2.0);
-                        scaleTransform.CenterY = Position.Y + (Size.Height / 2.0);
-                    }
-                    transformGroup.Children.Add(scaleTransform);
                 }
 
                 Element.RenderTransform = transformGroup.Children.Count > 0 ? transformGroup : Transform.Identity;
