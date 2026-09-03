@@ -46,7 +46,7 @@ namespace QASmartTouch.Forms
                 {
                     if (fe.Tag is string tag)
                     {
-                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel")
+                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "3DShapeContainer" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel")
                         {
                             return true;
                         }
@@ -801,18 +801,19 @@ namespace QASmartTouch.Forms
             // Stop drawing and add to undo stack
             else if (_isDrawing && _currentStroke != null)
             {
-                // âœ¨ BALANCED OPTIMIZATION: Apply light smoothing to reduce hardware jitter
-                // Decimation is DISABLED to preserve stroke shape
-                // Only light smoothing (20%) is applied to reduce jitter from touch hardware
+                // ✨ BALANCED OPTIMIZATION: Apply RDP Decimation + light smoothing
+                // Reduces 40-60% redundant points while preserving natural stroke curvature
                 if (_strokeOptimizer != null && _tempStrokePoints.Count > 2)
                 {
                     int originalCount = _tempStrokePoints.Count;
                     
-                    // Step 1: Skip decimation (keep all points for shape accuracy)
-                    // Step 2: Apply light smoothing to reduce hardware jitter
-                    var smoothedPoints = _strokeOptimizer.SmoothPoints(_tempStrokePoints);
+                    // Step 1: Apply Ramer-Douglas-Peucker decimation to eliminate redundant collinear points
+                    var decimatedPoints = _strokeOptimizer.DecimatePoints(_tempStrokePoints);
                     
-                    // Step 3: Replace stroke points with smoothed version
+                    // Step 2: Apply light smoothing to reduce hardware jitter
+                    var smoothedPoints = _strokeOptimizer.SmoothPoints(decimatedPoints);
+                    
+                    // Step 3: Replace stroke points with optimized version
                     _currentStroke.Points.Clear();
                     foreach (var point in smoothedPoints)
                     {
@@ -820,7 +821,7 @@ namespace QASmartTouch.Forms
                     }
                     
                     // Debug output
-                    System.Diagnostics.Debug.WriteLine($"âœ¨ Stroke smoothed: {originalCount} points (no decimation, 20% smoothing)");
+                    System.Diagnostics.Debug.WriteLine($"✨ Stroke optimized: {originalCount} → {smoothedPoints.Count} points (Decimation + 20% smoothing)");
                 }
 
                 // Add completed stroke to undo stack

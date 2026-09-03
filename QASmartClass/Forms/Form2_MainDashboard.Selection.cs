@@ -289,6 +289,15 @@ namespace QASmartTouch.Forms
             if (!_objectSelectionMode || _selectionManager == null || _isLassoMode)
                 return;
 
+            // ✅ QC_4.2_3D_DRAG_GUARD: Nếu đang trong phiên kéo đối tượng 3D/STEM, không vẽ khung chọn chữ nhật
+            if (_dragging3DShape != null)
+            {
+                _isDraggingSelection = false;
+                _draggedSelectionObject = null;
+                _isPreparingRectangleSelection = false;
+                return;
+            }
+
             // ✅ QC_4.2_TOUCH_TELEPORT_FIX: Safety guard
             // Đảm bảo reset trạng thái drag cũ trước khi xử lý click mới, tránh lỗi Teleport
             if (_draggedSelectionObject != null)
@@ -518,6 +527,10 @@ namespace QASmartTouch.Forms
         private void MainBoard_SelectionMouseMove(object sender, MouseEventArgs e)
         {
             if (!_objectSelectionMode || _isLassoMode)
+                return;
+
+            // ✅ QC_4.2_3D_DRAG_GUARD: Nếu đang trong phiên kéo đối tượng 3D/STEM, bỏ qua mouse move của Selection
+            if (_dragging3DShape != null)
                 return;
 
             Point currentPoint = e.GetPosition(MainInteractiveBoard);

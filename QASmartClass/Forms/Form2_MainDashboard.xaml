@@ -135,17 +135,6 @@
                         MouseLeave="MainInteractiveBoard_MouseLeave"
 
                         MouseEnter="MainInteractiveBoard_MouseEnter">
-
-                    <Canvas.CacheMode>
-
-                        <BitmapCache EnableClearType="True" 
-
-                                     RenderAtScale="1.0" 
-
-                                     SnapsToDevicePixels="True"/>
-
-                    </Canvas.CacheMode>
-
                 </Canvas>
 
             </ScrollViewer>

@@ -328,6 +328,28 @@ namespace QASmartTouch.Services
                     System.Diagnostics.Debug.WriteLine($"🔧 Resize Path stroke: scale=({scaleX:F2},{scaleY:F2})");
                 }
             }
+            else if (obj.Element is CanvasControl canvas)
+            {
+                double baseW = !double.IsNaN(canvas.Width) && canvas.Width > 0 ? canvas.Width : (canvas.ActualWidth > 0 ? canvas.ActualWidth : 200);
+                double baseH = !double.IsNaN(canvas.Height) && canvas.Height > 0 ? canvas.Height : (canvas.ActualHeight > 0 ? canvas.ActualHeight : 200);
+
+                CanvasControl.SetLeft(canvas, obj.Position.X);
+                CanvasControl.SetTop(canvas, obj.Position.Y);
+
+                if (baseW > 0 && baseH > 0)
+                {
+                    double scaleX = newSize.Width / baseW;
+                    double scaleY = newSize.Height / baseH;
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(scaleX, scaleY, 0, 0));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, (baseW * scaleX) / 2.0, (baseH * scaleY) / 2.0));
+                    }
+                    canvas.RenderTransform = tg;
+                    System.Diagnostics.Debug.WriteLine($"🔧 Resize Canvas: scale=({scaleX:F2},{scaleY:F2})");
+                }
+            }
             else if (obj.Element is FrameworkElement element)
             {
                 // Rectangle, Ellipse, TextBlock, Border, Image
@@ -335,6 +357,10 @@ namespace QASmartTouch.Services
                 CanvasControl.SetTop(element, obj.Position.Y);
                 element.Width = newSize.Width;
                 element.Height = newSize.Height;
+                if (obj.RotationAngle != 0)
+                {
+                    element.RenderTransform = new RotateTransform(obj.RotationAngle, newSize.Width / 2.0, newSize.Height / 2.0);
+                }
                 
                 System.Diagnostics.Debug.WriteLine($"🔧 Resize {obj.Type}: {newSize.Width:F0}x{newSize.Height:F0}");
             }
@@ -618,13 +644,45 @@ namespace QASmartTouch.Services
                     path.RenderTransform = tg;
                 }
             }
-            // 5. FrameworkElement (Rectangle, Ellipse, TextBlock, Image, Border)
+            // 5. Canvas Container (3D Shape, STEM diagrams, etc.): Áp dụng ScaleTransform vector mượt mà
+            else if (obj.Element is CanvasControl canvas)
+            {
+                CanvasControl.SetLeft(canvas, newPosition.X);
+                CanvasControl.SetTop(canvas, newPosition.Y);
+
+                double baseW = !double.IsNaN(canvas.Width) && canvas.Width > 0 ? canvas.Width : (canvas.ActualWidth > 0 ? canvas.ActualWidth : (state != null && !double.IsNaN(state.Width) && state.Width > 0 ? state.Width : 200));
+                double baseH = !double.IsNaN(canvas.Height) && canvas.Height > 0 ? canvas.Height : (canvas.ActualHeight > 0 ? canvas.ActualHeight : (state != null && !double.IsNaN(state.Height) && state.Height > 0 ? state.Height : 200));
+
+                if (baseW > 0 && baseH > 0)
+                {
+                    double scaleX = newSize.Width / baseW;
+                    double scaleY = newSize.Height / baseH;
+
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(scaleX, scaleY, 0, 0));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, (baseW * scaleX) / 2.0, (baseH * scaleY) / 2.0));
+                    }
+                    canvas.RenderTransform = tg;
+                }
+                else
+                {
+                    canvas.Width = newSize.Width;
+                    canvas.Height = newSize.Height;
+                }
+            }
+            // 6. FrameworkElement (Rectangle, Ellipse, TextBlock, Image, Border)
             else if (obj.Element is FrameworkElement element)
             {
                 CanvasControl.SetLeft(element, newPosition.X);
                 CanvasControl.SetTop(element, newPosition.Y);
                 element.Width = newSize.Width;
                 element.Height = newSize.Height;
+                if (obj.RotationAngle != 0)
+                {
+                    element.RenderTransform = new RotateTransform(obj.RotationAngle, newSize.Width / 2.0, newSize.Height / 2.0);
+                }
             }
 
             obj.UpdateBounds();
@@ -739,6 +797,44 @@ namespace QASmartTouch.Services
                 path.RenderTransform = tg;
                 member.UpdateBounds();
             }
+            else if (member.Element is CanvasControl canvas)
+            {
+                double memCenterX = state.Position.X + (state.Size.Width / 2.0);
+                double memCenterY = state.Position.Y + (state.Size.Height / 2.0);
+
+                double dx = memCenterX - center.X;
+                double dy = memCenterY - center.Y;
+
+                double newCenterX = center.X + (dx * cos - dy * sin);
+                double newCenterY = center.Y + (dx * sin + dy * cos);
+
+                double newLeft = newCenterX - (state.Size.Width / 2.0);
+                double newTop = newCenterY - (state.Size.Height / 2.0);
+
+                CanvasControl.SetLeft(canvas, newLeft);
+                CanvasControl.SetTop(canvas, newTop);
+
+                member.Position = new Point(newLeft, newTop);
+                member.RotationAngle = (state.RotationAngle + deltaAngleDegrees) % 360;
+
+                double baseW = !double.IsNaN(canvas.Width) && canvas.Width > 0 ? canvas.Width : (canvas.ActualWidth > 0 ? canvas.ActualWidth : 200);
+                double baseH = !double.IsNaN(canvas.Height) && canvas.Height > 0 ? canvas.Height : (canvas.ActualHeight > 0 ? canvas.ActualHeight : 200);
+
+                double currentW = state.Size.Width > 0 ? state.Size.Width : baseW;
+                double currentH = state.Size.Height > 0 ? state.Size.Height : baseH;
+
+                double scaleX = currentW / baseW;
+                double scaleY = currentH / baseH;
+
+                var tg = new TransformGroup();
+                tg.Children.Add(new ScaleTransform(scaleX, scaleY, 0, 0));
+                if (member.RotationAngle != 0)
+                {
+                    tg.Children.Add(new RotateTransform(member.RotationAngle, (baseW * scaleX) / 2.0, (baseH * scaleY) / 2.0));
+                }
+                canvas.RenderTransform = tg;
+                member.UpdateBounds();
+            }
             else if (member.Element is FrameworkElement fe)
             {
                 double memCenterX = state.Position.X + (state.Size.Width / 2.0);
@@ -759,7 +855,9 @@ namespace QASmartTouch.Services
                 member.Position = new Point(newLeft, newTop);
                 member.RotationAngle = (state.RotationAngle + deltaAngleDegrees) % 360;
 
-                var rotateTransform = new RotateTransform(member.RotationAngle, state.Size.Width / 2.0, state.Size.Height / 2.0);
+                double w = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : state.Size.Width);
+                double h = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : state.Size.Height);
+                var rotateTransform = new RotateTransform(member.RotationAngle, w / 2.0, h / 2.0);
                 fe.RenderTransform = rotateTransform;
                 member.UpdateBounds();
             }
@@ -824,10 +922,33 @@ namespace QASmartTouch.Services
                 tg.Children.Add(new RotateTransform(deltaAngleDegrees, center.X, center.Y));
                 path.RenderTransform = tg;
             }
+            else if (obj.Element is CanvasControl canvas)
+            {
+                obj.RotationAngle = targetAngleDegrees;
+
+                double baseW = !double.IsNaN(canvas.Width) && canvas.Width > 0 ? canvas.Width : (canvas.ActualWidth > 0 ? canvas.ActualWidth : 200);
+                double baseH = !double.IsNaN(canvas.Height) && canvas.Height > 0 ? canvas.Height : (canvas.ActualHeight > 0 ? canvas.ActualHeight : 200);
+
+                double currentW = state.Size.Width > 0 ? state.Size.Width : baseW;
+                double currentH = state.Size.Height > 0 ? state.Size.Height : baseH;
+
+                double scaleX = currentW / baseW;
+                double scaleY = currentH / baseH;
+
+                var tg = new TransformGroup();
+                tg.Children.Add(new ScaleTransform(scaleX, scaleY, 0, 0));
+                if (targetAngleDegrees != 0)
+                {
+                    tg.Children.Add(new RotateTransform(targetAngleDegrees, (baseW * scaleX) / 2.0, (baseH * scaleY) / 2.0));
+                }
+                canvas.RenderTransform = tg;
+            }
             else if (obj.Element is FrameworkElement fe)
             {
                 obj.RotationAngle = targetAngleDegrees;
-                var rotateTransform = new RotateTransform(targetAngleDegrees, state.Size.Width / 2.0, state.Size.Height / 2.0);
+                double w = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : state.Size.Width);
+                double h = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : state.Size.Height);
+                var rotateTransform = new RotateTransform(targetAngleDegrees, w / 2.0, h / 2.0);
                 fe.RenderTransform = rotateTransform;
             }
         }
