@@ -126,9 +126,6 @@ namespace QASmartTouch.Forms
         // Double-click detection for eraser button
         private DateTime _lastEraserClickTime = DateTime.MinValue;
         
-        // Double-click detection for select button (to activate Lasso mode)
-        private DateTime _lastSelectClickTime = DateTime.MinValue;
-        
         // Shape drawing settings
         private bool _shapeDrawingEnabled = false;
         private string _currentShape = "";
@@ -160,12 +157,6 @@ namespace QASmartTouch.Forms
         // Drag-erase selection area
         private Rectangle? _dragErasePreview;
         private Point _dragEraseStartPoint;
-        
-        // Selection area rectangle (for selecting objects)
-        private bool _isSelectingArea = false;
-        private Rectangle? _selectionAreaPreview;
-        private Point _selectionAreaStartPoint;
-        private Canvas? _activeSelectionMenu; // Track active context menu
         
         // Object Selection System (NEW)
         private SelectionManager? _selectionManager;
