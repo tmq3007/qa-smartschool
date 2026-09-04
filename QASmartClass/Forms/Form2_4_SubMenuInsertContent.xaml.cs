@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using System.Windows.Input;
 using QASmartTouch.PeriodicTable.Views;
 using QASmartTouch.Services.VersionManagement;
 using QASmartTouch.Shared;
@@ -861,15 +862,20 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                // Ẩn menu trước khi mở hộp thoại tìm kiếm để không che khuất dialog
+                this.Hide();
+
                 // Show input dialog for custom location
                 var inputDialog = new Window
                 {
                     Title = "Tìm kiếm địa điểm",
-                    Width = 450,
-                    Height = 180,
+                    Width = 460,
+                    Height = 190,
                     WindowStartupLocation = WindowStartupLocation.CenterScreen,
                     WindowStyle = WindowStyle.ToolWindow,
-                    ResizeMode = ResizeMode.NoResize
+                    ResizeMode = ResizeMode.NoResize,
+                    Owner = this.Owner ?? _mainDashboard,
+                    Topmost = true
                 };
 
                 var stackPanel = new System.Windows.Controls.StackPanel { Margin = new Thickness(20) };
@@ -878,13 +884,14 @@ namespace QASmartTouch.Forms
                 {
                     Text = "Nhập tên địa điểm hoặc tọa độ:",
                     FontSize = 13,
+                    FontWeight = FontWeights.SemiBold,
                     Margin = new Thickness(0, 0, 0, 10)
                 });
 
                 var textBox = new System.Windows.Controls.TextBox
                 {
                     Text = "Hà Nội, Việt Nam",
-                    FontSize = 13,
+                    FontSize = 14,
                     Padding = new Thickness(8),
                     Margin = new Thickness(0, 0, 0, 15)
                 };
@@ -899,45 +906,84 @@ namespace QASmartTouch.Forms
                 var okButton = new System.Windows.Controls.Button
                 {
                     Content = "Tìm kiếm",
-                    Width = 90,
-                    Height = 32,
+                    Width = 100,
+                    Height = 36,
                     Margin = new Thickness(0, 0, 10, 0),
                     Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(66, 133, 244)),
                     Foreground = System.Windows.Media.Brushes.White,
                     BorderThickness = new Thickness(0),
-                    Cursor = System.Windows.Input.Cursors.Hand
-                };
-                okButton.Click += (s, args) =>
-                {
-                    string searchQuery = textBox.Text.Trim();
-                    if (!string.IsNullOrEmpty(searchQuery))
-                    {
-                        string url = $"https://www.google.com/maps/search/{Uri.EscapeDataString(searchQuery)}";
-                        InsertGoogleMapsLocation(url);
-                        inputDialog.Close();
-                    }
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    FontSize = 13,
+                    FontWeight = FontWeights.SemiBold
                 };
 
                 var cancelButton = new System.Windows.Controls.Button
                 {
                     Content = "Hủy",
                     Width = 80,
-                    Height = 32,
+                    Height = 36,
                     Background = System.Windows.Media.Brushes.LightGray,
                     BorderThickness = new Thickness(0),
-                    Cursor = System.Windows.Input.Cursors.Hand
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    FontSize = 13
                 };
+
+                bool searchExecuted = false;
+
+                Action executeSearch = () =>
+                {
+                    string searchQuery = textBox.Text.Trim();
+                    if (!string.IsNullOrEmpty(searchQuery))
+                    {
+                        searchExecuted = true;
+                        string url = $"https://www.google.com/maps/search/{Uri.EscapeDataString(searchQuery)}";
+                        inputDialog.Close();
+                        InsertGoogleMapsLocation(url);
+                    }
+                };
+
+                okButton.Click += (s, args) => executeSearch();
                 cancelButton.Click += (s, args) => inputDialog.Close();
+
+                // Hỗ trợ phím Enter để tìm kiếm, Esc để hủy (thuận tiện cho cả PC và màn hình tương tác)
+                textBox.KeyDown += (s, args) =>
+                {
+                    if (args.Key == Key.Enter)
+                    {
+                        args.Handled = true;
+                        executeSearch();
+                    }
+                    else if (args.Key == Key.Escape)
+                    {
+                        args.Handled = true;
+                        inputDialog.Close();
+                    }
+                };
 
                 buttonPanel.Children.Add(okButton);
                 buttonPanel.Children.Add(cancelButton);
                 stackPanel.Children.Add(buttonPanel);
 
                 inputDialog.Content = stackPanel;
+
+                // Tự động focus và bôi đen text để gõ ngay
+                inputDialog.Loaded += (s, args) =>
+                {
+                    textBox.Focus();
+                    textBox.SelectAll();
+                };
+
                 inputDialog.ShowDialog();
+
+                // Nếu không thực hiện tìm kiếm (người dùng bấm Hủy hoặc đóng cửa sổ), đóng menu để trả lại bảng vẽ
+                if (!searchExecuted)
+                {
+                    this.Close();
+                }
             }
             catch (Exception ex)
             {
+                this.Show();
                 MessageBox.Show($"Lỗi mở dialog tìm kiếm: {ex.Message}", "Lỗi",
                               MessageBoxButton.OK, MessageBoxImage.Error);
             }

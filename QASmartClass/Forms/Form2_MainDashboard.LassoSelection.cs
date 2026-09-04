@@ -53,8 +53,6 @@ namespace QASmartTouch.Forms
                             gMaxX = Math.Max(gMaxX, b.Right);  gMaxY = Math.Max(gMaxY, b.Bottom);
                         }
                         var groupRect = new Rect(gMinX, gMinY, gMaxX - gMinX, gMaxY - gMinY);
-                        var toolbarPos = CalculateOptimalToolbarPosition(groupRect);
-
                         var groupObject = new SelectableObject
                         {
                             Element = null,
@@ -66,7 +64,9 @@ namespace QASmartTouch.Forms
                             Bounds = groupRect
                         };
                         _selectionBox?.AttachTo(groupObject);
-                        _contextToolbar?.ShowAt(toolbarPos, selectedObjects[0]);
+                        var visualBounds = GetSelectionVisualBounds(groupObject);
+                        var toolbarPos = CalculateOptimalToolbarPosition(visualBounds);
+                        _contextToolbar?.ShowAt(toolbarPos, groupObject);
                     }
 
                     // ✅ FIX DRAG & RESIZE: Sau khi Lasso chọn thành công đối tượng,

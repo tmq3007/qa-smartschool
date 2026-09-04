@@ -838,40 +838,104 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// ✅ G2.1: Tính vị trí tối ưu cho Context Toolbar theo thuật toán Auto-Flip
-        /// 1. Ưu tiên hiển thị phía dưới Bounding Box
-        /// 2. Nếu sát mép dưới → lật lên trên
-        /// 3. Nếu cả trên/dưới đều chật → Side-Docking bên phải
+        /// Tính toán Bounding Box bao ngoài thực tế hiển thị trên màn hình (Visual Bounds)
+        /// của chiếc hộp chọn SelectionBox sau khi đã xoay góc RotationAngle, bao gồm cả 4 chốt góc và chốt xoay.
+        /// Giúp thanh ContextToolbar luôn nằm ngoài chiếc hộp xoay, tuyệt đối không đè lên chốt góc.
         /// </summary>
-        private Point CalculateOptimalToolbarPosition(Rect bounds, double toolbarWidth = 400, double toolbarHeight = 45)
+        private Rect GetSelectionVisualBounds(SelectableObject obj)
+        {
+            if (obj == null) return Rect.Empty;
+
+            double angle = obj.RotationAngle;
+            double wBox = Math.Max(20, obj.Size.Width + 4);
+            double hBox = Math.Max(20, obj.Size.Height + 4);
+            Point center = new Point(obj.Position.X + obj.Size.Width / 2.0, obj.Position.Y + obj.Size.Height / 2.0);
+
+            if (angle == 0)
+            {
+                // Khi chưa xoay, lấy kích thước hộp chọn SelectionBox có tính bán kính chốt góc (8px)
+                double x = obj.Position.X - 2;
+                double y = obj.Position.Y - 2;
+                return new Rect(x - 8, y - 8, wBox + 16, hBox + 16);
+            }
+
+            double rad = angle * Math.PI / 180.0;
+            double cos = Math.Cos(rad);
+            double sin = Math.Sin(rad);
+
+            // Bán kính nửa chốt góc (16px / 2 = 8px)
+            double halfW = (wBox / 2.0) + 8;
+            double halfH = (hBox / 2.0) + 8;
+
+            // 4 góc của hộp SelectionBox trong hệ toạ độ cục bộ quanh tâm
+            Point[] localCorners = new Point[]
+            {
+                new Point(-halfW, -halfH),
+                new Point(halfW, -halfH),
+                new Point(halfW, halfH),
+                new Point(-halfW, halfH)
+            };
+
+            double minX = double.MaxValue, minY = double.MaxValue;
+            double maxX = double.MinValue, maxY = double.MinValue;
+
+            foreach (var c in localCorners)
+            {
+                double wx = center.X + (c.X * cos - c.Y * sin);
+                double wy = center.Y + (c.X * sin + c.Y * cos);
+                minX = Math.Min(minX, wx);
+                minY = Math.Min(minY, wy);
+                maxX = Math.Max(maxX, wx);
+                maxY = Math.Max(maxY, wy);
+            }
+
+            // Đồng thời tính thêm vị trí của RotateHandle ở đỉnh trên (cách mép 34px)
+            double rotHandleLocalY = -(hBox / 2.0) - 34;
+            double rotHandleWorldX = center.X + (0 * cos - rotHandleLocalY * sin);
+            double rotHandleWorldY = center.Y + (0 * sin + rotHandleLocalY * cos);
+            minX = Math.Min(minX, rotHandleWorldX - 10);
+            maxX = Math.Max(maxX, rotHandleWorldX + 10);
+            minY = Math.Min(minY, rotHandleWorldY - 10);
+            maxY = Math.Max(maxY, rotHandleWorldY + 10);
+
+            return new Rect(minX, minY, maxX - minX, maxY - minY);
+        }
+
+        /// <summary>
+        /// ✅ G2.1: Tính vị trí tối ưu cho Context Toolbar theo thuật toán Auto-Flip & Căn giữa chuẩn xác.
+        /// 1. Căn giữa chuẩn xác theo tâm X của đối tượng
+        /// 2. Ưu tiên hiển thị phía dưới Bounding Box có khoảng đệm an toàn (không đè chốt góc)
+        /// 3. Nếu sát mép dưới → lật lên trên
+        /// 4. Nếu cả trên/dưới đều chật → Side-Docking bên phải/trái
+        /// </summary>
+        private Point CalculateOptimalToolbarPosition(Rect bounds, double toolbarWidth = 140, double toolbarHeight = 44)
         {
             double canvasWidth = MainInteractiveBoard.ActualWidth > 0 ? MainInteractiveBoard.ActualWidth : 1920;
             double canvasHeight = MainInteractiveBoard.ActualHeight > 0 ? MainInteractiveBoard.ActualHeight : 1080;
 
-            double centerX = bounds.Left + (bounds.Width - toolbarWidth) / 2;
-            // Clamp X: không tràn trái/phải
-            centerX = Math.Max(10, Math.Min(centerX, canvasWidth - toolbarWidth - 10));
+            // Tâm X của đối tượng để ContextToolbar căn giữa chuẩn xác (ContextToolbar.ShowAt trừ width / 2.0)
+            double centerX = bounds.Left + bounds.Width / 2.0;
 
             double distanceBottom = canvasHeight - bounds.Bottom;
             double distanceTop = bounds.Top;
 
-            if (distanceBottom >= toolbarHeight + 15)
+            if (distanceBottom >= toolbarHeight + 18)
             {
-                // Ưu tiên: Hiển thị phía dưới
-                return new Point(centerX, bounds.Bottom + 10);
+                // Ưu tiên: Hiển thị phía dưới, cách mép dưới an toàn 14px (không bao giờ chạm chốt góc)
+                return new Point(centerX, bounds.Bottom + 14);
             }
-            else if (distanceTop >= toolbarHeight + 15)
+            else if (distanceTop >= toolbarHeight + 18)
             {
-                // Auto-Flip: Lật lên phía trên
-                return new Point(centerX, bounds.Top - toolbarHeight - 10);
+                // Auto-Flip: Lật lên phía trên, cách mép trên an toàn 14px
+                return new Point(centerX, bounds.Top - toolbarHeight - 14);
             }
             else
             {
-                // Side-Docking: Đặt bên phải Bounding Box
-                double sideX = bounds.Right + 10;
-                if (sideX + toolbarWidth > canvasWidth)
-                    sideX = bounds.Left - toolbarWidth - 10;
-                double sideY = bounds.Top + (bounds.Height - toolbarHeight) / 2;
+                // Side-Docking: Đặt bên phải hoặc bên trái
+                double sideX = bounds.Right + 14 + (toolbarWidth / 2.0);
+                if (sideX + (toolbarWidth / 2.0) > canvasWidth)
+                    sideX = bounds.Left - 14 - (toolbarWidth / 2.0);
+                double sideY = bounds.Top + (bounds.Height - toolbarHeight) / 2.0;
                 sideY = Math.Max(10, Math.Min(sideY, canvasHeight - toolbarHeight - 10));
                 return new Point(sideX, sideY);
             }

@@ -40,6 +40,16 @@ namespace QASmartTouch.Controls
         public bool IsTransforming => _isDragging || _isRotating || _isMoving || _isManipulating;
 
         /// <summary>
+        /// True nếu đang trong quá trình kéo chốt xoay (Rotate)
+        /// </summary>
+        public bool IsRotating => _isRotating;
+
+        /// <summary>
+        /// True nếu đang trong quá trình kéo chốt co dãn (Resize)
+        /// </summary>
+        public bool IsDragging => _isDragging;
+
+        /// <summary>
         /// Object đang được attach bởi SelectionBox (Object đơn hoặc Group Object)
         /// </summary>
         public SelectableObject? AttachedObject => _attachedObject;
@@ -149,6 +159,16 @@ namespace QASmartTouch.Controls
         /// Event khi người dùng nhấp đúp vào đối tượng TextBlock đã chọn — yêu cầu chỉnh sửa chữ trực tiếp
         /// </summary>
         public event EventHandler<SelectableObject>? TextEditRequested;
+
+        /// <summary>
+        /// Event khi người dùng bắt đầu kéo chốt xoay (để tạm ẩn ContextToolbar)
+        /// </summary>
+        public event EventHandler<SelectableObject>? RotateStarted;
+
+        /// <summary>
+        /// Event khi người dùng kết thúc xoay (để hiển thị lại ContextToolbar)
+        /// </summary>
+        public event EventHandler<SelectableObject>? RotateCompleted;
 
         #endregion
 
@@ -339,6 +359,7 @@ namespace QASmartTouch.Controls
         /// </summary>
         public void ResetMoveState()
         {
+            bool wasRotating = _isRotating;
             if (_isMoving) FinishTransformOperation("Move object");
             if (_isDragging) FinishTransformOperation("Resize object");
             if (_isRotating) FinishTransformOperation("Rotate object");
@@ -365,6 +386,11 @@ namespace QASmartTouch.Controls
                 SelectionBorder.ReleaseMouseCapture();
 
             _activeTransformInitialStates.Clear();
+
+            if (wasRotating && _attachedObject != null)
+            {
+                RotateCompleted?.Invoke(this, _attachedObject);
+            }
         }
 
         /// <summary>
@@ -513,6 +539,7 @@ namespace QASmartTouch.Controls
                 AngleTooltip.Visibility = Visibility.Collapsed;
                 SnapLine.Visibility = Visibility.Collapsed;
                 FinishTransformOperation("Reset rotation to 0°");
+                RotateCompleted?.Invoke(this, _attachedObject);
                 e.Handled = true;
                 return;
             }
@@ -533,6 +560,9 @@ namespace QASmartTouch.Controls
             ScaleTooltip.Visibility = Visibility.Collapsed;
             txtAngleTooltip.Text = $"{Math.Round(_attachedObject.RotationAngle, 0)}°";
             AngleTooltip.Visibility = Visibility.Visible;
+
+            // ✅ Tạm ẩn ContextToolbar khi bắt đầu xoay để giữ tầm nhìn thoáng đãng và không che nét vẽ
+            RotateStarted?.Invoke(this, _attachedObject);
 
             e.Handled = true;
         }
@@ -600,6 +630,10 @@ namespace QASmartTouch.Controls
                 _attachedObject?.UpdateBounds();
                 UpdatePosition();
                 FinishTransformOperation("Rotate object");
+                if (_attachedObject != null)
+                {
+                    RotateCompleted?.Invoke(this, _attachedObject);
+                }
             }
 
             var handle = sender as Ellipse;
