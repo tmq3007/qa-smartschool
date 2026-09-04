@@ -442,6 +442,40 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
+        /// Convenience method to record Remove action for multiple elements in a single Undo/Redo step (Batch)
+        /// </summary>
+        private void RecordRemoveBatchAction(System.Collections.Generic.IEnumerable<UIElement> elements, string? description = null)
+        {
+            var elementList = elements?.Where(e => e != null).ToList();
+            if (elementList == null || elementList.Count == 0) return;
+
+            if (elementList.Count == 1)
+            {
+                RecordRemoveAction(elementList[0], description);
+                return;
+            }
+
+            var batchAction = new UndoRedoAction
+            {
+                Type = ActionType.Batch,
+                Description = description ?? $"Delete {elementList.Count} elements"
+            };
+
+            foreach (var elem in elementList)
+            {
+                batchAction.BatchActions.Add(new UndoRedoAction
+                {
+                    Type = ActionType.Remove,
+                    Element = elem,
+                    Parent = MainInteractiveBoard,
+                    Description = description ?? $"Remove {elem.GetType().Name}"
+                });
+            }
+
+            RecordAction(batchAction);
+        }
+
+        /// <summary>
         /// Convenience method to record Modify action (move, rotate, resize)
         /// </summary>
         private void RecordModifyAction(UIElement element, object oldValue, object newValue, string? description = null)
@@ -1778,8 +1812,6 @@ namespace QASmartTouch.Forms
                         gMaxX = Math.Max(gMaxX, b.Right);  gMaxY = Math.Max(gMaxY, b.Bottom);
                     }
                     var groupRect = new Rect(gMinX, gMinY, gMaxX - gMinX, gMaxY - gMinY);
-                    var toolbarPos = CalculateOptimalToolbarPosition(groupRect);
-
                     var groupObject = new SelectableObject
                     {
                         Element = null,
@@ -1791,7 +1823,9 @@ namespace QASmartTouch.Forms
                         Bounds = groupRect
                     };
                     _selectionBox?.AttachTo(groupObject);
-                    _contextToolbar?.ShowAt(toolbarPos, matchingObjects[0]);
+                    var visualBounds = GetSelectionVisualBounds(groupObject);
+                    var toolbarPos = CalculateOptimalToolbarPosition(visualBounds);
+                    _contextToolbar?.ShowAt(toolbarPos, groupObject);
                 }
                 
                 // ✅ FIX: Chuyển sang ObjectSelectionMode để kích hoạt Drag-to-Move và Resize cho Magic Wand

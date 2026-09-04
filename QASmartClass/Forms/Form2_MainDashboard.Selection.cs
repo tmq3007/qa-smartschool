@@ -67,8 +67,8 @@ namespace QASmartTouch.Forms
                 }
                 
                 // ✅ G2.1: Auto-Flip toolbar position
-                var bounds = selectedObject.Bounds;
-                var toolbarPosition = CalculateOptimalToolbarPosition(bounds);
+                var visualBounds = GetSelectionVisualBounds(selectedObject);
+                var toolbarPosition = CalculateOptimalToolbarPosition(visualBounds);
                 _contextToolbar?.ShowAt(toolbarPosition, selectedObject);
                 
                 // Update toolbar UI
@@ -137,8 +137,8 @@ namespace QASmartTouch.Forms
                     }
                     if (_contextToolbar != null)
                     {
-                        var bounds = singleObj.Bounds;
-                        var position = CalculateOptimalToolbarPosition(bounds);
+                        var visualBounds = GetSelectionVisualBounds(singleObj);
+                        var position = CalculateOptimalToolbarPosition(visualBounds);
                         _contextToolbar.ShowAt(position, singleObj);
                     }
                 }
@@ -185,8 +185,10 @@ namespace QASmartTouch.Forms
 
                         if (_contextToolbar != null)
                         {
-                            var position = CalculateOptimalToolbarPosition(groupRect);
-                            _contextToolbar.ShowAt(position, selectedObjects[0]);
+                            groupContainer.StrokeColor = selectedObjects[0].StrokeColor;
+                            var visualBounds = GetSelectionVisualBounds(groupContainer);
+                            var position = CalculateOptimalToolbarPosition(visualBounds);
+                            _contextToolbar.ShowAt(position, groupContainer);
                             _contextToolbar.UpdateLockIcon(selectedObjects.All(o => o.IsLocked));
                         }
                     }
@@ -595,16 +597,18 @@ namespace QASmartTouch.Forms
                             _selectionBox.UpdatePosition();
                         }
 
-                        var toolbarPos = CalculateOptimalToolbarPosition(groupRect);
-                        _contextToolbar?.ShowAt(toolbarPos, _draggedSelectionObject);
+                        var targetGroup = (_selectionBox != null && _selectionBox.AttachedObject != null) ? _selectionBox.AttachedObject : _draggedSelectionObject;
+                        var visualBounds = GetSelectionVisualBounds(targetGroup);
+                        var toolbarPos = CalculateOptimalToolbarPosition(visualBounds);
+                        _contextToolbar?.ShowAt(toolbarPos, targetGroup);
                     }
                     else
                     {
                         _selectionBox?.UpdatePosition();
                         if (_draggedSelectionObject.Bounds != Rect.Empty)
                         {
-                            var bounds = _draggedSelectionObject.Bounds;
-                            var toolbarPosition = CalculateOptimalToolbarPosition(bounds);
+                            var visualBounds = GetSelectionVisualBounds(_draggedSelectionObject);
+                            var toolbarPosition = CalculateOptimalToolbarPosition(visualBounds);
                             _contextToolbar?.ShowAt(toolbarPosition, _draggedSelectionObject);
                         }
                     }
@@ -793,6 +797,22 @@ namespace QASmartTouch.Forms
             _isPreparingRectangleSelection = false; // ✅ Khóa lại cờ hiệu sau khi xong việc
         }
 
+        private void OnSelectionBoxRotateStarted(object? sender, SelectableObject obj)
+        {
+            _contextToolbar?.Hide();
+        }
+
+        private void OnSelectionBoxRotateCompleted(object? sender, SelectableObject obj)
+        {
+            var targetObj = _selectionBox?.AttachedObject ?? obj;
+            if (targetObj != null && _selectionBox != null && _selectionBox.Visibility == Visibility.Visible)
+            {
+                var visualBounds = GetSelectionVisualBounds(targetObj);
+                var toolbarPosition = CalculateOptimalToolbarPosition(visualBounds);
+                _contextToolbar?.ShowAt(toolbarPosition, targetObj);
+            }
+        }
+
         /// <summary>
         /// Called when user transforms object via SelectionBox handles
         /// </summary>
@@ -801,13 +821,19 @@ namespace QASmartTouch.Forms
             // ✅ Rebuild QuadTree spatial index ngay sau khi transform (kéo di chuyển, resize, rotate)
             _selectionManager?.RebuildQuadTree();
 
-            // Refresh context toolbar position after transform
-            var targetObj = _selectionManager?.SelectedObject ?? transformedObject;
+            // ✅ Khi đang xoay: Tuyệt đối không hiển thị Toolbar để giữ tầm nhìn thoáng đãng và không che nét vẽ
+            if (_selectionBox != null && _selectionBox.IsRotating)
+            {
+                _contextToolbar?.Hide();
+                return;
+            }
+
+            // Refresh context toolbar position after transform (ưu tiên _selectionBox.AttachedObject để lấy đúng groupContainer khi multi-selection)
+            var targetObj = _selectionBox?.AttachedObject ?? _selectionManager?.SelectedObject ?? transformedObject;
             if (targetObj != null && targetObj.Bounds != Rect.Empty)
             {
-                var bounds = targetObj.Bounds;
-                // ✅ G2.1: Auto-Flip toolbar position
-                var toolbarPosition = CalculateOptimalToolbarPosition(bounds);
+                var visualBounds = GetSelectionVisualBounds(targetObj);
+                var toolbarPosition = CalculateOptimalToolbarPosition(visualBounds);
                 _contextToolbar?.ShowAt(toolbarPosition, targetObj);
             }
         }
@@ -1007,13 +1033,19 @@ namespace QASmartTouch.Forms
                 double autoFontSize = _smartHandwritingRecognitionService.CalculateAutoFontSize(bounds.Height);
 
                 // Remove original stroke elements
-                foreach (var obj in selectedObjects)
+                var strokeElements = selectedObjects
+                    .Where(obj => obj.Element != null && MainInteractiveBoard.Children.Contains(obj.Element))
+                    .Select(obj => obj.Element!)
+                    .ToList();
+
+                foreach (var elem in strokeElements)
                 {
-                    if (obj.Element != null && MainInteractiveBoard.Children.Contains(obj.Element))
-                    {
-                        MainInteractiveBoard.Children.Remove(obj.Element);
-                        RecordRemoveAction(obj.Element, "Stroke");
-                    }
+                    MainInteractiveBoard.Children.Remove(elem);
+                }
+
+                if (strokeElements.Count > 0)
+                {
+                    RecordRemoveBatchAction(strokeElements, "Convert handwriting to text");
                 }
 
                 // Create new TextBlock with matching original ink color & auto font size
@@ -1245,7 +1277,7 @@ namespace QASmartTouch.Forms
 
             if (_contextToolbar != null)
             {
-                var pos = CalculateOptimalToolbarPosition(targetObj.Bounds);
+                var pos = CalculateOptimalToolbarPosition(GetSelectionVisualBounds(targetObj));
                 _contextToolbar.ShowAt(pos, targetObj);
             }
 
@@ -1270,7 +1302,7 @@ namespace QASmartTouch.Forms
 
             if (_contextToolbar != null)
             {
-                var pos = CalculateOptimalToolbarPosition(targetObj.Bounds);
+                var pos = CalculateOptimalToolbarPosition(GetSelectionVisualBounds(targetObj));
                 _contextToolbar.ShowAt(pos, targetObj);
             }
 
@@ -1295,7 +1327,7 @@ namespace QASmartTouch.Forms
 
             if (_contextToolbar != null)
             {
-                var pos = CalculateOptimalToolbarPosition(targetObj.Bounds);
+                var pos = CalculateOptimalToolbarPosition(GetSelectionVisualBounds(targetObj));
                 _contextToolbar.ShowAt(pos, targetObj);
             }
 
@@ -1354,12 +1386,15 @@ namespace QASmartTouch.Forms
             var selectedList = _selectionManager?.SelectedObjects.ToList();
             if (selectedList != null && selectedList.Count > 0)
             {
-                foreach (var obj in selectedList)
+                // ✅ BATCH UNDO: Gom toàn bộ phần tử bị xóa vào 1 bước Undo duy nhất
+                var elementsToDelete = selectedList
+                    .Where(obj => obj.Element != null)
+                    .Select(obj => obj.Element!)
+                    .ToList();
+
+                if (elementsToDelete.Count > 0)
                 {
-                    if (obj.Element != null)
-                    {
-                        RecordRemoveAction(obj.Element, $"Delete {obj.Type}");
-                    }
+                    RecordRemoveBatchAction(elementsToDelete, $"Delete {elementsToDelete.Count} object(s)");
                 }
 
                 // Immediately detach selection box & hide toolbar UI
@@ -1370,7 +1405,7 @@ namespace QASmartTouch.Forms
                 _colorPicker?.Hide();
 
                 _selectionManager?.DeleteSelectedObjects();
-                System.Diagnostics.Debug.WriteLine($"🗑️ Deleted {selectedList.Count} selected object(s)");
+                System.Diagnostics.Debug.WriteLine($"🗑️ Deleted {selectedList.Count} selected object(s) in single batch Undo action");
             }
         }
 
@@ -1643,7 +1678,7 @@ namespace QASmartTouch.Forms
 
                 if (_contextToolbar != null)
                 {
-                    var pos = CalculateOptimalToolbarPosition(targetObj.Bounds);
+                    var pos = CalculateOptimalToolbarPosition(GetSelectionVisualBounds(targetObj));
                     _contextToolbar.ShowAt(pos, targetObj);
                 }
 
@@ -1669,7 +1704,7 @@ namespace QASmartTouch.Forms
 
                 if (_contextToolbar != null)
                 {
-                    var pos = CalculateOptimalToolbarPosition(targetObj.Bounds);
+                    var pos = CalculateOptimalToolbarPosition(GetSelectionVisualBounds(targetObj));
                     _contextToolbar.ShowAt(pos, targetObj);
                 }
 
@@ -1778,7 +1813,7 @@ namespace QASmartTouch.Forms
 
                     if (_contextToolbar != null)
                     {
-                        var pos = CalculateOptimalToolbarPosition(obj.Bounds);
+                        var pos = CalculateOptimalToolbarPosition(GetSelectionVisualBounds(obj));
                         _contextToolbar.ShowAt(pos, obj);
                     }
                     
