@@ -1177,9 +1177,6 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void ZoomToArea(double left, double top, double width, double height)
         {
-            // Save bounds for later use
-            _zoomAreaBounds = new Rect(left, top, width, height);
-            
             // Create HIGH DPI snapshot by capturing the entire canvas first
             // Use 2x DPI (192) for better quality when zooming
             var highDPI = 192.0;

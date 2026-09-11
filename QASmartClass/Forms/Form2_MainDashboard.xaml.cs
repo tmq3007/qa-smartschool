@@ -156,7 +156,7 @@ namespace QASmartTouch.Forms
 
         // Drag-erase selection area
         private Rectangle? _dragErasePreview;
-        private Point _dragEraseStartPoint;
+
         
         // Object Selection System (NEW)
         private SelectionManager? _selectionManager;
@@ -216,7 +216,7 @@ namespace QASmartTouch.Forms
         private UIElement? _zoomAreaOverlay;
         private double _zoomAreaOverlayScale = 1.0;
         private BitmapSource? _zoomAreaSnapshot;
-        private Rect _zoomAreaBounds; // Original bounds of zoomed area
+
         
         // Zoom area overlay drag functionality
         private bool _isDraggingOverlay = false;
