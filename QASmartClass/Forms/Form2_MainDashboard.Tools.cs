@@ -853,17 +853,6 @@ namespace QASmartTouch.Forms
             // Position menu so bottom edge touches top of toolbar (0px gap)
             shapesMenu.Top = toolbarTop - shapesMenu.Height;
             
-            // DEBUG: Log positioning calculations
-            System.Diagnostics.Debug.WriteLine($"=== MENU POSITIONING DEBUG ===");
-            System.Diagnostics.Debug.WriteLine($"Window Position: X={windowPosition.X}, Y={windowPosition.Y}");
-            System.Diagnostics.Debug.WriteLine($"Window Size: W={windowWidth}, H={windowHeight}");
-            System.Diagnostics.Debug.WriteLine($"Menu Size: W={shapesMenu.Width}, H={shapesMenu.Height}");
-            System.Diagnostics.Debug.WriteLine($"Toolbar Top: {toolbarTop}");
-            System.Diagnostics.Debug.WriteLine($"Menu Position: Left={shapesMenu.Left}, Top={shapesMenu.Top}");
-            System.Diagnostics.Debug.WriteLine($"Menu Bottom: {shapesMenu.Top + shapesMenu.Height}");
-            System.Diagnostics.Debug.WriteLine($"Gap (should be 0): {toolbarTop - (shapesMenu.Top + shapesMenu.Height)}");
-            System.Diagnostics.Debug.WriteLine($"==============================");
-            
             // Handle window closed event
             shapesMenu.Closed += (s, args) =>
             {
@@ -2321,28 +2310,6 @@ namespace QASmartTouch.Forms
             };
             
             boardMenu.Show();
-        }
-
-        /// <summary>
-        /// Add chart UIElement to canvas and record for undo
-        /// NOTE: This method is reserved for future implementation when chart editors support exporting UIElement
-        /// </summary>
-        private void AddChartToCanvas(UIElement chartElement)
-        {
-            // Position chart at center of canvas
-            double left = (MainInteractiveBoard.ActualWidth - (chartElement as FrameworkElement)?.ActualWidth ?? 300) / 2;
-            double top = (MainInteractiveBoard.ActualHeight - (chartElement as FrameworkElement)?.ActualHeight ?? 200) / 2;
-            
-            Canvas.SetLeft(chartElement, left);
-            Canvas.SetTop(chartElement, top);
-            
-            // Add to canvas
-            MainInteractiveBoard.Children.Add(chartElement);
-            
-            // Record for undo
-            RecordAddAction(chartElement, $"Add {chartElement.GetType().Name}");
-            
-            System.Diagnostics.Debug.WriteLine($"✅ Chart added to canvas at ({left:F0}, {top:F0})");
         }
 
         private void btn10_WindowMode_Click(object sender, RoutedEventArgs e)
