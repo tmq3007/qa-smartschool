@@ -429,10 +429,6 @@ namespace QASmartTouch.Forms
             }
         }
 
-        private void ShowTemporaryMessage(string message)
-        {
-            MessageBox.Show(message, "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
 
         #endregion
 
