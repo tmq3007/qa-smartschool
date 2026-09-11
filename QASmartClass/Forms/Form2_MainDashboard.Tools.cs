@@ -1184,22 +1184,6 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// Update selection area preview rectangle
-        /// </summary>
-        private void UpdateSelectionAreaPreview(Rectangle preview, Point start, Point current)
-        {
-            double left = Math.Min(start.X, current.X);
-            double top = Math.Min(start.Y, current.Y);
-            double width = Math.Abs(current.X - start.X);
-            double height = Math.Abs(current.Y - start.Y);
-            
-            Canvas.SetLeft(preview, left);
-            Canvas.SetTop(preview, top);
-            preview.Width = width;
-            preview.Height = height;
-        }
-
-        /// <summary>
         /// Zoom to specific area of canvas
         /// </summary>
         private void ZoomToArea(double left, double top, double width, double height)
@@ -2337,61 +2321,6 @@ namespace QASmartTouch.Forms
             };
             
             boardMenu.Show();
-        }
-
-        /// <summary>
-        /// Open chart editor based on chart type
-        /// </summary>
-        private void OpenChartEditor(string chartType)
-        {
-            try
-            {
-                Window? chartEditor = null;
-                
-                switch (chartType)
-                {
-                    case "Bar":
-                        chartEditor = new Form2_8_BarChartEditor(this);
-                        System.Diagnostics.Debug.WriteLine("📊 Opening Bar Chart Editor");
-                        break;
-                        
-                    case "Line":
-                        chartEditor = new Form2_9_LineChartEditor();
-                        System.Diagnostics.Debug.WriteLine("📈 Opening Line Chart Editor");
-                        break;
-                        
-                    case "Pie":
-                        chartEditor = new Form2_10_PieChartEditor(this);
-                        System.Diagnostics.Debug.WriteLine("🥧 Opening Pie Chart Editor");
-                        break;
-                        
-                    case "Radar":
-                        chartEditor = new Form2_14_RadarChartEditor(this);
-                        System.Diagnostics.Debug.WriteLine("📡 Opening Radar Chart Editor");
-                        break;
-                }
-                
-                if (chartEditor != null)
-                {
-                    // Position chart editor at center of screen
-                    chartEditor.Owner = this;
-                    chartEditor.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    
-                    // Show as dialog
-                    chartEditor.ShowDialog();
-                    
-                    System.Diagnostics.Debug.WriteLine($"✅ {chartType} Chart Editor closed");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Error opening chart editor: {ex.Message}");
-                MessageBox.Show(
-                    $"Lỗi khi mở trình chỉnh sửa biểu đồ:\n{ex.Message}\n\nVui lòng thử lại.", 
-                    "Lỗi", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Error);
-            }
         }
 
         /// <summary>
