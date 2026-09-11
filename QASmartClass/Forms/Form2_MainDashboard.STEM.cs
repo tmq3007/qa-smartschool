@@ -699,28 +699,6 @@ namespace QASmartTouch.Forms
         #region Pie Chart Methods
 
         /// <summary>
-        /// Open Pie Chart Editor and handle both regular and DisplayStats mode
-        /// </summary>
-        private void OpenPieChartEditor()
-        {
-            var pieChartEditor = new Form2_10_PieChartEditor(this);
-            
-            if (pieChartEditor.ShowDialog() == true && pieChartEditor.IsConfirmed)
-            {
-                // Check if DisplayStats mode was activated
-                if (pieChartEditor.DisplayStatsMode)
-                {
-                    ApplyPieChartWithStatsToCanvas(pieChartEditor);
-                }
-                else
-                {
-                    // Regular confirm - just copy chart
-                    ApplyPieChartToCanvas(pieChartEditor);
-                }
-            }
-        }
-
-        /// <summary>
         /// Open Pie Chart Editor with preset chart type
         /// </summary>
         public void OpenPieChartEditorWithType(string chartType)
