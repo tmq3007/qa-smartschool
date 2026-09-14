@@ -240,6 +240,14 @@ namespace QASmartTouch.Forms
             // Handle window closed event
             eraserMenu.Closed += (s, args) =>
             {
+                try
+                {
+                    this.Activate();
+                    this.Focus();
+                    MainInteractiveBoard.Focus();
+                }
+                catch { }
+
                 // Save settings after dialog closes
                 _savedEraserMode = eraserMenu.EraserMode;
                 _savedEraserSize = eraserMenu.EraserSize;
@@ -856,6 +864,14 @@ namespace QASmartTouch.Forms
             // Handle window closed event
             shapesMenu.Closed += (s, args) =>
             {
+                try
+                {
+                    this.Activate();
+                    this.Focus();
+                    MainInteractiveBoard.Focus();
+                }
+                catch { }
+
                 // Check if user selected a shape
                 // ✅ Check UserSelected flag instead of DialogResult
                 if (shapesMenu.UserSelected && !string.IsNullOrEmpty(shapesMenu.SelectedShape))
@@ -1592,6 +1608,14 @@ namespace QASmartTouch.Forms
             RefreshSelectableObjects();              // Scan canvas, đăng ký objects với bounds chính xác
             _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Selection);
             
+            try
+            {
+                this.Activate();
+                this.Focus();
+                MainInteractiveBoard.Focus();
+            }
+            catch { }
+
             System.Diagnostics.Debug.WriteLine("Selection Mode: Standard Selection Activated via btn8_Select_Click");
         }
 
@@ -1608,6 +1632,15 @@ namespace QASmartTouch.Forms
             _selectionManager?.DeselectAll();        // Reset selection cũ
             RefreshSelectableObjects();              // Scan canvas, đăng ký objects với bounds chính xác
             _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Selection);
+            
+            try
+            {
+                this.Activate();
+                this.Focus();
+                MainInteractiveBoard.Focus();
+            }
+            catch { }
+
             ShowSmartStatusBadge("📐 Chế độ chọn Chữ nhật: Kéo khoanh vùng các đối tượng trên bảng");
             System.Diagnostics.Debug.WriteLine("Selection Mode: Rectangle/Standard Selection Activated");
         }
@@ -1626,6 +1659,15 @@ namespace QASmartTouch.Forms
             _selectionManager?.DeselectAll();        // Reset selection cũ
             RefreshSelectableObjects();              // Scan canvas, đăng ký objects với bounds chính xác
             _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Selection);
+            
+            try
+            {
+                this.Activate();
+                this.Focus();
+                MainInteractiveBoard.Focus();
+            }
+            catch { }
+
             if (_lassoTool != null)
             {
                 _lassoTool.Activate();
@@ -1958,6 +2000,14 @@ namespace QASmartTouch.Forms
 
             selectionMenu.Closed += (s, args) =>
             {
+                try
+                {
+                    this.Activate();
+                    this.Focus();
+                    MainInteractiveBoard.Focus();
+                }
+                catch { }
+
                 _activeSubMenu = null;
                 _activeSubMenuButton = null;
             };

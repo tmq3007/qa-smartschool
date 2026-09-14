@@ -31,6 +31,8 @@ namespace QASmartTouch.Controls
         private bool _isRotating = false;
         private bool _isMoving = false; // [BUG_DRAG_MOVE] Drag-to-move state
         private bool _isManipulating = false;
+        private int _activeResizeTouchId = -1;
+        private int _activeRotateTouchId = -1;
 
         private System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> _activeTransformInitialStates = new();
 
@@ -193,24 +195,6 @@ namespace QASmartTouch.Controls
             // Đề phòng Windows "nuốt" mất MouseUp trên màn hình cảm ứng hồng ngoại
             SelectionBorder.TouchUp += (s, e) => ResetMoveState();
             SelectionBorder.StylusUp += (s, e) => ResetMoveState();
-            // QC_4.2_TOUCH_RESIZE_GUARD: Đảm bảo khi kéo chốt vuông mở rộng/thu nhỏ (Resize) hoặc chốt xoay bằng ngón tay/bút cảm ứng không bị phát nét vẽ theo
-            this.Loaded += (s, e) =>
-            {
-                Rectangle[] handles = new Rectangle[] { TopLeftHandle, TopRightHandle, BottomLeftHandle, BottomRightHandle };
-                foreach (var h in handles)
-                {
-                    if (h != null)
-                    {
-                        h.PreviewTouchDown += (snd, touchArgs) => { touchArgs.Handled = true; };
-                        h.PreviewStylusDown += (snd, stylusArgs) => { stylusArgs.Handled = true; };
-                    }
-                }
-                if (RotateHandle != null)
-                {
-                    RotateHandle.PreviewTouchDown += (snd, touchArgs) => { touchArgs.Handled = true; };
-                    RotateHandle.PreviewStylusDown += (snd, stylusArgs) => { stylusArgs.Handled = true; };
-                }
-            };
         }
 
         private DateTime _lastClickTime = DateTime.MinValue;
@@ -229,8 +213,8 @@ namespace QASmartTouch.Controls
             }
             _lastClickTime = now;
 
-            // [BUG_DRAG_MOVE] Bắt đầu drag-to-move nếu không phải double-click
-            if (_attachedObject != null && !_attachedObject.IsLocked && !_isDragging && !_isRotating)
+            // [BUG_DRAG_MOVE] Bắt đầu drag-to-move nếu không phải double-click và không trong phiên resize/rotate chốt
+            if (_attachedObject != null && !_attachedObject.IsLocked && !_isDragging && !_isRotating && _activeResizeTouchId == -1 && _activeRotateTouchId == -1)
             {
                 _isMoving = true;
                 _dragStartPoint = e.GetPosition(this.Parent as UIElement);
@@ -249,6 +233,15 @@ namespace QASmartTouch.Controls
         {
             if (!_isMoving || _attachedObject == null || _attachedObject.IsLocked)
                 return;
+
+            // Nếu đang trong phiên kéo chốt góc bằng Touch/Mouse, lập tức ngắt di chuyển body
+            if (_isDragging || _isRotating || _activeResizeTouchId != -1 || _activeRotateTouchId != -1)
+            {
+                _isMoving = false;
+                if (SelectionBorder.IsMouseCaptured)
+                    SelectionBorder.ReleaseMouseCapture();
+                return;
+            }
 
             // CRITICAL FIX: Nếu SelectionBorder đã mất mouse capture (bị MainInteractiveBoard cướp),
             // reset _isMoving ngay lập tức để tránh state leak gây kẹt chế độ di chuyển vĩnh viễn.
@@ -341,6 +334,8 @@ namespace QASmartTouch.Controls
             _isMoving = false;
             _isDragging = false;
             _isRotating = false;
+            _activeResizeTouchId = -1;
+            _activeRotateTouchId = -1;
             if (SelectionBorder.IsMouseCaptured)
                 SelectionBorder.ReleaseMouseCapture();
 
@@ -359,6 +354,10 @@ namespace QASmartTouch.Controls
         /// </summary>
         public void ResetMoveState()
         {
+            // Bảo vệ phiên kéo/xoay chốt bằng Touch đang diễn ra
+            if (_activeResizeTouchId != -1 || _activeRotateTouchId != -1)
+                return;
+
             bool wasRotating = _isRotating;
             if (_isMoving) FinishTransformOperation("Move object");
             if (_isDragging) FinishTransformOperation("Resize object");
@@ -429,10 +428,17 @@ namespace QASmartTouch.Controls
 
         private void ResizeHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            // Bỏ qua sự kiện chuột ảo nếu đang có ngón tay cảm ứng tương tác
+            if (_activeResizeTouchId != -1)
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (_attachedObject == null || _attachedObject.IsLocked)
                 return;
 
-            var handle = sender as Rectangle;
+            var handle = sender as FrameworkElement;
             if (handle == null)
                 return;
 
@@ -477,6 +483,13 @@ namespace QASmartTouch.Controls
 
         private void ResizeHandle_MouseMove(object sender, MouseEventArgs e)
         {
+            // Bỏ qua sự kiện chuột ảo nếu đang có ngón tay cảm ứng tương tác
+            if (_activeResizeTouchId != -1)
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (!_isDragging || _attachedObject == null || _currentResizeMode == Models.ResizeMode.None)
                 return;
 
@@ -491,18 +504,132 @@ namespace QASmartTouch.Controls
 
         private void ResizeHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_activeResizeTouchId != -1)
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (_isDragging)
             {
                 _isDragging = false;
                 _currentResizeMode = Models.ResizeMode.None;
                 ScaleTooltip.Visibility = Visibility.Collapsed;
+                _attachedObject?.UpdateBounds();
+                UpdatePosition();
                 FinishTransformOperation("Resize object");
             }
 
-            var handle = sender as Rectangle;
+            var handle = sender as FrameworkElement;
             handle?.ReleaseMouseCapture();
 
             // [FIX] Luôn chặn MouseUp bubble lên Canvas để tránh mất chọn (Deselect)
+            e.Handled = true;
+        }
+
+        private void ResizeHandle_TouchDown(object sender, TouchEventArgs e)
+        {
+            if (_attachedObject == null || _attachedObject.IsLocked)
+                return;
+
+            var handle = sender as FrameworkElement;
+            if (handle == null)
+                return;
+
+            // Chủ động dọn dẹp mọi cờ kéo di chuyển cũ bị kẹt do chuột ảo
+            if (_isMoving)
+            {
+                _isMoving = false;
+                if (SelectionBorder.IsMouseCaptured)
+                    SelectionBorder.ReleaseMouseCapture();
+            }
+
+            if (_activeResizeTouchId != -1)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            string tag = handle.Tag?.ToString() ?? "";
+            _currentResizeMode = tag switch
+            {
+                "TopLeft" => Models.ResizeMode.TopLeft,
+                "TopRight" => Models.ResizeMode.TopRight,
+                "BottomLeft" => Models.ResizeMode.BottomLeft,
+                "BottomRight" => Models.ResizeMode.BottomRight,
+                _ => Models.ResizeMode.None
+            };
+
+            if (_currentResizeMode != Models.ResizeMode.None)
+            {
+                _isDragging = true;
+                _activeResizeTouchId = e.TouchDevice.Id;
+                _dragStartPoint = e.GetTouchPoint(this.Parent as UIElement).Position;
+                _originalPosition = _attachedObject.Position;
+                _originalSize = _attachedObject.Size;
+                _activeTransformInitialStates = CaptureCurrentTransformStates();
+
+                _memberSnapshots.Clear();
+                if (_attachedObject.GroupMembers != null && _attachedObject.GroupMembers.Count > 0)
+                {
+                    foreach (var member in _attachedObject.GroupMembers)
+                    {
+                        if (member != null)
+                        {
+                            _memberSnapshots[member] = (member.Position, member.Size);
+                        }
+                    }
+                }
+
+                ScaleTooltip.Visibility = Visibility.Visible;
+                UpdateScaleTooltipText();
+
+                handle.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void ResizeHandle_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (!_isDragging || _attachedObject == null || _currentResizeMode == Models.ResizeMode.None)
+                return;
+
+            if (e.TouchDevice.Id != _activeResizeTouchId)
+                return;
+
+            Point currentPoint = e.GetTouchPoint(this.Parent as UIElement).Position;
+            _transformService.ResizeFromHandle(_attachedObject, _currentResizeMode, currentPoint, _dragStartPoint, _originalSize, _originalPosition, _memberSnapshots, _activeTransformInitialStates);
+
+            UpdatePosition();
+            UpdateScaleTooltipText();
+
+            ObjectTransformed?.Invoke(this, _attachedObject);
+            e.Handled = true;
+        }
+
+        private void ResizeHandle_TouchUp(object sender, TouchEventArgs e)
+        {
+            var handle = sender as FrameworkElement;
+            if (handle != null && e.TouchDevice.Captured == handle)
+            {
+                handle.ReleaseTouchCapture(e.TouchDevice);
+            }
+            if (handle != null && handle.IsMouseCaptured)
+            {
+                handle.ReleaseMouseCapture();
+            }
+
+            if (_isDragging)
+            {
+                _isDragging = false;
+                _currentResizeMode = Models.ResizeMode.None;
+                ScaleTooltip.Visibility = Visibility.Collapsed;
+                _attachedObject?.UpdateBounds();
+                UpdatePosition();
+                FinishTransformOperation("Resize object");
+            }
+
+            _activeResizeTouchId = -1;
             e.Handled = true;
         }
 
@@ -519,6 +646,13 @@ namespace QASmartTouch.Controls
 
         private void RotateHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            // Bỏ qua chuột ảo nếu ngón tay cảm ứng đang thao tác
+            if (_activeRotateTouchId != -1)
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (_attachedObject == null || _attachedObject.IsLocked)
                 return;
 
@@ -553,7 +687,7 @@ namespace QASmartTouch.Controls
             _initialObjectAngle = _attachedObject.RotationAngle;
             _activeTransformInitialStates = CaptureCurrentTransformStates();
 
-            var handle = sender as Ellipse;
+            var handle = sender as FrameworkElement;
             handle?.CaptureMouse();
 
             // Hiển thị AngleTooltip live khi bắt đầu xoay
@@ -569,6 +703,13 @@ namespace QASmartTouch.Controls
 
         private void RotateHandle_MouseMove(object sender, MouseEventArgs e)
         {
+            // Bỏ qua chuột ảo nếu ngón tay cảm ứng đang thao tác
+            if (_activeRotateTouchId != -1)
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (!_isRotating || _attachedObject == null)
                 return;
 
@@ -622,6 +763,12 @@ namespace QASmartTouch.Controls
 
         private void RotateHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_activeRotateTouchId != -1)
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (_isRotating)
             {
                 _isRotating = false;
@@ -636,11 +783,152 @@ namespace QASmartTouch.Controls
                 }
             }
 
-            var handle = sender as Ellipse;
+            var handle = sender as FrameworkElement;
             handle?.ReleaseMouseCapture();
 
             // [FIX] Luôn chặn MouseUp bubble lên Canvas để tránh mất chọn (Deselect)
             e.Handled = true;
+        }
+
+        private void RotateHandle_TouchDown(object sender, TouchEventArgs e)
+        {
+            if (_attachedObject == null || _attachedObject.IsLocked)
+                return;
+
+            var handle = sender as FrameworkElement;
+            if (handle == null)
+                return;
+
+            // Chủ động dọn dẹp mọi cờ kéo di chuyển cũ bị kẹt do chuột ảo
+            if (_isMoving)
+            {
+                _isMoving = false;
+                if (SelectionBorder.IsMouseCaptured)
+                    SelectionBorder.ReleaseMouseCapture();
+            }
+
+            if (_activeRotateTouchId != -1)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            _isRotating = true;
+            _activeRotateTouchId = e.TouchDevice.Id;
+            _dragStartPoint = e.GetTouchPoint(this.Parent as UIElement).Position;
+            _originalPosition = _attachedObject.Position;
+            _originalSize = _attachedObject.Size;
+            _rotationCenter = new Point(_originalPosition.X + (_originalSize.Width / 2.0), _originalPosition.Y + (_originalSize.Height / 2.0));
+            _startPointerAngle = _transformService.CalculateRotationAngle(_rotationCenter, _dragStartPoint);
+            _initialObjectAngle = _attachedObject.RotationAngle;
+            _activeTransformInitialStates = CaptureCurrentTransformStates();
+
+            handle.CaptureTouch(e.TouchDevice);
+
+            ScaleTooltip.Visibility = Visibility.Collapsed;
+            txtAngleTooltip.Text = $"{Math.Round(_attachedObject.RotationAngle, 0)}°";
+            AngleTooltip.Visibility = Visibility.Visible;
+
+            RotateStarted?.Invoke(this, _attachedObject);
+            e.Handled = true;
+        }
+
+        private void RotateHandle_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (!_isRotating || _attachedObject == null || e.TouchDevice.Id != _activeRotateTouchId)
+                return;
+
+            Point currentPoint = e.GetTouchPoint(this.Parent as UIElement).Position;
+            double currentPointerAngle = _transformService.CalculateRotationAngle(_rotationCenter, currentPoint);
+            double pointerDelta = currentPointerAngle - _startPointerAngle;
+
+            double targetAngle = (_initialObjectAngle + pointerDelta) % 360;
+            if (targetAngle < 0) targetAngle += 360;
+
+            double snappedAngle = ApplySmartAngleSnappingExtended(targetAngle);
+
+            _transformService.RotateFromInitialState(_attachedObject, _rotationCenter, snappedAngle, _activeTransformInitialStates);
+            _attachedObject.RotationAngle = snappedAngle;
+            _attachedObject.Position = _originalPosition;
+            _attachedObject.Size = _originalSize;
+
+            UpdatePosition();
+
+            txtAngleTooltip.Text = $"{Math.Round(snappedAngle, 0)}°";
+            AngleTooltip.Visibility = Visibility.Visible;
+
+            ObjectTransformed?.Invoke(this, _attachedObject);
+            e.Handled = true;
+        }
+
+        private void RotateHandle_TouchUp(object sender, TouchEventArgs e)
+        {
+            var handle = sender as FrameworkElement;
+            if (handle != null && e.TouchDevice.Captured == handle)
+            {
+                handle.ReleaseTouchCapture(e.TouchDevice);
+            }
+            if (handle != null && handle.IsMouseCaptured)
+            {
+                handle.ReleaseMouseCapture();
+            }
+
+            if (_isRotating)
+            {
+                _isRotating = false;
+                SnapLine.Visibility = Visibility.Collapsed;
+                AngleTooltip.Visibility = Visibility.Collapsed;
+                _attachedObject?.UpdateBounds();
+                UpdatePosition();
+                FinishTransformOperation("Rotate object");
+                if (_attachedObject != null)
+                {
+                    RotateCompleted?.Invoke(this, _attachedObject);
+                }
+            }
+
+            _activeRotateTouchId = -1;
+            e.Handled = true;
+        }
+
+        private void Handle_LostTouchCapture(object sender, TouchEventArgs e)
+        {
+            var handle = sender as FrameworkElement;
+            if (handle != null && handle.IsMouseCaptured)
+            {
+                handle.ReleaseMouseCapture();
+            }
+
+            if (e.TouchDevice.Id == _activeResizeTouchId || _activeResizeTouchId != -1)
+            {
+                if (_isDragging)
+                {
+                    _isDragging = false;
+                    _currentResizeMode = Models.ResizeMode.None;
+                    ScaleTooltip.Visibility = Visibility.Collapsed;
+                    _attachedObject?.UpdateBounds();
+                    UpdatePosition();
+                    FinishTransformOperation("Resize object");
+                }
+                _activeResizeTouchId = -1;
+            }
+            if (e.TouchDevice.Id == _activeRotateTouchId || _activeRotateTouchId != -1)
+            {
+                if (_isRotating)
+                {
+                    _isRotating = false;
+                    SnapLine.Visibility = Visibility.Collapsed;
+                    AngleTooltip.Visibility = Visibility.Collapsed;
+                    _attachedObject?.UpdateBounds();
+                    UpdatePosition();
+                    FinishTransformOperation("Rotate object");
+                    if (_attachedObject != null)
+                    {
+                        RotateCompleted?.Invoke(this, _attachedObject);
+                    }
+                }
+                _activeRotateTouchId = -1;
+            }
         }
 
         #endregion
@@ -649,7 +937,15 @@ namespace QASmartTouch.Controls
 
         private void SelectionBorder_ManipulationStarting(object sender, ManipulationStartingEventArgs e)
         {
-            if (_attachedObject == null || _attachedObject.IsLocked) return;
+            // Nếu đang trong phiên kéo chốt resize hoặc xoay, hủy bỏ Manipulation để tránh MoveBy can thiệp gây giật khung
+            if (_attachedObject == null || _attachedObject.IsLocked || _isDragging || _isRotating || _activeResizeTouchId != -1 || _activeRotateTouchId != -1)
+            {
+                _isManipulating = false;
+                e.Cancel();
+                e.Handled = true;
+                return;
+            }
+
             e.ManipulationContainer = this.Parent as IInputElement;
 
             // ✅ REVIEW-FIX #2: Ghi nhận kích thước gốc khi bắt đầu Pinch gesture
@@ -662,7 +958,14 @@ namespace QASmartTouch.Controls
 
         private void SelectionBorder_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
-            if (_attachedObject == null || _attachedObject.IsLocked) return;
+            // Tuyệt đối không can thiệp di chuyển MoveBy khi người dùng đang kéo chốt resize/rotate
+            if (_attachedObject == null || _attachedObject.IsLocked || _isDragging || _isRotating || _activeResizeTouchId != -1 || _activeRotateTouchId != -1)
+            {
+                _isManipulating = false;
+                e.Complete();
+                e.Handled = true;
+                return;
+            }
 
             // [BUG_DRAG_MOVE] Handle 1-finger Translation (di chuyển)
             double transX = e.DeltaManipulation.Translation.X;
@@ -706,6 +1009,14 @@ namespace QASmartTouch.Controls
 
         private void SelectionBorder_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
+            // Bỏ qua dọn dẹp nếu phiên kéo chốt vẫn đang diễn ra
+            if (_isDragging || _isRotating || _activeResizeTouchId != -1 || _activeRotateTouchId != -1)
+            {
+                _isManipulating = false;
+                e.Handled = true;
+                return;
+            }
+
             ScaleTooltip.Visibility = Visibility.Collapsed;
 
             // Cập nhật bounds cho QuadTree spatial index sau khi di chuyển/zoom bằng touch

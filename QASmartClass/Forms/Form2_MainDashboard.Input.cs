@@ -147,17 +147,142 @@ namespace QASmartTouch.Forms
 
         private void MainInteractiveBoard_PreviewTouchDown(object? sender, TouchEventArgs e)
         {
+            // QC_4.2_TOUCH_SHAPE_DIRECT: Xử lý trực tiếp cảm ứng vẽ hình từ phần cứng (Zero 2nd tap)
+            if (_shapeDrawingEnabled)
+            {
+                if (_isDrawing)
+                {
+                    e.Handled = true;
+                    return;
+                }
+
+                _activeShapeTouchId = e.TouchDevice.Id;
+                _shapeStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                _isDrawing = true;
+
+                _previewShape = CreateShapePreview(_currentShape);
+                if (_previewShape != null)
+                {
+                    MainInteractiveBoard.Children.Add(_previewShape);
+                }
+
+                e.TouchDevice.Capture(MainInteractiveBoard);
+                e.Handled = true;
+                return;
+            }
+
+            // QC_4.2_TOUCH_SELECTION_DIRECT: Xử lý trực tiếp cảm ứng khoanh vùng chọn đối tượng từ phần cứng (Zero 2nd tap)
+            if (_objectSelectionMode)
+            {
+                if (_activeShapeTouchId != -1)
+                {
+                    e.Handled = true;
+                    return;
+                }
+
+                if ((_selectionBox != null && _selectionBox.IsTransforming) ||
+                    QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(e.OriginalSource, MainInteractiveBoard))
+                {
+                    return;
+                }
+
+                Point touchPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                bool isCtrl = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+                if (StartSelectionInteraction(touchPoint, e.OriginalSource, isCtrl))
+                {
+                    _activeShapeTouchId = e.TouchDevice.Id;
+                    e.TouchDevice.Capture(MainInteractiveBoard);
+                    e.Handled = true;
+                    return;
+                }
+            }
+
             EnsurePassthroughFocusAndPenMode(e.OriginalSource);
 
             // [LOI_VID_53] Auto-dismiss keyboard khi chạm Canvas ngoài TextBox/Keyboard
             AutoDismissKeyboardIfNeeded(e.OriginalSource);
         }
 
+        private void MainInteractiveBoard_PreviewTouchMove(object? sender, TouchEventArgs e)
+        {
+            if (_shapeDrawingEnabled && _isDrawing && _previewShape != null)
+            {
+                if (_activeShapeTouchId != -1 && e.TouchDevice.Id != _activeShapeTouchId)
+                {
+                    e.Handled = true;
+                    return;
+                }
+
+                Point currentPos = e.GetTouchPoint(MainInteractiveBoard).Position;
+                UpdateShapePreview(_previewShape, _shapeStartPoint, currentPos);
+                e.Handled = true;
+                return;
+            }
+
+            if (_objectSelectionMode)
+            {
+                if (_activeShapeTouchId != -1)
+                {
+                    if (e.TouchDevice.Id != _activeShapeTouchId)
+                    {
+                        e.Handled = true;
+                        return;
+                    }
+
+                    if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
+                    {
+                        Point currentPos = e.GetTouchPoint(MainInteractiveBoard).Position;
+                        UpdateSelectionInteraction(currentPos, e.OriginalSource);
+                        e.Handled = true;
+                        return;
+                    }
+                }
+            }
+        }
+
         private void MainInteractiveBoard_PreviewTouchUp(object? sender, TouchEventArgs e)
         {
+            if (_shapeDrawingEnabled && _isDrawing && _previewShape != null)
+            {
+                if (_activeShapeTouchId == -1 || e.TouchDevice.Id == _activeShapeTouchId)
+                {
+                    FinalizeShapeDrawing();
+                    _activeShapeTouchId = -1;
+                    if (e.TouchDevice.Captured == MainInteractiveBoard)
+                    {
+                        MainInteractiveBoard.ReleaseTouchCapture(e.TouchDevice);
+                    }
+                    e.Handled = true;
+                    return;
+                }
+            }
+
+            if (_objectSelectionMode)
+            {
+                if (_activeShapeTouchId != -1 && e.TouchDevice.Id == _activeShapeTouchId)
+                {
+                    if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
+                    {
+                        Point endPos = e.GetTouchPoint(MainInteractiveBoard).Position;
+                        EndSelectionInteraction(endPos);
+                        _activeShapeTouchId = -1;
+                        if (e.TouchDevice.Captured == MainInteractiveBoard)
+                        {
+                            MainInteractiveBoard.ReleaseTouchCapture(e.TouchDevice);
+                        }
+                        e.Handled = true;
+                        return;
+                    }
+                    _activeShapeTouchId = -1;
+                }
+            }
+
             // ✅ TOUCH-FIX SAFETY NET: Tránh trường hợp màn hình kẹt trạng thái kéo đối tượng.
             // Giải phóng trạng thái di chuyển của SelectionBox (nếu có kẹt do nuốt MouseUp)
-            _selectionBox?.ResetMoveState();
+            if (_selectionBox != null)
+            {
+                _selectionBox.ResetMoveState();
+            }
             _isPreparingRectangleSelection = false; // ✅ Dọn dẹp cờ hiệu vùng chọn
 
             // Nếu người dùng đã nhấc ngón tay lên (TouchUp) mà hệ thống vẫn nghĩ đang kéo (do lỗi nuốt MouseUp),
@@ -173,10 +298,188 @@ namespace QASmartTouch.Forms
 
         private void MainInteractiveBoard_PreviewStylusDown(object? sender, StylusDownEventArgs e)
         {
+            // QC_4.2_TOUCH_SHAPE_DIRECT: Xử lý trực tiếp bút tương tác (Stylus) vẽ hình
+            if (_shapeDrawingEnabled)
+            {
+                if (_isDrawing)
+                {
+                    e.Handled = true;
+                    return;
+                }
+
+                _shapeStartPoint = e.GetPosition(MainInteractiveBoard);
+                _isDrawing = true;
+
+                _previewShape = CreateShapePreview(_currentShape);
+                if (_previewShape != null)
+                {
+                    MainInteractiveBoard.Children.Add(_previewShape);
+                }
+
+                e.StylusDevice.Capture(MainInteractiveBoard);
+                e.Handled = true;
+                return;
+            }
+
+            if (_objectSelectionMode)
+            {
+                if ((_selectionBox != null && _selectionBox.IsTransforming) ||
+                    QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(e.OriginalSource, MainInteractiveBoard))
+                {
+                    return;
+                }
+
+                Point stylusPoint = e.GetPosition(MainInteractiveBoard);
+                bool isCtrl = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+                if (StartSelectionInteraction(stylusPoint, e.OriginalSource, isCtrl))
+                {
+                    e.StylusDevice.Capture(MainInteractiveBoard);
+                    e.Handled = true;
+                    return;
+                }
+            }
+
             EnsurePassthroughFocusAndPenMode(e.OriginalSource);
 
             // [LOI_VID_53] Auto-dismiss keyboard khi chạm Canvas ngoài TextBox/Keyboard
             AutoDismissKeyboardIfNeeded(e.OriginalSource);
+        }
+
+        private void MainInteractiveBoard_PreviewStylusMove(object? sender, StylusEventArgs e)
+        {
+            if (_shapeDrawingEnabled && _isDrawing && _previewShape != null)
+            {
+                Point currentPos = e.GetPosition(MainInteractiveBoard);
+                UpdateShapePreview(_previewShape, _shapeStartPoint, currentPos);
+                e.Handled = true;
+                return;
+            }
+
+            if (_objectSelectionMode)
+            {
+                if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
+                {
+                    Point currentPos = e.GetPosition(MainInteractiveBoard);
+                    UpdateSelectionInteraction(currentPos, e.OriginalSource);
+                    e.Handled = true;
+                    return;
+                }
+            }
+        }
+
+        private void MainInteractiveBoard_PreviewStylusUp(object? sender, StylusEventArgs e)
+        {
+            if (_shapeDrawingEnabled && _isDrawing && _previewShape != null)
+            {
+                FinalizeShapeDrawing();
+                if (e.StylusDevice.Captured == MainInteractiveBoard)
+                {
+                    MainInteractiveBoard.ReleaseStylusCapture();
+                }
+                e.Handled = true;
+                return;
+            }
+
+            if (_objectSelectionMode)
+            {
+                if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
+                {
+                    Point endPos = e.GetPosition(MainInteractiveBoard);
+                    EndSelectionInteraction(endPos);
+                    if (e.StylusDevice.Captured == MainInteractiveBoard)
+                    {
+                        MainInteractiveBoard.ReleaseStylusCapture();
+                    }
+                    e.Handled = true;
+                    return;
+                }
+            }
+        }
+
+        private void MainInteractiveBoard_LostTouchCapture(object? sender, TouchEventArgs e)
+        {
+            if (_shapeDrawingEnabled && _isDrawing && _previewShape != null)
+            {
+                FinalizeShapeDrawing();
+                _activeShapeTouchId = -1;
+            }
+
+            if (_objectSelectionMode && (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null))
+            {
+                EndSelectionInteraction(_rectangleSelectionStartPoint);
+                _activeShapeTouchId = -1;
+            }
+        }
+
+        private void MainInteractiveBoard_LostStylusCapture(object? sender, StylusEventArgs e)
+        {
+            if (_shapeDrawingEnabled && _isDrawing && _previewShape != null)
+            {
+                FinalizeShapeDrawing();
+            }
+
+            if (_objectSelectionMode && (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null))
+            {
+                EndSelectionInteraction(_rectangleSelectionStartPoint);
+            }
+        }
+
+        /// <summary>
+        /// QC_4.2_TOUCH_SHAPE_DIRECT: Hoàn tất quá trình vẽ hình và đăng ký vào Undo / SelectionManager.
+        /// Dùng chung đồng nhất cho cả MouseUp, TouchUp và StylusUp.
+        /// </summary>
+        private void FinalizeShapeDrawing()
+        {
+            if (!_shapeDrawingEnabled || !_isDrawing || _previewShape == null) return;
+
+            bool isTooSmall = false;
+            if (_previewShape is Line line)
+            {
+                double length = Math.Sqrt(Math.Pow(line.X2 - line.X1, 2) + Math.Pow(line.Y2 - line.Y1, 2));
+                if (length < 5) isTooSmall = true;
+            }
+            else if (_previewShape is Polygon poly)
+            {
+                if (poly.Points.Count < 2) isTooSmall = true;
+                else
+                {
+                    double minX = poly.Points.Min(p => p.X);
+                    double maxX = poly.Points.Max(p => p.X);
+                    double minY = poly.Points.Min(p => p.Y);
+                    double maxY = poly.Points.Max(p => p.Y);
+                    if ((maxX - minX) < 5 || (maxY - minY) < 5) isTooSmall = true;
+                }
+            }
+            else if (_previewShape is System.Windows.Shapes.Path path)
+            {
+                var bounds = path.Data?.Bounds ?? Rect.Empty;
+                if (bounds.Width < 5 || bounds.Height < 5) isTooSmall = true;
+            }
+            else
+            {
+                if (_previewShape.Width < 5 || _previewShape.Height < 5) isTooSmall = true;
+            }
+
+            if (isTooSmall)
+            {
+                MainInteractiveBoard.Children.Remove(_previewShape);
+                System.Diagnostics.Debug.WriteLine("🧹 Discarded micro-shape drawing (accidental tap)");
+            }
+            else
+            {
+                // Add completed shape to undo stack
+                RecordAddAction(_previewShape, $"Draw {_currentShape}");
+                
+                // BUGFIX: Register new shape with SelectionManager
+                RegisterNewObjectWithSelectionManager(_previewShape);
+            }
+            
+            _isDrawing = false;
+            _previewShape = null;
+            if (MainInteractiveBoard.IsMouseCaptured)
+            {
+                MainInteractiveBoard.ReleaseMouseCapture();
+            }
         }
 
         /// <summary>
@@ -752,51 +1055,7 @@ namespace QASmartTouch.Forms
             // Shape drawing mode - finalize shape
             else if (_shapeDrawingEnabled && _isDrawing && _previewShape != null)
             {
-                bool isTooSmall = false;
-                if (_previewShape is Line line)
-                {
-                    double length = Math.Sqrt(Math.Pow(line.X2 - line.X1, 2) + Math.Pow(line.Y2 - line.Y1, 2));
-                    if (length < 5) isTooSmall = true;
-                }
-                else if (_previewShape is Polygon poly)
-                {
-                    if (poly.Points.Count < 2) isTooSmall = true;
-                    else
-                    {
-                        double minX = poly.Points.Min(p => p.X);
-                        double maxX = poly.Points.Max(p => p.X);
-                        double minY = poly.Points.Min(p => p.Y);
-                        double maxY = poly.Points.Max(p => p.Y);
-                        if ((maxX - minX) < 5 || (maxY - minY) < 5) isTooSmall = true;
-                    }
-                }
-                else if (_previewShape is System.Windows.Shapes.Path path)
-                {
-                    var bounds = path.Data?.Bounds ?? Rect.Empty;
-                    if (bounds.Width < 5 || bounds.Height < 5) isTooSmall = true;
-                }
-                else
-                {
-                    if (_previewShape.Width < 5 || _previewShape.Height < 5) isTooSmall = true;
-                }
-
-                if (isTooSmall)
-                {
-                    MainInteractiveBoard.Children.Remove(_previewShape);
-                    System.Diagnostics.Debug.WriteLine("🧹 Discarded micro-shape drawing (accidental tap)");
-                }
-                else
-                {
-                    // Add completed shape to undo stack
-                    RecordAddAction(_previewShape, $"Draw {_currentShape}");
-                    
-                    // BUGFIX: Register new shape with SelectionManager
-                    RegisterNewObjectWithSelectionManager(_previewShape);
-                }
-                
-                _isDrawing = false;
-                _previewShape = null;
-                MainInteractiveBoard.ReleaseMouseCapture();
+                FinalizeShapeDrawing();
             }
             // Stop drawing and add to undo stack
             else if (_isDrawing && _currentStroke != null)

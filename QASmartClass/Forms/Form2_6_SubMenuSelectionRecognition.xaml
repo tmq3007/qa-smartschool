@@ -134,7 +134,7 @@
 
                     <UniformGrid Columns="3" Rows="1" Margin="0,0,0,15">
 
-                        <Button Height="60" Margin="4"
+                        <Button x:Name="btnSelectRect" Height="60" Margin="4"
 
                                Background="#F1F2F6"
 
@@ -168,7 +168,7 @@
 
 
 
-                        <Button Height="60" Margin="4"
+                        <Button x:Name="btnSelectLasso" Height="60" Margin="4"
 
                                Background="#F1F2F6"
 
@@ -200,7 +200,7 @@
 
 
 
-                        <Button Height="60" Margin="4"
+                        <Button x:Name="btnSelectMagic" Height="60" Margin="4"
 
                                Background="#F1F2F6"
 

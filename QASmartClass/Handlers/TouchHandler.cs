@@ -427,7 +427,29 @@ namespace QASmartTouch.Handlers
         {
             if (e.TouchDevice != null)
             {
-                _lastTouchPoints.Remove(e.TouchDevice.Id);
+                int touchId = e.TouchDevice.Id;
+                _lastTouchPoints.Remove(touchId);
+
+                // Clean up smoother for this touch ID to prevent memory leaks
+                if (_smoothers.ContainsKey(touchId))
+                {
+                    _smoothers[touchId].Clear();
+                    _smoothers.Remove(touchId);
+                }
+
+                // If in drawing mode and capture was abruptly lost, complete and discard the stroke
+                if (_toolMode == TouchToolMode.Drawing)
+                {
+                    try
+                    {
+                        var stroke = _touchManager.CompleteStroke(touchId);
+                        if (stroke != null && _canvas.Children.Contains(stroke))
+                        {
+                            _canvas.Children.Remove(stroke);
+                        }
+                    }
+                    catch { }
+                }
             }
 
             if (_toolMode == TouchToolMode.Eraser)
@@ -600,10 +622,12 @@ namespace QASmartTouch.Handlers
             _canvas.TouchDown -= Canvas_TouchDown;
             _canvas.TouchMove -= Canvas_TouchMove;
             _canvas.TouchUp -= Canvas_TouchUp;
-            _canvas.TouchLeave -= Canvas_TouchUp; // ✅ QC_4.2: Unsubscribe TouchLeave để tránh GC leak
+            _canvas.TouchLeave -= Canvas_TouchLeave;
+            _canvas.LostTouchCapture -= Canvas_LostTouchCapture;
             
             _touchManager.ClearAllStrokes();
             _smoothers.Clear();
+            _lastTouchPoints.Clear();
             
             System.Diagnostics.Debug.WriteLine("🧹 TouchHandler disposed");
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,14 +22,64 @@ namespace QASmartTouch.Forms
             InitializeComponent();
             if (btnClose != null)
             {
-                btnClose.PreviewTouchDown += (s, e) => { this.Close(); e.Handled = true; };
-                btnClose.PreviewStylusDown += (s, e) => { this.Close(); e.Handled = true; };
+                System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
+
+                btnClose.PreviewTouchDown += (s, e) =>
+                {
+                    e.TouchDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewTouchUp += (s, e) =>
+                {
+                    if (e.TouchDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseTouchCapture(e.TouchDevice);
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            _mainDashboard?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
+
+                btnClose.PreviewStylusDown += (s, e) =>
+                {
+                    e.StylusDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewStylusUp += (s, e) =>
+                {
+                    if (e.StylusDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseStylusCapture();
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            _mainDashboard?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
             }
             _mainDashboard = mainDashboard;
             
             // Subscribe to feature changes
             FeatureManager.Instance.FeaturesChanged += OnFeaturesChanged;
             
+            if (btn2D != null) WireTouchActivation(btn2D, btnCategory_Click);
+            if (btn3D != null) WireTouchActivation(btn3D, btnCategory_Click);
+
             // Load default category (2D)
             UpdateShapeGallery("2D");
         }
@@ -45,6 +95,7 @@ namespace QASmartTouch.Forms
         {
             // Unsubscribe from event
             FeatureManager.Instance.FeaturesChanged -= OnFeaturesChanged;
+            try { _mainDashboard?.Activate(); } catch { }
             this.Close();
         }
 
@@ -390,6 +441,7 @@ namespace QASmartTouch.Forms
 
             button.Content = stackPanel;
             button.Click += ShapeButton_Click;
+            WireTouchActivation(button, ShapeButton_Click);
 
             return button;
         }
@@ -1310,8 +1362,85 @@ namespace QASmartTouch.Forms
             }
             catch { }
             
-            this.Close();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try 
+                { 
+                    _mainDashboard?.Activate();
+                    _mainDashboard?.Focus();
+                } 
+                catch { }
+                this.Close();
+            }), System.Windows.Threading.DispatcherPriority.Input);
         }
+    }
+
+    /// <summary>
+    /// QC_4.2_TOUCH_PIPELINE: Trực tiếp kích hoạt cảm ứng cho nút bấm trong SubMenu.
+    /// Bắt trực tiếp PreviewTouchDown/Up và PreviewStylusDown/Up để đảm bảo 100% cú chạm đầu tiên
+    /// kích hoạt hành động ngay lập tức (Zero 2nd tap) trên màn hình tương tác.
+    /// </summary>
+    private void WireTouchActivation(Button button, RoutedEventHandler clickHandler)
+    {
+        if (button == null) return;
+        button.Focusable = false;
+        System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(button, false);
+
+        button.PreviewTouchDown += (s, e) =>
+        {
+            e.TouchDevice.Capture(button);
+            e.Handled = true;
+        };
+
+        button.PreviewTouchUp += (s, e) =>
+        {
+            if (e.TouchDevice.Captured == button)
+            {
+                button.ReleaseTouchCapture(e.TouchDevice);
+                try
+                {
+                    var pos = e.GetTouchPoint(button).Position;
+                    if (pos.X >= 0 && pos.X <= button.ActualWidth &&
+                        pos.Y >= 0 && pos.Y <= button.ActualHeight)
+                    {
+                        clickHandler(button, new RoutedEventArgs(Button.ClickEvent, button));
+                    }
+                }
+                catch
+                {
+                    clickHandler(button, new RoutedEventArgs(Button.ClickEvent, button));
+                }
+            }
+            e.Handled = true;
+        };
+
+        button.PreviewStylusDown += (s, e) =>
+        {
+            e.StylusDevice.Capture(button);
+            e.Handled = true;
+        };
+
+        button.PreviewStylusUp += (s, e) =>
+        {
+            if (e.StylusDevice.Captured == button)
+            {
+                button.ReleaseStylusCapture();
+                try
+                {
+                    var pos = e.GetPosition(button);
+                    if (pos.X >= 0 && pos.X <= button.ActualWidth &&
+                        pos.Y >= 0 && pos.Y <= button.ActualHeight)
+                    {
+                        clickHandler(button, new RoutedEventArgs(Button.ClickEvent, button));
+                    }
+                }
+                catch
+                {
+                    clickHandler(button, new RoutedEventArgs(Button.ClickEvent, button));
+                }
+            }
+            e.Handled = true;
+        };
     }
 }
 }

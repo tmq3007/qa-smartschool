@@ -279,6 +279,7 @@ namespace QASmartTouch.Forms
             {
                 RecordTransformAction(e.InitialStates, e.FinalStates, e.Description);
             }
+            _selectionManager?.RebuildQuadTree();
         }
 
         #endregion
@@ -288,8 +289,18 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void MainBoard_SelectionMouseDown(object sender, MouseButtonEventArgs e)
         {
+            Point clickPoint = e.GetPosition(MainInteractiveBoard);
+            bool isCtrlPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+            StartSelectionInteraction(clickPoint, e.OriginalSource, isCtrlPressed);
+        }
+
+        /// <summary>
+        /// QC_4.2_TOUCH_SELECTION_DIRECT: Khởi tạo tương tác chọn đối tượng (Dùng chung cho cả Mouse, Touch và Stylus)
+        /// </summary>
+        private bool StartSelectionInteraction(Point clickPoint, object originalSource, bool isCtrlPressed)
+        {
             if (!_objectSelectionMode || _selectionManager == null || _isLassoMode)
-                return;
+                return false;
 
             // ✅ QC_4.2_3D_DRAG_GUARD: Nếu đang trong phiên kéo đối tượng 3D/STEM, không vẽ khung chọn chữ nhật
             if (_dragging3DShape != null)
@@ -297,7 +308,7 @@ namespace QASmartTouch.Forms
                 _isDraggingSelection = false;
                 _draggedSelectionObject = null;
                 _isPreparingRectangleSelection = false;
-                return;
+                return false;
             }
 
             // ✅ QC_4.2_TOUCH_TELEPORT_FIX: Safety guard
@@ -308,8 +319,6 @@ namespace QASmartTouch.Forms
                 _isDraggingSelection = false;
             }
 
-            Point clickPoint = e.GetPosition(MainInteractiveBoard);
-            bool isCtrlPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
             var hitObject = _selectionManager.HitTest(clickPoint);
             
             // 🪄 Magic Wand Mode handling (N27 FIX: Support both Single Click Wand & Drag Rectangle Wand)
@@ -321,7 +330,7 @@ namespace QASmartTouch.Forms
                 _pendingHitObject = hitObject;
                 _pendingIsCtrl = isCtrlPressed;
                 _isPreparingRectangleSelection = true; // ✅ Mở khóa bảo vệ
-                return;
+                return true;
             }
             
             // ✅ QC_4.2_WIDGET_DRAG_FIX: Kiểm tra xem người dùng có bấm vào đối tượng ĐÃ ĐƯỢC CHỌN hay không
@@ -343,12 +352,12 @@ namespace QASmartTouch.Forms
             if (isClickOnSelectedObject && !isCtrlPressed)
             {
                 // Nếu bấm vào nút chức năng cụ thể (như nút Edit ✏️, Move 🖐️ hay Delete ❌), nhường event cho nút xử lý
-                if (e.OriginalSource is DependencyObject depObj && QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(depObj, MainInteractiveBoard))
+                if (originalSource is DependencyObject depObj && QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(depObj, MainInteractiveBoard))
                 {
                     _isDraggingSelection = false;
                     _draggedSelectionObject = null;
                     _isPreparingRectangleSelection = false; // ✅ Khóa vẽ vùng chọn
-                    return;
+                    return false;
                 }
 
                 // ✅ QC_4.2_TABLE_BODY_NO_DRAG: Nếu là Bảng dữ liệu / Container dạng StackPanel, 
@@ -360,7 +369,7 @@ namespace QASmartTouch.Forms
                     _isDraggingSelection = false;
                     _pendingHitObject = null;
                     _isPreparingRectangleSelection = false; // ✅ Khóa vẽ vùng chọn
-                    return;
+                    return false;
                 }
 
                 // Với đối tượng vẽ thông thường: Click vào đối tượng ĐÃ CHỌN -> Chuẩn bị kéo di chuyển
@@ -371,16 +380,16 @@ namespace QASmartTouch.Forms
                 _isPreparingRectangleSelection = false; // ✅ Khóa vẽ vùng chọn
                 _canvasDragInitialStates = CaptureSelectedObjectsTransformStates();
                 System.Diagnostics.Debug.WriteLine($"🔒 Dragging existing selection - anchor: {hitObject.Type}");
-                return;
+                return true;
             }
 
             // Nếu chạm vào thanh công cụ / hệ thống ngoài canvas, không vẽ vùng chọn rectangle
-            if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(e.OriginalSource, MainInteractiveBoard))
+            if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(originalSource, MainInteractiveBoard))
             {
                 _isDraggingSelection = false;
                 _draggedSelectionObject = null;
                 _isPreparingRectangleSelection = false; // ✅ Khóa vẽ vùng chọn
-                return;
+                return false;
             }
 
             // Otherwise (clicked empty space OR clicked an unselected object):
@@ -393,6 +402,7 @@ namespace QASmartTouch.Forms
             _isPreparingRectangleSelection = true; // ✅ Mở khóa để cho phép vẽ vùng chọn
             
             System.Diagnostics.Debug.WriteLine($"🖱️ Selection click at ({clickPoint.X:F0}, {clickPoint.Y:F0}), hit={hitObject?.Type.ToString() ?? "null"}, Ctrl={isCtrlPressed}");
+            return true;
         }
         
         /// <summary>
@@ -528,17 +538,27 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void MainBoard_SelectionMouseMove(object sender, MouseEventArgs e)
         {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                Point currentPoint = e.GetPosition(MainInteractiveBoard);
+                UpdateSelectionInteraction(currentPoint, e.OriginalSource);
+            }
+        }
+
+        /// <summary>
+        /// QC_4.2_TOUCH_SELECTION_DIRECT: Cập nhật tương tác chọn đối tượng (Dùng chung cho cả Mouse, Touch và Stylus)
+        /// </summary>
+        private void UpdateSelectionInteraction(Point currentPoint, object originalSource)
+        {
             if (!_objectSelectionMode || _isLassoMode)
                 return;
 
             // ✅ QC_4.2_3D_DRAG_GUARD: Nếu đang trong phiên kéo đối tượng 3D/STEM, bỏ qua mouse move của Selection
             if (_dragging3DShape != null)
                 return;
-
-            Point currentPoint = e.GetPosition(MainInteractiveBoard);
             
             // 1. Handle object drag & drop (moving ALREADY SELECTED objects)
-            if (_draggedSelectionObject != null && e.LeftButton == MouseButtonState.Pressed)
+            if (_draggedSelectionObject != null)
             {
                 Vector dragVector = currentPoint - _selectionDragStartPoint;
                 if (!_isDraggingSelection && (Math.Abs(dragVector.X) > 3 || Math.Abs(dragVector.Y) > 3))
@@ -617,7 +637,7 @@ namespace QASmartTouch.Forms
             }
 
             // ✅ QC_4.2_WIDGET_DRAG_FIX: Chỉ kiểm tra IsEventFromInteractiveControl nếu KHÔNG đang kéo di chuyển đối tượng
-            if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(e.OriginalSource, MainInteractiveBoard))
+            if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(originalSource, MainInteractiveBoard))
             {
                 _isDraggingSelection = false;
                 _draggedSelectionObject = null;
@@ -627,7 +647,7 @@ namespace QASmartTouch.Forms
             }
             
             // 2. Handle Rectangle Selection Drag (when dragging on canvas)
-            if (e.LeftButton == MouseButtonState.Pressed && _draggedSelectionObject == null && _isPreparingRectangleSelection)
+            if (_draggedSelectionObject == null && _isPreparingRectangleSelection)
             {
                 // ✅ CRITICAL FIX: Đang kéo chốt resize hoặc xoay SelectionBox -> Không tạo khung khoanh vùng chọn rectangle
                 if (_selectionBox != null && _selectionBox.IsTransforming)
@@ -651,12 +671,10 @@ namespace QASmartTouch.Forms
                     {
                         _rectangleSelectionPreview = new Rectangle
                         {
-                            Stroke = new SolidColorBrush(Color.FromRgb(52, 152, 219)), // Dodger blue
-                            StrokeThickness = 2,
-                            StrokeDashArray = new DoubleCollection { 5, 3 },
-                            Fill = new SolidColorBrush(Color.FromArgb(30, 52, 152, 219)),
-                            RadiusX = 3,
-                            RadiusY = 3
+                            Stroke = new SolidColorBrush(Color.FromRgb(46, 134, 222)), // #2E86DE
+                            StrokeThickness = 1.5,
+                            StrokeDashArray = new DoubleCollection { 4, 4 },
+                            Fill = new SolidColorBrush(Color.FromArgb(25, 46, 134, 222)) // 10% opacity
                         };
                         MainInteractiveBoard.Children.Add(_rectangleSelectionPreview);
                         Canvas.SetZIndex(_rectangleSelectionPreview, 9999);
@@ -675,6 +693,7 @@ namespace QASmartTouch.Forms
                     _rectangleSelectionPreview.Width = width;
                     _rectangleSelectionPreview.Height = height;
                 }
+                return;
             }
         }
         
@@ -683,13 +702,20 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void MainBoard_SelectionMouseUp(object sender, MouseButtonEventArgs e)
         {
+            Point endPoint = e != null ? e.GetPosition(MainInteractiveBoard) : _rectangleSelectionStartPoint;
+            EndSelectionInteraction(endPoint);
+        }
+
+        /// <summary>
+        /// QC_4.2_TOUCH_SELECTION_DIRECT: Kết thúc tương tác chọn đối tượng (Dùng chung cho cả Mouse, Touch và Stylus)
+        /// </summary>
+        private void EndSelectionInteraction(Point endPoint)
+        {
             if (_isLassoMode)
                 return;
             // 1. Handle Rectangle Selection completion
             if (_rectangleSelectionPreview != null || _isRectangleSelecting)
             {
-                Point endPoint = e.GetPosition(MainInteractiveBoard);
-                
                 double left = Math.Min(_rectangleSelectionStartPoint.X, endPoint.X);
                 double top = Math.Min(_rectangleSelectionStartPoint.Y, endPoint.Y);
                 double right = Math.Max(_rectangleSelectionStartPoint.X, endPoint.X);
@@ -707,6 +733,7 @@ namespace QASmartTouch.Forms
                     _rectangleSelectionPreview = null;
                 }
                 _isRectangleSelecting = false;
+                _isPreparingRectangleSelection = false;
 
                 if (rectW > 5 || rectH > 5)
                 {
@@ -765,7 +792,7 @@ namespace QASmartTouch.Forms
 
             if (_isMagicWandMode && !_isRectangleSelecting)
             {
-                Point clickPoint = e.GetPosition(MainInteractiveBoard);
+                Point clickPoint = endPoint;
                 PerformMagicWandSelection(clickPoint);
                 return;
             }
