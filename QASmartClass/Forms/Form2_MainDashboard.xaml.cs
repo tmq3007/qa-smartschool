@@ -131,6 +131,7 @@ namespace QASmartTouch.Forms
         private string _currentShape = "";
         private Point _shapeStartPoint;
         private Shape? _previewShape;
+        private int _activeShapeTouchId = -1; // QC_4.2_TOUCH_SHAPE_DIRECT: Track primary touch device for shape drawing
         
         // Text tool settings
         private bool _textToolEnabled = false;
@@ -300,10 +301,19 @@ namespace QASmartTouch.Forms
             _touchHandler.SetRecordEraseSessionAction(FinalizeEraseSession); // Wire atomic batch undo for touch erase
             _touchHandler.SetUpdateEraserPreviewAction(UpdateEraserCursorPreview); // ✅ Wire eraser preview callback for touch
             _touchHandler.SetHideEraserPreviewAction(HideEraserCursorPreview); // ✅ Wire hide eraser preview callback for touch
-            _touchHandler.SetOnCanvasTouchDownAction(() => { if (_activeSubMenu != null) CloseAllSubmenus(); }); // ✅ Close SubMenus on touch canvas
+            _touchHandler.SetOnCanvasTouchDownAction(() =>
+            {
+                if (_activeSubMenu != null)
+                {
+                    Dispatcher.BeginInvoke(new Action(CloseAllSubmenus), System.Windows.Threading.DispatcherPriority.Background);
+                }
+            }); // ✅ Close SubMenus on touch canvas (Deferred to Background priority)
             _touchHandler.SetDrawingProperties(_currentPenColor, _currentPenSize, _currentBrushType);
             _touchHandler.GetColorForPosition = (pos) => _isMultiUserModeActive ? GetStudentByPosition(pos)?.Color : null;
             System.Diagnostics.Debug.WriteLine("✅ Touch interaction initialized");
+
+            // QC_4.2_TOUCH_TOOLBAR: Wire direct touch activation for all toolbar buttons
+            InitializeToolbarTouchActivation();
 
             // Initialize Window Mode Controller
             _windowModeController = new WindowModeController(this);
@@ -342,15 +352,15 @@ namespace QASmartTouch.Forms
             
             System.Diagnostics.Debug.WriteLine("✅ Stroke Optimizer: 🎯 BALANCED MODE (RDP Decimation + Light Smoothing)");
             
-            // 🔥 Increase UI thread priority for smoother drawing
+            // 🎯 Balance UI thread priority: Normal prevents starving hardware touch/PenIMC background threads on IR Touch screens
             try
             {
-                System.Threading.Thread.CurrentThread.Priority = System.Threading.ThreadPriority.Highest;
-                System.Diagnostics.Debug.WriteLine("✅ UI Thread Priority: HIGHEST");
+                System.Threading.Thread.CurrentThread.Priority = System.Threading.ThreadPriority.Normal;
+                System.Diagnostics.Debug.WriteLine("✅ UI Thread Priority: NORMAL (Prevents Stylus/Touch hardware thread starvation)");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"âš ï¸ Cannot set thread priority: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"⚠️ Cannot set thread priority: {ex.Message}");
             }
             
             // âœ¨ Apply default background after window is loaded
@@ -407,6 +417,118 @@ namespace QASmartTouch.Forms
                 }
             };
         }
+
+        #region Toolbar Touch Direct Activation & Win32 Activation Hook
+        /// <summary>
+        /// QC_4.2_TOUCH_TOOLBAR: Trực tiếp kích hoạt cảm ứng cho toàn bộ nút trên thanh công cụ.
+        /// Khắc phục triệt để lỗi "phải ấn 2 lần" trên màn hình tương tác:
+        /// Trên màn hình cảm ứng, các nút chỉ dùng sự kiện Click phụ thuộc vào Touch-to-Mouse promotion của WPF,
+        /// khiến cú chạm đầu tiên bị OS hiểu lầm là Hover/MouseMove (đặc biệt khi vừa đóng cửa sổ SubMenu).
+        /// Việc bắt trực tiếp PreviewTouchDown/Up và PreviewStylusDown/Up đảm bảo 100% cú chạm đầu tiên
+        /// kích hoạt sự kiện Click ngay lập tức mà không cần chạm lần 2.
+        /// </summary>
+        private void InitializeToolbarTouchActivation()
+        {
+            if (panelTools == null) return;
+
+            foreach (UIElement child in panelTools.Children)
+            {
+                if (child is Button button)
+                {
+                    button.Focusable = false;
+                    System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(button, false);
+
+                    button.PreviewTouchDown += (s, e) =>
+                    {
+                        e.TouchDevice.Capture(button);
+                        e.Handled = true;
+                    };
+
+                    button.PreviewTouchUp += (s, e) =>
+                    {
+                        if (e.TouchDevice.Captured == button)
+                        {
+                            button.ReleaseTouchCapture(e.TouchDevice);
+                            try
+                            {
+                                var pos = e.GetTouchPoint(button).Position;
+                                if (pos.X >= 0 && pos.X <= button.ActualWidth &&
+                                    pos.Y >= 0 && pos.Y <= button.ActualHeight)
+                                {
+                                    Dispatcher.BeginInvoke(new Action(() =>
+                                    {
+                                        button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                                    }), System.Windows.Threading.DispatcherPriority.Input);
+                                }
+                            }
+                            catch
+                            {
+                                Dispatcher.BeginInvoke(new Action(() =>
+                                {
+                                    button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                                }), System.Windows.Threading.DispatcherPriority.Input);
+                            }
+                        }
+                        e.Handled = true;
+                    };
+
+                    button.PreviewStylusDown += (s, e) =>
+                    {
+                        e.StylusDevice.Capture(button);
+                        e.Handled = true;
+                    };
+
+                    button.PreviewStylusUp += (s, e) =>
+                    {
+                        if (e.StylusDevice.Captured == button)
+                        {
+                            button.ReleaseStylusCapture();
+                            try
+                            {
+                                var pos = e.GetPosition(button);
+                                if (pos.X >= 0 && pos.X <= button.ActualWidth &&
+                                    pos.Y >= 0 && pos.Y <= button.ActualHeight)
+                                {
+                                    Dispatcher.BeginInvoke(new Action(() =>
+                                    {
+                                        button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                                    }), System.Windows.Threading.DispatcherPriority.Input);
+                                }
+                            }
+                            catch
+                            {
+                                Dispatcher.BeginInvoke(new Action(() =>
+                                {
+                                    button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                                }), System.Windows.Threading.DispatcherPriority.Input);
+                            }
+                        }
+                        e.Handled = true;
+                    };
+                }
+            }
+        }
+
+        private const int WM_MOUSEACTIVATE = 0x0021;
+        private const int MA_ACTIVATE = 1;
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            var source = System.Windows.PresentationSource.FromVisual(this) as System.Windows.Interop.HwndSource;
+            source?.AddHook(WndProc);
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == WM_MOUSEACTIVATE)
+            {
+                handled = true;
+                return new IntPtr(MA_ACTIVATE); // Kích hoạt cửa sổ VÀ KHÔNG ĐƯỢC NUỐT cú chạm/click!
+            }
+            return IntPtr.Zero;
+        }
+        #endregion
         
         /// <summary>
         /// PHASE 2: Handle DPI changes when moving between displays
@@ -671,8 +793,13 @@ namespace QASmartTouch.Forms
             // Wire up Passthrough Touch Focus events
             MainInteractiveBoard.PreviewMouseDown += MainInteractiveBoard_PreviewMouseDown;
             MainInteractiveBoard.PreviewTouchDown += MainInteractiveBoard_PreviewTouchDown;
+            MainInteractiveBoard.PreviewTouchMove += MainInteractiveBoard_PreviewTouchMove;
             MainInteractiveBoard.PreviewTouchUp += MainInteractiveBoard_PreviewTouchUp;
             MainInteractiveBoard.PreviewStylusDown += MainInteractiveBoard_PreviewStylusDown;
+            MainInteractiveBoard.PreviewStylusMove += MainInteractiveBoard_PreviewStylusMove;
+            MainInteractiveBoard.PreviewStylusUp += MainInteractiveBoard_PreviewStylusUp;
+            MainInteractiveBoard.LostTouchCapture += MainInteractiveBoard_LostTouchCapture;
+            MainInteractiveBoard.LostStylusCapture += MainInteractiveBoard_LostStylusCapture;
 
             // Wire up SelectionManager events
             _selectionManager.SelectionChanged += OnSelectionChanged;

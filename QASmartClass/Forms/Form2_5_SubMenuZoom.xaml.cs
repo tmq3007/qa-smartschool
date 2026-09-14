@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -13,8 +13,55 @@ namespace QASmartTouch.Forms
             InitializeComponent();
             if (btnClose != null)
             {
-                btnClose.PreviewTouchDown += (s, e) => { this.Close(); e.Handled = true; };
-                btnClose.PreviewStylusDown += (s, e) => { this.Close(); e.Handled = true; };
+                System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
+
+                btnClose.PreviewTouchDown += (s, e) =>
+                {
+                    e.TouchDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewTouchUp += (s, e) =>
+                {
+                    if (e.TouchDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseTouchCapture(e.TouchDevice);
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
+
+                btnClose.PreviewStylusDown += (s, e) =>
+                {
+                    e.StylusDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewStylusUp += (s, e) =>
+                {
+                    if (e.StylusDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseStylusCapture();
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
             }
             UpdateZoomDisplay();
         }
@@ -67,6 +114,7 @@ namespace QASmartTouch.Forms
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
+            try { this.Owner?.Activate(); } catch { }
             this.Close();
         }
 
