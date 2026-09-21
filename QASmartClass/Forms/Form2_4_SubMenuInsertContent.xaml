@@ -34,6 +34,10 @@
 
             <Setter Property="Cursor" Value="Hand"/>
 
+            <!-- QC_4.2_TOUCH_PIPELINE: Disable focus shift + press-and-hold for IFP touch -->
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
+
             <Setter Property="Template">
 
                 <Setter.Value>
@@ -111,6 +115,10 @@
             <Setter Property="BorderBrush" Value="#E1E8ED"/>
 
             <Setter Property="Cursor" Value="Hand"/>
+
+            <!-- QC_4.2_TOUCH_PIPELINE: Disable focus shift + press-and-hold for IFP touch -->
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
 
             <Setter Property="Template">
 

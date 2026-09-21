@@ -25,8 +25,6 @@ namespace QASmartTouch.Forms
         // Drag State for Window
         private bool _isDragging = false;
         private Point _dragStartPoint;
-        private double _originalLeft = 0;
-        private double _originalTop = 0;
 
         // Flip State
         private bool _isFlipped = false;
@@ -53,6 +51,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             // QC_4.2_TOUCH_PIPELINE: STEM Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
+            QASmartTouch.Helpers.TouchActivationHelper.Apply(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
 
             _mainDashboard = mainDashboard;
 
@@ -716,6 +715,80 @@ namespace QASmartTouch.Forms
                 _drawnLinesCount = 0;
 
                 e.Handled = true;
+            }
+        }
+
+        // ============ TOUCH MOVE HANDLERS (QC_4.2_TOUCH_PIPELINE) ============
+        private int? _setSquareTouchId = null;
+
+        private void btnMove_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            if (sender is UIElement el)
+            {
+                _setSquareTouchId = e.TouchDevice.Id;
+                _isDragging = true;
+                _dragStartPoint = PointToScreen(e.GetTouchPoint(this).Position);
+
+                el.CaptureTouch(e.TouchDevice);
+
+                SetSquareLayerRoot.CacheMode = new BitmapCache
+                {
+                    RenderAtScale = 2.0,
+                    EnableClearType = true,
+                    SnapsToDevicePixels = true
+                };
+                RenderOptions.SetEdgeMode(SetSquareLayerRoot, EdgeMode.Aliased);
+
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (_isDragging && _setSquareTouchId == e.TouchDevice.Id)
+            {
+                var currentScreenPoint = PointToScreen(e.GetTouchPoint(this).Position);
+
+                double offsetX = currentScreenPoint.X - _dragStartPoint.X;
+                double offsetY = currentScreenPoint.Y - _dragStartPoint.Y;
+
+                this.Left += offsetX;
+                this.Top += offsetY;
+
+                _dragStartPoint = currentScreenPoint;
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (_setSquareTouchId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _setSquareTouchId = null;
+
+                if (sender is UIElement el && e.TouchDevice.Captured == el)
+                    el.ReleaseTouchCapture(e.TouchDevice);
+
+                SetSquareLayerRoot.CacheMode = null;
+                RenderOptions.SetEdgeMode(SetSquareLayerRoot, EdgeMode.Unspecified);
+                SetSquareLayerRoot.InvalidateVisual();
+
+                _drawnLinesCount = 0;
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_LostTouchCapture(object sender, TouchEventArgs e)
+        {
+            if (_setSquareTouchId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _setSquareTouchId = null;
+                SetSquareLayerRoot.CacheMode = null;
+                RenderOptions.SetEdgeMode(SetSquareLayerRoot, EdgeMode.Unspecified);
+                SetSquareLayerRoot.InvalidateVisual();
+                _drawnLinesCount = 0;
             }
         }
 

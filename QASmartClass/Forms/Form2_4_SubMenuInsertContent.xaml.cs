@@ -1,6 +1,10 @@
 using System;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
+using QASmartTouch.Helpers;
 using QASmartTouch.PeriodicTable.Views;
 using QASmartTouch.Services.VersionManagement;
 using QASmartTouch.Shared;
@@ -70,6 +74,20 @@ namespace QASmartTouch.Forms
                     }), System.Windows.Threading.DispatcherPriority.Normal);
                 };
             }
+
+            // QC_4.2_TOUCH_ACTIVATION: Fix "phải nhấn 2 lần" trên màn hình tương tác
+            TouchActivationHelper.Apply(this);
+
+            // QC_4.2_TOUCH_PIPELINE: Wire touch activation cho sidebar RadioButtons
+            WireTouchActivationRadio(rbCategory1, Category_Changed);
+            WireTouchActivationRadio(rbCategory2, Category_Changed);
+            WireTouchActivationRadio(rbCategory3, Category_Changed);
+            WireTouchActivationRadio(rbCategory4, Category_Changed);
+            WireTouchActivationRadio(rbCategory5, Category_Changed);
+            WireTouchActivationRadio(rbCategory6, Category_Changed);
+
+            // QC_4.2_TOUCH_PIPELINE: Wire touch activation cho tất cả content Buttons sau khi XAML load xong
+            this.Loaded += (s, e) => WireAllInteractiveControls(this);
         }
 
         /// <summary>
@@ -141,6 +159,7 @@ namespace QASmartTouch.Forms
                 circleTool.SetMainDashboard(_mainDashboard);
                 circleTool.Show(); // Show (not ShowDialog) để không block
                 this.Close(); // Đóng menu
+                try { this.Owner?.Activate(); } catch { }
             }
             catch (Exception ex)
             {
@@ -1131,6 +1150,194 @@ namespace QASmartTouch.Forms
             {
                 System.Diagnostics.Debug.WriteLine($"[Form2_4_SubMenuInsertContent] Error applying feature visibility: {ex.Message}");
             }
+        }
+
+        #endregion
+
+        #region QC_4.2_TOUCH_PIPELINE — Touch Activation cho IFP Touch Screen
+
+        /// <summary>
+        /// Tự động duyệt cây Visual Tree, gắn pipeline cảm ứng cho tất cả Button
+        /// (trừ btnClose đã xử lý riêng). Đảm bảo cú chạm đầu tiên kích hoạt ngay.
+        /// </summary>
+        private void WireAllInteractiveControls(DependencyObject parent)
+        {
+            if (parent == null) return;
+
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is Button button && button != btnClose)
+                {
+                    WireTouchActivationButton(button);
+                }
+
+                // Recurse vào con
+                WireAllInteractiveControls(child);
+            }
+        }
+
+        /// <summary>
+        /// QC_4.2_TOUCH_PIPELINE: Wire touch activation cho Button.
+        /// Bắt trực tiếp PreviewTouchDown/Up để đảm bảo Zero 2nd tap.
+        /// Phân biệt tap (< 15px) vs drag scroll (> 15px) để giữ ScrollViewer hoạt động.
+        /// </summary>
+        private void WireTouchActivationButton(Button button)
+        {
+            if (button == null) return;
+            button.Focusable = false;
+            Stylus.SetIsPressAndHoldEnabled(button, false);
+
+            Point? touchStart = null;
+
+            button.PreviewTouchDown += (s, e) =>
+            {
+                touchStart = e.GetTouchPoint(button).Position;
+                e.TouchDevice.Capture(button);
+                e.Handled = true;
+            };
+
+            button.PreviewTouchUp += (s, e) =>
+            {
+                if (e.TouchDevice.Captured == button)
+                {
+                    button.ReleaseTouchCapture(e.TouchDevice);
+                    try
+                    {
+                        var pos = e.GetTouchPoint(button).Position;
+                        double dist = touchStart.HasValue
+                            ? Math.Sqrt(Math.Pow(pos.X - touchStart.Value.X, 2) + Math.Pow(pos.Y - touchStart.Value.Y, 2))
+                            : 0;
+
+                        // Tap (< 15px) → kích hoạt Click; Drag (>= 15px) → nhường cho ScrollViewer
+                        if (dist < 15 &&
+                            pos.X >= 0 && pos.X <= button.ActualWidth &&
+                            pos.Y >= 0 && pos.Y <= button.ActualHeight)
+                        {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
+                            }), System.Windows.Threading.DispatcherPriority.Normal);
+                        }
+                    }
+                    catch
+                    {
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
+                        }), System.Windows.Threading.DispatcherPriority.Normal);
+                    }
+                }
+                touchStart = null;
+                e.Handled = true;
+            };
+
+            button.PreviewStylusDown += (s, e) =>
+            {
+                e.StylusDevice.Capture(button);
+                e.Handled = true;
+            };
+
+            button.PreviewStylusUp += (s, e) =>
+            {
+                if (e.StylusDevice.Captured == button)
+                {
+                    button.ReleaseStylusCapture();
+                    try
+                    {
+                        var pos = e.GetPosition(button);
+                        if (pos.X >= 0 && pos.X <= button.ActualWidth &&
+                            pos.Y >= 0 && pos.Y <= button.ActualHeight)
+                        {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
+                            }), System.Windows.Threading.DispatcherPriority.Normal);
+                        }
+                    }
+                    catch
+                    {
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
+                        }), System.Windows.Threading.DispatcherPriority.Normal);
+                    }
+                }
+                e.Handled = true;
+            };
+        }
+
+        /// <summary>
+        /// QC_4.2_TOUCH_PIPELINE: Wire touch activation cho RadioButton sidebar.
+        /// Đảm bảo chạm 1 lần là chuyển tab ngay trên IFP.
+        /// </summary>
+        private void WireTouchActivationRadio(RadioButton radio, RoutedEventHandler checkedHandler)
+        {
+            if (radio == null) return;
+            radio.Focusable = false;
+            Stylus.SetIsPressAndHoldEnabled(radio, false);
+
+            radio.PreviewTouchDown += (s, e) =>
+            {
+                e.TouchDevice.Capture(radio);
+                e.Handled = true;
+            };
+
+            radio.PreviewTouchUp += (s, e) =>
+            {
+                if (e.TouchDevice.Captured == radio)
+                {
+                    radio.ReleaseTouchCapture(e.TouchDevice);
+                    try
+                    {
+                        var pos = e.GetTouchPoint(radio).Position;
+                        if (pos.X >= 0 && pos.X <= radio.ActualWidth &&
+                            pos.Y >= 0 && pos.Y <= radio.ActualHeight)
+                        {
+                            radio.IsChecked = true;
+                            checkedHandler(radio, new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
+                        }
+                    }
+                    catch
+                    {
+                        radio.IsChecked = true;
+                        checkedHandler(radio, new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
+                    }
+                }
+                e.Handled = true;
+            };
+
+            radio.PreviewStylusDown += (s, e) =>
+            {
+                e.StylusDevice.Capture(radio);
+                e.Handled = true;
+            };
+
+            radio.PreviewStylusUp += (s, e) =>
+            {
+                if (e.StylusDevice.Captured == radio)
+                {
+                    radio.ReleaseStylusCapture();
+                    try
+                    {
+                        var pos = e.GetPosition(radio);
+                        if (pos.X >= 0 && pos.X <= radio.ActualWidth &&
+                            pos.Y >= 0 && pos.Y <= radio.ActualHeight)
+                        {
+                            radio.IsChecked = true;
+                            checkedHandler(radio, new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
+                        }
+                    }
+                    catch
+                    {
+                        radio.IsChecked = true;
+                        checkedHandler(radio, new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
+                    }
+                }
+                e.Handled = true;
+            };
         }
 
         #endregion

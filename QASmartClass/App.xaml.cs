@@ -467,6 +467,7 @@ namespace QASmartTouch
                 ConfigureWindowCaching(_classroomShell);
             }
 
+            MainWindow = _classroomShell;
             // [LOI_VID_50] Fade-in cửa sổ mới
             FadeInWindow(_classroomShell);
 
@@ -489,6 +490,7 @@ namespace QASmartTouch
                 ConfigureWindowCaching(_whiteboardShell);
             }
 
+            MainWindow = _whiteboardShell;
             // [LOI_VID_50] Fade-in cửa sổ mới
             FadeInWindow(_whiteboardShell);
 

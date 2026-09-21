@@ -1,4 +1,4 @@
-﻿<Window x:Class="QASmartTouch.Forms.Form2_15_RulerTool"
+<Window x:Class="QASmartTouch.Forms.Form2_15_RulerTool"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -351,24 +351,21 @@
                             <!-- Existing controls -->
 
                             <Button x:Name="btnMove" 
-
                                     Content="✥" 
-
                                     Width="32" Height="32"
-
                                     FontSize="14"
-
+                                    Focusable="False"
+                                    Stylus.IsPressAndHoldEnabled="False"
                                     Style="{StaticResource RulerButtonStyle}"
-
                                     ToolTip="Di chuyển" 
-
                                     Margin="2,5"
-
                                     PreviewMouseDown="btnMove_PreviewMouseDown"
-
                                     PreviewMouseMove="btnMove_PreviewMouseMove"
-
-                                    PreviewMouseUp="btnMove_PreviewMouseUp"/>
+                                    PreviewMouseUp="btnMove_PreviewMouseUp"
+                                    PreviewTouchDown="btnMove_PreviewTouchDown"
+                                    TouchMove="btnMove_TouchMove"
+                                    TouchUp="btnMove_TouchUp"
+                                    LostTouchCapture="btnMove_LostTouchCapture"/>
 
                             <Button x:Name="btnClose" 
 

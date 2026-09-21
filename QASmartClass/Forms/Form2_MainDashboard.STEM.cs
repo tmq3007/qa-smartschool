@@ -34,202 +34,38 @@ namespace QASmartTouch.Forms
     {
         #region 3D Shape Drag & Drop
 
-        // Variables for dragging 3D shapes
+        // Variables for dragging 3D shapes (kept for guard compatibility)
         private Canvas? _dragging3DShape;
-        private Point _drag3DStartPoint;
-        private double _drag3DOriginalLeft;
-        private double _drag3DOriginalTop;
 
         /// <summary>
         /// Enable drag & drop for 3D shape container (PC Mouse + Interactive Touch Screen)
+        /// QC_4.2_3D_SELECTION_INTEGRATION: Đăng ký hình 3D / STEM Canvas vào SelectionManager
+        /// Cho phép viết vẽ tự do đè lên hình ở chế độ Bút vẽ, và chọn/di chuyển/thu phóng/xóa/sao chép qua công cụ Chọn (Selection).
         /// </summary>
         private void Enable3DShapeDragging(Canvas shapeContainer)
         {
-            // Gán Tag để hệ thống nhận diện đây là đối tượng kéo di chuyển (ngăn vẽ bút đè lên trên cảm ứng)
-            shapeContainer.Tag = "3DShapeContainer";
+            if (shapeContainer == null) return;
 
-            // Add visual feedback - border when hovering
-            shapeContainer.MouseEnter += (s, e) =>
+            // Gán Tag nhận diện là đối tượng hình học 3D
+            shapeContainer.Tag = "3DShape";
+
+            // ✅ QC_4.2_VISUAL_PARENT_GUARD: Đăng ký an toàn với SelectionManager
+            // Tuyệt đối không thêm hoặc đăng ký trước khi element được đưa vào Visual Tree (MainInteractiveBoard.Children),
+            // tránh lỗi System.ArgumentException: Specified Visual is already a child of another Visual.
+            if (MainInteractiveBoard.Children.Contains(shapeContainer))
             {
-                if (_dragging3DShape == null)
-                {
-                    shapeContainer.Cursor = Cursors.Hand;
-                }
-            };
-
-            shapeContainer.MouseLeave += (s, e) =>
+                RegisterNewObjectWithSelectionManager(shapeContainer);
+            }
+            else
             {
-                if (_dragging3DShape == null)
+                RoutedEventHandler? onLoaded = null;
+                onLoaded = (s, e) =>
                 {
-                    shapeContainer.Cursor = Cursors.Arrow;
-                }
-            };
-
-            // Mouse down - start dragging
-            shapeContainer.MouseLeftButtonDown += (s, e) =>
-            {
-                if (_drawingEnabled || _eraserEnabled || _shapeDrawingEnabled) return;
-                
-                // Nếu đang ở chế độ Chọn vùng (_objectSelectionMode), nhường quyền cho SelectionManager
-                if (_objectSelectionMode) return;
-
-                var mainCanvas = this.FindName("MainInteractiveBoard") as Canvas;
-                if (mainCanvas == null) return;
-
-                if (e.ClickCount == 1) // Single click to drag
-                {
-                    // Dọn dẹp bất kỳ preview rectangle selection nào còn sót lại
-                    if (_rectangleSelectionPreview != null && mainCanvas.Children.Contains(_rectangleSelectionPreview))
-                    {
-                        mainCanvas.Children.Remove(_rectangleSelectionPreview);
-                        _rectangleSelectionPreview = null;
-                    }
-                    _isRectangleSelecting = false;
-                    _isPreparingRectangleSelection = false;
-
-                    _dragging3DShape = shapeContainer;
-                    _drag3DStartPoint = e.GetPosition(mainCanvas);
-                    _drag3DOriginalLeft = Canvas.GetLeft(shapeContainer);
-                    _drag3DOriginalTop = Canvas.GetTop(shapeContainer);
-                    
-                    // Chỉ capture chuột thật (tránh nuốt MouseUp trên màn hình cảm ứng)
-                    if (e.StylusDevice == null)
-                    {
-                        shapeContainer.CaptureMouse();
-                    }
-                    shapeContainer.Cursor = Cursors.SizeAll;
-                    
-                    // Bring to front
-                    Canvas.SetZIndex(shapeContainer, 1000);
-                    
-                    // Show action buttons (Copy & Delete)
-                    ShowActionButtons(shapeContainer);
-                    
-                    e.Handled = true;
-                }
-            };
-
-            // Mouse move - dragging
-            shapeContainer.MouseMove += (s, e) =>
-            {
-                if (_dragging3DShape == shapeContainer)
-                {
-                    var mainCanvas = this.FindName("MainInteractiveBoard") as Canvas;
-                    if (mainCanvas == null) return;
-
-                    Point currentPoint = e.GetPosition(mainCanvas);
-                    double deltaX = currentPoint.X - _drag3DStartPoint.X;
-                    double deltaY = currentPoint.Y - _drag3DStartPoint.Y;
-
-                    double newLeft = _drag3DOriginalLeft + deltaX;
-                    double newTop = _drag3DOriginalTop + deltaY;
-
-                    // Constrain to canvas bounds
-                    newLeft = Math.Max(0, Math.Min(newLeft, mainCanvas.ActualWidth - shapeContainer.Width));
-                    newTop = Math.Max(0, Math.Min(newTop, mainCanvas.ActualHeight - shapeContainer.Height));
-
-                    Canvas.SetLeft(shapeContainer, newLeft);
-                    Canvas.SetTop(shapeContainer, newTop);
-
-                    // Update action buttons position to follow the shape
-                    UpdateActionButtonsPosition();
-
-                    // ✅ CHẶN LAN TRUYỀN: Ngăn không cho sự kiện MouseMove lọt lên Canvas cha gây vẽ khung quét chọn
-                    e.Handled = true;
-                }
-            };
-
-            // Mouse up - stop dragging
-            shapeContainer.MouseLeftButtonUp += (s, e) =>
-            {
-                if (_dragging3DShape == shapeContainer)
-                {
-                    if (shapeContainer.IsMouseCaptured)
-                    {
-                        shapeContainer.ReleaseMouseCapture();
-                    }
-                    shapeContainer.Cursor = Cursors.Hand;
-                    
-                    // Reset Z-Index
-                    Canvas.SetZIndex(shapeContainer, 0);
-                    
-                    _dragging3DShape = null;
-                    e.Handled = true;
-                }
-            };
-
-            // ✅ HỖ TRỢ MÀN HÌNH TƯƠNG TÁC (Touch/Stylus)
-            shapeContainer.PreviewTouchDown += (s, e) =>
-            {
-                if (_drawingEnabled || _eraserEnabled || _shapeDrawingEnabled || _objectSelectionMode) return;
-
-                var mainCanvas = this.FindName("MainInteractiveBoard") as Canvas;
-                if (mainCanvas == null) return;
-
-                // Dọn dẹp rectangle selection thừa nếu có
-                if (_rectangleSelectionPreview != null && mainCanvas.Children.Contains(_rectangleSelectionPreview))
-                {
-                    mainCanvas.Children.Remove(_rectangleSelectionPreview);
-                    _rectangleSelectionPreview = null;
-                }
-                _isRectangleSelecting = false;
-                _isPreparingRectangleSelection = false;
-
-                _dragging3DShape = shapeContainer;
-                _drag3DStartPoint = e.GetTouchPoint(mainCanvas).Position;
-                _drag3DOriginalLeft = Canvas.GetLeft(shapeContainer);
-                _drag3DOriginalTop = Canvas.GetTop(shapeContainer);
-
-                shapeContainer.CaptureTouch(e.TouchDevice);
-                ShowActionButtons(shapeContainer);
-                e.Handled = true;
-            };
-
-            shapeContainer.TouchMove += (s, e) =>
-            {
-                if (_dragging3DShape == shapeContainer)
-                {
-                    var mainCanvas = this.FindName("MainInteractiveBoard") as Canvas;
-                    if (mainCanvas == null) return;
-
-                    Point currentPoint = e.GetTouchPoint(mainCanvas).Position;
-                    double deltaX = currentPoint.X - _drag3DStartPoint.X;
-                    double deltaY = currentPoint.Y - _drag3DStartPoint.Y;
-
-                    double newLeft = _drag3DOriginalLeft + deltaX;
-                    double newTop = _drag3DOriginalTop + deltaY;
-
-                    newLeft = Math.Max(0, Math.Min(newLeft, mainCanvas.ActualWidth - shapeContainer.Width));
-                    newTop = Math.Max(0, Math.Min(newTop, mainCanvas.ActualHeight - shapeContainer.Height));
-
-                    Canvas.SetLeft(shapeContainer, newLeft);
-                    Canvas.SetTop(shapeContainer, newTop);
-
-                    UpdateActionButtonsPosition();
-                    e.Handled = true;
-                }
-            };
-
-            shapeContainer.TouchUp += (s, e) =>
-            {
-                if (_dragging3DShape == shapeContainer)
-                {
-                    if (shapeContainer.AreAnyTouchesCaptured)
-                    {
-                        shapeContainer.ReleaseTouchCapture(e.TouchDevice);
-                    }
-                    _dragging3DShape = null;
-                    e.Handled = true;
-                }
-            };
-
-            shapeContainer.LostTouchCapture += (s, e) =>
-            {
-                if (_dragging3DShape == shapeContainer)
-                {
-                    _dragging3DShape = null;
-                }
-            };
+                    shapeContainer.Loaded -= onLoaded;
+                    RegisterNewObjectWithSelectionManager(shapeContainer);
+                };
+                shapeContainer.Loaded += onLoaded;
+            }
         }
         #endregion
 

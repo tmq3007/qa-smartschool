@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -172,6 +172,8 @@ namespace QASmartTouch.Managers
             // Create new stroke using StrokeService
             _currentStroke = _strokeService.CreateStroke(_penColor, _penSize, _brushType.ToString());
             _strokeService.AddPointToStroke(_currentStroke, startPoint);
+            // ✨ DOT SUPPORT: Thêm điểm vi mô (+0.01px) để WPF render chấm tròn tức thì
+            _currentStroke.Points.Add(new Point(startPoint.X + 0.01, startPoint.Y));
             
             // Add to canvas using CanvasService
             _canvasService.AddElement(_currentStroke);
@@ -194,8 +196,16 @@ namespace QASmartTouch.Managers
                 return;
             }
             
-            // Add point to stroke using StrokeService
-            _strokeService.AddPointToStroke(_currentStroke, currentPoint);
+            // Nếu mới chỉ có 1 điểm gốc và 1 điểm vi mô preview, thay thế điểm vi mô bằng điểm di chuyển thực tế đầu tiên
+            if (_currentStroke.Points.Count == 2 && Math.Abs(_currentStroke.Points[1].X - _currentStroke.Points[0].X - 0.01) < 0.001 && _currentStroke.Points[1].Y == _currentStroke.Points[0].Y)
+            {
+                _currentStroke.Points[1] = currentPoint;
+            }
+            else
+            {
+                // Add point to stroke using StrokeService
+                _strokeService.AddPointToStroke(_currentStroke, currentPoint);
+            }
             _lastPoint = currentPoint;
         }
         
@@ -214,6 +224,13 @@ namespace QASmartTouch.Managers
             _isDrawing = false;
             var completedStroke = _currentStroke;
             _currentStroke = null;
+
+            // ✨ DOT FALLBACK: Đảm bảo nếu nét chỉ có 1 điểm thì thêm điểm vi mô thứ hai
+            if (completedStroke.Points.Count == 1)
+            {
+                Point pt = completedStroke.Points[0];
+                completedStroke.Points.Add(new Point(pt.X + 0.01, pt.Y));
+            }
 
             System.Diagnostics.Debug.WriteLine($"🖊️ Drawing ended: {completedStroke.Points.Count} points");
 

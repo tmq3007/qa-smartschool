@@ -290,7 +290,7 @@ namespace QASmartTouch.Managers
                 if (IsSystemElement(child)) continue;
                 if (!child.IsHitTestVisible) continue;
 
-                if (child is Polyline polyline && polyline.Points != null && polyline.Points.Count >= 2)
+                if (child is Polyline polyline && polyline.Points != null && polyline.Points.Count >= 1)
                 {
                     // Check bounds intersection first
                     var bounds = BoundsHelper.GetAbsoluteBounds(polyline, _canvas);
@@ -298,6 +298,22 @@ namespace QASmartTouch.Managers
                         continue;
 
                     var canvasPoints = GetPolylinePointsInCanvas(polyline, _canvas);
+                    if (canvasPoints.Count <= 2)
+                    {
+                        // Đối với dấu chấm (1 hoặc 2 điểm vi mô), xóa trực tiếp khi chạm cục tẩy
+                        double dotDist = Math.Sqrt(Math.Pow(center.X - canvasPoints[0].X, 2) + Math.Pow(center.Y - canvasPoints[0].Y, 2));
+                        if (dotDist <= radius + polyline.StrokeThickness / 2.0)
+                        {
+                            anyErased = true;
+                            RestoreOriginalFillForElement(polyline);
+                            _canvas.Children.Remove(polyline);
+                            session?.RegisterRemovedElement(polyline);
+                            recordRemove?.Invoke(polyline, "Point erase (dot)");
+                            ObjectErased?.Invoke(this, new ObjectErasedEventArgs(polyline));
+                            continue;
+                        }
+                    }
+
                     var pieces = SlicePolyline(canvasPoints, center, radius);
 
                     // Check if points were modified/sliced
@@ -520,13 +536,24 @@ namespace QASmartTouch.Managers
                     if (bounds.IsEmpty || bounds.IntersectsWith(eraserBounds))
                     {
                         var canvasPoints = GetPolylinePointsInCanvas(polyline, _canvas);
-                        for (int i = 0; i < canvasPoints.Count - 1; i++)
+                        if (canvasPoints.Count == 1)
                         {
-                            double dist = DistanceFromPointToLineSegment(center, canvasPoints[i], canvasPoints[i + 1]);
-                            if (dist <= radius)
+                            double dist = Math.Sqrt(Math.Pow(center.X - canvasPoints[0].X, 2) + Math.Pow(center.Y - canvasPoints[0].Y, 2));
+                            if (dist <= radius + polyline.StrokeThickness / 2.0)
                             {
                                 shouldRemove = true;
-                                break;
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < canvasPoints.Count - 1; i++)
+                            {
+                                double dist = DistanceFromPointToLineSegment(center, canvasPoints[i], canvasPoints[i + 1]);
+                                if (dist <= radius + polyline.StrokeThickness / 2.0)
+                                {
+                                    shouldRemove = true;
+                                    break;
+                                }
                             }
                         }
                     }

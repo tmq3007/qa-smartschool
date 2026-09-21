@@ -54,14 +54,15 @@ namespace QASmartTouch.Forms
             else
             {
                 // First click: Activate pen tool
-                DeactivateAllTools();
-                CloseAllSubmenus();
-
+                // Toggle: If clicking same button that opened current submenu, just close it
                 if (_activeSubMenu != null && _activeSubMenuButton == button)
                 {
                     CloseActiveSubMenu();
                     return;
                 }
+
+                DeactivateAllTools();
+                CloseAllSubmenus();
 
                 SelectTool(button);
                 HideWelcomeState();
@@ -80,11 +81,13 @@ namespace QASmartTouch.Forms
                 return;
             }
             
+            CloseAllSubmenus();
             SelectTool(button);
             HideWelcomeState();
             
             // Open SubMenu Pen
             var penMenu = new Form2_1_SubMenuPen();
+            penMenu.Owner = this;
             
             // Set current settings to show saved values
             penMenu.BrushType = _savedBrushType;
@@ -106,6 +109,14 @@ namespace QASmartTouch.Forms
             // Handle window closed event
             penMenu.Closed += (s, args) =>
             {
+                try
+                {
+                    this.Activate();
+                    this.Focus();
+                    MainInteractiveBoard?.Focus();
+                }
+                catch { }
+
                 // Save settings after dialog closes
                 _savedBrushType = penMenu.BrushType;
                 _savedPenSize = penMenu.PenSize;
@@ -114,17 +125,20 @@ namespace QASmartTouch.Forms
                 // Apply pen settings
                 EnableDrawingMode(_savedBrushType, _savedPenSize, _savedPenColor);
                 
-                // Cleanup
-                _activeSubMenu = null;
-                _activeSubMenuButton = null;
-                
-                // Reset button appearance
-                if (button != null)
+                // Cleanup safely
+                if (ReferenceEquals(_activeSubMenu, penMenu))
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    _activeSubMenu = null;
+                    _activeSubMenuButton = null;
+                    
+                    // Reset button appearance
+                    if (button != null)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                        UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    }
+                    _selectedTool = null;
                 }
-                _selectedTool = null;
             };
             
             penMenu.Show();
@@ -150,14 +164,15 @@ namespace QASmartTouch.Forms
             else
             {
                 // First click: Activate eraser tool
-                DeactivateAllTools();
-                CloseAllSubmenus();
-
+                // Toggle: If clicking same button that opened current submenu, just close it
                 if (_activeSubMenu != null && _activeSubMenuButton == button)
                 {
                     CloseActiveSubMenu();
                     return;
                 }
+
+                DeactivateAllTools();
+                CloseAllSubmenus();
 
                 SelectTool(button);
                 HideWelcomeState();
@@ -176,6 +191,7 @@ namespace QASmartTouch.Forms
                 return;
             }
             
+            CloseAllSubmenus();
             SelectTool(button);
             HideWelcomeState();
 
@@ -201,6 +217,9 @@ namespace QASmartTouch.Forms
 
             if (Panel.GetZIndex(element) >= ZIndexConstants.SystemUIBase) return true;
 
+            // ✅ GIAI ĐOẠN 2: Lọc bỏ hình chữ nhật nền bảng để không gom nhầm vào đối tượng vẽ của người dùng
+            if (element is FrameworkElement feBg && feBg.Tag?.ToString() == "BackgroundLayer") return true;
+
             return false;
         }
 
@@ -209,6 +228,7 @@ namespace QASmartTouch.Forms
             
             // Open SubMenu Eraser
             var eraserMenu = new Form2_2_SubMenuEraser();
+            eraserMenu.Owner = this;
             
             // Set current settings to show saved values
             eraserMenu.EraserMode = _savedEraserMode;
@@ -309,17 +329,20 @@ namespace QASmartTouch.Forms
                     EnableEraserMode(_savedEraserSize, _savedEraserMode);
                 }
                 
-                // Cleanup
-                _activeSubMenu = null;
-                _activeSubMenuButton = null;
-                
-                // Reset button appearance
-                if (button != null)
+                // Cleanup safely
+                if (ReferenceEquals(_activeSubMenu, eraserMenu))
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    _activeSubMenu = null;
+                    _activeSubMenuButton = null;
+                    
+                    // Reset button appearance
+                    if (button != null)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                        UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    }
+                    _selectedTool = null;
                 }
-                _selectedTool = null;
             };
             
             eraserMenu.Show();
@@ -382,20 +405,13 @@ namespace QASmartTouch.Forms
             if (element == null) return;
 
             // Accidental touch filtering for drawn strokes (Polyline / Path)
+            // LƯU Ý: Tuyệt đối không lọc dấu chấm chủ ý (Dot) của giáo viên/học sinh!
             if (element is Polyline polyline)
             {
                 if (polyline.Points != null && polyline.Points.Count > 0)
                 {
-                    double minX = double.MaxValue, minY = double.MaxValue;
-                    double maxX = double.MinValue, maxY = double.MinValue;
-                    foreach (var pt in polyline.Points)
-                    {
-                        if (pt.X < minX) minX = pt.X;
-                        if (pt.X > maxX) maxX = pt.X;
-                        if (pt.Y < minY) minY = pt.Y;
-                        if (pt.Y > maxY) maxY = pt.Y;
-                    }
-                    if (polyline.Points.Count == 1 || ((maxX - minX) <= 5.0 && (maxY - minY) <= 5.0))
+                    bool isDot = polyline.Points.Count == 2 && Math.Abs(polyline.Points[1].X - polyline.Points[0].X - 0.01) < 0.005 && polyline.Points[1].Y == polyline.Points[0].Y;
+                    if (!isDot && description != null && description.Contains("Accidental", StringComparison.OrdinalIgnoreCase))
                     {
                         System.Diagnostics.Debug.WriteLine("Ignoring accidental touch Polyline in Undo/Redo registration");
                         return;
@@ -404,10 +420,12 @@ namespace QASmartTouch.Forms
             }
             else if (element is System.Windows.Shapes.Path path)
             {
-                if (path.Data != null)
+                bool isDot = path.Tag is PointCollection pts && pts.Count == 2 && Math.Abs(pts[1].X - pts[0].X - 0.01) < 0.005;
+                if (!isDot && path.Data != null)
                 {
                     var bounds = path.Data.Bounds;
-                    if (bounds.Width <= 5.0 && bounds.Height <= 5.0)
+                    if (bounds.Width <= 5.0 && bounds.Height <= 5.0 &&
+                        description != null && description.Contains("Accidental", StringComparison.OrdinalIgnoreCase))
                     {
                         System.Diagnostics.Debug.WriteLine("Ignoring accidental touch Path in Undo/Redo registration");
                         return;
@@ -627,13 +645,25 @@ namespace QASmartTouch.Forms
                 case ActionType.Add:
                     // Undo Add = Remove from canvas and selection manager
                     if (action.Element != null)
+                    {
                         _selectionManager?.RemoveObjectByElement(action.Element);
+                        if (MainInteractiveBoard.Children.Contains(action.Element))
+                        {
+                            MainInteractiveBoard.Children.Remove(action.Element);
+                        }
+                    }
                     break;
                     
                 case ActionType.Remove:
                     // Undo Remove = Add back to canvas and register selection
                     if (action.Element != null)
+                    {
+                        if (!MainInteractiveBoard.Children.Contains(action.Element))
+                        {
+                            MainInteractiveBoard.Children.Add(action.Element);
+                        }
                         RegisterNewObjectWithSelectionManager(action.Element);
+                    }
                     break;
                     
                 case ActionType.Modify:
@@ -654,7 +684,13 @@ namespace QASmartTouch.Forms
                     foreach (var batchAction in action.BatchActions)
                     {
                         if (batchAction.Element != null)
+                        {
+                            if (!MainInteractiveBoard.Children.Contains(batchAction.Element))
+                            {
+                                MainInteractiveBoard.Children.Add(batchAction.Element);
+                            }
                             RegisterNewObjectWithSelectionManager(batchAction.Element);
+                        }
                     }
                     break;
             }
@@ -670,13 +706,25 @@ namespace QASmartTouch.Forms
                 case ActionType.Add:
                     // Redo Add = Add back to canvas and register selection
                     if (action.Element != null)
+                    {
+                        if (!MainInteractiveBoard.Children.Contains(action.Element))
+                        {
+                            MainInteractiveBoard.Children.Add(action.Element);
+                        }
                         RegisterNewObjectWithSelectionManager(action.Element);
+                    }
                     break;
                     
                 case ActionType.Remove:
                     // Redo Remove = Remove from canvas and selection manager
                     if (action.Element != null)
+                    {
                         _selectionManager?.RemoveObjectByElement(action.Element);
+                        if (MainInteractiveBoard.Children.Contains(action.Element))
+                        {
+                            MainInteractiveBoard.Children.Remove(action.Element);
+                        }
+                    }
                     break;
                     
                 case ActionType.Modify:
@@ -697,7 +745,13 @@ namespace QASmartTouch.Forms
                     foreach (var batchAction in action.BatchActions)
                     {
                         if (batchAction.Element != null)
+                        {
                             _selectionManager?.RemoveObjectByElement(batchAction.Element);
+                            if (MainInteractiveBoard.Children.Contains(batchAction.Element))
+                            {
+                                MainInteractiveBoard.Children.Remove(batchAction.Element);
+                            }
+                        }
                     }
                     break;
             }
@@ -827,22 +881,23 @@ namespace QASmartTouch.Forms
         {
             var button = sender as Button;
             
-            // ✅ PHASE 2: Deactivate tools and close other submenus
-            DeactivateAllTools();
-            CloseAllSubmenus();
-            
-            // Toggle: If clicking same button, close submenu
+            // Toggle: If clicking same button that opened current submenu, just close it
             if (_activeSubMenu != null && _activeSubMenuButton == button)
             {
                 CloseActiveSubMenu();
                 return;
             }
             
+            // ✅ PHASE 2: Deactivate tools and close other submenus
+            DeactivateAllTools();
+            CloseAllSubmenus();
+            
             SelectTool((Button)sender);
             HideWelcomeState();
             
             // Open SubMenu Draw Shapes
             var shapesMenu = new Form2_5_SubMenuDrawShapes(this);
+            shapesMenu.Owner = this;
             _activeSubMenu = shapesMenu;
             _activeSubMenuButton = button;
             
@@ -879,17 +934,20 @@ namespace QASmartTouch.Forms
                     EnableShapeDrawingMode(shapesMenu.SelectedShape);
                 }
                 
-                // Cleanup
-                _activeSubMenu = null;
-                _activeSubMenuButton = null;
-                
-                // Reset button appearance
-                if (button != null)
+                // Cleanup safely
+                if (ReferenceEquals(_activeSubMenu, shapesMenu))
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    _activeSubMenu = null;
+                    _activeSubMenuButton = null;
+                    
+                    // Reset button appearance
+                    if (button != null)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                        UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    }
+                    _selectedTool = null;
                 }
-                _selectedTool = null;
             };
             
             shapesMenu.Show();
@@ -898,6 +956,13 @@ namespace QASmartTouch.Forms
         private void btn6_Inserts_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
+            
+            // Toggle: If clicking same button that opened current submenu, just close it
+            if (_activeSubMenu != null && _activeSubMenuButton == button)
+            {
+                CloseActiveSubMenu();
+                return;
+            }
             
             // ✅ PHASE 2: Deactivate tools and close other submenus
             DeactivateAllTools();
@@ -908,6 +973,7 @@ namespace QASmartTouch.Forms
             
             // Open SubMenu Insert Content
             var insertMenu = new Form2_4_SubMenuInsertContent(this);
+            insertMenu.Owner = this;
             _activeSubMenu = insertMenu;
             _activeSubMenuButton = button;
             
@@ -923,6 +989,14 @@ namespace QASmartTouch.Forms
             // Handle window closed event
             insertMenu.Closed += (s, args) =>
             {
+                try
+                {
+                    this.Activate();
+                    this.Focus();
+                    MainInteractiveBoard.Focus();
+                }
+                catch { }
+
                 // ✨ Fix WPF touch/modal focus freeze on IFP touch screens:
                 // Run action asynchronously after insertMenu finishes closing completely
                 this.Dispatcher.BeginInvoke(new Action(() =>
@@ -961,20 +1035,24 @@ namespace QASmartTouch.Forms
                     }
                 }), System.Windows.Threading.DispatcherPriority.Input);
                 
-                // Cleanup
-                _activeSubMenu = null;
-                _activeSubMenuButton = null;
-                
-                // Reset button appearance
-                if (button != null)
+                // Cleanup safely
+                if (ReferenceEquals(_activeSubMenu, insertMenu))
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    _activeSubMenu = null;
+                    _activeSubMenuButton = null;
+                    
+                    // Reset button appearance
+                    if (button != null)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                        UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    }
+                    _selectedTool = null;
                 }
-                _selectedTool = null;
             };
             
             insertMenu.Show();
+            insertMenu.Activate(); // QC_4.2_TOUCH_ACTIVATION: Đảm bảo cửa sổ Active ngay để tránh WM_MOUSEACTIVATE nuốt cú chạm đầu tiên
         }
 
         // Note: btn6_5_LineChart and btn6_6_PieChart removed from toolbar
@@ -991,6 +1069,8 @@ namespace QASmartTouch.Forms
                 return;
             }
             
+            CloseAllSubmenus();
+
             // IMPORTANT: Disable all drawing tools when zoom is selected
             // User must re-click pen/eraser/shape button to draw again
             _drawingEnabled = false;
@@ -1007,6 +1087,7 @@ namespace QASmartTouch.Forms
             
             // Open NEW SubMenu Zoom with BLACK background and 7 buttons
             var zoomMenu = new Form2_7_SubMenuZoom();
+            zoomMenu.Owner = this;
             _activeSubMenu = zoomMenu;
             _activeSubMenuButton = button;
             
@@ -1029,17 +1110,20 @@ namespace QASmartTouch.Forms
                     ApplyZoom(zoomMenu.ZoomMode, zoomMenu.ZoomLevel);
                 }
                 
-                // Cleanup
-                _activeSubMenu = null;
-                _activeSubMenuButton = null;
-                
-                // Reset button appearance
-                if (button != null)
+                // Cleanup safely
+                if (ReferenceEquals(_activeSubMenu, zoomMenu))
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    _activeSubMenu = null;
+                    _activeSubMenuButton = null;
+                    
+                    // Reset button appearance
+                    if (button != null)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                        UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    }
+                    _selectedTool = null;
                 }
-                _selectedTool = null;
             };
             
             zoomMenu.Show();
@@ -1987,6 +2071,7 @@ namespace QASmartTouch.Forms
             HideWelcomeState();
 
             var selectionMenu = new Form2_6_SubMenuSelectionRecognition(this);
+            selectionMenu.Owner = this;
             _activeSubMenu = selectionMenu;
             _activeSubMenuButton = button;
 
@@ -2008,8 +2093,18 @@ namespace QASmartTouch.Forms
                 }
                 catch { }
 
-                _activeSubMenu = null;
-                _activeSubMenuButton = null;
+                if (ReferenceEquals(_activeSubMenu, selectionMenu))
+                {
+                    _activeSubMenu = null;
+                    _activeSubMenuButton = null;
+
+                    if (button != null)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                        UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    }
+                    _selectedTool = null;
+                }
             };
 
             selectionMenu.Show();
@@ -2320,14 +2415,22 @@ namespace QASmartTouch.Forms
         {
             var button = sender as Button;
             
+            // Toggle: If clicking same button that opened current submenu, just close it
+            if (_activeSubMenu != null && _activeSubMenuButton == button)
+            {
+                CloseActiveSubMenu();
+                return;
+            }
+            
             // ✅ PHASE 2: Close other submenus first
             CloseAllSubmenus();
             
             SelectTool((Button)sender);
             HideWelcomeState();
             
-            // âœ¨ Open SubMenu Board Management (not Chart!)
+            // ✨ Open SubMenu Board Management (not Chart!)
             var boardMenu = new Form2_7_SubMenuBoardManagement(this);
+            boardMenu.Owner = this;
             _activeSubMenu = boardMenu;
             _activeSubMenuButton = button;
             
@@ -2343,17 +2446,28 @@ namespace QASmartTouch.Forms
             // Handle window closed event
             boardMenu.Closed += (s, args) =>
             {
-                // Cleanup
-                _activeSubMenu = null;
-                _activeSubMenuButton = null;
-                
-                // Reset button appearance
-                if (button != null)
+                try
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    this.Activate();
+                    this.Focus();
+                    MainInteractiveBoard?.Focus();
                 }
-                _selectedTool = null;
+                catch { }
+
+                // Cleanup safely
+                if (ReferenceEquals(_activeSubMenu, boardMenu))
+                {
+                    _activeSubMenu = null;
+                    _activeSubMenuButton = null;
+                    
+                    // Reset button appearance
+                    if (button != null)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                        UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    }
+                    _selectedTool = null;
+                }
             };
             
             boardMenu.Show();
@@ -2409,13 +2523,21 @@ namespace QASmartTouch.Forms
         {
             var button = sender as Button;
             
+            // Toggle: If clicking same button that opened current submenu, just close it
+            if (_activeSubMenu != null && _activeSubMenuButton == button)
+            {
+                CloseActiveSubMenu();
+                return;
+            }
+            
             // ✅ PHASE 2: Close other submenus first
             CloseAllSubmenus();
             
             SelectTool((Button)sender);
             
             // Open SubMenu More Extended
-            var moreMenu = new Form2_8_SubMenuMoreExtended();
+            var moreMenu = new Form2_8_SubMenuMoreExtended(this);
+            moreMenu.Owner = this;
             _activeSubMenu = moreMenu;
             _activeSubMenuButton = button;
             
@@ -2431,17 +2553,20 @@ namespace QASmartTouch.Forms
             // Handle window closed event
             moreMenu.Closed += (s, args) =>
             {
-                // Cleanup
-                _activeSubMenu = null;
-                _activeSubMenuButton = null;
-                
-                // Reset button appearance
-                if (button != null)
+                // Cleanup safely
+                if (ReferenceEquals(_activeSubMenu, moreMenu))
                 {
-                    button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-                    UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    _activeSubMenu = null;
+                    _activeSubMenuButton = null;
+                    
+                    // Reset button appearance
+                    if (button != null)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                        UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                    }
+                    _selectedTool = null;
                 }
-                _selectedTool = null;
             };
             
             moreMenu.Show();

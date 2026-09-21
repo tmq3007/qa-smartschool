@@ -9,6 +9,7 @@ using System.Windows.Shapes;
 using QASmartTouch.Models;
 using QASmartTouch.Controls;
 using CanvasControl = System.Windows.Controls.Canvas;
+using System.Windows.Media;
 
 namespace QASmartTouch.Services
 {
@@ -451,6 +452,139 @@ namespace QASmartTouch.Services
         }
 
         /// <summary>
+        /// QC_4.2_POSITION_GUARD: Định vị chính xác cho phần tử được nhân bản/dán.
+        /// - Đối với các hình học dạng vector/điểm (Polyline, Polygon, Line, Path):
+        ///   Các tọa độ điểm (Points, X1/Y1/X2/Y2) hoặc TranslateTransform đã được cộng sẵn độ lệch (offset) mới trong CloneSingleElement.
+        ///   Do đó BẮT BUỘC xóa Canvas.Left và Canvas.Top (set về double.NaN) để tránh WPF cộng dồn vị trí 2 lần làm hình bay ra góc xa màn hình.
+        /// - Đối với các phần tử dạng hộp (Rectangle, Ellipse, TextBlock, Border, Image, Canvas 3D):
+        ///   Định vị chính xác bằng CanvasControl.SetLeft/SetTop theo newPos.
+        /// </summary>
+        private void PositionClonedElement(UIElement clonedElement, Point newPos)
+        {
+            if (clonedElement is Polyline || clonedElement is Polygon || 
+                clonedElement is System.Windows.Shapes.Line || clonedElement is System.Windows.Shapes.Path)
+            {
+                CanvasControl.SetLeft(clonedElement, double.NaN);
+                CanvasControl.SetTop(clonedElement, double.NaN);
+            }
+            else if (clonedElement is FrameworkElement fe)
+            {
+                CanvasControl.SetLeft(fe, newPos.X);
+                CanvasControl.SetTop(fe, newPos.Y);
+            }
+        }
+
+        /// <summary>
+        /// QC_4.2_INSTANT_DUPLICATE: Nhân bản tức thì các đối tượng đang được chọn (đơn hoặc đa đối tượng)
+        /// Tạo bản sao với độ lệch (offsetX, offsetY), thêm vào Canvas, tự động chọn bản sao và trả về danh sách đối tượng mới.
+        /// </summary>
+        public List<SelectableObject> DuplicateSelectedObjects(double offsetX = 30.0, double offsetY = 30.0)
+        {
+            var duplicatedObjects = new List<SelectableObject>();
+            var targets = GetSelectedObjects();
+            if (targets.Count == 0 && _state.PrimarySelectedObject != null)
+            {
+                targets = new List<SelectableObject> { _state.PrimarySelectedObject };
+            }
+
+            if (targets.Count == 0)
+                return duplicatedObjects;
+
+            double canvasWidth = _canvas?.ActualWidth > 0 ? _canvas.ActualWidth : 1920;
+            double canvasHeight = _canvas?.ActualHeight > 0 ? _canvas.ActualHeight : 1080;
+
+            foreach (var original in targets)
+            {
+                if (original.Element == null) continue;
+
+                var newPos = new Point(original.Position.X + offsetX, original.Position.Y + offsetY);
+                if (newPos.X + original.Size.Width > canvasWidth) newPos.X = Math.Max(10, original.Position.X - offsetX);
+                if (newPos.Y + original.Size.Height > canvasHeight) newPos.Y = Math.Max(10, original.Position.Y - offsetY);
+
+                UIElement? clonedElement = CloneSingleElement(original, newPos);
+                if (clonedElement == null) continue;
+
+                var clone = original.Clone();
+                clone.Element = clonedElement;
+                clone.Position = newPos;
+
+                PositionClonedElement(clonedElement, newPos);
+
+                if (clonedElement is Polyline pastedPolyline && pastedPolyline.Points.Count > 0)
+                {
+                    double pMinX = double.MaxValue, pMinY = double.MaxValue;
+                    double pMaxX = double.MinValue, pMaxY = double.MinValue;
+                    foreach (var point in pastedPolyline.Points)
+                    {
+                        pMinX = Math.Min(pMinX, point.X); pMinY = Math.Min(pMinY, point.Y);
+                        pMaxX = Math.Max(pMaxX, point.X); pMaxY = Math.Max(pMaxY, point.Y);
+                    }
+                    double w = pMaxX - pMinX, h = pMaxY - pMinY;
+                    double pad = pastedPolyline.StrokeThickness;
+                    pMinX -= pad; pMinY -= pad; w += pad * 2; h += pad * 2;
+                    if (w < 10) w = 10; if (h < 10) h = 10;
+                    clone.Position = new Point(pMinX, pMinY);
+                    clone.Size = new Size(w, h);
+                    clone.Bounds = new Rect(pMinX, pMinY, w, h);
+                }
+                else if (clonedElement is Polygon pastedPolygon && pastedPolygon.Points.Count > 0)
+                {
+                    double pMinX = double.MaxValue, pMinY = double.MaxValue;
+                    double pMaxX = double.MinValue, pMaxY = double.MinValue;
+                    foreach (var point in pastedPolygon.Points)
+                    {
+                        pMinX = Math.Min(pMinX, point.X); pMinY = Math.Min(pMinY, point.Y);
+                        pMaxX = Math.Max(pMaxX, point.X); pMaxY = Math.Max(pMaxY, point.Y);
+                    }
+                    double w = pMaxX - pMinX, h = pMaxY - pMinY;
+                    double pad = Math.Max(pastedPolygon.StrokeThickness / 2.0, 2.0);
+                    pMinX -= pad; pMinY -= pad; w += pad * 2; h += pad * 2;
+                    if (w < 10) w = 10; if (h < 10) h = 10;
+                    clone.Position = new Point(pMinX, pMinY);
+                    clone.Size = new Size(w, h);
+                    clone.Bounds = new Rect(pMinX, pMinY, w, h);
+                }
+                else if (clonedElement is System.Windows.Shapes.Line pastedLine)
+                {
+                    double pMinX = Math.Min(pastedLine.X1, pastedLine.X2);
+                    double pMinY = Math.Min(pastedLine.Y1, pastedLine.Y2);
+                    double pMaxX = Math.Max(pastedLine.X1, pastedLine.X2);
+                    double pMaxY = Math.Max(pastedLine.Y1, pastedLine.Y2);
+                    double w = Math.Max(pMaxX - pMinX, 5);
+                    double h = Math.Max(pMaxY - pMinY, 5);
+                    double pad = Math.Max(pastedLine.StrokeThickness / 2.0, 2.0);
+                    pMinX -= pad; pMinY -= pad; w += pad * 2; h += pad * 2;
+                    clone.Position = new Point(pMinX, pMinY);
+                    clone.Size = new Size(w, h);
+                    clone.Bounds = new Rect(pMinX, pMinY, w, h);
+                }
+                else
+                {
+                    clone.UpdateBounds();
+                }
+
+                int newZ = Panel.GetZIndex(original.Element) + 1;
+                clone.ZIndex = newZ;
+
+                AddObject(clone);
+                duplicatedObjects.Add(clone);
+            }
+
+            if (duplicatedObjects.Count > 1)
+            {
+                SelectMultiple(duplicatedObjects);
+                ShowMultiSelectionAdorners();
+            }
+            else if (duplicatedObjects.Count == 1)
+            {
+                SelectObject(duplicatedObjects[0]);
+            }
+
+            System.Diagnostics.Debug.WriteLine($"✅ DuplicateSelectedObjects: Successfully duplicated {duplicatedObjects.Count} objects");
+            return duplicatedObjects;
+        }
+
+        /// <summary>
         /// Paste object from clipboard at specified position (NG-2 Fix: Support all object types)
         /// </summary>
         public SelectableObject? PasteAtPosition(Point position)
@@ -665,6 +799,8 @@ namespace QASmartTouch.Services
             clone.Element = clonedElement;
             clone.Position = position;
             
+            PositionClonedElement(clonedElement, position);
+            
             // BUGFIX: Calculate bounds properly for Polyline and Polygon
             if (clonedElement is Polyline pastedPolyline && pastedPolyline.Points.Count > 0)
             {
@@ -815,6 +951,8 @@ namespace QASmartTouch.Services
                 var clone = original.Clone();
                 clone.Element = clonedElement;
                 clone.Position = newPos;
+
+                PositionClonedElement(clonedElement, newPos);
 
                 // Calculate bounds properly for Polyline
                 if (clonedElement is Polyline pastedPolyline && pastedPolyline.Points.Count > 0)
@@ -992,6 +1130,33 @@ namespace QASmartTouch.Services
                 }
                 return newBorder;
             }
+            else if (original.Element is System.Windows.Shapes.Path path && path.Data != null)
+            {
+                var newPath = new System.Windows.Shapes.Path
+                {
+                    Data = path.Data.Clone(),
+                    Stroke = path.Stroke?.Clone(),
+                    StrokeThickness = path.StrokeThickness,
+                    StrokeLineJoin = path.StrokeLineJoin,
+                    StrokeStartLineCap = path.StrokeStartLineCap,
+                    StrokeEndLineCap = path.StrokeEndLineCap,
+                    Fill = path.Fill?.Clone(),
+                    Opacity = path.Opacity
+                };
+                double oX = newPosition.X - original.Position.X;
+                double oY = newPosition.Y - original.Position.Y;
+                if (Math.Abs(oX) > 0.001 || Math.Abs(oY) > 0.001)
+                {
+                    var group = new TransformGroup();
+                    if (path.RenderTransform != null && path.RenderTransform != Transform.Identity)
+                    {
+                        group.Children.Add(path.RenderTransform.Clone());
+                    }
+                    group.Children.Add(new TranslateTransform(oX, oY));
+                    newPath.RenderTransform = group;
+                }
+                return newPath;
+            }
             else if (original.Element is System.Windows.Controls.Image image)
             {
                 return new System.Windows.Controls.Image
@@ -1001,8 +1166,142 @@ namespace QASmartTouch.Services
                     Opacity = image.Opacity
                 };
             }
+            else if (original.Element is CanvasControl canvas)
+            {
+                // ✅ Hỗ trợ sao chép Hình khối 3D và biểu đồ STEM Canvas
+                var newCanvas = new CanvasControl
+                {
+                    Width = canvas.Width,
+                    Height = canvas.Height,
+                    Background = canvas.Background?.Clone(),
+                    ClipToBounds = canvas.ClipToBounds,
+                    Tag = canvas.Tag
+                };
+
+                foreach (UIElement child in canvas.Children)
+                {
+                    if (child is System.Windows.Shapes.Shape shp)
+                    {
+                        var clonedShp = CloneShapeElement(shp);
+                        if (clonedShp != null) newCanvas.Children.Add(clonedShp);
+                    }
+                    else if (child is System.Windows.Controls.TextBlock tb)
+                    {
+                        var clonedTb = new System.Windows.Controls.TextBlock
+                        {
+                            Text = tb.Text, FontSize = tb.FontSize, FontWeight = tb.FontWeight,
+                            FontFamily = tb.FontFamily, Foreground = tb.Foreground?.Clone(),
+                            Background = tb.Background?.Clone(), TextWrapping = tb.TextWrapping,
+                            Width = tb.Width, Height = tb.Height
+                        };
+                        CanvasControl.SetLeft(clonedTb, CanvasControl.GetLeft(tb));
+                        CanvasControl.SetTop(clonedTb, CanvasControl.GetTop(tb));
+                        newCanvas.Children.Add(clonedTb);
+                    }
+                    else if (child is System.Windows.Controls.Border b)
+                    {
+                        var clonedB = new System.Windows.Controls.Border
+                        {
+                            Width = b.Width, Height = b.Height, Background = b.Background?.Clone(),
+                            BorderBrush = b.BorderBrush?.Clone(), BorderThickness = b.BorderThickness,
+                            CornerRadius = b.CornerRadius, Padding = b.Padding, Opacity = b.Opacity
+                        };
+                        if (b.Child is System.Windows.Controls.TextBlock bTb)
+                        {
+                            clonedB.Child = new System.Windows.Controls.TextBlock
+                            {
+                                Text = bTb.Text, FontFamily = bTb.FontFamily, FontSize = bTb.FontSize,
+                                FontWeight = bTb.FontWeight, Foreground = bTb.Foreground?.Clone()
+                            };
+                        }
+                        CanvasControl.SetLeft(clonedB, CanvasControl.GetLeft(b));
+                        CanvasControl.SetTop(clonedB, CanvasControl.GetTop(b));
+                        newCanvas.Children.Add(clonedB);
+                    }
+                }
+                return newCanvas;
+            }
+
+            // Fallback: Xaml clone cho các loại đối tượng FrameworkElement phức tạp khác
+            try
+            {
+                if (original.Element is FrameworkElement fe)
+                {
+                    string xaml = System.Windows.Markup.XamlWriter.Save(fe);
+                    if (System.Windows.Markup.XamlReader.Parse(xaml) is UIElement parsed)
+                    {
+                        return parsed;
+                    }
+                }
+            }
+            catch { }
 
             System.Diagnostics.Debug.WriteLine($"⚠️ Clone not supported: {original.Element?.GetType().Name}");
+            return null;
+        }
+
+        /// <summary>
+        /// Clone Shape element helper
+        /// </summary>
+        private System.Windows.Shapes.Shape? CloneShapeElement(System.Windows.Shapes.Shape source)
+        {
+            if (source is System.Windows.Shapes.Line line)
+            {
+                return new System.Windows.Shapes.Line
+                {
+                    X1 = line.X1, Y1 = line.Y1, X2 = line.X2, Y2 = line.Y2,
+                    Stroke = line.Stroke?.Clone(), StrokeThickness = line.StrokeThickness,
+                    StrokeDashArray = line.StrokeDashArray?.Clone(), Opacity = line.Opacity
+                };
+            }
+            else if (source is Polygon polygon)
+            {
+                var p = new Polygon
+                {
+                    Stroke = polygon.Stroke?.Clone(), StrokeThickness = polygon.StrokeThickness,
+                    Fill = polygon.Fill?.Clone(), Opacity = polygon.Opacity
+                };
+                foreach (var pt in polygon.Points) p.Points.Add(pt);
+                return p;
+            }
+            else if (source is Polyline polyline)
+            {
+                var pl = new Polyline
+                {
+                    Stroke = polyline.Stroke?.Clone(), StrokeThickness = polyline.StrokeThickness,
+                    Opacity = polyline.Opacity
+                };
+                foreach (var pt in polyline.Points) pl.Points.Add(pt);
+                return pl;
+            }
+            else if (source is System.Windows.Shapes.Rectangle rect)
+            {
+                return new System.Windows.Shapes.Rectangle
+                {
+                    Width = rect.Width, Height = rect.Height,
+                    Stroke = rect.Stroke?.Clone(), Fill = rect.Fill?.Clone(),
+                    StrokeThickness = rect.StrokeThickness, RadiusX = rect.RadiusX, RadiusY = rect.RadiusY,
+                    Opacity = rect.Opacity
+                };
+            }
+            else if (source is System.Windows.Shapes.Ellipse ellipse)
+            {
+                return new System.Windows.Shapes.Ellipse
+                {
+                    Width = ellipse.Width, Height = ellipse.Height,
+                    Stroke = ellipse.Stroke?.Clone(), Fill = ellipse.Fill?.Clone(),
+                    StrokeThickness = ellipse.StrokeThickness, Opacity = ellipse.Opacity
+                };
+            }
+            else if (source is System.Windows.Shapes.Path path && path.Data != null)
+            {
+                return new System.Windows.Shapes.Path
+                {
+                    Data = path.Data.Clone(), Stroke = path.Stroke?.Clone(),
+                    StrokeThickness = path.StrokeThickness, Fill = path.Fill?.Clone(),
+                    Opacity = path.Opacity
+                };
+            }
             return null;
         }
 
@@ -1020,6 +1319,7 @@ namespace QASmartTouch.Services
         public void ClearClipboard()
         {
             _clipboard = null;
+            _clipboardList = null;
         }
 
         /// <summary>

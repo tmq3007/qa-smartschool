@@ -188,10 +188,15 @@ namespace QASmartTouch.Services.Canvas
         /// <inheritdoc/>
         public System.Windows.Shapes.Path? ConvertToSmoothPath(Polyline stroke)
         {
-            if (stroke == null || stroke.Points.Count < 2)
+            if (stroke == null || stroke.Points.Count < 1)
                 return null;
 
             var points = stroke.Points.ToList();
+            if (points.Count == 1)
+            {
+                // ✨ DOT SUPPORT: Nếu stroke chỉ có 1 điểm, thêm điểm thứ hai vi mô để tạo thành Path dấu chấm tròn
+                points.Add(new Point(points[0].X + 0.01, points[0].Y));
+            }
 
             // Build StreamGeometry with QuadraticBezierSegments
             // Technique: midpoint quadratic bezier — industry standard for smooth freehand

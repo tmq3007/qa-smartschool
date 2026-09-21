@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.RegularExpressions;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
@@ -19,7 +19,10 @@ namespace QASmartTouch.Forms
             _ = InitializeWebView();
             
             // Get reference to MainDashboard
-            _mainDashboard = Application.Current.MainWindow as Form2_MainDashboard;
+            _mainDashboard = this.Owner as Form2_MainDashboard
+                ?? (Application.Current as App)?._whiteboardShell
+                ?? Application.Current.Windows.OfType<Form2_MainDashboard>().FirstOrDefault()
+                ?? Application.Current.MainWindow as Form2_MainDashboard;
         }
 
         private async System.Threading.Tasks.Task InitializeWebView()

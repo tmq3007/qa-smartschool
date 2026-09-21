@@ -129,6 +129,24 @@
                 </Popup>
             </Grid>
 
+            <!-- 📏 Stroke Thickness Button (Tier 1 Direct Access) -->
+            <Button x:Name="btnThickness"
+                    Style="{StaticResource ToolbarButtonStyle}"
+                    Click="btnThickness_Click"
+                    PreviewTouchDown="btnThickness_PreviewTouchDown"
+                    ToolTip="Độ dày nét">
+                <TextBlock Text="📏" FontSize="16"/>
+            </Button>
+
+            <!-- 📋 Copy Button (Tier 1 Direct Access) -->
+            <Button x:Name="btnCopy"
+                    Style="{StaticResource ToolbarButtonStyle}"
+                    Click="btnCopy_Click"
+                    PreviewTouchDown="btnCopy_PreviewTouchDown"
+                    ToolTip="Sao chép (Ctrl+C)">
+                <TextBlock Text="📋" FontSize="16"/>
+            </Button>
+
             <!-- 🗑️ Delete Button -->
             <Button x:Name="btnDelete"
                     Style="{StaticResource ToolbarButtonStyle}"
@@ -150,13 +168,6 @@
             <!-- Tier 2 Advanced Tools Container (Collapsed by default for clean Tier 1 UI) -->
             <StackPanel x:Name="AdvancedToolsPanel" Orientation="Horizontal" Visibility="Collapsed">
                 <Rectangle Width="1" Height="24" Fill="#33FFFFFF" Margin="4,0"/>
-
-                <Button x:Name="btnCopy"
-                        Style="{StaticResource ToolbarButtonStyle}"
-                        Click="btnCopy_Click"
-                        ToolTip="Sao chép (Ctrl+C)">
-                    <TextBlock Text="📋" FontSize="16"/>
-                </Button>
 
                 <Button x:Name="btnRecognizeHandwriting"
                         Style="{StaticResource ToolbarButtonStyle}"
@@ -205,13 +216,6 @@
                         Click="btnFlipVertical_Click"
                         ToolTip="Lật dọc (Trên ⇄ Dưới)">
                     <TextBlock Text="↕️" FontSize="16"/>
-                </Button>
-
-                <Button x:Name="btnThickness"
-                        Style="{StaticResource ToolbarButtonStyle}"
-                        Click="btnThickness_Click"
-                        ToolTip="Độ dày nét">
-                    <TextBlock Text="📏" FontSize="16"/>
                 </Button>
 
                 <Button x:Name="btnSpotlight"

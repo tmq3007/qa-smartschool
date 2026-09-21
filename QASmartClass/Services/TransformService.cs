@@ -377,9 +377,26 @@ namespace QASmartTouch.Services
                     path.Fill = null;
                 }
 
-                // Path (smooth Bezier handwriting stroke or shape): Apply RenderTransform
+                // Path (smooth Bezier handwriting stroke, shape, or touch dot): Apply RenderTransform
                 var bounds = path.Data.Bounds;
-                if (!bounds.IsEmpty && bounds.Width > 0 && bounds.Height > 0)
+                bool isDotOrMicro = bounds.IsEmpty || (bounds.Width <= 0.05 && bounds.Height <= 0.05);
+                Point targetCenter = new Point(obj.Position.X + newSize.Width / 2.0, obj.Position.Y + newSize.Height / 2.0);
+
+                if (isDotOrMicro)
+                {
+                    // ✨ TOUCH DOT SUPPORT: Dấu chấm cảm ứng - tịnh tiến tâm về targetCenter mà không scale vi mô
+                    var tg = new TransformGroup();
+                    double dotOrigX = !bounds.IsEmpty ? (bounds.X + bounds.Width / 2.0) : obj.Position.X;
+                    double dotOrigY = !bounds.IsEmpty ? (bounds.Y + bounds.Height / 2.0) : obj.Position.Y;
+                    tg.Children.Add(new TranslateTransform(targetCenter.X - dotOrigX, targetCenter.Y - dotOrigY));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                    System.Diagnostics.Debug.WriteLine($"🔧 Resize Path touch dot: targetCenter=({targetCenter.X:F2},{targetCenter.Y:F2})");
+                }
+                else if (bounds.Width > 0.05 && bounds.Height > 0.05)
                 {
                     double scaleX = newSize.Width / bounds.Width;
                     double scaleY = newSize.Height / bounds.Height;
@@ -387,9 +404,37 @@ namespace QASmartTouch.Services
                     var tg = new TransformGroup();
                     tg.Children.Add(new ScaleTransform(scaleX, scaleY, bounds.X, bounds.Y));
                     tg.Children.Add(new TranslateTransform(obj.Position.X - bounds.X, obj.Position.Y - bounds.Y));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
+                    }
                     path.RenderTransform = tg;
 
                     System.Diagnostics.Debug.WriteLine($"🔧 Resize Path stroke: scale=({scaleX:F2},{scaleY:F2})");
+                }
+                else if (bounds.Width > 0.05) // Đoạn thẳng nằm ngang thuần túy
+                {
+                    double scaleX = newSize.Width / bounds.Width;
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(scaleX, 1.0, bounds.X, bounds.Y));
+                    tg.Children.Add(new TranslateTransform(obj.Position.X - bounds.X, targetCenter.Y - (bounds.Y + bounds.Height / 2.0)));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                }
+                else if (bounds.Height > 0.05) // Đoạn thẳng thẳng đứng thuần túy
+                {
+                    double scaleY = newSize.Height / bounds.Height;
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(1.0, scaleY, bounds.X, bounds.Y));
+                    tg.Children.Add(new TranslateTransform(targetCenter.X - (bounds.X + bounds.Width / 2.0), obj.Position.Y - bounds.Y));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
+                    }
+                    path.RenderTransform = tg;
                 }
             }
             else if (obj.Element is CanvasControl canvas)
@@ -764,7 +809,7 @@ namespace QASmartTouch.Services
                 if (!double.IsNaN(CanvasControl.GetLeft(polyline))) CanvasControl.SetLeft(polyline, double.NaN);
                 if (!double.IsNaN(CanvasControl.GetTop(polyline))) CanvasControl.SetTop(polyline, double.NaN);
             }
-            // 4. Path (ArrowLine, DoubleArrowLine, Bezier strokes): ScaleTransform + TranslateTransform + RotateTransform
+            // 4. Path (ArrowLine, DoubleArrowLine, Bezier strokes, Touch Dots): ScaleTransform + TranslateTransform + RotateTransform
             else if (obj.Element is System.Windows.Shapes.Path path && path.Data != null)
             {
                 if (obj.Type == ObjectType.Stroke || obj.Type == ObjectType.Drawing)
@@ -773,7 +818,24 @@ namespace QASmartTouch.Services
                 }
 
                 var bounds = path.Data.Bounds;
-                if (!bounds.IsEmpty && bounds.Width > 0 && bounds.Height > 0)
+                bool isDotOrMicro = bounds.IsEmpty || (bounds.Width <= 0.05 && bounds.Height <= 0.05);
+
+                if (isDotOrMicro)
+                {
+                    // ✨ TOUCH DOT SUPPORT: Dấu chấm trên màn hình cảm ứng là Path chứa StreamGeometry vi mô (0.01px).
+                    // Với dấu chấm tròn, hình ảnh thực tế được tạo nên từ StrokeThickness và PenLineCap.Round.
+                    // Tịnh tiến tâm dấu chấm chính xác đến newCenter của nhóm, không áp dụng scale vi mô (tránh chia cho 0/biến dạng).
+                    var tg = new TransformGroup();
+                    double dotOrigX = !bounds.IsEmpty ? (bounds.X + bounds.Width / 2.0) : origCenter.X;
+                    double dotOrigY = !bounds.IsEmpty ? (bounds.Y + bounds.Height / 2.0) : origCenter.Y;
+                    tg.Children.Add(new TranslateTransform(newCenter.X - dotOrigX, newCenter.Y - dotOrigY));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                }
+                else if (bounds.Width > 0.05 && bounds.Height > 0.05)
                 {
                     double pathScaleX = newSize.Width / bounds.Width;
                     double pathScaleY = newSize.Height / bounds.Height;
@@ -781,6 +843,30 @@ namespace QASmartTouch.Services
                     var tg = new TransformGroup();
                     tg.Children.Add(new ScaleTransform(pathScaleX, pathScaleY, bounds.X, bounds.Y));
                     tg.Children.Add(new TranslateTransform(newPosition.X - bounds.X, newPosition.Y - bounds.Y));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                }
+                else if (bounds.Width > 0.05) // Đoạn thẳng nằm ngang thuần túy (Height == 0)
+                {
+                    double pathScaleX = newSize.Width / bounds.Width;
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(pathScaleX, 1.0, bounds.X, bounds.Y));
+                    tg.Children.Add(new TranslateTransform(newPosition.X - bounds.X, newCenter.Y - (bounds.Y + bounds.Height / 2.0)));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                }
+                else if (bounds.Height > 0.05) // Đoạn thẳng thẳng đứng thuần túy (Width == 0)
+                {
+                    double pathScaleY = newSize.Height / bounds.Height;
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(1.0, pathScaleY, bounds.X, bounds.Y));
+                    tg.Children.Add(new TranslateTransform(newCenter.X - (bounds.X + bounds.Width / 2.0), newPosition.Y - bounds.Y));
                     if (obj.RotationAngle != 0)
                     {
                         tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));

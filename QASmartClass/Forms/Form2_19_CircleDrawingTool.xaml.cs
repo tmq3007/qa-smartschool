@@ -66,6 +66,7 @@ namespace QASmartTouch.Forms
         public Form2_19_CircleDrawingTool()
         {
             InitializeComponent();
+            QASmartTouch.Helpers.TouchActivationHelper.Apply(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
         }
 
         #endregion
@@ -371,6 +372,11 @@ namespace QASmartTouch.Forms
             btnMove.PreviewMouseDown += btnMove_PreviewMouseDown;
             btnMove.PreviewMouseMove += btnMove_PreviewMouseMove;
             btnMove.PreviewMouseUp += btnMove_PreviewMouseUp;
+            // QC_4.2_TOUCH_PIPELINE: Hỗ trợ Touch trực tiếp trên IFP, chặn gesture delay và coordinate loop
+            btnMove.PreviewTouchDown += btnMove_PreviewTouchDown;
+            btnMove.TouchMove += btnMove_TouchMove;
+            btnMove.TouchUp += btnMove_TouchUp;
+            btnMove.LostTouchCapture += btnMove_LostTouchCapture;
 
             controlRow.Children.Add(btnMove);
 
@@ -1109,6 +1115,63 @@ namespace QASmartTouch.Forms
                     el.ReleaseMouseCapture();
 
                 e.Handled = true;
+            }
+        }
+
+        // ============ TOUCH MOVE HANDLERS (QC_4.2_TOUCH_PIPELINE) ============
+        private int? _panelTouchId = null;
+
+        private void btnMove_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            if (_mainDashboard == null || _controlPanel == null) return;
+
+            if (sender is UIElement el)
+            {
+                _panelTouchId = e.TouchDevice.Id;
+                _isDraggingPanel = true;
+                _panelDragStart = _mainDashboard.PointToScreen(e.GetTouchPoint(_mainDashboard).Position);
+                el.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (!_isDraggingPanel || _mainDashboard == null || _controlPanel == null) return;
+            if (_panelTouchId != e.TouchDevice.Id) return;
+
+            var currentScreenPoint = _mainDashboard.PointToScreen(e.GetTouchPoint(_mainDashboard).Position);
+
+            double deltaX = currentScreenPoint.X - _panelDragStart.X;
+            double deltaY = currentScreenPoint.Y - _panelDragStart.Y;
+
+            _circleCenter = new Point(_circleCenter.X + deltaX, _circleCenter.Y + deltaY);
+            _panelDragStart = currentScreenPoint;
+
+            UpdateCircle();
+            e.Handled = true;
+        }
+
+        private void btnMove_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (_panelTouchId == e.TouchDevice.Id)
+            {
+                _isDraggingPanel = false;
+                _panelTouchId = null;
+
+                if (sender is UIElement el && e.TouchDevice.Captured == el)
+                    el.ReleaseTouchCapture(e.TouchDevice);
+
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_LostTouchCapture(object sender, TouchEventArgs e)
+        {
+            if (_panelTouchId == e.TouchDevice.Id)
+            {
+                _isDraggingPanel = false;
+                _panelTouchId = null;
             }
         }
 
