@@ -21,8 +21,6 @@ namespace QASmartTouch.Forms
         // Drag State for Window
         private bool _isDragging = false;
         private Point _dragStartPoint;
-        private double _originalLeft = 0;
-        private double _originalTop = 0;
 
         // Drag State for Rays
         private bool _isDraggingRayA = false;
@@ -48,6 +46,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             // QC_4.2_TOUCH_PIPELINE: STEM Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
+            QASmartTouch.Helpers.TouchActivationHelper.Apply(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
 
             // Initialize state with default angles
             _state = new ProtractorState
@@ -460,6 +459,45 @@ namespace QASmartTouch.Forms
             }
         }
 
+        private int? _rayATouchId = null;
+        private void RayAHandle_TouchDown(object sender, TouchEventArgs e)
+        {
+            _isDraggingRayA = true;
+            _rayATouchId = e.TouchDevice.Id;
+            RayAHandle.CaptureTouch(e.TouchDevice);
+            e.Handled = true;
+        }
+
+        private void RayAHandle_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (_rayATouchId == e.TouchDevice.Id)
+            {
+                _isDraggingRayA = false;
+                _rayATouchId = null;
+                if (e.TouchDevice.Captured == RayAHandle)
+                    RayAHandle.ReleaseTouchCapture(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void RayAHandle_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (_isDraggingRayA && _rayATouchId == e.TouchDevice.Id)
+            {
+                Point touchPos = e.GetTouchPoint(ProtractorCanvas).Position;
+                double angle = CartesianToPolar(_centerPoint, touchPos);
+                angle = ApplySnap(angle);
+
+                _state.RayAAngle = angle;
+
+                DrawProtractor();
+                UpdateRayHandles();
+                UpdateAngleDisplay();
+
+                e.Handled = true;
+            }
+        }
+
         private void RayBHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
             _isDraggingRayB = true;
@@ -492,25 +530,58 @@ namespace QASmartTouch.Forms
             }
         }
 
+        private int? _rayBTouchId = null;
+        private void RayBHandle_TouchDown(object sender, TouchEventArgs e)
+        {
+            _isDraggingRayB = true;
+            _rayBTouchId = e.TouchDevice.Id;
+            RayBHandle.CaptureTouch(e.TouchDevice);
+            e.Handled = true;
+        }
+
+        private void RayBHandle_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (_rayBTouchId == e.TouchDevice.Id)
+            {
+                _isDraggingRayB = false;
+                _rayBTouchId = null;
+                if (e.TouchDevice.Captured == RayBHandle)
+                    RayBHandle.ReleaseTouchCapture(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void RayBHandle_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (_isDraggingRayB && _rayBTouchId == e.TouchDevice.Id)
+            {
+                Point touchPos = e.GetTouchPoint(ProtractorCanvas).Position;
+                double angle = CartesianToPolar(_centerPoint, touchPos);
+                angle = ApplySnap(angle);
+
+                _state.RayBAngle = angle;
+
+                DrawProtractor();
+                UpdateRayHandles();
+                UpdateAngleDisplay();
+
+                e.Handled = true;
+            }
+        }
+
         #endregion
 
         #region Button Events - Move
 
         private void btnMove_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
+            if (e.ChangedButton == MouseButton.Left || e.LeftButton == MouseButtonState.Pressed)
             {
                 _isDragging = true;
-                _dragStartPoint = e.GetPosition(this);
-                _originalLeft = this.Left;
-                _originalTop = this.Top;
+                _dragStartPoint = PointToScreen(e.GetPosition(this));
 
-                if (double.IsNaN(_originalLeft))
-                    _originalLeft = 0;
-                if (double.IsNaN(_originalTop))
-                    _originalTop = 0;
-
-                ((Button)sender).CaptureMouse();
+                if (sender is UIElement el)
+                    el.CaptureMouse();
                 e.Handled = true;
             }
         }
@@ -519,26 +590,81 @@ namespace QASmartTouch.Forms
         {
             if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
             {
-                Point currentPoint = e.GetPosition(this);
-                double deltaX = currentPoint.X - _dragStartPoint.X;
-                double deltaY = currentPoint.Y - _dragStartPoint.Y;
+                var currentScreenPoint = PointToScreen(e.GetPosition(this));
+                double offsetX = currentScreenPoint.X - _dragStartPoint.X;
+                double offsetY = currentScreenPoint.Y - _dragStartPoint.Y;
 
-                // Get screen position
-                Point screenStart = this.PointToScreen(new Point(0, 0));
-                this.Left = screenStart.X + deltaX;
-                this.Top = screenStart.Y + deltaY;
+                this.Left += offsetX;
+                this.Top += offsetY;
 
+                _dragStartPoint = currentScreenPoint;
                 e.Handled = true;
             }
         }
 
         private void btnMove_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left && _isDragging)
+            if (_isDragging)
             {
                 _isDragging = false;
-                ((Button)sender).ReleaseMouseCapture();
+                if (sender is UIElement el)
+                    el.ReleaseMouseCapture();
                 e.Handled = true;
+            }
+        }
+
+        // ============ TOUCH MOVE HANDLERS (QC_4.2_TOUCH_PIPELINE) ============
+        private int? _protractorTouchId = null;
+
+        private void btnMove_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            if (sender is UIElement el)
+            {
+                _protractorTouchId = e.TouchDevice.Id;
+                _isDragging = true;
+                _dragStartPoint = PointToScreen(e.GetTouchPoint(this).Position);
+
+                el.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (_isDragging && _protractorTouchId == e.TouchDevice.Id)
+            {
+                var currentScreenPoint = PointToScreen(e.GetTouchPoint(this).Position);
+                double offsetX = currentScreenPoint.X - _dragStartPoint.X;
+                double offsetY = currentScreenPoint.Y - _dragStartPoint.Y;
+
+                this.Left += offsetX;
+                this.Top += offsetY;
+
+                _dragStartPoint = currentScreenPoint;
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (_protractorTouchId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _protractorTouchId = null;
+
+                if (sender is UIElement el && e.TouchDevice.Captured == el)
+                    el.ReleaseTouchCapture(e.TouchDevice);
+
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_LostTouchCapture(object sender, TouchEventArgs e)
+        {
+            if (_protractorTouchId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _protractorTouchId = null;
             }
         }
 

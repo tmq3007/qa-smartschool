@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -196,7 +196,14 @@ namespace QASmartTouch.Forms
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
+            try { this.Owner?.Activate(); this.Owner?.Focus(); } catch { }
             this.Close();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            try { this.Owner?.Activate(); this.Owner?.Focus(); } catch { }
         }
     }
 }

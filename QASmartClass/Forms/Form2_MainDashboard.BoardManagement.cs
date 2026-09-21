@@ -41,11 +41,24 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                // Store line spacing and opacity for pattern creation
-                _currentLineSpacing = lineSpacing;
-                _currentLineOpacity = lineOpacity;
+                bool hasPattern = !string.IsNullOrWhiteSpace(pattern) && !pattern.Equals("none", StringComparison.OrdinalIgnoreCase);
+
+                // Store line spacing, opacity, color and pattern for pattern creation & board persistence
+                _currentBackgroundColor = color ?? "#3D6D64";
+                _currentBackgroundPattern = hasPattern ? pattern : null;
+                _currentLineSpacing = lineSpacing > 0 ? lineSpacing : 40;
+                _currentLineOpacity = lineOpacity > 0 ? lineOpacity : 10;
                 
-                // âœ¨ Remove old background rectangles if any
+                // Cập nhật ngay lập tức vào CurrentBoard của BoardManager nếu có
+                if (_boardManager?.CurrentBoard != null)
+                {
+                    _boardManager.CurrentBoard.BackgroundColorHex = _currentBackgroundColor;
+                    _boardManager.CurrentBoard.BackgroundPattern = _currentBackgroundPattern;
+                    _boardManager.CurrentBoard.LineSpacing = _currentLineSpacing;
+                    _boardManager.CurrentBoard.LineOpacity = _currentLineOpacity;
+                }
+                
+                // ✨ Remove old background rectangles if any
                 var oldBgRects = MainInteractiveBoard.Children.OfType<Rectangle>()
                     .Where(r => r.Tag?.ToString() == "BackgroundLayer")
                     .ToList();
@@ -54,12 +67,17 @@ namespace QASmartTouch.Forms
                     MainInteractiveBoard.Children.Remove(rect);
                 }
                 
-                if (!string.IsNullOrEmpty(pattern))
+                if (hasPattern)
                 {
+                    double initWidth = MainInteractiveBoard.ActualWidth > 0 ? MainInteractiveBoard.ActualWidth : 1920;
+                    double initHeight = MainInteractiveBoard.ActualHeight > 0 ? MainInteractiveBoard.ActualHeight : 1080;
+
                     // Create background color rectangle with dynamic bindings
                     var bgRect = new Rectangle
                     {
                         Tag = "BackgroundLayer",
+                        Width = initWidth,
+                        Height = initHeight,
                         // ✅ QC_4.2_GRID_PROTECT (G-1): Grid không bao giờ nhận touch/click
                         IsHitTestVisible = false
                     };
@@ -89,6 +107,8 @@ namespace QASmartTouch.Forms
                     {
                         Fill = CreatePatternBrushByName(pattern),
                         Tag = "BackgroundLayer",
+                        Width = initWidth,
+                        Height = initHeight,
                         // ✅ QC_4.2_GRID_PROTECT (G-1): Grid không bao giờ nhận touch/click
                         IsHitTestVisible = false
                     };
@@ -252,66 +272,6 @@ namespace QASmartTouch.Forms
             }
         }
 
-        /// <summary>
-        /// âœ¨ Create combined brush with background color + pattern overlay
-        /// </summary>
-        private Brush CreateCombinedBrush(string? backgroundColor, string pattern)
-        {
-            // Get the pattern brush first to determine viewport size
-            var patternBrush = CreatePatternBrushByName(pattern);
-            
-            // Determine viewport size from pattern
-            Rect viewport = new Rect(0, 0, 20, 20); // Default
-            if (patternBrush is DrawingBrush pb)
-            {
-                viewport = pb.Viewport;
-            }
-            
-            // Create a new DrawingBrush for the combined result
-            var combinedBrush = new DrawingBrush
-            {
-                TileMode = TileMode.Tile,
-                Viewport = viewport,
-                ViewportUnits = BrushMappingMode.Absolute
-            };
-            
-            var drawingGroup = new DrawingGroup();
-            
-            // Layer 1: Background color (full tile)
-            if (!string.IsNullOrEmpty(backgroundColor))
-            {
-                try
-                {
-                    var color = (Color)ColorConverter.ConvertFromString(backgroundColor);
-                    drawingGroup.Children.Add(new GeometryDrawing
-                    {
-                        Brush = new SolidColorBrush(color),
-                        Geometry = new RectangleGeometry(viewport)
-                    });
-                }
-                catch
-                {
-                    // Fallback to white if color parsing fails
-                    drawingGroup.Children.Add(new GeometryDrawing
-                    {
-                        Brush = Brushes.White,
-                        Geometry = new RectangleGeometry(viewport)
-                    });
-                }
-            }
-            
-            // Layer 2: Pattern overlay
-            if (patternBrush is DrawingBrush patternDb && patternDb.Drawing is DrawingGroup patternGroup)
-            {
-                foreach (var child in patternGroup.Children)
-                {
-                    drawingGroup.Children.Add(child);
-                }
-            }
-            
-            combinedBrush.Drawing = drawingGroup;
-            return combinedBrush;
-        }
 
         /// <summary>
         /// ✨ Refactor: Tách logic tạo pattern thành method riêng
@@ -959,6 +919,212 @@ namespace QASmartTouch.Forms
             {
                 // Top half = Student 1, Bottom half = Student 2
                 return position.Y < MainInteractiveBoard.ActualHeight / 2 ? _student1 : _student2;
+            }
+        }
+
+        #endregion
+
+        #region Board Management - Page Switching & Isolation
+
+        /// <summary>
+        /// ✅ GIAI ĐOẠN 2: Xử lý chuyển trang/bảng an toàn, cách ly Undo/Redo và đồng bộ SelectionManager
+        /// </summary>
+        private void OnBoardSwitched(object? sender, QASmartTouch.Managers.BoardSwitchEventArgs e)
+        {
+            try
+            {
+                // 1. Đảm bảo toàn bộ Selection UI được reset sạch sẽ
+                _selectionManager?.DeselectAll();
+                _selectionBox?.Detach();
+                _contextToolbar?.Hide();
+                _thicknessPicker?.Hide();
+                _colorPicker?.Hide();
+                _moreMenu?.Hide();
+
+                // 2. Phục hồi ngăn xếp Undo / Redo của trang mới
+                if (e.NewBoard != null)
+                {
+                    _undoStack = new System.Collections.Generic.Stack<UndoRedoAction>(e.NewBoard.UndoStack.Reverse());
+                    _redoStack = new System.Collections.Generic.Stack<UndoRedoAction>(e.NewBoard.RedoStack.Reverse());
+                    UpdateButtonStates();
+
+                    // 3. Tái tạo nền bảng của trang mới
+                    ApplyCanvasBackground(
+                        e.NewBoard.BackgroundColorHex ?? "#3D6D64",
+                        e.NewBoard.BackgroundPattern,
+                        e.NewBoard.LineSpacing > 0 ? e.NewBoard.LineSpacing : 40,
+                        e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 10
+                    );
+                }
+                else
+                {
+                    _undoStack.Clear();
+                    _redoStack.Clear();
+                    UpdateButtonStates();
+                }
+
+                // 4. Đồng bộ lại toàn bộ đối tượng của trang mới vào SelectionManager
+                RefreshSelectableObjects();
+
+                // 5. Kích hoạt lại tương tác kéo thả cho các khối 3D trên trang mới
+                foreach (UIElement child in MainInteractiveBoard.Children)
+                {
+                    if (child is Canvas canvas && canvas.Tag?.ToString() == "3DShape")
+                    {
+                        Enable3DShapeDragging(canvas);
+                    }
+                }
+
+                // 6. Hiển thị thông báo trạng thái
+                ShowSmartStatusBadge($"📋 Đang hiển thị: {e.NewBoard?.Name ?? "Bảng mới"}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error in OnBoardSwitched: {ex.Message}");
+            }
+        }
+
+        private void OnBoardDeleted(object? sender, QASmartTouch.Managers.BoardEventArgs e)
+        {
+            UpdateButtonStates();
+            ShowSmartStatusBadge($"🗑️ Đã xóa: {e.Board.Name}");
+        }
+
+        #endregion
+
+        #region Lecture Save / Load (.qasc)
+
+        private string? _currentLectureFilePath = null;
+
+        /// <summary>
+        /// Đường dẫn tệp bài giảng .qasc hiện tại (null nếu chưa lưu)
+        /// </summary>
+        public string? CurrentLectureFilePath => _currentLectureFilePath;
+
+        /// <summary>
+        /// Lưu bài giảng hiện tại (.qasc)
+        /// Nếu filePath rỗng và chưa từng lưu -> mở SaveFileDialog
+        /// </summary>
+        public bool SaveCurrentLecture(string? customFilePath = null)
+        {
+            if (_boardManager == null)
+            {
+                MessageBox.Show("Bảng vẽ chưa được khởi tạo đầy đủ.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            string? targetPath = customFilePath;
+
+            string defaultDir = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "QA SmartClass",
+                "BaiGiang");
+
+            if (!System.IO.Directory.Exists(defaultDir))
+            {
+                System.IO.Directory.CreateDirectory(defaultDir);
+            }
+
+            if (string.IsNullOrWhiteSpace(targetPath))
+            {
+                if (!string.IsNullOrWhiteSpace(_currentLectureFilePath))
+                {
+                    targetPath = _currentLectureFilePath;
+                }
+                else
+                {
+                    var saveDialog = new Microsoft.Win32.SaveFileDialog
+                    {
+                        Title = "Lưu bài giảng QA SmartClass",
+                        Filter = "Bài giảng QA SmartClass (*.qasc)|*.qasc",
+                        DefaultExt = ".qasc",
+                        InitialDirectory = defaultDir,
+                        FileName = $"BaiGiang_{DateTime.Now:yyyyMMdd_HHmm}.qasc"
+                    };
+
+                    if (saveDialog.ShowDialog(this) != true)
+                    {
+                        return false;
+                    }
+
+                    targetPath = saveDialog.FileName;
+                }
+            }
+
+            try
+            {
+                string title = System.IO.Path.GetFileNameWithoutExtension(targetPath);
+                bool success = QASmartTouch.WhiteboardCore.IO.SaveLoadService.SaveLecture(_boardManager, targetPath, title);
+
+                if (success)
+                {
+                    _currentLectureFilePath = targetPath;
+                    RecentFilesService.Instance.AddFile(targetPath, title);
+
+                    // Hiển thị thông báo xác nhận vị trí lưu và cho phép mở thư mục ngay
+                    var msgResult = MessageBox.Show(
+                        $"Đã lưu bài giảng thành công!\n\n📁 Vị trí lưu:\n{targetPath}\n\nBạn có muốn mở thư mục chứa tệp này không?",
+                        "Lưu bài giảng",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Information);
+
+                    if (msgResult == MessageBoxResult.Yes)
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "explorer.exe",
+                            Arguments = $"/select,\"{targetPath}\"",
+                            UseShellExecute = true
+                        });
+                    }
+
+                    return true;
+                }
+                else
+                {
+                    MessageBox.Show("Không thể lưu bài giảng. Vui lòng kiểm tra lại quyền ghi tệp tin.", "Lỗi lưu tệp", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi lưu bài giảng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+            finally
+            {
+                try { this.Activate(); } catch { }
+            }
+        }
+
+        /// <summary>
+        /// Mở bài giảng từ tệp .qasc
+        /// </summary>
+        public bool LoadLecture(string filePath)
+        {
+            if (_boardManager == null || !System.IO.File.Exists(filePath)) return false;
+
+            try
+            {
+                var manifest = QASmartTouch.WhiteboardCore.IO.SaveLoadService.LoadLecture(_boardManager, filePath);
+                if (manifest != null)
+                {
+                    _currentLectureFilePath = filePath;
+                    RecentFilesService.Instance.AddFile(filePath, manifest.Title);
+                    UpdateButtonStates();
+                    ShowSmartStatusBadge($"📂 Đã mở bài giảng: {System.IO.Path.GetFileName(filePath)}");
+                    return true;
+                }
+                else
+                {
+                    MessageBox.Show("Không thể đọc tệp bài giảng. Tệp có thể bị hỏng hoặc không đúng định dạng .qasc.", "Lỗi mở tệp", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi mở bài giảng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
             }
         }
 

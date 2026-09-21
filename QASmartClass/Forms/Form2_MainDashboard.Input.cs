@@ -46,7 +46,7 @@ namespace QASmartTouch.Forms
                 {
                     if (fe.Tag is string tag)
                     {
-                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "3DShapeContainer" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel")
+                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel")
                         {
                             return true;
                         }
@@ -673,7 +673,9 @@ namespace QASmartTouch.Forms
             }
             
             // Paste mode - if clipboard has content, paste at clicked position
-            if (_selectionManager?.HasClipboardContent() == true && e.LeftButton == MouseButtonState.Pressed)
+            // QC_4.2_PASTE_GUARD: Chỉ xử lý dán khi đang ở Chế độ Chọn (Selection Mode) và KHÔNG ở chế độ vẽ/tẩy
+            if (_objectSelectionMode && !_drawingEnabled && !_eraserEnabled && !_shapeDrawingEnabled &&
+                _selectionManager?.HasClipboardContent() == true && e.LeftButton == MouseButtonState.Pressed)
             {
                 Point clickPoint = e.GetPosition(MainInteractiveBoard);
                 var pasted = _selectionManager?.PasteAtPosition(clickPoint);
@@ -682,17 +684,21 @@ namespace QASmartTouch.Forms
                 {
                     System.Diagnostics.Debug.WriteLine($"📋 Pasted at ({clickPoint.X:F0}, {clickPoint.Y:F0})");
                     
+                    if (pasted.Element is Canvas canvas)
+                    {
+                        Enable3DShapeDragging(canvas);
+                    }
+
                     // Add to undo stack
                     RecordAddAction(pasted.Element, $"Paste {pasted.Type}");
                     
                     // Visual feedback
                     AnimateFadeIn(pasted.Element);
-                    
-                    // Auto-clear clipboard after paste to exit paste mode
-                    _selectionManager?.ClearClipboard();
-                    System.Diagnostics.Debug.WriteLine("✅ Clipboard cleared - Paste mode ended");
                 }
                 
+                // Auto-clear clipboard after paste attempt to exit paste mode safely
+                _selectionManager?.ClearClipboard();
+                System.Diagnostics.Debug.WriteLine("✅ Clipboard cleared - Paste mode ended");
                 return;
             }
             
@@ -871,6 +877,8 @@ namespace QASmartTouch.Forms
                 
                 // Add first point
                 _currentStroke.Points.Add(_lastPoint);
+                // ✨ DOT SUPPORT: Thêm ngay điểm vi mô (+0.01px) để WPF render ngay lập tức một chấm tròn hoàn hảo
+                _currentStroke.Points.Add(new Point(_lastPoint.X + 0.01, _lastPoint.Y));
                 
                 // Add stroke to canvas
                 MainInteractiveBoard.Children.Add(_currentStroke);
@@ -966,11 +974,20 @@ namespace QASmartTouch.Forms
                 // Only add point if it's far enough from last point (reduces jitter)
                 if (_strokeOptimizer != null && _strokeOptimizer.ShouldAddPoint(currentPoint, _lastPoint))
                 {
+                    // ✨ Nếu trước đó mới có 1 điểm gốc và 1 điểm vi mô phục vụ hiển thị dấu chấm tức thì,
+                    // thay thế điểm vi mô đó bằng điểm di chuyển thực tế đầu tiên.
+                    if (_tempStrokePoints.Count == 1 && _currentStroke.Points.Count == 2)
+                    {
+                        _currentStroke.Points[1] = currentPoint;
+                    }
+                    else
+                    {
+                        // Add point to current stroke for real-time preview
+                        _currentStroke.Points.Add(currentPoint);
+                    }
+
                     // Add to temporary collection
                     _tempStrokePoints.Add(currentPoint);
-                    
-                    // Add point to current stroke for real-time preview
-                    _currentStroke.Points.Add(currentPoint);
                     
                     _lastPoint = currentPoint;
                 }
@@ -1060,6 +1077,13 @@ namespace QASmartTouch.Forms
             // Stop drawing and add to undo stack
             else if (_isDrawing && _currentStroke != null)
             {
+                // ✨ DOT FALLBACK: Đảm bảo nếu nét vẽ chỉ có 1 điểm duy nhất thì luôn có điểm vi mô thứ hai để WPF render
+                if (_currentStroke.Points.Count == 1)
+                {
+                    Point pt = _currentStroke.Points[0];
+                    _currentStroke.Points.Add(new Point(pt.X + 0.01, pt.Y));
+                }
+
                 // ✨ BALANCED OPTIMIZATION: Apply RDP Decimation + light smoothing
                 // Reduces 40-60% redundant points while preserving natural stroke curvature
                 if (_strokeOptimizer != null && _tempStrokePoints.Count > 2)
@@ -1251,8 +1275,9 @@ namespace QASmartTouch.Forms
             _selectionToolEnabled = false; // Disable selection
             _objectSelectionMode = false; // ✅ G3.1: Tắt chế độ chọn vùng
             
-            // ✅ G3.1: Hủy chọn vùng đang tồn tại khi chuyển sang vẽ
+            // ✅ G3.1: Hủy chọn vùng đang tồn tại khi chuyển sang vẽ & xóa clipboard dán
             _selectionManager?.DeselectAll();
+            _selectionManager?.ClearClipboard();
             HideSmartStatusBadge(); // ✅ G4.2: Ẩn chỉ dẫn khi đổi công cụ
             
             // Change cursor to indicate drawing mode (both board and parent scroll viewer)
@@ -1298,8 +1323,9 @@ namespace QASmartTouch.Forms
             System.Diagnostics.Debug.WriteLine($"   _eraserEnabled = {_eraserEnabled}");
             System.Diagnostics.Debug.WriteLine($"   _objectSelectionMode = {_objectSelectionMode}");
             
-            // Deselect any selected objects and hide selection UI
+            // Deselect any selected objects, hide selection UI & clear clipboard
             _selectionManager?.DeselectAll();
+            _selectionManager?.ClearClipboard();
             HideSmartStatusBadge(); // ✅ G4.2: Ẩn chỉ dẫn khi đổi công cụ
             
             // Create visual eraser cursor preview
@@ -1489,6 +1515,8 @@ namespace QASmartTouch.Forms
             
             _textToolEnabled = false; // Disable text tool
             _selectionToolEnabled = false; // Disable selection
+            _selectionManager?.DeselectAll();
+            _selectionManager?.ClearClipboard();
             
             // Set TouchHandler to None tool mode to prevent drawing freehand lines when drawing shapes
             if (_touchHandler != null)
@@ -8166,6 +8194,8 @@ namespace QASmartTouch.Forms
             _activeRulerTool.Owner = this;
             _activeRulerTool.Closed += (s, e) => { _activeRulerTool = null; };
             _activeRulerTool.Show(); // Use Show() not ShowDialog() to allow interaction with main window
+            _activeRulerTool.Activate();
+            _activeRulerTool.Focus();
         }
 
         private void OpenProtractorTool()
@@ -8183,6 +8213,8 @@ namespace QASmartTouch.Forms
             _activeProtractorTool.Owner = this;
             _activeProtractorTool.Closed += (s, e) => { _activeProtractorTool = null; };
             _activeProtractorTool.Show(); // Use Show() not ShowDialog() to allow interaction with main window
+            _activeProtractorTool.Activate();
+            _activeProtractorTool.Focus();
         }
 
         private void OpenSetSquareTool()
@@ -8199,6 +8231,8 @@ namespace QASmartTouch.Forms
             _activeSetSquareTool.Owner = this;
             _activeSetSquareTool.Closed += (s, e) => { _activeSetSquareTool = null; };
             _activeSetSquareTool.Show(); // Use Show() not ShowDialog() to allow interaction with main window
+            _activeSetSquareTool.Activate();
+            _activeSetSquareTool.Focus();
         }
 
         private void OpenCompassTool()
@@ -8224,6 +8258,8 @@ namespace QASmartTouch.Forms
             _activeCompassTool3D.Closed += (s, e) => { _activeCompassTool3D = null; };
             
             _activeCompassTool3D.Show(); // Use Show() not ShowDialog() to allow interaction with main window
+            _activeCompassTool3D.Activate();
+            _activeCompassTool3D.Focus();
         }
 
         private void OpenCompassTool3D()
@@ -8241,6 +8277,8 @@ namespace QASmartTouch.Forms
             _activeCompassTool3D.Closed += (s, e) => { _activeCompassTool3D = null; };
             
             _activeCompassTool3D.Show(); // Use Show() not ShowDialog() to allow interaction with main window
+            _activeCompassTool3D.Activate();
+            _activeCompassTool3D.Focus();
         }
 
         private void ImportImage()

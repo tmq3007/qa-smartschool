@@ -338,9 +338,10 @@ namespace QASmartTouch.Forms
             var currentSelection = _selectionManager.GetSelectedObjects();
             bool isClickOnSelectedObject = hitObject != null && currentSelection != null && currentSelection.Contains(hitObject);
 
-            // ✅ FIX CẢM ỨNG: Nếu chạm vào bất kỳ đâu bên trong khung SelectionBox đang hiển thị,
-            // xác định chắc chắn là thao tác kéo di chuyển vùng chọn hiện tại (kể cả chạm vào khoảng trống giữa các nét)
-            if (!isClickOnSelectedObject && _selectionBox != null && _selectionBox.Visibility == Visibility.Visible && _selectionBox.AttachedObject != null)
+            // ✅ FIX CẢM ỨNG: Nếu chạm vào khoảng trống bên trong khung SelectionBox đang hiển thị (hitObject == null),
+            // xác định là thao tác kéo di chuyển vùng chọn hiện tại.
+            // Ngược lại, nếu chạm trúng một đối tượng khác (hitObject != null), ưu tiên chọn đối tượng đó thay vì bị cướp quyền!
+            if (!isClickOnSelectedObject && hitObject == null && _selectionBox != null && _selectionBox.Visibility == Visibility.Visible && _selectionBox.AttachedObject != null)
             {
                 if (_selectionBox.AttachedObject.Bounds.Contains(clickPoint))
                 {
@@ -868,22 +869,59 @@ namespace QASmartTouch.Forms
         // ContextToolbar button handlers
         private void OnToolbarCopyClicked(object? sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"🔍 OnToolbarCopyClicked called");
-            System.Diagnostics.Debug.WriteLine($"   _selectionManager = {(_selectionManager != null ? "EXISTS" : "NULL")}");
-            System.Diagnostics.Debug.WriteLine($"   SelectedObject = {(_selectionManager?.SelectedObject != null ? _selectionManager.SelectedObject.Type.ToString() : "NULL")}");
-            
-            var copied = _selectionManager?.CopySelectedObject();
-            if (copied != null)
+            System.Diagnostics.Debug.WriteLine($"🔍 OnToolbarCopyClicked called (Instant Duplication)");
+            if (_selectionManager == null) return;
+
+            var duplicated = _selectionManager.DuplicateSelectedObjects(30, 30);
+            if (duplicated != null && duplicated.Count > 0)
             {
-                System.Diagnostics.Debug.WriteLine($"✅ Copied to clipboard: {copied.Type} - Click anywhere to paste");
-                
-                // Deselect current object so user can click to paste
-                _selectionManager?.DeselectAll();
+                System.Diagnostics.Debug.WriteLine($"✅ Duplicated {duplicated.Count} objects");
+
+                // 1. Đăng ký tương tác đặc thù (VD: 3D shapes Canvas) & Animation
+                foreach (var obj in duplicated)
+                {
+                    if (obj.Element is Canvas canvas)
+                    {
+                        Enable3DShapeDragging(canvas);
+                    }
+                    AnimateFadeIn(obj.Element);
+                }
+
+                // 2. Ghi nhận Undo / Redo cho thao tác nhân bản
+                if (duplicated.Count == 1)
+                {
+                    RecordAddAction(duplicated[0].Element, $"Duplicate {duplicated[0].Type}");
+                }
+                else
+                {
+                    var batchAction = new UndoRedoAction
+                    {
+                        Type = ActionType.Batch,
+                        Description = $"Duplicate {duplicated.Count} elements"
+                    };
+                    foreach (var obj in duplicated)
+                    {
+                        if (obj.Element != null)
+                        {
+                            batchAction.BatchActions.Add(new UndoRedoAction
+                            {
+                                Type = ActionType.Add,
+                                Element = obj.Element,
+                                Parent = MainInteractiveBoard,
+                                Description = $"Duplicate {obj.Type}"
+                            });
+                        }
+                    }
+                    RecordAction(batchAction);
+                }
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Copy failed: No object copied");
+                System.Diagnostics.Debug.WriteLine($"❌ Duplication failed: No object selected or unsupported element");
             }
+
+            // 3. Luôn dọn dẹp clipboard để không bao giờ bị rơi vào trạng thái Paste-trap click hijacking
+            _selectionManager.ClearClipboard();
         }
 
         private async void OnToolbarRecognizeHandwritingClicked(object? sender, EventArgs e)
@@ -1368,10 +1406,41 @@ namespace QASmartTouch.Forms
         {
             if (_contextToolbar != null && _selectionManager?.SelectedObject != null)
             {
-                var pickerPosition = new Point(
-                    Canvas.GetLeft(_contextToolbar) + 280, // Position next to thickness button
-                    Canvas.GetTop(_contextToolbar) - 150    // Above toolbar
-                );
+                // Toggle if already visible
+                if (_thicknessPicker != null && _thicknessPicker.Visibility == Visibility.Visible)
+                {
+                    _thicknessPicker.Hide();
+                    return;
+                }
+
+                double boardWidth = MainInteractiveBoard.ActualWidth > 0 ? MainInteractiveBoard.ActualWidth : 1920;
+                double boardHeight = MainInteractiveBoard.ActualHeight > 0 ? MainInteractiveBoard.ActualHeight : 1080;
+
+                double toolbarLeft = Canvas.GetLeft(_contextToolbar);
+                double toolbarTop = Canvas.GetTop(_contextToolbar);
+                if (double.IsNaN(toolbarLeft)) toolbarLeft = 100;
+                if (double.IsNaN(toolbarTop)) toolbarTop = 100;
+
+                double toolbarHeight = _contextToolbar.ActualHeight > 0 ? _contextToolbar.ActualHeight : 48;
+
+                double pickerWidth = (_thicknessPicker?.ActualWidth > 0) ? _thicknessPicker.ActualWidth : 220;
+                double pickerHeight = (_thicknessPicker?.ActualHeight > 0) ? _thicknessPicker.ActualHeight : 140;
+
+                // Center above the toolbar / thickness button (btnThickness is centered around X = 66 within toolbar)
+                double targetX = toolbarLeft + 66 - (pickerWidth / 2.0);
+                double posX = Math.Max(10, Math.Min(targetX, boardWidth - pickerWidth - 10));
+
+                double posY;
+                if (toolbarTop - pickerHeight - 10 >= 10)
+                {
+                    posY = toolbarTop - pickerHeight - 10;
+                }
+                else
+                {
+                    posY = toolbarTop + toolbarHeight + 10;
+                }
+
+                var pickerPosition = new Point(posX, posY);
                 
                 // Set current thickness before showing
                 if (_thicknessPicker != null)
@@ -1384,7 +1453,7 @@ namespace QASmartTouch.Forms
                 _colorPicker?.Hide();
                 _moreMenu?.Hide();
                 
-                System.Diagnostics.Debug.WriteLine($"📏 Thickness picker opened with value: {_selectionManager.SelectedObject.StrokeThickness}px");
+                System.Diagnostics.Debug.WriteLine($"📏 Thickness picker opened with value: {_selectionManager.SelectedObject.StrokeThickness}px at ({posX:F0}, {posY:F0})");
             }
         }
 

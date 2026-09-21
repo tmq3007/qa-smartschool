@@ -107,20 +107,13 @@ namespace QASmartClass.WhiteboardCore.History
             if (element == null) return;
 
             // Lọc nét chạm nhỏ (accidental touch)
+            // LƯU Ý: Tuyệt đối không lọc dấu chấm chủ ý (Dot) của giáo viên/học sinh!
             if (element is System.Windows.Shapes.Polyline polyline)
             {
                 if (polyline.Points != null && polyline.Points.Count > 0)
                 {
-                    double minX = double.MaxValue, minY = double.MaxValue;
-                    double maxX = double.MinValue, maxY = double.MinValue;
-                    foreach (var pt in polyline.Points)
-                    {
-                        if (pt.X < minX) minX = pt.X;
-                        if (pt.X > maxX) maxX = pt.X;
-                        if (pt.Y < minY) minY = pt.Y;
-                        if (pt.Y > maxY) maxY = pt.Y;
-                    }
-                    if (polyline.Points.Count == 1 || ((maxX - minX) <= 5.0 && (maxY - minY) <= 5.0))
+                    bool isDot = polyline.Points.Count == 2 && Math.Abs(polyline.Points[1].X - polyline.Points[0].X - 0.01) < 0.005 && polyline.Points[1].Y == polyline.Points[0].Y;
+                    if (!isDot && description != null && description.Contains("Accidental", StringComparison.OrdinalIgnoreCase))
                     {
                         System.Diagnostics.Debug.WriteLine("Ignoring accidental touch Polyline in Undo/Redo registration");
                         return;
@@ -129,10 +122,12 @@ namespace QASmartClass.WhiteboardCore.History
             }
             else if (element is System.Windows.Shapes.Path path)
             {
-                if (path.Data != null)
+                bool isDot = path.Tag is System.Windows.Media.PointCollection pts && pts.Count == 2 && Math.Abs(pts[1].X - pts[0].X - 0.01) < 0.005;
+                if (!isDot && path.Data != null)
                 {
                     var bounds = path.Data.Bounds;
-                    if (bounds.Width <= 5.0 && bounds.Height <= 5.0)
+                    if (bounds.Width <= 5.0 && bounds.Height <= 5.0 &&
+                        description != null && description.Contains("Accidental", StringComparison.OrdinalIgnoreCase))
                     {
                         System.Diagnostics.Debug.WriteLine("Ignoring accidental touch Path in Undo/Redo registration");
                         return;

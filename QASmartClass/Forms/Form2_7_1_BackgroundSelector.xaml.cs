@@ -220,14 +220,14 @@ namespace QASmartTouch.Forms
                 message += $"• Màu nền: {GetColorDisplayName(SelectedColor)}\n";
                 message += $"• Mẫu nền: {GetPatternDisplayName(SelectedPattern)}";
                 
-                MessageBox.Show(message, 
+                MessageBox.Show(this, message, 
                                "Thành công", 
                                MessageBoxButton.OK, 
                                MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi lưu cài đặt:\n{ex.Message}", 
+                MessageBox.Show(this, $"Lỗi khi lưu cài đặt:\n{ex.Message}", 
                                "Lỗi", 
                                MessageBoxButton.OK, 
                                MessageBoxImage.Error);

@@ -479,6 +479,13 @@ namespace QASmartTouch.Handlers
 
                     if (stroke != null)
                     {
+                        // ✨ DOT FALLBACK: Đảm bảo nếu stroke chỉ có 1 điểm duy nhất thì luôn thêm điểm vi mô thứ 2
+                        if (stroke.Points.Count == 1)
+                        {
+                            Point pt = stroke.Points[0];
+                            stroke.Points.Add(new Point(pt.X + 0.01, pt.Y));
+                        }
+
                         var smoothPath = _strokeService.ConvertToSmoothPath(stroke);
                         if (smoothPath != null)
                         {

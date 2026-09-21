@@ -8,8 +8,11 @@ namespace QASmartTouch.Forms
 {
     public partial class Form2_8_SubMenuMoreExtended : Window
     {
-        public Form2_8_SubMenuMoreExtended()
+        private Form2_MainDashboard? _mainDashboard;
+
+        public Form2_8_SubMenuMoreExtended(Form2_MainDashboard? mainDashboard = null)
         {
+            _mainDashboard = mainDashboard;
             InitializeComponent();
             if (btnClose != null)
             {
@@ -84,19 +87,66 @@ namespace QASmartTouch.Forms
             WindowHelper.ShowChildDialog(settingsWindow);
         }
 
+        private Form2_MainDashboard? GetMainDashboard()
+        {
+            return _mainDashboard
+                ?? (this.Owner as Form2_MainDashboard)
+                ?? (Application.Current as App)?._whiteboardShell
+                ?? Application.Current.Windows.OfType<Form2_MainDashboard>().FirstOrDefault()
+                ?? (Application.Current.MainWindow as Form2_MainDashboard);
+        }
+
+        private void btnOpenLecture_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+            var mainWindow = GetMainDashboard();
+            if (mainWindow == null)
+            {
+                MessageBox.Show("Không tìm thấy bảng vẽ để mở bài giảng.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            string defaultDir = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "QA SmartClass",
+                "BaiGiang");
+            if (!System.IO.Directory.Exists(defaultDir))
+            {
+                System.IO.Directory.CreateDirectory(defaultDir);
+            }
+
+            var openDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Mở tệp bài giảng QA SmartClass",
+                Filter = "Bài giảng QA SmartClass (*.qasc)|*.qasc|Tất cả tệp (*.*)|*.*",
+                DefaultExt = ".qasc",
+                InitialDirectory = defaultDir
+            };
+
+            if (openDialog.ShowDialog(mainWindow) == true)
+            {
+                mainWindow.LoadLecture(openDialog.FileName);
+            }
+            mainWindow.Activate();
+        }
+
         private void btnRecentFiles_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+            var mainWindow = GetMainDashboard();
 
             var dialog = new RecentFilesDialog();
-            dialog.Owner = Application.Current.MainWindow;
+            dialog.Owner = (Window?)mainWindow ?? Application.Current.MainWindow;
             if (dialog.ShowDialog() == true && !string.IsNullOrEmpty(dialog.SelectedFilePath))
             {
-                // File path đã chọn — MainDashboard sẽ xử lý mở file
-                // Thông qua hệ thống file open hiện tại
                 string ext = System.IO.Path.GetExtension(dialog.SelectedFilePath).ToLowerInvariant();
 
-                if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".gif")
+                if (ext == ".qasc" && mainWindow != null)
+                {
+                    mainWindow.LoadLecture(dialog.SelectedFilePath);
+                    mainWindow.Activate();
+                }
+                else if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".gif")
                 {
                     // Mở ảnh: chèn vào canvas
                     MessageBox.Show($"Đã chọn file ảnh:\n{dialog.SelectedFilePath}\n\nFile sẽ được chèn vào bảng trắng.",
@@ -139,6 +189,16 @@ namespace QASmartTouch.Forms
             }
         }
 
+        private void btnLectureLibrary_Click(object sender, RoutedEventArgs e)
+        {
+            // Close this menu first to avoid z-order conflicts
+            this.Close();
+            
+            // Open Form3_1_LectureLibrary
+            var lectureWindow = new Form3_1_LectureLibrary();
+            WindowHelper.ShowChildDialog(lectureWindow);
+        }
+
         private void btnVersionManager_Click(object sender, RoutedEventArgs e)
         {
             // Close this menu first to avoid z-order conflicts
@@ -158,41 +218,76 @@ namespace QASmartTouch.Forms
 
         private void btnSaveLecture_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Save current lecture with dialog
-            var result = MessageBox.Show("Bạn có muốn lưu bài giảng hiện tại?", 
-                                       "Lưu bài giảng", 
-                                       MessageBoxButton.YesNo, 
-                                       MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
+            this.Close();
+            var mainWindow = GetMainDashboard();
+            if (mainWindow != null)
             {
-                MessageBox.Show("Đã lưu bài giảng thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                mainWindow.SaveCurrentLecture();
+                mainWindow.Activate();
             }
+            else
+            {
+                MessageBox.Show("Không tìm thấy bảng vẽ để lưu bài giảng.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void btnSaveLectureAs_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+            var mainWindow = GetMainDashboard();
+            if (mainWindow == null)
+            {
+                MessageBox.Show("Không tìm thấy bảng vẽ để lưu bài giảng.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            string defaultDir = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "QA SmartClass",
+                "BaiGiang");
+            if (!System.IO.Directory.Exists(defaultDir))
+            {
+                System.IO.Directory.CreateDirectory(defaultDir);
+            }
+
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Lưu bài giảng thành tệp mới",
+                Filter = "Bài giảng QA SmartClass (*.qasc)|*.qasc",
+                DefaultExt = ".qasc",
+                InitialDirectory = defaultDir,
+                FileName = $"BaiGiang_{DateTime.Now:yyyyMMdd_HHmm}.qasc"
+            };
+
+            if (saveDialog.ShowDialog(mainWindow) == true)
+            {
+                mainWindow.SaveCurrentLecture(saveDialog.FileName);
+            }
+            mainWindow.Activate();
         }
 
         private void btnShareLecture_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Show share options (QR code, cloud, email)
-            MessageBox.Show("Chức năng chia sẻ:\n• QR Code\n• Upload Cloud\n• Gửi Email\n• Xuất PDF", 
-                          "Chia sẻ bài giảng", 
-                          MessageBoxButton.OK, 
-                          MessageBoxImage.Information);
+            // Show share options dialog or directly open export dialog
+            this.Close();
+            var mainWindow = GetMainDashboard();
+            if (mainWindow != null)
+            {
+                var exportDialog = new Form2_20_ExportLectureDialog(mainWindow);
+                WindowHelper.ShowChildDialog(exportDialog);
+                mainWindow.Activate();
+            }
         }
 
         private void btnExportBoard_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
-
-            // Lấy canvas từ MainDashboard
-            var mainWindow = Application.Current.MainWindow as Form2_MainDashboard;
-            var canvas = mainWindow?.FindName("MainInteractiveBoard") as System.Windows.Controls.Canvas;
-            if (canvas != null)
+            var mainWindow = GetMainDashboard();
+            if (mainWindow != null)
             {
-                Services.CanvasExportService.ShowExportDialog(canvas);
-            }
-            else
-            {
-                MessageBox.Show("Không tìm thấy bảng trắng để xuất.", "Lỗi",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                var exportDialog = new Form2_20_ExportLectureDialog(mainWindow);
+                WindowHelper.ShowChildDialog(exportDialog);
+                mainWindow.Activate();
             }
         }
 
@@ -201,7 +296,7 @@ namespace QASmartTouch.Forms
             this.Close();
 
             // Lấy canvas từ MainDashboard
-            var mainWindow = Application.Current.MainWindow as Form2_MainDashboard;
+            var mainWindow = GetMainDashboard();
             var canvas = mainWindow?.FindName("MainInteractiveBoard") as System.Windows.Controls.Canvas;
             if (canvas != null)
             {
@@ -280,7 +375,7 @@ namespace QASmartTouch.Forms
             this.Close();
 
             // Mở Help Tour overlay trên MainDashboard
-            var mainWindow = Application.Current.MainWindow;
+            var mainWindow = (Window?)GetMainDashboard() ?? Application.Current.MainWindow;
             if (mainWindow != null)
             {
                 var tour = new HelpTourOverlay(mainWindow);

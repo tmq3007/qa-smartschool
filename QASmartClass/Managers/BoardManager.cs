@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using QASmartTouch.Forms;
 
 namespace QASmartTouch.Managers
 {
@@ -73,6 +76,16 @@ namespace QASmartTouch.Managers
         public Func<UIElement, bool>? IsSystemElementPredicate { get; set; }
 
         /// <summary>
+        /// Callback executed right before the current board is saved during switch/save
+        /// </summary>
+        public Action<BoardState>? BeforeBoardSaved { get; set; }
+
+        /// <summary>
+        /// Callback executed right after a board is loaded
+        /// </summary>
+        public Action<BoardState>? AfterBoardLoaded { get; set; }
+
+        /// <summary>
         /// WP6: Unified System Element check for BoardManager operations
         /// </summary>
         public bool IsSystemElement(UIElement element)
@@ -88,6 +101,10 @@ namespace QASmartTouch.Managers
                 return true;
 
             if (element is FrameworkElement fe && fe.Tag?.ToString() == "EraserPreview")
+                return true;
+
+            // ✅ GIAI ĐOẠN 2: Lọc bỏ hình chữ nhật nền bảng để không gom nhầm vào đối tượng vẽ của người dùng
+            if (element is FrameworkElement feBg && feBg.Tag?.ToString() == "BackgroundLayer")
                 return true;
 
             if (Panel.GetZIndex(element) >= 10000) return true;
@@ -239,7 +256,15 @@ namespace QASmartTouch.Managers
                 newBoard.ObjectCount = newBoard.CanvasElements.Count;
             }
             
-            // Copy thumbnail
+            // Copy background settings & thumbnail
+            newBoard.BackgroundColorHex = sourceBoard.BackgroundColorHex;
+            newBoard.BackgroundPattern = sourceBoard.BackgroundPattern;
+            newBoard.LineSpacing = sourceBoard.LineSpacing;
+            newBoard.LineOpacity = sourceBoard.LineOpacity;
+            if (sourceBoard.UndoStack != null)
+            {
+                newBoard.UndoStack = new Stack<QASmartTouch.Forms.UndoRedoAction>(sourceBoard.UndoStack.Reverse());
+            }
             newBoard.ThumbnailImage = sourceBoard.ThumbnailImage;
             
             _boards.Add(newBoard);
@@ -253,13 +278,10 @@ namespace QASmartTouch.Managers
         }
         
         /// <summary>
-        /// Clones a UI element (simplified version)
+        /// Clones a UI element (with fallback for shapes and dynamic controls)
         /// </summary>
         private UIElement? CloneElement(UIElement source)
         {
-            // This is a simplified cloning approach
-            // For production, you'd need proper serialization/deserialization
-            
             try
             {
                 string xaml = System.Windows.Markup.XamlWriter.Save(source);
@@ -268,6 +290,116 @@ namespace QASmartTouch.Managers
             }
             catch
             {
+                try
+                {
+                    if (source is Polyline polyline)
+                    {
+                        var clone = new Polyline
+                        {
+                            Points = new PointCollection(polyline.Points),
+                            Stroke = polyline.Stroke?.Clone(),
+                            StrokeThickness = polyline.StrokeThickness,
+                            Fill = polyline.Fill?.Clone(),
+                            RenderTransform = polyline.RenderTransform?.Clone()
+                        };
+                        Canvas.SetLeft(clone, Canvas.GetLeft(polyline));
+                        Canvas.SetTop(clone, Canvas.GetTop(polyline));
+                        return clone;
+                    }
+                    if (source is Polygon polygon)
+                    {
+                        var clone = new Polygon
+                        {
+                            Points = new PointCollection(polygon.Points),
+                            Stroke = polygon.Stroke?.Clone(),
+                            StrokeThickness = polygon.StrokeThickness,
+                            Fill = polygon.Fill?.Clone(),
+                            RenderTransform = polygon.RenderTransform?.Clone()
+                        };
+                        Canvas.SetLeft(clone, Canvas.GetLeft(polygon));
+                        Canvas.SetTop(clone, Canvas.GetTop(polygon));
+                        return clone;
+                    }
+                    if (source is Path path)
+                    {
+                        var clone = new Path
+                        {
+                            Data = path.Data?.Clone(),
+                            Stroke = path.Stroke?.Clone(),
+                            StrokeThickness = path.StrokeThickness,
+                            Fill = path.Fill?.Clone(),
+                            RenderTransform = path.RenderTransform?.Clone()
+                        };
+                        Canvas.SetLeft(clone, Canvas.GetLeft(path));
+                        Canvas.SetTop(clone, Canvas.GetTop(path));
+                        return clone;
+                    }
+                    if (source is Rectangle rect)
+                    {
+                        var clone = new Rectangle
+                        {
+                            Width = rect.Width,
+                            Height = rect.Height,
+                            RadiusX = rect.RadiusX,
+                            RadiusY = rect.RadiusY,
+                            Stroke = rect.Stroke?.Clone(),
+                            StrokeThickness = rect.StrokeThickness,
+                            Fill = rect.Fill?.Clone(),
+                            RenderTransform = rect.RenderTransform?.Clone()
+                        };
+                        Canvas.SetLeft(clone, Canvas.GetLeft(rect));
+                        Canvas.SetTop(clone, Canvas.GetTop(rect));
+                        return clone;
+                    }
+                    if (source is Ellipse ellipse)
+                    {
+                        var clone = new Ellipse
+                        {
+                            Width = ellipse.Width,
+                            Height = ellipse.Height,
+                            Stroke = ellipse.Stroke?.Clone(),
+                            StrokeThickness = ellipse.StrokeThickness,
+                            Fill = ellipse.Fill?.Clone(),
+                            RenderTransform = ellipse.RenderTransform?.Clone()
+                        };
+                        Canvas.SetLeft(clone, Canvas.GetLeft(ellipse));
+                        Canvas.SetTop(clone, Canvas.GetTop(ellipse));
+                        return clone;
+                    }
+                    if (source is TextBlock tb)
+                    {
+                        var clone = new TextBlock
+                        {
+                            Text = tb.Text,
+                            FontSize = tb.FontSize,
+                            FontFamily = tb.FontFamily,
+                            FontWeight = tb.FontWeight,
+                            Foreground = tb.Foreground?.Clone(),
+                            RenderTransform = tb.RenderTransform?.Clone()
+                        };
+                        Canvas.SetLeft(clone, Canvas.GetLeft(tb));
+                        Canvas.SetTop(clone, Canvas.GetTop(tb));
+                        return clone;
+                    }
+                    if (source is Image img)
+                    {
+                        var clone = new Image
+                        {
+                            Source = img.Source,
+                            Width = img.Width,
+                            Height = img.Height,
+                            Stretch = img.Stretch,
+                            RenderTransform = img.RenderTransform?.Clone()
+                        };
+                        Canvas.SetLeft(clone, Canvas.GetLeft(img));
+                        Canvas.SetTop(clone, Canvas.GetTop(img));
+                        return clone;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ Manual CloneElement fallback failed: {ex.Message}");
+                }
                 return null;
             }
         }
@@ -296,20 +428,36 @@ namespace QASmartTouch.Managers
             // If deleting current board, switch to another board first
             if (index == _currentBoardIndex)
             {
-                // Switch to previous board, or next if deleting first board
-                int newIndex = index > 0 ? index - 1 : 0;
+                // Switch to previous board, or next if deleting first board (fix: newIndex = 1 when deleting 0)
+                int newIndex = index > 0 ? index - 1 : 1;
                 SwitchBoard(newIndex);
             }
             
             _boards.RemoveAt(index);
+            
+            // If the deleted board was before the current active board, adjust current board index
+            if (index < _currentBoardIndex)
+            {
+                _currentBoardIndex--;
+            }
             
             // Adjust current board index if necessary
             if (_currentBoardIndex >= _boards.Count)
             {
                 _currentBoardIndex = _boards.Count - 1;
             }
+
+            // Synchronize active flags & sequentially renumber default board names
+            for (int i = 0; i < _boards.Count; i++)
+            {
+                _boards[i].IsActive = (i == _currentBoardIndex);
+                if (System.Text.RegularExpressions.Regex.IsMatch(_boards[i].Name, @"^Bảng\s+\d+$"))
+                {
+                    _boards[i].Name = $"Bảng {i + 1}";
+                }
+            }
             
-            System.Diagnostics.Debug.WriteLine($"✅ Board deleted: {board.Name} (Remaining: {_boards.Count})");
+            System.Diagnostics.Debug.WriteLine($"✅ Board deleted: {board.Name} (Remaining: {_boards.Count}, CurrentIndex: {_currentBoardIndex})");
             
             // Fire event
             BoardDeleted?.Invoke(this, new BoardEventArgs(board));
@@ -498,22 +646,70 @@ namespace QASmartTouch.Managers
             
             System.Diagnostics.Debug.WriteLine($"🔄 Refreshed thumbnail for: {board.Name}");
         }
-        
+
+        /// <summary>
+        /// Nạp danh sách các trang bảng từ bên ngoài (ví dụ tệp bài giảng .qasc)
+        /// </summary>
+        public void LoadBoards(List<BoardState> newBoards, int activeIndex = 0)
+        {
+            if (newBoards == null || newBoards.Count == 0) return;
+
+            // Step 1: Hook lưu trạng thái nếu cần
+            if (_boards.Count > 0 && _currentBoardIndex >= 0 && _currentBoardIndex < _boards.Count)
+            {
+                BeforeBoardSaved?.Invoke(CurrentBoard);
+            }
+
+            // Step 2: Xóa danh sách cũ và nạp danh sách mới
+            _boards.Clear();
+            _boards.AddRange(newBoards);
+
+            // Step 3: Giới hạn chỉ số bảng
+            _currentBoardIndex = Math.Clamp(activeIndex, 0, _boards.Count - 1);
+
+            // Step 4: Đồng bộ cờ IsActive
+            for (int i = 0; i < _boards.Count; i++)
+            {
+                _boards[i].IsActive = (i == _currentBoardIndex);
+            }
+
+            var activeBoard = _boards[_currentBoardIndex];
+
+            // Step 5: Nạp bảng đang chọn lên canvas
+            _mainCanvas.Visibility = Visibility.Hidden;
+            try
+            {
+                LoadBoardState(activeBoard);
+                _mainCanvas.UpdateLayout();
+            }
+            finally
+            {
+                _mainCanvas.Visibility = Visibility.Visible;
+            }
+
+            // Step 6: Kích hoạt sự kiện chuyển bảng
+            BoardSwitched?.Invoke(this, new BoardSwitchEventArgs(null!, activeBoard, _currentBoardIndex));
+            System.Diagnostics.Debug.WriteLine($"✅ LoadBoards: Nạp thành công {_boards.Count} bảng, đang hiển thị: {activeBoard.Name}");
+        }
+
         #endregion
         
-        #region Private Methods
+        #region Save / Load Methods
         
         /// <summary>
         /// Saves the current board state (canvas content)
         /// </summary>
-        private void SaveCurrentBoardState()
+        public void SaveCurrentBoardState()
         {
             var board = CurrentBoard;
             
+            // Allow caller to save external state (Undo/Redo stacks, background settings, clean selection)
+            BeforeBoardSaved?.Invoke(board);
+
             // Create a list to store all canvas elements
             var elements = new List<UIElement>();
             
-            // Copy all children except system UI elements
+            // Copy all children except system UI elements & background layers
             foreach (UIElement child in _mainCanvas.Children)
             {
                 if (IsSystemElement(child)) continue;
@@ -556,10 +752,12 @@ namespace QASmartTouch.Managers
                     return CreateEmptyBoardPlaceholder();
                 }
                 
-                // HF-05: Tạm ẩn System UI elements trước khi chụp
+                // HF-05: Tạm ẩn System UI elements trước khi chụp (bảo toàn BackgroundLayer)
                 var hiddenElements = new System.Collections.Generic.List<(UIElement element, Visibility original)>();
                 foreach (UIElement child in _mainCanvas.Children)
                 {
+                    if (child is FrameworkElement fe && fe.Tag?.ToString() == "BackgroundLayer") continue;
+
                     if (IsSystemElement(child) && child.Visibility == Visibility.Visible)
                     {
                         hiddenElements.Add((child, child.Visibility));
@@ -571,20 +769,46 @@ namespace QASmartTouch.Managers
                 {
                     // Force re-render với system UI đã ẩn
                     _mainCanvas.UpdateLayout();
+
+                    int cWidth = (int)_mainCanvas.ActualWidth;
+                    int cHeight = (int)_mainCanvas.ActualHeight;
+                    if (cWidth <= 0) cWidth = 1920;
+                    if (cHeight <= 0) cHeight = 1080;
                     
-                    // Render the main canvas (bây giờ KHÔNG CÓ system UI)
+                    // Kiểm tra xem canvas có BackgroundLayer hiển thị hay không
+                    bool hasVisibleBgLayer = false;
+                    foreach (UIElement child in _mainCanvas.Children)
+                    {
+                        if (child is FrameworkElement fe && fe.Tag?.ToString() == "BackgroundLayer" && child.Visibility == Visibility.Visible)
+                        {
+                            hasVisibleBgLayer = true;
+                            break;
+                        }
+                    }
+
                     var renderBitmap = new RenderTargetBitmap(
-                        (int)_mainCanvas.ActualWidth,
-                        (int)_mainCanvas.ActualHeight,
+                        cWidth,
+                        cHeight,
                         96, 96,
                         PixelFormats.Pbgra32);
-                    
+
+                    if (!hasVisibleBgLayer && (_mainCanvas.Background == null || _mainCanvas.Background == Brushes.Transparent))
+                    {
+                        var bgVisual = new DrawingVisual();
+                        using (var dc = bgVisual.RenderOpen())
+                        {
+                            var bgBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3D6D64"));
+                            dc.DrawRectangle(bgBrush, null, new Rect(0, 0, _mainCanvas.ActualWidth, _mainCanvas.ActualHeight));
+                        }
+                        renderBitmap.Render(bgVisual);
+                    }
+
                     renderBitmap.Render(_mainCanvas);
                     
                     // Scale down to thumbnail size (80x60 pixels)
                     var thumbnail = new TransformedBitmap(renderBitmap, new ScaleTransform(
-                        80.0 / _mainCanvas.ActualWidth,
-                        60.0 / _mainCanvas.ActualHeight));
+                        80.0 / cWidth,
+                        60.0 / cHeight));
                     
                     // Freeze for cross-thread access
                     thumbnail.Freeze();
@@ -717,6 +941,7 @@ namespace QASmartTouch.Managers
             var systemElements = new List<UIElement>();
             foreach (UIElement child in _mainCanvas.Children)
             {
+                if (child is FrameworkElement fe && fe.Tag?.ToString() == "BackgroundLayer") continue;
                 if (IsSystemElement(child))
                 {
                     systemElements.Add(child);
@@ -749,6 +974,9 @@ namespace QASmartTouch.Managers
             {
                 _mainCanvas.Children.Add(element);
             }
+
+            // Notify caller that board loading has completed
+            AfterBoardLoaded?.Invoke(board);
         }
         
         #endregion
@@ -849,6 +1077,36 @@ namespace QASmartTouch.Managers
         /// Number of objects on this board
         /// </summary>
         public int ObjectCount { get; set; }
+
+        /// <summary>
+        /// Stack Hoàn tác (Undo) riêng của trang này
+        /// </summary>
+        public Stack<QASmartTouch.Forms.UndoRedoAction> UndoStack { get; set; } = new();
+
+        /// <summary>
+        /// Stack Làm lại (Redo) riêng của trang này
+        /// </summary>
+        public Stack<QASmartTouch.Forms.UndoRedoAction> RedoStack { get; set; } = new();
+
+        /// <summary>
+        /// Màu nền dạng mã Hex (mặc định xanh bảng #3D6D64)
+        /// </summary>
+        public string? BackgroundColorHex { get; set; } = "#3D6D64";
+
+        /// <summary>
+        /// Dạng hoa văn/kẻ ô nền (grid, lines, dots, none...)
+        /// </summary>
+        public string? BackgroundPattern { get; set; } = "grid";
+
+        /// <summary>
+        /// Khoảng cách đường kẻ ô ly
+        /// </summary>
+        public int LineSpacing { get; set; } = 40;
+
+        /// <summary>
+        /// Độ mờ đường kẻ ô ly (0-100)
+        /// </summary>
+        public int LineOpacity { get; set; } = 10;
     }
     
     #endregion

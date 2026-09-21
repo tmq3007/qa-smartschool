@@ -72,7 +72,7 @@ namespace QASmartTouch.Controls
             // Tránh ContextToolbar bị trôi ra ngoài lề trái hoặc lề dưới màn hình làm che khuất nút công cụ
             Action applyBoundsClamping = () =>
             {
-                double width = this.ActualWidth > 0 ? this.ActualWidth : 420;
+                double width = this.ActualWidth > 0 ? this.ActualWidth : 220;
                 double height = this.ActualHeight > 0 ? this.ActualHeight : 44;
 
                 var parent = this.Parent as Canvas;
@@ -122,8 +122,16 @@ namespace QASmartTouch.Controls
 
         #region Button Click Events
 
+        private void btnCopy_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            btnCopy_Click(sender, e);
+        }
+
         private void btnCopy_Click(object sender, RoutedEventArgs e)
         {
+            if (ColorPalettePopup != null) ColorPalettePopup.IsOpen = false;
+            if (HandwritingCandidatesPopup != null) HandwritingCandidatesPopup.IsOpen = false;
             CopyClicked?.Invoke(this, EventArgs.Empty);
         }
 
@@ -167,8 +175,16 @@ namespace QASmartTouch.Controls
             FlipVerticalClicked?.Invoke(this, EventArgs.Empty);
         }
 
+        private void btnThickness_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            btnThickness_Click(sender, e);
+        }
+
         private void btnThickness_Click(object sender, RoutedEventArgs e)
         {
+            if (ColorPalettePopup != null) ColorPalettePopup.IsOpen = false;
+            if (HandwritingCandidatesPopup != null) HandwritingCandidatesPopup.IsOpen = false;
             ThicknessClicked?.Invoke(this, EventArgs.Empty);
         }
 

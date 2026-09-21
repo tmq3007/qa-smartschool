@@ -273,12 +273,23 @@ namespace QASmartTouch.Forms
         {
             // Apply settings and close
             IsApplied = true;
+            try
+            {
+                this.Owner?.Activate();
+                this.Owner?.Focus();
+            }
+            catch { }
             this.Close();
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            try { this.Owner?.Activate(); } catch { }
+            try
+            {
+                this.Owner?.Activate();
+                this.Owner?.Focus();
+            }
+            catch { }
             this.Close();
         }
 
@@ -416,6 +427,20 @@ namespace QASmartTouch.Forms
             {
                 System.Diagnostics.Debug.WriteLine($"[Form2_1_SubMenuPen] Error applying feature visibility: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// ✅ Đảm bảo khi đóng SubMenu Pen thì MainDashboard luôn được kích hoạt lại trên cùng
+        /// </summary>
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            try
+            {
+                this.Owner?.Activate();
+                this.Owner?.Focus();
+            }
+            catch { }
         }
 
         #endregion

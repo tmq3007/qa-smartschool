@@ -117,6 +117,8 @@ namespace QASmartTouch.Forms
         // âœ¨ Line spacing for patterns
         private int _currentLineSpacing = 40; // Default 40px (â‰ˆ1.1cm)
         private int _currentLineOpacity = 10; // Default 10% (0-100)
+        private string? _currentBackgroundColor = "#3D6D64";
+        private string? _currentBackgroundPattern = "grid";
         private Form2_18_CompassTool_3D? _activeCompassTool3D;
         
         // Saved eraser settings (to restore when reopening eraser tool)
@@ -144,9 +146,6 @@ namespace QASmartTouch.Forms
         private UIElement? _selectedElement;
         private Point _selectionStartPoint;
         
-        // Object action buttons (Copy & Delete)
-        private Canvas? _actionButtonsContainer;
-        private UIElement? _currentSelectedObject;
         private bool _isDraggingElement = false;
         
         // Zoom area selection settings
@@ -750,6 +749,34 @@ namespace QASmartTouch.Forms
             _boardManager = new QASmartTouch.Managers.BoardManager(MainInteractiveBoard);
             _boardManager.IsSystemElementPredicate = IsSystemElement;
             
+            // ✅ GIAI ĐOẠN 2: Hook lưu trạng thái trước khi chuyển / lưu bảng
+            _boardManager.BeforeBoardSaved = (board) =>
+            {
+                if (board == null) return;
+                
+                // 1. Lưu ngăn xếp Undo / Redo của trang hiện tại
+                board.UndoStack = new System.Collections.Generic.Stack<UndoRedoAction>(_undoStack.Reverse());
+                board.RedoStack = new System.Collections.Generic.Stack<UndoRedoAction>(_redoStack.Reverse());
+                
+                // 2. Lưu thông tin nền bảng hiện tại
+                board.BackgroundColorHex = _currentBackgroundColor ?? "#3D6D64";
+                board.BackgroundPattern = _currentBackgroundPattern;
+                board.LineSpacing = _currentLineSpacing;
+                board.LineOpacity = _currentLineOpacity;
+
+                // 3. Hủy chọn và ẩn UI trước khi chụp thumbnail và lưu
+                _selectionManager?.DeselectAll();
+                _selectionBox?.Detach();
+                _contextToolbar?.Hide();
+                _thicknessPicker?.Hide();
+                _colorPicker?.Hide();
+                _moreMenu?.Hide();
+            };
+
+            // ✅ GIAI ĐOẠN 2: Lắng nghe sự kiện chuyển bảng và xóa bảng
+            _boardManager.BoardSwitched += OnBoardSwitched;
+            _boardManager.BoardDeleted += OnBoardDeleted;
+            
             System.Diagnostics.Debug.WriteLine($"✅ BoardManager initialized with {_boardManager.BoardCount} board(s)");
         }
         
@@ -1228,7 +1255,7 @@ namespace QASmartTouch.Forms
                     System.Diagnostics.Debug.WriteLine($"📦 Registered Border: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
                 }
                 // ✅ QC_4.2_3D_CANVAS_REGISTER: Register 3D Shape & STEM Canvas Containers
-                else if (child is Canvas shapeCanvas && shapeCanvas != _actionButtonsContainer)
+                else if (child is Canvas shapeCanvas)
                 {
                     double left = Canvas.GetLeft(shapeCanvas);
                     double top = Canvas.GetTop(shapeCanvas);
@@ -1430,7 +1457,7 @@ namespace QASmartTouch.Forms
                 }
             }
             // Register 3D Shape / Canvas Container
-            else if (element is Canvas canvasElement && canvasElement != _actionButtonsContainer)
+            else if (element is Canvas canvasElement)
             {
                 double left = Canvas.GetLeft(canvasElement);
                 double top = Canvas.GetTop(canvasElement);
@@ -1851,45 +1878,28 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// [LOI_VID_52] Close all active submenus with fade-out animation.
-        /// Fade-out 150ms → Close() → reset button.
-        /// Prevents submenu overlap and ensures clean UI.
+        /// [QC_4.2_SUBMENU_CLEANUP] Đóng tất cả các submenu đang hoạt động và dọn dẹp an toàn các cửa sổ con mồ côi.
+        /// Đảm bảo không bao giờ xảy ra tình trạng nhiều cửa sổ submenu xếp chồng lên nhau.
         /// </summary>
         private void CloseAllSubmenus()
         {
-            // Close active submenu window
-            if (_activeSubMenu != null)
-            {
-                var menuToClose = _activeSubMenu;
-                _activeSubMenu = null; // Clear reference ngay để tránh re-entrant
+            CloseActiveSubMenu();
 
-                try
+            // Quét dọn an toàn mọi cửa sổ SubMenu con có thể bị trôi nổi/mồ côi
+            try
+            {
+                var openWindows = System.Windows.Application.Current.Windows.OfType<Window>().ToList();
+                foreach (var win in openWindows)
                 {
-                    // [LOI_VID_52] Fade-out animation 150ms
-                    var fadeOut = new System.Windows.Media.Animation.DoubleAnimation(
-                        1.0, 0.0, TimeSpan.FromMilliseconds(150))
+                    if (win != this && win.Owner == this && win.GetType().Name.Contains("SubMenu"))
                     {
-                        EasingFunction = new System.Windows.Media.Animation.QuadraticEase
-                        {
-                            EasingMode = System.Windows.Media.Animation.EasingMode.EaseIn
-                        }
-                    };
-                    fadeOut.Completed += (s, e) =>
-                    {
-                        try { menuToClose.Close(); }
-                        catch { /* Ignore if already closed */ }
-                    };
-                    menuToClose.BeginAnimation(Window.OpacityProperty, fadeOut);
-                }
-                catch
-                {
-                    // Fallback: đóng trực tiếp nếu animation lỗi
-                    try { menuToClose.Close(); }
-                    catch { /* Ignore if already closed */ }
+                        try { win.Close(); } catch { }
+                    }
                 }
             }
-            
-            // Reset active submenu button background
+            catch { }
+
+            // Reset active submenu button background nếu còn sót
             if (_activeSubMenuButton != null)
             {
                 var defaultBrush = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
@@ -1897,7 +1907,7 @@ namespace QASmartTouch.Forms
                 UpdateIconColor(_activeSubMenuButton, Color.FromRgb(0x2F, 0x35, 0x42));
                 _activeSubMenuButton = null;
             }
-            
+
             // Reset selected tool
             _selectedTool = null;
         }
@@ -1998,7 +2008,7 @@ namespace QASmartTouch.Forms
 
         public void CloseActiveSubMenu()
         {
-            if (_activeSubMenu != null && _activeSubMenu.IsVisible)
+            if (_activeSubMenu != null)
             {
                 if (_activeSubMenu is Form2_2_SubMenuEraser eraserMenu)
                 {
@@ -2010,9 +2020,25 @@ namespace QASmartTouch.Forms
                     }
                 }
                 var menuToClose = _activeSubMenu;
+                var buttonToReset = _activeSubMenuButton;
                 _activeSubMenu = null;
                 _activeSubMenuButton = null;
-                menuToClose.Close();
+
+                try { menuToClose.Close(); } catch { }
+
+                if (buttonToReset != null)
+                {
+                    buttonToReset.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
+                    UpdateIconColor(buttonToReset, Color.FromRgb(0x2F, 0x35, 0x42));
+                }
+
+                try
+                {
+                    this.Activate();
+                    this.Focus();
+                    MainInteractiveBoard?.Focus();
+                }
+                catch { }
             }
         }
 
