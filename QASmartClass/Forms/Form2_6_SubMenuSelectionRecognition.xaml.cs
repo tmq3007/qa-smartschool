@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -11,6 +12,7 @@ namespace QASmartTouch.Forms
         public Form2_6_SubMenuSelectionRecognition(Form2_MainDashboard mainDashboard)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             if (btnClose != null)
             {
                 System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);

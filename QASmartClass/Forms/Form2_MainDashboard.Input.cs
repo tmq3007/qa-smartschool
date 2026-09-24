@@ -523,6 +523,240 @@ namespace QASmartTouch.Forms
             _floatingTouchKeyboard.RequestAutoDismiss();
         }
 
+        #region Canvas Zoom & Pan Navigation (Phase 1 Desktop Ergonomics)
+
+        /// <summary>
+        /// Xử lý sự kiện lăn chuột: Ctrl + MouseWheel để phóng to/thu nhỏ định tâm tại vị trí con trỏ chuột
+        /// </summary>
+        private void MainInteractiveBoard_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            {
+                double zoomDelta = e.Delta > 0 ? 0.15 : -0.15;
+                Point mousePos = e.GetPosition(MainInteractiveBoard);
+                ZoomAtPosition(mousePos, zoomDelta);
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Thu phóng bảng mượt mà neo vào vị trí con trỏ chuột (Zoom to Cursor)
+        /// </summary>
+        public void ZoomAtPosition(Point mousePos, double delta)
+        {
+            double oldZoom = _currentZoomLevel;
+            double newZoom = Math.Round(Math.Clamp(oldZoom + delta, 0.5, 4.0), 2);
+
+            // Tự động hít (snap) về 1.0 nếu ở rất gần 100%
+            if (Math.Abs(newZoom - 1.0) < 0.06 && Math.Abs(oldZoom - 1.0) >= 0.05)
+            {
+                newZoom = 1.0;
+            }
+
+            if (Math.Abs(newZoom - oldZoom) < 0.001)
+                return;
+
+            if (Math.Abs(newZoom - 1.0) < 0.001)
+            {
+                // Reset về 1.0x sạch sẽ
+                ApplyZoom("Fixed", 1.0);
+                return;
+            }
+
+            // Đảm bảo Canvas có kích thước tường minh
+            if (double.IsNaN(MainInteractiveBoard.Width))
+            {
+                MainInteractiveBoard.Width = MainInteractiveBoard.ActualWidth;
+                MainInteractiveBoard.Height = MainInteractiveBoard.ActualHeight;
+            }
+
+            // Lấy hoặc tạo TransformGroup
+            ScaleTransform? scaleTransform = null;
+            TransformGroup? group = MainInteractiveBoard.RenderTransform as TransformGroup;
+            if (group != null)
+            {
+                foreach (var child in group.Children)
+                {
+                    if (child is ScaleTransform st) scaleTransform = st;
+                    if (child is TranslateTransform tt) _panTransform = tt;
+                }
+            }
+            else
+            {
+                group = new TransformGroup();
+                scaleTransform = new ScaleTransform(oldZoom, oldZoom);
+                _panTransform = new TranslateTransform(0, 0);
+                group.Children.Add(scaleTransform);
+                group.Children.Add(_panTransform);
+                MainInteractiveBoard.RenderTransform = group;
+                MainInteractiveBoard.RenderTransformOrigin = new Point(0.5, 0.5);
+            }
+
+            if (scaleTransform == null)
+            {
+                scaleTransform = new ScaleTransform(oldZoom, oldZoom);
+                group.Children.Insert(0, scaleTransform);
+            }
+            if (_panTransform == null)
+            {
+                _panTransform = new TranslateTransform(0, 0);
+                group.Children.Add(_panTransform);
+            }
+
+            // Áp dụng công thức Zoom to Cursor:
+            // T_new = T_old + (mousePos - center) * (oldZoom - newZoom)
+            Point center = new Point(MainInteractiveBoard.ActualWidth / 2.0, MainInteractiveBoard.ActualHeight / 2.0);
+            _panTransform.X += (mousePos.X - center.X) * (oldZoom - newZoom);
+            _panTransform.Y += (mousePos.Y - center.Y) * (oldZoom - newZoom);
+
+            // Tự động thu hồi độ lệch dịch chuyển (pan) về tâm khi zoom nhỏ hơn hoặc bằng 100% (Dynamic Canvas Centering)
+            if (newZoom <= 1.0)
+            {
+                double factor = Math.Max(0.0, (newZoom - 0.5) / 0.5);
+                _panTransform.X *= factor;
+                _panTransform.Y *= factor;
+            }
+
+            scaleTransform.ScaleX = newZoom;
+            scaleTransform.ScaleY = newZoom;
+            _currentZoomLevel = newZoom;
+
+            UpdateZoomHudDisplay();
+            System.Diagnostics.Debug.WriteLine($"🔍 Zoom to Cursor: {oldZoom}x → {newZoom}x at ({mousePos.X:F0}, {mousePos.Y:F0})");
+        }
+
+        private void EnsurePanTransformExists()
+        {
+            if (_panTransform != null) return;
+
+            if (MainInteractiveBoard.RenderTransform is TransformGroup group)
+            {
+                _panTransform = new TranslateTransform(0, 0);
+                group.Children.Add(_panTransform);
+            }
+            else
+            {
+                var newGroup = new TransformGroup();
+                var scale = new ScaleTransform(_currentZoomLevel, _currentZoomLevel);
+                _panTransform = new TranslateTransform(0, 0);
+                newGroup.Children.Add(scale);
+                newGroup.Children.Add(_panTransform);
+                MainInteractiveBoard.RenderTransform = newGroup;
+                MainInteractiveBoard.RenderTransformOrigin = new Point(0.5, 0.5);
+            }
+        }
+
+        #region Two-Finger Multi-Touch Gestures (Pha 3 Pinch-to-Zoom & Pan)
+
+        private double _lastReportedHudZoom = 1.0;
+
+        /// <summary>
+        /// Khởi tạo trạng thái cử chỉ 2 ngón (chuẩn bị zoom & pan mượt mà)
+        /// </summary>
+        public void OnTwoFingerPinchPanStarted(Point canvasCenter)
+        {
+            EnsurePanTransformExists();
+            _lastReportedHudZoom = _currentZoomLevel;
+            System.Diagnostics.Debug.WriteLine($"✌️ Two-finger gesture started at ({canvasCenter.X:F0}, {canvasCenter.Y:F0}), initialZoom={_currentZoomLevel:F2}x");
+        }
+
+        /// <summary>
+        /// Áp dụng tỉ lệ thu phóng và độ dời cuộn bảng mượt mà 60 FPS từ 2 ngón tay (Incremental Affine Transform)
+        /// </summary>
+        public void ApplyTwoFingerPinchPan(Point canvasCenter, double scaleStep, Vector panStep)
+        {
+            EnsurePanTransformExists();
+
+            if (_panTransform == null) return;
+
+            // 1. TỐI ƯU HÓA TRIỆT ĐỂ CHO KÉO DI CHUYỂN (PURE PAN):
+            // Khi scaleStep == 1.0 (người dùng đang kéo bảng):
+            // Chỉ dịch chuyển tọa độ Pan thuần túy, tuyệt đối KHÔNG đụng đến ScaleTransform hay công thức bù tâm zoom!
+            // Điều này loại bỏ 100% hiện tượng rung giật giằng co khi kéo bảng trên màn hình tương tác!
+            if (Math.Abs(scaleStep - 1.0) < 0.0001)
+            {
+                _panTransform.X += panStep.X;
+                _panTransform.Y += panStep.Y;
+                return;
+            }
+
+            // 2. KHI ĐANG THU PHÓNG (PINCH ZOOM):
+            ScaleTransform? scaleTransform = null;
+            if (MainInteractiveBoard.RenderTransform is TransformGroup group)
+            {
+                foreach (var child in group.Children)
+                {
+                    if (child is ScaleTransform st) scaleTransform = st;
+                    if (child is TranslateTransform tt) _panTransform = tt;
+                }
+            }
+
+            if (scaleTransform == null) return;
+
+            double oldZoom = _currentZoomLevel;
+            // Thu phóng trơn tru liên tục (không làm tròn Math.Round để loại bỏ giật cục khựng hình)
+            double newZoom = Math.Clamp(oldZoom * scaleStep, 0.5, 4.0);
+
+            double boardWidth = MainInteractiveBoard.ActualWidth > 0 ? MainInteractiveBoard.ActualWidth : (MainInteractiveBoard.Width > 0 ? MainInteractiveBoard.Width : 1920);
+            double boardHeight = MainInteractiveBoard.ActualHeight > 0 ? MainInteractiveBoard.ActualHeight : (MainInteractiveBoard.Height > 0 ? MainInteractiveBoard.Height : 1080);
+            Point center = new Point(boardWidth / 2.0, boardHeight / 2.0);
+
+            // Công thức chuyển vị biến đổi Afin chuẩn xác: Zoom định tâm theo điểm chạm + Pan theo bước dịch chuyển
+            _panTransform.X += (canvasCenter.X - center.X) * (oldZoom - newZoom) + panStep.X;
+            _panTransform.Y += (canvasCenter.Y - center.Y) * (oldZoom - newZoom) + panStep.Y;
+
+            scaleTransform.ScaleX = newZoom;
+            scaleTransform.ScaleY = newZoom;
+            _currentZoomLevel = newZoom;
+
+            // Giảm tải UI: chỉ cập nhật text HUD khi mức zoom thay đổi từ 1% trở lên
+            if (Math.Abs(newZoom - _lastReportedHudZoom) >= 0.01)
+            {
+                _lastReportedHudZoom = newZoom;
+                UpdateZoomHudDisplay();
+            }
+        }
+
+        /// <summary>
+        /// Kết thúc cử chỉ 2 ngón tay
+        /// </summary>
+        public void OnTwoFingerPinchPanEnded()
+        {
+            // Tự động snap về 100% nếu rất gần 1.0 (trong khoảng 0.95x - 1.05x)
+            if (Math.Abs(_currentZoomLevel - 1.0) < 0.05)
+            {
+                ApplyZoom("Fixed", 1.0);
+            }
+            else
+            {
+                // Khi thu nhỏ bảng (< 1.0x), hồi tâm nhẹ nhàng về chính giữa màn hình
+                if (_currentZoomLevel < 1.0 && _panTransform != null)
+                {
+                    double factor = Math.Max(0.0, (_currentZoomLevel - 0.5) / 0.5);
+                    _panTransform.X *= factor;
+                    _panTransform.Y *= factor;
+                }
+                UpdateZoomHudDisplay();
+            }
+            System.Diagnostics.Debug.WriteLine($"✌️ Two-finger gesture ended at zoom={_currentZoomLevel:F2}x");
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Chuyển tiếp tương tác chuột từ vùng ngoài ScrollViewer vào Canvas khi zoom nhỏ (Zero Dead Zone)
+        /// </summary>
+        private void MainScrollViewer_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource == MainInteractiveBoard || 
+                (e.OriginalSource is DependencyObject d && IsDescendantOf(d, MainInteractiveBoard)))
+                return;
+
+            MainInteractiveBoard_MouseDown(MainInteractiveBoard, e);
+        }
+
+        #endregion
+
         private void MainInteractiveBoard_MouseDown(object sender, MouseButtonEventArgs e)
         {
             // Tự động kích hoạt lại Focus cho MainDashboard nếu đang bị trình duyệt nhúng chiếm Focus
@@ -576,6 +810,32 @@ namespace QASmartTouch.Forms
 
             // Hide welcome state when user starts interacting with canvas
             HideWelcomeState();
+
+            // Middle Mouse Button Pan: Kéo bảng bằng chuột giữa tức thời (kể cả khi đang chọn Bút)
+            if (e.MiddleButton == MouseButtonState.Pressed)
+            {
+                _isMiddleMousePanning = true;
+                _panStartPoint = e.GetPosition(this);
+                EnsurePanTransformExists();
+                MainInteractiveBoard.Cursor = Cursors.SizeAll;
+                MainInteractiveBoard.CaptureMouse();
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine($"🖐️ Middle mouse pan started at ({_panStartPoint.X:F0}, {_panStartPoint.Y:F0})");
+                return;
+            }
+
+            // Spacebar Pan: Giữ phím Space + Chuột trái để kéo bảng
+            if (_isSpacebarDown && e.LeftButton == MouseButtonState.Pressed)
+            {
+                _isPanning = true;
+                _panStartPoint = e.GetPosition(this);
+                EnsurePanTransformExists();
+                MainInteractiveBoard.Cursor = Cursors.SizeAll;
+                MainInteractiveBoard.CaptureMouse();
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine($"🖐️ Spacebar pan started at ({_panStartPoint.X:F0}, {_panStartPoint.Y:F0})");
+                return;
+            }
             
             // PRIORITY CHECK: If any picker/menu is visible, check if click is outside them
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -900,7 +1160,21 @@ namespace QASmartTouch.Forms
                 return;
             }
             
-            // Pan mode - drag canvas
+            // Middle Mouse Pan mode - drag canvas
+            if (_isMiddleMousePanning && e.MiddleButton == MouseButtonState.Pressed && _panTransform != null)
+            {
+                Point currentWindowPoint = e.GetPosition(this);
+                double deltaX = currentWindowPoint.X - _panStartPoint.X;
+                double deltaY = currentWindowPoint.Y - _panStartPoint.Y;
+                
+                _panTransform.X += deltaX;
+                _panTransform.Y += deltaY;
+                
+                _panStartPoint = currentWindowPoint;
+                return;
+            }
+
+            // Pan mode - drag canvas (Spacebar or zoomed mode)
             if (_isPanning && e.LeftButton == MouseButtonState.Pressed && _panTransform != null)
             {
                 Point currentWindowPoint = e.GetPosition(this);
@@ -1002,12 +1276,30 @@ namespace QASmartTouch.Forms
             if ((_drawingEnabled || _eraserEnabled) && (e.StylusDevice != null || (_touchHandler?.HasActiveTouches == true)))
                 return;
 
-            // Pan mode - finish panning
+            // Middle Mouse Pan mode - finish panning
+            if (_isMiddleMousePanning)
+            {
+                _isMiddleMousePanning = false;
+                MainInteractiveBoard.ReleaseMouseCapture();
+                RestoreCurrentToolCursor();
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("🖐️ Middle mouse pan ended");
+                return;
+            }
+
+            // Pan mode - finish panning (from spacebar or regular pan)
             if (_isPanning)
             {
                 _isPanning = false;
-                MainInteractiveBoard.Cursor = Cursors.Hand; // Back to hand cursor (indicates can pan)
                 MainInteractiveBoard.ReleaseMouseCapture();
+                if (_isSpacebarDown)
+                {
+                    MainInteractiveBoard.Cursor = Cursors.Hand;
+                }
+                else
+                {
+                    RestoreCurrentToolCursor();
+                }
                 System.Diagnostics.Debug.WriteLine("🖐️ Pan mode ended");
                 return;
             }

@@ -40,6 +40,8 @@ namespace QASmartTouch.WhiteboardCore.IO
         public int LineSpacing { get; set; } = 40;
         public int LineOpacity { get; set; } = 10;
         public int ObjectCount { get; set; }
+        public double CanvasWidth { get; set; } = 1920;
+        public double CanvasHeight { get; set; } = 1080;
         public string XamlFile { get; set; } = string.Empty;
         public string? ThumbnailFile { get; set; }
     }
@@ -99,6 +101,8 @@ namespace QASmartTouch.WhiteboardCore.IO
                         {
                             Id = board.Id,
                             Name = board.Name,
+                            CanvasWidth = board.CanvasWidth > 0 ? board.CanvasWidth : 1920,
+                            CanvasHeight = board.CanvasHeight > 0 ? board.CanvasHeight : 1080,
                             BackgroundColorHex = board.BackgroundColorHex ?? "#3D6D64",
                             BackgroundPattern = board.BackgroundPattern,
                             LineSpacing = board.LineSpacing > 0 ? board.LineSpacing : 40,
@@ -234,6 +238,8 @@ namespace QASmartTouch.WhiteboardCore.IO
                     {
                         Id = item.Id != Guid.Empty ? item.Id : Guid.NewGuid(),
                         Name = !string.IsNullOrWhiteSpace(item.Name) ? item.Name : "Bảng",
+                        CanvasWidth = item.CanvasWidth > 0 ? item.CanvasWidth : 1920,
+                        CanvasHeight = item.CanvasHeight > 0 ? item.CanvasHeight : 1080,
                         BackgroundColorHex = item.BackgroundColorHex ?? "#3D6D64",
                         BackgroundPattern = item.BackgroundPattern,
                         LineSpacing = item.LineSpacing > 0 ? item.LineSpacing : 40,

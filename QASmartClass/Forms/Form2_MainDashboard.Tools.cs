@@ -142,6 +142,7 @@ namespace QASmartTouch.Forms
             };
             
             penMenu.Show();
+            try { penMenu.Activate(); } catch { }
         }
 
         private void btn2_Eraser_Click(object sender, RoutedEventArgs e)
@@ -212,13 +213,20 @@ namespace QASmartTouch.Forms
                 element == _eraserPreview || element == _rectangleSelectionPreview ||
                 element == _zoomAreaPreview || element == _dragErasePreview ||
                 element == _currentSpotlightOverlay || element == _smartStatusBadge ||
-                element == panelWelcomeState)
+                element == panelWelcomeState || element == multiUserOverlay)
                 return true;
 
             if (Panel.GetZIndex(element) >= ZIndexConstants.SystemUIBase) return true;
 
             // ✅ GIAI ĐOẠN 2: Lọc bỏ hình chữ nhật nền bảng để không gom nhầm vào đối tượng vẽ của người dùng
             if (element is FrameworkElement feBg && feBg.Tag?.ToString() == "BackgroundLayer") return true;
+
+            // ✅ Bảo vệ các thành phần chia bảng và overlay đa người dùng
+            if (element is FrameworkElement feMulti && 
+                (feMulti.Tag?.ToString() == "MultiUserDivider" || 
+                 feMulti.Tag?.ToString() == "MultiUserLabel" || 
+                 feMulti.Tag?.ToString() == "MultiUserSplitLine"))
+                return true;
 
             return false;
         }
@@ -346,6 +354,7 @@ namespace QASmartTouch.Forms
             };
             
             eraserMenu.Show();
+            try { eraserMenu.Activate(); } catch { }
         }
 
         private void btn3_Undo_Click(object sender, RoutedEventArgs e)
@@ -355,6 +364,7 @@ namespace QASmartTouch.Forms
                 var action = _undoStack.Pop();
                 ExecuteUndoAction(action);
                 _redoStack.Push(action);
+                MarkAsDirty();
                 UpdateButtonStates();
                 _selectionManager?.DeselectAll();
                 RefreshSelectableObjects();
@@ -368,6 +378,7 @@ namespace QASmartTouch.Forms
                 var action = _redoStack.Pop();
                 ExecuteRedoAction(action);
                 _undoStack.Push(action);
+                MarkAsDirty();
                 UpdateButtonStates();
                 _selectionManager?.DeselectAll();
                 RefreshSelectableObjects();
@@ -383,6 +394,7 @@ namespace QASmartTouch.Forms
         {
             _undoStack.Push(action);
             _redoStack.Clear(); // Clear redo stack when new action is performed
+            MarkAsDirty();
             
             // Limit stack size to prevent memory issues
             if (_undoStack.Count > MAX_UNDO_LEVELS)
@@ -951,6 +963,7 @@ namespace QASmartTouch.Forms
             };
             
             shapesMenu.Show();
+            try { shapesMenu.Activate(); } catch { }
         }
 
         private void btn6_Inserts_Click(object sender, RoutedEventArgs e)
@@ -1127,6 +1140,7 @@ namespace QASmartTouch.Forms
             };
             
             zoomMenu.Show();
+            try { zoomMenu.Activate(); } catch { }
         }
 
         /// <summary>
@@ -1224,7 +1238,103 @@ namespace QASmartTouch.Forms
                 System.Diagnostics.Debug.WriteLine($"✅ Canvas zoomed to {_currentZoomLevel}x (High Quality DPI)");
                 System.Diagnostics.Debug.WriteLine($"👆 You can now drag canvas to pan (Press 1x to reset)");
             }
+
+            // Đồng bộ hiển thị % Zoom lên HUD
+            UpdateZoomHudDisplay();
         }
+
+        #region Zoom Indicator HUD Event Handlers
+
+        private void btnHudZoomReset_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyZoom("Fixed", 1.0);
+        }
+
+        private void btnHudZoomIn_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyZoom("Increment", 0.25);
+        }
+
+        private void btnHudZoomOut_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyZoom("Decrement", 0.25);
+        }
+
+        private void btnHudZoomFit_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyZoom("Fixed", 1.0);
+        }
+
+        private void btnHudTouchMode_Click(object sender, RoutedEventArgs e)
+        {
+            if (_touchHandler == null) return;
+
+            if (_touchHandler.CurrentMode == QASmartTouch.Managers.TouchInteractionMode.MultiFinger)
+            {
+                _touchHandler.CurrentMode = QASmartTouch.Managers.TouchInteractionMode.SingleFinger;
+            }
+            else
+            {
+                _touchHandler.CurrentMode = QASmartTouch.Managers.TouchInteractionMode.MultiFinger;
+            }
+
+            _touchHandler.ResetTouchState();
+            UpdateTouchModeHudDisplay();
+        }
+
+        public void UpdateTouchModeHudDisplay()
+        {
+            if (btnHudTouchMode == null || _touchHandler == null) return;
+
+            bool isSingleFinger = (_touchHandler.CurrentMode == QASmartTouch.Managers.TouchInteractionMode.SingleFinger);
+
+            var border = btnHudTouchMode.Template?.FindName("PART_TouchModeBorder", btnHudTouchMode) as Border;
+            var icon = btnHudTouchMode.Template?.FindName("iconHudTouchMode", btnHudTouchMode) as System.Windows.Shapes.Path;
+            var text = btnHudTouchMode.Template?.FindName("txtHudTouchMode", btnHudTouchMode) as TextBlock;
+
+            if (border == null)
+            {
+                btnHudTouchMode.ApplyTemplate();
+                border = btnHudTouchMode.Template?.FindName("PART_TouchModeBorder", btnHudTouchMode) as Border;
+                icon = btnHudTouchMode.Template?.FindName("iconHudTouchMode", btnHudTouchMode) as System.Windows.Shapes.Path;
+                text = btnHudTouchMode.Template?.FindName("txtHudTouchMode", btnHudTouchMode) as TextBlock;
+            }
+
+            if (isSingleFinger)
+            {
+                // Chế độ Đơn điểm / Cử chỉ 2 ngón (Single-touch Draw, 2-finger Pinch/Pan)
+                if (border != null) border.Background = new SolidColorBrush(Color.FromRgb(46, 134, 222)); // #2E86DE
+                if (icon != null)
+                {
+                    icon.Fill = Brushes.White;
+                    icon.Data = Geometry.Parse("M9.5,4A1.5,1.5 0 0,1 11,5.5V11.5L12.5,11.5A1.5,1.5 0 0,1 14,13V15.5L13.5,17.5L11.5,21.5H7.5L5.5,17.5V12A1.5,1.5 0 0,1 7,10.5V5.5A1.5,1.5 0 0,1 8.5,4H9.5M8.5,2A3.5,3.5 0 0,0 5,5.5V9.17C4.4,9.58 4,10.24 4,11V18C4,18.35 4.12,18.68 4.34,18.95L6.67,23.61C7,24.27 7.69,24.69 8.42,24.69H12.58C13.31,24.69 14,24.27 14.33,23.61L16.66,18.95C16.88,18.68 17,18.35 17,18V13A3,3 0 0,0 14,10H13V5.5A3.5,3.5 0 0,0 9.5,2H8.5Z");
+                }
+                if (text != null)
+                {
+                    text.Text = "Đơn điểm";
+                    text.Foreground = Brushes.White;
+                }
+                btnHudTouchMode.ToolTip = "Chế độ Đơn điểm (Cử chỉ): 1 ngón viết vẽ, 2 ngón thu phóng & cuộn bảng (Pinch/Pan). Nhấn để chuyển về Đa chạm";
+            }
+            else
+            {
+                // Chế độ Đa chạm (Multi-touch Draw - Mặc định)
+                if (border != null) border.Background = Brushes.Transparent;
+                if (icon != null)
+                {
+                    icon.Fill = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA));
+                    icon.Data = Geometry.Parse("M21,11A1,1 0 0,0 20,10A1,1 0 0,0 19,11V15.5L18.06,14.56C17.67,14.17 17.04,14.17 16.65,14.56L15.71,15.5L18.82,21.68C19.18,22.4 19.92,22.86 20.73,22.86H21.5A2.5,2.5 0 0,0 24,20.36V14A1,1 0 0,0 23,13A1,1 0 0,0 22,14V12A1,1 0 0,0 21,11M13,2A1,1 0 0,0 12,3V10.5L11.06,9.56C10.67,9.17 10.04,9.17 9.65,9.56L8.71,10.5L11.82,16.68C12.18,17.4 12.92,17.86 13.73,17.86H14.5A2.5,2.5 0 0,0 17,15.36V9A1,1 0 0,0 16,8A1,1 0 0,0 15,9V4A1,1 0 0,0 14,3A1,1 0 0,0 13,2M5,6A1,1 0 0,0 4,7V14.5L3.06,13.56C2.67,13.17 2.04,13.17 1.65,13.56L0.71,14.5L3.82,20.68C4.18,21.4 4.92,21.86 5.73,21.86H6.5A2.5,2.5 0 0,0 9,19.36V13A1,1 0 0,0 8,12A1,1 0 0,0 7,13V8A1,1 0 0,0 6,7A1,1 0 0,0 5,6Z");
+                }
+                if (text != null)
+                {
+                    text.Text = "Đa chạm";
+                    text.Foreground = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA));
+                }
+                btnHudTouchMode.ToolTip = "Chế độ Đa chạm (Mặc định: nhiều ngón cùng viết vẽ đồng thời). Nhấn để bật Đơn điểm & Cử chỉ 2 ngón (Pinch/Pan)";
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Enable area selection mode for zooming into a specific region
@@ -2108,6 +2218,7 @@ namespace QASmartTouch.Forms
             };
 
             selectionMenu.Show();
+            try { selectionMenu.Activate(); } catch { }
         }
 
         /// <summary>
@@ -2471,6 +2582,7 @@ namespace QASmartTouch.Forms
             };
             
             boardMenu.Show();
+            try { boardMenu.Activate(); } catch { }
         }
 
         private void btn10_WindowMode_Click(object sender, RoutedEventArgs e)
@@ -2570,61 +2682,55 @@ namespace QASmartTouch.Forms
             };
             
             moreMenu.Show();
+            try { moreMenu.Activate(); } catch { }
         }
 
         private void btn13_Exit_Click(object sender, RoutedEventArgs e)
         {
-            // Kiểm tra biến master để quyết định có hiển thị xác nhận hay không
-            if (!AppSettings.ShouldShowExitConfirmation)
-            {
-                // Thoát trực tiếp không cần xác nhận
-                var loginForm = new Form1_MainLogin();
-                loginForm.Show();
-                this.Close();
-                return;
-            }
-
-            // Hiển thị đầy đủ xác nhận theo logic cũ
-            // Check if there are unsaved changes
-            bool hasUnsavedChanges = _undoStack.Count > 0 || MainInteractiveBoard.Children.Count > 1; // >1 because of welcome panel
-            
-            if (hasUnsavedChanges)
+            // 1. Nếu có dữ liệu chưa lưu, hỏi giáo viên có muốn lưu trước khi thoát không
+            if (CheckHasUnsavedChanges())
             {
                 var saveResult = MessageBox.Show(
-                    "Bạn có dữ liệu chưa lưu. Bạn có muốn lưu trước khi thoát?",
-                    "Dữ liệu chưa lưu",
+                    "Bạn có dữ liệu bài giảng chưa lưu. Bạn có muốn lưu bài giảng trước khi thoát?",
+                    "Xác nhận lưu bài giảng",
                     MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Warning);
-                
+                    MessageBoxImage.Question);
+
                 if (saveResult == MessageBoxResult.Cancel)
                 {
-                    // User cancelled, don't exit
-                    return;
+                    return; // Hủy lệnh thoát
                 }
                 else if (saveResult == MessageBoxResult.Yes)
                 {
-                    // Save data before exit
-                    MessageBox.Show("Đã lưu dữ liệu thành công!", "Lưu thành công", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                    // TODO: Implement actual save logic
+                    // Thực hiện lưu bài giảng thực tế (.qasc)
+                    bool saved = SaveCurrentLecture(showOpenFolderPrompt: false);
+                    if (!saved)
+                    {
+                        // Người dùng hủy lưu tệp tin hoặc lỗi -> Không thoát để tránh mất dữ liệu
+                        return;
+                    }
                 }
-                // If No, continue to exit without saving
+                // Nếu chọn No -> Tiếp tục thoát mà không lưu
             }
-            
-            // Final confirmation
-            var result = MessageBox.Show(
-                "Bạn có chắc chắn muốn thoát về màn hình đăng nhập?",
-                "Xác nhận thoát",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            else if (AppSettings.ShouldShowExitConfirmation)
             {
-                // Return to login screen
-                var loginForm = new Form1_MainLogin();
-                loginForm.Show();
-                this.Close();
+                // Nếu không có dữ liệu chưa lưu (bảng trắng hoặc đã lưu rồi), chỉ hỏi xác nhận thoát đơn giản
+                var confirmResult = MessageBox.Show(
+                    "Bạn có chắc chắn muốn thoát về màn hình đăng nhập?",
+                    "Xác nhận thoát",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (confirmResult != MessageBoxResult.Yes)
+                {
+                    return;
+                }
             }
+
+            // 2. Tiến hành điều hướng thoát về màn hình đăng nhập
+            var loginForm = new Form1_MainLogin();
+            loginForm.Show();
+            this.Close();
         }
 
         #endregion

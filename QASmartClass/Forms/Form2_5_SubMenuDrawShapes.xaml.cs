@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using Path = System.Windows.Shapes.Path;
 using QASmartTouch.Services.VersionManagement;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -20,6 +21,7 @@ namespace QASmartTouch.Forms
         public Form2_5_SubMenuDrawShapes(Form2_MainDashboard? mainDashboard = null)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             if (btnClose != null)
             {
                 System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);

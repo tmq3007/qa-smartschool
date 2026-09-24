@@ -1,4 +1,4 @@
-﻿<Window x:Class="QASmartTouch.Forms.Form2_20_SubMenuBooks"
+<Window x:Class="QASmartTouch.Forms.Form2_20_SubMenuBooks"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -385,6 +385,10 @@
                                    Cursor="Hand"
 
                                    MouseLeftButtonDown="BookCard_Click"
+
+                                   PreviewTouchUp="BookCard_TouchUp"
+
+                                   PreviewStylusUp="BookCard_StylusUp"
 
                                    RenderTransformOrigin="0.5,0.5">
 

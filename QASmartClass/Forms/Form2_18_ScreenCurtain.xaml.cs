@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -40,6 +41,7 @@ namespace QASmartTouch.Forms
         public Form2_18_ScreenCurtain()
         {
             InitializeComponent();
+            TouchActivationHelper.Apply(this);
             
             // Set window to cover entire screen
             this.Left = 0;

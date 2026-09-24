@@ -508,11 +508,13 @@
 
                 <Button x:Name="btnApply"
 
-                       Content="Áp dụng"
+                       Content="Bắt đầu làm bài"
 
-                       Width="100" Height="40"
+                       Width="140" Height="40"
 
                        FontSize="13"
+
+                       FontWeight="Bold"
 
                        Background="#2E86DE"
 

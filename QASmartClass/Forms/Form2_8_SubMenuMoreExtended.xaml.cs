@@ -3,6 +3,7 @@ using System.Windows;
 using QASmartTouch.Forms.Admin;
 using QASmartTouch.Services.VersionManagement;
 using QASmartTouch.Shared;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -14,6 +15,7 @@ namespace QASmartTouch.Forms
         {
             _mainDashboard = mainDashboard;
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             if (btnClose != null)
             {
                 System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
