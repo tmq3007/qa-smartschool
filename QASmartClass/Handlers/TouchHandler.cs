@@ -24,6 +24,16 @@ namespace QASmartTouch.Handlers
     }
 
     /// <summary>
+    /// Chế độ nhận diện cử chỉ 2 ngón tay (Pha 3): Phân biệt Kéo di chuyển thuần túy (Pan) và Thu phóng (Zoom)
+    /// </summary>
+    public enum TwoFingerGestureMode
+    {
+        Pending,    // Vừa chạm 2 ngón, đang theo dõi để xác định ý định người dùng (chưa vượt ngưỡng)
+        PanOnly,    // Người dùng đang kéo di chuyển bảng (khóa zoom 100%, lướt êm tuyệt đối không dính zoom)
+        PinchZoom   // Người dùng đang cố ý thu phóng (cho phép zoom mượt mà kết hợp pan)
+    }
+
+    /// <summary>
     /// Handles touch interactions for canvas drawing
     /// Integrates TouchManager with WPF Canvas
     /// </summary>
@@ -69,6 +79,81 @@ namespace QASmartTouch.Handlers
         /// </summary>
         public Func<Point, Color?>? GetColorForPosition { get; set; }
 
+        // Two-Finger Pinch-to-Zoom & Pan fields (Phase 3)
+        private bool _isTwoFingerGestureActive = false;
+        private bool _suppressDrawingUntilAllReleased = false;
+        private int _gestureTouchId1 = -1;
+        private int _gestureTouchId2 = -1;
+        private double _gestureStartDistance = 0;
+        private double _gestureLastDistance = 0;
+        private double _gestureFilteredDistance = 0;
+        private Point _gestureStartCenter;
+        private Point _gestureLastCenter;
+        private TwoFingerGestureMode _gestureMode = TwoFingerGestureMode.Pending;
+        private DateTime _lastGestureEndTime = DateTime.MinValue;
+        private int _singleDrawingTouchId = -1;
+        private Dictionary<int, Point> _activeTouchScreenPoints = new Dictionary<int, Point>();
+        private Polyline? _preliminaryStroke = null;
+        private int _preliminaryTouchId = -1;
+
+        /// <summary>
+        /// Xóa sạch toàn bộ trạng thái cảm ứng (chạm, vẽ dở, cử chỉ) khi đổi mode hoặc reset
+        /// </summary>
+        public void ResetTouchState()
+        {
+            _isTwoFingerGestureActive = false;
+            _suppressDrawingUntilAllReleased = false;
+            _singleDrawingTouchId = -1;
+            _gestureTouchId1 = -1;
+            _gestureTouchId2 = -1;
+            _gestureStartDistance = 0;
+            _gestureLastDistance = 0;
+            _gestureFilteredDistance = 0;
+            _gestureMode = TwoFingerGestureMode.Pending;
+            _lastGestureEndTime = DateTime.MinValue;
+            _activeTouchScreenPoints.Clear();
+            _lastTouchPoints.Clear();
+            _smoothers.Clear();
+
+            if (_preliminaryStroke != null)
+            {
+                try
+                {
+                    if (_canvas.Children.Contains(_preliminaryStroke))
+                    {
+                        _canvas.Children.Remove(_preliminaryStroke);
+                    }
+                    if (_preliminaryTouchId != -1)
+                    {
+                        _touchManager.CompleteStroke(_preliminaryTouchId);
+                    }
+                }
+                catch { }
+                _preliminaryStroke = null;
+                _preliminaryTouchId = -1;
+            }
+        }
+
+        /// <summary>
+        /// Delegate invoked when two-finger pinch/pan gesture begins (Point canvasCenter)
+        /// </summary>
+        public Action<Point>? OnTwoFingerPinchPanStarted { get; set; }
+
+        /// <summary>
+        /// Delegate invoked during two-finger pinch/pan gesture (Point canvasCenter, double scaleStep, Vector panStep)
+        /// </summary>
+        public Action<Point, double, Vector>? OnTwoFingerPinchPan { get; set; }
+
+        /// <summary>
+        /// Delegate invoked when two-finger pinch/pan gesture ends
+        /// </summary>
+        public Action? OnTwoFingerPinchPanEnded { get; set; }
+
+        /// <summary>
+        /// Callback to check if Multi-User Split Mode is currently active (guards against pinch in 2-user mode)
+        /// </summary>
+        public Func<bool>? IsMultiUserModeActive { get; set; }
+
         public Managers.TouchInteractionMode CurrentMode
         {
             get => _touchManager.CurrentMode;
@@ -80,7 +165,7 @@ namespace QASmartTouch.Handlers
         /// Used by mouse handlers to detect when mouse events are promoted
         /// from touch input (prevents duplicate strokes/erase sessions on interactive screens).
         /// </summary>
-        public bool HasActiveTouches => _touchManager.GetActiveTouchCount() > 0 || _lastTouchPoints.Count > 0;
+        public bool HasActiveTouches => _touchManager.GetActiveTouchCount() > 0 || _lastTouchPoints.Count > 0 || _activeTouchScreenPoints.Count > 0;
 
         public TouchHandler(Canvas canvas)
         {
@@ -125,6 +210,46 @@ namespace QASmartTouch.Handlers
         public void SetRecordEraseSessionAction(Action<Managers.EraseSession, string> recordAction)
         {
             _recordEraseSessionAction = recordAction;
+        }
+
+        /// <summary>
+        /// Đăng ký bề mặt cảm ứng bên ngoài (ScrollViewer) để chuyển tiếp chạm cảm ứng vào Canvas khi zoom nhỏ (Zero Dead Zone for Touch)
+        /// </summary>
+        public void RegisterOuterTouchSurface(UIElement outerSurface)
+        {
+            if (outerSurface != null)
+            {
+                outerSurface.TouchDown += (s, e) =>
+                {
+                    if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
+                        return;
+                    Canvas_TouchDown(_canvas, e);
+                };
+                outerSurface.TouchMove += (s, e) =>
+                {
+                    if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
+                        return;
+                    Canvas_TouchMove(_canvas, e);
+                };
+                outerSurface.TouchUp += (s, e) =>
+                {
+                    if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
+                        return;
+                    Canvas_TouchUp(_canvas, e);
+                };
+                outerSurface.TouchLeave += (s, e) =>
+                {
+                    if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
+                        return;
+                    Canvas_TouchLeave(_canvas, e);
+                };
+                outerSurface.LostTouchCapture += (s, e) =>
+                {
+                    if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
+                        return;
+                    Canvas_LostTouchCapture(_canvas, e);
+                };
+            }
         }
 
         /// <summary>
@@ -252,6 +377,86 @@ namespace QASmartTouch.Handlers
                 int touchId = e.TouchDevice.Id;
                 Point position = touchPoint.Position;
 
+                // Track screen/window position for robust multi-touch gesture calculation
+                UIElement referenceElement = _canvas.Parent as UIElement ?? _canvas;
+                Point screenPos = e.GetTouchPoint(referenceElement).Position;
+                _activeTouchScreenPoints[touchId] = screenPos;
+
+                // --- SINGLE FINGER / GESTURE MODE (ĐƠN ĐIỂM) ---
+                if (CurrentMode == Managers.TouchInteractionMode.SingleFinger && 
+                    (IsMultiUserModeActive == null || !IsMultiUserModeActive()))
+                {
+                    // Tự động giải phóng cờ khóa nếu đã quá 400ms kể từ khi nhấc tay xong hoặc chỉ còn <= 1 ngón
+                    if (_suppressDrawingUntilAllReleased)
+                    {
+                        if ((DateTime.UtcNow - _lastGestureEndTime).TotalMilliseconds > 400 || _activeTouchScreenPoints.Count <= 1)
+                        {
+                            _suppressDrawingUntilAllReleased = false;
+                        }
+                        else
+                        {
+                            _canvas.CaptureTouch(e.TouchDevice);
+                            e.Handled = true;
+                            return;
+                        }
+                    }
+
+                    // Khi có từ 2 điểm chạm trở lên trên màn hình:
+                    if (_activeTouchScreenPoints.Count >= 2)
+                    {
+                        // 1. Rollback nét vẽ tạm của ngón 1 (Zero Ghost Ink)
+                        if (_singleDrawingTouchId != -1 || _preliminaryStroke != null)
+                        {
+                            try
+                            {
+                                if (_preliminaryStroke != null && _canvas.Children.Contains(_preliminaryStroke))
+                                {
+                                    _canvas.Children.Remove(_preliminaryStroke);
+                                }
+                                if (_singleDrawingTouchId != -1)
+                                {
+                                    _touchManager.CompleteStroke(_singleDrawingTouchId);
+                                }
+                            }
+                            catch { }
+                            _preliminaryStroke = null;
+                            _preliminaryTouchId = -1;
+                            _singleDrawingTouchId = -1;
+                        }
+
+                        // 2. Kích hoạt Cử chỉ 2 ngón nếu chưa bật
+                        if (!_isTwoFingerGestureActive)
+                        {
+                            var keys = _activeTouchScreenPoints.Keys.ToList();
+                            int id1 = keys[0];
+                            int id2 = keys[1];
+                            Point pt1 = _activeTouchScreenPoints[id1];
+                            Point pt2 = _activeTouchScreenPoints[id2];
+                            double dist = Math.Max(10.0, (pt1 - pt2).Length);
+
+                            _isTwoFingerGestureActive = true;
+                            _gestureTouchId1 = id1;
+                            _gestureTouchId2 = id2;
+                            _gestureStartDistance = dist;
+                            _gestureLastDistance = dist;
+                            _gestureFilteredDistance = dist;
+                            _gestureStartCenter = new Point((pt1.X + pt2.X) / 2.0, (pt1.Y + pt2.Y) / 2.0);
+                            _gestureLastCenter = _gestureStartCenter;
+                            _gestureMode = TwoFingerGestureMode.Pending;
+
+                            Point canvasCenter = referenceElement.TranslatePoint(_gestureStartCenter, _canvas);
+                            OnTwoFingerPinchPanStarted?.Invoke(canvasCenter);
+                        }
+
+                        _canvas.CaptureTouch(e.TouchDevice);
+                        e.Handled = true;
+                        return; // TUYỆT ĐỐI KHÔNG VẼ KHI CÓ 2+ NGÓN TAY Ở CHẾ ĐỘ ĐƠN ĐIỂM
+                    }
+
+                    // Nếu chỉ có đúng 1 ngón tay, ghi nhận ngón này là ngón vẽ duy nhất
+                    _singleDrawingTouchId = touchId;
+                }
+
                 // ✨ CRITICAL: Capture touch to prevent ScrollViewer interception
                 _canvas.CaptureTouch(e.TouchDevice);
 
@@ -283,6 +488,13 @@ namespace QASmartTouch.Handlers
                     _canvas.Children.Add(stroke);
                     // ✅ QC_4.2_STROKE_ABOVE_TABLE (NV-2a): Touch nét vẽ TRÊN Table/TextBox
                     Panel.SetZIndex(stroke, QASmartTouch.Helpers.ZIndexConstants.UserContentMax);
+
+                    // If this is touch 1 in SingleFinger mode, hold reference for ghost ink rollback if touch 2 arrives
+                    if (_activeTouchScreenPoints.Count == 1 && CurrentMode == Managers.TouchInteractionMode.SingleFinger)
+                    {
+                        _preliminaryStroke = stroke;
+                        _preliminaryTouchId = touchId;
+                    }
 
                     System.Diagnostics.Debug.WriteLine($"👆 Touch {touchId} DRAW at ({position.X:F0}, {position.Y:F0})");
                 }
@@ -332,8 +544,100 @@ namespace QASmartTouch.Handlers
 
             try
             {
-                var touchPoint = e.GetTouchPoint(_canvas);
                 int touchId = e.TouchDevice.Id;
+
+                // --- SINGLE FINGER / GESTURE MODE XỬ LÝ DI CHUYỂN ---
+                if (CurrentMode == Managers.TouchInteractionMode.SingleFinger && 
+                    (IsMultiUserModeActive == null || !IsMultiUserModeActive()))
+                {
+                    // 1. Đang trong Cử chỉ 2 ngón (Pinch-to-Zoom & Pan)
+                    if (_isTwoFingerGestureActive)
+                    {
+                        if (touchId == _gestureTouchId1 || touchId == _gestureTouchId2)
+                        {
+                            UIElement referenceElement = _canvas.Parent as UIElement ?? _canvas;
+                            Point screenPos = e.GetTouchPoint(referenceElement).Position;
+                            _activeTouchScreenPoints[touchId] = screenPos;
+
+                            if (_activeTouchScreenPoints.TryGetValue(_gestureTouchId1, out Point curPt1) &&
+                                _activeTouchScreenPoints.TryGetValue(_gestureTouchId2, out Point curPt2))
+                            {
+                                double curDist = Math.Max(10.0, (curPt1 - curPt2).Length);
+                                Point curCenter = new Point((curPt1.X + curPt2.X) / 2.0, (curPt1.Y + curPt2.Y) / 2.0);
+
+                                Vector panStep = curCenter - _gestureLastCenter;
+                                _gestureLastCenter = curCenter;
+
+                                // Tính độ lệch tích lũy so với lúc bắt đầu cử chỉ
+                                double totalDistDelta = Math.Abs(curDist - _gestureStartDistance);
+                                double totalScaleRatio = _gestureStartDistance > 0 ? (curDist / _gestureStartDistance) : 1.0;
+                                double totalCenterShift = (curCenter - _gestureStartCenter).Length;
+
+                                // Phân loại ý định cử chỉ: Kéo di chuyển (Pan) vs Thu phóng (Pinch Zoom)
+                                if (_gestureMode == TwoFingerGestureMode.Pending)
+                                {
+                                    // Nếu khoảng cách thay đổi rõ rệt (>= 22px hoặc >= 7%) -> Người dùng muốn Zoom
+                                    if (totalDistDelta >= 22.0 || Math.Abs(totalScaleRatio - 1.0) >= 0.07)
+                                    {
+                                        _gestureMode = TwoFingerGestureMode.PinchZoom;
+                                        _gestureFilteredDistance = curDist;
+                                        _gestureLastDistance = curDist;
+                                    }
+                                    // Nếu trung tâm 2 ngón đã di chuyển (>= 8px) mà khoảng cách không đổi nhiều -> Khóa KÉO BẢNG THUẦN TÚY (Pan Only)
+                                    else if (totalCenterShift >= 8.0)
+                                    {
+                                        _gestureMode = TwoFingerGestureMode.PanOnly;
+                                    }
+                                }
+                                else if (_gestureMode == TwoFingerGestureMode.PanOnly)
+                                {
+                                    // Nếu đang kéo bảng nhưng người dùng mở rộng hoặc chụm ngón tay rất mạnh (>= 40px hoặc >= 15%)
+                                    // thì mở khóa cho phép chuyển sang Zoom
+                                    if (totalDistDelta >= 40.0 || Math.Abs(totalScaleRatio - 1.0) >= 0.15)
+                                    {
+                                        _gestureMode = TwoFingerGestureMode.PinchZoom;
+                                        _gestureFilteredDistance = curDist;
+                                        _gestureLastDistance = curDist;
+                                    }
+                                }
+
+                                double scaleStep = 1.0; // Mặc định 1.0 (khóa zoom 100% khi Kéo bảng hoặc Pending)
+
+                                if (_gestureMode == TwoFingerGestureMode.PinchZoom)
+                                {
+                                    // Lọc làm mượt EMA để triệt tiêu rung chấn của cảm biến màn hình tương tác
+                                    _gestureFilteredDistance = 0.35 * curDist + 0.65 * _gestureFilteredDistance;
+                                    if (_gestureLastDistance > 0)
+                                    {
+                                        scaleStep = _gestureFilteredDistance / _gestureLastDistance;
+                                    }
+                                    _gestureLastDistance = _gestureFilteredDistance;
+                                }
+
+                                Point canvasCenter = referenceElement.TranslatePoint(curCenter, _canvas);
+                                OnTwoFingerPinchPan?.Invoke(canvasCenter, scaleStep, panStep);
+                            }
+                        }
+                        e.Handled = true;
+                        return;
+                    }
+
+                    // 2. Khóa an toàn sau khi kết thúc cử chỉ
+                    if (_suppressDrawingUntilAllReleased)
+                    {
+                        e.Handled = true;
+                        return;
+                    }
+
+                    // 3. RÀNG BUỘC TUYỆT ĐỐI CHẾ ĐỘ ĐƠN ĐIỂM: Chỉ ngón vẽ được cấp phép mới được vẽ
+                    if (touchId != _singleDrawingTouchId)
+                    {
+                        e.Handled = true;
+                        return;
+                    }
+                }
+
+                var touchPoint = e.GetTouchPoint(_canvas);
                 Point position = touchPoint.Position;
 
                 // ✅ QC_4.2_SMART_TOUCH_ERASER_PREVIEW_FIX: Luôn cập nhật vị trí vệt tẩy bám sát 100% điểm chạm bút cảm ứng
@@ -429,6 +733,54 @@ namespace QASmartTouch.Handlers
             {
                 int touchId = e.TouchDevice.Id;
                 _lastTouchPoints.Remove(touchId);
+                _activeTouchScreenPoints.Remove(touchId);
+
+                if (CurrentMode == Managers.TouchInteractionMode.SingleFinger && 
+                    (IsMultiUserModeActive == null || !IsMultiUserModeActive()))
+                {
+                    if (_isTwoFingerGestureActive)
+                    {
+                        _isTwoFingerGestureActive = false;
+                        _suppressDrawingUntilAllReleased = true;
+                        _gestureMode = TwoFingerGestureMode.Pending;
+                        _lastGestureEndTime = DateTime.UtcNow;
+                        OnTwoFingerPinchPanEnded?.Invoke();
+                    }
+
+                    if (touchId == _singleDrawingTouchId)
+                    {
+                        _singleDrawingTouchId = -1;
+                        _preliminaryStroke = null;
+                        _preliminaryTouchId = -1;
+                    }
+
+                    if (_activeTouchScreenPoints.Count == 0)
+                    {
+                        _suppressDrawingUntilAllReleased = false;
+                        _gestureTouchId1 = -1;
+                        _gestureTouchId2 = -1;
+                        _singleDrawingTouchId = -1;
+                        _gestureMode = TwoFingerGestureMode.Pending;
+                    }
+                }
+                else
+                {
+                    if (_isTwoFingerGestureActive)
+                    {
+                        _isTwoFingerGestureActive = false;
+                        _suppressDrawingUntilAllReleased = true;
+                        _gestureMode = TwoFingerGestureMode.Pending;
+                        OnTwoFingerPinchPanEnded?.Invoke();
+                    }
+
+                    if (_activeTouchScreenPoints.Count == 0)
+                    {
+                        _suppressDrawingUntilAllReleased = false;
+                        _gestureTouchId1 = -1;
+                        _gestureTouchId2 = -1;
+                        _gestureMode = TwoFingerGestureMode.Pending;
+                    }
+                }
 
                 // Clean up smoother for this touch ID to prevent memory leaks
                 if (_smoothers.ContainsKey(touchId))
@@ -465,12 +817,96 @@ namespace QASmartTouch.Handlers
             {
                 if (!_isEnabled) return;
 
+                int touchId = e.TouchDevice.Id;
+                _activeTouchScreenPoints.Remove(touchId);
+
+                if (CurrentMode == Managers.TouchInteractionMode.SingleFinger && 
+                    (IsMultiUserModeActive == null || !IsMultiUserModeActive()))
+                {
+                    // Kết thúc Two-Finger Gesture nếu đang chạy
+                    if (_isTwoFingerGestureActive)
+                    {
+                        _isTwoFingerGestureActive = false;
+                        _suppressDrawingUntilAllReleased = true; // Lockout safety
+                        _gestureMode = TwoFingerGestureMode.Pending;
+                        _lastGestureEndTime = DateTime.UtcNow;
+                        OnTwoFingerPinchPanEnded?.Invoke();
+
+                        if (_activeTouchScreenPoints.Count == 0)
+                        {
+                            _suppressDrawingUntilAllReleased = false;
+                            _gestureTouchId1 = -1;
+                            _gestureTouchId2 = -1;
+                            _singleDrawingTouchId = -1;
+                        }
+                        e.Handled = true;
+                        return;
+                    }
+
+                    // Khóa an toàn: nếu ngón còn lại nhấc sau cử chỉ
+                    if (_suppressDrawingUntilAllReleased)
+                    {
+                        if (_activeTouchScreenPoints.Count == 0)
+                        {
+                            _suppressDrawingUntilAllReleased = false;
+                            _gestureTouchId1 = -1;
+                            _gestureTouchId2 = -1;
+                            _singleDrawingTouchId = -1;
+                            _gestureMode = TwoFingerGestureMode.Pending;
+                        }
+                        e.Handled = true;
+                        return;
+                    }
+
+                    if (touchId == _singleDrawingTouchId)
+                    {
+                        _singleDrawingTouchId = -1;
+                    }
+                }
+                else
+                {
+                    // End Two-Finger Gesture if active (MultiFinger safety)
+                    if (_isTwoFingerGestureActive)
+                    {
+                        _isTwoFingerGestureActive = false;
+                        _suppressDrawingUntilAllReleased = true;
+                        _gestureMode = TwoFingerGestureMode.Pending;
+                        OnTwoFingerPinchPanEnded?.Invoke();
+
+                        if (_activeTouchScreenPoints.Count == 0)
+                        {
+                            _suppressDrawingUntilAllReleased = false;
+                            _gestureTouchId1 = -1;
+                            _gestureTouchId2 = -1;
+                        }
+                        e.Handled = true;
+                        return;
+                    }
+
+                    if (_suppressDrawingUntilAllReleased)
+                    {
+                        if (_activeTouchScreenPoints.Count == 0)
+                        {
+                            _suppressDrawingUntilAllReleased = false;
+                            _gestureTouchId1 = -1;
+                            _gestureTouchId2 = -1;
+                            _gestureMode = TwoFingerGestureMode.Pending;
+                        }
+                        e.Handled = true;
+                        return;
+                    }
+                }
+
+                if (touchId == _preliminaryTouchId)
+                {
+                    _preliminaryStroke = null;
+                    _preliminaryTouchId = -1;
+                }
+
                 if (_toolMode == TouchToolMode.None || 
                     (_toolMode == TouchToolMode.Eraser && _eraserMode == "ClearAll"))
                     return;
                 if (e.TouchDevice.Captured != _canvas) return;
-
-                int touchId = e.TouchDevice.Id;
 
                 if (_toolMode == TouchToolMode.Drawing)
                 {

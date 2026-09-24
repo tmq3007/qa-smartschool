@@ -207,8 +207,10 @@ namespace QASmartTouch.Forms
         private Rect _lastDraggedSelectionRect = Rect.Empty; // Vùng hình chữ nhật vừa kéo chọn trên bảng
         private System.Speech.Synthesis.SpeechSynthesizer? _speechSynthesizer; // 🔊 Text-To-Speech Synthesizer
         
-        // Pan (move canvas) when zoomed
+        // Pan (move canvas) when zoomed or using Space/Middle click
         private bool _isPanning = false;
+        private bool _isSpacebarDown = false;
+        private bool _isMiddleMousePanning = false;
         private Point _panStartPoint;
         private TranslateTransform? _panTransform;
         
@@ -294,6 +296,7 @@ namespace QASmartTouch.Forms
 
             // Initialize Touch Handler
             _touchHandler = new TouchHandler(MainInteractiveBoard);
+            _touchHandler.RegisterOuterTouchSurface(MainScrollViewer);
             _touchHandler.SetEraserEngine(_eraserEngine);
             _touchHandler.SetRecordAddAction(RecordAddAction);
             _touchHandler.SetRecordRemoveAction(RecordRemoveAction); // QC_4.2_TOUCH_ERASER_FIX: Wire undo cho touch erase
@@ -309,6 +312,10 @@ namespace QASmartTouch.Forms
             }); // ✅ Close SubMenus on touch canvas (Deferred to Background priority)
             _touchHandler.SetDrawingProperties(_currentPenColor, _currentPenSize, _currentBrushType);
             _touchHandler.GetColorForPosition = (pos) => _isMultiUserModeActive ? GetStudentByPosition(pos)?.Color : null;
+            _touchHandler.OnTwoFingerPinchPanStarted = OnTwoFingerPinchPanStarted;
+            _touchHandler.OnTwoFingerPinchPan = ApplyTwoFingerPinchPan;
+            _touchHandler.OnTwoFingerPinchPanEnded = OnTwoFingerPinchPanEnded;
+            _touchHandler.IsMultiUserModeActive = () => _isMultiUserModeActive;
             System.Diagnostics.Debug.WriteLine("✅ Touch interaction initialized");
 
             // QC_4.2_TOUCH_TOOLBAR: Wire direct touch activation for all toolbar buttons
@@ -367,6 +374,7 @@ namespace QASmartTouch.Forms
             
             // NG-3: Add keyboard shortcuts for Copy/Paste/Delete
             this.PreviewKeyDown += Form2_MainDashboard_PreviewKeyDown;
+            this.PreviewKeyUp += Form2_MainDashboard_PreviewKeyUp;
             this.KeyDown += Form2_MainDashboard_KeyDown;
             
             // Apply App Branding Configuration
@@ -714,12 +722,116 @@ namespace QASmartTouch.Forms
                 return;
             }
 
+            // ✅ Shortcut Ctrl + 0: Reset Zoom về 100%
+            if (e.Key == Key.D0 && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                ApplyZoom("Fixed", 1.0);
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+0: Reset Zoom to 100%");
+                return;
+            }
+
+            // ✅ Spacebar Pan: Giữ Space để kéo bảng (như Photoshop/Figma/Miro)
+            if (e.Key == Key.Space && !e.IsRepeat && !_isSpacebarDown)
+            {
+                _isSpacebarDown = true;
+                if (!_isDrawing)
+                {
+                    MainInteractiveBoard.Cursor = Cursors.Hand;
+                }
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Spacebar down: Pan mode ready");
+                return;
+            }
+
             // ❌ All OTHER keyboard shortcuts vẫn DISABLED cho touch-only interface
             System.Diagnostics.Debug.WriteLine($"⚠️ Keyboard shortcut disabled: {e.Key}");
             System.Diagnostics.Debug.WriteLine($"   Use Context Toolbar buttons for touch interaction");
             
             // Do not handle any keys - let them pass through
             // This ensures no keyboard shortcuts interfere with touch-based workflow
+        }
+
+        private void Form2_MainDashboard_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Space && _isSpacebarDown)
+            {
+                _isSpacebarDown = false;
+                if (_isPanning)
+                {
+                    _isPanning = false;
+                    MainInteractiveBoard.ReleaseMouseCapture();
+                }
+                RestoreCurrentToolCursor();
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Spacebar released: Pan mode finished");
+            }
+        }
+
+        /// <summary>
+        /// Khôi phục con trỏ chuột theo công cụ hiện tại đang được chọn
+        /// </summary>
+        public void RestoreCurrentToolCursor()
+        {
+            if (_drawingEnabled)
+            {
+                MainInteractiveBoard.Cursor = Cursors.Pen;
+            }
+            else if (_eraserEnabled)
+            {
+                MainInteractiveBoard.Cursor = Cursors.None;
+            }
+            else if (_selectionToolEnabled || _objectSelectionMode)
+            {
+                MainInteractiveBoard.Cursor = Cursors.Arrow;
+            }
+            else if (_zoomAreaSelectionEnabled)
+            {
+                MainInteractiveBoard.Cursor = Cursors.Cross;
+            }
+            else if (_currentZoomLevel > 1.0)
+            {
+                MainInteractiveBoard.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                MainInteractiveBoard.Cursor = Cursors.Arrow;
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật hiển thị Zoom Indicator HUD
+        /// </summary>
+        public void UpdateZoomHudDisplay()
+        {
+            try
+            {
+                if (txtHudZoomPercent != null)
+                {
+                    txtHudZoomPercent.Text = $"{_currentZoomLevel * 100:F0}%";
+                    
+                    if (Math.Abs(_currentZoomLevel - 1.0) > 0.001)
+                    {
+                        txtHudZoomPercent.Foreground = new SolidColorBrush(Color.FromRgb(0x2E, 0x86, 0xDE)); // #2E86DE xanh nổi bật
+                        if (hudZoomIndicator != null)
+                        {
+                            hudZoomIndicator.BorderBrush = new SolidColorBrush(Color.FromRgb(0x2E, 0x86, 0xDE));
+                        }
+                    }
+                    else
+                    {
+                        txtHudZoomPercent.Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)); // Trắng xám dịu khi 100%
+                        if (hudZoomIndicator != null)
+                        {
+                            hudZoomIndicator.BorderBrush = new SolidColorBrush(Color.FromRgb(0x40, 0x40, 0x40));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"UpdateZoomHudDisplay error: {ex.Message}");
+            }
         }
         
         /// <summary>
@@ -764,7 +876,11 @@ namespace QASmartTouch.Forms
                 board.LineSpacing = _currentLineSpacing;
                 board.LineOpacity = _currentLineOpacity;
 
-                // 3. Hủy chọn và ẩn UI trước khi chụp thumbnail và lưu
+                // 3. Lưu kích thước Canvas riêng biệt của trang hiện tại
+                board.CanvasWidth = MainInteractiveBoard.Width > 0 && !double.IsNaN(MainInteractiveBoard.Width) ? MainInteractiveBoard.Width : (MainInteractiveBoard.ActualWidth > 0 ? MainInteractiveBoard.ActualWidth : 1920);
+                board.CanvasHeight = MainInteractiveBoard.Height > 0 && !double.IsNaN(MainInteractiveBoard.Height) ? MainInteractiveBoard.Height : (MainInteractiveBoard.ActualHeight > 0 ? MainInteractiveBoard.ActualHeight : 1080);
+
+                // 4. Hủy chọn và ẩn UI trước khi chụp thumbnail và lưu
                 _selectionManager?.DeselectAll();
                 _selectionBox?.Detach();
                 _contextToolbar?.Hide();
@@ -773,8 +889,9 @@ namespace QASmartTouch.Forms
                 _moreMenu?.Hide();
             };
 
-            // ✅ GIAI ĐOẠN 2: Lắng nghe sự kiện chuyển bảng và xóa bảng
+            // ✅ GIAI ĐOẠN 2: Lắng nghe sự kiện chuyển bảng, tạo bảng và xóa bảng
             _boardManager.BoardSwitched += OnBoardSwitched;
+            _boardManager.BoardCreated += (s, e) => MarkAsDirty();
             _boardManager.BoardDeleted += OnBoardDeleted;
             
             System.Diagnostics.Debug.WriteLine($"✅ BoardManager initialized with {_boardManager.BoardCount} board(s)");
@@ -2373,6 +2490,8 @@ namespace QASmartTouch.Forms
             if (_touchHandler != null)
             {
                 _touchHandler.CurrentMode = mode;
+                _touchHandler.ResetTouchState();
+                UpdateTouchModeHudDisplay();
                 System.Diagnostics.Debug.WriteLine($"🔄 Touch mode: {mode}");
             }
         }

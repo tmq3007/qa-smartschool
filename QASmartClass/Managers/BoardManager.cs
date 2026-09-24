@@ -182,6 +182,8 @@ namespace QASmartTouch.Managers
                 Id = Guid.NewGuid(),
                 Name = name,
                 BackgroundColor = Colors.White,
+                CanvasWidth = 1920,
+                CanvasHeight = 1080,
                 CreatedAt = DateTime.Now,
                 LastModifiedAt = DateTime.Now,
                 IsActive = false
@@ -256,7 +258,9 @@ namespace QASmartTouch.Managers
                 newBoard.ObjectCount = newBoard.CanvasElements.Count;
             }
             
-            // Copy background settings & thumbnail
+            // Copy background settings & thumbnail & dimensions
+            newBoard.CanvasWidth = sourceBoard.CanvasWidth > 0 ? sourceBoard.CanvasWidth : 1920;
+            newBoard.CanvasHeight = sourceBoard.CanvasHeight > 0 ? sourceBoard.CanvasHeight : 1080;
             newBoard.BackgroundColorHex = sourceBoard.BackgroundColorHex;
             newBoard.BackgroundPattern = sourceBoard.BackgroundPattern;
             newBoard.LineSpacing = sourceBoard.LineSpacing;
@@ -719,6 +723,8 @@ namespace QASmartTouch.Managers
             // Store elements in board state
             board.CanvasElements = elements;
             board.ObjectCount = elements.Count; // Store object count
+            board.CanvasWidth = _mainCanvas.Width > 0 && !double.IsNaN(_mainCanvas.Width) ? _mainCanvas.Width : (_mainCanvas.ActualWidth > 0 ? _mainCanvas.ActualWidth : 1920);
+            board.CanvasHeight = _mainCanvas.Height > 0 && !double.IsNaN(_mainCanvas.Height) ? _mainCanvas.Height : (_mainCanvas.ActualHeight > 0 ? _mainCanvas.ActualHeight : 1080);
             board.LastModifiedAt = DateTime.Now;
             
             // Capture thumbnail preview
@@ -951,6 +957,12 @@ namespace QASmartTouch.Managers
             // Clear current canvas
             _mainCanvas.Children.Clear();
             
+            // Restore canvas size for per-page isolation
+            double targetW = board.CanvasWidth > 0 ? board.CanvasWidth : 1920;
+            double targetH = board.CanvasHeight > 0 ? board.CanvasHeight : 1080;
+            _mainCanvas.Width = targetW;
+            _mainCanvas.Height = targetH;
+            
             // Apply board settings
             _mainCanvas.Background = new SolidColorBrush(board.BackgroundColor);
             
@@ -1107,6 +1119,16 @@ namespace QASmartTouch.Managers
         /// Độ mờ đường kẻ ô ly (0-100)
         /// </summary>
         public int LineOpacity { get; set; } = 10;
+
+        /// <summary>
+        /// Chiều rộng Canvas của trang (mặc định 1920)
+        /// </summary>
+        public double CanvasWidth { get; set; } = 1920;
+
+        /// <summary>
+        /// Chiều cao Canvas của trang (mặc định 1080)
+        /// </summary>
+        public double CanvasHeight { get; set; } = 1080;
     }
     
     #endregion

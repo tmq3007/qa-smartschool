@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -18,6 +19,7 @@ namespace QASmartTouch.Forms
         public Form2_2_SubMenuEraser()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             // QC_4.2_TOUCH_PIPELINE: Popup Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
             if (btnClose != null)
             {

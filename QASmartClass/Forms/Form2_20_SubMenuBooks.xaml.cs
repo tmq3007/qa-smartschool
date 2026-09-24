@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using QASmartTouch.Modules.InteractiveBooks.Models;
 using QASmartTouch.Modules.InteractiveBooks.Services;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -20,6 +21,7 @@ namespace QASmartTouch.Forms
         public Form2_20_SubMenuBooks()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             if (btnClose != null)
             {
                 System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
@@ -148,6 +150,7 @@ namespace QASmartTouch.Forms
             button.Template = template;
 
             button.Click += GradeTab_Click;
+            TouchActivationHelper.WireButton(button);
 
             return button;
         }
@@ -311,6 +314,24 @@ namespace QASmartTouch.Forms
             var border = (Border)sender;
             var book = (Book)border.DataContext;
             OpenBook(book);
+        }
+
+        private void BookCard_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (sender is Border border && border.DataContext is Book book)
+            {
+                OpenBook(book);
+                e.Handled = true;
+            }
+        }
+
+        private void BookCard_StylusUp(object sender, StylusEventArgs e)
+        {
+            if (sender is Border border && border.DataContext is Book book)
+            {
+                OpenBook(book);
+                e.Handled = true;
+            }
         }
 
         private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)

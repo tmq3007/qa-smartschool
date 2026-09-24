@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Media;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -13,24 +14,35 @@ namespace QASmartTouch.Forms
         public bool ZoneIsolationEnabled { get; private set; }
         public bool ShowSplitLine { get; private set; }
 
+        private static string _savedStudent1Name = "Học sinh A";
+        private static int _savedStudent1ColorIndex = 0;
+        private static string _savedStudent2Name = "Học sinh B";
+        private static int _savedStudent2ColorIndex = 0;
+
         public Form2_7_4_MultiUserMode()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this);
             
             // Initialize default profiles
             Student1 = new StudentProfile
             {
-                Name = "Học sinh A",
+                Name = _savedStudent1Name,
                 Color = Colors.Blue,
                 Zone = SplitZone.Left
             };
 
             Student2 = new StudentProfile
             {
-                Name = "Học sinh B",
+                Name = _savedStudent2Name,
                 Color = Colors.Red,
                 Zone = SplitZone.Right
             };
+
+            txtStudent1Name.Text = _savedStudent1Name;
+            cmbStudent1Color.SelectedIndex = _savedStudent1ColorIndex;
+            txtStudent2Name.Text = _savedStudent2Name;
+            cmbStudent2Color.SelectedIndex = _savedStudent2ColorIndex;
 
             // Enable multi-user mode by default
             chkEnableMultiUser.IsChecked = true;
@@ -57,6 +69,12 @@ namespace QASmartTouch.Forms
                 Close();
                 return;
             }
+
+            // Save cache
+            _savedStudent1Name = txtStudent1Name.Text;
+            _savedStudent1ColorIndex = cmbStudent1Color.SelectedIndex;
+            _savedStudent2Name = txtStudent2Name.Text;
+            _savedStudent2ColorIndex = cmbStudent2Color.SelectedIndex;
 
             // Get split mode
             SelectedSplitMode = rbVertical.IsChecked.GetValueOrDefault() 

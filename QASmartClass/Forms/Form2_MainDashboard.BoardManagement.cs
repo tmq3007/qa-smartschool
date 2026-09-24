@@ -67,80 +67,77 @@ namespace QASmartTouch.Forms
                     MainInteractiveBoard.Children.Remove(rect);
                 }
                 
+                // Khởi tạo màu nền cơ bản
+                Color bgColor;
+                if (!string.IsNullOrEmpty(color))
+                {
+                    try
+                    {
+                        bgColor = (Color)ColorConverter.ConvertFromString(color);
+                    }
+                    catch
+                    {
+                        bgColor = (Color)ColorConverter.ConvertFromString("#3D6D64");
+                    }
+                }
+                else
+                {
+                    bgColor = (Color)ColorConverter.ConvertFromString("#3D6D64");
+                }
+                var solidBgBrush = new SolidColorBrush(bgColor);
+
+                // Đồng bộ màu nền ra khung chứa ngoài cùng (ContentGrid & MainScrollViewer)
+                if (ContentGrid != null)
+                {
+                    ContentGrid.Background = solidBgBrush;
+                }
+                if (MainScrollViewer != null)
+                {
+                    MainScrollViewer.Background = Brushes.Transparent;
+                }
+
+                // Không gian nền ảo rộng lớn: đảm bảo khi zoom nhỏ (50%) hay pan, nền và đường kẻ vẫn bao phủ toàn màn hình
+                int spacing;
+                if (pattern == "Dots") spacing = 30;
+                else if (pattern == "MusicStaff") spacing = Math.Max(10, _currentLineSpacing) * 4;
+                else spacing = Math.Max(10, _currentLineSpacing);
+
+                const double VIRTUAL_OFFSET = 50000.0;
+                double alignedOffset = Math.Ceiling(VIRTUAL_OFFSET / spacing) * spacing;
+                double virtualSize = alignedOffset * 2 + 20000.0;
+
+                // Tạo Rectangle màu nền bao phủ toàn bộ không gian
+                var bgRect = new Rectangle
+                {
+                    Tag = "BackgroundLayer",
+                    Width = virtualSize,
+                    Height = virtualSize,
+                    Fill = solidBgBrush,
+                    IsHitTestVisible = false
+                };
+                Canvas.SetLeft(bgRect, -alignedOffset);
+                Canvas.SetTop(bgRect, -alignedOffset);
+                MainInteractiveBoard.Children.Insert(0, bgRect);
+                Panel.SetZIndex(bgRect, ZIndexConstants.Background);
+
                 if (hasPattern)
                 {
-                    double initWidth = MainInteractiveBoard.ActualWidth > 0 ? MainInteractiveBoard.ActualWidth : 1920;
-                    double initHeight = MainInteractiveBoard.ActualHeight > 0 ? MainInteractiveBoard.ActualHeight : 1080;
-
-                    // Create background color rectangle with dynamic bindings
-                    var bgRect = new Rectangle
-                    {
-                        Tag = "BackgroundLayer",
-                        Width = initWidth,
-                        Height = initHeight,
-                        // ✅ QC_4.2_GRID_PROTECT (G-1): Grid không bao giờ nhận touch/click
-                        IsHitTestVisible = false
-                    };
-                    bgRect.SetBinding(FrameworkElement.WidthProperty, new System.Windows.Data.Binding("ActualWidth") { Source = MainInteractiveBoard });
-                    bgRect.SetBinding(FrameworkElement.HeightProperty, new System.Windows.Data.Binding("ActualHeight") { Source = MainInteractiveBoard });
-                    
-                    if (!string.IsNullOrEmpty(color))
-                    {
-                        try
-                        {
-                            bgRect.Fill = new SolidColorBrush(
-                                (Color)ColorConverter.ConvertFromString(color)
-                            );
-                        }
-                        catch
-                        {
-                            bgRect.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3D6D64"));
-                        }
-                    }
-                    else
-                    {
-                        bgRect.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3D6D64"));
-                    }
-                    
-                    // Create pattern rectangle with dynamic bindings
+                    // Tạo Rectangle mẫu kẻ ô ly/đường kẻ bao phủ cùng không gian và căn chuẩn theo tile
                     var patternRect = new Rectangle
                     {
                         Fill = CreatePatternBrushByName(pattern),
                         Tag = "BackgroundLayer",
-                        Width = initWidth,
-                        Height = initHeight,
-                        // ✅ QC_4.2_GRID_PROTECT (G-1): Grid không bao giờ nhận touch/click
+                        Width = virtualSize,
+                        Height = virtualSize,
                         IsHitTestVisible = false
                     };
-                    patternRect.SetBinding(FrameworkElement.WidthProperty, new System.Windows.Data.Binding("ActualWidth") { Source = MainInteractiveBoard });
-                    patternRect.SetBinding(FrameworkElement.HeightProperty, new System.Windows.Data.Binding("ActualHeight") { Source = MainInteractiveBoard });
-                    
-                    // Add to canvas at index 0 (bottom layer)
-                    MainInteractiveBoard.Children.Insert(0, bgRect);
+                    Canvas.SetLeft(patternRect, -alignedOffset);
+                    Canvas.SetTop(patternRect, -alignedOffset);
                     MainInteractiveBoard.Children.Insert(1, patternRect);
-                    // ✅ QC_4.2_GRID_PROTECT (G-2): Pin tại (0,0) tránh NaN position khi layout thay đổi
-                    Canvas.SetLeft(bgRect, 0);
-                    Canvas.SetTop(bgRect, 0);
-                    Canvas.SetLeft(patternRect, 0);
-                    Canvas.SetTop(patternRect, 0);
-                    Panel.SetZIndex(bgRect, ZIndexConstants.Background);
                     Panel.SetZIndex(patternRect, ZIndexConstants.GridOverlay);
-                    
-                    // Set canvas background to transparent
-                    MainInteractiveBoard.Background = Brushes.Transparent;
                 }
-                else if (!string.IsNullOrEmpty(color))
-                {
-                    // Only color, no pattern - use Canvas.Background
-                    MainInteractiveBoard.Background = new SolidColorBrush(
-                        (Color)ColorConverter.ConvertFromString(color)
-                    );
-                }
-                else
-                {
-                    // Default chalkboard green
-                    MainInteractiveBoard.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3D6D64"));
-                }
+
+                MainInteractiveBoard.Background = Brushes.Transparent;
             }
             catch (Exception ex)
             {
@@ -191,12 +188,14 @@ namespace QASmartTouch.Forms
                 System.Diagnostics.Debug.WriteLine($"❌ Failed to apply default background: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                 // Fallback to chalkboard green if error
-                MainInteractiveBoard.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3D6D64"));
+                var fallbackBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3D6D64"));
+                MainInteractiveBoard.Background = fallbackBrush;
+                if (ContentGrid != null) ContentGrid.Background = fallbackBrush;
             }
         }
 
         /// <summary>
-        /// âœ¨ NEW: Apply custom background image to MainInteractiveBoard
+        /// ✨ NEW: Apply custom background image to MainInteractiveBoard
         /// </summary>
         public void ApplyCanvasBackgroundImage(System.Windows.Media.Imaging.BitmapImage? backgroundImage, string? pattern = null)
         {
@@ -213,6 +212,11 @@ namespace QASmartTouch.Forms
 
                 if (backgroundImage != null)
                 {
+                    if (ContentGrid != null)
+                    {
+                        ContentGrid.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E"));
+                    }
+
                     // Create image background rectangle
                     var imageBrush = new ImageBrush
                     {
@@ -262,7 +266,9 @@ namespace QASmartTouch.Forms
                 else
                 {
                     // No image, fallback to chalkboard green
-                    MainInteractiveBoard.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3D6D64"));
+                    var fallbackBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3D6D64"));
+                    MainInteractiveBoard.Background = fallbackBrush;
+                    if (ContentGrid != null) ContentGrid.Background = fallbackBrush;
                 }
             }
             catch (Exception ex)
@@ -736,190 +742,214 @@ namespace QASmartTouch.Forms
 
         #endregion
 
-        #region Multi-User Mode (Split Screen for 2 Students)
+        #region Multi-User Mode (Dedicated Dual Board Sandbox - Umind style)
 
         private bool _isMultiUserModeActive = false;
-        private bool _isCustomColorSelected = false; // Flag to allow custom color override
-        private SplitMode _currentSplitMode;
+        private bool _zoneIsolationEnabled = false;
         private StudentProfile? _student1;
         private StudentProfile? _student2;
-        private Border? _splitLine;
-        private TextBlock? _student1Label;
-        private TextBlock? _student2Label;
-        private bool _zoneIsolationEnabled = false;
-        private bool _showSplitLine = true;
+
+        public bool IsMultiUserModeActive => _isMultiUserModeActive;
 
         /// <summary>
-        /// Enable multi-user mode with split screen
+        /// Khởi chạy Chế độ Đa người dùng (2 học sinh cùng làm bài) theo mô hình Umind Sandbox chuyên biệt
         /// </summary>
-        public void EnableMultiUserMode(SplitMode splitMode, StudentProfile student1, StudentProfile student2, bool zoneIsolation = false, bool showSplitLine = true)
+        public void StartMultiUserSession(StudentProfile student1, StudentProfile student2)
         {
-            _isMultiUserModeActive = true;
-            _isCustomColorSelected = false; // Reset to use student team colors initially
-            _currentSplitMode = splitMode;
-            _student1 = student1;
-            _student2 = student2;
-            _zoneIsolationEnabled = zoneIsolation;
-            _showSplitLine = showSplitLine;
+            try
+            {
+                _student1 = student1;
+                _student2 = student2;
+                _isMultiUserModeActive = true;
 
-            // Create visual split line
-            CreateSplitLine();
+                // 1. Lưu lại trạng thái bài giảng hiện tại của giáo viên
+                _boardManager?.SaveCurrentBoardState();
 
-            // Create student labels
-            CreateStudentLabels();
+                // 2. Kế thừa màu nền hiện tại của bảng chính
+                Brush currentBg = MainInteractiveBoard.Background?.Clone() ?? new SolidColorBrush(Color.FromRgb(0x3D, 0x6D, 0x64));
 
-            System.Diagnostics.Debug.WriteLine($"✅ Multi-user mode enabled - {splitMode}, {student1.Name} vs {student2.Name}, Isolation={zoneIsolation}, ShowLine={showSplitLine}");
+                // 3. Đăng ký sự kiện hoàn thành từ overlay (chỉ đăng ký 1 lần)
+                multiUserOverlay.SessionCompleted -= MultiUserOverlay_SessionCompleted;
+                multiUserOverlay.SessionCompleted += MultiUserOverlay_SessionCompleted;
+
+                // 4. Kích hoạt và hiển thị Sandbox Overlay
+                multiUserOverlay.StartSession(
+                    student1.Name, student1.Color,
+                    student2.Name, student2.Color,
+                    currentBg
+                );
+                multiUserOverlay.Visibility = Visibility.Visible;
+
+                System.Diagnostics.Debug.WriteLine($"✅ Multi-User Sandbox Session started: {student1.Name} vs {student2.Name}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error starting Multi-User session: {ex.Message}");
+            }
+        }
+
+        private void MultiUserOverlay_SessionCompleted(object? sender, QASmartTouch.Controls.MultiUserSessionEventArgs e)
+        {
+            try
+            {
+                if (e.SaveAsNewBoard && _boardManager != null)
+                {
+                    // Tạo một trang bài giảng mới để lưu kết quả bài làm của 2 học sinh
+                    string boardTitle = $"Bài làm: {e.Student1Name} vs {e.Student2Name}";
+                    var newBoard = _boardManager.CreateBoard(boardTitle);
+                    if (newBoard != null)
+                    {
+                        var elements = new System.Collections.Generic.List<UIElement>();
+                        double targetW = 1920;
+                        double targetH = 1080;
+                        double halfW = targetW / 2;
+
+                        // 1. Thêm đường phân cách giữa (Divider)
+                        var dividerLine = new System.Windows.Shapes.Line
+                        {
+                            X1 = halfW,
+                            Y1 = 0,
+                            X2 = halfW,
+                            Y2 = targetH,
+                            Stroke = new SolidColorBrush(Color.FromArgb(120, 255, 255, 255)),
+                            StrokeThickness = 3,
+                            StrokeDashArray = new DoubleCollection { 4, 2 },
+                            Tag = "MultiUserDivider"
+                        };
+                        Panel.SetZIndex(dividerLine, 10);
+                        elements.Add(dividerLine);
+
+                        // 2. Thêm nhãn tên Học sinh 1
+                        var labelStudent1 = new TextBlock
+                        {
+                            Text = $"🔵 {e.Student1Name}",
+                            FontSize = 26,
+                            FontWeight = FontWeights.Bold,
+                            Foreground = new SolidColorBrush(e.Student1Color),
+                            Background = new SolidColorBrush(Color.FromArgb(200, 30, 39, 46)),
+                            Padding = new Thickness(16, 8, 16, 8),
+                            Tag = "MultiUserLabel"
+                        };
+                        Canvas.SetLeft(labelStudent1, 30);
+                        Canvas.SetTop(labelStudent1, 30);
+                        Panel.SetZIndex(labelStudent1, 20);
+                        elements.Add(labelStudent1);
+
+                        // 3. Thêm nhãn tên Học sinh 2
+                        var labelStudent2 = new TextBlock
+                        {
+                            Text = $"🔴 {e.Student2Name}",
+                            FontSize = 26,
+                            FontWeight = FontWeights.Bold,
+                            Foreground = new SolidColorBrush(e.Student2Color),
+                            Background = new SolidColorBrush(Color.FromArgb(200, 30, 39, 46)),
+                            Padding = new Thickness(16, 8, 16, 8),
+                            Tag = "MultiUserLabel"
+                        };
+                        Canvas.SetLeft(labelStudent2, halfW + 30);
+                        Canvas.SetTop(labelStudent2, 30);
+                        Panel.SetZIndex(labelStudent2, 20);
+                        elements.Add(labelStudent2);
+
+                        // Tỉ lệ scale nếu kích thước render thực tế khác 1920x1080
+                        double scaleX = e.ActualAreaWidth > 0 ? (targetW / e.ActualAreaWidth) : 1.0;
+                        double scaleY = e.ActualAreaHeight > 0 ? (targetH / e.ActualAreaHeight) : 1.0;
+
+                        // 4. Clone nét vẽ Học sinh 1 (Nửa trái)
+                        foreach (var pl in e.LeftPolylines)
+                        {
+                            var clone = ClonePolyline(pl, 0, 0, scaleX, scaleY);
+                            clone.Tag = "Student1Stroke";
+                            elements.Add(clone);
+                        }
+
+                        // 5. Clone nét vẽ Học sinh 2 (Nửa phải: offset halfW)
+                        foreach (var pl in e.RightPolylines)
+                        {
+                            var clone = ClonePolyline(pl, halfW, 0, scaleX, scaleY);
+                            clone.Tag = "Student2Stroke";
+                            elements.Add(clone);
+                        }
+
+                        newBoard.CanvasElements = elements;
+                        newBoard.ObjectCount = elements.Count;
+                        newBoard.CanvasWidth = targetW;
+                        newBoard.CanvasHeight = targetH;
+                        newBoard.LastModifiedAt = DateTime.Now;
+
+                        ShowSmartStatusBadge($"💾 Đã lưu bài làm thành Trang {_boardManager.Boards.Count}: {newBoard.Name}");
+                    }
+                }
+                else
+                {
+                    ShowSmartStatusBadge("ℹ️ Đã kết thúc chế độ thi đua (Không lưu nháp)");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error saving multi-user session: {ex.Message}");
+            }
+            finally
+            {
+                // Ẩn Sandbox Overlay và trả về trang bài giảng hiện tại
+                multiUserOverlay.Visibility = Visibility.Collapsed;
+                _isMultiUserModeActive = false;
+            }
+        }
+
+        private System.Windows.Shapes.Polyline ClonePolyline(
+            System.Windows.Shapes.Polyline source, double offsetX, double offsetY, double scaleX = 1.0, double scaleY = 1.0)
+        {
+            var polyline = new System.Windows.Shapes.Polyline
+            {
+                Stroke = source.Stroke?.Clone(),
+                StrokeThickness = source.StrokeThickness,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
+                StrokeLineJoin = PenLineJoin.Round,
+                Opacity = source.Opacity,
+                SnapsToDevicePixels = true
+            };
+
+            var points = new PointCollection();
+            foreach (var pt in source.Points)
+            {
+                points.Add(new Point((pt.X * scaleX) + offsetX, (pt.Y * scaleY) + offsetY));
+            }
+            polyline.Points = points;
+            Panel.SetZIndex(polyline, QASmartTouch.Helpers.ZIndexConstants.UserContentMax);
+            return polyline;
         }
 
         /// <summary>
-        /// Disable multi-user mode
+        /// Tương thích ngược: Bật chế độ đa người dùng
+        /// </summary>
+        public void EnableMultiUserMode(SplitMode splitMode, StudentProfile student1, StudentProfile student2, bool zoneIsolation = false, bool showSplitLine = true)
+        {
+            StartMultiUserSession(student1, student2);
+        }
+
+        /// <summary>
+        /// Tương thích ngược: Tắt chế độ đa người dùng
         /// </summary>
         public void DisableMultiUserMode()
         {
             _isMultiUserModeActive = false;
-            _isCustomColorSelected = false;
-            _student1 = null;
-            _student2 = null;
-
-            // Remove split line
-            if (_splitLine != null && MainInteractiveBoard.Children.Contains(_splitLine))
+            if (multiUserOverlay != null)
             {
-                MainInteractiveBoard.Children.Remove(_splitLine);
-                _splitLine = null;
+                multiUserOverlay.Visibility = Visibility.Collapsed;
             }
-
-            // Remove labels
-            if (_student1Label != null && MainInteractiveBoard.Children.Contains(_student1Label))
-            {
-                MainInteractiveBoard.Children.Remove(_student1Label);
-                _student1Label = null;
-            }
-
-            if (_student2Label != null && MainInteractiveBoard.Children.Contains(_student2Label))
-            {
-                MainInteractiveBoard.Children.Remove(_student2Label);
-                _student2Label = null;
-            }
-
-            System.Diagnostics.Debug.WriteLine("✅ Multi-user mode disabled");
-        }
-
-        private void CreateSplitLine()
-        {
-            // Remove old split line if exists
-            if (_splitLine != null && MainInteractiveBoard.Children.Contains(_splitLine))
-            {
-                MainInteractiveBoard.Children.Remove(_splitLine);
-            }
-
-            _splitLine = new Border
-            {
-                Tag = "MultiUserSplitLine",
-                Background = new SolidColorBrush(Color.FromArgb(100, 0, 0, 0)), // Semi-transparent
-                BorderBrush = new SolidColorBrush(Colors.Gray),
-                BorderThickness = new Thickness(2),
-                Visibility = _showSplitLine ? Visibility.Visible : Visibility.Collapsed
-            };
-
-            if (_currentSplitMode == SplitMode.Vertical)
-            {
-                // Vertical split line (middle of canvas)
-                _splitLine.Width = 4;
-                _splitLine.Height = MainInteractiveBoard.ActualHeight;
-                Canvas.SetLeft(_splitLine, MainInteractiveBoard.ActualWidth / 2 - 2);
-                Canvas.SetTop(_splitLine, 0);
-            }
-            else
-            {
-                // Horizontal split line (middle of canvas)
-                _splitLine.Width = MainInteractiveBoard.ActualWidth;
-                _splitLine.Height = 4;
-                Canvas.SetLeft(_splitLine, 0);
-                Canvas.SetTop(_splitLine, MainInteractiveBoard.ActualHeight / 2 - 2);
-            }
-
-            MainInteractiveBoard.Children.Add(_splitLine);
-        }
-
-        private void CreateStudentLabels()
-        {
-            // Remove old labels
-            if (_student1Label != null && MainInteractiveBoard.Children.Contains(_student1Label))
-            {
-                MainInteractiveBoard.Children.Remove(_student1Label);
-            }
-            if (_student2Label != null && MainInteractiveBoard.Children.Contains(_student2Label))
-            {
-                MainInteractiveBoard.Children.Remove(_student2Label);
-            }
-
-            if (_student1 == null || _student2 == null) return;
-
-            // Create student 1 label
-            _student1Label = new TextBlock
-            {
-                Tag = "MultiUserLabel",
-                Text = _student1.Name,
-                FontSize = 24,
-                FontWeight = FontWeights.Bold,
-                Foreground = _student1.GetBrush(),
-                Background = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
-                Padding = new Thickness(15, 8, 15, 8)
-            };
-
-            // Create student 2 label
-            _student2Label = new TextBlock
-            {
-                Tag = "MultiUserLabel",
-                Text = _student2.Name,
-                FontSize = 24,
-                FontWeight = FontWeights.Bold,
-                Foreground = _student2.GetBrush(),
-                Background = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
-                Padding = new Thickness(15, 8, 15, 8)
-            };
-
-            if (_currentSplitMode == SplitMode.Vertical)
-            {
-                // Position labels for vertical split
-                Canvas.SetLeft(_student1Label, 20);
-                Canvas.SetTop(_student1Label, 20);
-
-                Canvas.SetLeft(_student2Label, MainInteractiveBoard.ActualWidth / 2 + 20);
-                Canvas.SetTop(_student2Label, 20);
-            }
-            else
-            {
-                // Position labels for horizontal split
-                Canvas.SetLeft(_student1Label, 20);
-                Canvas.SetTop(_student1Label, 20);
-
-                Canvas.SetLeft(_student2Label, 20);
-                Canvas.SetTop(_student2Label, MainInteractiveBoard.ActualHeight / 2 + 20);
-            }
-
-            MainInteractiveBoard.Children.Add(_student1Label);
-            MainInteractiveBoard.Children.Add(_student2Label);
         }
 
         /// <summary>
-        /// Get student profile based on touch position
+        /// Tương thích ngược: Lấy profile học sinh theo tọa độ
         /// </summary>
         private StudentProfile? GetStudentByPosition(Point position)
         {
-            if (!_isMultiUserModeActive || _student1 == null || _student2 == null || _isCustomColorSelected)
+            if (!_isMultiUserModeActive || _student1 == null || _student2 == null)
                 return null;
 
-            if (_currentSplitMode == SplitMode.Vertical)
-            {
-                // Left half = Student 1, Right half = Student 2
-                return position.X < MainInteractiveBoard.ActualWidth / 2 ? _student1 : _student2;
-            }
-            else
-            {
-                // Top half = Student 1, Bottom half = Student 2
-                return position.Y < MainInteractiveBoard.ActualHeight / 2 ? _student1 : _student2;
-            }
+            return position.X < MainInteractiveBoard.ActualWidth / 2 ? _student1 : _student2;
         }
 
         #endregion
@@ -948,19 +978,47 @@ namespace QASmartTouch.Forms
                     _redoStack = new System.Collections.Generic.Stack<UndoRedoAction>(e.NewBoard.RedoStack.Reverse());
                     UpdateButtonStates();
 
-                    // 3. Tái tạo nền bảng của trang mới
-                    ApplyCanvasBackground(
-                        e.NewBoard.BackgroundColorHex ?? "#3D6D64",
-                        e.NewBoard.BackgroundPattern,
-                        e.NewBoard.LineSpacing > 0 ? e.NewBoard.LineSpacing : 40,
-                        e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 10
-                    );
+                    // Phục hồi kích thước Canvas riêng biệt của trang mới
+                    double targetW = e.NewBoard.CanvasWidth > 0 ? e.NewBoard.CanvasWidth : 1920;
+                    double targetH = e.NewBoard.CanvasHeight > 0 ? e.NewBoard.CanvasHeight : 1080;
+                    SetCanvasSize(targetW, targetH);
+                    UpdateScrollBarVisibility();
+
+                    // 3. Tái tạo nền bảng của trang mới (hỗ trợ ảnh nền hoặc màu sắc + hoa văn)
+                    if (!string.IsNullOrEmpty(e.NewBoard.BackgroundImagePath) && System.IO.File.Exists(e.NewBoard.BackgroundImagePath))
+                    {
+                        try
+                        {
+                            var bitmap = new BitmapImage(new Uri(e.NewBoard.BackgroundImagePath, UriKind.Absolute));
+                            ApplyCanvasBackgroundImage(bitmap, e.NewBoard.BackgroundPattern);
+                        }
+                        catch
+                        {
+                            ApplyCanvasBackground(
+                                e.NewBoard.BackgroundColorHex ?? "#3D6D64",
+                                e.NewBoard.BackgroundPattern,
+                                e.NewBoard.LineSpacing > 0 ? e.NewBoard.LineSpacing : 40,
+                                e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 10
+                            );
+                        }
+                    }
+                    else
+                    {
+                        ApplyCanvasBackground(
+                            e.NewBoard.BackgroundColorHex ?? "#3D6D64",
+                            e.NewBoard.BackgroundPattern,
+                            e.NewBoard.LineSpacing > 0 ? e.NewBoard.LineSpacing : 40,
+                            e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 10
+                        );
+                    }
                 }
                 else
                 {
                     _undoStack.Clear();
                     _redoStack.Clear();
                     UpdateButtonStates();
+                    SetCanvasSize(1920, 1080);
+                    UpdateScrollBarVisibility();
                 }
 
                 // 4. Đồng bộ lại toàn bộ đối tượng của trang mới vào SelectionManager
@@ -986,8 +1044,60 @@ namespace QASmartTouch.Forms
 
         private void OnBoardDeleted(object? sender, QASmartTouch.Managers.BoardEventArgs e)
         {
+            MarkAsDirty();
             UpdateButtonStates();
             ShowSmartStatusBadge($"🗑️ Đã xóa: {e.Board.Name}");
+        }
+
+        #endregion
+
+        #region Dirty State & Unsaved Changes Tracking
+
+        private bool _isDirty = false;
+
+        /// <summary>
+        /// Cho biết bài giảng có các thay đổi chưa lưu hay không
+        /// </summary>
+        public bool HasUnsavedChanges => _isDirty;
+
+        /// <summary>
+        /// Đánh dấu bài giảng đã bị thay đổi (cần lưu)
+        /// </summary>
+        public void MarkAsDirty()
+        {
+            _isDirty = true;
+        }
+
+        /// <summary>
+        /// Xóa cờ thay đổi (sau khi lưu hoặc mở bài giảng thành công)
+        /// </summary>
+        public void ClearDirty()
+        {
+            _isDirty = false;
+        }
+
+        /// <summary>
+        /// Kiểm tra xem có dữ liệu bài giảng thực sự chưa lưu hay không
+        /// </summary>
+        public bool CheckHasUnsavedChanges()
+        {
+            if (!_isDirty) return false;
+
+            // Kiểm tra các trang bảng trong BoardManager
+            if (_boardManager != null)
+            {
+                bool hasElementsInBoards = _boardManager.Boards.Any(b =>
+                    b.CanvasElements != null && b.CanvasElements.Any(el => !_boardManager.IsSystemElement(el)));
+                if (hasElementsInBoards) return true;
+            }
+
+            // Kiểm tra trang hiện tại trên Canvas
+            bool hasCanvasContent = MainInteractiveBoard.Children.OfType<UIElement>()
+                .Any(el => _boardManager != null 
+                    ? !_boardManager.IsSystemElement(el) 
+                    : (el is not FrameworkElement fe || fe.Tag?.ToString() != "BackgroundLayer"));
+
+            return hasCanvasContent;
         }
 
         #endregion
@@ -1005,7 +1115,7 @@ namespace QASmartTouch.Forms
         /// Lưu bài giảng hiện tại (.qasc)
         /// Nếu filePath rỗng và chưa từng lưu -> mở SaveFileDialog
         /// </summary>
-        public bool SaveCurrentLecture(string? customFilePath = null)
+        public bool SaveCurrentLecture(string? customFilePath = null, bool showOpenFolderPrompt = true)
         {
             if (_boardManager == null)
             {
@@ -1059,23 +1169,31 @@ namespace QASmartTouch.Forms
                 if (success)
                 {
                     _currentLectureFilePath = targetPath;
+                    _isDirty = false;
                     RecentFilesService.Instance.AddFile(targetPath, title);
 
-                    // Hiển thị thông báo xác nhận vị trí lưu và cho phép mở thư mục ngay
-                    var msgResult = MessageBox.Show(
-                        $"Đã lưu bài giảng thành công!\n\n📁 Vị trí lưu:\n{targetPath}\n\nBạn có muốn mở thư mục chứa tệp này không?",
-                        "Lưu bài giảng",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Information);
-
-                    if (msgResult == MessageBoxResult.Yes)
+                    if (showOpenFolderPrompt)
                     {
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        // Hiển thị thông báo xác nhận vị trí lưu và cho phép mở thư mục ngay
+                        var msgResult = MessageBox.Show(
+                            $"Đã lưu bài giảng thành công!\n\n📁 Vị trí lưu:\n{targetPath}\n\nBạn có muốn mở thư mục chứa tệp này không?",
+                            "Lưu bài giảng",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Information);
+
+                        if (msgResult == MessageBoxResult.Yes)
                         {
-                            FileName = "explorer.exe",
-                            Arguments = $"/select,\"{targetPath}\"",
-                            UseShellExecute = true
-                        });
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = "explorer.exe",
+                                Arguments = $"/select,\"{targetPath}\"",
+                                UseShellExecute = true
+                            });
+                        }
+                    }
+                    else
+                    {
+                        ShowSmartStatusBadge($"💾 Đã lưu bài giảng: {System.IO.Path.GetFileName(targetPath)}");
                     }
 
                     return true;
@@ -1110,6 +1228,7 @@ namespace QASmartTouch.Forms
                 if (manifest != null)
                 {
                     _currentLectureFilePath = filePath;
+                    _isDirty = false;
                     RecentFilesService.Instance.AddFile(filePath, manifest.Title);
                     UpdateButtonStates();
                     ShowSmartStatusBadge($"📂 Đã mở bài giảng: {System.IO.Path.GetFileName(filePath)}");

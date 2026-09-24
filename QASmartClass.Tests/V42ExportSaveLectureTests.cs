@@ -269,5 +269,38 @@ namespace QASmartClass.Tests
             thread.Start();
             thread.Join();
         }
+
+        [Fact]
+        public void Test_Form2_DirtyState_And_UnsavedChangesLogic()
+        {
+            var thread = new Thread(() =>
+            {
+                var dashboard = new QASmartTouch.Forms.Form2_MainDashboard();
+
+                // Ban đầu khởi tạo: chưa có thao tác sửa đổi -> HasUnsavedChanges = false
+                Assert.False(dashboard.HasUnsavedChanges);
+                Assert.False(dashboard.CheckHasUnsavedChanges());
+
+                // Khi đánh dấu dirty
+                dashboard.MarkAsDirty();
+                Assert.True(dashboard.HasUnsavedChanges);
+
+                // Thêm một nét vẽ/phần tử người dùng
+                var userElement = new Rectangle { Width = 50, Height = 50, Fill = Brushes.Blue };
+                dashboard.MainInteractiveBoard.Children.Add(userElement);
+
+                // Lúc này CheckHasUnsavedChanges() phải trả về true
+                Assert.True(dashboard.CheckHasUnsavedChanges());
+
+                // Khi gọi ClearDirty (hoặc sau khi lưu thành công)
+                dashboard.ClearDirty();
+                Assert.False(dashboard.HasUnsavedChanges);
+                Assert.False(dashboard.CheckHasUnsavedChanges());
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
     }
 }

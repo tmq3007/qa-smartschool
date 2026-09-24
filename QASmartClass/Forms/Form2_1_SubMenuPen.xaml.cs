@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using QASmartTouch.Services.VersionManagement;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -19,6 +20,7 @@ namespace QASmartTouch.Forms
         public Form2_1_SubMenuPen()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             // QC_4.2_TOUCH_PIPELINE: Popup Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
             if (btnClose != null)
             {
