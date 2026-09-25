@@ -22,6 +22,7 @@ namespace QASmartTouch.Controllers
         private bool _isPenMode = false;
         private bool _isMouseMode = false;
         private bool _isEraseByClickActive = false;  // Chế độ Xóa Từng Nét
+        private readonly System.Collections.Generic.List<Forms.QuickDockTabWindow> _dockTabs = new();
 
         public bool IsWindowModeActive => _isWindowModeActive;
         public bool IsPenMode => _isPenMode;
@@ -86,6 +87,7 @@ namespace QASmartTouch.Controllers
                 _toolbar.RecordToggled += OnRecordToggled;
                 _toolbar.DeleteLastStrokeRequested += OnDeleteLastStrokeRequested;
                 _toolbar.MouseModeRequested += OnMouseModeRequested;
+                _toolbar.ToolbarHidden += OnToolbarHidden;
                 
                 // Subscribe Save event
                 if (_screenRecorder != null)
@@ -102,6 +104,9 @@ namespace QASmartTouch.Controllers
 
                 _toolbar.Show();
                 
+                // Hiển thị 4 nút Quick Dock Tabs ở các vị trí mép/góc màn hình
+                CreateAndShowDockTabs();
+
                 _isWindowModeActive = true;
                 
                 System.Diagnostics.Debug.WriteLine("✅ Entered Window Mode - Ready for screenshot");
@@ -190,6 +195,7 @@ namespace QASmartTouch.Controllers
                     _toolbar.RecordToggled -= OnRecordToggled;
                     _toolbar.DeleteLastStrokeRequested -= OnDeleteLastStrokeRequested;
                     _toolbar.MouseModeRequested -= OnMouseModeRequested;
+                    _toolbar.ToolbarHidden -= OnToolbarHidden;
                     
                     _toolbar.Close();
                     _toolbar = null;
@@ -202,6 +208,9 @@ namespace QASmartTouch.Controllers
                     _colorPicker = null;
                 }
                 
+                // Close quick dock tabs
+                CloseDockTabs();
+
                 // Restore main app
                 _mainApp.WindowState = WindowState.Maximized;
                 _mainApp.Activate();
@@ -220,6 +229,85 @@ namespace QASmartTouch.Controllers
                 System.Diagnostics.Debug.WriteLine($"❌ Error exiting Window Mode: {ex.Message}");
             }
         }
+
+        #region Quick Dock Tabs Management
+
+        private void CreateAndShowDockTabs()
+        {
+            CloseDockTabs();
+
+            var positions = new[]
+            {
+                Forms.DockPosition.Left,
+                Forms.DockPosition.Right,
+                Forms.DockPosition.Top,
+                Forms.DockPosition.Bottom
+            };
+
+            foreach (var pos in positions)
+            {
+                var tab = new Forms.QuickDockTabWindow(pos);
+                tab.DockTabClicked += OnDockTabClicked;
+                
+                // Nếu toolbar đang ở vị trí này, ẩn icon button đó đi (vì toolbar đã tràn ra tại cạnh đó)
+                if (_toolbar != null && _toolbar.CurrentDockPosition == pos && _toolbar.Visibility == Visibility.Visible)
+                {
+                    tab.Hide();
+                }
+                else
+                {
+                    tab.Show();
+                }
+                _dockTabs.Add(tab);
+            }
+            System.Diagnostics.Debug.WriteLine($"✅ Created and displayed {_dockTabs.Count} QuickDockTabs at 4 positions");
+        }
+
+        private void OnDockTabClicked(object? sender, Forms.DockPosition position)
+        {
+            System.Diagnostics.Debug.WriteLine($"🎯 QuickDockTab clicked: {position}");
+            
+            // Ẩn icon button ở cạnh vừa bấm (vì toolbar tràn ra tại đó)
+            // Đồng thời hiện lại icon button ở 3 cạnh còn lại
+            foreach (var tab in _dockTabs)
+            {
+                if (tab.Position == position)
+                {
+                    tab.Hide();
+                }
+                else
+                {
+                    tab.Show();
+                }
+            }
+
+            _toolbar?.MoveToolbarToPosition(position);
+        }
+
+        private void OnToolbarHidden(object? sender, EventArgs e)
+        {
+            // Khi toolbar bị ẩn/đóng ➔ Hiện lại toàn bộ 4 icon button ở 4 cạnh
+            foreach (var tab in _dockTabs)
+            {
+                tab.Show();
+            }
+        }
+
+        private void CloseDockTabs()
+        {
+            foreach (var tab in _dockTabs)
+            {
+                try
+                {
+                    tab.DockTabClicked -= OnDockTabClicked;
+                    tab.Close();
+                }
+                catch { }
+            }
+            _dockTabs.Clear();
+        }
+
+        #endregion
 
         #region Event Handlers
 
@@ -308,10 +396,41 @@ namespace QASmartTouch.Controllers
             // Tắt tất cả chế độ hiện tại
             DeactivateAllModes();
 
+            // Lần đầu bật Pen -> Cần chụp ảnh desktop làm nền bảng (Chụp ngay TRƯỚC khi hiện ColorPicker)
+            if (!_overlay.HasBackground)
+            {
+                try
+                {
+                    _overlay.Visibility = Visibility.Hidden;
+                    _toolbar?.Hide();
+                    foreach (var tab in _dockTabs) tab.Hide();
+                    
+                    System.Threading.Thread.Sleep(150);
+                    Application.Current.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
+
+                    var screenshot = CaptureScreen();
+                    _overlay.SetBackground(screenshot);
+                    System.Diagnostics.Debug.WriteLine("✅ Screenshot set as background in OnPenSelected");
+                    
+                    _overlay.Show();
+                    _toolbar?.Show();
+                    foreach (var tab in _dockTabs) tab.Show();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Error capturing screenshot: {ex.Message}");
+                    _overlay.Show();
+                    _toolbar?.Show();
+                    foreach (var tab in _dockTabs) tab.Show();
+                }
+            }
+
             // Bật Pen mode
             _isPenMode = true;
             _overlay.SetPenMode(true);
             _overlay.SetTool(Forms.AnnotationTool.Pen);
+            _overlay.Focus();
+            _overlay.Activate();
 
             // Highlight nút Pen
             _toolbar?.SetActiveToolButton("pen");
@@ -409,9 +528,10 @@ namespace QASmartTouch.Controllers
 
             try
             {
-                // 1. Ẩn overlay và toolbar để chụp màn hình sạch
+                // 1. Ẩn overlay, toolbar và dock tabs để chụp màn hình sạch
                 _overlay?.Hide();
                 _toolbar?.Hide();
+                foreach (var tab in _dockTabs) tab.Hide();
 
                 // 2. Chờ render xử lý xong
                 System.Threading.Thread.Sleep(200);
@@ -449,6 +569,7 @@ namespace QASmartTouch.Controllers
                 // 4. Hiển lại trước khi show dialog
                 _overlay?.Show();
                 _toolbar?.Show();
+                foreach (var tab in _dockTabs) tab.Show();
 
                 if (screenshot == null)
                 {
@@ -493,6 +614,7 @@ namespace QASmartTouch.Controllers
                 System.Diagnostics.Debug.WriteLine($"❌ Screenshot error: {ex.Message}\n{ex.StackTrace}");
                 _overlay?.Show();
                 _toolbar?.Show();
+                foreach (var tab in _dockTabs) tab.Show();
                 MessageBox.Show($"Lỗi khi chụp ảnh:\n{ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -532,9 +654,10 @@ namespace QASmartTouch.Controllers
                 }
                 
                 // Hide overlay temporarily
-                System.Diagnostics.Debug.WriteLine("🙈 Hiding overlay and toolbar...");
+                System.Diagnostics.Debug.WriteLine("🙈 Hiding overlay, toolbar and dock tabs...");
                 _overlay.Visibility = Visibility.Hidden;
                 _toolbar?.Hide();
+                foreach (var tab in _dockTabs) tab.Hide();
                 
                 // Wait for UI to update
                 await System.Threading.Tasks.Task.Delay(100);
@@ -586,6 +709,7 @@ namespace QASmartTouch.Controllers
                         System.Diagnostics.Debug.WriteLine("👁️ Restoring overlay and toolbar after capture failure...");
                         _overlay.Visibility = Visibility.Visible;
                         _toolbar?.Show();
+                        foreach (var tab in _dockTabs) tab.Show();
                     }
                 }
                 else
@@ -594,6 +718,7 @@ namespace QASmartTouch.Controllers
                     System.Diagnostics.Debug.WriteLine("👁️ Restoring overlay and toolbar after cancel...");
                     _overlay.Visibility = Visibility.Visible;
                     _toolbar?.Show();
+                    foreach (var tab in _dockTabs) tab.Show();
                     System.Diagnostics.Debug.WriteLine("ℹ️ Area selection cancelled");
                 }
             }
@@ -817,6 +942,26 @@ namespace QASmartTouch.Controllers
 
         #region Color Picker
 
+        #region Monitor Native API for Color Picker
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr handle, uint flags);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+        [System.Runtime.InteropServices.DllImport("shcore.dll")]
+        private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct RECT { public int left, top, right, bottom; }
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct MONITORINFO { public int cbSize; public RECT rcMonitor; public RECT rcWork; public uint dwFlags; }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+        #endregion
+
         private void ShowColorPicker()
         {
             try
@@ -830,23 +975,110 @@ namespace QASmartTouch.Controllers
 
                 // Create new color picker
                 _colorPicker = new Forms.ColorPickerPopup();
+                _colorPicker.WindowStartupLocation = WindowStartupLocation.Manual; // Bắt buộc để nhận Left/Top
                 
                 // Subscribe to events
                 _colorPicker.ColorChanged += OnColorChanged;
                 _colorPicker.ThicknessChanged += OnThicknessChanged;
                 _colorPicker.Closed += OnColorPickerClosed;
                 
+                // Tính toán tọa độ vật lý cho ColorPicker
+                int physX = 0, physY = 0, physW = 0, physH = 0;
+                
                 // Position near toolbar
                 if (_toolbar != null)
                 {
-                    _colorPicker.Left = _toolbar.Left - _colorPicker.Width - 20;
-                    _colorPicker.Top = _toolbar.Top + 100;
+                    var dock = _toolbar.CurrentDockPosition;
+                    double pickerW = double.IsNaN(_colorPicker.Width) ? 280 : _colorPicker.Width;
+                    double pickerH = double.IsNaN(_colorPicker.Height) ? 240 : _colorPicker.Height;
+                    
+                    double left = _toolbar.Left - pickerW - 10;
+                    double top = _toolbar.Top + 60;
+
+                    switch (dock)
+                    {
+                        case Forms.DockPosition.Left:
+                            left = _toolbar.Left + _toolbar.ActualWidth + 10;
+                            top = _toolbar.Top + 60;
+                            break;
+                            
+                        case Forms.DockPosition.Right:
+                            left = _toolbar.Left - pickerW - 10;
+                            top = _toolbar.Top + 60;
+                            break;
+                            
+                        case Forms.DockPosition.Top:
+                            left = _toolbar.Left + 50;
+                            top = _toolbar.Top + _toolbar.ActualHeight + 10;
+                            break;
+                            
+                        case Forms.DockPosition.Bottom:
+                            left = _toolbar.Left + 50;
+                            top = _toolbar.Top - pickerH - 10;
+                            break;
+                    }
+                    
+                    var hwnd = new System.Windows.Interop.WindowInteropHelper(_toolbar).Handle;
+                    var monitor = MonitorFromWindow(hwnd, 2 /* MONITOR_DEFAULTTONEAREST */);
+                    if (monitor != IntPtr.Zero)
+                    {
+                        var info = new MONITORINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(MONITORINFO)) };
+                        if (GetMonitorInfo(monitor, ref info))
+                        {
+                            uint dpiX = 96, dpiY = 96;
+                            try { GetDpiForMonitor(monitor, 0 /* MDT_EFFECTIVE_DPI */, out dpiX, out dpiY); } catch { }
+                            if (dpiX == 0) dpiX = 96;
+                            if (dpiY == 0) dpiY = 96;
+
+                            double scaleX = dpiX / 96.0;
+                            double scaleY = dpiY / 96.0;
+
+                            // Convert physical rect to WPF logical rect
+                            double workLeft = info.rcWork.left / scaleX;
+                            double workTop = info.rcWork.top / scaleY;
+                            double workRight = info.rcWork.right / scaleX;
+                            double workBottom = info.rcWork.bottom / scaleY;
+
+                            // Apply clamping guard
+                            if (left < workLeft) left = workLeft + 8;
+                            if (left + pickerW > workRight) left = workRight - pickerW - 8;
+                            if (top < workTop) top = workTop + 8;
+                            if (top + pickerH > workBottom) top = workBottom - pickerH - 8;
+                            
+                            _colorPicker.Left = left;
+                            _colorPicker.Top = top;
+                            
+                            physX = (int)Math.Round(left * scaleX);
+                            physY = (int)Math.Round(top * scaleY);
+                            physW = (int)Math.Round(pickerW * scaleX);
+                            physH = (int)Math.Round(pickerH * scaleY);
+                        }
+                    }
+                    else
+                    {
+                        _colorPicker.Left = left;
+                        _colorPicker.Top = top;
+                    }
                 }
                 
-                // Show popup
+                // Show popup first so it gets a handle
                 _colorPicker.Show();
                 
-                System.Diagnostics.Debug.WriteLine("🎨 Color picker shown");
+                // Bắt buộc dùng SetWindowPos bằng tọa độ vật lý (Physical Pixels) sau khi Show
+                // để ghi đè lỗi WPF tự động scale sai tọa độ trên màn hình có DPI khác nhau
+                if (_toolbar != null)
+                {
+                    var cp_hwnd = new System.Windows.Interop.WindowInteropHelper(_colorPicker).Handle;
+                    if (cp_hwnd != IntPtr.Zero)
+                    {
+                        const uint SWP_NOSIZE = 0x0001;
+                        const uint SWP_NOZORDER = 0x0004;
+                        const uint SWP_NOACTIVATE = 0x0010;
+                        SetWindowPos(cp_hwnd, IntPtr.Zero, physX, physY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+                    }
+                }
+                
+                System.Diagnostics.Debug.WriteLine("🎨 Color picker shown & positioned with physical pixels");
             }
             catch (Exception ex)
             {
@@ -856,46 +1088,14 @@ namespace QASmartTouch.Controllers
 
         private void OnColorPickerClosed(object? sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("🎨 Color picker confirmed - capturing screenshot");
+            System.Diagnostics.Debug.WriteLine("🎨 Color picker confirmed - closed");
             
             if (_overlay != null && _isPenMode)
             {
-                try
-                {
-                    // Hide overlay and toolbar temporarily
-                    _overlay.Hide();
-                    _toolbar?.Hide();
-                    
-                    // Wait for windows to hide completely
-                    System.Threading.Thread.Sleep(150);
-                    
-                    // Capture clean desktop screenshot
-                    System.Diagnostics.Debug.WriteLine("📸 Capturing desktop screenshot...");
-                    var screenshot = CaptureScreen();
-                    
-                    // Set as overlay background
-                    _overlay.SetBackground(screenshot);
-                    System.Diagnostics.Debug.WriteLine("✅ Screenshot set as background");
-                    
-                    // Show overlay and toolbar again
-                    _overlay.Show();
-                    _toolbar?.Show();
-                    
-                    // Re-apply pen tool and focus
-                    _overlay.SetTool(Forms.AnnotationTool.Pen);
-                    _overlay.Focus();
-                    _overlay.Activate();
-                    
-                    System.Diagnostics.Debug.WriteLine("✅ Ready to draw on desktop screenshot");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ Error capturing screenshot: {ex.Message}");
-                    
-                    // Show overlay anyway
-                    _overlay.Show();
-                    _toolbar?.Show();
-                }
+                // Cấp lại Focus cho overlay để nhận nét vẽ ngay lập tức
+                _overlay.Focus();
+                _overlay.Activate();
+                System.Diagnostics.Debug.WriteLine("✅ Ready to draw on desktop screenshot");
             }
         }
 

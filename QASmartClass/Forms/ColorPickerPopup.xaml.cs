@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -23,6 +23,13 @@ namespace QASmartTouch.Forms
             // Highlight default color (Red)
             btnColorRed.BorderBrush = new SolidColorBrush(Color.FromRgb(136, 192, 208));
             btnColorRed.BorderThickness = new Thickness(3);
+            
+            // Auto close when clicking outside
+            this.Deactivated += (s, e) => 
+            {
+                System.Diagnostics.Debug.WriteLine("❌ ColorPickerPopup deactivated - auto closing");
+                this.Close();
+            };
             
             System.Diagnostics.Debug.WriteLine("✅ ColorPickerPopup initialized");
         }
