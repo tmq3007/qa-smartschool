@@ -16,6 +16,10 @@
 
     <UseWPF>true</UseWPF>
 
+    <Platforms>x64</Platforms>
+    <Platform>x64</Platform>
+    <PlatformTarget>x64</PlatformTarget>
+
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <AssemblyName>QASmartClass</AssemblyName>
@@ -76,6 +80,7 @@
 
     <PackageReference Include="QuestPDF" Version="2026.5.0" />
 
+    <PackageReference Include="ScreenRecorderLib" Version="7.0.1" />
     <PackageReference Include="System.IO.Ports" Version="10.0.8" />
 
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.8" />

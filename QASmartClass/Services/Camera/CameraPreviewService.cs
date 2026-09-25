@@ -46,56 +46,93 @@ public class CameraPreviewService : IDisposable
 
         try
         {
-            // Use Task.Run to run initialization in background
+            bool isRtsp = profile.SelectedCameraId == "RTSP" || (!string.IsNullOrEmpty(rtspUrl) && rtspUrl.StartsWith("rtsp://", StringComparison.OrdinalIgnoreCase));
+            int timeoutMs = isRtsp ? 4000 : 10000;
+
             var initTask = Task.Run(() =>
             {
-                VideoCapture capture;
-                if (profile.SelectedCameraId == "RTSP" || (!string.IsNullOrEmpty(rtspUrl) && rtspUrl.StartsWith("rtsp://", StringComparison.OrdinalIgnoreCase)))
+                VideoCapture? capture = null;
+                if (isRtsp)
                 {
                     string url = !string.IsNullOrEmpty(rtspUrl) ? rtspUrl : (profile.SelectedCameraId.StartsWith("rtsp://") ? profile.SelectedCameraId : "rtsp://127.0.0.1:8554/live");
                     capture = new VideoCapture(url);
                 }
-                else if (int.TryParse(profile.SelectedCameraId, out int cameraIndex))
-                {
-                    capture = new VideoCapture(cameraIndex);
-                }
                 else
                 {
-                    throw new ArgumentException("Invalid camera identifier");
+                    int targetIndex = 0;
+                    if (!string.IsNullOrEmpty(profile.SelectedCameraId) && int.TryParse(profile.SelectedCameraId, out int parsedIdx))
+                    {
+                        targetIndex = parsedIdx;
+                    }
+
+                    // 1. Thử mở camera theo targetIndex bằng DirectShow (DSHOW) - API chuẩn, nhanh và ổn định nhất trên Windows
+                    try
+                    {
+                        capture = new VideoCapture(targetIndex, VideoCaptureAPIs.DSHOW);
+                    }
+                    catch { }
+
+                    // 2. Nếu DSHOW không mở được, thử qua default API (MSMF)
+                    if (capture == null || !capture.IsOpened())
+                    {
+                        capture?.Dispose();
+                        try
+                        {
+                            capture = new VideoCapture(targetIndex, VideoCaptureAPIs.ANY);
+                        }
+                        catch { }
+                    }
+
+                    // 3. Nếu targetIndex không hoạt động (ví dụ index 0 là virtual cam bị tắt), tự động quét các index khác (0-3)
+                    if (capture == null || !capture.IsOpened())
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            if (i == targetIndex) continue;
+                            capture?.Dispose();
+                            try
+                            {
+                                capture = new VideoCapture(i, VideoCaptureAPIs.DSHOW);
+                                if (capture.IsOpened()) break;
+
+                                capture.Dispose();
+                                capture = new VideoCapture(i, VideoCaptureAPIs.ANY);
+                                if (capture.IsOpened()) break;
+                            }
+                            catch { }
+                        }
+                    }
                 }
                 return capture;
             });
 
-            // Enforce a 3-second timeout
-            var timeoutTask = Task.Delay(3000, cancellationToken);
+            var timeoutTask = Task.Delay(timeoutMs, cancellationToken);
             var completedTask = await Task.WhenAny(initTask, timeoutTask);
 
             if (completedTask == timeoutTask)
             {
-                // Timeout exceeded
                 _isRunning = false;
                 _cts.Cancel();
-                throw new TimeoutException("Kết nối camera RTSP quá hạn (3 giây). Vui lòng kiểm tra địa chỉ IP và trạng thái mạng.");
+                throw new TimeoutException(isRtsp ? "Kết nối camera RTSP quá hạn (4 giây)." : "Khởi động Camera quá hạn (10 giây).");
             }
 
-            // If initTask completed, get the result (or propagate exception)
             _capture = await initTask;
 
             if (_capture == null || !_capture.IsOpened())
             {
                 _isRunning = false;
-                ErrorOccurred?.Invoke("Failed to open camera");
+                ErrorOccurred?.Invoke("Không tìm thấy hoặc không mở được thiết bị Camera.");
                 return;
             }
 
-            // Set camera properties (might fail for RTSP, so catch errors silently)
+            // Set camera properties
             try
             {
-                if (profile.SelectedCameraId != "RTSP")
+                if (!isRtsp)
                 {
-                    _capture.Set(VideoCaptureProperties.FrameWidth, profile.Width);
-                    _capture.Set(VideoCaptureProperties.FrameHeight, profile.Height);
-                    _capture.Set(VideoCaptureProperties.Fps, profile.FPS);
+                    _capture.Set(VideoCaptureProperties.FrameWidth, profile.Width > 0 ? profile.Width : 640);
+                    _capture.Set(VideoCaptureProperties.FrameHeight, profile.Height > 0 ? profile.Height : 480);
+                    _capture.Set(VideoCaptureProperties.Fps, profile.FPS > 0 ? profile.FPS : 30);
                 }
             }
             catch { }
@@ -105,7 +142,7 @@ public class CameraPreviewService : IDisposable
         }
         catch (Exception ex)
         {
-            ErrorOccurred?.Invoke($"Error starting camera: {ex.Message}");
+            ErrorOccurred?.Invoke($"Lỗi camera: {ex.Message}");
             _isRunning = false;
             _capture?.Release();
             _capture?.Dispose();

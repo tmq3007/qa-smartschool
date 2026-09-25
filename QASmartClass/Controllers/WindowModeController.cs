@@ -14,6 +14,7 @@ namespace QASmartTouch.Controllers
         private Forms.FloatingToolbarWindow? _toolbar;
         private Forms.AnnotationOverlay? _overlay;
         private Forms.ColorPickerPopup? _colorPicker;
+        private Forms.FloatingCameraWindow? _floatingCamera;
         private Forms.Form2_MainDashboard _mainApp;
         private Services.ScreenCaptureService? _screenCapture;
         private Services.ScreenRecorderService? _screenRecorder;
@@ -85,6 +86,9 @@ namespace QASmartTouch.Controllers
                 _toolbar.SelectDisplayRequested += OnSelectDisplayRequested;
                 _toolbar.SelectAreaRequested += OnSelectAreaRequested;
                 _toolbar.RecordToggled += OnRecordToggled;
+                _toolbar.CameraToggled += OnCameraToggled;
+
+                _toolbar.RecordingOptionsSelected += OnRecordingOptionsSelected;
                 _toolbar.DeleteLastStrokeRequested += OnDeleteLastStrokeRequested;
                 _toolbar.MouseModeRequested += OnMouseModeRequested;
                 _toolbar.ToolbarHidden += OnToolbarHidden;
@@ -193,6 +197,8 @@ namespace QASmartTouch.Controllers
                     _toolbar.SelectDisplayRequested -= OnSelectDisplayRequested;
                     _toolbar.SelectAreaRequested -= OnSelectAreaRequested;
                     _toolbar.RecordToggled -= OnRecordToggled;
+                    _toolbar.CameraToggled -= OnCameraToggled;
+
                     _toolbar.DeleteLastStrokeRequested -= OnDeleteLastStrokeRequested;
                     _toolbar.MouseModeRequested -= OnMouseModeRequested;
                     _toolbar.ToolbarHidden -= OnToolbarHidden;
@@ -396,34 +402,8 @@ namespace QASmartTouch.Controllers
             // Tắt tất cả chế độ hiện tại
             DeactivateAllModes();
 
-            // Lần đầu bật Pen -> Cần chụp ảnh desktop làm nền bảng (Chụp ngay TRƯỚC khi hiện ColorPicker)
-            if (!_overlay.HasBackground)
-            {
-                try
-                {
-                    _overlay.Visibility = Visibility.Hidden;
-                    _toolbar?.Hide();
-                    foreach (var tab in _dockTabs) tab.Hide();
-                    
-                    System.Threading.Thread.Sleep(150);
-                    Application.Current.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
-
-                    var screenshot = CaptureScreen();
-                    _overlay.SetBackground(screenshot);
-                    System.Diagnostics.Debug.WriteLine("✅ Screenshot set as background in OnPenSelected");
-                    
-                    _overlay.Show();
-                    _toolbar?.Show();
-                    foreach (var tab in _dockTabs) tab.Show();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ Error capturing screenshot: {ex.Message}");
-                    _overlay.Show();
-                    _toolbar?.Show();
-                    foreach (var tab in _dockTabs) tab.Show();
-                }
-            }
+            // Lần đầu bật Pen -> không chụp ảnh màn hình nữa, để màn hình trong suốt (live)
+            // (Đoạn chụp ảnh nền đã được loại bỏ theo yêu cầu của người dùng để vẽ trực tiếp)
 
             // Bật Pen mode
             _isPenMode = true;
@@ -800,6 +780,28 @@ namespace QASmartTouch.Controllers
         [System.Runtime.InteropServices.DllImport("gdi32.dll")]
         private static extern bool DeleteObject(IntPtr hObject);
 
+        private void OnCameraToggled(object? sender, EventArgs e)
+        {
+            if (_floatingCamera == null)
+            {
+                _floatingCamera = new Forms.FloatingCameraWindow();
+                _floatingCamera.CameraClosed += () => _floatingCamera = null;
+                
+                var screenW = SystemParameters.PrimaryScreenWidth;
+                var screenH = SystemParameters.PrimaryScreenHeight;
+                _floatingCamera.Left = screenW - _floatingCamera.Width - 30;
+                _floatingCamera.Top = screenH - _floatingCamera.Height - 80;
+                
+                _floatingCamera.Show();
+                _floatingCamera.Activate();
+            }
+            else
+            {
+                _floatingCamera.Close();
+                _floatingCamera = null;
+            }
+        }
+
         private void OnRecordToggled(object? sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("⏺️ Record toggled");
@@ -817,44 +819,39 @@ namespace QASmartTouch.Controllers
             {
                 StopRecording();
             }
-            else
+            // else case is now handled by popup and OnRecordingOptionsSelected
+        }
+
+        private void OnRecordingOptionsSelected(object? sender, Forms.FloatingToolbarWindow.RecordingOptionsEventArgs e)
+        {
+            if (e.IncludeCamera)
             {
-                // Ask user for format
-                var result = MessageBox.Show(
-                    "Chọn định dạng ghi màn hình:\n\n" +
-                    "📹 GIF (Optimized)\n" +
-                    "   • Tương thích cao\n" +
-                    "   • Đã tối ưu (ít chấm nhiễu)\n" +
-                    "   • File size: Trung bình\n\n" +
-                    "🎯 WebP (Zero Dithering)\n" +
-                    "   • Không có chấm nhiễu\n" +
-                    "   • Chất lượng hoàn hảo\n" +
-                    "   • File size: Nhỏ hơn\n\n" +
-                    "Chọn YES cho WebP, NO cho GIF",
-                    "Chọn định dạng",
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Question);
-                
-                if (result == MessageBoxResult.Cancel)
-                    return;
-                
-                // Set format
-                var format = result == MessageBoxResult.Yes ? RecordingFormat.WebP : RecordingFormat.GIF;
-                _screenRecorder.SetRecordingFormat(format);
-                
-                StartRecording();
+                if (_floatingCamera == null)
+                {
+                    _floatingCamera = new Forms.FloatingCameraWindow();
+                    _floatingCamera.CameraClosed += () => _floatingCamera = null;
+                }
+
+                double screenW = SystemParameters.PrimaryScreenWidth;
+                double screenH = SystemParameters.PrimaryScreenHeight;
+                _floatingCamera.Left = screenW - _floatingCamera.Width - 30;
+                _floatingCamera.Top = screenH - _floatingCamera.Height - 80;
+                _floatingCamera.Show();
+                _floatingCamera.Activate();
             }
+
+            StartRecording(e.IncludeMicrophone, e.IncludeSystemAudio);
         }
 
         #endregion
 
         #region Recording Methods
 
-        private void StartRecording()
+        private void StartRecording(bool enableMicrophone = true, bool enableSystemAudio = true)
         {
             try
             {
-                _screenRecorder?.StartRecording();
+                _screenRecorder?.StartRecording(enableMicrophone, enableSystemAudio, null);
                 _toolbar?.SetRecordingState(true);
 
                 // Timer hiển thị thời gian ghi
@@ -865,13 +862,11 @@ namespace QASmartTouch.Controllers
                 _recordingTimer.Tick += RecordingTimer_Tick;
                 _recordingTimer.Start();
 
-                var format = _screenRecorder?.CurrentFormat ?? RecordingFormat.GIF;
-                var formatName = format == RecordingFormat.WebP ? "WebP" : "GIF";
-
                 // Hiển toast nhỏ thay vì MessageBox toàn màn hình
-                _overlay?.ShowToast($"⏺️ Đang ghi màn hình ({formatName}) | Nhấn nút ● lại để dừng", "#5C6BC0");
+                string audioInfo = (enableMicrophone && enableSystemAudio) ? "Mic + Máy" : (enableMicrophone ? "Chỉ Mic" : (enableSystemAudio ? "Chỉ Máy" : "Tắt tiếng"));
+                _overlay?.ShowToast($"⏺️ Đang ghi màn hình ({audioInfo}) | Nhấn nút ● lại để dừng", "#5C6BC0");
 
-                System.Diagnostics.Debug.WriteLine($"⏺️ Recording started ({formatName})");
+                System.Diagnostics.Debug.WriteLine($"⏺️ Recording started (MP4, Mic: {enableMicrophone}, SysAudio: {enableSystemAudio})");
             }
             catch (Exception ex)
             {
@@ -889,12 +884,17 @@ namespace QASmartTouch.Controllers
                 _recordingTimer?.Stop();
                 _recordingTimer = null;
 
-                // StopRecording() trả về ngay, lưu file trong background
                 _screenRecorder?.StopRecording();
                 _toolbar?.SetRecordingState(false);
 
-                // Thông báo cho user biết đang xử lý
-                _overlay?.ShowToast("💾 Đang lưu file ghi màn hình...", "#E65100");
+                // Auto hide floating camera when recording stops
+                if (_floatingCamera != null)
+                {
+                    _floatingCamera.Close();
+                    _floatingCamera = null;
+                }
+
+                _overlay?.ShowToast("💾 Đang lưu file ghi màn hình MP4...", "#E65100");
 
                 System.Diagnostics.Debug.WriteLine("⏹️ Recording stopped, saving in background...");
             }
@@ -906,25 +906,63 @@ namespace QASmartTouch.Controllers
             }
         }
 
-        private void OnRecordingSaveCompleted(string? savedPath)
+        private void OnRecordingSaveCompleted(string? savedPath, string? errorMessage)
         {
-            System.Diagnostics.Debug.WriteLine($"✅ Recording save completed: {savedPath}");
+            System.Diagnostics.Debug.WriteLine($"✅ Recording save completed: {savedPath}, Error: {errorMessage}");
 
             if (savedPath != null && System.IO.File.Exists(savedPath))
             {
-                var res = MessageBox.Show(
-                    $"Đã lưu file tại:\n{savedPath}\n\nBạn có muốn mở thư mục?",
-                    "Ghi màn hình hoàn tất", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                var dialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Lưu video ghi màn hình",
+                    Filter = "MP4 Video|*.mp4|All Files|*.*",
+                    DefaultExt = ".mp4",
+                    FileName = $"Bài_giảng_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
+                };
 
-                if (res == MessageBoxResult.Yes)
-                    _screenRecorder?.OpenRecordingsFolder();
+                if (dialog.ShowDialog() == true)
+                {
+                    try
+                    {
+                        if (System.IO.File.Exists(dialog.FileName))
+                        {
+                            System.IO.File.Delete(dialog.FileName);
+                        }
+                        System.IO.File.Move(savedPath, dialog.FileName);
+                        
+                        var res = MessageBox.Show(
+                            $"Đã lưu video thành công tại:\n{dialog.FileName}\n\nBạn có muốn mở video không?",
+                            "Lưu video", MessageBoxButton.YesNo, MessageBoxImage.Information);
+
+                        if (res == MessageBoxResult.Yes)
+                        {
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = dialog.FileName,
+                                UseShellExecute = true
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi khi lưu video:\n{ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    // User cancelled, maybe keep it in temp or delete?
+                    // Optional: delete the temp file
+                    try { System.IO.File.Delete(savedPath); } catch { }
+                }
             }
             else
             {
+                var msg = savedPath == null
+                        ? $"Không có frames nào được ghi. Vui lòng thử lại.\nLỗi chi tiết: {errorMessage}"
+                        : $"Lỗi: File không được tạo!\n{savedPath}";
+
                 MessageBox.Show(
-                    savedPath == null
-                        ? "Không có frames nào được ghi. Vui lòng thử lại."
-                        : $"Lỗi: File không được tạo!\n{savedPath}",
+                    msg,
                     "Lỗi ghi màn hình", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -935,7 +973,7 @@ namespace QASmartTouch.Controllers
             var time = _screenRecorder?.GetFormattedRecordingTime() ?? "00:00";
             System.Diagnostics.Debug.WriteLine($"⏱️ Recording: {time}");
             
-            // TODO: Update toolbar with time display (Phase 5)
+            _toolbar?.UpdateRecordingTime(time);
         }
 
         #endregion

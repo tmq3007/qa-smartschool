@@ -249,6 +249,19 @@
                     </Viewbox>
                 </Button>
 
+                <!-- Camera Toggle -->
+                <Button x:Name="btnCamera"
+                        Style="{StaticResource ToolbarButtonStyle}"
+                        ToolTip="Bật/Tắt Camera"
+                        Click="btnCamera_Click">
+                    <Viewbox Width="26" Height="26">
+                        <Canvas Width="24" Height="24">
+                            <Path Fill="#37474F" 
+                                  Data="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"/>
+                        </Canvas>
+                    </Viewbox>
+                </Button>
+
                 <!-- Record Button -->
                 <Button x:Name="btnRecord"
                         Style="{StaticResource ToolbarButtonStyle}"
@@ -263,7 +276,8 @@
                                          x:Name="recDot"/>
                             </Canvas>
                         </Viewbox>
-                        <TextBlock Text="REC" 
+                        <TextBlock x:Name="txtRecordTime"
+                                   Text="REC" 
                                    FontSize="8" 
                                    FontWeight="Bold" 
                                    Foreground="#ECEFF4"
@@ -274,5 +288,33 @@
                 </Button>
             </StackPanel>
         </Border>
+
+        <!-- Recording Options Popup -->
+        <Popup x:Name="popupRecordOptions" PlacementTarget="{Binding ElementName=btnRecord}" Placement="Right" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" Margin="10,0,0,0">
+            <Border Background="#2E3440" CornerRadius="8" Padding="12" BorderBrush="#5C6BC0" BorderThickness="1" Width="230">
+                <Border.Effect>
+                    <DropShadowEffect Color="#000000" Opacity="0.4" BlurRadius="10" ShadowDepth="4"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="CÀI ĐẶT GHI HÌNH" Foreground="#E5E9F0" FontWeight="Bold" FontSize="12" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                    
+                    <RadioButton x:Name="rbScreenOnly" Content="Chỉ màn hình" Foreground="White" IsChecked="True" Margin="0,4"/>
+                    <RadioButton x:Name="rbScreenAndCam" Content="Màn hình + Camera" Foreground="White" Margin="0,4"/>
+                    
+                    <Rectangle Height="1" Fill="#4C566A" Margin="0,8"/>
+                    
+                    <CheckBox x:Name="chkMicrophone" Content="Thu âm Microphone (Người nói)" Foreground="White" IsChecked="True" Margin="0,4"/>
+                    <CheckBox x:Name="chkSystemAudio" Content="Thu âm máy tính (Loa/Media)" Foreground="White" IsChecked="True" Margin="0,4"/>
+                    
+                    <Button x:Name="btnStartRecordingOptions" Content="BẮT ĐẦU" Background="#BF616A" Foreground="White" FontWeight="Bold" Height="32" Margin="0,12,0,0" Click="btnStartRecordingOptions_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="4"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Popup>
     </Grid>
 </Window>
