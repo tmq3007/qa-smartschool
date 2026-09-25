@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -26,16 +28,22 @@ namespace QASmartTouch.Forms
         public bool IsConfirmed { get; private set; }
         public bool DisplayStatsMode { get; private set; } = false;
 
-        // Tùy chọn vẽ nét đứt cho cạnh khuất (Phương án 2)
+        // Tùy chọn vẽ nét đứt cho cạnh khuất
         public bool ShowHiddenEdges { get; private set; } = true;
 
         // Auto-rotate timer
         private DispatcherTimer autoRotateTimer;
         private bool isAutoRotating = false;
 
+        // Direct Canvas Drag/Touch Rotation state
+        private Point _lastInteractionPoint;
+        private bool _isDragging = false;
+        private int? _activeTouchId = null;
+
         public Form2_6_3DSphereEditor()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             InitializeAutoRotateTimer();
 
             // Initialize default values
@@ -52,6 +60,7 @@ namespace QASmartTouch.Forms
 
             // Initial draw
             Loaded += (s, e) => DrawSphere();
+            SizeChanged += (s, e) => { if (IsLoaded) DrawSphere(); };
         }
 
         private void RotationSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -214,8 +223,8 @@ namespace QASmartTouch.Forms
             {
                 // Create RenderTargetBitmap
                 RenderTargetBitmap renderBitmap = new RenderTargetBitmap(
-                    (int)SphereCanvas.ActualWidth,
-                    (int)SphereCanvas.ActualHeight,
+                    (int)Math.Max(1, SphereCanvas.ActualWidth),
+                    (int)Math.Max(1, SphereCanvas.ActualHeight),
                     96d,
                     96d,
                     PixelFormats.Pbgra32);
@@ -264,6 +273,10 @@ namespace QASmartTouch.Forms
             DrawModeComboBox.SelectedIndex = 0; // Wireframe
             EdgeColorComboBox.SelectedIndex = 0; // Đen
             FaceColorComboBox.SelectedIndex = 0; // Không màu
+            if (chkAutoRotate.IsChecked == true)
+            {
+                chkAutoRotate.IsChecked = false;
+            }
         }
 
         private void btnCopyStats_Click(object sender, RoutedEventArgs e)
@@ -304,6 +317,150 @@ namespace QASmartTouch.Forms
             this.DialogResult = false;
             this.Close();
         }
+
+        #region Canvas Direct Interaction (Touch & Mouse Drag)
+
+        private void SphereCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                _isDragging = true;
+                _lastInteractionPoint = e.GetPosition(SphereCanvas);
+                SphereCanvas.CaptureMouse();
+            }
+        }
+
+        private void SphereCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
+            {
+                Point currentPoint = e.GetPosition(SphereCanvas);
+                double deltaX = currentPoint.X - _lastInteractionPoint.X;
+                double deltaY = currentPoint.Y - _lastInteractionPoint.Y;
+
+                UpdateRotationFromDrag(deltaX, deltaY);
+                _lastInteractionPoint = currentPoint;
+            }
+        }
+
+        private void SphereCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_isDragging)
+            {
+                _isDragging = false;
+                SphereCanvas.ReleaseMouseCapture();
+            }
+        }
+
+        private void SphereCanvas_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (_isDragging)
+            {
+                _isDragging = false;
+                SphereCanvas.ReleaseMouseCapture();
+            }
+        }
+
+        private void SphereCanvas_TouchDown(object sender, TouchEventArgs e)
+        {
+            if (!_isDragging)
+            {
+                _isDragging = true;
+                _activeTouchId = e.TouchDevice.Id;
+                _lastInteractionPoint = e.GetTouchPoint(SphereCanvas).Position;
+                SphereCanvas.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void SphereCanvas_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (_isDragging && _activeTouchId == e.TouchDevice.Id)
+            {
+                Point currentPoint = e.GetTouchPoint(SphereCanvas).Position;
+                double deltaX = currentPoint.X - _lastInteractionPoint.X;
+                double deltaY = currentPoint.Y - _lastInteractionPoint.Y;
+
+                UpdateRotationFromDrag(deltaX, deltaY);
+                _lastInteractionPoint = currentPoint;
+                e.Handled = true;
+            }
+        }
+
+        private void SphereCanvas_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (_isDragging && _activeTouchId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _activeTouchId = null;
+                SphereCanvas.ReleaseTouchCapture(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void UpdateRotationFromDrag(double deltaX, double deltaY)
+        {
+            // Tạm dừng tự động xoay nếu người dùng đang chủ động tương tác
+            if (isAutoRotating)
+            {
+                chkAutoRotate.IsChecked = false;
+            }
+
+            // Kéo ngang -> Xoay quanh trục Y (quay trái/phải)
+            double newY = (RotYSlider.Value + deltaX * 0.6) % 360;
+            if (newY < 0) newY += 360;
+
+            // Kéo dọc -> Xoay quanh trục X (nghiêng lên/xuống)
+            double newX = (RotXSlider.Value - deltaY * 0.6) % 360;
+            if (newX < 0) newX += 360;
+
+            RotYSlider.Value = Math.Round(newY);
+            RotXSlider.Value = Math.Round(newX);
+        }
+
+        private void SphereCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            double step = (e.Delta > 0) ? 10 : -10;
+            double newValue = RadiusSlider.Value + step;
+            if (newValue >= RadiusSlider.Minimum && newValue <= RadiusSlider.Maximum)
+            {
+                RadiusSlider.Value = newValue;
+            }
+        }
+
+        #endregion
+
+        #region Preset View Handlers
+
+        private void BtnPresetPerspective_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 0;
+            RotYSlider.Value = 60;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetFront_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 0;
+            RotYSlider.Value = 0;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetTop_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 90;
+            RotYSlider.Value = 0;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetIsometric_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 30;
+            RotYSlider.Value = 45;
+            RotZSlider.Value = 0;
+        }
+
+        #endregion
 
         #region 3D Rendering Methods
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using Microsoft.Win32;
 using QASmartTouch.Services;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -15,6 +16,7 @@ namespace QASmartTouch.Forms
         public Form2_20_ExportLectureDialog(Form2_MainDashboard? mainDashboard = null)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             _mainDashboard = mainDashboard ?? Application.Current.MainWindow as Form2_MainDashboard;
             Owner = _mainDashboard;
 

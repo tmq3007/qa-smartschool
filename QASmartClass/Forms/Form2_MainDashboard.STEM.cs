@@ -544,7 +544,7 @@ namespace QASmartTouch.Forms
             // Set initial chart type before showing dialog
             pieChartEditor.InitialChartType = chartType;
             
-            if (pieChartEditor.ShowDialog() == true && pieChartEditor.IsConfirmed)
+            if (WindowHelper.ShowChildDialog(pieChartEditor, this) == true && pieChartEditor.IsConfirmed)
             {
                 // Check if DisplayStats mode was activated
                 if (pieChartEditor.DisplayStatsMode)

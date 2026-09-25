@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -18,6 +19,7 @@ namespace QASmartTouch.Forms
         public CalculatorWindow()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
         }
         
         #region Number Input

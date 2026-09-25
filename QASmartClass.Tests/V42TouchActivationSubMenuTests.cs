@@ -84,12 +84,78 @@ namespace QASmartClass.Tests
         }
 
         [Fact]
+        public void WireSlider_SetsFocusableFalse_AndPressAndHoldDisabled()
+        {
+            var thread = new Thread(() =>
+            {
+                var slider = new Slider { Value = 50 };
+                Assert.True(slider.Focusable);
+
+                TouchActivationHelper.WireSlider(slider);
+
+                Assert.False(slider.Focusable);
+                Assert.False(System.Windows.Input.Stylus.GetIsPressAndHoldEnabled(slider));
+                Assert.True(TouchActivationHelper.GetIsTouchWired(slider));
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void WireComboBox_DisablesPressAndHold()
+        {
+            var thread = new Thread(() =>
+            {
+                var cb = new ComboBox();
+
+                TouchActivationHelper.WireComboBox(cb);
+
+                Assert.False(System.Windows.Input.Stylus.GetIsPressAndHoldEnabled(cb));
+                Assert.True(TouchActivationHelper.GetIsTouchWired(cb));
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void WireAllInteractiveControls_WiresSlidersAndComboBoxes()
+        {
+            var thread = new Thread(() =>
+            {
+                var panel = new StackPanel();
+                var slider = new Slider();
+                var cb = new ComboBox();
+                var chk = new CheckBox { Content = "ShowHidden" };
+
+                panel.Children.Add(slider);
+                panel.Children.Add(cb);
+                panel.Children.Add(chk);
+
+                TouchActivationHelper.WireAllInteractiveControls(panel);
+
+                Assert.True(TouchActivationHelper.GetIsTouchWired(slider));
+                Assert.False(slider.Focusable);
+                Assert.True(TouchActivationHelper.GetIsTouchWired(cb));
+                Assert.True(TouchActivationHelper.GetIsTouchWired(chk));
+                Assert.False(chk.Focusable);
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
         public void Apply_WithNullWindow_DoesNotThrow()
         {
             TouchActivationHelper.Apply(null!);
             TouchActivationHelper.ApplyToSubMenu(null!);
+            TouchActivationHelper.ApplyToWindow(null!);
             TouchActivationHelper.WireAllInteractiveControls(null!);
             TouchActivationHelper.WireButton(null!);
+            TouchActivationHelper.WireSlider(null!);
+            TouchActivationHelper.WireComboBox(null!);
         }
     }
 }

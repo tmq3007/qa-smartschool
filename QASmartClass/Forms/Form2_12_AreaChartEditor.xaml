@@ -158,7 +158,7 @@
 
             <!-- Control Panel -->
 
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" 
+            <ScrollViewer x:Name="MainScrollViewer" Grid.Column="1" VerticalScrollBarVisibility="Auto" PanningMode="Both" PanningDeceleration="0.002" 
 
                          Background="#F0F2F5" Padding="20">
 

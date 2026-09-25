@@ -1825,7 +1825,7 @@ namespace QASmartTouch.Forms
         {
             var cubeEditor = new Form2_6_3DCubeEditor();
             
-            if (cubeEditor.ShowDialog() == true && cubeEditor.IsConfirmed)
+            if (WindowHelper.ShowChildDialog(cubeEditor, this) == true && cubeEditor.IsConfirmed)
             {
                 // Check if "Display Stats" button was clicked
                 if (cubeEditor.DisplayStatsMode)
@@ -1843,7 +1843,7 @@ namespace QASmartTouch.Forms
         {
             var sphereEditor = new Form2_6_3DSphereEditor();
             
-            if (sphereEditor.ShowDialog() == true && sphereEditor.IsConfirmed)
+            if (WindowHelper.ShowChildDialog(sphereEditor, this) == true && sphereEditor.IsConfirmed)
             {
                 // Check if "Display Stats" button was clicked
                 if (sphereEditor.DisplayStatsMode)
@@ -1861,7 +1861,7 @@ namespace QASmartTouch.Forms
         {
             var cylinderEditor = new Form2_6_3DCylinderEditor();
             
-            if (cylinderEditor.ShowDialog() == true && cylinderEditor.IsConfirmed)
+            if (WindowHelper.ShowChildDialog(cylinderEditor, this) == true && cylinderEditor.IsConfirmed)
             {
                 // Check if DisplayStats mode was activated
                 if (cylinderEditor.DisplayStatsMode)
@@ -1883,7 +1883,7 @@ namespace QASmartTouch.Forms
             var coneEditor = new Form2_6_3DConeEditor();
             
             System.Diagnostics.Debug.WriteLine("🔍 DASHBOARD: Đang mở ConeEditor dialog...");
-            var dialogResult = coneEditor.ShowDialog();
+            var dialogResult = WindowHelper.ShowChildDialog(coneEditor, this);
             
             System.Diagnostics.Debug.WriteLine($"🔍 DASHBOARD: Dialog đã đóng. DialogResult = {dialogResult}");
             System.Diagnostics.Debug.WriteLine($"   IsConfirmed = {coneEditor.IsConfirmed}");
@@ -1914,7 +1914,7 @@ namespace QASmartTouch.Forms
         {
             var pyramidEditor = new Form2_6_3DPyramidEditor();
             
-            if (pyramidEditor.ShowDialog() == true && pyramidEditor.IsConfirmed)
+            if (WindowHelper.ShowChildDialog(pyramidEditor, this) == true && pyramidEditor.IsConfirmed)
             {
                 // Check if "Display Stats" button was clicked
                 if (pyramidEditor.DisplayStatsMode)
@@ -1932,7 +1932,7 @@ namespace QASmartTouch.Forms
         {
             var prismEditor = new Form2_6_3DPrismEditor();
             
-            if (prismEditor.ShowDialog() == true && prismEditor.IsConfirmed)
+            if (WindowHelper.ShowChildDialog(prismEditor, this) == true && prismEditor.IsConfirmed)
             {
                 // User confirmed - apply the prism to canvas
                 Apply3DPrismToCanvas(prismEditor);
@@ -1946,7 +1946,7 @@ namespace QASmartTouch.Forms
         {
             var prismEditor = new Form2_6_3DPrismEditor();
             
-            if (prismEditor.ShowDialog() == true && prismEditor.IsConfirmed)
+            if (WindowHelper.ShowChildDialog(prismEditor, this) == true && prismEditor.IsConfirmed)
             {
                 // Check if DisplayStats mode was activated
                 if (prismEditor.DisplayStatsMode)
@@ -1968,7 +1968,7 @@ namespace QASmartTouch.Forms
         {
             var lineChartEditor = new Form2_9_LineChartEditor();
             
-            if (lineChartEditor.ShowDialog() == true && lineChartEditor.IsConfirmed)
+            if (WindowHelper.ShowChildDialog(lineChartEditor, this) == true && lineChartEditor.IsConfirmed)
             {
                 // Check if DisplayStats mode was activated
                 if (lineChartEditor.DisplayStatsMode)

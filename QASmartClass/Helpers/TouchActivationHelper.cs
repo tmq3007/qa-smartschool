@@ -79,11 +79,11 @@ namespace QASmartTouch.Helpers
         }
 
         /// <summary>
-        /// Tự động áp dụng toàn diện cho SubMenu Window:
-        /// 1. Hook WM_MOUSEACTIVATE để chống nuốt cú chạm khi kích hoạt cửa sổ.
-        /// 2. Duyệt cây Visual Tree khi Loaded để gắn pipeline cảm ứng trực tiếp cho tất cả Buttons.
+        /// Tự động áp dụng toàn diện cho bất kỳ Window nào (SubMenu, Dialog, Editor 3D/Biểu đồ):
+        /// 1. Hook WM_MOUSEACTIVATE trả về MA_ACTIVATE (1) để chống OS nuốt cú chạm khi kích hoạt cửa sổ.
+        /// 2. Duyệt cây Visual Tree khi Loaded để gắn pipeline cảm ứng trực tiếp cho Buttons, Sliders, ComboBoxes...
         /// </summary>
-        public static void ApplyToSubMenu(Window window, FrameworkElement? exclude = null)
+        public static void ApplyToWindow(Window window, FrameworkElement? exclude = null)
         {
             if (window == null) return;
 
@@ -103,7 +103,15 @@ namespace QASmartTouch.Helpers
         }
 
         /// <summary>
-        /// Duyệt đệ quy cây Visual Tree, gắn pipeline cảm ứng cho tất cả ButtonBase (Button, RadioButton, ToggleButton...)
+        /// Tương thích ngược: Áp dụng cho SubMenu (chuyển tiếp tới ApplyToWindow).
+        /// </summary>
+        public static void ApplyToSubMenu(Window window, FrameworkElement? exclude = null)
+        {
+            ApplyToWindow(window, exclude);
+        }
+
+        /// <summary>
+        /// Duyệt đệ quy cây Visual Tree, gắn pipeline cảm ứng cho ButtonBase, Slider, ComboBox...
         /// </summary>
         public static void WireAllInteractiveControls(DependencyObject parent, FrameworkElement? exclude = null)
         {
@@ -114,14 +122,50 @@ namespace QASmartTouch.Helpers
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
 
-                if (child is ButtonBase buttonBase && child != exclude)
+                if (child == exclude)
+                {
+                    continue;
+                }
+
+                if (child is ButtonBase buttonBase)
                 {
                     WireButton(buttonBase);
+                }
+                else if (child is Slider slider)
+                {
+                    WireSlider(slider);
+                }
+                else if (child is ComboBox comboBox)
+                {
+                    WireComboBox(comboBox);
                 }
 
                 // Đệ quy tiếp vào các con
                 WireAllInteractiveControls(child, exclude);
             }
+        }
+
+        /// <summary>
+        /// Vô hiệu hóa press-and-hold delay và chuyển giao tiêu điểm cho thanh trượt Slider.
+        /// </summary>
+        public static void WireSlider(Slider slider)
+        {
+            if (slider == null || GetIsTouchWired(slider)) return;
+            SetIsTouchWired(slider, true);
+
+            slider.Focusable = false;
+            Stylus.SetIsPressAndHoldEnabled(slider, false);
+        }
+
+        /// <summary>
+        /// Vô hiệu hóa press-and-hold delay cho ComboBox trên màn hình tương tác.
+        /// </summary>
+        public static void WireComboBox(ComboBox comboBox)
+        {
+            if (comboBox == null || GetIsTouchWired(comboBox)) return;
+            SetIsTouchWired(comboBox, true);
+
+            Stylus.SetIsPressAndHoldEnabled(comboBox, false);
         }
 
         /// <summary>
@@ -194,12 +238,7 @@ namespace QASmartTouch.Helpers
                 {
                     button.Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        if (button is RadioButton radio)
-                        {
-                            radio.IsChecked = true;
-                            radio.RaiseEvent(new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
-                        }
-                        button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
+                        ExecuteButtonClick(button);
                     }), System.Windows.Threading.DispatcherPriority.Normal);
                 }
             }
@@ -207,14 +246,37 @@ namespace QASmartTouch.Helpers
             {
                 button.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    if (button is RadioButton radio)
-                    {
-                        radio.IsChecked = true;
-                        radio.RaiseEvent(new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
-                    }
-                    button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
+                    ExecuteButtonClick(button);
                 }), System.Windows.Threading.DispatcherPriority.Normal);
             }
+        }
+
+        private static void ExecuteButtonClick(ButtonBase button)
+        {
+            if (button is RadioButton radio)
+            {
+                radio.IsChecked = true;
+                radio.RaiseEvent(new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
+            }
+            else if (button is ToggleButton toggle)
+            {
+                if (toggle.IsThreeState)
+                {
+                    if (toggle.IsChecked == null) toggle.IsChecked = false;
+                    else if (toggle.IsChecked == true) toggle.IsChecked = null;
+                    else toggle.IsChecked = true;
+                }
+                else
+                {
+                    toggle.IsChecked = !(toggle.IsChecked ?? false);
+                }
+
+                toggle.RaiseEvent(new RoutedEventArgs(
+                    toggle.IsChecked == true ? ToggleButton.CheckedEvent : ToggleButton.UncheckedEvent, 
+                    toggle));
+            }
+
+            button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
         }
     }
 }

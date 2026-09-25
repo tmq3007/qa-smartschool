@@ -203,13 +203,17 @@
 
             <!-- Control Panel -->
 
-            <ScrollViewer Grid.Column="1" 
+            <ScrollViewer x:Name="MainScrollViewer" Grid.Column="1" 
 
-                         Background="#F0F2F5" 
+                          Background="#F0F2F5" 
 
-                         VerticalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
 
-                         Padding="20">
+                          PanningMode="Both"
+
+                          PanningDeceleration="0.002"
+
+                          Padding="20">
 
                 <StackPanel>
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -42,6 +43,11 @@ namespace QASmartTouch.Forms
         private DispatcherTimer autoRotateTimer;
         private bool isAutoRotating = false;
 
+        // Interaction state for Touch & Mouse Drag
+        private bool _isDragging = false;
+        private Point _lastInteractionPoint;
+        private int? _activeTouchId = null;
+
         // Tetrahedron vertices in cube coordinates
         private struct Point3D
         {
@@ -57,6 +63,7 @@ namespace QASmartTouch.Forms
         public Form2_7_3DTetrahedronEditor()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
 
             // Initialize default values
             EdgeLength = 150;
@@ -826,5 +833,221 @@ namespace QASmartTouch.Forms
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        #region Touch and Mouse Drag Rotation
+
+        private void TetrahedronCanvas_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                _isDragging = true;
+                _lastInteractionPoint = e.GetPosition(TetrahedronCanvas);
+                TetrahedronCanvas.CaptureMouse();
+                e.Handled = true;
+            }
+        }
+
+        private void TetrahedronCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (_isDragging && e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                Point currentPoint = e.GetPosition(TetrahedronCanvas);
+                double deltaX = currentPoint.X - _lastInteractionPoint.X;
+                double deltaY = currentPoint.Y - _lastInteractionPoint.Y;
+
+                UpdateRotationFromDrag(deltaX, deltaY);
+
+                _lastInteractionPoint = currentPoint;
+                e.Handled = true;
+            }
+        }
+
+        private void TetrahedronCanvas_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (_isDragging)
+            {
+                _isDragging = false;
+                TetrahedronCanvas.ReleaseMouseCapture();
+                e.Handled = true;
+            }
+        }
+
+        private void TetrahedronCanvas_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (_isDragging)
+            {
+                _isDragging = false;
+                TetrahedronCanvas.ReleaseMouseCapture();
+            }
+        }
+
+        private void TetrahedronCanvas_TouchDown(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (!_isDragging)
+            {
+                _isDragging = true;
+                _activeTouchId = e.TouchDevice.Id;
+                _lastInteractionPoint = e.GetTouchPoint(TetrahedronCanvas).Position;
+                TetrahedronCanvas.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void TetrahedronCanvas_TouchMove(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (_isDragging && _activeTouchId == e.TouchDevice.Id)
+            {
+                Point currentPoint = e.GetTouchPoint(TetrahedronCanvas).Position;
+                double deltaX = currentPoint.X - _lastInteractionPoint.X;
+                double deltaY = currentPoint.Y - _lastInteractionPoint.Y;
+
+                UpdateRotationFromDrag(deltaX, deltaY);
+
+                _lastInteractionPoint = currentPoint;
+                e.Handled = true;
+            }
+        }
+
+        private void TetrahedronCanvas_TouchUp(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (_isDragging && _activeTouchId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _activeTouchId = null;
+                TetrahedronCanvas.ReleaseTouchCapture(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void UpdateRotationFromDrag(double deltaX, double deltaY)
+        {
+            if (isAutoRotating)
+            {
+                chkAutoRotate.IsChecked = false;
+            }
+
+            double newY = RotYSlider.Value + deltaX * 0.6;
+            while (newY > 180) newY -= 360;
+            while (newY < -180) newY += 360;
+
+            double newX = RotXSlider.Value - deltaY * 0.6;
+            while (newX > 180) newX -= 360;
+            while (newX < -180) newX += 360;
+
+            RotYSlider.Value = Math.Round(newY);
+            RotXSlider.Value = Math.Round(newX);
+        }
+
+        private void TetrahedronCanvas_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            double step = (e.Delta > 0) ? 10 : -10;
+            double newValue = EdgeLengthSlider.Value + step;
+            if (newValue >= EdgeLengthSlider.Minimum && newValue <= EdgeLengthSlider.Maximum)
+            {
+                EdgeLengthSlider.Value = newValue;
+            }
+        }
+
+        #endregion
+
+        #region Preset Views and Actions
+
+        private void BtnPresetPerspective_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = -20;
+            RotYSlider.Value = 30;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetFront_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 0;
+            RotYSlider.Value = 0;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetTop_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 90;
+            RotYSlider.Value = 0;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetIsometric_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 30;
+            RotYSlider.Value = 45;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnReset_Click(object sender, RoutedEventArgs e)
+        {
+            EdgeLengthSlider.Value = 150;
+            ScaleSlider.Value = 1.0;
+            RotXSlider.Value = -20;
+            RotYSlider.Value = 30;
+            RotZSlider.Value = 0;
+            chkAutoRotate.IsChecked = false;
+            cboDrawMode.SelectedIndex = 2; // Both
+            cboColorMode.SelectedIndex = 1; // Multi
+            OpacitySlider.Value = 90;
+            chkEnableLighting.IsChecked = true;
+            chkBackfaceCulling.IsChecked = true;
+            chkShowEdges.IsChecked = true;
+            chkShowVertices.IsChecked = true;
+            chkShowLabels.IsChecked = true;
+            chkShowAxis.IsChecked = false;
+            chkShowFaceEdges.IsChecked = false;
+            chkShowNormals.IsChecked = false;
+            EdgeWidthSlider.Value = 2;
+            VertexSizeSlider.Value = 6;
+        }
+
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            IsConfirmed = false;
+            if (autoRotateTimer != null && autoRotateTimer.IsEnabled)
+            {
+                autoRotateTimer.Stop();
+            }
+            this.Close();
+        }
+
+        private void BtnDownload_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "PNG Image (*.png)|*.png",
+                    FileName = $"Tetrahedron3D_{DateTime.Now:yyyyMMdd_HHmmss}.png"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    var renderBitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(
+                        (int)TetrahedronCanvas.ActualWidth,
+                        (int)TetrahedronCanvas.ActualHeight,
+                        96, 96, PixelFormats.Pbgra32);
+                    renderBitmap.Render(TetrahedronCanvas);
+
+                    var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                    encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(renderBitmap));
+
+                    using var stream = new System.IO.FileStream(saveFileDialog.FileName, System.IO.FileMode.Create);
+                    encoder.Save(stream);
+
+                    MessageBox.Show("✅ Đã lưu hình tứ diện 3D thành công!", "Thông báo",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Lỗi lưu ảnh: {ex.Message}", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
     }
 }

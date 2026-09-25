@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -30,9 +32,15 @@ namespace QASmartTouch.Forms
         private DispatcherTimer autoRotateTimer;
         private bool isAutoRotating = false;
 
+        // Thao tác cảm ứng / chuột kéo thả xoay trực tiếp
+        private bool _isDragging = false;
+        private Point _lastInteractionPoint;
+        private int? _activeTouchId = null;
+
         public Form2_6_3DTorusEditor()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             InitializeAutoRotateTimer();
             
             // Initialize values
@@ -440,6 +448,67 @@ namespace QASmartTouch.Forms
             this.Close();
         }
 
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            IsConfirmed = false;
+            if (autoRotateTimer != null && autoRotateTimer.IsEnabled)
+            {
+                autoRotateTimer.Stop();
+            }
+            this.DialogResult = false;
+            this.Close();
+        }
+
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            MajorRadiusSlider.Value = 100;
+            MinorRadiusSlider.Value = 40;
+            RotXSlider.Value = 20;
+            RotYSlider.Value = 45;
+            RotZSlider.Value = 0;
+            DrawModeComboBox.SelectedIndex = 2; // Both
+            cmbEdgeColor.SelectedIndex = 0; // Black
+            cmbFaceColor.SelectedIndex = 0; // Transparent
+            if (chkAutoRotate.IsChecked == true)
+            {
+                chkAutoRotate.IsChecked = false;
+            }
+            txtPreset.Text = "Donut chuẩn";
+        }
+
+        private void DownloadButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                RenderTargetBitmap renderBitmap = new RenderTargetBitmap(
+                    (int)Math.Max(1, TorusCanvas.ActualWidth),
+                    (int)Math.Max(1, TorusCanvas.ActualHeight),
+                    96d, 96d, PixelFormats.Pbgra32);
+                renderBitmap.Render(TorusCanvas);
+
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "PNG Image|*.png",
+                    FileName = $"Torus_3D_{DateTime.Now:yyyyMMdd_HHmmss}.png"
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    using (var fs = new System.IO.FileStream(saveDialog.FileName, System.IO.FileMode.Create))
+                    {
+                        var encoder = new PngBitmapEncoder();
+                        encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+                        encoder.Save(fs);
+                    }
+                    MessageBox.Show("✅ Đã lưu hình ảnh thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Lỗi lưu file: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void btnCopyStats_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -464,6 +533,149 @@ namespace QASmartTouch.Forms
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        #region Canvas Direct Interaction (Touch & Mouse Drag)
+
+        private void TorusCanvas_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                _isDragging = true;
+                _lastInteractionPoint = e.GetPosition(TorusCanvas);
+                TorusCanvas.CaptureMouse();
+            }
+        }
+
+        private void TorusCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (_isDragging && e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                Point currentPoint = e.GetPosition(TorusCanvas);
+                double deltaX = currentPoint.X - _lastInteractionPoint.X;
+                double deltaY = currentPoint.Y - _lastInteractionPoint.Y;
+
+                UpdateRotationFromDrag(deltaX, deltaY);
+                _lastInteractionPoint = currentPoint;
+            }
+        }
+
+        private void TorusCanvas_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (_isDragging)
+            {
+                _isDragging = false;
+                TorusCanvas.ReleaseMouseCapture();
+            }
+        }
+
+        private void TorusCanvas_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (_isDragging)
+            {
+                _isDragging = false;
+                TorusCanvas.ReleaseMouseCapture();
+            }
+        }
+
+        private void TorusCanvas_TouchDown(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (!_isDragging)
+            {
+                _isDragging = true;
+                _activeTouchId = e.TouchDevice.Id;
+                _lastInteractionPoint = e.GetTouchPoint(TorusCanvas).Position;
+                TorusCanvas.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void TorusCanvas_TouchMove(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (_isDragging && _activeTouchId == e.TouchDevice.Id)
+            {
+                Point currentPoint = e.GetTouchPoint(TorusCanvas).Position;
+                double deltaX = currentPoint.X - _lastInteractionPoint.X;
+                double deltaY = currentPoint.Y - _lastInteractionPoint.Y;
+
+                UpdateRotationFromDrag(deltaX, deltaY);
+                _lastInteractionPoint = currentPoint;
+                e.Handled = true;
+            }
+        }
+
+        private void TorusCanvas_TouchUp(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (_isDragging && _activeTouchId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _activeTouchId = null;
+                TorusCanvas.ReleaseTouchCapture(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void UpdateRotationFromDrag(double deltaX, double deltaY)
+        {
+            if (isAutoRotating)
+            {
+                chkAutoRotate.IsChecked = false;
+            }
+
+            double newY = RotYSlider.Value + deltaX * 0.6;
+            while (newY > 180) newY -= 360;
+            while (newY < -180) newY += 360;
+
+            double newX = RotXSlider.Value - deltaY * 0.6;
+            while (newX > 180) newX -= 360;
+            while (newX < -180) newX += 360;
+
+            RotYSlider.Value = Math.Round(newY);
+            RotXSlider.Value = Math.Round(newX);
+        }
+
+        private void TorusCanvas_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            double step = (e.Delta > 0) ? 5 : -5;
+            double newValue = MajorRadiusSlider.Value + step;
+            if (newValue >= MajorRadiusSlider.Minimum && newValue <= MajorRadiusSlider.Maximum)
+            {
+                MajorRadiusSlider.Value = newValue;
+            }
+        }
+
+        #endregion
+
+        #region Preset View Handlers
+
+        private void BtnPresetPerspective_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 20;
+            RotYSlider.Value = 45;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetFront_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 0;
+            RotYSlider.Value = 0;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetTop_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 90;
+            RotYSlider.Value = 0;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetIsometric_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 30;
+            RotYSlider.Value = 45;
+            RotZSlider.Value = 0;
+        }
+
+        #endregion
 
         // Helper struct for 3D points
         private struct Point3D
