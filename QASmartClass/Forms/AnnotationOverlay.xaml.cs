@@ -244,6 +244,15 @@ namespace QASmartTouch.Forms
             System.Diagnostics.Debug.WriteLine($"📏 Thickness changed to: {thickness}");
         }
 
+        public bool HasBackground
+        {
+            get
+            {
+                return DrawingCanvas.Children.OfType<System.Windows.Controls.Image>()
+                    .Any(img => img.Tag?.ToString() == "BackgroundImage");
+            }
+        }
+
         public void SetBackground(System.Windows.Media.Imaging.BitmapSource screenshot)
         {
             try

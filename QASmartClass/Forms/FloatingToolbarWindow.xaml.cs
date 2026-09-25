@@ -1,20 +1,18 @@
 using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
 namespace QASmartTouch.Forms
 {
     public partial class FloatingToolbarWindow : Window
     {
-        private Point _dragStartPoint;
-        private bool _isDragging = false;
-        private DateTime _mouseDownTime;
-        private const int DRAG_THRESHOLD = 5; // pixels
-        private const int CLICK_THRESHOLD_MS = 200; // milliseconds
         private DispatcherTimer? _recDotTimer;
+        private DockPosition? _currentDockPosition = null;
 
         // Events
         public event EventHandler? BackToMainApp;
@@ -31,18 +29,26 @@ namespace QASmartTouch.Forms
         public event EventHandler? SelectAreaRequested;
         public event EventHandler? RecordToggled;
         public event EventHandler? DeleteLastStrokeRequested;
+        
+        /// <summary>
+        /// Phát ra khi toolbar bị đóng hoặc ẩn đi để các dock button hiện lại
+        /// </summary>
+        public event EventHandler? ToolbarHidden;
+
+        public DockPosition? CurrentDockPosition => _currentDockPosition;
 
         public FloatingToolbarWindow()
         {
             InitializeComponent();
+            this.WindowStartupLocation = WindowStartupLocation.Manual;
             
-            // Position at right edge of screen
-            PositionAtScreenEdge();
+            // Mặc định ban đầu ở cạnh dưới theo chiều ngang
+            MoveToolbarToPosition(DockPosition.Bottom);
             
             // Animate record dot
             StartRecDotAnimation();
             
-            System.Diagnostics.Debug.WriteLine("✅ FloatingToolbarWindow initialized");
+            System.Diagnostics.Debug.WriteLine("✅ FloatingToolbarWindow initialized with Unfurl Animation");
         }
         
         private void StartRecDotAnimation()
@@ -63,126 +69,273 @@ namespace QASmartTouch.Forms
             _recDotTimer.Start();
         }
 
-        private void PositionAtScreenEdge()
-        {
-            // Position at right edge, vertically centered
-            this.Left = SystemParameters.PrimaryScreenWidth - this.Width - 10;
-            this.Top = (SystemParameters.PrimaryScreenHeight - this.Height) / 2;
-        }
+        #region Dynamic Layout Orientation & Unfurl Animation
 
-        #region Drag & Back Button
-
-        private void btnDragBack_MouseDown(object sender, MouseButtonEventArgs e)
+        /// <summary>
+        /// Cấu hình hướng nằm Ngang hoặc Dọc cho toàn bộ Toolbar
+        /// </summary>
+        public void SetLayoutOrientation(Orientation orientation)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
+            toolsPanel.Orientation = orientation;
+            bool isHoriz = (orientation == Orientation.Horizontal);
+
+            if (isHoriz)
             {
-                _dragStartPoint = e.GetPosition(this);
-                _mouseDownTime = DateTime.Now;
-                _isDragging = false;
-                
-                // Capture mouse for dragging
-                ((UIElement)sender).CaptureMouse();
-            }
-        }
+                // Toolbar NẰM NGANG
+                btnExit.Margin = new Thickness(0, 0, 6, 0);
+                sepTools.Width = 1.5;
+                sepTools.Height = 32;
+                sepTools.Margin = new Thickness(5, 4, 5, 4);
 
-        private void btnDragBack_Click(object sender, RoutedEventArgs e)
-        {
-            // Only trigger if it was a click (not a drag)
-            var elapsed = (DateTime.Now - _mouseDownTime).TotalMilliseconds;
-            
-            if (!_isDragging && elapsed < CLICK_THRESHOLD_MS)
-            {
-                System.Diagnostics.Debug.WriteLine("🔙 Back to main app");
-                BackToMainApp?.Invoke(this, EventArgs.Empty);
-            }
-            
-            ((UIElement)sender).ReleaseMouseCapture();
-        }
-
-        protected override void OnMouseMove(System.Windows.Input.MouseEventArgs e)
-        {
-            base.OnMouseMove(e);
-            
-            if (e.LeftButton == MouseButtonState.Pressed && this.IsMouseCaptured)
-            {
-                var currentPoint = e.GetPosition(this);
-                var delta = currentPoint - _dragStartPoint;
-                
-                // Check if moved beyond threshold
-                if (Math.Abs(delta.X) > DRAG_THRESHOLD || Math.Abs(delta.Y) > DRAG_THRESHOLD)
-                {
-                    _isDragging = true;
-                    
-                    // Move window
-                    this.Left += delta.X;
-                    this.Top += delta.Y;
-                    
-                    System.Diagnostics.Debug.WriteLine($"📍 Toolbar moved to ({this.Left:F0}, {this.Top:F0})");
-                }
-            }
-        }
-
-        protected override void OnMouseUp(MouseButtonEventArgs e)
-        {
-            base.OnMouseUp(e);
-            
-            if (_isDragging)
-            {
-                // Snap to nearest edge
-                SnapToNearestEdge();
-                _isDragging = false;
-            }
-        }
-
-        private void SnapToNearestEdge()
-        {
-            var screenWidth = SystemParameters.PrimaryScreenWidth;
-            var screenHeight = SystemParameters.PrimaryScreenHeight;
-            
-            // Calculate distance to each edge
-            var distToLeft = this.Left;
-            var distToRight = screenWidth - (this.Left + this.Width);
-            
-            // Snap to nearest edge
-            if (distToLeft < distToRight)
-            {
-                // Snap to left
-                this.Left = 10;
+                btnPen.Margin = new Thickness(2, 0, 2, 0);
+                btnMouse.Margin = new Thickness(2, 0, 2, 0);
+                btnClearAll.Margin = new Thickness(2, 0, 2, 0);
+                btnDeleteStroke.Margin = new Thickness(2, 0, 2, 0);
+                btnUndo.Margin = new Thickness(2, 0, 2, 0);
+                btnRedo.Margin = new Thickness(2, 0, 2, 0);
+                btnSelectArea.Margin = new Thickness(2, 0, 2, 0);
+                btnScreenshot.Margin = new Thickness(2, 0, 2, 0);
+                btnRecord.Margin = new Thickness(2, 0, 2, 0);
             }
             else
             {
-                // Snap to right
-                this.Left = screenWidth - this.Width - 10;
+                // Toolbar NẰM DỌC
+                btnExit.Margin = new Thickness(0, 0, 0, 6);
+                sepTools.Width = double.NaN;
+                sepTools.Height = 1.5;
+                sepTools.Margin = new Thickness(4, 5, 4, 5);
+
+                btnPen.Margin = new Thickness(0, 2, 0, 2);
+                btnMouse.Margin = new Thickness(0, 2, 0, 2);
+                btnClearAll.Margin = new Thickness(0, 2, 0, 2);
+                btnDeleteStroke.Margin = new Thickness(0, 2, 0, 2);
+                btnUndo.Margin = new Thickness(0, 2, 0, 2);
+                btnRedo.Margin = new Thickness(0, 2, 0, 2);
+                btnSelectArea.Margin = new Thickness(0, 2, 0, 2);
+                btnScreenshot.Margin = new Thickness(0, 2, 0, 2);
+                btnRecord.Margin = new Thickness(0, 2, 0, 2);
             }
-            
-            // Keep within vertical bounds
-            if (this.Top < 0)
-                this.Top = 0;
-            if (this.Top + this.Height > screenHeight)
-                this.Top = screenHeight - this.Height;
-            
-            System.Diagnostics.Debug.WriteLine($"📌 Snapped to edge at ({this.Left:F0}, {this.Top:F0})");
+
+            this.UpdateLayout();
         }
-        
+
         /// <summary>
-        /// Move toolbar to specified side (left or right)
+        /// Hiệu ứng bung tràn ra mượt mà (Unfurl Animation) từ icon thành toàn bộ thanh toolbar
         /// </summary>
+        private void PlayUnfurlAnimation(Orientation orientation, DockPosition position)
+        {
+            try
+            {
+                var duration = TimeSpan.FromMilliseconds(220);
+                var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+
+                // Thiết lập tâm nở (RenderTransformOrigin) theo đúng vị trí nút bấm ở mép cạnh:
+                // - Cạnh Trái: Nở tràn từ mép trái ra (X=0.0, Y=0.5)
+                // - Cạnh Phải: Nở tràn từ mép phải vào (X=1.0, Y=0.5)
+                // - Cạnh Trên: Nở tràn từ mép trên xuống (X=0.5, Y=0.0)
+                // - Cạnh Dưới: Nở tràn từ mép dưới lên (X=0.5, Y=1.0)
+                switch (position)
+                {
+                    case DockPosition.Left:
+                        mainBorder.RenderTransformOrigin = new Point(0.0, 0.5);
+                        break;
+                    case DockPosition.Right:
+                        mainBorder.RenderTransformOrigin = new Point(1.0, 0.5);
+                        break;
+                    case DockPosition.Top:
+                        mainBorder.RenderTransformOrigin = new Point(0.5, 0.0);
+                        break;
+                    case DockPosition.Bottom:
+                        mainBorder.RenderTransformOrigin = new Point(0.5, 1.0);
+                        break;
+                }
+
+                if (orientation == Orientation.Vertical)
+                {
+                    // Tràn ra theo chiều dọc (chiều dài dãn dài và chiều ngang bung mở)
+                    var scaleXAnim = new DoubleAnimation(0.25, 1.0, duration) { EasingFunction = ease };
+                    var scaleYAnim = new DoubleAnimation(0.08, 1.0, duration) { EasingFunction = ease };
+                    toolbarScale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnim);
+                    toolbarScale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnim);
+                }
+                else
+                {
+                    // Tràn ra theo chiều ngang (chiều ngang trải rộng và chiều cao bung mở)
+                    var scaleXAnim = new DoubleAnimation(0.08, 1.0, duration) { EasingFunction = ease };
+                    var scaleYAnim = new DoubleAnimation(0.25, 1.0, duration) { EasingFunction = ease };
+                    toolbarScale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnim);
+                    toolbarScale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnim);
+                }
+
+                // Fade in nhẹ nhàng hòa quyện
+                var opacityAnim = new DoubleAnimation(0.1, 1.0, duration) { EasingFunction = ease };
+                this.BeginAnimation(OpacityProperty, opacityAnim);
+            }
+            catch { }
+        }
+
+        #region Monitor Native API
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr handle, uint flags);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+        [System.Runtime.InteropServices.DllImport("shcore.dll")]
+        private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        private const uint SWP_NOZORDER = 0x0004;
+        private const uint SWP_NOACTIVATE = 0x0010;
+        private const uint SWP_SHOWWINDOW = 0x0040;
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct RECT { public int left, top, right, bottom; }
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct MONITORINFO { public int cbSize; public RECT rcMonitor; public RECT rcWork; public uint dwFlags; }
+
+        private IntPtr _targetMonitor = IntPtr.Zero;
+        public IntPtr TargetMonitor => _targetMonitor;
+
+        public void SetTargetMonitor(IntPtr monitor)
+        {
+            _targetMonitor = monitor;
+            if (_currentDockPosition.HasValue)
+                MoveToolbarToPosition(_currentDockPosition.Value);
+        }
+        #endregion
+
+        /// <summary>
+        /// Di chuyển toolbar đến cạnh được chọn:
+        /// - Cạnh Nằm Dọc (Left, Right) ➔ Toolbar NẰM DỌC
+        /// - Cạnh Nằm Ngang (Top, Bottom) ➔ Toolbar NẰM NGANG
+        /// Kèm hiệu ứng bung tràn ra từ vị trí nút bấm
+        /// </summary>
+        public void MoveToolbarToPosition(DockPosition position)
+        {
+            try
+            {
+                // Nếu bấm vào đúng cạnh đang mở ➔ Toggle Ẩn đi và thông báo hiện lại icon
+                if (_currentDockPosition == position && this.Visibility == Visibility.Visible)
+                {
+                    this.Hide();
+                    _currentDockPosition = null;
+                    ToolbarHidden?.Invoke(this, EventArgs.Empty);
+                    System.Diagnostics.Debug.WriteLine($"📍 Toolbar toggled OFF at {position}");
+                    return;
+                }
+
+                _currentDockPosition = position;
+
+                bool isVertical = (position == DockPosition.Left || position == DockPosition.Right);
+                var orientation = isVertical ? Orientation.Vertical : Orientation.Horizontal;
+
+                SetLayoutOrientation(orientation);
+
+                this.Show();
+                this.Activate();
+                this.UpdateLayout();
+
+                double w = this.ActualWidth > 0 ? this.ActualWidth : (isVertical ? 68 : 520);
+                double h = this.ActualHeight > 0 ? this.ActualHeight : (isVertical ? 500 : 58);
+
+                // Lấy thông tin màn hình vật lý
+                IntPtr monitor = _targetMonitor;
+                if (monitor == IntPtr.Zero)
+                {
+                    Window? targetWindow = null;
+                    foreach (Window win in Application.Current.Windows)
+                    {
+                        if (win.GetType().Name == "AnnotationOverlay" && win.IsVisible) { targetWindow = win; break; }
+                    }
+                    if (targetWindow == null) targetWindow = Application.Current.MainWindow;
+
+                    if (targetWindow != null)
+                    {
+                        var hwndTarget = new System.Windows.Interop.WindowInteropHelper(targetWindow).Handle;
+                        if (hwndTarget != IntPtr.Zero)
+                            monitor = MonitorFromWindow(hwndTarget, 2 /* MONITOR_DEFAULTTONEAREST */);
+                    }
+                }
+
+                var info = new MONITORINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(MONITORINFO)) };
+                if (monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref info))
+                {
+                    uint dpiX = 96, dpiY = 96;
+                    try { GetDpiForMonitor(monitor, 0 /* MDT_EFFECTIVE_DPI */, out dpiX, out dpiY); } catch { }
+                    if (dpiX == 0) dpiX = 96;
+                    if (dpiY == 0) dpiY = 96;
+
+                    double scaleX = dpiX / 96.0;
+                    double scaleY = dpiY / 96.0;
+
+                    int tbPhysW = (int)Math.Round(w * scaleX);
+                    int tbPhysH = (int)Math.Round(h * scaleY);
+                    int marginPhys = (int)Math.Round(8 * scaleX);
+
+                    int physX = 0;
+                    int physY = 0;
+
+                    switch (position)
+                    {
+                        case DockPosition.Left:
+                            physX = info.rcWork.left + marginPhys;
+                            physY = info.rcWork.top + Math.Max(10, (info.rcWork.bottom - info.rcWork.top - tbPhysH) / 2);
+                            break;
+
+                        case DockPosition.Right:
+                            physX = info.rcWork.right - tbPhysW - marginPhys;
+                            physY = info.rcWork.top + Math.Max(10, (info.rcWork.bottom - info.rcWork.top - tbPhysH) / 2);
+                            break;
+
+                        case DockPosition.Top:
+                            physX = info.rcWork.left + (info.rcWork.right - info.rcWork.left - tbPhysW) / 2;
+                            physY = info.rcWork.top + marginPhys;
+                            break;
+
+                        case DockPosition.Bottom:
+                            physX = info.rcWork.left + (info.rcWork.right - info.rcWork.left - tbPhysW) / 2;
+                            physY = info.rcWork.bottom - tbPhysH - marginPhys;
+                            break;
+                    }
+
+                    // Clamping Guard (Tuyệt đối không tràn)
+                    if (physX < info.rcWork.left + marginPhys)
+                        physX = info.rcWork.left + marginPhys;
+                    if (physX + tbPhysW > info.rcWork.right - marginPhys)
+                        physX = info.rcWork.right - tbPhysW - marginPhys;
+                    if (physY < info.rcWork.top + marginPhys)
+                        physY = info.rcWork.top + marginPhys;
+                    if (physY + tbPhysH > info.rcWork.bottom - marginPhys)
+                        physY = info.rcWork.bottom - tbPhysH - marginPhys;
+
+                    this.Left = physX / scaleX;
+                    this.Top = physY / scaleY;
+
+                    var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+                    if (hwnd != IntPtr.Zero)
+                    {
+                        SetWindowPos(hwnd, IntPtr.Zero, physX, physY, tbPhysW, tbPhysH, SWP_NOZORDER | SWP_NOACTIVATE);
+                    }
+                }
+
+                // Kích hoạt hiệu ứng tràn ra từ mép cạnh nút bấm
+                PlayUnfurlAnimation(orientation, position);
+
+                System.Diagnostics.Debug.WriteLine($"📍 Toolbar unfurled at {position} (Orientation={orientation})");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"MoveToolbarToPosition error: {ex.Message}");
+            }
+        }
+
         public void MoveToolbarToSide(bool isLeftSide)
         {
-            var screenWidth = SystemParameters.PrimaryScreenWidth;
-            
-            if (isLeftSide)
-            {
-                // Move to left edge
-                this.Left = 10;
-                System.Diagnostics.Debug.WriteLine("📍 Toolbar moved to LEFT edge");
-            }
-            else
-            {
-                // Move to right edge (default)
-                this.Left = screenWidth - this.Width - 10;
-                System.Diagnostics.Debug.WriteLine("📍 Toolbar moved to RIGHT edge");
-            }
+            MoveToolbarToPosition(isLeftSide ? DockPosition.Left : DockPosition.Right);
         }
 
         #endregion
@@ -192,6 +345,8 @@ namespace QASmartTouch.Forms
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("Exit Window Mode clicked");
+            _currentDockPosition = null;
+            ToolbarHidden?.Invoke(this, EventArgs.Empty);
             BackToMainApp?.Invoke(this, EventArgs.Empty);
         }
 
@@ -292,10 +447,6 @@ namespace QASmartTouch.Forms
             }
         }
 
-        #endregion
-
-        #region Public Methods
-
         /// <summary>
         /// Toggle visual state of Delete Stroke button (highlight when erase mode is active)
         /// </summary>
@@ -304,7 +455,6 @@ namespace QASmartTouch.Forms
             if (isActive)
             {
                 btnDeleteStroke.Background = new SolidColorBrush(Color.FromRgb(191, 97, 106)); // Red
-                // Tắt highlight Pen khi bật Erase mode
                 btnPen.Background = new SolidColorBrush(Color.FromRgb(46, 52, 64));
             }
             else
@@ -338,12 +488,10 @@ namespace QASmartTouch.Forms
             var defaultColor = Brushes.Transparent;
             var defaultIconColor = new SolidColorBrush(Color.FromRgb(55, 71, 79)); // #37474F Dark Gray
 
-            // Reset tất cả các nút tool
             btnPen.Background         = defaultColor;
             btnMouse.Background       = defaultColor;
             btnDeleteStroke.Background = defaultColor;
 
-            // Reset icon colors
             SetPathFill(btnPen, defaultIconColor);
             SetPathFill(btnMouse, defaultIconColor);
             SetPathFill(btnDeleteStroke, defaultIconColor);
