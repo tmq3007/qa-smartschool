@@ -1,0 +1,55 @@
+<Window x:Class="QASmartTouch.Forms.FloatingCameraWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Camera Overlay" 
+        Height="220" Width="220"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        Topmost="True" 
+        ShowInTaskbar="False"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    
+    <Border x:Name="CameraBorder" CornerRadius="110" BorderBrush="#5C6BC0" BorderThickness="3" Background="#1E1E2E" ClipToBounds="True">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" BlurRadius="12" Opacity="0.5" ShadowDepth="3"/>
+        </Border.Effect>
+        <Grid>
+            <!-- Camera Preview via Rectangle with ImageBrush (Perfect Circle & Rounded-Rect Clipping) -->
+            <Rectangle x:Name="CameraRect" RadiusX="107" RadiusY="107">
+                <Rectangle.Fill>
+                    <ImageBrush x:Name="CameraBrush" Stretch="UniformToFill" />
+                </Rectangle.Fill>
+            </Rectangle>
+            
+            <!-- Loading / Status Panel -->
+            <StackPanel x:Name="LoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                <TextBlock x:Name="txtStatus" Text="📷 Đang bật camera..." Foreground="#A6ADC8" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="10"/>
+            </StackPanel>
+            
+            <!-- Mini Controls (Hidden by default, shown on hover) -->
+            <StackPanel x:Name="ControlsPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Opacity="0" Background="#99000000">
+                <Button x:Name="btnFlip" Content="Lật" Width="36" Height="24" Margin="2" Click="btnFlip_Click" Foreground="White" Background="#33FFFFFF" BorderThickness="0" FontSize="11" Cursor="Hand"/>
+                <Button x:Name="btnShape" Content="Dạng" Width="48" Height="24" Margin="2" Click="btnShape_Click" Foreground="White" Background="#33FFFFFF" BorderThickness="0" FontSize="11" Cursor="Hand"/>
+                <Button x:Name="btnClose" Content="✕" Width="28" Height="24" Margin="2" Click="btnClose_Click" Foreground="White" Background="#CCBF616A" BorderThickness="0" FontWeight="Bold" FontSize="12" Cursor="Hand"/>
+            </StackPanel>
+        </Grid>
+        
+        <Border.Triggers>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetName="ControlsPanel" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetName="ControlsPanel" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Border.Triggers>
+    </Border>
+</Window>

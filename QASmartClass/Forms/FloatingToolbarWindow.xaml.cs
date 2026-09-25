@@ -29,6 +29,7 @@ namespace QASmartTouch.Forms
         public event EventHandler? SelectAreaRequested;
         public event EventHandler? RecordToggled;
         public event EventHandler? DeleteLastStrokeRequested;
+        public event EventHandler? CameraToggled;
         
         /// <summary>
         /// Phát ra khi toolbar bị đóng hoặc ẩn đi để các dock button hiện lại
@@ -422,10 +423,59 @@ namespace QASmartTouch.Forms
             SelectAreaRequested?.Invoke(this, EventArgs.Empty);
         }
 
+        public event EventHandler<RecordingOptionsEventArgs>? RecordingOptionsSelected;
+
+        public class RecordingOptionsEventArgs : EventArgs
+        {
+            public bool IncludeCamera { get; set; }
+            public bool IncludeMicrophone { get; set; }
+            public bool IncludeSystemAudio { get; set; }
+        }
+
+        private bool _isRecording = false;
+
         private void btnRecord_Click(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("⏺️ Record toggled");
-            RecordToggled?.Invoke(this, EventArgs.Empty);
+            if (_isRecording)
+            {
+                // If already recording, just send toggle event to stop it
+                RecordToggled?.Invoke(this, EventArgs.Empty);
+            }
+            else if (popupRecordOptions != null)
+            {
+                // If not recording, show options popup
+                popupRecordOptions.IsOpen = !popupRecordOptions.IsOpen;
+            }
+            else
+            {
+                RecordToggled?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private void btnCamera_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("📷 Camera toggled");
+            CameraToggled?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void btnStartRecordingOptions_Click(object sender, RoutedEventArgs e)
+        {
+            if (popupRecordOptions != null)
+            {
+                popupRecordOptions.IsOpen = false;
+            }
+            
+            bool includeCamera = rbScreenAndCam?.IsChecked ?? false;
+            bool includeMic = chkMicrophone?.IsChecked ?? true;
+            bool includeSysAudio = chkSystemAudio?.IsChecked ?? true;
+            
+            RecordingOptionsSelected?.Invoke(this, new RecordingOptionsEventArgs 
+            { 
+                IncludeCamera = includeCamera, 
+                IncludeMicrophone = includeMic,
+                IncludeSystemAudio = includeSysAudio
+            });
         }
 
         #endregion
@@ -437,13 +487,24 @@ namespace QASmartTouch.Forms
         /// </summary>
         public void SetRecordingState(bool isRecording)
         {
+            _isRecording = isRecording;
             if (isRecording)
             {
                 btnRecord.Background = new SolidColorBrush(Color.FromRgb(191, 97, 106)); // Red
+                txtRecordTime.Text = "00:00";
             }
             else
             {
                 btnRecord.Background = new SolidColorBrush(Color.FromRgb(46, 52, 64)); // Dark
+                txtRecordTime.Text = "REC";
+            }
+        }
+
+        public void UpdateRecordingTime(string time)
+        {
+            if (txtRecordTime != null)
+            {
+                txtRecordTime.Text = time;
             }
         }
 

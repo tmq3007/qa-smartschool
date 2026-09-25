@@ -270,8 +270,8 @@ namespace QASmartTouch.Forms
                 {
                     Source = screenshot,
                     Stretch = Stretch.Fill,
-                    Width = screenshot.PixelWidth,
-                    Height = screenshot.PixelHeight,
+                    Width = SystemParameters.PrimaryScreenWidth,
+                    Height = SystemParameters.PrimaryScreenHeight,
                     Tag = "BackgroundImage" // Mark as background
                 };
                 
