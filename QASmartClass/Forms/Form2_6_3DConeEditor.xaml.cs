@@ -9,6 +9,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.IO;
 using Microsoft.Win32;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -48,6 +49,7 @@ namespace QASmartTouch.Forms
         public Form2_6_3DConeEditor()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             InitializeAutoRotateTimer();
             this.Loaded += (s, e) =>
             {
@@ -58,32 +60,43 @@ namespace QASmartTouch.Forms
 
         private void EnableDragDrop()
         {
-            canvas3D.MouseLeftButtonDown += Canvas3D_MouseLeftButtonDown;
+            canvas3D.MouseDown += Canvas3D_MouseDown;
             canvas3D.MouseMove += Canvas3D_MouseMove;
-            canvas3D.MouseLeftButtonUp += Canvas3D_MouseLeftButtonUp;
+            canvas3D.MouseUp += Canvas3D_MouseUp;
             canvas3D.MouseLeave += Canvas3D_MouseLeave;
+            canvas3D.TouchDown += Canvas3D_TouchDown;
+            canvas3D.TouchMove += Canvas3D_TouchMove;
+            canvas3D.TouchUp += Canvas3D_TouchUp;
+            canvas3D.TouchLeave += Canvas3D_TouchUp;
+            canvas3D.MouseWheel += Canvas3D_MouseWheel;
         }
 
-        private void Canvas3D_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private int? _activeTouchId = null;
+
+        private void Canvas3D_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            isDragging = true;
-            dragStartPoint = e.GetPosition(canvas3D);
-            canvas3D.CaptureMouse();
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                isDragging = true;
+                dragStartPoint = e.GetPosition(canvas3D);
+                canvas3D.CaptureMouse();
+            }
         }
 
         private void Canvas3D_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if (isDragging)
+            if (isDragging && e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
             {
                 Point currentPoint = e.GetPosition(canvas3D);
-                OffsetX += currentPoint.X - dragStartPoint.X;
-                OffsetY += currentPoint.Y - dragStartPoint.Y;
+                double deltaX = currentPoint.X - dragStartPoint.X;
+                double deltaY = currentPoint.Y - dragStartPoint.Y;
+
+                UpdateRotationFromDrag(deltaX, deltaY);
                 dragStartPoint = currentPoint;
-                DrawCone();
             }
         }
 
-        private void Canvas3D_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Canvas3D_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (isDragging)
             {
@@ -100,6 +113,102 @@ namespace QASmartTouch.Forms
                 canvas3D.ReleaseMouseCapture();
             }
         }
+
+        private void Canvas3D_TouchDown(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (!isDragging)
+            {
+                isDragging = true;
+                _activeTouchId = e.TouchDevice.Id;
+                dragStartPoint = e.GetTouchPoint(canvas3D).Position;
+                canvas3D.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void Canvas3D_TouchMove(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (isDragging && _activeTouchId == e.TouchDevice.Id)
+            {
+                Point currentPoint = e.GetTouchPoint(canvas3D).Position;
+                double deltaX = currentPoint.X - dragStartPoint.X;
+                double deltaY = currentPoint.Y - dragStartPoint.Y;
+
+                UpdateRotationFromDrag(deltaX, deltaY);
+                dragStartPoint = currentPoint;
+                e.Handled = true;
+            }
+        }
+
+        private void Canvas3D_TouchUp(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (isDragging && _activeTouchId == e.TouchDevice.Id)
+            {
+                isDragging = false;
+                _activeTouchId = null;
+                canvas3D.ReleaseTouchCapture(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void UpdateRotationFromDrag(double deltaX, double deltaY)
+        {
+            if (isAutoRotating)
+            {
+                chkAutoRotate.IsChecked = false;
+            }
+
+            double newY = (sliderRotationY.Value + deltaX * 0.6) % 360;
+            if (newY < 0) newY += 360;
+
+            double newX = (sliderRotationX.Value - deltaY * 0.6) % 360;
+            if (newX < 0) newX += 360;
+
+            sliderRotationY.Value = Math.Round(newY);
+            sliderRotationX.Value = Math.Round(newX);
+        }
+
+        private void Canvas3D_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            double step = (e.Delta > 0) ? 10 : -10;
+            double newValue = sliderHeight.Value + step;
+            if (newValue >= sliderHeight.Minimum && newValue <= sliderHeight.Maximum)
+            {
+                sliderHeight.Value = newValue;
+            }
+        }
+
+        #region Preset View Handlers
+
+        private void BtnPresetPerspective_Click(object sender, RoutedEventArgs e)
+        {
+            sliderRotationX.Value = 0;
+            sliderRotationY.Value = 60;
+            sliderRotationZ.Value = 0;
+        }
+
+        private void BtnPresetFront_Click(object sender, RoutedEventArgs e)
+        {
+            sliderRotationX.Value = 0;
+            sliderRotationY.Value = 0;
+            sliderRotationZ.Value = 0;
+        }
+
+        private void BtnPresetTop_Click(object sender, RoutedEventArgs e)
+        {
+            sliderRotationX.Value = 90;
+            sliderRotationY.Value = 0;
+            sliderRotationZ.Value = 0;
+        }
+
+        private void BtnPresetIsometric_Click(object sender, RoutedEventArgs e)
+        {
+            sliderRotationX.Value = 30;
+            sliderRotationY.Value = 45;
+            sliderRotationZ.Value = 0;
+        }
+
+        #endregion
 
         // ===== 3D GEOMETRY GENERATION =====
 

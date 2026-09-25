@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using QASmartTouch.Controls;
 using QASmartTouch.Models;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -12,11 +13,13 @@ namespace QASmartTouch.Forms
         public Form2_TableEditorDialog()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
         }
 
         public Form2_TableEditorDialog(TableData existingData)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             // ✅ QC_4.2_TABLE_EDIT_FIX: Nạp dữ liệu vào XAML instance đã có
             // (KHÔNG tạo instance mới — tránh lỗi orphaned control)
             tableEditor.LoadExistingData(existingData);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +13,7 @@ using System.Windows.Input;
 using IOPath = System.IO.Path;
 using IOFile = System.IO.File;
 using IODirectory = System.IO.Directory;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -32,6 +33,8 @@ namespace QASmartTouch.Forms
         public Form2_8_BarChartEditor(Form2_MainDashboard? mainDashboard = null)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             _mainDashboard = mainDashboard;
             InitializeDefaultData();
             Loaded += (s, e) => UpdateChart();

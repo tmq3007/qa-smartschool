@@ -437,7 +437,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở Bing Translator
                 this.Hide();
                 var bingTranslator = new Form2_24_BingTranslator();
-                bingTranslator.ShowDialog();
+                WindowHelper.ShowChildDialog(bingTranslator, _mainDashboard);
                 this.Close(); // Close menu after closing Bing Translator
                 
                 System.Diagnostics.Debug.WriteLine("✅ Bing Translator opened");
@@ -460,7 +460,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở Lịch Âm Dương
                 this.Hide();
                 var lichAmDuong = new Form2_27_LichAmDuong();
-                lichAmDuong.ShowDialog();
+                WindowHelper.ShowChildDialog(lichAmDuong, _mainDashboard);
                 this.Close(); // Close menu after closing Lich Am Duong
                 
                 System.Diagnostics.Debug.WriteLine("✅ Lich Am Duong opened");
@@ -483,7 +483,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở World Clock
                 this.Hide();
                 var worldClock = new Form2_28_WorldClock();
-                worldClock.ShowDialog();
+                WindowHelper.ShowChildDialog(worldClock, _mainDashboard);
                 this.Close(); // Close menu after closing World Clock
                 
                 System.Diagnostics.Debug.WriteLine("✅ World Clock opened");
@@ -520,7 +520,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở biểu đồ cột
                 this.Hide();
                 var chartEditor = new Form2_8_BarChartEditor(_mainDashboard);
-                chartEditor.ShowDialog();
+                WindowHelper.ShowChildDialog(chartEditor, _mainDashboard);
                 this.Close(); // Đóng menu sau khi đóng form biểu đồ
             }
             catch (Exception ex)
@@ -538,7 +538,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở biểu đồ đường
                 this.Hide();
                 var chartEditor = new Form2_9_LineChartEditor(_mainDashboard);
-                chartEditor.ShowDialog();
+                WindowHelper.ShowChildDialog(chartEditor, _mainDashboard);
                 this.Close(); // Đóng menu sau khi đóng form biểu đồ
             }
             catch (Exception ex)
@@ -556,7 +556,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở biểu đồ tròn
                 this.Hide();
                 var chartEditor = new Form2_10_PieChartEditor(_mainDashboard);
-                chartEditor.ShowDialog();
+                WindowHelper.ShowChildDialog(chartEditor, _mainDashboard);
                 this.Close(); // Đóng menu sau khi đóng form biểu đồ
             }
             catch (Exception ex)
@@ -574,7 +574,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở biểu đồ vùng
                 this.Hide();
                 var chartEditor = new Form2_12_AreaChartEditor(_mainDashboard);
-                chartEditor.ShowDialog();
+                WindowHelper.ShowChildDialog(chartEditor, _mainDashboard);
                 this.Close(); // Đóng menu sau khi đóng form biểu đồ
             }
             catch (Exception ex)
@@ -592,7 +592,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở biểu đồ phân tán
                 this.Hide();
                 var chartEditor = new Form2_13_ScatterChartEditor(_mainDashboard);
-                chartEditor.ShowDialog();
+                WindowHelper.ShowChildDialog(chartEditor, _mainDashboard);
                 this.Close(); // Đóng menu sau khi đóng form biểu đồ
             }
             catch (Exception ex)
@@ -617,7 +617,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở đồ thị hàm số
                 this.Hide();
                 var graphEditor = new Form2_GraphEditorUnified(); // 🆕 Unified 2D+3D editor
-                bool? result = graphEditor.ShowDialog();
+                bool? result = WindowHelper.ShowChildDialog(graphEditor, _mainDashboard);
                 
                 if (result == true && graphEditor.ExportedGraphImage != null)
                 {
@@ -644,7 +644,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở Graph 3D
                 this.Hide();
                 var Graph3DDialog = new Form2_22_Graph3D();
-                bool? result = Graph3DDialog.ShowDialog();
+                bool? result = WindowHelper.ShowChildDialog(Graph3DDialog, _mainDashboard);
                 
                 if (result == true && Graph3DDialog.WasInserted && !string.IsNullOrEmpty(Graph3DDialog.GraphUrl))
                 {
@@ -671,7 +671,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở đồ thị 3D
                 this.Hide();
                 var graph3DEditor = new Form2_Graph3DEditor();
-                bool? result = graph3DEditor.ShowDialog();
+                bool? result = WindowHelper.ShowChildDialog(graph3DEditor, _mainDashboard);
                 
                 if (result == true && graph3DEditor.ExportedGraphImage != null)
                 {

@@ -15,6 +15,7 @@ using System.Windows.Documents;
 using IOPath = System.IO.Path;
 using IOFile = System.IO.File;
 using IODirectory = System.IO.Directory;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -49,6 +50,8 @@ namespace QASmartTouch.Forms
         public Form2_9_LineChartEditor(Form2_MainDashboard? mainDashboard = null)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             _mainDashboard = mainDashboard;
             InitializeDefaultData();
             CreateLineSeriesUI();
