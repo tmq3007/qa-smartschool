@@ -508,8 +508,7 @@ namespace QASmartTouch.Controllers
 
             try
             {
-                // 1. Ẩn overlay, toolbar và dock tabs để chụp màn hình sạch
-                _overlay?.Hide();
+                // 1. Ẩn toolbar và dock tabs để chụp màn hình sạch (giữ nguyên overlay để chụp nét vẽ)
                 _toolbar?.Hide();
                 foreach (var tab in _dockTabs) tab.Hide();
 
@@ -546,8 +545,7 @@ namespace QASmartTouch.Controllers
                     }
                 }
 
-                // 4. Hiển lại trước khi show dialog
-                _overlay?.Show();
+                // 4. Hiển lại toolbar và dock tabs trước khi show dialog
                 _toolbar?.Show();
                 foreach (var tab in _dockTabs) tab.Show();
 
@@ -592,7 +590,6 @@ namespace QASmartTouch.Controllers
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ Screenshot error: {ex.Message}\n{ex.StackTrace}");
-                _overlay?.Show();
                 _toolbar?.Show();
                 foreach (var tab in _dockTabs) tab.Show();
                 MessageBox.Show($"Lỗi khi chụp ảnh:\n{ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -633,9 +630,8 @@ namespace QASmartTouch.Controllers
                     return;
                 }
                 
-                // Hide overlay temporarily
-                System.Diagnostics.Debug.WriteLine("🙈 Hiding overlay, toolbar and dock tabs...");
-                _overlay.Visibility = Visibility.Hidden;
+                // Hide toolbar temporarily (giữ nguyên overlay để chụp nét vẽ)
+                System.Diagnostics.Debug.WriteLine("🙈 Hiding toolbar and dock tabs...");
                 _toolbar?.Hide();
                 foreach (var tab in _dockTabs) tab.Hide();
                 
@@ -685,18 +681,16 @@ namespace QASmartTouch.Controllers
                         System.Diagnostics.Debug.WriteLine("❌ Captured image is NULL!");
                         MessageBox.Show("Không thể chụp vùng đã chọn", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                         
-                        // Restore overlay and toolbar since capture failed
-                        System.Diagnostics.Debug.WriteLine("👁️ Restoring overlay and toolbar after capture failure...");
-                        _overlay.Visibility = Visibility.Visible;
+                        // Restore toolbar since capture failed
+                        System.Diagnostics.Debug.WriteLine("👁️ Restoring toolbar after capture failure...");
                         _toolbar?.Show();
                         foreach (var tab in _dockTabs) tab.Show();
                     }
                 }
                 else
                 {
-                    // Restore overlay and toolbar since selection was cancelled
-                    System.Diagnostics.Debug.WriteLine("👁️ Restoring overlay and toolbar after cancel...");
-                    _overlay.Visibility = Visibility.Visible;
+                    // Restore toolbar since selection was cancelled
+                    System.Diagnostics.Debug.WriteLine("👁️ Restoring toolbar after cancel...");
                     _toolbar?.Show();
                     foreach (var tab in _dockTabs) tab.Show();
                     System.Diagnostics.Debug.WriteLine("ℹ️ Area selection cancelled");
@@ -711,11 +705,7 @@ namespace QASmartTouch.Controllers
                               MessageBoxButton.OK,
                               MessageBoxImage.Error);
                               
-                // Ensure overlay is visible
-                if (_overlay != null)
-                {
-                    _overlay.Visibility = Visibility.Visible;
-                }
+                // Ensure toolbar is visible
                 _toolbar?.Show();
             }
         }
