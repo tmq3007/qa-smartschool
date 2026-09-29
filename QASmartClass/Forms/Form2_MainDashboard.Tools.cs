@@ -2716,7 +2716,7 @@ namespace QASmartTouch.Forms
             {
                 // Nếu không có dữ liệu chưa lưu (bảng trắng hoặc đã lưu rồi), chỉ hỏi xác nhận thoát đơn giản
                 var confirmResult = MessageBox.Show(
-                    "Bạn có chắc chắn muốn thoát về màn hình đăng nhập?",
+                    "Bạn có chắc chắn muốn thoát phần mềm?",
                     "Xác nhận thoát",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
@@ -2728,9 +2728,11 @@ namespace QASmartTouch.Forms
             }
 
             // 2. Tiến hành điều hướng thoát về màn hình đăng nhập
-            var loginForm = new Form1_MainLogin();
-            loginForm.Show();
-            this.Close();
+            // [SMARTTOUCH_ONLY] Thoát luôn phần mềm thay vì quay lại màn hình đăng nhập
+            // var loginForm = new Form1_MainLogin();
+            // loginForm.Show();
+            // this.Close();
+            Application.Current.Shutdown();
         }
 
         #endregion

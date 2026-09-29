@@ -702,7 +702,6 @@
                        Click="btn9_5_ScreenCurtain_Click"
 
                        ToolTip="Màn che bảng"
-
                        Visibility="Collapsed">
 
                     <Button.Template>
@@ -998,4 +997,5 @@
     </Grid>
 
 </Window>
+
 

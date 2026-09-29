@@ -150,9 +150,12 @@ namespace QASmartTouch
             // Nếu phân hệ là All (mặc định) và không có tham số dòng lệnh override
             if (!isTestMode && !isStudentMode && (string.IsNullOrEmpty(activeRole) || activeRole.Equals("All", StringComparison.OrdinalIgnoreCase)))
             {
-                // Hiển thị ngay màn hình chọn đăng nhập nhưng KHÔNG kích hoạt overlay block toàn màn hình
-                var loginSelection = new Form0_LoginSelection(true);
-                loginSelection.Show();
+                // [SMARTTOUCH_ONLY] Chặn WPF tự thoát khi chưa có Window nào
+                this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+                // [SMARTTOUCH_ONLY] Bỏ qua đăng nhập — vào thẳng bảng vẽ
+                // var loginSelection = new Form0_LoginSelection(true);
+                // loginSelection.Show();
 
                 // Chạy ngầm tác vụ khởi tạo
                 System.Threading.Tasks.Task.Run(async () =>
@@ -161,11 +164,11 @@ namespace QASmartTouch
                     {
                         InitializeCoreServices(e, (status, progress) =>
                         {
-                            Dispatcher.Invoke(() =>
-                            {
-                                // Cập nhật progress bar nhúng trong Form thay vì block overlay
-                                loginSelection.UpdateLoadingStatus(status, progress);
-                            });
+                            // [SMARTTOUCH_ONLY] Không cần cập nhật UI vì không có form đăng nhập
+                            // Dispatcher.Invoke(() =>
+                            // {
+                            //     loginSelection.UpdateLoadingStatus(status, progress);
+                            // });
                         });
 
                         // Khởi tạo Database thực tế ở Background Thread để tránh block Main UI
@@ -178,8 +181,18 @@ namespace QASmartTouch
                         await Dispatcher.InvokeAsync(() =>
                         {
                             Database = tempDb;
-                            loginSelection.HideLoadingOverlay();
-                            InitializeModeAndRoleAfterLoading();
+                            // [SMARTTOUCH_ONLY] Bỏ qua login → vào thẳng SmartTouch
+                            // loginSelection.HideLoadingOverlay();
+                            // InitializeModeAndRoleAfterLoading();
+
+                            // Hard-code Teacher + đăng ký events + mở bảng vẽ trực tiếp
+                            UserRoleService.SaveRole(QASmartClass.Shared.UserRole.Teacher);
+                            ModeService.ModeChanged += OnModeChanged;
+                            ModeService.ModeTransitionStarted += OnModeTransitionStarted;
+                            ModeService.ModeTransitionCompleted += OnModeTransitionCompleted;
+                            ShowWhiteboard();
+                            this.ShutdownMode = ShutdownMode.OnLastWindowClose;
+                            EnsureFloatingModeBar();
                         });
                     }
                     catch (Exception ex)
@@ -514,18 +527,24 @@ namespace QASmartTouch
 
         public void EnsureFloatingModeBar()
         {
-            if (UserRoleService.ShouldShowModeBar)
+            // [SMARTTOUCH_ONLY] Ẩn hoàn toàn thanh Floating Mode Bar để khóa cứng ở bảng vẽ
+            // if (UserRoleService.ShouldShowModeBar)
+            // {
+            //     if (_floatingModeBar == null)
+            //     {
+            //         _floatingModeBar = new FloatingModeBar(ModeService, UserRoleService);
+            //     }
+            //     _floatingModeBar.Show();
+            //     _floatingModeBar.Activate();
+            // }
+            // else
+            // {
+            //     _floatingModeBar?.Hide();
+            // }
+            
+            if (_floatingModeBar != null)
             {
-                if (_floatingModeBar == null)
-                {
-                    _floatingModeBar = new FloatingModeBar(ModeService, UserRoleService);
-                }
-                _floatingModeBar.Show();
-                _floatingModeBar.Activate();
-            }
-            else
-            {
-                _floatingModeBar?.Hide();
+                _floatingModeBar.Hide();
             }
         }
 

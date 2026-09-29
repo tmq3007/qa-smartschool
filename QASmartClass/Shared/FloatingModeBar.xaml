@@ -102,8 +102,9 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- 📚 Smart Class Button -->
+                    <!-- [SMARTTOUCH_ONLY] Ẩn nút SmartClass -->
                     <Border x:Name="btnClass" Grid.Column="0" CornerRadius="8,0,0,8" Margin="1"
-                            Background="#1976D2" Cursor="Hand" MouseLeftButtonDown="OnClassClick">
+                            Background="#1976D2" Cursor="Hand" MouseLeftButtonDown="OnClassClick" Visibility="Collapsed">
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                             <TextBlock Text="📚 SMART CLASS" FontSize="10" FontWeight="Bold" 
                                        Foreground="White" HorizontalAlignment="Center"/>
@@ -122,8 +123,9 @@
                     </Border>
 
                     <!-- 🔲 Desktop Button -->
+                    <!-- [SMARTTOUCH_ONLY] Ẩn nút Desktop -->
                     <Border x:Name="btnDesktop" Grid.Column="2" CornerRadius="0,8,8,0" Margin="1"
-                            Background="Transparent" Cursor="Hand" MouseLeftButtonDown="OnDesktopClick">
+                            Background="Transparent" Cursor="Hand" MouseLeftButtonDown="OnDesktopClick" Visibility="Collapsed">
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                             <TextBlock Text="🔲 DESKTOP" FontSize="10" FontWeight="Bold"
                                        Foreground="#37474F" HorizontalAlignment="Center"/>
