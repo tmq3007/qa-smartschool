@@ -3,7 +3,7 @@
 
 
   <PropertyGroup>
-
+    <ApplicationIcon>logo.ico</ApplicationIcon>
     <OutputType Condition="!$(MSBuildProjectName.EndsWith('_wpftmp'))">WinExe</OutputType>
 
     <OutputType Condition="$(MSBuildProjectName.EndsWith('_wpftmp'))">Library</OutputType>
