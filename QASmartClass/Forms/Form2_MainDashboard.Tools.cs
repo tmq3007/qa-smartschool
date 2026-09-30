@@ -462,6 +462,12 @@ namespace QASmartTouch.Forms
         public void RecordToolDrawAction(UIElement element, string description)
         {
             RecordAddAction(element, description);
+            
+            // ✅ FIX: Cập nhật SelectionManager ngay khi tool window thêm nét vẽ mới,
+            // đảm bảo nét mới có thể chọn được ngay mà không cần chuyển mode.
+            // (Trước đây RefreshSelectableObjects chỉ gọi khi bấm btn8_Select,
+            //  nên nét vẽ thêm bằng thước/thước đo độ khi đang ở Selection mode sẽ bị bỏ sót)
+            RefreshSelectableObjects();
         }
 
         /// <summary>
@@ -2728,6 +2734,9 @@ namespace QASmartTouch.Forms
             }
 
             // 2. Tiến hành điều hướng thoát về màn hình đăng nhập
+            // ✅ FIX: Đóng tất cả tool windows trước khi thoát
+            CloseAllToolWindows();
+            
             var loginForm = new Form1_MainLogin();
             loginForm.Show();
             this.Close();
