@@ -23,6 +23,10 @@ namespace QASmartTouch.Controllers
         private bool _isPenMode = false;
         private bool _isMouseMode = false;
         private bool _isEraseByClickActive = false;  // Chế độ Xóa Từng Nét
+        
+        // ✅ FIX: Lưu giá trị màu và độ dày bút đã chọn để khôi phục khi mở lại popup
+        private System.Windows.Media.Color _savedPenColor = System.Windows.Media.Colors.Red;
+        private double _savedPenThickness = 3;
         private readonly System.Collections.Generic.List<Forms.QuickDockTabWindow> _dockTabs = new();
 
         public bool IsWindowModeActive => _isWindowModeActive;
@@ -1002,7 +1006,7 @@ namespace QASmartTouch.Controllers
                 }
 
                 // Create new color picker
-                _colorPicker = new Forms.ColorPickerPopup();
+                _colorPicker = new Forms.ColorPickerPopup(_savedPenColor, _savedPenThickness);
                 _colorPicker.WindowStartupLocation = WindowStartupLocation.Manual; // Bắt buộc để nhận Left/Top
                 
                 // Subscribe to events
@@ -1166,12 +1170,14 @@ namespace QASmartTouch.Controllers
 
         private void OnColorChanged(object? sender, Forms.ColorChangedEventArgs e)
         {
+            _savedPenColor = e.Color;
             _overlay?.SetColor(e.Color);
             System.Diagnostics.Debug.WriteLine($"🎨 Color changed to: {e.Color}");
         }
 
         private void OnThicknessChanged(object? sender, Forms.ThicknessChangedEventArgs e)
         {
+            _savedPenThickness = e.Thickness;
             _overlay?.SetThickness(e.Thickness);
             System.Diagnostics.Debug.WriteLine($"📏 Thickness changed to: {e.Thickness}px");
         }
