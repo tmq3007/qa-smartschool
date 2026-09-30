@@ -31,6 +31,8 @@ namespace QASmartTouch.Controls
                 if (txtContent != null)
                 {
                     txtContent.GotFocus += (s2, e2) => QASmartTouch.Forms.Form2_MainDashboard.ShowTouchKeyboard();
+                    // ✅ QC_4.2_SMART_TOUCH_TEXTBOX_CLICK_FIX: Hỗ trợ click chuột / bút mở bàn phím ảo
+                    txtContent.PreviewMouseLeftButtonDown += (s2, e2) => QASmartTouch.Forms.Form2_MainDashboard.ShowTouchKeyboard();
                     // ✅ QC_4.2_SMART_TOUCH_TEXTBOX_TOUCH_FIX: Đảm bảo chạm ngón tay trên SMART TOUCH đặt con trỏ cuối văn bản và bật bàn phím
                     txtContent.PreviewTouchDown += (s2, e2) =>
                     {
