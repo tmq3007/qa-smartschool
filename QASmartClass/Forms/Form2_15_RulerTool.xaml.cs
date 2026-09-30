@@ -88,6 +88,9 @@ namespace QASmartTouch.Forms
             
             // ✨ Cập nhật Clip khi Canvas thay đổi kích thước
             RulerCanvas.SizeChanged += (s, e) => UpdateRulerClipAndBody();
+            
+            // ✅ FIX: Safety cleanup preview line khi Ruler bị đóng giữa chừng
+            this.Closing += (s, e) => CleanupPreviewLine();
         }
         
         private void LoadBrushSettings()

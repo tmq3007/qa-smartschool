@@ -456,6 +456,9 @@ namespace QASmartTouch
 
         public void ShowClassroom()
         {
+            // ✅ FIX: Đóng tool windows trước khi ẩn whiteboard
+            _whiteboardShell?.CloseAllToolWindows();
+
             // [LOI_VID_50] Fade-out cửa sổ cũ thay vì Hide đột ngột
             FadeOutWindow(_whiteboardShell);
             _studentShell?.Hide();
@@ -502,6 +505,9 @@ namespace QASmartTouch
 
         private void HideAll()
         {
+            // ✅ FIX: Đóng tool windows trước khi ẩn whiteboard
+            _whiteboardShell?.CloseAllToolWindows();
+
             // [LOI_VID_50] Fade-out cả hai cửa sổ
             FadeOutWindow(_classroomShell);
             FadeOutWindow(_whiteboardShell);
