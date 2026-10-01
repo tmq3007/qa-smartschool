@@ -1203,14 +1203,18 @@ namespace QASmartTouch.Forms
                     double lMinY = Math.Min(line.Y1, line.Y2);
                     double lW = Math.Abs(line.X2 - line.X1);
                     double lH = Math.Abs(line.Y2 - line.Y1);
-                    if (lW < 5) lW = 5;
-                    if (lH < 5) lH = 5;
+                    // ✅ FIX: Tăng minimum bounds lên 20px cho dễ click/touch (trước đây 5px)
+                    if (lW < 20) lW = 20;
+                    if (lH < 20) lH = 20;
 
-                    // ✅ GĐ1-FIX: Skip grid/guide lines (kéo dài > 800px một chiều)
-                    // Grid lines thường kéo dài toàn bộ chiều ngang hoặc chiều dọc canvas
-                    if (lW > 800 || lH > 800)
+                    // ✅ FIX: Chỉ skip grid/guide lines phủ >= 90% canvas,
+                    // KHÔNG skip nét vẽ từ Ruler/Protractor/SetSquare dù dài > 800px
+                    double canvasW = MainInteractiveBoard.ActualWidth;
+                    double canvasH = MainInteractiveBoard.ActualHeight;
+                    if (canvasW > 100 && canvasH > 100 &&
+                        (lW >= canvasW * 0.9 || lH >= canvasH * 0.9))
                     {
-                        System.Diagnostics.Debug.WriteLine($"⏭️ Skipped grid/guide Line: ({line.X1:F0},{line.Y1:F0}) → ({line.X2:F0},{line.Y2:F0}) — too large (W={lW:F0}, H={lH:F0})");
+                        System.Diagnostics.Debug.WriteLine($"⏭️ Skipped grid/guide Line: ({line.X1:F0},{line.Y1:F0}) → ({line.X2:F0},{line.Y2:F0}) — covers >=90% canvas (W={lW:F0}/{canvasW:F0}, H={lH:F0}/{canvasH:F0})");
                         continue;
                     }
 
@@ -1992,6 +1996,47 @@ namespace QASmartTouch.Forms
 
             // Đồng bộ con trỏ ScrollViewer cha về Arrow
             MainScrollViewer.Cursor = System.Windows.Input.Cursors.Arrow;
+        }
+
+        /// <summary>
+        /// ✅ FIX: Đóng tất cả cửa sổ công cụ đo lường (Ruler, Protractor, SetSquare, Compass)
+        /// khi thoát khỏi bảng vẽ hoặc chuyển mode.
+        /// </summary>
+        public void CloseAllToolWindows()
+        {
+            try
+            {
+                if (_activeRulerTool != null)
+                {
+                    _activeRulerTool.Close();
+                    _activeRulerTool = null;
+                }
+                if (_activeProtractorTool != null)
+                {
+                    _activeProtractorTool.Close();
+                    _activeProtractorTool = null;
+                }
+                if (_activeSetSquareTool != null)
+                {
+                    _activeSetSquareTool.Close();
+                    _activeSetSquareTool = null;
+                }
+                if (_activeCompassTool != null)
+                {
+                    _activeCompassTool.Close();
+                    _activeCompassTool = null;
+                }
+                if (_activeCompassTool3D != null)
+                {
+                    _activeCompassTool3D.Close();
+                    _activeCompassTool3D = null;
+                }
+                System.Diagnostics.Debug.WriteLine("🔧 CloseAllToolWindows: All tool windows closed.");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ CloseAllToolWindows error: {ex.Message}");
+            }
         }
 
         /// <summary>

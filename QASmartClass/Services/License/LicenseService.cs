@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -172,6 +172,10 @@ namespace QASmartTouch.Services.License
         /// </summary>
         public LicenseStatus CheckLicense()
         {
+            // Tạm thời BỎ QUA kiểm tra License (Luôn Valid)
+            return LicenseStatus.Valid;
+            
+            /*
             // Chưa có file license → kiểm tra Free Trial 1 ngày
             if (!File.Exists(LicensePath))
             {
@@ -220,6 +224,7 @@ namespace QASmartTouch.Services.License
                 return LicenseStatus.ExpiringSoon;
 
             return LicenseStatus.Valid;
+            */
         }
 
         /// <summary>
@@ -228,6 +233,10 @@ namespace QASmartTouch.Services.License
         /// </summary>
         public bool HasFeature(string feature)
         {
+            // Bỏ qua kiểm tra tính năng, mặc định cấp quyền
+            return true;
+            
+            /*
             // Trong chế độ Free Trial 1 ngày → MỞ KHÓA TOÀN BỘ tính năng
             if (IsInFreeTrial)
                 return true;
@@ -240,6 +249,7 @@ namespace QASmartTouch.Services.License
                 return false;
 
             return CurrentLicense.Features.Contains(feature, StringComparer.OrdinalIgnoreCase);
+            */
         }
 
         /// <summary>

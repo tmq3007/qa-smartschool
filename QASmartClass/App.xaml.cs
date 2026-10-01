@@ -78,6 +78,9 @@ namespace QASmartTouch
         {
             base.OnStartup(e);
 
+            // === QC_4.2_TOUCH_SLIDER: Tối ưu cảm ứng 1 chạm cho thanh trượt Slider toàn hệ thống ===
+            QASmartTouch.Helpers.TouchSliderHelper.Initialize();
+
             // === UPGRADE_06: CommandLine Auto-Fix Firewall ===
             if (e.Args != null && System.Linq.Enumerable.Contains(e.Args, "--configure-firewall"))
             {
@@ -469,6 +472,9 @@ namespace QASmartTouch
 
         public void ShowClassroom()
         {
+            // ✅ FIX: Đóng tool windows trước khi ẩn whiteboard
+            _whiteboardShell?.CloseAllToolWindows();
+
             // [LOI_VID_50] Fade-out cửa sổ cũ thay vì Hide đột ngột
             FadeOutWindow(_whiteboardShell);
             _studentShell?.Hide();
@@ -515,6 +521,9 @@ namespace QASmartTouch
 
         private void HideAll()
         {
+            // ✅ FIX: Đóng tool windows trước khi ẩn whiteboard
+            _whiteboardShell?.CloseAllToolWindows();
+
             // [LOI_VID_50] Fade-out cả hai cửa sổ
             FadeOutWindow(_classroomShell);
             FadeOutWindow(_whiteboardShell);

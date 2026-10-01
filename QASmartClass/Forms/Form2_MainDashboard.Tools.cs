@@ -445,6 +445,9 @@ namespace QASmartTouch.Forms
                 }
             }
 
+            // ✅ QC_4.2_TABLE_OWNERSHIP: Tự động đính kèm nét vẽ nếu nằm trọn trong ô Bảng dữ liệu
+            CheckAndAttachStrokeToTable(element);
+
             var action = new UndoRedoAction
             {
                 Type = ActionType.Add,
@@ -462,6 +465,12 @@ namespace QASmartTouch.Forms
         public void RecordToolDrawAction(UIElement element, string description)
         {
             RecordAddAction(element, description);
+            
+            // ✅ FIX: Cập nhật SelectionManager ngay khi tool window thêm nét vẽ mới,
+            // đảm bảo nét mới có thể chọn được ngay mà không cần chuyển mode.
+            // (Trước đây RefreshSelectableObjects chỉ gọi khi bấm btn8_Select,
+            //  nên nét vẽ thêm bằng thước/thước đo độ khi đang ở Selection mode sẽ bị bỏ sót)
+            RefreshSelectableObjects();
         }
 
         /// <summary>

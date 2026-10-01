@@ -48,6 +48,7 @@ namespace QASmartTouch.Handlers
         private Action? _hideEraserPreview;
         private Action<Point>? _updatePointerAction;
         private Action? _onCanvasTouchDown; // ✅ Callback to notify MainDashboard of touch on canvas (for closing SubMenus)
+        private UIElement? _outerSurface; // Reference to outer surface for touch forwarding
         
         // PHASE 3: Input Smoothing — ENABLED for touch parity with mouse
         private Dictionary<int, InputSmoother> _smoothers = new Dictionary<int, InputSmoother>();
@@ -219,37 +220,83 @@ namespace QASmartTouch.Handlers
         {
             if (outerSurface != null)
             {
-                outerSurface.TouchDown += (s, e) =>
+                _outerSurface = outerSurface;
+                
+                // ✅ Sử dụng AddHandler với handledEventsToo=true để bắt sự kiện Touch 
+                // ngay cả khi ScrollViewer đã đánh dấu e.Handled=true (chống nuốt sự kiện)
+                outerSurface.AddHandler(UIElement.TouchDownEvent, new EventHandler<TouchEventArgs>((s, e) =>
                 {
-                    if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
+                    if (IsCanvasOrDescendant(e.OriginalSource))
                         return;
                     Canvas_TouchDown(_canvas, e);
-                };
-                outerSurface.TouchMove += (s, e) =>
+                }), true);
+                
+                outerSurface.AddHandler(UIElement.TouchMoveEvent, new EventHandler<TouchEventArgs>((s, e) =>
                 {
-                    if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
+                    if (IsCanvasOrDescendant(e.OriginalSource))
                         return;
                     Canvas_TouchMove(_canvas, e);
-                };
-                outerSurface.TouchUp += (s, e) =>
+                }), true);
+                
+                outerSurface.AddHandler(UIElement.TouchUpEvent, new EventHandler<TouchEventArgs>((s, e) =>
                 {
-                    if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
+                    if (IsCanvasOrDescendant(e.OriginalSource))
                         return;
                     Canvas_TouchUp(_canvas, e);
-                };
-                outerSurface.TouchLeave += (s, e) =>
+                }), true);
+                
+                outerSurface.AddHandler(UIElement.TouchLeaveEvent, new EventHandler<TouchEventArgs>((s, e) =>
                 {
-                    if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
+                    if (IsCanvasOrDescendant(e.OriginalSource))
                         return;
                     Canvas_TouchLeave(_canvas, e);
-                };
+                }), true);
+                
                 outerSurface.LostTouchCapture += (s, e) =>
                 {
-                    if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
+                    if (IsCanvasOrDescendant(e.OriginalSource))
                         return;
                     Canvas_LostTouchCapture(_canvas, e);
                 };
             }
+        }
+
+        /// <summary>
+        /// ✅ QC_4.2_FLOWDOCUMENT_TOUCH_FIX: Kiểm tra an toàn xem đối tượng phát sinh sự kiện cảm ứng
+        /// có phải là Canvas hoặc bất kỳ phần tử con nào thuộc Canvas hay không.
+        /// Xử lý an toàn cả ContentElement (FlowDocument, Paragraph, Run trong RichTextBox) và VisualTree,
+        /// tuyệt đối không để VisualTreeHelper ném ngoại lệ InvalidOperationException.
+        /// </summary>
+        private bool IsCanvasOrDescendant(object? source)
+        {
+            if (source == null || _canvas == null) return false;
+            if (ReferenceEquals(source, _canvas)) return true;
+
+            try
+            {
+                var element = source as DependencyObject;
+                while (element != null)
+                {
+                    if (ReferenceEquals(element, _canvas)) return true;
+
+                    // FlowDocument, Paragraph, Run là ContentElement, KHÔNG phải Visual
+                    // → Dùng LogicalTreeHelper cho ContentElement, VisualTreeHelper cho Visual / Visual3D
+                    if (element is Visual || element is System.Windows.Media.Media3D.Visual3D)
+                    {
+                        element = VisualTreeHelper.GetParent(element);
+                    }
+                    else
+                    {
+                        element = LogicalTreeHelper.GetParent(element);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ IsCanvasOrDescendant error: {ex.Message}");
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -486,8 +533,8 @@ namespace QASmartTouch.Handlers
                     var stroke = _touchManager.CreateStroke(touchId, position, strokeColor);
                     ApplyBrushStyle(stroke);
                     _canvas.Children.Add(stroke);
-                    // ✅ QC_4.2_STROKE_ABOVE_TABLE (NV-2a): Touch nét vẽ TRÊN Table/TextBox
-                    Panel.SetZIndex(stroke, QASmartTouch.Helpers.ZIndexConstants.UserContentMax);
+                    // Nét vẽ khi đang chạm vẽ live nằm trên tầng ActiveStrokeLayer (3000)
+                    Panel.SetZIndex(stroke, QASmartTouch.Helpers.ZIndexConstants.ActiveStrokeLayer);
 
                     // If this is touch 1 in SingleFinger mode, hold reference for ghost ink rollback if touch 2 arrives
                     if (_activeTouchScreenPoints.Count == 1 && CurrentMode == Managers.TouchInteractionMode.SingleFinger)
@@ -678,7 +725,9 @@ namespace QASmartTouch.Handlers
                     return;
                 }
 
-                if (e.TouchDevice.Captured != _canvas) return;
+                // Bỏ qua nếu touch bị cướp bởi 1 control khác (vd: Nút bấm).
+                // Cho phép nếu được capture bởi Canvas hoặc bề mặt outerSurface (như ScrollViewer khi zoom nhỏ)
+                if (e.TouchDevice.Captured != null && e.TouchDevice.Captured != _canvas && e.TouchDevice.Captured != _outerSurface) return;
 
                 if (_toolMode == TouchToolMode.Pointer)
                 {
@@ -927,13 +976,14 @@ namespace QASmartTouch.Handlers
                         {
                             _canvas.Children.Remove(stroke);
                             _canvas.Children.Add(smoothPath);
-                            // ✅ QC_4.2_STROKE_ABOVE_TABLE (NV-2b): Touch smoothPath TRÊN Table/TextBox
-                            Panel.SetZIndex(smoothPath, QASmartTouch.Helpers.ZIndexConstants.UserContentMax);
+                            // Nét vẽ hoàn thành đưa về tầng nội dung chuẩn (UserContentBase = 100)
+                            Panel.SetZIndex(smoothPath, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
                             _recordAddAction?.Invoke(smoothPath, $"Touch draw (ID: {touchId})");
                             System.Diagnostics.Debug.WriteLine($"✨ Touch {touchId}: Polyline → SmoothPath ({stroke.Points.Count} pts)");
                         }
                         else
                         {
+                            Panel.SetZIndex(stroke, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
                             _recordAddAction?.Invoke(stroke, $"Touch draw (ID: {touchId})");
                         }
                     }

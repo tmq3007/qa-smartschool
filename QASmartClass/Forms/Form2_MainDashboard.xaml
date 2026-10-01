@@ -93,7 +93,9 @@
                          ClipToBounds="False"
 
                          SizeChanged="MainScrollViewer_SizeChanged"
-                         MouseDown="MainScrollViewer_MouseDown">
+                         PreviewMouseDown="MainScrollViewer_PreviewMouseDown"
+                         PreviewTouchDown="MainScrollViewer_PreviewTouchDown"
+                         PreviewStylusDown="MainScrollViewer_PreviewStylusDown">
 
                 <!-- Main Interactive Board (Canvas) -->
 
