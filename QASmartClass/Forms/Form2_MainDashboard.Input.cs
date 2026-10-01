@@ -8773,59 +8773,7 @@ namespace QASmartTouch.Forms
             }
         }
 
-        public void InsertLocalVideoToCanvas(string videoPath)
-        {
-            if (string.IsNullOrEmpty(videoPath) || !System.IO.File.Exists(videoPath)) return;
 
-            var containerGrid = new Grid
-            {
-                Width = 500,
-                Height = 350,
-                Tag = "LocalVideoContainer"
-            };
-
-            var mediaElement = new MediaElement
-            {
-                Source = new Uri(videoPath, UriKind.Absolute),
-                LoadedBehavior = MediaState.Play,
-                UnloadedBehavior = MediaState.Close,
-                Stretch = Stretch.Uniform
-            };
-
-            var border = new Border
-            {
-                Background = new SolidColorBrush(Colors.Black),
-                BorderBrush = new SolidColorBrush(Colors.DarkGray),
-                BorderThickness = new Thickness(2),
-                CornerRadius = new CornerRadius(8),
-                Child = mediaElement
-            };
-
-            containerGrid.Children.Add(border);
-
-            // Position at center of board
-            double left = (MainInteractiveBoard.ActualWidth - 500) / 2;
-            double top = (MainInteractiveBoard.ActualHeight - 350) / 2;
-            if (left < 0) left = 50;
-            if (top < 0) top = 50;
-
-            Canvas.SetLeft(containerGrid, left);
-            Canvas.SetTop(containerGrid, top);
-
-            MainInteractiveBoard.Children.Add(containerGrid);
-            RecordAddAction(containerGrid, $"Local Video: {System.IO.Path.GetFileName(videoPath)}");
-            if (_selectionManager != null)
-            {
-                var selObj = new SelectableObject
-                {
-                    Element = containerGrid,
-                    Type = ObjectType.Other,
-                    Position = new Point(left, top),
-                    Size = new Size(500, 350)
-                };
-                _selectionManager.AddObject(selObj);
-            }
-        }
 
         private void CaptureScreenshot()
         {

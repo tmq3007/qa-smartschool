@@ -642,589 +642,926 @@ namespace QASmartTouch.Forms
 
         #endregion
 
-        #region Interactive Image Integration
-
-        /// <summary>
-        /// QC_4.2_IMAGE_UMIND_WIDGET: Chèn hình ảnh tương tác vào Canvas theo kiến trúc Unified Container (UMind Style).
-        /// Hỗ trợ cả 2 phương thức:
-        /// 1. Nút "Chèn vào bảng" từ Google Search Browser.
-        /// 2. Kéo-thả trực tiếp (Drag & Drop) từ trình duyệt hoặc máy tính vào Canvas.
-        /// Bao gồm Header Bar tích hợp tay cầm kéo (DragHandle) hỗ trợ Chuột, Ngón tay cảm ứng (Touch), Bút (Stylus)
-        /// và các nút thao tác nhanh (Thu nhỏ, Phóng to, Nhân bản/Copy, Đóng/Xóa).
-        /// </summary>
-        public void InsertInteractiveImage(BitmapSource bitmap, string sourceUrl = "", double? initialLeft = null, double? initialTop = null)
-        {
-            try
-            {                // Calculate initial size (max 600px, maintain aspect ratio)
-                double maxSize = 600;
-                double imageWidth = bitmap.PixelWidth;
-                double imageHeight = bitmap.PixelHeight;
+        #region Interactive Image Integration
 
-                if (bitmap == null) return;
-
-                // 1. Tính toán kích thước ban đầu (tối đa 600px, giữ nguyên tỉ lệ gốc)
-                double pixelWidth = bitmap.PixelWidth > 0 ? bitmap.PixelWidth : (bitmap.Width > 0 ? bitmap.Width : 400);
-                double pixelHeight = bitmap.PixelHeight > 0 ? bitmap.PixelHeight : (bitmap.Height > 0 ? bitmap.Height : 300);
-
-                const double maxSize = 600;
-                double displayWidth = pixelWidth;
-                double displayHeight = pixelHeight;
-
-                if (displayWidth > maxSize || displayHeight > maxSize)
-                {
-                    double ratio = Math.Min(maxSize / displayWidth, maxSize / displayHeight);
-                    displayWidth = Math.Round(displayWidth * ratio);
-                    displayHeight = Math.Round(displayHeight * ratio);
-                }
-
-                // Chiều cao thanh tiêu đề UMind
-                const double headerHeight = 36;
-                double totalHeight = displayHeight + headerHeight;
-
-                // 2. Tạo Image Control hiển thị ảnh
-                var imageControl = new System.Windows.Controls.Image
-                {
-                    Source = bitmap,                    Width = imageWidth,
-                    Height = imageHeight,
-                    Stretch = System.Windows.Media.Stretch.Uniform
+
+
+        /// <summary>
+
+        /// QC_4.2_IMAGE_UMIND_WIDGET: Chèn hình ảnh tương tác vào Canvas theo kiến trúc Unified Container (UMind Style).
+
+        /// Hỗ trợ cả 2 phương thức:
+
+        /// 1. Nút "Chèn vào bảng" từ Google Search Browser.
+
+        /// 2. Kéo-thả trực tiếp (Drag & Drop) từ trình duyệt hoặc máy tính vào Canvas.
+
+        /// Bao gồm Header Bar tích hợp tay cầm kéo (DragHandle) hỗ trợ Chuột, Ngón tay cảm ứng (Touch), Bút (Stylus)
+
+        /// và các nút thao tác nhanh (Thu nhỏ, Phóng to, Nhân bản/Copy, Đóng/Xóa).
+
+        /// </summary>
+
+        public void InsertInteractiveImage(BitmapSource bitmap, string sourceUrl = "", double? initialLeft = null, double? initialTop = null)
+
+        {
+
+            try
+
+            {
+
+                if (bitmap == null) return;
+
+
+
+                // 1. Tính toán kích thước ban đầu (tối đa 600px, giữ nguyên tỉ lệ gốc)
+
+                double pixelWidth = bitmap.PixelWidth > 0 ? bitmap.PixelWidth : (bitmap.Width > 0 ? bitmap.Width : 400);
+
+                double pixelHeight = bitmap.PixelHeight > 0 ? bitmap.PixelHeight : (bitmap.Height > 0 ? bitmap.Height : 300);
+
+
+
+                const double maxSize = 600;
+
+                double displayWidth = pixelWidth;
+
+                double displayHeight = pixelHeight;
+
+
+
+                if (displayWidth > maxSize || displayHeight > maxSize)
+
+                {
+
+                    double ratio = Math.Min(maxSize / displayWidth, maxSize / displayHeight);
+
+                    displayWidth = Math.Round(displayWidth * ratio);
+
+                    displayHeight = Math.Round(displayHeight * ratio);
+
+                }
+
+
+
+                // Chiều cao thanh tiêu đề UMind
+
+                const double headerHeight = 36;
+
+                double totalHeight = displayHeight + headerHeight;
+
+
+
+                // 2. Tạo Image Control hiển thị ảnh
+
+                var imageControl = new System.Windows.Controls.Image
+
+                {
+
+                    Source = bitmap,
+
+                    Stretch = Stretch.Uniform,
+
+                    HorizontalAlignment = HorizontalAlignment.Center,
+
+                    VerticalAlignment = VerticalAlignment.Center
+
                 };
 
-                    Stretch = Stretch.Uniform,
-                    var patternText = new TextBlock
-                    {
-                        Text = pattern,
-                        FontSize = fontSize,
-                        Foreground = new SolidColorBrush(Color.FromArgb(150, 76, 175, 80)),
-                    HorizontalAlignment = HorizontalAlignment.Center,                        VerticalAlignment = VerticalAlignment.Center,
-                        IsHitTestVisible = false,
-                        TextAlignment = TextAlignment.Center,
-                        FontWeight = FontWeights.Bold
-                    };
-                    handle.Child = patternText;
 
-                    VerticalAlignment = VerticalAlignment.Center
-                    return handle;
-                };
-                // Create all 4 drag handles
-                var topDragHandle = createDragHandle("═══", 10);
-                topDragHandle.Width = imageWidth;
-                topDragHandle.Height = 15;
-                var bottomDragHandle = createDragHandle("═══", 10);
-                bottomDragHandle.Width = imageWidth;
-                bottomDragHandle.Height = 15;
 
-                // 3. Tạo Unified Container (Border ngoài cùng)
-                var container = new Border
-                // Wrap Image in Border
-                var border = new Border
-                {
-                    Width = displayWidth,
-                    Height = totalHeight,
-                    Background = new SolidColorBrush(Color.FromRgb(24, 24, 27)), // Dark frame #18181B
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(59, 130, 246)), // Blue #3B82F6 hiện đại
-                    BorderThickness = new Thickness(2),
-                    CornerRadius = new CornerRadius(8),
-                    ClipToBounds = true,
-                    Tag = "InteractiveImage",
-                    Effect = new System.Windows.Media.Effects.DropShadowEffect
-                    {
-                        Color = Colors.Black,
-                        BlurRadius = 14,
-                        ShadowDepth = 3,
-                        Opacity = 0.35
-                    }
-                };
-                // Position at center
-                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - (imageWidth / 2);
-                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - (imageHeight / 2);
-                double borderLeft = Math.Max(0, centerX);
-                double borderTop = Math.Max(0, centerY);
-                Canvas.SetLeft(border, borderLeft);
-                Canvas.SetTop(border, borderTop);
+                // 3. Tạo Unified Container (Border ngoài cùng)
 
-                // 4. Grid 2 hàng: Hàng 0 = Header Bar kéo & điều khiển; Hàng 1 = Ảnh hiển thị
-                var mainGrid = new Grid();
-                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(headerHeight) });
-                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-                Canvas.SetLeft(rightDragHandle, borderLeft + imageWidth);
-                Canvas.SetTop(rightDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(rightDragHandle);
-                // Create control panel
-                var controlPanel = CreateImageControlPanel();
-                Canvas.SetLeft(controlPanel, borderLeft + imageWidth + 8);
-                Canvas.SetTop(controlPanel, borderTop);
-                MainInteractiveBoard.Children.Add(controlPanel);
+                var container = new Border
 
-                // 5. Header / Title Bar (UMind Style)
-                var headerBar = new Border
-                {
-                    Height = headerHeight,
-                    Background = new SolidColorBrush(Color.FromRgb(30, 41, 59)), // Slate 800 (#1E293B)
-                    BorderBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
-                    BorderThickness = new Thickness(0, 0, 0, 1),
-                    CornerRadius = new CornerRadius(6, 6, 0, 0),
-                    Cursor = Cursors.SizeAll,
-                    Tag = "DragHandle"
-                };
-                Grid.SetRow(headerBar, 0);
-
-                // Tối ưu cảm ứng: Tắt press-and-hold delay và gestures của Windows trên thanh kéo
-                Stylus.SetIsPressAndHoldEnabled(headerBar, false);
-                Stylus.SetIsFlicksEnabled(headerBar, false);
-                Stylus.SetIsTapFeedbackEnabled(headerBar, false);
-                Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
-
-                var headerGrid = new Grid();
-                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-                // Cột trái: Biểu tượng kéo (⠿) + Badge Ảnh 🖼️ + Kích thước / Nhãn ảnh
-                var leftPanel = new StackPanel
-                {                    // Hide all other control panels first
-                    HideAllImageControlPanels();
-
-                    Orientation = Orientation.Horizontal,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(8, 0, 8, 0),
-                    IsHitTestVisible = false // Bỏ qua hit-test để click/touch rơi vào headerBar
-                };
-                Grid.SetColumn(leftPanel, 0);
-
-                var gripText = new TextBlock
-                {                    MainInteractiveBoard.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
-                    _canvasClickHandlerAdded = true;
-                }
-
-                    Text = "⠿",
-                    FontSize = 16,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184)),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(2, 0, 6, 0)
-                };
-                leftPanel.Children.Add(gripText);
-
-                var imgBadge = new Border
-                {                System.Diagnostics.Debug.WriteLine($"❌ Insert Interactive Image error: {ex.Message}");
-                MessageBox.Show($"Lỗi chèn hình ảnh:\n{ex.Message}", "Lỗi",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-                    Background = new SolidColorBrush(Color.FromRgb(59, 130, 246)),
-                    CornerRadius = new CornerRadius(3),
-                    Width = 20,
-                    Height = 16,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(0, 0, 6, 0)
-                };
-                var badgeIcon = new TextBlock
-                {
-                    Text = "🖼️",
-                    FontSize = 10,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                };            btnZoomIn.Click += BtnImageZoomIn_Click;
-            panel.Children.Add(btnZoomIn);
-
-                imgBadge.Child = badgeIcon;
-                leftPanel.Children.Add(imgBadge);
-
-                var titleBlock = new TextBlock
-                {
-                    Text = $"Hình ảnh ({pixelWidth:F0}×{pixelHeight:F0})",
-                    Foreground = Brushes.White,
-                    FontSize = 12,
-                    FontWeight = FontWeights.SemiBold,
-                    TextTrimming = TextTrimming.CharacterEllipsis,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    ToolTip = string.IsNullOrWhiteSpace(sourceUrl) ? "Hình ảnh" : sourceUrl
-                };            btnZoomOut.Click += BtnImageZoomOut_Click;
-            panel.Children.Add(btnZoomOut);
-
-                leftPanel.Children.Add(titleBlock);
-                headerGrid.Children.Add(leftPanel);
-
-                // Cột phải: Các nút thao tác nhanh (Thu nhỏ -, Phóng to +, Sao chép 📋, Đóng ✕)
-                var actionPanel = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(0, 0, 6, 0)
-                };            btnCopy.Click += BtnImageCopy_Click;
-            panel.Children.Add(btnCopy);
-
-                Grid.SetColumn(actionPanel, 1);
-
-                Button CreateHeaderButton(string text, string tooltip, Color normalColor, Color hoverColor, Action clickAction)
-                {
-                    var btn = new Button
-                    {
-                        Content = text,
-                        Width = 30,
-                        Height = 24,
-                        Margin = new Thickness(3, 0, 0, 0),
-                        Background = new SolidColorBrush(normalColor),
-                        Foreground = Brushes.White,
-                        FontSize = 12,
-                        FontWeight = FontWeights.Bold,
-                        BorderThickness = new Thickness(0),
-                        Cursor = Cursors.Hand,
-                        ToolTip = tooltip
-                    };            btnDelete.Click += BtnImageDelete_Click;
-            panel.Children.Add(btnDelete);
-
-
-                    var template = new ControlTemplate(typeof(Button));
-                    var borderFactory = new FrameworkElementFactory(typeof(Border));
-                    borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
-                    borderFactory.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Button.Background))
-                    {
-                        RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
-                    });
-                    var presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
-                    presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-                    presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-                    borderFactory.AppendChild(presenterFactory);
-                    template.VisualTree = borderFactory;
-                    btn.Template = template;
-
-                    btn.MouseEnter += (s, e) => btn.Background = new SolidColorBrush(hoverColor);
-                    btn.MouseLeave += (s, e) => btn.Background = new SolidColorBrush(normalColor);
-                    btn.Click += (s, e) => clickAction?.Invoke();
-
-                    TouchActivationHelper.WireButton(btn);
-                    return btn;
-                }
-
-                // Nút Thu nhỏ (-)
-                var btnZoomOut = CreateHeaderButton("－", "Thu nhỏ ảnh (Zoom -)",
-                    Color.FromArgb(180, 71, 85, 105), Color.FromArgb(230, 100, 116, 139),
-                    () => ZoomImageContainer(container, 1.0 / 1.15, pixelWidth, pixelHeight));
-                actionPanel.Children.Add(btnZoomOut);
-
-                // Nút Phóng to (+)
-                var btnZoomIn = CreateHeaderButton("＋", "Phóng to ảnh (Zoom +)",
-                    Color.FromArgb(180, 71, 85, 105), Color.FromArgb(230, 100, 116, 139),
-                    () => ZoomImageContainer(container, 1.15, pixelWidth, pixelHeight));
-                actionPanel.Children.Add(btnZoomIn);
-
-                // Nút Sao chép (📋)
-                var btnCopy = CreateHeaderButton("📋", "Nhân bản ảnh",
-                    Color.FromArgb(180, 16, 185, 129), Color.FromArgb(230, 5, 150, 105),
-                    () => DuplicateImageContainer(container, bitmap, sourceUrl));
-                actionPanel.Children.Add(btnCopy);
-
-                // Nút Đóng / Xóa (✕)
-                var btnDelete = CreateHeaderButton("✕", "Xóa ảnh",
-                    Color.FromRgb(220, 38, 38), Color.FromRgb(239, 68, 68),
-                    () => DeleteImageContainer(container));
-                actionPanel.Children.Add(btnDelete);
-
-                headerGrid.Children.Add(actionPanel);
-                headerBar.Child = headerGrid;
-                mainGrid.Children.Add(headerBar);
-
-                // Đặt ảnh vào hàng 1
-                Grid.SetRow(imageControl, 1);
-                mainGrid.Children.Add(imageControl);
-
-                container.Child = mainGrid;
-
-                // 6. Gắn cơ chế Kéo Di Chuyển Chuẩn Kép (Touch + Mouse + Stylus)
-                EnableImageUnifiedDrag(container, headerBar);
-
-                // 7. Xác định vị trí đặt container trên bảng
-                double borderLeft, borderTop;
-                if (initialLeft.HasValue && initialTop.HasValue)
-                {            var button = sender as Button;
-            var controlPanel = button?.Parent as StackPanel;
-            if (controlPanel == null) return;
-
-                    // Đặt trực tiếp tại tọa độ thả (drag & drop point)
-                    borderLeft = Math.Max(0, initialLeft.Value - (displayWidth / 2));
-                    borderTop = Math.Max(0, initialTop.Value - (headerHeight / 2));
-                }
-                else
-                {                dynamic tag = border.Tag;
-                double newWidth = border.Width * 1.2;
-                double newHeight = border.Height * 1.2;
-
-                    // Đặt ở giữa khung hình hiển thị hiện tại
-                    double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - (displayWidth / 2);
-                    double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - (totalHeight / 2);
-                    borderLeft = Math.Max(0, centerX);
-                    borderTop = Math.Max(0, centerY);
-                }
-                // Update drag handles
-                UpdateImageHandlePositions(border, tag.TopHandle, tag.BottomHandle, 
-                                          tag.LeftHandle, tag.RightHandle, tag.ControlPanel);
-
-                Canvas.SetLeft(container, borderLeft);
-                Canvas.SetTop(container, borderTop);
-
-                // 8. Đưa Container vào bảng và ghi nhận Undo
-                MainInteractiveBoard.Children.Add(container);
-                RecordAddAction(container, $"Interactive Image: {sourceUrl}");
-                RefreshSelectableObjects();
-
-                System.Diagnostics.Debug.WriteLine($"✅ Interactive image inserted (UMind Unified Container): {sourceUrl} ({displayWidth}x{totalHeight})");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Insert Interactive Image error: {ex.Message}");
-                MessageBox.Show($"Lỗi chèn hình ảnh:\n{ex.Message}", "Lỗi",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        /// <summary>
-        /// QC_4.2_IMAGE_ZOOM: Điều chỉnh tỉ lệ thu phóng của container ảnh
-        /// </summary>
-        private void ZoomImageContainer(Border container, double factor, double originalPixelWidth, double originalPixelHeight)
-        {            var button = sender as Button;
-            var controlPanel = button?.Parent as StackPanel;
-            if (controlPanel == null) return;
-
-            if (container == null) return;
-
-            double currentWidth = container.Width;
-            if (double.IsNaN(currentWidth) || currentWidth <= 0) currentWidth = 400;
-
-            double newWidth = Math.Round(currentWidth * factor);
-
-            // Giới hạn chiều rộng tối thiểu 150px, tối đa 2400px
-            if (newWidth < 150 || newWidth > 2400) return;
-
-            const double headerHeight = 36;
-            double aspectRatio = (originalPixelHeight > 0 && originalPixelWidth > 0)
-                ? (originalPixelHeight / originalPixelWidth)
-                : 0.75;
-
-            double newImageHeight = Math.Round(newWidth * aspectRatio);
-            double newTotalHeight = newImageHeight + headerHeight;
-
-            container.Width = newWidth;
-            container.Height = newTotalHeight;
-
-            RefreshSelectableObjects();
-            System.Diagnostics.Debug.WriteLine($"🔍 Image Zoomed: {newWidth:F0}x{newTotalHeight:F0}");
-        }
-
-        /// <summary>
-        /// QC_4.2_IMAGE_DUPLICATE: Nhân bản ảnh với độ lệch 30px
-        /// </summary>
-        private void DuplicateImageContainer(Border originalContainer, BitmapSource bitmap, string sourceUrl)
-        {                dynamic tag = border.Tag;
-                double newWidth = border.Width / 1.2;
-                double newHeight = border.Height / 1.2;
-
-            if (originalContainer == null || bitmap == null) return;
-                border.Width = newWidth;
-                border.Height = newHeight;
-
-            double currentLeft = Canvas.GetLeft(originalContainer);
-            double currentTop = Canvas.GetTop(originalContainer);
-            if (double.IsNaN(currentLeft)) currentLeft = 100;
-            if (double.IsNaN(currentTop)) currentTop = 100;
-
-            // Offset 30px
-            double targetX = currentLeft + (originalContainer.Width / 2) + 30;
-            double targetY = currentTop + 30 + 18;
-
-            InsertInteractiveImage(bitmap, sourceUrl + " (Copy)", targetX, targetY);
-        }
-                UpdateImageHandlePositions(border, tag.TopHandle, tag.BottomHandle, 
-                                          tag.LeftHandle, tag.RightHandle, tag.ControlPanel);
-
-        /// <summary>
-        /// QC_4.2_IMAGE_DELETE: Xóa container ảnh khỏi bảng
-        /// </summary>
-        private void DeleteImageContainer(Border container)
-        {
-            if (container == null) return;
-
-            MainInteractiveBoard.Children.Remove(container);
-            RecordRemoveAction(container, "Deleted Interactive Image");
-            RefreshSelectableObjects();
-
-            System.Diagnostics.Debug.WriteLine("🗑️ Interactive Image deleted (Unified Container)");
-        }        }
-
-
-        /// <summary>
-        /// QC_4.2_IMAGE_UNIFIED_DRAG: Pipeline kéo di chuyển chuẩn kép (Touch, Mouse, Stylus) cho Image Title Bar (UMind Style).
-        /// </summary>
-        private void EnableImageUnifiedDrag(Border container, Border headerBar)
-        {            var button = sender as Button;
-            var controlPanel = button?.Parent as StackPanel;
-            if (controlPanel == null) return;
-
-            // ──────────────────────────────────────────
-            // 1. TOUCH PIPELINE (Màn hình cảm ứng IFP đa điểm)
-            // ──────────────────────────────────────────
-            int? activeTouchId = null;
-            Point touchStartPoint = new Point();
-            double touchStartLeft = 0;
-            double touchStartTop = 0;
-
-            headerBar.PreviewTouchDown += (s, e) =>
-            {                dynamic tag = border.Tag;
-
-                if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
-                    return;
-
-                _isDrawing = false;
-                _currentStroke = null;
-
-                if (!activeTouchId.HasValue)
-                {
-                    activeTouchId = e.TouchDevice.Id;
-                    touchStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
-                    touchStartLeft = Canvas.GetLeft(container);
-                    if (double.IsNaN(touchStartLeft)) touchStartLeft = 0;
-                    touchStartTop = Canvas.GetTop(container);
-                    if (double.IsNaN(touchStartTop)) touchStartTop = 0;
-
-                    headerBar.CaptureTouch(e.TouchDevice);
-                    e.Handled = true;
-                }        }
-
-            };
-
-            headerBar.PreviewTouchMove += (s, e) =>
-            {            var button = sender as Button;
-            var controlPanel = button?.Parent as StackPanel;
-            if (controlPanel == null) return;
-
-                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
-            if (border != null && border.Child is System.Windows.Controls.Image originalImage)
-                {                dynamic tag = border.Tag;
-
-                    Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
-                    double offsetX = currentPoint.X - touchStartPoint.X;
-                    double offsetY = currentPoint.Y - touchStartPoint.Y;
-
-                    double newLeft = Math.Max(0, touchStartLeft + offsetX);
-                    double newTop = Math.Max(0, touchStartTop + offsetY);
-
-                    Canvas.SetLeft(container, newLeft);
-                    Canvas.SetTop(container, newTop);
-
-                    e.Handled = true;
-                }            }
-        }
-
-            };
-
-            EventHandler<TouchEventArgs> endTouch = (s, e) =>
-            {            // Find all image control panels and hide them
-            var controlPanels = MainInteractiveBoard.Children.OfType<StackPanel>()
-                .Where(sp => sp.Tag?.ToString() == "ImageControlPanel");
-
-                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
-                {
-                    activeTouchId = null;
-                    try { headerBar.ReleaseTouchCapture(e.TouchDevice); } catch { }
-                    RefreshSelectableObjects();
-                    e.Handled = true;
-                }        }
-
-            };
-
-            headerBar.PreviewTouchUp += endTouch;
-            headerBar.LostTouchCapture += (s, e) =>
-            {
-                if (activeTouchId.HasValue)
-                {
-                    activeTouchId = null;
-                    RefreshSelectableObjects();
-                }
-            };
-
-            // ──────────────────────────────────────────
-            // 2. MOUSE PIPELINE (Chuột máy tính PC thông thường)
-            // ──────────────────────────────────────────
-            bool isMouseDragging = false;
-            Point mouseStartPoint = new Point();
-            double mouseStartLeft = 0;
-            double mouseStartTop = 0;
-
-            headerBar.PreviewMouseLeftButtonDown += (s, e) =>
-            {            bool isDragging = false;
-            Point dragStartPoint = new Point();
-            double originalLeft = 0;
-            double originalTop = 0;
-
-                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
-                    return;
-
-                _isDrawing = false;
-                _currentStroke = null;
-
-                isMouseDragging = true;
-                mouseStartPoint = e.GetPosition(MainInteractiveBoard);
-                mouseStartLeft = Canvas.GetLeft(container);
-                if (double.IsNaN(mouseStartLeft)) mouseStartLeft = 0;
-                mouseStartTop = Canvas.GetTop(container);
-                if (double.IsNaN(mouseStartTop)) mouseStartTop = 0;
-
-                headerBar.CaptureMouse();
-                e.Handled = true;
-            };
-
-            headerBar.PreviewMouseMove += (s, e) =>
-            {
-                if (isMouseDragging && !activeTouchId.HasValue)
-                {
-                    Point currentPoint = e.GetPosition(MainInteractiveBoard);                    double offsetX = currentPoint.X - dragStartPoint.X;
-                    double offsetY = currentPoint.Y - dragStartPoint.Y;
-
-                    double offsetX = currentPoint.X - mouseStartPoint.X;
-                    double offsetY = currentPoint.Y - mouseStartPoint.Y;
-
-                    double newLeft = Math.Max(0, mouseStartLeft + offsetX);
-                    double newTop = Math.Max(0, mouseStartTop + offsetY);
-
-                    Canvas.SetLeft(container, newLeft);
-                    Canvas.SetTop(container, newTop);
-
-                    e.Handled = true;
-                }            };
-
-            MouseButtonEventHandler endDrag = (s, e) =>
-            {
-                if (isDragging)
                 {
-                    isDragging = false;
-                    (s as Border)?.ReleaseMouseCapture();
+
+                    Width = displayWidth,
+
+                    Height = totalHeight,
+
+                    Background = new SolidColorBrush(Color.FromRgb(24, 24, 27)), // Dark frame #18181B
+
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(59, 130, 246)), // Blue #3B82F6 hiện đại
+
+                    BorderThickness = new Thickness(2),
+
+                    CornerRadius = new CornerRadius(8),
+
+                    ClipToBounds = true,
+
+                    Tag = "InteractiveImage",
+
+                    Effect = new System.Windows.Media.Effects.DropShadowEffect
+
+                    {
+
+                        Color = Colors.Black,
+
+                        BlurRadius = 14,
+
+                        ShadowDepth = 3,
+
+                        Opacity = 0.35
+
+                    }
+
+                };
+
+
+
+                // 4. Grid 2 hàng: Hàng 0 = Header Bar kéo & điều khiển; Hàng 1 = Ảnh hiển thị
+
+                var mainGrid = new Grid();
+
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(headerHeight) });
+
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+
+
+                // 5. Header / Title Bar (UMind Style)
+
+                var headerBar = new Border
+
+                {
+
+                    Height = headerHeight,
+
+                    Background = new SolidColorBrush(Color.FromRgb(30, 41, 59)), // Slate 800 (#1E293B)
+
+                    BorderBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
+
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+
+                    CornerRadius = new CornerRadius(6, 6, 0, 0),
+
+                    Cursor = Cursors.SizeAll,
+
+                    Tag = "DragHandle"
+
+                };
+
+                Grid.SetRow(headerBar, 0);
+
+
+
+                // Tối ưu cảm ứng: Tắt press-and-hold delay và gestures của Windows trên thanh kéo
+
+                Stylus.SetIsPressAndHoldEnabled(headerBar, false);
+
+                Stylus.SetIsFlicksEnabled(headerBar, false);
+
+                Stylus.SetIsTapFeedbackEnabled(headerBar, false);
+
+                Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
+
+
+
+                var headerGrid = new Grid();
+
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+
+
+                // Cột trái: Biểu tượng kéo (⠿) + Badge Ảnh 🖼️ + Kích thước / Nhãn ảnh
+
+                var leftPanel = new StackPanel
+
+                {
+
+                    Orientation = Orientation.Horizontal,
+
+                    VerticalAlignment = VerticalAlignment.Center,
+
+                    Margin = new Thickness(8, 0, 8, 0),
+
+                    IsHitTestVisible = false // Bỏ qua hit-test để click/touch rơi vào headerBar
+
+                };
+
+                Grid.SetColumn(leftPanel, 0);
+
+
+
+                var gripText = new TextBlock
+
+                {
+
+                    Text = "⠿",
+
+                    FontSize = 16,
+
+                    FontWeight = FontWeights.Bold,
+
+                    Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184)),
+
+                    VerticalAlignment = VerticalAlignment.Center,
+
+                    Margin = new Thickness(2, 0, 6, 0)
+
+                };
+
+                leftPanel.Children.Add(gripText);
+
+
+
+                var imgBadge = new Border
+
+                {
+
+                    Background = new SolidColorBrush(Color.FromRgb(59, 130, 246)),
+
+                    CornerRadius = new CornerRadius(3),
+
+                    Width = 20,
+
+                    Height = 16,
+
+                    VerticalAlignment = VerticalAlignment.Center,
+
+                    Margin = new Thickness(0, 0, 6, 0)
+
+                };
+
+                var badgeIcon = new TextBlock
+
+                {
+
+                    Text = "🖼️",
+
+                    FontSize = 10,
+
+                    HorizontalAlignment = HorizontalAlignment.Center,
+
+                    VerticalAlignment = VerticalAlignment.Center
+
+                };
+
+                imgBadge.Child = badgeIcon;
+
+                leftPanel.Children.Add(imgBadge);
+
+
+
+                var titleBlock = new TextBlock
+
+                {
+
+                    Text = $"Hình ảnh ({pixelWidth:F0}×{pixelHeight:F0})",
+
+                    Foreground = Brushes.White,
+
+                    FontSize = 12,
+
+                    FontWeight = FontWeights.SemiBold,
+
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+
+                    VerticalAlignment = VerticalAlignment.Center,
+
+                    ToolTip = string.IsNullOrWhiteSpace(sourceUrl) ? "Hình ảnh" : sourceUrl
+
+                };
+
+                leftPanel.Children.Add(titleBlock);
+
+                headerGrid.Children.Add(leftPanel);
+
+
+
+                // Cột phải: Các nút thao tác nhanh (Thu nhỏ -, Phóng to +, Sao chép 📋, Đóng ✕)
+
+                var actionPanel = new StackPanel
+
+                {
+
+                    Orientation = Orientation.Horizontal,
+
+                    HorizontalAlignment = HorizontalAlignment.Right,
+
+                    VerticalAlignment = VerticalAlignment.Center,
+
+                    Margin = new Thickness(0, 0, 6, 0)
+
+                };
+
+                Grid.SetColumn(actionPanel, 1);
+
+
+
+                Button CreateHeaderButton(string text, string tooltip, Color normalColor, Color hoverColor, Action clickAction)
+
+                {
+
+                    var btn = new Button
+
+                    {
+
+                        Content = text,
+
+                        Width = 30,
+
+                        Height = 24,
+
+                        Margin = new Thickness(3, 0, 0, 0),
+
+                        Background = new SolidColorBrush(normalColor),
+
+                        Foreground = Brushes.White,
+
+                        FontSize = 12,
+
+                        FontWeight = FontWeights.Bold,
+
+                        BorderThickness = new Thickness(0),
+
+                        Cursor = Cursors.Hand,
+
+                        ToolTip = tooltip
+
+                    };
+
+
+
+                    var template = new ControlTemplate(typeof(Button));
+
+                    var borderFactory = new FrameworkElementFactory(typeof(Border));
+
+                    borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+
+                    borderFactory.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Button.Background))
+
+                    {
+
+                        RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+
+                    });
+
+                    var presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+
+                    presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+
+                    presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+
+                    borderFactory.AppendChild(presenterFactory);
+
+                    template.VisualTree = borderFactory;
+
+                    btn.Template = template;
+
+
+
+                    btn.MouseEnter += (s, e) => btn.Background = new SolidColorBrush(hoverColor);
+
+                    btn.MouseLeave += (s, e) => btn.Background = new SolidColorBrush(normalColor);
+
+                    btn.Click += (s, e) => clickAction?.Invoke();
+
+
+
+                    TouchActivationHelper.WireButton(btn);
+
+                    return btn;
+
                 }
-            };
-            // Attach events to all handles
-            topHandle.MouseLeftButtonDown += startDrag;
-            topHandle.MouseMove += drag;
-            topHandle.MouseLeftButtonUp += endDrag;
-            bottomHandle.MouseLeftButtonDown += startDrag;
-            bottomHandle.MouseMove += drag;
-            bottomHandle.MouseLeftButtonUp += endDrag;
 
-            headerBar.PreviewMouseLeftButtonUp += (s, e) =>
-            {
-                if (isMouseDragging)
-                {            double left = Canvas.GetLeft(border);
-            double top = Canvas.GetTop(border);
-            double width = border.Width;
-            double height = border.Height;
 
-                    isMouseDragging = false;
-                    headerBar.ReleaseMouseCapture();
-                    RefreshSelectableObjects();
-                    e.Handled = true;
-                }
-            };
-        }
-
+
+                // Nút Thu nhỏ (-)
+
+                var btnZoomOut = CreateHeaderButton("－", "Thu nhỏ ảnh (Zoom -)",
+
+                    Color.FromArgb(180, 71, 85, 105), Color.FromArgb(230, 100, 116, 139),
+
+                    () => ZoomImageContainer(container, 1.0 / 1.15, pixelWidth, pixelHeight));
+
+                actionPanel.Children.Add(btnZoomOut);
+
+
+
+                // Nút Phóng to (+)
+
+                var btnZoomIn = CreateHeaderButton("＋", "Phóng to ảnh (Zoom +)",
+
+                    Color.FromArgb(180, 71, 85, 105), Color.FromArgb(230, 100, 116, 139),
+
+                    () => ZoomImageContainer(container, 1.15, pixelWidth, pixelHeight));
+
+                actionPanel.Children.Add(btnZoomIn);
+
+
+
+                // Nút Sao chép (📋)
+
+                var btnCopy = CreateHeaderButton("📋", "Nhân bản ảnh",
+
+                    Color.FromArgb(180, 16, 185, 129), Color.FromArgb(230, 5, 150, 105),
+
+                    () => DuplicateImageContainer(container, bitmap, sourceUrl));
+
+                actionPanel.Children.Add(btnCopy);
+
+
+
+                // Nút Đóng / Xóa (✕)
+
+                var btnDelete = CreateHeaderButton("✕", "Xóa ảnh",
+
+                    Color.FromRgb(220, 38, 38), Color.FromRgb(239, 68, 68),
+
+                    () => DeleteImageContainer(container));
+
+                actionPanel.Children.Add(btnDelete);
+
+
+
+                headerGrid.Children.Add(actionPanel);
+
+                headerBar.Child = headerGrid;
+
+                mainGrid.Children.Add(headerBar);
+
+
+
+                // Đặt ảnh vào hàng 1
+
+                Grid.SetRow(imageControl, 1);
+
+                mainGrid.Children.Add(imageControl);
+
+
+
+                container.Child = mainGrid;
+
+
+
+                // 6. Gắn cơ chế Kéo Di Chuyển Chuẩn Kép (Touch + Mouse + Stylus)
+
+                EnableImageUnifiedDrag(container, headerBar);
+
+
+
+                // 7. Xác định vị trí đặt container trên bảng
+
+                double borderLeft, borderTop;
+
+                if (initialLeft.HasValue && initialTop.HasValue)
+
+                {
+
+                    // Đặt trực tiếp tại tọa độ thả (drag & drop point)
+
+                    borderLeft = Math.Max(0, initialLeft.Value - (displayWidth / 2));
+
+                    borderTop = Math.Max(0, initialTop.Value - (headerHeight / 2));
+
+                }
+
+                else
+
+                {
+
+                    // Đặt ở giữa khung hình hiển thị hiện tại
+
+                    double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - (displayWidth / 2);
+
+                    double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - (totalHeight / 2);
+
+                    borderLeft = Math.Max(0, centerX);
+
+                    borderTop = Math.Max(0, centerY);
+
+                }
+
+
+
+                Canvas.SetLeft(container, borderLeft);
+
+                Canvas.SetTop(container, borderTop);
+
+
+
+                // 8. Đưa Container vào bảng và ghi nhận Undo
+
+                MainInteractiveBoard.Children.Add(container);
+
+                RecordAddAction(container, $"Interactive Image: {sourceUrl}");
+
+                RefreshSelectableObjects();
+
+
+
+                System.Diagnostics.Debug.WriteLine($"✅ Interactive image inserted (UMind Unified Container): {sourceUrl} ({displayWidth}x{totalHeight})");
+
+            }
+
+            catch (Exception ex)
+
+            {
+
+                System.Diagnostics.Debug.WriteLine($"❌ Insert Interactive Image error: {ex.Message}");
+
+                MessageBox.Show($"Lỗi chèn hình ảnh:\n{ex.Message}", "Lỗi",
+
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+
+            }
+
+        }
+
+
+
+        /// <summary>
+
+        /// QC_4.2_IMAGE_ZOOM: Điều chỉnh tỉ lệ thu phóng của container ảnh
+
+        /// </summary>
+
+        private void ZoomImageContainer(Border container, double factor, double originalPixelWidth, double originalPixelHeight)
+
+        {
+
+            if (container == null) return;
+
+
+
+            double currentWidth = container.Width;
+
+            if (double.IsNaN(currentWidth) || currentWidth <= 0) currentWidth = 400;
+
+
+
+            double newWidth = Math.Round(currentWidth * factor);
+
+
+
+            // Giới hạn chiều rộng tối thiểu 150px, tối đa 2400px
+
+            if (newWidth < 150 || newWidth > 2400) return;
+
+
+
+            const double headerHeight = 36;
+
+            double aspectRatio = (originalPixelHeight > 0 && originalPixelWidth > 0)
+
+                ? (originalPixelHeight / originalPixelWidth)
+
+                : 0.75;
+
+
+
+            double newImageHeight = Math.Round(newWidth * aspectRatio);
+
+            double newTotalHeight = newImageHeight + headerHeight;
+
+
+
+            container.Width = newWidth;
+
+            container.Height = newTotalHeight;
+
+
+
+            RefreshSelectableObjects();
+
+            System.Diagnostics.Debug.WriteLine($"🔍 Image Zoomed: {newWidth:F0}x{newTotalHeight:F0}");
+
+        }
+
+
+
+        /// <summary>
+
+        /// QC_4.2_IMAGE_DUPLICATE: Nhân bản ảnh với độ lệch 30px
+
+        /// </summary>
+
+        private void DuplicateImageContainer(Border originalContainer, BitmapSource bitmap, string sourceUrl)
+
+        {
+
+            if (originalContainer == null || bitmap == null) return;
+
+
+
+            double currentLeft = Canvas.GetLeft(originalContainer);
+
+            double currentTop = Canvas.GetTop(originalContainer);
+
+            if (double.IsNaN(currentLeft)) currentLeft = 100;
+
+            if (double.IsNaN(currentTop)) currentTop = 100;
+
+
+
+            // Offset 30px
+
+            double targetX = currentLeft + (originalContainer.Width / 2) + 30;
+
+            double targetY = currentTop + 30 + 18;
+
+
+
+            InsertInteractiveImage(bitmap, sourceUrl + " (Copy)", targetX, targetY);
+
+        }
+
+
+
+        /// <summary>
+
+        /// QC_4.2_IMAGE_DELETE: Xóa container ảnh khỏi bảng
+
+        /// </summary>
+
+        private void DeleteImageContainer(Border container)
+
+        {
+
+            if (container == null) return;
+
+
+
+            MainInteractiveBoard.Children.Remove(container);
+
+            RecordRemoveAction(container, "Deleted Interactive Image");
+
+            RefreshSelectableObjects();
+
+
+
+            System.Diagnostics.Debug.WriteLine("🗑️ Interactive Image deleted (Unified Container)");
+
+        }
+
+
+
+        /// <summary>
+
+        /// QC_4.2_IMAGE_UNIFIED_DRAG: Pipeline kéo di chuyển chuẩn kép (Touch, Mouse, Stylus) cho Image Title Bar (UMind Style).
+
+        /// </summary>
+
+        private void EnableImageUnifiedDrag(Border container, Border headerBar)
+
+        {
+
+            // ──────────────────────────────────────────
+
+            // 1. TOUCH PIPELINE (Màn hình cảm ứng IFP đa điểm)
+
+            // ──────────────────────────────────────────
+
+            int? activeTouchId = null;
+
+            Point touchStartPoint = new Point();
+
+            double touchStartLeft = 0;
+
+            double touchStartTop = 0;
+
+
+
+            headerBar.PreviewTouchDown += (s, e) =>
+
+            {
+
+                if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+
+                    return;
+
+
+
+                _isDrawing = false;
+
+                _currentStroke = null;
+
+
+
+                if (!activeTouchId.HasValue)
+
+                {
+
+                    activeTouchId = e.TouchDevice.Id;
+
+                    touchStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+
+                    touchStartLeft = Canvas.GetLeft(container);
+
+                    if (double.IsNaN(touchStartLeft)) touchStartLeft = 0;
+
+                    touchStartTop = Canvas.GetTop(container);
+
+                    if (double.IsNaN(touchStartTop)) touchStartTop = 0;
+
+
+
+                    headerBar.CaptureTouch(e.TouchDevice);
+
+                    e.Handled = true;
+
+                }
+
+            };
+
+
+
+            headerBar.PreviewTouchMove += (s, e) =>
+
+            {
+
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+
+                {
+
+                    Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+
+                    double offsetX = currentPoint.X - touchStartPoint.X;
+
+                    double offsetY = currentPoint.Y - touchStartPoint.Y;
+
+
+
+                    double newLeft = Math.Max(0, touchStartLeft + offsetX);
+
+                    double newTop = Math.Max(0, touchStartTop + offsetY);
+
+
+
+                    Canvas.SetLeft(container, newLeft);
+
+                    Canvas.SetTop(container, newTop);
+
+
+
+                    e.Handled = true;
+
+                }
+
+            };
+
+
+
+            EventHandler<TouchEventArgs> endTouch = (s, e) =>
+
+            {
+
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+
+                {
+
+                    activeTouchId = null;
+
+                    try { headerBar.ReleaseTouchCapture(e.TouchDevice); } catch { }
+
+                    RefreshSelectableObjects();
+
+                    e.Handled = true;
+
+                }
+
+            };
+
+
+
+            headerBar.PreviewTouchUp += endTouch;
+
+            headerBar.LostTouchCapture += (s, e) =>
+
+            {
+
+                if (activeTouchId.HasValue)
+
+                {
+
+                    activeTouchId = null;
+
+                    RefreshSelectableObjects();
+
+                }
+
+            };
+
+
+
+            // ──────────────────────────────────────────
+
+            // 2. MOUSE PIPELINE (Chuột máy tính PC thông thường)
+
+            // ──────────────────────────────────────────
+
+            bool isMouseDragging = false;
+
+            Point mouseStartPoint = new Point();
+
+            double mouseStartLeft = 0;
+
+            double mouseStartTop = 0;
+
+
+
+            headerBar.PreviewMouseLeftButtonDown += (s, e) =>
+
+            {
+
+                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+
+                    return;
+
+
+
+                _isDrawing = false;
+
+                _currentStroke = null;
+
+
+
+                isMouseDragging = true;
+
+                mouseStartPoint = e.GetPosition(MainInteractiveBoard);
+
+                mouseStartLeft = Canvas.GetLeft(container);
+
+                if (double.IsNaN(mouseStartLeft)) mouseStartLeft = 0;
+
+                mouseStartTop = Canvas.GetTop(container);
+
+                if (double.IsNaN(mouseStartTop)) mouseStartTop = 0;
+
+
+
+                headerBar.CaptureMouse();
+
+                e.Handled = true;
+
+            };
+
+
+
+            headerBar.PreviewMouseMove += (s, e) =>
+
+            {
+
+                if (isMouseDragging && !activeTouchId.HasValue)
+
+                {
+
+                    Point currentPoint = e.GetPosition(MainInteractiveBoard);
+
+                    double offsetX = currentPoint.X - mouseStartPoint.X;
+
+                    double offsetY = currentPoint.Y - mouseStartPoint.Y;
+
+
+
+                    double newLeft = Math.Max(0, mouseStartLeft + offsetX);
+
+                    double newTop = Math.Max(0, mouseStartTop + offsetY);
+
+
+
+                    Canvas.SetLeft(container, newLeft);
+
+                    Canvas.SetTop(container, newTop);
+
+
+
+                    e.Handled = true;
+
+                }
+
+            };
+
+
+
+            headerBar.PreviewMouseLeftButtonUp += (s, e) =>
+
+            {
+
+                if (isMouseDragging)
+
+                {
+
+                    isMouseDragging = false;
+
+                    headerBar.ReleaseMouseCapture();
+
+                    RefreshSelectableObjects();
+
+                    e.Handled = true;
+
+                }
+
+            };
+
+        }
+
+
+
         #endregion
 
         #region Interactive YouTube Video Integration
@@ -1767,20 +2104,17 @@ namespace QASmartTouch.Forms
             padding: 0;
             box-sizing: border-box;
         }}
-        
         html, body {{
             width: 100%;
             height: 100%;
             overflow: hidden;
             background: #000;
         }}
-        
         #player-container {{
             width: 100%;
             height: 100%;
             position: relative;
         }}
-        
         iframe {{
             position: absolute;
             top: 0;
