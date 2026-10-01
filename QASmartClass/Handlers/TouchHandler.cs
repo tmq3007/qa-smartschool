@@ -48,6 +48,7 @@ namespace QASmartTouch.Handlers
         private Action? _hideEraserPreview;
         private Action<Point>? _updatePointerAction;
         private Action? _onCanvasTouchDown; // ✅ Callback to notify MainDashboard of touch on canvas (for closing SubMenus)
+        private UIElement? _outerSurface; // Reference to outer surface for touch forwarding
         
         // PHASE 3: Input Smoothing — ENABLED for touch parity with mouse
         private Dictionary<int, InputSmoother> _smoothers = new Dictionary<int, InputSmoother>();
@@ -219,30 +220,38 @@ namespace QASmartTouch.Handlers
         {
             if (outerSurface != null)
             {
-                outerSurface.TouchDown += (s, e) =>
+                _outerSurface = outerSurface;
+                
+                // ✅ Sử dụng AddHandler với handledEventsToo=true để bắt sự kiện Touch 
+                // ngay cả khi ScrollViewer đã đánh dấu e.Handled=true (chống nuốt sự kiện)
+                outerSurface.AddHandler(UIElement.TouchDownEvent, new EventHandler<TouchEventArgs>((s, e) =>
                 {
                     if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
                         return;
                     Canvas_TouchDown(_canvas, e);
-                };
-                outerSurface.TouchMove += (s, e) =>
+                }), true);
+                
+                outerSurface.AddHandler(UIElement.TouchMoveEvent, new EventHandler<TouchEventArgs>((s, e) =>
                 {
                     if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
                         return;
                     Canvas_TouchMove(_canvas, e);
-                };
-                outerSurface.TouchUp += (s, e) =>
+                }), true);
+                
+                outerSurface.AddHandler(UIElement.TouchUpEvent, new EventHandler<TouchEventArgs>((s, e) =>
                 {
                     if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
                         return;
                     Canvas_TouchUp(_canvas, e);
-                };
-                outerSurface.TouchLeave += (s, e) =>
+                }), true);
+                
+                outerSurface.AddHandler(UIElement.TouchLeaveEvent, new EventHandler<TouchEventArgs>((s, e) =>
                 {
                     if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
                         return;
                     Canvas_TouchLeave(_canvas, e);
-                };
+                }), true);
+                
                 outerSurface.LostTouchCapture += (s, e) =>
                 {
                     if (e.OriginalSource == _canvas || (e.OriginalSource is DependencyObject d && VisualTreeHelper.GetParent(d) == _canvas))
@@ -678,7 +687,9 @@ namespace QASmartTouch.Handlers
                     return;
                 }
 
-                if (e.TouchDevice.Captured != _canvas) return;
+                // Bỏ qua nếu touch bị cướp bởi 1 control khác (vd: Nút bấm).
+                // Cho phép nếu được capture bởi Canvas hoặc bề mặt outerSurface (như ScrollViewer khi zoom nhỏ)
+                if (e.TouchDevice.Captured != null && e.TouchDevice.Captured != _canvas && e.TouchDevice.Captured != _outerSurface) return;
 
                 if (_toolMode == TouchToolMode.Pointer)
                 {

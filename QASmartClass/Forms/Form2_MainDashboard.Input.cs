@@ -745,14 +745,33 @@ namespace QASmartTouch.Forms
 
         /// <summary>
         /// Chuyển tiếp tương tác chuột từ vùng ngoài ScrollViewer vào Canvas khi zoom nhỏ (Zero Dead Zone)
+        /// Sử dụng PreviewMouseDown để tránh việc ScrollViewer nuốt sự kiện MouseDown.
         /// </summary>
-        private void MainScrollViewer_MouseDown(object sender, MouseButtonEventArgs e)
+        private void MainScrollViewer_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.OriginalSource == MainInteractiveBoard || 
                 (e.OriginalSource is DependencyObject d && IsDescendantOf(d, MainInteractiveBoard)))
                 return;
 
             MainInteractiveBoard_MouseDown(MainInteractiveBoard, e);
+        }
+
+        private void MainScrollViewer_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            if (e.OriginalSource == MainInteractiveBoard || 
+                (e.OriginalSource is DependencyObject d && IsDescendantOf(d, MainInteractiveBoard)))
+                return;
+
+            MainInteractiveBoard_PreviewTouchDown(MainInteractiveBoard, e);
+        }
+
+        private void MainScrollViewer_PreviewStylusDown(object sender, StylusDownEventArgs e)
+        {
+            if (e.OriginalSource == MainInteractiveBoard || 
+                (e.OriginalSource is DependencyObject d && IsDescendantOf(d, MainInteractiveBoard)))
+                return;
+
+            MainInteractiveBoard_PreviewStylusDown(MainInteractiveBoard, e);
         }
 
         #endregion
@@ -1222,16 +1241,8 @@ namespace QASmartTouch.Forms
             // Eraser mode: erase while mouse is held & dragged
             else if (_eraserEnabled && _isDrawing && e.LeftButton == MouseButtonState.Pressed)
             {
-                var canvasBounds = new Rect(0, 0, MainInteractiveBoard.ActualWidth, MainInteractiveBoard.ActualHeight);
-                if (!canvasBounds.Contains(currentPoint))
-                {
-                    _isDrawing = false;
-                    MainInteractiveBoard.ReleaseMouseCapture();
-                    var session = _eraserEngine?.EndMouseSession();
-                    FinalizeEraseSession(session, "Mouse erase");
-                    return;
-                }
-                
+                // Cho phép tẩy ở cả ngoài vùng Canvas (khi zoom) thay vì bị ngắt quãng
+
                 if (_eraserMode == "Point" || _eraserMode == "Drag")
                 {
                     EraseByPointAt(currentPoint);
