@@ -6,7 +6,7 @@
 
         Title="6. Chọn và Nhận diện" 
 
-        Width="420" Height="440"
+        Width="420" Height="210"
 
         WindowStyle="None"
 
@@ -232,6 +232,11 @@
 
 
 
+                    <!-- =========================================================================
+                         TẠM ẨN: Phần Nhận diện thông minh (OCR, Dịch, Đọc, Tìm kiếm, Hỏi AI)
+                         chưa hoàn thiện cho bản thử nghiệm nội bộ (bảo toàn code, không xóa)
+                    ========================================================================= -->
+                    <StackPanel Visibility="Collapsed">
                     <!-- Recognition Features -->
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
@@ -481,6 +486,7 @@
                         </Grid>
 
                     </Button>
+                    </StackPanel>
 
 
 

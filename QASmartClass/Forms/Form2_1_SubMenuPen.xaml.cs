@@ -13,7 +13,7 @@ namespace QASmartTouch.Forms
     {
         // Current pen settings
         private string currentBrushType = "Normal";
-        private int currentPenSize = 4;
+        private int currentPenSize = 5;
         private Color currentPenColor = Colors.Black;
 
         public bool IsApplied { get; private set; } = false;
@@ -79,6 +79,10 @@ namespace QASmartTouch.Forms
             // Initialize after XAML is loaded
             this.Loaded += (s, e) =>
             {
+                if (sliderPenSize != null)
+                {
+                    sliderPenSize.Value = currentPenSize;
+                }
                 InitializeSizeIndicators();
                 UpdatePreview();
                 UpdateColorUI();
@@ -278,10 +282,10 @@ namespace QASmartTouch.Forms
         {
             // Reset to default values
             currentBrushType = "Normal";
-            currentPenSize = 4;
+            currentPenSize = 5;
             currentPenColor = Colors.Black;
 
-            sliderPenSize.Value = 4;
+            sliderPenSize.Value = 5;
             HighlightBrushType(btnBrushNormal);
             
             txtCustomColorHex.Text = "#000000";

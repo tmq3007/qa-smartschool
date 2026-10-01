@@ -71,7 +71,7 @@ namespace QASmartTouch.Handlers
         private string _eraserMode = "Stroke";  // "Stroke" or "Point"
         
         private Color _currentPenColor = Colors.White;
-        private double _currentPenSize = 2;
+        private double _currentPenSize = 5;
         private string _currentBrushType = "Normal";
         private bool _isEnabled = true;
 

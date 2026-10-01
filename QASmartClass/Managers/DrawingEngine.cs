@@ -44,7 +44,7 @@ namespace QASmartTouch.Managers
         /// <summary>
         /// Default pen size
         /// </summary>
-        public const int DEFAULT_PEN_SIZE = 2;
+        public const int DEFAULT_PEN_SIZE = 5;
         
         #endregion
         
