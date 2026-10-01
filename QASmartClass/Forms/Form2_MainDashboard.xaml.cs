@@ -76,7 +76,7 @@ namespace QASmartTouch.Forms
         
         // Pen settings
         private string _currentBrushType = "Normal";
-        private int _currentPenSize = 2;
+        private int _currentPenSize = 5;
         private Color _currentPenColor = Colors.White;
         private bool _drawingEnabled = false;
 
@@ -86,7 +86,7 @@ namespace QASmartTouch.Forms
         
         // Saved pen settings (to restore when reopening pen tool)
         private string _savedBrushType = "Normal";
-        private int _savedPenSize = 2;
+        private int _savedPenSize = 5;
         private Color _savedPenColor = Colors.White;
         
         // Double-click detection for pen button
@@ -321,6 +321,9 @@ namespace QASmartTouch.Forms
             // QC_4.2_TOUCH_TOOLBAR: Wire direct touch activation for all toolbar buttons
             InitializeToolbarTouchActivation();
 
+            // QC_4.2_CANVAS_DRAG_DROP: Kích hoạt khả năng Kéo-Thả ảnh (UMind Style) trực tiếp vào bảng vẽ
+            InitializeCanvasDragAndDrop();
+
             // Initialize Window Mode Controller
             _windowModeController = new WindowModeController(this);
             _windowModeController.WindowModeExited += WindowModeController_WindowModeExited;
@@ -518,6 +521,22 @@ namespace QASmartTouch.Forms
 
         private const int WM_MOUSEACTIVATE = 0x0021;
         private const int MA_ACTIVATE = 1;
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            try
+            {
+                if (MainInteractiveBoard != null)
+                {
+                    foreach (UIElement child in MainInteractiveBoard.Children)
+                    {
+                        CleanupWebView2Media(child);
+                    }
+                }
+            }
+            catch { }
+            base.OnClosing(e);
+        }
 
         protected override void OnSourceInitialized(EventArgs e)
         {
@@ -1241,8 +1260,8 @@ namespace QASmartTouch.Forms
                     double imgT = Canvas.GetTop(image);
                     if (double.IsNaN(imgL)) imgL = 0;
                     if (double.IsNaN(imgT)) imgT = 0;
-                    double imgW = image.ActualWidth > 0 ? image.ActualWidth : image.Width;
-                    double imgH = image.ActualHeight > 0 ? image.ActualHeight : image.Height;
+                    double imgW = !double.IsNaN(image.Width) && image.Width > 0 ? image.Width : (image.ActualWidth > 0 ? image.ActualWidth : 100);
+                    double imgH = !double.IsNaN(image.Height) && image.Height > 0 ? image.Height : (image.ActualHeight > 0 ? image.ActualHeight : 100);
                     if (imgW <= 0 || imgH <= 0) continue;
 
                     var selectableObj = new SelectableObject
@@ -1348,8 +1367,13 @@ namespace QASmartTouch.Forms
                     if (width <= 0 || height <= 0)
                         continue;
 
-                    // ✅ GĐ1-FIX: Skip large background borders
-                    if (width > 800 || height > 800)
+                    // ✅ GĐ1-FIX: Skip large background borders (ngoại trừ các widget tương tác như YouTube, Google Maps, Image, Local Video)
+                    bool isInteractiveWidget = (border.Tag as string == "InteractiveYouTubeVideo") ||
+                                              (border.Tag as string == "InteractiveGoogleMaps") ||
+                                              (border.Tag as string == "InteractiveImage") ||
+                                              (border.Tag as string == "InteractiveLocalVideo") ||
+                                              (border.Tag != null && (border.Tag.ToString().Contains("InteractiveYouTubeVideo") || border.Tag.ToString().Contains("InteractiveImage") || border.Tag.ToString().Contains("InteractiveLocalVideo")));
+                    if (!isInteractiveWidget && (width > 800 || height > 800))
                     {
                         System.Diagnostics.Debug.WriteLine($"⏭️ Skipped large Border: ({width:F0}x{height:F0}) — background container");
                         continue;

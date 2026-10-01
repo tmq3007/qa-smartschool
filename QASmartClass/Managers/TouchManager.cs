@@ -50,7 +50,7 @@ namespace QASmartTouch.Managers
             _activeStrokes = new Dictionary<int, Polyline>();
             _touchColors = new Dictionary<int, Color>();
             _defaultColor = Colors.White;
-            _defaultThickness = 2;
+            _defaultThickness = 5;
             _defaultBrushType = "Normal";
         }
 

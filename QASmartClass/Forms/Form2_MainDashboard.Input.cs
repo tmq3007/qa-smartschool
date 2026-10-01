@@ -46,7 +46,7 @@ namespace QASmartTouch.Forms
                 {
                     if (fe.Tag is string tag)
                     {
-                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel")
+                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "InteractiveImage" || tag == "InteractiveLocalVideo" || tag == "LocalVideoContainer" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel" || tag == "ImageControlPanel" || tag == "VideoControlPanel")
                         {
                             return true;
                         }
@@ -8683,7 +8683,7 @@ namespace QASmartTouch.Forms
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.EndInit();
 
-                    // Create Image control
+                    // Create Image control (QC_4.2_IMAGE_RESIZE_FIX: Không đặt MaxWidth/MaxHeight cứng để cho phép phóng to tự do)
                     var image = new Image
                     {
                         Source = bitmap,
@@ -8726,6 +8726,9 @@ namespace QASmartTouch.Forms
 
                     // Add to undo stack
                     RecordAddAction(image, "Draw");
+
+                    // Đăng ký ngay vào SelectionManager để công cụ Chọn vùng có thể chọn và resize ngay lập tức
+                    RefreshSelectableObjects();
 
                     // Make image draggable (enable selection tool temporarily)
                     image.MouseDown += (s, e) =>

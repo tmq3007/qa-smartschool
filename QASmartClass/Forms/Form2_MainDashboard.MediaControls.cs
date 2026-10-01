@@ -642,441 +642,556 @@ namespace QASmartTouch.Forms
 
         #endregion
 
-        #region Interactive Image Integration
-
-        /// <summary>
-        /// Insert interactive image into canvas with drag handles and control buttons
-        /// </summary>
-        public void InsertInteractiveImage(BitmapImage bitmap, string sourceUrl)
-        {
-            try
-            {
-                // Calculate initial size (max 600px, maintain aspect ratio)
+        #region Interactive Image Integration
+
+        /// <summary>
+        /// QC_4.2_IMAGE_UMIND_WIDGET: Chèn hình ảnh tương tác vào Canvas theo kiến trúc Unified Container (UMind Style).
+        /// Hỗ trợ cả 2 phương thức:
+        /// 1. Nút "Chèn vào bảng" từ Google Search Browser.
+        /// 2. Kéo-thả trực tiếp (Drag & Drop) từ trình duyệt hoặc máy tính vào Canvas.
+        /// Bao gồm Header Bar tích hợp tay cầm kéo (DragHandle) hỗ trợ Chuột, Ngón tay cảm ứng (Touch), Bút (Stylus)
+        /// và các nút thao tác nhanh (Thu nhỏ, Phóng to, Nhân bản/Copy, Đóng/Xóa).
+        /// </summary>
+        public void InsertInteractiveImage(BitmapSource bitmap, string sourceUrl = "", double? initialLeft = null, double? initialTop = null)
+        {
+            try
+            {                // Calculate initial size (max 600px, maintain aspect ratio)
                 double maxSize = 600;
                 double imageWidth = bitmap.PixelWidth;
                 double imageHeight = bitmap.PixelHeight;
-                
-                if (imageWidth > maxSize || imageHeight > maxSize)
-                {
-                    double ratio = Math.Min(maxSize / imageWidth, maxSize / imageHeight);
-                    imageWidth *= ratio;
-                    imageHeight *= ratio;
-                }
 
-                // Create Image control
-                var image = new System.Windows.Controls.Image
-                {
-                    Source = bitmap,
-                    Width = imageWidth,
+                if (bitmap == null) return;
+
+                // 1. Tính toán kích thước ban đầu (tối đa 600px, giữ nguyên tỉ lệ gốc)
+                double pixelWidth = bitmap.PixelWidth > 0 ? bitmap.PixelWidth : (bitmap.Width > 0 ? bitmap.Width : 400);
+                double pixelHeight = bitmap.PixelHeight > 0 ? bitmap.PixelHeight : (bitmap.Height > 0 ? bitmap.Height : 300);
+
+                const double maxSize = 600;
+                double displayWidth = pixelWidth;
+                double displayHeight = pixelHeight;
+
+                if (displayWidth > maxSize || displayHeight > maxSize)
+                {
+                    double ratio = Math.Min(maxSize / displayWidth, maxSize / displayHeight);
+                    displayWidth = Math.Round(displayWidth * ratio);
+                    displayHeight = Math.Round(displayHeight * ratio);
+                }
+
+                // Chiều cao thanh tiêu đề UMind
+                const double headerHeight = 36;
+                double totalHeight = displayHeight + headerHeight;
+
+                // 2. Tạo Image Control hiển thị ảnh
+                var imageControl = new System.Windows.Controls.Image
+                {
+                    Source = bitmap,                    Width = imageWidth,
                     Height = imageHeight,
                     Stretch = System.Windows.Media.Stretch.Uniform
                 };
 
-                // Helper method to create drag handle
-                Func<string, int, Border> createDragHandle = (pattern, fontSize) =>
-                {
-                    var handle = new Border
-                    {
-                        Background = new SolidColorBrush(Color.FromArgb(50, 76, 175, 80)), // #4CAF50 with 20% opacity
-                        BorderBrush = new SolidColorBrush(Color.FromArgb(80, 76, 175, 80)),
-                        BorderThickness = new Thickness(1),
-                        Cursor = Cursors.SizeAll,
-                        Tag = "DragHandle"
-                    };
-
+                    Stretch = Stretch.Uniform,
                     var patternText = new TextBlock
                     {
                         Text = pattern,
                         FontSize = fontSize,
                         Foreground = new SolidColorBrush(Color.FromArgb(150, 76, 175, 80)),
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center,                        VerticalAlignment = VerticalAlignment.Center,
                         IsHitTestVisible = false,
                         TextAlignment = TextAlignment.Center,
                         FontWeight = FontWeights.Bold
                     };
                     handle.Child = patternText;
 
-                    // Hover effects
-                    handle.MouseEnter += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(100, 76, 175, 80));
-                    handle.MouseLeave += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(50, 76, 175, 80));
-
+                    VerticalAlignment = VerticalAlignment.Center
                     return handle;
-                };
-
+                };
                 // Create all 4 drag handles
                 var topDragHandle = createDragHandle("═══", 10);
                 topDragHandle.Width = imageWidth;
                 topDragHandle.Height = 15;
-
-                var bottomDragHandle = createDragHandle("═══", 10);
+                var bottomDragHandle = createDragHandle("═══", 10);
                 bottomDragHandle.Width = imageWidth;
                 bottomDragHandle.Height = 15;
 
-                var leftDragHandle = createDragHandle("║\n║", 10);
-                leftDragHandle.Width = 15;
-                leftDragHandle.Height = imageHeight;
-
-                var rightDragHandle = createDragHandle("║\n║", 10);
-                rightDragHandle.Width = 15;
-                rightDragHandle.Height = imageHeight;
-
+                // 3. Tạo Unified Container (Border ngoài cùng)
+                var container = new Border
                 // Wrap Image in Border
                 var border = new Border
-                {
-                    Child = image,
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(76, 175, 80)), // #4CAF50
-                    BorderThickness = new Thickness(3),
-                    CornerRadius = new CornerRadius(8),
-                    Background = Brushes.White,
-                    Tag = "InteractiveImage",
-                    Width = imageWidth,
-                    Height = imageHeight
-                };
-
+                {
+                    Width = displayWidth,
+                    Height = totalHeight,
+                    Background = new SolidColorBrush(Color.FromRgb(24, 24, 27)), // Dark frame #18181B
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(59, 130, 246)), // Blue #3B82F6 hiện đại
+                    BorderThickness = new Thickness(2),
+                    CornerRadius = new CornerRadius(8),
+                    ClipToBounds = true,
+                    Tag = "InteractiveImage",
+                    Effect = new System.Windows.Media.Effects.DropShadowEffect
+                    {
+                        Color = Colors.Black,
+                        BlurRadius = 14,
+                        ShadowDepth = 3,
+                        Opacity = 0.35
+                    }
+                };
                 // Position at center
                 double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - (imageWidth / 2);
                 double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - (imageHeight / 2);
                 double borderLeft = Math.Max(0, centerX);
                 double borderTop = Math.Max(0, centerY);
-
-                Canvas.SetLeft(border, borderLeft);
+                Canvas.SetLeft(border, borderLeft);
                 Canvas.SetTop(border, borderTop);
 
-                // Add border to canvas
-                MainInteractiveBoard.Children.Add(border);
-
-                // Add drag handles
-                Canvas.SetLeft(topDragHandle, borderLeft);
-                Canvas.SetTop(topDragHandle, borderTop - 15);
-                MainInteractiveBoard.Children.Add(topDragHandle);
-
-                Canvas.SetLeft(bottomDragHandle, borderLeft);
-                Canvas.SetTop(bottomDragHandle, borderTop + imageHeight);
-                MainInteractiveBoard.Children.Add(bottomDragHandle);
-
-                Canvas.SetLeft(leftDragHandle, borderLeft - 15);
-                Canvas.SetTop(leftDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(leftDragHandle);
-
+                // 4. Grid 2 hàng: Hàng 0 = Header Bar kéo & điều khiển; Hàng 1 = Ảnh hiển thị
+                var mainGrid = new Grid();
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(headerHeight) });
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
                 Canvas.SetLeft(rightDragHandle, borderLeft + imageWidth);
                 Canvas.SetTop(rightDragHandle, borderTop);
                 MainInteractiveBoard.Children.Add(rightDragHandle);
-
-                // Create control panel
+                // Create control panel
                 var controlPanel = CreateImageControlPanel();
                 Canvas.SetLeft(controlPanel, borderLeft + imageWidth + 8);
                 Canvas.SetTop(controlPanel, borderTop);
                 MainInteractiveBoard.Children.Add(controlPanel);
 
-                // Store references
-                border.Tag = new
-                {
-                    Type = "InteractiveImage",
-                    TopHandle = topDragHandle,
-                    BottomHandle = bottomDragHandle,
-                    LeftHandle = leftDragHandle,
-                    RightHandle = rightDragHandle,
-                    ControlPanel = controlPanel,
-                    SourceUrl = sourceUrl
-                };
-
-                // Enable drag functionality
-                EnableImageDragToMove(border, controlPanel, topDragHandle, leftDragHandle, rightDragHandle, bottomDragHandle);
-
-                // Add click handler to show control panel
-                border.MouseLeftButtonDown += (s, e) =>
-                {
-                    // Hide all other control panels first
+                // 5. Header / Title Bar (UMind Style)
+                var headerBar = new Border
+                {
+                    Height = headerHeight,
+                    Background = new SolidColorBrush(Color.FromRgb(30, 41, 59)), // Slate 800 (#1E293B)
+                    BorderBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    CornerRadius = new CornerRadius(6, 6, 0, 0),
+                    Cursor = Cursors.SizeAll,
+                    Tag = "DragHandle"
+                };
+                Grid.SetRow(headerBar, 0);
+
+                // Tối ưu cảm ứng: Tắt press-and-hold delay và gestures của Windows trên thanh kéo
+                Stylus.SetIsPressAndHoldEnabled(headerBar, false);
+                Stylus.SetIsFlicksEnabled(headerBar, false);
+                Stylus.SetIsTapFeedbackEnabled(headerBar, false);
+                Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
+
+                var headerGrid = new Grid();
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                // Cột trái: Biểu tượng kéo (⠿) + Badge Ảnh 🖼️ + Kích thước / Nhãn ảnh
+                var leftPanel = new StackPanel
+                {                    // Hide all other control panels first
                     HideAllImageControlPanels();
-                    
-                    // Show this control panel
-                    controlPanel.Visibility = Visibility.Visible;
-                    
-                    e.Handled = true; // Prevent event from bubbling to canvas
-                    System.Diagnostics.Debug.WriteLine("🖼️ Image clicked - Control panel shown");
-                };
 
-                // Add canvas click handler to hide control panels
-                if (!_canvasClickHandlerAdded)
-                {
-                    MainInteractiveBoard.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(8, 0, 8, 0),
+                    IsHitTestVisible = false // Bỏ qua hit-test để click/touch rơi vào headerBar
+                };
+                Grid.SetColumn(leftPanel, 0);
+
+                var gripText = new TextBlock
+                {                    MainInteractiveBoard.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
                     _canvasClickHandlerAdded = true;
                 }
 
-                // Record undo action
-                RecordAddAction(border, $"Interactive Image: {sourceUrl}");
-
-                System.Diagnostics.Debug.WriteLine($"✅ Interactive image inserted with controls: {sourceUrl}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Insert Interactive Image error: {ex.Message}");
+                    Text = "⠿",
+                    FontSize = 16,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184)),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(2, 0, 6, 0)
+                };
+                leftPanel.Children.Add(gripText);
+
+                var imgBadge = new Border
+                {                System.Diagnostics.Debug.WriteLine($"❌ Insert Interactive Image error: {ex.Message}");
                 MessageBox.Show($"Lỗi chèn hình ảnh:\n{ex.Message}", "Lỗi",
                               MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private StackPanel CreateImageControlPanel()
-        {
-            var panel = new StackPanel
-            {
-                Orientation = Orientation.Vertical,
-                Background = new SolidColorBrush(Color.FromArgb(230, 255, 255, 255)),
-                Tag = "ImageControlPanel",
-                Visibility = Visibility.Collapsed // Initially hidden
-            };
-
-            // Zoom In button
-            var btnZoomIn = new Button
-            {
-                Content = "+",
-                Width = 50,
-                Height = 50,
-                Margin = new Thickness(0, 0, 0, 5),
-                Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-                Foreground = Brushes.White,
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                BorderThickness = new Thickness(0),
-                Cursor = Cursors.Hand
-            };
-            btnZoomIn.Click += BtnImageZoomIn_Click;
+                    Background = new SolidColorBrush(Color.FromRgb(59, 130, 246)),
+                    CornerRadius = new CornerRadius(3),
+                    Width = 20,
+                    Height = 16,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 6, 0)
+                };
+                var badgeIcon = new TextBlock
+                {
+                    Text = "🖼️",
+                    FontSize = 10,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };            btnZoomIn.Click += BtnImageZoomIn_Click;
             panel.Children.Add(btnZoomIn);
 
-            // Zoom Out button
-            var btnZoomOut = new Button
-            {
-                Content = "-",
-                Width = 50,
-                Height = 50,
-                Margin = new Thickness(0, 0, 0, 5),
-                Background = new SolidColorBrush(Color.FromRgb(255, 152, 0)),
-                Foreground = Brushes.White,
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                BorderThickness = new Thickness(0),
-                Cursor = Cursors.Hand
-            };
-            btnZoomOut.Click += BtnImageZoomOut_Click;
+                imgBadge.Child = badgeIcon;
+                leftPanel.Children.Add(imgBadge);
+
+                var titleBlock = new TextBlock
+                {
+                    Text = $"Hình ảnh ({pixelWidth:F0}×{pixelHeight:F0})",
+                    Foreground = Brushes.White,
+                    FontSize = 12,
+                    FontWeight = FontWeights.SemiBold,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    ToolTip = string.IsNullOrWhiteSpace(sourceUrl) ? "Hình ảnh" : sourceUrl
+                };            btnZoomOut.Click += BtnImageZoomOut_Click;
             panel.Children.Add(btnZoomOut);
 
-            // Copy button
-            var btnCopy = new Button
-            {
-                Content = "📋",
-                Width = 50,
-                Height = 50,
-                Margin = new Thickness(0, 0, 0, 5),
-                Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)), // Blue
-                Foreground = Brushes.White,
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                BorderThickness = new Thickness(0),
-                Cursor = Cursors.Hand
-            };
-            btnCopy.Click += BtnImageCopy_Click;
+                leftPanel.Children.Add(titleBlock);
+                headerGrid.Children.Add(leftPanel);
+
+                // Cột phải: Các nút thao tác nhanh (Thu nhỏ -, Phóng to +, Sao chép 📋, Đóng ✕)
+                var actionPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 6, 0)
+                };            btnCopy.Click += BtnImageCopy_Click;
             panel.Children.Add(btnCopy);
 
-            // Delete button
-            var btnDelete = new Button
-            {
-                Content = "🗑️",
-                Width = 50,
-                Height = 50,
-                Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-                Foreground = Brushes.White,
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                BorderThickness = new Thickness(0),
-                Cursor = Cursors.Hand
-            };
-            btnDelete.Click += BtnImageDelete_Click;
+                Grid.SetColumn(actionPanel, 1);
+
+                Button CreateHeaderButton(string text, string tooltip, Color normalColor, Color hoverColor, Action clickAction)
+                {
+                    var btn = new Button
+                    {
+                        Content = text,
+                        Width = 30,
+                        Height = 24,
+                        Margin = new Thickness(3, 0, 0, 0),
+                        Background = new SolidColorBrush(normalColor),
+                        Foreground = Brushes.White,
+                        FontSize = 12,
+                        FontWeight = FontWeights.Bold,
+                        BorderThickness = new Thickness(0),
+                        Cursor = Cursors.Hand,
+                        ToolTip = tooltip
+                    };            btnDelete.Click += BtnImageDelete_Click;
             panel.Children.Add(btnDelete);
 
-            return panel;
-        }
-
-        private void BtnImageZoomIn_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
+
+                    var template = new ControlTemplate(typeof(Button));
+                    var borderFactory = new FrameworkElementFactory(typeof(Border));
+                    borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+                    borderFactory.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Button.Background))
+                    {
+                        RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+                    });
+                    var presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+                    presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                    presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                    borderFactory.AppendChild(presenterFactory);
+                    template.VisualTree = borderFactory;
+                    btn.Template = template;
+
+                    btn.MouseEnter += (s, e) => btn.Background = new SolidColorBrush(hoverColor);
+                    btn.MouseLeave += (s, e) => btn.Background = new SolidColorBrush(normalColor);
+                    btn.Click += (s, e) => clickAction?.Invoke();
+
+                    TouchActivationHelper.WireButton(btn);
+                    return btn;
+                }
+
+                // Nút Thu nhỏ (-)
+                var btnZoomOut = CreateHeaderButton("－", "Thu nhỏ ảnh (Zoom -)",
+                    Color.FromArgb(180, 71, 85, 105), Color.FromArgb(230, 100, 116, 139),
+                    () => ZoomImageContainer(container, 1.0 / 1.15, pixelWidth, pixelHeight));
+                actionPanel.Children.Add(btnZoomOut);
+
+                // Nút Phóng to (+)
+                var btnZoomIn = CreateHeaderButton("＋", "Phóng to ảnh (Zoom +)",
+                    Color.FromArgb(180, 71, 85, 105), Color.FromArgb(230, 100, 116, 139),
+                    () => ZoomImageContainer(container, 1.15, pixelWidth, pixelHeight));
+                actionPanel.Children.Add(btnZoomIn);
+
+                // Nút Sao chép (📋)
+                var btnCopy = CreateHeaderButton("📋", "Nhân bản ảnh",
+                    Color.FromArgb(180, 16, 185, 129), Color.FromArgb(230, 5, 150, 105),
+                    () => DuplicateImageContainer(container, bitmap, sourceUrl));
+                actionPanel.Children.Add(btnCopy);
+
+                // Nút Đóng / Xóa (✕)
+                var btnDelete = CreateHeaderButton("✕", "Xóa ảnh",
+                    Color.FromRgb(220, 38, 38), Color.FromRgb(239, 68, 68),
+                    () => DeleteImageContainer(container));
+                actionPanel.Children.Add(btnDelete);
+
+                headerGrid.Children.Add(actionPanel);
+                headerBar.Child = headerGrid;
+                mainGrid.Children.Add(headerBar);
+
+                // Đặt ảnh vào hàng 1
+                Grid.SetRow(imageControl, 1);
+                mainGrid.Children.Add(imageControl);
+
+                container.Child = mainGrid;
+
+                // 6. Gắn cơ chế Kéo Di Chuyển Chuẩn Kép (Touch + Mouse + Stylus)
+                EnableImageUnifiedDrag(container, headerBar);
+
+                // 7. Xác định vị trí đặt container trên bảng
+                double borderLeft, borderTop;
+                if (initialLeft.HasValue && initialTop.HasValue)
+                {            var button = sender as Button;
             var controlPanel = button?.Parent as StackPanel;
             if (controlPanel == null) return;
 
-            // Find the border (image container)
-            var border = MainInteractiveBoard.Children.OfType<Border>()
-                .FirstOrDefault(b => b.Tag is object tag && 
-                               tag.GetType().GetProperty("ControlPanel")?.GetValue(tag) == controlPanel);
-
-            if (border != null)
-            {
-                dynamic tag = border.Tag;
+                    // Đặt trực tiếp tại tọa độ thả (drag & drop point)
+                    borderLeft = Math.Max(0, initialLeft.Value - (displayWidth / 2));
+                    borderTop = Math.Max(0, initialTop.Value - (headerHeight / 2));
+                }
+                else
+                {                dynamic tag = border.Tag;
                 double newWidth = border.Width * 1.2;
                 double newHeight = border.Height * 1.2;
 
-                // Update border size
-                border.Width = newWidth;
-                border.Height = newHeight;
-
-                // Update image size
-                if (border.Child is System.Windows.Controls.Image img)
-                {
-                    img.Width = newWidth;
-                    img.Height = newHeight;
-                }
-
+                    // Đặt ở giữa khung hình hiển thị hiện tại
+                    double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - (displayWidth / 2);
+                    double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - (totalHeight / 2);
+                    borderLeft = Math.Max(0, centerX);
+                    borderTop = Math.Max(0, centerY);
+                }
                 // Update drag handles
                 UpdateImageHandlePositions(border, tag.TopHandle, tag.BottomHandle, 
                                           tag.LeftHandle, tag.RightHandle, tag.ControlPanel);
-
-                System.Diagnostics.Debug.WriteLine($"🔍 Image Zoomed In: {newWidth}x{newHeight}");
-            }
-        }
-
-        private void BtnImageZoomOut_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
+
+                Canvas.SetLeft(container, borderLeft);
+                Canvas.SetTop(container, borderTop);
+
+                // 8. Đưa Container vào bảng và ghi nhận Undo
+                MainInteractiveBoard.Children.Add(container);
+                RecordAddAction(container, $"Interactive Image: {sourceUrl}");
+                RefreshSelectableObjects();
+
+                System.Diagnostics.Debug.WriteLine($"✅ Interactive image inserted (UMind Unified Container): {sourceUrl} ({displayWidth}x{totalHeight})");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Insert Interactive Image error: {ex.Message}");
+                MessageBox.Show($"Lỗi chèn hình ảnh:\n{ex.Message}", "Lỗi",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// QC_4.2_IMAGE_ZOOM: Điều chỉnh tỉ lệ thu phóng của container ảnh
+        /// </summary>
+        private void ZoomImageContainer(Border container, double factor, double originalPixelWidth, double originalPixelHeight)
+        {            var button = sender as Button;
             var controlPanel = button?.Parent as StackPanel;
             if (controlPanel == null) return;
 
-            var border = MainInteractiveBoard.Children.OfType<Border>()
-                .FirstOrDefault(b => b.Tag is object tag && 
-                               tag.GetType().GetProperty("ControlPanel")?.GetValue(tag) == controlPanel);
-
-            if (border != null)
-            {
-                dynamic tag = border.Tag;
+            if (container == null) return;
+
+            double currentWidth = container.Width;
+            if (double.IsNaN(currentWidth) || currentWidth <= 0) currentWidth = 400;
+
+            double newWidth = Math.Round(currentWidth * factor);
+
+            // Giới hạn chiều rộng tối thiểu 150px, tối đa 2400px
+            if (newWidth < 150 || newWidth > 2400) return;
+
+            const double headerHeight = 36;
+            double aspectRatio = (originalPixelHeight > 0 && originalPixelWidth > 0)
+                ? (originalPixelHeight / originalPixelWidth)
+                : 0.75;
+
+            double newImageHeight = Math.Round(newWidth * aspectRatio);
+            double newTotalHeight = newImageHeight + headerHeight;
+
+            container.Width = newWidth;
+            container.Height = newTotalHeight;
+
+            RefreshSelectableObjects();
+            System.Diagnostics.Debug.WriteLine($"🔍 Image Zoomed: {newWidth:F0}x{newTotalHeight:F0}");
+        }
+
+        /// <summary>
+        /// QC_4.2_IMAGE_DUPLICATE: Nhân bản ảnh với độ lệch 30px
+        /// </summary>
+        private void DuplicateImageContainer(Border originalContainer, BitmapSource bitmap, string sourceUrl)
+        {                dynamic tag = border.Tag;
                 double newWidth = border.Width / 1.2;
                 double newHeight = border.Height / 1.2;
 
-                if (newWidth < 100 || newHeight < 100) return; // Minimum size
-
+            if (originalContainer == null || bitmap == null) return;
                 border.Width = newWidth;
                 border.Height = newHeight;
-
-                if (border.Child is System.Windows.Controls.Image img)
-                {
-                    img.Width = newWidth;
-                    img.Height = newHeight;
-                }
-
+
+            double currentLeft = Canvas.GetLeft(originalContainer);
+            double currentTop = Canvas.GetTop(originalContainer);
+            if (double.IsNaN(currentLeft)) currentLeft = 100;
+            if (double.IsNaN(currentTop)) currentTop = 100;
+
+            // Offset 30px
+            double targetX = currentLeft + (originalContainer.Width / 2) + 30;
+            double targetY = currentTop + 30 + 18;
+
+            InsertInteractiveImage(bitmap, sourceUrl + " (Copy)", targetX, targetY);
+        }
                 UpdateImageHandlePositions(border, tag.TopHandle, tag.BottomHandle, 
                                           tag.LeftHandle, tag.RightHandle, tag.ControlPanel);
+
+        /// <summary>
+        /// QC_4.2_IMAGE_DELETE: Xóa container ảnh khỏi bảng
+        /// </summary>
+        private void DeleteImageContainer(Border container)
+        {
+            if (container == null) return;
+
+            MainInteractiveBoard.Children.Remove(container);
+            RecordRemoveAction(container, "Deleted Interactive Image");
+            RefreshSelectableObjects();
+
+            System.Diagnostics.Debug.WriteLine("🗑️ Interactive Image deleted (Unified Container)");
+        }        }
 
-                System.Diagnostics.Debug.WriteLine($"🔍 Image Zoomed Out: {newWidth}x{newHeight}");
-            }
-        }
-
-        private void BtnImageDelete_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
+
+        /// <summary>
+        /// QC_4.2_IMAGE_UNIFIED_DRAG: Pipeline kéo di chuyển chuẩn kép (Touch, Mouse, Stylus) cho Image Title Bar (UMind Style).
+        /// </summary>
+        private void EnableImageUnifiedDrag(Border container, Border headerBar)
+        {            var button = sender as Button;
             var controlPanel = button?.Parent as StackPanel;
             if (controlPanel == null) return;
 
-            var border = MainInteractiveBoard.Children.OfType<Border>()
-                .FirstOrDefault(b => b.Tag is object tag && 
-                               tag.GetType().GetProperty("ControlPanel")?.GetValue(tag) == controlPanel);
+            // ──────────────────────────────────────────
+            // 1. TOUCH PIPELINE (Màn hình cảm ứng IFP đa điểm)
+            // ──────────────────────────────────────────
+            int? activeTouchId = null;
+            Point touchStartPoint = new Point();
+            double touchStartLeft = 0;
+            double touchStartTop = 0;
+
+            headerBar.PreviewTouchDown += (s, e) =>
+            {                dynamic tag = border.Tag;
 
-            if (border != null)
-            {
-                dynamic tag = border.Tag;
-                
-                // Remove all elements
-                MainInteractiveBoard.Children.Remove(border);
-                MainInteractiveBoard.Children.Remove(tag.TopHandle);
-                MainInteractiveBoard.Children.Remove(tag.BottomHandle);
-                MainInteractiveBoard.Children.Remove(tag.LeftHandle);
-                MainInteractiveBoard.Children.Remove(tag.RightHandle);
-                MainInteractiveBoard.Children.Remove(controlPanel);
+                if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                    return;
+
+                _isDrawing = false;
+                _currentStroke = null;
+
+                if (!activeTouchId.HasValue)
+                {
+                    activeTouchId = e.TouchDevice.Id;
+                    touchStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                    touchStartLeft = Canvas.GetLeft(container);
+                    if (double.IsNaN(touchStartLeft)) touchStartLeft = 0;
+                    touchStartTop = Canvas.GetTop(container);
+                    if (double.IsNaN(touchStartTop)) touchStartTop = 0;
+
+                    headerBar.CaptureTouch(e.TouchDevice);
+                    e.Handled = true;
+                }        }
 
-                RecordRemoveAction(border, "Deleted Interactive Image");
-                System.Diagnostics.Debug.WriteLine("🗑️ Interactive Image deleted");
-            }
-        }
-
-        private void BtnImageCopy_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
+            };
+
+            headerBar.PreviewTouchMove += (s, e) =>
+            {            var button = sender as Button;
             var controlPanel = button?.Parent as StackPanel;
             if (controlPanel == null) return;
 
-            var border = MainInteractiveBoard.Children.OfType<Border>()
-                .FirstOrDefault(b => b.Tag is object tag && 
-                               tag.GetType().GetProperty("ControlPanel")?.GetValue(tag) == controlPanel);
-
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
             if (border != null && border.Child is System.Windows.Controls.Image originalImage)
-            {
-                dynamic tag = border.Tag;
-                
-                // Clone the image
-                var clonedBitmap = originalImage.Source as BitmapImage;
-                if (clonedBitmap != null)
-                {
-                    // Insert new image with offset
-                    InsertInteractiveImage(clonedBitmap, tag.SourceUrl + " (Copy)");
-                    System.Diagnostics.Debug.WriteLine("📋 Interactive Image copied");
-                }
-            }
+                {                dynamic tag = border.Tag;
+
+                    Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                    double offsetX = currentPoint.X - touchStartPoint.X;
+                    double offsetY = currentPoint.Y - touchStartPoint.Y;
+
+                    double newLeft = Math.Max(0, touchStartLeft + offsetX);
+                    double newTop = Math.Max(0, touchStartTop + offsetY);
+
+                    Canvas.SetLeft(container, newLeft);
+                    Canvas.SetTop(container, newTop);
+
+                    e.Handled = true;
+                }            }
         }
 
-        private void HideAllImageControlPanels()
-        {
-            // Find all image control panels and hide them
+            };
+
+            EventHandler<TouchEventArgs> endTouch = (s, e) =>
+            {            // Find all image control panels and hide them
             var controlPanels = MainInteractiveBoard.Children.OfType<StackPanel>()
                 .Where(sp => sp.Tag?.ToString() == "ImageControlPanel");
-            
-            foreach (var panel in controlPanels)
-            {
-                panel.Visibility = Visibility.Collapsed;
-            }
-        }
 
-        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            // Hide all control panels when clicking on canvas (not on image)
-            HideAllImageControlPanels();
-            System.Diagnostics.Debug.WriteLine("🖼️ Canvas clicked - All control panels hidden");
-        }
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+                {
+                    activeTouchId = null;
+                    try { headerBar.ReleaseTouchCapture(e.TouchDevice); } catch { }
+                    RefreshSelectableObjects();
+                    e.Handled = true;
+                }        }
 
-        private void EnableImageDragToMove(Border border, StackPanel controlPanel, 
-                                          Border topHandle, Border leftHandle, 
-                                          Border rightHandle, Border bottomHandle)
-        {
-            bool isDragging = false;
+            };
+
+            headerBar.PreviewTouchUp += endTouch;
+            headerBar.LostTouchCapture += (s, e) =>
+            {
+                if (activeTouchId.HasValue)
+                {
+                    activeTouchId = null;
+                    RefreshSelectableObjects();
+                }
+            };
+
+            // ──────────────────────────────────────────
+            // 2. MOUSE PIPELINE (Chuột máy tính PC thông thường)
+            // ──────────────────────────────────────────
+            bool isMouseDragging = false;
+            Point mouseStartPoint = new Point();
+            double mouseStartLeft = 0;
+            double mouseStartTop = 0;
+
+            headerBar.PreviewMouseLeftButtonDown += (s, e) =>
+            {            bool isDragging = false;
             Point dragStartPoint = new Point();
             double originalLeft = 0;
             double originalTop = 0;
 
-            MouseButtonEventHandler startDrag = (s, e) =>
-            {
-                _isDrawing = false;
-                _currentStroke = null;
-                isDragging = true;
-                dragStartPoint = e.GetPosition(MainInteractiveBoard);
-                originalLeft = Canvas.GetLeft(border);
-                originalTop = Canvas.GetTop(border);
-                (s as Border)?.CaptureMouse();
-                e.Handled = true;
-            };
-
-            MouseEventHandler drag = (s, e) =>
-            {
-                if (isDragging)
-                {
-                    Point currentPoint = e.GetPosition(MainInteractiveBoard);
-                    double offsetX = currentPoint.X - dragStartPoint.X;
+                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                    return;
+
+                _isDrawing = false;
+                _currentStroke = null;
+
+                isMouseDragging = true;
+                mouseStartPoint = e.GetPosition(MainInteractiveBoard);
+                mouseStartLeft = Canvas.GetLeft(container);
+                if (double.IsNaN(mouseStartLeft)) mouseStartLeft = 0;
+                mouseStartTop = Canvas.GetTop(container);
+                if (double.IsNaN(mouseStartTop)) mouseStartTop = 0;
+
+                headerBar.CaptureMouse();
+                e.Handled = true;
+            };
+
+            headerBar.PreviewMouseMove += (s, e) =>
+            {
+                if (isMouseDragging && !activeTouchId.HasValue)
+                {
+                    Point currentPoint = e.GetPosition(MainInteractiveBoard);                    double offsetX = currentPoint.X - dragStartPoint.X;
                     double offsetY = currentPoint.Y - dragStartPoint.Y;
 
-                    double newLeft = Math.Max(0, originalLeft + offsetX);
-                    double newTop = Math.Max(0, originalTop + offsetY);
-
-                    Canvas.SetLeft(border, newLeft);
-                    Canvas.SetTop(border, newTop);
-
-                    UpdateImageHandlePositions(border, topHandle, bottomHandle, 
-                                              leftHandle, rightHandle, controlPanel);
-                }
-            };
+                    double offsetX = currentPoint.X - mouseStartPoint.X;
+                    double offsetY = currentPoint.Y - mouseStartPoint.Y;
+
+                    double newLeft = Math.Max(0, mouseStartLeft + offsetX);
+                    double newTop = Math.Max(0, mouseStartTop + offsetY);
+
+                    Canvas.SetLeft(container, newLeft);
+                    Canvas.SetTop(container, newTop);
+
+                    e.Handled = true;
+                }            };
 
             MouseButtonEventHandler endDrag = (s, e) =>
             {
@@ -1085,199 +1200,268 @@ namespace QASmartTouch.Forms
                     isDragging = false;
                     (s as Border)?.ReleaseMouseCapture();
                 }
-            };
-
+            };
             // Attach events to all handles
             topHandle.MouseLeftButtonDown += startDrag;
             topHandle.MouseMove += drag;
             topHandle.MouseLeftButtonUp += endDrag;
-
-            bottomHandle.MouseLeftButtonDown += startDrag;
+            bottomHandle.MouseLeftButtonDown += startDrag;
             bottomHandle.MouseMove += drag;
             bottomHandle.MouseLeftButtonUp += endDrag;
 
-            leftHandle.MouseLeftButtonDown += startDrag;
-            leftHandle.MouseMove += drag;
-            leftHandle.MouseLeftButtonUp += endDrag;
-
-            rightHandle.MouseLeftButtonDown += startDrag;
-            rightHandle.MouseMove += drag;
-            rightHandle.MouseLeftButtonUp += endDrag;
-        }
-
-        private void UpdateImageHandlePositions(Border border, Border topHandle, Border bottomHandle,
-                                               Border leftHandle, Border rightHandle, StackPanel controlPanel)
-        {
-            double left = Canvas.GetLeft(border);
+            headerBar.PreviewMouseLeftButtonUp += (s, e) =>
+            {
+                if (isMouseDragging)
+                {            double left = Canvas.GetLeft(border);
             double top = Canvas.GetTop(border);
             double width = border.Width;
             double height = border.Height;
 
-            // Update handle sizes
-            topHandle.Width = width;
-            bottomHandle.Width = width;
-            leftHandle.Height = height;
-            rightHandle.Height = height;
-
-            // Update positions
-            Canvas.SetLeft(topHandle, left);
-            Canvas.SetTop(topHandle, top - 15);
-
-            Canvas.SetLeft(bottomHandle, left);
-            Canvas.SetTop(bottomHandle, top + height);
-
-            Canvas.SetLeft(leftHandle, left - 15);
-            Canvas.SetTop(leftHandle, top);
-
-            Canvas.SetLeft(rightHandle, left + width);
-            Canvas.SetTop(rightHandle, top);
-
-            Canvas.SetLeft(controlPanel, left + width + 8);
-            Canvas.SetTop(controlPanel, top);
-        }
-
+                    isMouseDragging = false;
+                    headerBar.ReleaseMouseCapture();
+                    RefreshSelectableObjects();
+                    e.Handled = true;
+                }
+            };
+        }
+
         #endregion
 
         #region Interactive YouTube Video Integration
 
         /// <summary>
-        /// Insert interactive YouTube video into canvas with drag handles and control buttons
+        /// QC_4.2_YOUTUBE_UMIND_WIDGET: Chèn video YouTube tương tác vào Canvas theo kiến trúc Unified Container (UMind Style).
+        /// Bao gồm Header Bar tích hợp tay cầm kéo (DragHandle) hỗ trợ Chuột, Ngón tay cảm ứng (Touch), Bút (Stylus)
+        /// và các nút thao tác nhanh (Thu nhỏ, Phóng to, Đóng/Xóa) trực tiếp trên khung video.
         /// </summary>
         public void InsertInteractiveYouTubeVideo(string videoId, string videoTitle)
         {
             try
             {
-                // Create WebView2 for YouTube embed
+                // Kích thước chuẩn ban đầu: 800px chiều rộng, tỉ lệ 16:9 cho video (448px) + 40px cho Header Bar + viền 2px
+                const double initialWidth = 800;
+                const double headerHeight = 40;
+                const double borderThickness = 2;
+                const double innerWidth = initialWidth - (borderThickness * 2); // 796px lọt lòng
+                double videoHeight = Math.Round(innerWidth * 9.0 / 16.0); // 448px chuẩn 16:9
+                double totalHeight = videoHeight + headerHeight + (borderThickness * 2); // 492px tổng thể
+
+                // 1. Tạo WebView2 cho YouTube embed (Stretch tự do để khớp chuẩn 100% với khung lọt lòng)
                 var webView = new Microsoft.Web.WebView2.Wpf.WebView2
                 {
-                    Width = 800,
-                    Height = 450 // 16:9 aspect ratio
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch
                 };
 
-                // Initialize and navigate to YouTube embed
+                // Khởi tạo và điều hướng tới YouTube embed với virtual host bảo vệ
                 _ = InitializeYouTubeWebView(webView, videoId);
 
-                // Helper method to create drag handle
-                Func<string, int, Border> createDragHandle = (pattern, fontSize) =>
+                // 2. Tạo Container thống nhất (Border ngoài cùng)
+                var container = new Border
                 {
-                    var handle = new Border
-                    {
-                        Background = new SolidColorBrush(Color.FromArgb(50, 255, 0, 0)), // #FF0000 with 20% opacity
-                        BorderBrush = new SolidColorBrush(Color.FromArgb(80, 255, 0, 0)),
-                        BorderThickness = new Thickness(1),
-                        Cursor = Cursors.SizeAll,
-                        Tag = "DragHandle"
-                    };
-
-                    var patternText = new TextBlock
-                    {
-                        Text = pattern,
-                        FontSize = fontSize,
-                        Foreground = new SolidColorBrush(Color.FromArgb(150, 255, 0, 0)),
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        IsHitTestVisible = false,
-                        TextAlignment = TextAlignment.Center,
-                        FontWeight = FontWeights.Bold
-                    };
-                    handle.Child = patternText;
-
-                    // Hover effects
-                    handle.MouseEnter += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(100, 255, 0, 0));
-                    handle.MouseLeave += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(50, 255, 0, 0));
-
-                    return handle;
-                };
-
-                // Create all 4 drag handles
-                var topDragHandle = createDragHandle("═══", 10);
-                topDragHandle.Width = 800;
-                topDragHandle.Height = 15;
-
-                var bottomDragHandle = createDragHandle("═══", 10);
-                bottomDragHandle.Width = 800;
-                bottomDragHandle.Height = 15;
-
-                var leftDragHandle = createDragHandle("║\n║", 10);
-                leftDragHandle.Width = 15;
-                leftDragHandle.Height = 450;
-
-                var rightDragHandle = createDragHandle("║\n║", 10);
-                rightDragHandle.Width = 15;
-                rightDragHandle.Height = 450;
-
-                // Wrap WebView in Border
-                var border = new Border
-                {
-                    Child = webView,
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(255, 0, 0)), // #FF0000
-                    BorderThickness = new Thickness(3),
-                    CornerRadius = new CornerRadius(8),
+                    Width = initialWidth,
+                    Height = totalHeight,
                     Background = Brushes.Black,
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(220, 38, 38)), // Đỏ YouTube sắc nét (#DC2626)
+                    BorderThickness = new Thickness(borderThickness),
+                    CornerRadius = new CornerRadius(10, 10, 0, 0), // Bo góc trên khớp với HeaderBar, 2 góc dưới vuông khớp tuyệt đối với Win32 HWND của WebView2
+                    ClipToBounds = true,
                     Tag = "InteractiveYouTubeVideo",
-                    Width = 800,
-                    Height = 450
+                    Effect = new System.Windows.Media.Effects.DropShadowEffect
+                    {
+                        Color = Colors.Black,
+                        BlurRadius = 16,
+                        ShadowDepth = 4,
+                        Opacity = 0.45
+                    }
                 };
 
-                // Position at center
-                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - 400;
-                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - 225;
+                // 3. Grid 2 hàng: Hàng 0 = Header Bar kéo thả & điều khiển; Hàng 1 = WebView2 Player
+                var mainGrid = new Grid();
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(headerHeight) });
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+                // 4. Header / Title Bar (UMind Style)
+                var headerBar = new Border
+                {
+                    Height = headerHeight,
+                    Background = new SolidColorBrush(Color.FromRgb(28, 28, 30)), // Dark Slate sang trọng
+                    BorderBrush = new SolidColorBrush(Color.FromArgb(50, 255, 255, 255)),
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    CornerRadius = new CornerRadius(8, 8, 0, 0),
+                    Cursor = Cursors.SizeAll,
+                    Tag = "DragHandle"
+                };
+                Grid.SetRow(headerBar, 0);
+
+                // Tối ưu cảm ứng: Tắt press-and-hold delay và gestures của Windows trên thanh kéo
+                Stylus.SetIsPressAndHoldEnabled(headerBar, false);
+                Stylus.SetIsFlicksEnabled(headerBar, false);
+                Stylus.SetIsTapFeedbackEnabled(headerBar, false);
+                Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
+
+                var headerGrid = new Grid();
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                // Cột trái: Biểu tượng kéo (⠿) + Badge YouTube + Tiêu đề video
+                var leftPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(8, 0, 8, 0),
+                    IsHitTestVisible = false // Bỏ qua hit-test để cú chạm/click rơi thẳng vào headerBar kéo di chuyển
+                };
+                Grid.SetColumn(leftPanel, 0);
+
+                // Biểu tượng tay cầm kéo UMind (⠿)
+                var gripText = new TextBlock
+                {
+                    Text = "⠿",
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(156, 163, 175)),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(4, 0, 8, 0)
+                };
+                leftPanel.Children.Add(gripText);
+
+                // YouTube Badge
+                var ytBadge = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(220, 38, 38)),
+                    CornerRadius = new CornerRadius(3),
+                    Width = 22,
+                    Height = 16,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                var playIcon = new TextBlock
+                {
+                    Text = "▶",
+                    FontSize = 9,
+                    Foreground = Brushes.White,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(1, 0, 0, 0)
+                };
+                ytBadge.Child = playIcon;
+                leftPanel.Children.Add(ytBadge);
+
+                // Tiêu đề video (cắt ngắn nếu quá dài)
+                var titleBlock = new TextBlock
+                {
+                    Text = string.IsNullOrWhiteSpace(videoTitle) ? "YouTube Video" : videoTitle,
+                    Foreground = Brushes.White,
+                    FontSize = 13,
+                    FontWeight = FontWeights.SemiBold,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    ToolTip = videoTitle
+                };
+                leftPanel.Children.Add(titleBlock);
+                headerGrid.Children.Add(leftPanel);
+
+                // Cột phải: Các nút thao tác nhanh (Thu nhỏ -, Phóng to +, Đóng ✕)
+                var actionPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                Grid.SetColumn(actionPanel, 1);
+
+                // Helper tạo nút thao tác nhanh
+                Button CreateHeaderButton(string text, string tooltip, Color normalColor, Color hoverColor)
+                {
+                    var btn = new Button
+                    {
+                        Content = text,
+                        Width = 34,
+                        Height = 28,
+                        Margin = new Thickness(4, 0, 0, 0),
+                        Background = new SolidColorBrush(normalColor),
+                        Foreground = Brushes.White,
+                        FontSize = 13,
+                        FontWeight = FontWeights.Bold,
+                        BorderThickness = new Thickness(0),
+                        Cursor = Cursors.Hand,
+                        ToolTip = tooltip
+                    };
+
+                    // ControlTemplate bo góc đẹp
+                    var template = new ControlTemplate(typeof(Button));
+                    var borderFactory = new FrameworkElementFactory(typeof(Border));
+                    borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(5));
+                    borderFactory.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Button.Background))
+                    {
+                        RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+                    });
+                    var presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+                    presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                    presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                    borderFactory.AppendChild(presenterFactory);
+                    template.VisualTree = borderFactory;
+                    btn.Template = template;
+
+                    // Hover feedback
+                    btn.MouseEnter += (s, e) => btn.Background = new SolidColorBrush(hoverColor);
+                    btn.MouseLeave += (s, e) => btn.Background = new SolidColorBrush(normalColor);
+
+                    // Tối ưu cảm ứng không trễ
+                    TouchActivationHelper.WireButton(btn);
+
+                    return btn;
+                }
+
+                // Nút Thu nhỏ (-)
+                var btnZoomOut = CreateHeaderButton("－", "Thu nhỏ video (Zoom -)", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnZoomOut.Click += (s, e) => ZoomYouTubeContainer(container, webView, 1.0 / 1.15);
+                actionPanel.Children.Add(btnZoomOut);
+
+                // Nút Phóng to (+)
+                var btnZoomIn = CreateHeaderButton("＋", "Phóng to video (Zoom +)", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnZoomIn.Click += (s, e) => ZoomYouTubeContainer(container, webView, 1.15);
+                actionPanel.Children.Add(btnZoomIn);
+
+                // Nút Đóng / Xóa (✕)
+                var btnDelete = CreateHeaderButton("✕", "Đóng và xóa video", Color.FromRgb(220, 38, 38), Color.FromRgb(239, 68, 68));
+                btnDelete.Click += (s, e) => DeleteYouTubeContainer(container);
+                actionPanel.Children.Add(btnDelete);
+
+                headerGrid.Children.Add(actionPanel);
+                headerBar.Child = headerGrid;
+                mainGrid.Children.Add(headerBar);
+
+                // Đặt WebView2 vào hàng 1
+                Grid.SetRow(webView, 1);
+                mainGrid.Children.Add(webView);
+
+                container.Child = mainGrid;
+
+                // 5. Gắn cơ chế Kéo Di Chuyển Chuẩn Kép (Touch + Mouse + Stylus)
+                EnableYouTubeUnifiedDrag(container, headerBar);
+
+                // 6. Định vị Container vào chính giữa màn hình hiển thị của bảng
+                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - (initialWidth / 2);
+                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - (totalHeight / 2);
                 double borderLeft = Math.Max(0, centerX);
                 double borderTop = Math.Max(0, centerY);
 
-                Canvas.SetLeft(border, borderLeft);
-                Canvas.SetTop(border, borderTop);
+                Canvas.SetLeft(container, borderLeft);
+                Canvas.SetTop(container, borderTop);
 
-                // Add border to canvas
-                MainInteractiveBoard.Children.Add(border);
+                // Thêm duy nhất 1 container vào bảng (Kiến trúc đơn lẻ, không còn 6 phần tử rời rạc)
+                MainInteractiveBoard.Children.Add(container);
 
-                // Add drag handles
-                Canvas.SetLeft(topDragHandle, borderLeft);
-                Canvas.SetTop(topDragHandle, borderTop - 15);
-                MainInteractiveBoard.Children.Add(topDragHandle);
+                // Ghi nhận Undo/Redo
+                RecordAddAction(container, $"Interactive YouTube Video: {videoTitle}");
 
-                Canvas.SetLeft(bottomDragHandle, borderLeft);
-                Canvas.SetTop(bottomDragHandle, borderTop + 450);
-                MainInteractiveBoard.Children.Add(bottomDragHandle);
-
-                Canvas.SetLeft(leftDragHandle, borderLeft - 15);
-                Canvas.SetTop(leftDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(leftDragHandle);
-
-                Canvas.SetLeft(rightDragHandle, borderLeft + 800);
-                Canvas.SetTop(rightDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(rightDragHandle);
-
-                // Create control panel
-                var controlPanel = CreateYouTubeControlPanel();
-                Canvas.SetLeft(controlPanel, borderLeft + 800 + 8);
-                Canvas.SetTop(controlPanel, borderTop);
-                MainInteractiveBoard.Children.Add(controlPanel);
-
-                // Store references
-                border.Tag = new
-                {
-                    Type = "InteractiveYouTubeVideo",
-                    TopHandle = topDragHandle,
-                    BottomHandle = bottomDragHandle,
-                    LeftHandle = leftDragHandle,
-                    RightHandle = rightDragHandle,
-                    ControlPanel = controlPanel,
-                    VideoId = videoId,
-                    VideoTitle = videoTitle
-                };
-
-                // Enable drag functionality
-                EnableYouTubeDragToMove(border, controlPanel, topDragHandle, leftDragHandle, rightDragHandle, bottomDragHandle);
-
-                // Record undo action
-                RecordAddAction(border, $"Interactive YouTube Video: {videoTitle}");
-
-                // N22-YT FIX: Đăng ký YouTube container vào SelectionManager ngay sau khi chèn
-                // Đảm bảo giáo viên có thể khoanh chọn YouTube Video ngay lập tức
+                // Cập nhật vùng chọn cho SelectionManager
                 RefreshSelectableObjects();
 
-                System.Diagnostics.Debug.WriteLine($"✅ Interactive YouTube video inserted: {videoTitle} ({videoId})");
+                System.Diagnostics.Debug.WriteLine($"✅ Interactive YouTube video inserted (UMind Unified Container): {videoTitle} ({videoId})");
             }
             catch (Exception ex)
             {
@@ -1287,19 +1471,295 @@ namespace QASmartTouch.Forms
             }
         }
 
+        /// <summary>
+        /// QC_4.2_YOUTUBE_ZOOM: Điều chỉnh tỉ lệ thu phóng của container YouTube theo tỉ lệ 16:9
+        /// </summary>
+        private void ZoomYouTubeContainer(Border container, Microsoft.Web.WebView2.Wpf.WebView2 webView, double factor)
+        {
+            if (container == null || webView == null) return;
+
+            double currentWidth = container.Width;
+            if (double.IsNaN(currentWidth) || currentWidth <= 0) currentWidth = 800;
+
+            double newWidth = Math.Round(currentWidth * factor);
+
+            // Giới hạn độ rộng tối thiểu 420px, tối đa 1600px
+            if (newWidth < 420 || newWidth > 1600) return;
+
+            const double headerHeight = 40;
+            const double borderThickness = 2;
+            double innerWidth = newWidth - (borderThickness * 2);
+            double newVideoHeight = Math.Round(innerWidth * 9.0 / 16.0);
+            double newTotalHeight = newVideoHeight + headerHeight + (borderThickness * 2);
+
+            container.Width = newWidth;
+            container.Height = newTotalHeight;
+
+            // Đảm bảo WebView2 luôn Stretch theo cell Grid lọt lòng, không tràn qua viền đỏ
+            webView.ClearValue(FrameworkElement.WidthProperty);
+            webView.ClearValue(FrameworkElement.HeightProperty);
+
+            RefreshSelectableObjects();
+            System.Diagnostics.Debug.WriteLine($"🔍 YouTube Video Zoomed: {newWidth:F0}x{newTotalHeight:F0}");
+        }
+
+        /// <summary>
+        /// QC_4.2_YOUTUBE_DELETE: Xóa container YouTube khỏi bảng và giải phóng sạch tài nguyên âm thanh/WebView2
+        /// </summary>
+        private void DeleteYouTubeContainer(Border container)
+        {
+            if (container == null) return;
+
+            // Dừng phát âm thanh ngay lập tức và giải phóng WebView2
+            CleanupWebView2Media(container);
+
+            // Xóa container khỏi canvas
+            MainInteractiveBoard.Children.Remove(container);
+
+            // Ghi nhận Undo Action
+            RecordRemoveAction(container, "Deleted Interactive YouTube Video");
+
+            // Cập nhật lại SelectionManager
+            RefreshSelectableObjects();
+
+            System.Diagnostics.Debug.WriteLine("🗑️ Interactive YouTube Video deleted (Unified Container)");
+        }
+
+        /// <summary>
+        /// QC_4.2_YOUTUBE_UNIFIED_DRAG: Pipeline kéo di chuyển chuẩn kép (Touch, Mouse, Stylus) cho YouTube Title Bar (UMind Style).
+        /// Đảm bảo hoạt động trơn tru cả trên màn hình cảm ứng tương tác và máy tính thường.
+        /// </summary>
+        private void EnableYouTubeUnifiedDrag(Border container, Border headerBar)
+        {
+            // ──────────────────────────────────────────
+            // 1. TOUCH PIPELINE (Màn hình cảm ứng IFP đa điểm)
+            // ──────────────────────────────────────────
+            int? activeTouchId = null;
+            Point touchStartPoint = new Point();
+            double touchStartLeft = 0;
+            double touchStartTop = 0;
+
+            headerBar.PreviewTouchDown += (s, e) =>
+            {
+                // Nếu chạm vào các nút điều khiển (Zoom, Delete), nhường sự kiện cho nút bấm
+                if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                    return;
+
+                _isDrawing = false;
+                _currentStroke = null;
+
+                if (!activeTouchId.HasValue)
+                {
+                    activeTouchId = e.TouchDevice.Id;
+                    touchStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                    touchStartLeft = Canvas.GetLeft(container);
+                    if (double.IsNaN(touchStartLeft)) touchStartLeft = 0;
+                    touchStartTop = Canvas.GetTop(container);
+                    if (double.IsNaN(touchStartTop)) touchStartTop = 0;
+
+                    headerBar.CaptureTouch(e.TouchDevice);
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewTouchMove += (s, e) =>
+            {
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+                {
+                    Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                    double offsetX = currentPoint.X - touchStartPoint.X;
+                    double offsetY = currentPoint.Y - touchStartPoint.Y;
+
+                    double newLeft = Math.Max(0, touchStartLeft + offsetX);
+                    double newTop = Math.Max(0, touchStartTop + offsetY);
+
+                    Canvas.SetLeft(container, newLeft);
+                    Canvas.SetTop(container, newTop);
+
+                    e.Handled = true;
+                }
+            };
+
+            EventHandler<TouchEventArgs> endTouch = (s, e) =>
+            {
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+                {
+                    activeTouchId = null;
+                    try { headerBar.ReleaseTouchCapture(e.TouchDevice); } catch { }
+                    RefreshSelectableObjects();
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewTouchUp += endTouch;
+            headerBar.LostTouchCapture += (s, e) =>
+            {
+                if (activeTouchId.HasValue)
+                {
+                    activeTouchId = null;
+                    RefreshSelectableObjects();
+                }
+            };
+
+            // ──────────────────────────────────────────
+            // 2. MOUSE PIPELINE (Chuột máy tính PC thông thường)
+            // ──────────────────────────────────────────
+            bool isMouseDragging = false;
+            Point mouseStartPoint = new Point();
+            double mouseStartLeft = 0;
+            double mouseStartTop = 0;
+
+            headerBar.PreviewMouseLeftButtonDown += (s, e) =>
+            {
+                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                    return;
+
+                _isDrawing = false;
+                _currentStroke = null;
+
+                isMouseDragging = true;
+                mouseStartPoint = e.GetPosition(MainInteractiveBoard);
+                mouseStartLeft = Canvas.GetLeft(container);
+                if (double.IsNaN(mouseStartLeft)) mouseStartLeft = 0;
+                mouseStartTop = Canvas.GetTop(container);
+                if (double.IsNaN(mouseStartTop)) mouseStartTop = 0;
+
+                headerBar.CaptureMouse();
+                e.Handled = true;
+            };
+
+            headerBar.MouseMove += (s, e) =>
+            {
+                if (isMouseDragging && !activeTouchId.HasValue)
+                {
+                    Point currentPoint = e.GetPosition(MainInteractiveBoard);
+                    double offsetX = currentPoint.X - mouseStartPoint.X;
+                    double offsetY = currentPoint.Y - mouseStartPoint.Y;
+
+                    double newLeft = Math.Max(0, mouseStartLeft + offsetX);
+                    double newTop = Math.Max(0, mouseStartTop + offsetY);
+
+                    Canvas.SetLeft(container, newLeft);
+                    Canvas.SetTop(container, newTop);
+
+                    e.Handled = true;
+                }
+            };
+
+            MouseButtonEventHandler endMouse = (s, e) =>
+            {
+                if (isMouseDragging)
+                {
+                    isMouseDragging = false;
+                    try { headerBar.ReleaseMouseCapture(); } catch { }
+                    RefreshSelectableObjects();
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewMouseLeftButtonUp += endMouse;
+            headerBar.LostMouseCapture += (s, e) =>
+            {
+                if (isMouseDragging)
+                {
+                    isMouseDragging = false;
+                    RefreshSelectableObjects();
+                }
+            };
+
+            // ──────────────────────────────────────────
+            // 3. STYLUS PIPELINE (Bút cảm ứng trên màn hình IFP)
+            // ──────────────────────────────────────────
+            bool isStylusDragging = false;
+            Point stylusStartPoint = new Point();
+            double stylusStartLeft = 0;
+            double stylusStartTop = 0;
+
+            headerBar.PreviewStylusDown += (s, e) =>
+            {
+                if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                    return;
+
+                _isDrawing = false;
+                _currentStroke = null;
+
+                isStylusDragging = true;
+                stylusStartPoint = e.GetPosition(MainInteractiveBoard);
+                stylusStartLeft = Canvas.GetLeft(container);
+                if (double.IsNaN(stylusStartLeft)) stylusStartLeft = 0;
+                stylusStartTop = Canvas.GetTop(container);
+                if (double.IsNaN(stylusStartTop)) stylusStartTop = 0;
+
+                headerBar.CaptureStylus();
+                e.Handled = true;
+            };
+
+            headerBar.PreviewStylusMove += (s, e) =>
+            {
+                if (isStylusDragging)
+                {
+                    Point currentPoint = e.GetPosition(MainInteractiveBoard);
+                    double offsetX = currentPoint.X - stylusStartPoint.X;
+                    double offsetY = currentPoint.Y - stylusStartPoint.Y;
+
+                    double newLeft = Math.Max(0, stylusStartLeft + offsetX);
+                    double newTop = Math.Max(0, stylusStartTop + offsetY);
+
+                    Canvas.SetLeft(container, newLeft);
+                    Canvas.SetTop(container, newTop);
+
+                    e.Handled = true;
+                }
+            };
+
+            StylusEventHandler endStylus = (s, e) =>
+            {
+                if (isStylusDragging)
+                {
+                    isStylusDragging = false;
+                    try { headerBar.ReleaseStylusCapture(); } catch { }
+                    RefreshSelectableObjects();
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewStylusUp += endStylus;
+            headerBar.LostStylusCapture += (s, e) =>
+            {
+                if (isStylusDragging)
+                {
+                    isStylusDragging = false;
+                    RefreshSelectableObjects();
+                }
+            };
+        }
+
         private async System.Threading.Tasks.Task InitializeYouTubeWebView(Microsoft.Web.WebView2.Wpf.WebView2 webView, string videoId)
         {
             try
             {
                 await webView.EnsureCoreWebView2Async(null);
-                
-                // Create custom HTML page with embedded YouTube player
-                string htmlContent = $@"
-<!DOCTYPE html>
+
+                // Configure WebView2 settings
+                webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
+                webView.CoreWebView2.Settings.IsScriptEnabled = true;
+
+                // Fix Error 153 (Video player configuration error / embedder.identity.missing.referrer):
+                // YouTube embed iframe requires a valid origin and Referer header.
+                // NavigateToString creates an anonymous/null origin which strips Referer.
+                // We use SetVirtualHostNameToFolderMapping to serve the player from an HTTPS virtual domain.
+                string tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "QASmartSchool", "YouTubeEmbed");
+                if (!System.IO.Directory.Exists(tempDir))
+                {
+                    System.IO.Directory.CreateDirectory(tempDir);
+                }
+
+                string htmlContent = $@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <meta name='referrer' content='strict-origin-when-cross-origin'>
     <title>YouTube Player</title>
     <style>
         * {{
@@ -1334,7 +1794,8 @@ namespace QASmartTouch.Forms
 <body>
     <div id='player-container'>
         <iframe 
-            src='https://www.youtube-nocookie.com/embed/{videoId}?autoplay=0&rel=0&modestbranding=1&controls=1&showinfo=0&fs=1&iv_load_policy=3&disablekb=0&playsinline=1'
+            src='https://www.youtube.com/embed/{videoId}?autoplay=0&rel=0&modestbranding=1&controls=1&showinfo=0&fs=1&enablejsapi=1&origin=https://appassets.smartschool'
+            referrerpolicy='strict-origin-when-cross-origin'
             allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
             allowfullscreen>
         </iframe>
@@ -1342,10 +1803,43 @@ namespace QASmartTouch.Forms
 </body>
 </html>";
 
-                // Navigate to the HTML content
-                webView.CoreWebView2.NavigateToString(htmlContent);
-                
-                System.Diagnostics.Debug.WriteLine($"✅ YouTube WebView initialized with custom HTML: {videoId}");
+                string filePath = System.IO.Path.Combine(tempDir, $"{videoId}.html");
+                await System.IO.File.WriteAllTextAsync(filePath, htmlContent);
+
+                try
+                {
+                    webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                        "appassets.smartschool",
+                        tempDir,
+                        Microsoft.Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow
+                    );
+                }
+                catch { }
+
+                // Intercept web requests to ensure Referer and Origin headers are set
+                try
+                {
+                    webView.CoreWebView2.AddWebResourceRequestedFilter("*", Microsoft.Web.WebView2.Core.CoreWebView2WebResourceContext.All);
+                    webView.CoreWebView2.WebResourceRequested += (s, args) =>
+                    {
+                        try
+                        {
+                            var uri = args.Request.Uri;
+                            if (uri.Contains("youtube.com") || uri.Contains("youtube-nocookie.com") || uri.Contains("googlevideo.com"))
+                            {
+                                args.Request.Headers.SetHeader("Referer", "https://appassets.smartschool/");
+                                args.Request.Headers.SetHeader("Origin", "https://appassets.smartschool");
+                            }
+                        }
+                        catch { }
+                    };
+                }
+                catch { }
+
+                // Navigate using virtual host URL
+                webView.CoreWebView2.Navigate($"https://appassets.smartschool/{videoId}.html");
+
+                System.Diagnostics.Debug.WriteLine($"✅ YouTube WebView initialized with virtual host: {videoId}");
             }
             catch (Exception ex)
             {
@@ -1481,6 +1975,111 @@ namespace QASmartTouch.Forms
             }
         }
 
+        /// <summary>
+        /// Dừng phát âm thanh, điều hướng về about:blank và giải phóng tài nguyên WebView2
+        /// khi một phần tử bị xóa khỏi bảng (ClearAll, Delete, Eraser,...)
+        /// </summary>
+        internal void CleanupWebView2Media(UIElement? element)
+        {
+            if (element == null) return;
+
+            try
+            {
+                // 0. Nếu chính là MediaElement (Local Video)
+                if (element is MediaElement directMe)
+                {
+                    try
+                    {
+                        directMe.Stop();
+                        directMe.Close();
+                    }
+                    catch { }
+                    return;
+                }
+
+                // 1. Nếu chính là WebView2
+                if (element is Microsoft.Web.WebView2.Wpf.WebView2 directWv)
+                {
+                    StopAndDisposeWebView2(directWv);
+                    return;
+                }
+
+                // 2. Nếu là Border (như InteractiveYouTubeVideo, PhET Simulation, Google Maps,...)
+                if (element is Border border)
+                {
+                    if (border.Child is Microsoft.Web.WebView2.Wpf.WebView2 borderWv)
+                    {
+                        StopAndDisposeWebView2(borderWv);
+                        border.Child = null;
+                    }
+                    else if (border.Child is UIElement childElem)
+                    {
+                        CleanupWebView2Media(childElem);
+                    }
+                    return;
+                }
+
+                // 3. Nếu là Panel / Container chứa nhiều phần tử con
+                if (element is Panel panel)
+                {
+                    foreach (UIElement child in panel.Children)
+                    {
+                        CleanupWebView2Media(child);
+                    }
+                    return;
+                }
+
+                // 4. Nếu là ContentControl
+                if (element is ContentControl cc && cc.Content is UIElement contentElem)
+                {
+                    CleanupWebView2Media(contentElem);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CleanupWebView2Media Error] {ex.Message}");
+            }
+        }
+
+        private void StopAndDisposeWebView2(Microsoft.Web.WebView2.Wpf.WebView2 wv)
+        {
+            if (wv == null) return;
+            try
+            {
+                if (wv.CoreWebView2 != null)
+                {
+                    try { wv.CoreWebView2.IsMuted = true; } catch { }
+                    try
+                    {
+                        _ = wv.CoreWebView2.ExecuteScriptAsync(
+                            @"try {
+                                document.querySelectorAll('video, audio, iframe').forEach(el => {
+                                    try {
+                                        if (el.tagName === 'IFRAME') el.src = 'about:blank';
+                                        else { el.pause(); el.muted = true; el.src = ''; }
+                                    } catch(e){}
+                                });
+                            } catch(e){}"
+                        );
+                    }
+                    catch { }
+
+                    try
+                    {
+                        wv.CoreWebView2.Navigate("about:blank");
+                        wv.CoreWebView2.Stop();
+                    }
+                    catch { }
+                }
+                wv.Dispose();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[StopAndDisposeWebView2 Error] {ex.Message}");
+            }
+        }
+
         private void BtnYouTubeDelete_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
@@ -1494,6 +2093,9 @@ namespace QASmartTouch.Forms
             if (border != null)
             {
                 dynamic tag = border.Tag;
+
+                // Stop and dispose the embedded WebView2 to terminate audio immediately
+                CleanupWebView2Media(border);
                 
                 // Remove all elements
                 MainInteractiveBoard.Children.Remove(border);
@@ -2435,6 +3037,513 @@ namespace QASmartTouch.Forms
                 MessageBox.Show($"Lỗi chèn ảnh:\n{ex.Message}", "Lỗi",
                               MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        #endregion
+
+        #region Local Video Integration
+
+        /// <summary>
+        /// QC_4.2_LOCAL_VIDEO_UNIFIED: Chèn video cục bộ vào canvas theo chuẩn UMind Unified Container.
+        /// Hỗ trợ đầy đủ: Header Bar kéo thả chuẩn kép (Touch + Mouse + Stylus), Nút Play/Pause, Replay,
+        /// Thu nhỏ/Phóng to, Đóng/Tắt video, và tương thích 100% với hệ thống SelectionManager (chọn, kéo, xóa).
+        /// </summary>
+        public void InsertLocalVideoToCanvas(string videoPath)
+        {
+            if (string.IsNullOrEmpty(videoPath) || !System.IO.File.Exists(videoPath)) return;
+
+            try
+            {
+                string videoTitle = System.IO.Path.GetFileName(videoPath);
+
+                // 1. Kích thước chuẩn ban đầu: 640px chiều rộng, tỉ lệ 16:9 cho video (358px) + 38px HeaderBar + 4px viền
+                const double initialWidth = 640;
+                const double headerHeight = 38;
+                const double borderThickness = 2;
+                const double innerWidth = initialWidth - (borderThickness * 2); // 636px
+                double videoHeight = Math.Round(innerWidth * 9.0 / 16.0); // 358px
+                double totalHeight = videoHeight + headerHeight + (borderThickness * 2); // 398px
+
+                // 2. Tạo MediaElement phát video
+                var mediaElement = new MediaElement
+                {
+                    Source = new Uri(videoPath, UriKind.Absolute),
+                    LoadedBehavior = MediaState.Manual,
+                    UnloadedBehavior = MediaState.Close,
+                    Stretch = Stretch.Uniform,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch
+                };
+
+                // 3. Tạo Unified Container (Border ngoài cùng)
+                var container = new Border
+                {
+                    Width = initialWidth,
+                    Height = totalHeight,
+                    Background = Brushes.Black,
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(249, 115, 22)), // Màu cam năng động (#F97316) cho Local Video
+                    BorderThickness = new Thickness(borderThickness),
+                    CornerRadius = new CornerRadius(8),
+                    ClipToBounds = true,
+                    Tag = "InteractiveLocalVideo",
+                    Effect = new System.Windows.Media.Effects.DropShadowEffect
+                    {
+                        Color = Colors.Black,
+                        BlurRadius = 14,
+                        ShadowDepth = 3,
+                        Opacity = 0.35
+                    }
+                };
+
+                // 4. Grid 2 hàng: Hàng 0 = Header Bar kéo & điều khiển; Hàng 1 = Video Player
+                var mainGrid = new Grid();
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(headerHeight) });
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+                // 5. Header / Title Bar (UMind Style)
+                var headerBar = new Border
+                {
+                    Height = headerHeight,
+                    Background = new SolidColorBrush(Color.FromRgb(30, 41, 59)), // Slate 800 (#1E293B)
+                    BorderBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    CornerRadius = new CornerRadius(6, 6, 0, 0),
+                    Cursor = Cursors.SizeAll,
+                    Tag = "DragHandle"
+                };
+                Grid.SetRow(headerBar, 0);
+
+                // Tối ưu cảm ứng: Tắt press-and-hold delay và gestures của Windows trên thanh kéo
+                Stylus.SetIsPressAndHoldEnabled(headerBar, false);
+                Stylus.SetIsFlicksEnabled(headerBar, false);
+                Stylus.SetIsTapFeedbackEnabled(headerBar, false);
+                Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
+
+                var headerGrid = new Grid();
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                // Cột trái: Biểu tượng kéo (⠿) + Badge Video 🎬 + Tiêu đề video
+                var leftPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(8, 0, 8, 0),
+                    IsHitTestVisible = false // Bỏ qua hit-test để click/touch rơi vào headerBar
+                };
+                Grid.SetColumn(leftPanel, 0);
+
+                var gripText = new TextBlock
+                {
+                    Text = "⠿",
+                    FontSize = 16,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184)),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(2, 0, 6, 0)
+                };
+                leftPanel.Children.Add(gripText);
+
+                var vidBadge = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(249, 115, 22)),
+                    CornerRadius = new CornerRadius(3),
+                    Width = 20,
+                    Height = 16,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 6, 0)
+                };
+                var badgeIcon = new TextBlock
+                {
+                    Text = "🎬",
+                    FontSize = 10,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                vidBadge.Child = badgeIcon;
+                leftPanel.Children.Add(vidBadge);
+
+                var titleBlock = new TextBlock
+                {
+                    Text = videoTitle,
+                    Foreground = Brushes.White,
+                    FontSize = 12,
+                    FontWeight = FontWeights.SemiBold,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    ToolTip = videoPath
+                };
+                leftPanel.Children.Add(titleBlock);
+                headerGrid.Children.Add(leftPanel);
+
+                // Cột phải: Các nút thao tác nhanh (Phát/Tạm dừng, Quay lại, Thu nhỏ -, Phóng to +, Đóng ✕)
+                var actionPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 6, 0)
+                };
+                Grid.SetColumn(actionPanel, 1);
+
+                Button CreateHeaderButton(string text, string tooltip, Color normalColor, Color hoverColor, Action clickAction)
+                {
+                    var btn = new Button
+                    {
+                        Content = text,
+                        Width = 32,
+                        Height = 26,
+                        Margin = new Thickness(3, 0, 0, 0),
+                        Background = new SolidColorBrush(normalColor),
+                        Foreground = Brushes.White,
+                        FontSize = 12,
+                        FontWeight = FontWeights.Bold,
+                        BorderThickness = new Thickness(0),
+                        Cursor = Cursors.Hand,
+                        ToolTip = tooltip
+                    };
+
+                    var template = new ControlTemplate(typeof(Button));
+                    var borderFactory = new FrameworkElementFactory(typeof(Border));
+                    borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+                    borderFactory.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Button.Background))
+                    {
+                        RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+                    });
+                    var presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+                    presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                    presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                    borderFactory.AppendChild(presenterFactory);
+                    template.VisualTree = borderFactory;
+                    btn.Template = template;
+
+                    btn.MouseEnter += (s, e) => btn.Background = new SolidColorBrush(hoverColor);
+                    btn.MouseLeave += (s, e) => btn.Background = new SolidColorBrush(normalColor);
+                    btn.Click += (s, e) => clickAction?.Invoke();
+
+                    TouchActivationHelper.WireButton(btn);
+                    return btn;
+                }
+
+                bool isPlaying = true;
+                Button btnPlayPause = null!;
+
+                btnPlayPause = CreateHeaderButton("⏸", "Tạm dừng video",
+                    Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99), () =>
+                    {
+                        if (isPlaying)
+                        {
+                            mediaElement.Pause();
+                            isPlaying = false;
+                            btnPlayPause.Content = "▶";
+                            btnPlayPause.ToolTip = "Phát video";
+                        }
+                        else
+                        {
+                            mediaElement.Play();
+                            isPlaying = true;
+                            btnPlayPause.Content = "⏸";
+                            btnPlayPause.ToolTip = "Tạm dừng video";
+                        }
+                    });
+                actionPanel.Children.Add(btnPlayPause);
+
+                // Nút Phát lại từ đầu (🔄)
+                var btnReplay = CreateHeaderButton("🔄", "Phát lại từ đầu",
+                    Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99), () =>
+                    {
+                        mediaElement.Position = TimeSpan.Zero;
+                        mediaElement.Play();
+                        isPlaying = true;
+                        btnPlayPause.Content = "⏸";
+                        btnPlayPause.ToolTip = "Tạm dừng video";
+                    });
+                actionPanel.Children.Add(btnReplay);
+
+                // Nút Thu nhỏ (-)
+                var btnZoomOut = CreateHeaderButton("－", "Thu nhỏ video (Zoom -)",
+                    Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99), () =>
+                    {
+                        ZoomLocalVideoContainer(container, 1.0 / 1.15);
+                    });
+                actionPanel.Children.Add(btnZoomOut);
+
+                // Nút Phóng to (+)
+                var btnZoomIn = CreateHeaderButton("＋", "Phóng to video (Zoom +)",
+                    Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99), () =>
+                    {
+                        ZoomLocalVideoContainer(container, 1.15);
+                    });
+                actionPanel.Children.Add(btnZoomIn);
+
+                // Nút Đóng / Xóa video (✕)
+                var btnClose = CreateHeaderButton("✕", "Đóng và tắt video",
+                    Color.FromRgb(220, 38, 38), Color.FromRgb(239, 68, 68), () =>
+                    {
+                        DeleteLocalVideoContainer(container, mediaElement, videoTitle);
+                    });
+                actionPanel.Children.Add(btnClose);
+
+                headerGrid.Children.Add(actionPanel);
+                headerBar.Child = headerGrid;
+                mainGrid.Children.Add(headerBar);
+
+                // 6. Video Display Area (Row 1)
+                var videoBorder = new Border
+                {
+                    Background = Brushes.Black,
+                    Child = mediaElement
+                };
+                Grid.SetRow(videoBorder, 1);
+
+                // Nhấp vào khung video để Play / Pause nhanh
+                videoBorder.MouseLeftButtonDown += (s, e) =>
+                {
+                    if (isPlaying)
+                    {
+                        mediaElement.Pause();
+                        isPlaying = false;
+                        btnPlayPause.Content = "▶";
+                        btnPlayPause.ToolTip = "Phát video";
+                    }
+                    else
+                    {
+                        mediaElement.Play();
+                        isPlaying = true;
+                        btnPlayPause.Content = "⏸";
+                        btnPlayPause.ToolTip = "Tạm dừng video";
+                    }
+                    e.Handled = true;
+                };
+
+                mediaElement.MediaEnded += (s, e) =>
+                {
+                    isPlaying = false;
+                    btnPlayPause.Content = "▶";
+                    btnPlayPause.ToolTip = "Phát video";
+                    mediaElement.Position = TimeSpan.Zero;
+                };
+
+                mainGrid.Children.Add(videoBorder);
+                container.Child = mainGrid;
+
+                // 7. Gắn cơ chế Kéo Di Chuyển Chuẩn Kép (Touch + Mouse + Stylus)
+                EnableLocalVideoUnifiedDrag(container, headerBar);
+
+                // 8. Định vị Container vào chính giữa màn hình hiển thị của bảng
+                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - (initialWidth / 2);
+                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - (totalHeight / 2);
+                double borderLeft = Math.Max(0, centerX);
+                double borderTop = Math.Max(0, centerY);
+
+                Canvas.SetLeft(container, borderLeft);
+                Canvas.SetTop(container, borderTop);
+
+                // Thêm vào bảng vẽ
+                MainInteractiveBoard.Children.Add(container);
+
+                // Bắt đầu phát video
+                mediaElement.Play();
+
+                // Ghi nhận Undo/Redo
+                RecordAddAction(container, $"Local Video: {videoTitle}");
+
+                // Cập nhật vùng chọn cho SelectionManager
+                RefreshSelectableObjects();
+
+                System.Diagnostics.Debug.WriteLine($"✅ Local Video inserted (UMind Unified Container): {videoTitle} at ({borderLeft}, {borderTop})");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Insert Local Video error: {ex.Message}");
+                MessageBox.Show($"Lỗi chèn video:\n{ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// QC_4.2_LOCAL_VIDEO_ZOOM: Điều chỉnh tỉ lệ thu phóng của container video theo tỉ lệ 16:9
+        /// </summary>
+        private void ZoomLocalVideoContainer(Border container, double factor)
+        {
+            if (container == null) return;
+
+            double currentWidth = container.Width;
+            if (double.IsNaN(currentWidth) || currentWidth <= 0) currentWidth = 640;
+
+            double newWidth = Math.Round(currentWidth * factor);
+
+            // Giới hạn độ rộng tối thiểu 360px, tối đa 1600px
+            if (newWidth < 360 || newWidth > 1600) return;
+
+            const double headerHeight = 38;
+            const double borderThickness = 2;
+            double innerWidth = newWidth - (borderThickness * 2);
+            double newVideoHeight = Math.Round(innerWidth * 9.0 / 16.0);
+            double newTotalHeight = newVideoHeight + headerHeight + (borderThickness * 2);
+
+            container.Width = newWidth;
+            container.Height = newTotalHeight;
+
+            RefreshSelectableObjects();
+            System.Diagnostics.Debug.WriteLine($"🔍 Local Video Zoomed: {newWidth:F0}x{newTotalHeight:F0}");
+        }
+
+        /// <summary>
+        /// QC_4.2_LOCAL_VIDEO_DELETE: Xóa video khỏi bảng và dừng phát sạch tài nguyên âm thanh/hình ảnh
+        /// </summary>
+        private void DeleteLocalVideoContainer(Border container, MediaElement mediaElement, string videoTitle)
+        {
+            if (container == null) return;
+
+            try
+            {
+                mediaElement?.Stop();
+                mediaElement?.Close();
+            }
+            catch { }
+
+            MainInteractiveBoard.Children.Remove(container);
+            RecordRemoveAction(container, $"Deleted Local Video: {videoTitle}");
+            RefreshSelectableObjects();
+
+            System.Diagnostics.Debug.WriteLine($"🗑️ Local Video deleted: {videoTitle}");
+        }
+
+        /// <summary>
+        /// QC_4.2_LOCAL_VIDEO_UNIFIED_DRAG: Pipeline kéo di chuyển chuẩn kép (Touch, Mouse, Stylus) cho Video Title Bar
+        /// </summary>
+        private void EnableLocalVideoUnifiedDrag(Border container, Border headerBar)
+        {
+            // 1. TOUCH PIPELINE (Màn hình cảm ứng IFP đa điểm)
+            int? activeTouchId = null;
+            Point touchStartPoint = new Point();
+            double touchStartLeft = 0;
+            double touchStartTop = 0;
+
+            headerBar.PreviewTouchDown += (s, e) =>
+            {
+                if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                    return;
+
+                _isDrawing = false;
+                _currentStroke = null;
+
+                if (!activeTouchId.HasValue)
+                {
+                    activeTouchId = e.TouchDevice.Id;
+                    touchStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                    touchStartLeft = Canvas.GetLeft(container);
+                    if (double.IsNaN(touchStartLeft)) touchStartLeft = 0;
+                    touchStartTop = Canvas.GetTop(container);
+                    if (double.IsNaN(touchStartTop)) touchStartTop = 0;
+
+                    headerBar.CaptureTouch(e.TouchDevice);
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewTouchMove += (s, e) =>
+            {
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+                {
+                    Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                    double offsetX = currentPoint.X - touchStartPoint.X;
+                    double offsetY = currentPoint.Y - touchStartPoint.Y;
+
+                    double newLeft = Math.Max(0, touchStartLeft + offsetX);
+                    double newTop = Math.Max(0, touchStartTop + offsetY);
+
+                    Canvas.SetLeft(container, newLeft);
+                    Canvas.SetTop(container, newTop);
+
+                    e.Handled = true;
+                }
+            };
+
+            EventHandler<TouchEventArgs> endTouch = (s, e) =>
+            {
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+                {
+                    activeTouchId = null;
+                    try { headerBar.ReleaseTouchCapture(e.TouchDevice); } catch { }
+                    RefreshSelectableObjects();
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewTouchUp += endTouch;
+            headerBar.LostTouchCapture += (s, e) =>
+            {
+                if (activeTouchId.HasValue)
+                {
+                    activeTouchId = null;
+                    RefreshSelectableObjects();
+                }
+            };
+
+            // 2. MOUSE PIPELINE (Chuột máy tính PC thông thường)
+            bool isMouseDragging = false;
+            Point mouseStartPoint = new Point();
+            double mouseStartLeft = 0;
+            double mouseStartTop = 0;
+
+            headerBar.PreviewMouseLeftButtonDown += (s, e) =>
+            {
+                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                    return;
+
+                _isDrawing = false;
+                _currentStroke = null;
+
+                isMouseDragging = true;
+                mouseStartPoint = e.GetPosition(MainInteractiveBoard);
+                mouseStartLeft = Canvas.GetLeft(container);
+                if (double.IsNaN(mouseStartLeft)) mouseStartLeft = 0;
+                mouseStartTop = Canvas.GetTop(container);
+                if (double.IsNaN(mouseStartTop)) mouseStartTop = 0;
+
+                headerBar.CaptureMouse();
+                e.Handled = true;
+            };
+
+            headerBar.MouseMove += (s, e) =>
+            {
+                if (isMouseDragging && !activeTouchId.HasValue)
+                {
+                    Point currentPoint = e.GetPosition(MainInteractiveBoard);
+                    double offsetX = currentPoint.X - mouseStartPoint.X;
+                    double offsetY = currentPoint.Y - mouseStartPoint.Y;
+
+                    double newLeft = Math.Max(0, mouseStartLeft + offsetX);
+                    double newTop = Math.Max(0, mouseStartTop + offsetY);
+
+                    Canvas.SetLeft(container, newLeft);
+                    Canvas.SetTop(container, newTop);
+
+                    e.Handled = true;
+                }
+            };
+
+            MouseButtonEventHandler endMouse = (s, e) =>
+            {
+                if (isMouseDragging)
+                {
+                    isMouseDragging = false;
+                    try { headerBar.ReleaseMouseCapture(); } catch { }
+                    RefreshSelectableObjects();
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewMouseLeftButtonUp += endMouse;
+            headerBar.LostMouseCapture += (s, e) =>
+            {
+                if (isMouseDragging)
+                {
+                    isMouseDragging = false;
+                    RefreshSelectableObjects();
+                }
+            };
         }
 
         #endregion

@@ -314,6 +314,9 @@ namespace QASmartTouch.Forms
                         // Remove all non-background elements and record for Undo
                         foreach (var element in elementsToRemove)
                         {
+                            // ✅ Stop and cleanup any active media/WebView2 (YouTube, etc.) immediately to terminate sound
+                            CleanupWebView2Media(element);
+
                             MainInteractiveBoard.Children.Remove(element);
                             batchUndo.BatchActions.Add(new UndoRedoAction
                             {
@@ -768,6 +771,7 @@ namespace QASmartTouch.Forms
                         if (batchAction.Element != null)
                         {
                             _selectionManager?.RemoveObjectByElement(batchAction.Element);
+                            CleanupWebView2Media(batchAction.Element);
                             if (MainInteractiveBoard.Children.Contains(batchAction.Element))
                             {
                                 MainInteractiveBoard.Children.Remove(batchAction.Element);

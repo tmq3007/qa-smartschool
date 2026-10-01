@@ -318,11 +318,14 @@
 
                                     Checked="Category_Changed"/>
 
+                        <!-- TẠM ẨN: 4.6 AI & Trợ lý cho bản thử nghiệm nội bộ (bảo toàn code, không xóa) -->
                         <RadioButton x:Name="rbCategory6" 
 
                                     Content="4.6 AI &amp; Trợ lý"
 
                                     Style="{StaticResource SidebarButtonStyle}"
+
+                                    Visibility="Collapsed"
 
                                     Checked="Category_Changed"/>
 
@@ -590,7 +593,7 @@
 
 
 
-                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertImageCamera_Click">
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertImageCamera_Click" Visibility="Collapsed">
 
                             <StackPanel Orientation="Horizontal">
 
@@ -642,7 +645,7 @@
 
 
 
-                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertImageLibrary_Click">
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertImageLibrary_Click" Visibility="Collapsed">
 
                             <StackPanel Orientation="Horizontal">
 

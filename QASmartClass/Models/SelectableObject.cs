@@ -287,8 +287,8 @@ namespace QASmartTouch.Models
                     double top = Canvas.GetTop(fe);
                     if (double.IsNaN(left)) left = Position.X;
                     if (double.IsNaN(top)) top = Position.Y;
-                    double w = fe.ActualWidth > 0 ? fe.ActualWidth : fe.Width;
-                    double h = fe.ActualHeight > 0 ? fe.ActualHeight : fe.Height;
+                    double w = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : Size.Width);
+                    double h = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : Size.Height);
                     if (double.IsNaN(w) || w <= 0) w = fe.RenderSize.Width > 0 ? fe.RenderSize.Width : Size.Width;
                     if (double.IsNaN(h) || h <= 0) h = fe.RenderSize.Height > 0 ? fe.RenderSize.Height : Size.Height;
 

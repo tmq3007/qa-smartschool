@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Media;
 using QASmartTouch.Managers;
 
@@ -14,7 +14,7 @@ namespace QASmartTouch.Services.Tools
         
         private const int MIN_PEN_SIZE = 1;
         private const int MAX_PEN_SIZE = 16;
-        private const int DEFAULT_PEN_SIZE = 2;
+        private const int DEFAULT_PEN_SIZE = 5;
         
         #endregion
         
