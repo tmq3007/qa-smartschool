@@ -78,6 +78,9 @@ namespace QASmartTouch
         {
             base.OnStartup(e);
 
+            // === QC_4.2_TOUCH_SLIDER: Tối ưu cảm ứng 1 chạm cho thanh trượt Slider toàn hệ thống ===
+            QASmartTouch.Helpers.TouchSliderHelper.Initialize();
+
             // === UPGRADE_06: CommandLine Auto-Fix Firewall ===
             if (e.Args != null && System.Linq.Enumerable.Contains(e.Args, "--configure-firewall"))
             {

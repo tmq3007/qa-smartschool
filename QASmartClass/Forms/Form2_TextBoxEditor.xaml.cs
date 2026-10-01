@@ -26,7 +26,12 @@ namespace QASmartTouch.Forms
             Loaded += (s, e) =>
             {
                 textBoxEditor.Focus();
-                QASmartTouch.Forms.Form2_MainDashboard.ShowTouchKeyboard();
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            };
+
+            Closed += (s, e) =>
+            {
+                TouchKeyboardHelper.HideTouchKeyboard();
             };
         }
 

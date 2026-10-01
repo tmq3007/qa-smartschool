@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Input;
 using QASmartTouch.Services.VersionManagement;
 using QASmartTouch.Helpers;
 
@@ -102,7 +103,25 @@ namespace QASmartTouch.Forms
                     Fill = i <= currentPenSize ? new SolidColorBrush(Color.FromRgb(46, 134, 222)) : new SolidColorBrush(Color.FromRgb(220, 221, 225)),
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    Tag = i
+                    Tag = i,
+                    Cursor = Cursors.Hand
+                };
+
+                // Cho phép chạm hoặc nhấp trực tiếp vào chấm tròn để chọn size ngay lập tức
+                ellipse.MouseDown += (s, e) =>
+                {
+                    if (s is Ellipse el && el.Tag is int size)
+                    {
+                        sliderPenSize.Value = size;
+                    }
+                };
+                ellipse.PreviewTouchDown += (s, e) =>
+                {
+                    if (s is Ellipse el && el.Tag is int size)
+                    {
+                        sliderPenSize.Value = size;
+                        e.Handled = true;
+                    }
                 };
 
                 panelSizeIndicators.Children.Add(ellipse);
