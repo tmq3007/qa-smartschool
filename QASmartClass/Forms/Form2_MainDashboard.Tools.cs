@@ -445,6 +445,9 @@ namespace QASmartTouch.Forms
                 }
             }
 
+            // ✅ QC_4.2_TABLE_OWNERSHIP: Tự động đính kèm nét vẽ nếu nằm trọn trong ô Bảng dữ liệu
+            CheckAndAttachStrokeToTable(element);
+
             var action = new UndoRedoAction
             {
                 Type = ActionType.Add,

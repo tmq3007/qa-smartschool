@@ -146,15 +146,14 @@ namespace QASmartTouch.Helpers
         }
 
         /// <summary>
-        /// Vô hiệu hóa press-and-hold delay và chuyển giao tiêu điểm cho thanh trượt Slider.
+        /// Vô hiệu hóa press-and-hold delay và cấu hình tối ưu cảm ứng cho thanh trượt Slider.
         /// </summary>
         public static void WireSlider(Slider slider)
         {
             if (slider == null || GetIsTouchWired(slider)) return;
             SetIsTouchWired(slider, true);
 
-            slider.Focusable = false;
-            Stylus.SetIsPressAndHoldEnabled(slider, false);
+            TouchSliderHelper.ConfigureSlider(slider);
         }
 
         /// <summary>

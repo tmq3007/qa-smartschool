@@ -917,7 +917,7 @@ namespace QASmartTouch.Forms
                 points.Add(new Point((pt.X * scaleX) + offsetX, (pt.Y * scaleY) + offsetY));
             }
             polyline.Points = points;
-            Panel.SetZIndex(polyline, QASmartTouch.Helpers.ZIndexConstants.UserContentMax);
+            Panel.SetZIndex(polyline, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
             return polyline;
         }
 

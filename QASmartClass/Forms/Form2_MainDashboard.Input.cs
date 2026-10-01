@@ -1161,8 +1161,8 @@ namespace QASmartTouch.Forms
                 
                 // Add stroke to canvas
                 MainInteractiveBoard.Children.Add(_currentStroke);
-                // ✅ QC_4.2_STROKE_ABOVE_TABLE (NV-1): Nét vẽ hiển thị TRÊN Table/TextBox (500) nhưng DƯỚI Widget nhúng (1000+)
-                Panel.SetZIndex(_currentStroke, ZIndexConstants.UserContentMax);
+                // Nét vẽ khi đang vẽ live nằm trên tầng ActiveStrokeLayer (3000)
+                Panel.SetZIndex(_currentStroke, ZIndexConstants.ActiveStrokeLayer);
                 
                 // Capture mouse to continue tracking even if it leaves the canvas
                 MainInteractiveBoard.CaptureMouse();
@@ -1409,6 +1409,9 @@ namespace QASmartTouch.Forms
                     // Debug output
                     System.Diagnostics.Debug.WriteLine($"✨ Stroke optimized: {originalCount} → {smoothedPoints.Count} points (Decimation + 20% smoothing)");
                 }
+
+                // Đưa nét vẽ hoàn thành về tầng nội dung chuẩn (UserContentBase = 100)
+                Panel.SetZIndex(_currentStroke, ZIndexConstants.UserContentBase);
 
                 // Add completed stroke to undo stack
                 RecordAddAction(_currentStroke, "Draw stroke");
@@ -6091,6 +6094,121 @@ namespace QASmartTouch.Forms
         #region Container Drag & Element Attachment Helpers
 
         /// <summary>
+        /// QC_4.2_TABLE_OWNERSHIP: Quản lý danh sách nét vẽ thuộc về từng Bảng dữ liệu.
+        /// Chỉ những nét vẽ thực sự được vẽ vào ô bảng mới được đính kèm và di chuyển theo bảng.
+        /// </summary>
+        private readonly Dictionary<FrameworkElement, HashSet<UIElement>> _tableAttachedStrokes = new();
+
+        /// <summary>
+        /// QC_4.2_TABLE_OWNERSHIP: Kiểm tra nếu nét vẽ vừa hoàn thành nằm trọn trong thân một Bảng dữ liệu,
+        /// tự động gắn nét vẽ đó vào danh sách thuộc Bảng.
+        /// </summary>
+        private void CheckAndAttachStrokeToTable(UIElement element)
+        {
+            if (element == null || MainInteractiveBoard == null) return;
+
+            // Chỉ xử lý nét vẽ tay (Polyline hoặc Path nét vẽ từ Touch)
+            Rect elemRect = Rect.Empty;
+            if (element is Polyline polyline)
+            {
+                if (polyline.Points == null || polyline.Points.Count == 0) return;
+                if (Panel.GetZIndex(polyline) >= ZIndexConstants.SystemUIBase) return;
+
+                double minX = double.MaxValue, maxX = double.MinValue;
+                double minY = double.MaxValue, maxY = double.MinValue;
+                foreach (var pt in polyline.Points)
+                {
+                    if (pt.X < minX) minX = pt.X;
+                    if (pt.X > maxX) maxX = pt.X;
+                    if (pt.Y < minY) minY = pt.Y;
+                    if (pt.Y > maxY) maxY = pt.Y;
+                }
+                elemRect = new Rect(minX, minY, Math.Max(1, maxX - minX), Math.Max(1, maxY - minY));
+            }
+            else if (element is System.Windows.Shapes.Path path)
+            {
+                // Chỉ nhận nét vẽ viết tay (có lưu PointCollection trong Tag từ Touch)
+                // Tuyệt đối không nhận các hình học Path (hình trụ, hình khối 3D...)
+                if (path.Tag is PointCollection pts && pts.Count > 0)
+                {
+                    if (Panel.GetZIndex(path) >= ZIndexConstants.SystemUIBase) return;
+
+                    double minX = double.MaxValue, maxX = double.MinValue;
+                    double minY = double.MaxValue, maxY = double.MinValue;
+                    foreach (var pt in pts)
+                    {
+                        if (pt.X < minX) minX = pt.X;
+                        if (pt.X > maxX) maxX = pt.X;
+                        if (pt.Y < minY) minY = pt.Y;
+                        if (pt.Y > maxY) maxY = pt.Y;
+                    }
+                    elemRect = new Rect(minX, minY, Math.Max(1, maxX - minX), Math.Max(1, maxY - minY));
+                }
+                else if (path.Data != null && !path.Data.Bounds.IsEmpty)
+                {
+                    var b = path.Data.Bounds;
+                    double pLeft = double.IsNaN(Canvas.GetLeft(path)) ? 0 : Canvas.GetLeft(path);
+                    double pTop = double.IsNaN(Canvas.GetTop(path)) ? 0 : Canvas.GetTop(path);
+                    if (path.RenderTransform is TranslateTransform tt)
+                    {
+                        pLeft += tt.X;
+                        pTop += tt.Y;
+                    }
+                    elemRect = new Rect(pLeft + b.X, pTop + b.Y, b.Width, b.Height);
+                }
+            }
+
+            if (elemRect.IsEmpty) return;
+
+            Point strokeCenter = new Point(elemRect.X + elemRect.Width / 2.0, elemRect.Y + elemRect.Height / 2.0);
+
+            foreach (UIElement child in MainInteractiveBoard.Children)
+            {
+                if (child is StackPanel sp && sp.Tag is string tag && tag == "TableContainer")
+                {
+                    double left = Canvas.GetLeft(sp);
+                    double top = Canvas.GetTop(sp);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = sp.ActualWidth > 0 ? sp.ActualWidth : sp.Width;
+                    double height = sp.ActualHeight > 0 ? sp.ActualHeight : sp.Height;
+
+                    // Thân bảng (outerBorder bên dưới thanh tiêu đề cao 34px)
+                    Rect tableBodyRect = new Rect(left, top + 34, width, Math.Max(10, height - 34));
+
+                    // Đính kèm nét vẽ nếu toàn bộ nét vẽ nằm trong Bảng HOẶC tâm nét vẽ nằm trong Bảng
+                    if (tableBodyRect.Contains(elemRect) || tableBodyRect.Contains(strokeCenter))
+                    {
+                        if (!_tableAttachedStrokes.TryGetValue(sp, out var set))
+                        {
+                            set = new HashSet<UIElement>();
+                            _tableAttachedStrokes[sp] = set;
+                        }
+                        set.Add(element);
+                        // ✅ Nâng Z-Index cho nét vẽ thuộc Bảng để nổi trên mặt bảng (TableContainer = 500)
+                        Panel.SetZIndex(element, ZIndexConstants.TableContainer + 1);
+                        System.Diagnostics.Debug.WriteLine($"🏷️ [Table Ownership] Attached stroke to TableContainer at ({left:F0}, {top:F0})");
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// QC_4.2_TABLE_OWNERSHIP: Lấy danh sách các nét vẽ thực sự thuộc về Bảng dữ liệu này.
+        /// Triệt tiêu 100% lỗi kéo trôi hoặc xóa nhầm đối tượng nền có sẵn trên bảng.
+        /// </summary>
+        private List<UIElement> GetTableAttachedStrokes(FrameworkElement tableContainer)
+        {
+            if (tableContainer != null && _tableAttachedStrokes.TryGetValue(tableContainer, out var set))
+            {
+                set.RemoveWhere(el => MainInteractiveBoard == null || !MainInteractiveBoard.Children.Contains(el));
+                return set.ToList();
+            }
+            return new List<UIElement>();
+        }
+
+        /// <summary>
         /// Retrieves all canvas UI elements located inside or overlapping the bounding box of a container (e.g. Table, Text Box)
         /// </summary>
         private List<UIElement> GetElementsInsideContainer(FrameworkElement container)
@@ -6224,6 +6342,14 @@ namespace QASmartTouch.Forms
                     else
                     {
                         path.RenderTransform = new TranslateTransform(deltaX, deltaY);
+                    }
+
+                    if (path.Tag is PointCollection pts)
+                    {
+                        for (int i = 0; i < pts.Count; i++)
+                        {
+                            pts[i] = new Point(pts[i].X + deltaX, pts[i].Y + deltaY);
+                        }
                     }
                 }
                 else if (elem is FrameworkElement fe)
@@ -6461,6 +6587,7 @@ namespace QASmartTouch.Forms
                 double totalHeight = tableData.GetTotalHeight() + (tableData.BorderThickness * 2) + 34;
 
                 finalContainer.Width = totalWidth;
+                finalContainer.Height = totalHeight;
 
                 // Enable Drag-to-Move when pressing & holding btnMove (or dragHandleBar)
                 bool isDragging = false;
@@ -6473,7 +6600,7 @@ namespace QASmartTouch.Forms
                     _currentStroke = null;
                     isDragging = true;
                     dragStartPoint = startPt;
-                    attachedElements = GetElementsInsideContainer(finalContainer);
+                    attachedElements = GetTableAttachedStrokes(finalContainer);
                 };
 
                 Action<Point> processMove = (currentPoint) =>
@@ -6727,44 +6854,14 @@ namespace QASmartTouch.Forms
 
         public static void ShowTouchKeyboard()
         {
-            try
-            {
-                // ✅ QC_4.2_TABLE_KEYBOARD_FIX (T11): Kiểm tra TabTip/osk đã chạy chưa
-                // Tránh spawn nhiều instance khi GV chạm nhanh nhiều ô liên tiếp
-                var existingTabTip = System.Diagnostics.Process.GetProcessesByName("TabTip");
-                if (existingTabTip.Length > 0) return;
+            // ✅ QC_4.2_TOUCH_KEYBOARD_FIX: Chuyển sang TouchKeyboardHelper kiểm tra hiển thị thực tế
+            // thay vì chặn cứng khi tiến trình TabTip.exe đang chạy ngầm, đảm bảo luôn hiển thị lại ở các lần mở tiếp theo.
+            QASmartTouch.Helpers.TouchKeyboardHelper.ShowTouchKeyboard();
+        }
 
-                var existingOsk = System.Diagnostics.Process.GetProcessesByName("osk");
-                if (existingOsk.Length > 0) return;
-
-                string tabTipPath = System.IO.Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles),
-                    @"microsoft shared\ink\TabTip.exe");
-
-                if (System.IO.File.Exists(tabTipPath))
-                {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = tabTipPath,
-                        UseShellExecute = true
-                    });
-                    return;
-                }
-
-                string oskPath = System.IO.Path.Combine(Environment.SystemDirectory, "osk.exe");
-                if (System.IO.File.Exists(oskPath))
-                {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = oskPath,
-                        UseShellExecute = true
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"⚠️ ShowTouchKeyboard error: {ex.Message}");
-            }
+        public static void HideTouchKeyboard()
+        {
+            QASmartTouch.Helpers.TouchKeyboardHelper.HideTouchKeyboard();
         }
 
         private TextAlignment GetTextAlignment(string alignment)
@@ -6875,7 +6972,7 @@ namespace QASmartTouch.Forms
 
                     if (targetToDelete != null && MainInteractiveBoard.Children.Contains(targetToDelete))
                     {
-                        var attached = GetElementsInsideContainer(targetToDelete);
+                        var attached = GetTableAttachedStrokes(targetToDelete);
                         // ✅ QC_4.2_TABLE_UNDO_FIX (T6): Ghi từng attached element vào Undo stack
                         // TRƯỚC khi xóa, để Ctrl+Z khôi phục cả nét vẽ đính kèm
                         foreach (var elem in attached)
@@ -6886,6 +6983,8 @@ namespace QASmartTouch.Forms
                         {
                             MainInteractiveBoard.Children.Remove(elem);
                         }
+
+                        _tableAttachedStrokes.Remove(targetToDelete);
 
                         MainInteractiveBoard.Children.Remove(targetToDelete);
                         RecordRemoveAction(targetToDelete, "Table");
@@ -6952,8 +7051,9 @@ namespace QASmartTouch.Forms
                 // Add NEW text box control
                 newTextBox.Margin = new Thickness(10, 30, 10, 10);
                 newTextBox.GotFocus += (s, e) => ShowTouchKeyboard();
+                newTextBox.PreviewMouseLeftButtonDown += (s, e) => ShowTouchKeyboard();
+                newTextBox.PreviewTouchDown += (s, e) => ShowTouchKeyboard();
                 container.Children.Add(newTextBox);
-                ShowTouchKeyboard();
 
                 // Create drag handle (top bar)
                 var dragHandle = new Border
@@ -7002,14 +7102,12 @@ namespace QASmartTouch.Forms
                 // Enable dragging
                 bool isDragging = false;
                 Point dragStartPoint = new Point();
-                List<UIElement> attachedElements = new List<UIElement>();
 
                 Action endMove = () =>
                 {
                     if (isDragging)
                     {
                         isDragging = false;
-                        attachedElements.Clear();
                         RefreshSelectableObjects();
                     }
                 };
@@ -7020,7 +7118,6 @@ namespace QASmartTouch.Forms
                     _currentStroke = null;
                     isDragging = true;
                     dragStartPoint = startPt;
-                    attachedElements = GetElementsInsideContainer(container);
                 };
 
                 dragHandle.MouseLeftButtonDown += (s, e) =>
@@ -7045,13 +7142,8 @@ namespace QASmartTouch.Forms
                         newLeft = Math.Max(0, Math.Min(newLeft, MainInteractiveBoard.ActualWidth - container.Width));
                         newTop = Math.Max(0, Math.Min(newTop, MainInteractiveBoard.ActualHeight - container.Height));
 
-                        double actualDeltaX = newLeft - oldLeft;
-                        double actualDeltaY = newTop - oldTop;
-
                         Canvas.SetLeft(container, newLeft);
                         Canvas.SetTop(container, newTop);
-
-                        MoveAttachedElements(attachedElements, actualDeltaX, actualDeltaY);
 
                         dragStartPoint = currentPoint;
                         e.Handled = true; // ✅ Chặn event bubble khi đang kéo
@@ -7095,13 +7187,8 @@ namespace QASmartTouch.Forms
                         newLeft = Math.Max(0, Math.Min(newLeft, MainInteractiveBoard.ActualWidth - container.Width));
                         newTop = Math.Max(0, Math.Min(newTop, MainInteractiveBoard.ActualHeight - container.Height));
 
-                        double actualDeltaX = newLeft - oldLeft;
-                        double actualDeltaY = newTop - oldTop;
-
                         Canvas.SetLeft(container, newLeft);
                         Canvas.SetTop(container, newTop);
-
-                        MoveAttachedElements(attachedElements, actualDeltaX, actualDeltaY);
 
                         dragStartPoint = currentPoint;
                         e.Handled = true;
@@ -7167,21 +7254,13 @@ namespace QASmartTouch.Forms
                                         MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                // ✅ QC_4.2_TEXTBOX_UNDO_FIX (TB-4): Ghi attached strokes vào Undo stack
-                // TRƯỚC khi xóa, để Ctrl+Z khôi phục cả nét vẽ đính kèm
-                var attached = GetElementsInsideContainer(textBoxContainer);
-                foreach (var elem in attached)
-                    RecordRemoveAction(elem, "TextBoxAttachedStroke");
-                foreach (var elem in attached)
-                    MainInteractiveBoard.Children.Remove(elem);
-
                 MainInteractiveBoard.Children.Remove(textBoxContainer);
                 RecordRemoveAction(textBoxContainer, "Text Box");
                 RefreshSelectableObjects();
                 // ✅ QC_4.2_SMART_TOUCH_TEXTBOX_DELETE_FIX: Giải phóng toàn bộ Touch Capture sau khi xóa
                 MainInteractiveBoard.ReleaseAllTouchCaptures();
                 MainScrollViewer.ReleaseAllTouchCaptures();
-                System.Diagnostics.Debug.WriteLine("✅ Text box deleted with attached strokes");
+                System.Diagnostics.Debug.WriteLine("✅ Text box deleted");
             }
         }
 
@@ -8334,8 +8413,8 @@ namespace QASmartTouch.Forms
                 StrokeThickness = _currentPenSize
             };
 
-            // ✅ QC_4.2_STROKE_ABOVE_TABLE (NV-3): Mọi nét vẽ mặc định TRÊN Table/TextBox (500)
-            Panel.SetZIndex(stroke, ZIndexConstants.UserContentMax);
+            // ✅ Mọi nét vẽ mặc định ở tầng UserContentBase (100)
+            Panel.SetZIndex(stroke, ZIndexConstants.UserContentBase);
 
             // =====================================================
             // 🚀 HARDWARE ACCELERATION FOR STROKES (Anti-Jitter)
