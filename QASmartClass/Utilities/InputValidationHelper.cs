@@ -31,6 +31,21 @@ namespace QASmartTouch.Utilities
                 if (obj is TextBox || obj is Selector || obj is Slider || obj is Viewport3D || obj is UserControl)
                     return true;
 
+                // ✅ QC_4.2_WIDGET_GUARD: Kiểm tra DragHandle hoặc Container widget tương tác (YouTube, Google Maps, Widget, SelectionBox)
+                if (obj is FrameworkElement fe)
+                {
+                    if (fe.Tag is string tagStr && 
+                        (tagStr == "DragHandle" || tagStr == "InteractiveYouTubeVideo" || 
+                         tagStr == "InteractiveGoogleMaps" || tagStr == "InteractiveImage" || 
+                         tagStr == "InteractiveLocalVideo" ||
+                         tagStr == "SelectionBox" || tagStr == "YouTubeControlPanel" || 
+                         tagStr == "GoogleMapsControlPanel" || tagStr == "ImageControlPanel" || 
+                         tagStr == "VideoControlPanel" || tagStr == "ResizeHandle"))
+                    {
+                        return true;
+                    }
+                }
+
                 return false;
             });
         }

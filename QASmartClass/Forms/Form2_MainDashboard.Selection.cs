@@ -1500,6 +1500,30 @@ namespace QASmartTouch.Forms
                 _thicknessPicker?.Hide();
                 _colorPicker?.Hide();
 
+                foreach (var elem in elementsToDelete)
+                {
+                    CleanupWebView2Media(elem);
+                    // Also check if elem is YouTube border with handles and controlPanel
+                    if (elem is Border border && border.Tag is object tag)
+                    {
+                        try
+                        {
+                            var topHandle = tag.GetType().GetProperty("TopHandle")?.GetValue(tag) as UIElement;
+                            var bottomHandle = tag.GetType().GetProperty("BottomHandle")?.GetValue(tag) as UIElement;
+                            var leftHandle = tag.GetType().GetProperty("LeftHandle")?.GetValue(tag) as UIElement;
+                            var rightHandle = tag.GetType().GetProperty("RightHandle")?.GetValue(tag) as UIElement;
+                            var ctrlPanel = tag.GetType().GetProperty("ControlPanel")?.GetValue(tag) as UIElement;
+
+                            if (topHandle != null) MainInteractiveBoard.Children.Remove(topHandle);
+                            if (bottomHandle != null) MainInteractiveBoard.Children.Remove(bottomHandle);
+                            if (leftHandle != null) MainInteractiveBoard.Children.Remove(leftHandle);
+                            if (rightHandle != null) MainInteractiveBoard.Children.Remove(rightHandle);
+                            if (ctrlPanel != null) MainInteractiveBoard.Children.Remove(ctrlPanel);
+                        }
+                        catch { }
+                    }
+                }
+
                 _selectionManager?.DeleteSelectedObjects();
                 System.Diagnostics.Debug.WriteLine($"🗑️ Deleted {selectedList.Count} selected object(s) in single batch Undo action");
             }

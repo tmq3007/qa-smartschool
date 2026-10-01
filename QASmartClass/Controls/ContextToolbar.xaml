@@ -157,11 +157,13 @@
             </Button>
 
             <!-- ⋮ More Menu Button (Tier 2 Toggle) -->
+            <!-- TẠM ẨN: Tính năng mở rộng (...) cho bản thử nghiệm nội bộ (bảo toàn code, không xóa) -->
             <Button x:Name="btnMore"
                     Style="{StaticResource ToolbarButtonStyle}"
                     Click="btnMore_Click"
                     PreviewTouchDown="btnMore_PreviewTouchDown"
-                    ToolTip="Tính năng mở rộng (...)">
+                    ToolTip="Tính năng mở rộng (...)"
+                    Visibility="Collapsed">
                 <TextBlock Text="⋮" FontSize="18" FontWeight="Bold"/>
             </Button>
 

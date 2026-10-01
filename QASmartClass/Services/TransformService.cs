@@ -461,6 +461,16 @@ namespace QASmartTouch.Services
             }
             else if (obj.Element is FrameworkElement element)
             {
+                // QC_4.2_RESIZE_GUARD: Tự động gỡ bỏ giới hạn MaxWidth/MaxHeight nếu người dùng phóng to vượt quá giới hạn cũ
+                if (!double.IsPositiveInfinity(element.MaxWidth) && element.MaxWidth < newSize.Width)
+                {
+                    element.MaxWidth = double.PositiveInfinity;
+                }
+                if (!double.IsPositiveInfinity(element.MaxHeight) && element.MaxHeight < newSize.Height)
+                {
+                    element.MaxHeight = double.PositiveInfinity;
+                }
+
                 // Rectangle, Ellipse, TextBlock, Border, Image
                 CanvasControl.SetLeft(element, obj.Position.X);
                 CanvasControl.SetTop(element, obj.Position.Y);
@@ -905,6 +915,16 @@ namespace QASmartTouch.Services
             // 6. FrameworkElement (Rectangle, Ellipse, TextBlock, Image, Border)
             else if (obj.Element is FrameworkElement element)
             {
+                // QC_4.2_RESIZE_GUARD: Tự động gỡ bỏ giới hạn MaxWidth/MaxHeight nếu người dùng phóng to vượt quá giới hạn cũ
+                if (!double.IsPositiveInfinity(element.MaxWidth) && element.MaxWidth < newSize.Width)
+                {
+                    element.MaxWidth = double.PositiveInfinity;
+                }
+                if (!double.IsPositiveInfinity(element.MaxHeight) && element.MaxHeight < newSize.Height)
+                {
+                    element.MaxHeight = double.PositiveInfinity;
+                }
+
                 CanvasControl.SetLeft(element, newPosition.X);
                 CanvasControl.SetTop(element, newPosition.Y);
                 element.Width = newSize.Width;

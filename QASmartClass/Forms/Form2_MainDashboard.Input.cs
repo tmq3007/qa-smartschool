@@ -46,7 +46,7 @@ namespace QASmartTouch.Forms
                 {
                     if (fe.Tag is string tag)
                     {
-                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel")
+                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "InteractiveImage" || tag == "InteractiveLocalVideo" || tag == "LocalVideoContainer" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel" || tag == "ImageControlPanel" || tag == "VideoControlPanel")
                         {
                             return true;
                         }
@@ -8683,7 +8683,7 @@ namespace QASmartTouch.Forms
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.EndInit();
 
-                    // Create Image control
+                    // Create Image control (QC_4.2_IMAGE_RESIZE_FIX: Không đặt MaxWidth/MaxHeight cứng để cho phép phóng to tự do)
                     var image = new Image
                     {
                         Source = bitmap,
@@ -8726,6 +8726,9 @@ namespace QASmartTouch.Forms
 
                     // Add to undo stack
                     RecordAddAction(image, "Draw");
+
+                    // Đăng ký ngay vào SelectionManager để công cụ Chọn vùng có thể chọn và resize ngay lập tức
+                    RefreshSelectableObjects();
 
                     // Make image draggable (enable selection tool temporarily)
                     image.MouseDown += (s, e) =>
@@ -8770,59 +8773,7 @@ namespace QASmartTouch.Forms
             }
         }
 
-        public void InsertLocalVideoToCanvas(string videoPath)
-        {
-            if (string.IsNullOrEmpty(videoPath) || !System.IO.File.Exists(videoPath)) return;
 
-            var containerGrid = new Grid
-            {
-                Width = 500,
-                Height = 350,
-                Tag = "LocalVideoContainer"
-            };
-
-            var mediaElement = new MediaElement
-            {
-                Source = new Uri(videoPath, UriKind.Absolute),
-                LoadedBehavior = MediaState.Play,
-                UnloadedBehavior = MediaState.Close,
-                Stretch = Stretch.Uniform
-            };
-
-            var border = new Border
-            {
-                Background = new SolidColorBrush(Colors.Black),
-                BorderBrush = new SolidColorBrush(Colors.DarkGray),
-                BorderThickness = new Thickness(2),
-                CornerRadius = new CornerRadius(8),
-                Child = mediaElement
-            };
-
-            containerGrid.Children.Add(border);
-
-            // Position at center of board
-            double left = (MainInteractiveBoard.ActualWidth - 500) / 2;
-            double top = (MainInteractiveBoard.ActualHeight - 350) / 2;
-            if (left < 0) left = 50;
-            if (top < 0) top = 50;
-
-            Canvas.SetLeft(containerGrid, left);
-            Canvas.SetTop(containerGrid, top);
-
-            MainInteractiveBoard.Children.Add(containerGrid);
-            RecordAddAction(containerGrid, $"Local Video: {System.IO.Path.GetFileName(videoPath)}");
-            if (_selectionManager != null)
-            {
-                var selObj = new SelectableObject
-                {
-                    Element = containerGrid,
-                    Type = ObjectType.Other,
-                    Position = new Point(left, top),
-                    Size = new Size(500, 350)
-                };
-                _selectionManager.AddObject(selObj);
-            }
-        }
 
         private void CaptureScreenshot()
         {

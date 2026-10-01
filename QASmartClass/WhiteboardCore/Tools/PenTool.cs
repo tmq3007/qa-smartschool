@@ -48,14 +48,14 @@ namespace QASmartClass.WhiteboardCore.Tools
         public string CurrentBrushType { get; private set; } = "Normal";
 
         /// <summary>Kích thước nét bút (px).</summary>
-        public int CurrentPenSize { get; private set; } = 2;
+        public int CurrentPenSize { get; private set; } = 5;
 
         /// <summary>Màu bút hiện tại.</summary>
         public Color CurrentPenColor { get; private set; } = Colors.White;
 
         // Cấu hình đã lưu (khôi phục khi re-activate)
         private string _savedBrushType = "Normal";
-        private int _savedPenSize = 2;
+        private int _savedPenSize = 5;
         private Color _savedPenColor = Colors.White;
 
         #endregion
