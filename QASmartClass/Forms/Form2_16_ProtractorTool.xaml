@@ -290,6 +290,7 @@
 
                         <Button x:Name="btnMove"
                                 Content="✥"
+                                Tag="DragHandle"
                                 Width="30" ToolTip="Di chuyển"
                                 Background="#E8EEFF" BorderBrush="#667EEA"
                                 Foreground="#667EEA"
@@ -299,12 +300,11 @@
                                 Style="{StaticResource CtrlBtnStyle}"
                                 Cursor="SizeAll"
                                 PreviewMouseDown="btnMove_MouseDown"
-                                PreviewMouseUp="btnMove_MouseUp"
                                 PreviewMouseMove="btnMove_MouseMove"
+                                PreviewMouseUp="btnMove_MouseUp"
                                 PreviewTouchDown="btnMove_PreviewTouchDown"
                                 TouchMove="btnMove_TouchMove"
-                                TouchUp="btnMove_TouchUp"
-                                LostTouchCapture="btnMove_LostTouchCapture"/>
+                                TouchUp="btnMove_TouchUp"/>
 
 
 
