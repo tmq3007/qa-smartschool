@@ -144,11 +144,25 @@ namespace QASmartTouch.Controls
             };
         }
 
+        /// <summary>
+        /// Giới hạn tọa độ vẽ trong biên vùng canvas, ngăn nét vẽ tràn sang phần người khác
+        /// khi mouse/touch bị capture và kéo ra ngoài vùng cho phép.
+        /// </summary>
+        private Point ClampPoint(Point pt, Canvas canvas)
+        {
+            double maxX = canvas.ActualWidth > 0 ? canvas.ActualWidth : double.MaxValue;
+            double maxY = canvas.ActualHeight > 0 ? canvas.ActualHeight : double.MaxValue;
+            return new Point(
+                Math.Max(0, Math.Min(pt.X, maxX)),
+                Math.Max(0, Math.Min(pt.Y, maxY))
+            );
+        }
+
         #region LEFT ZONE (STUDENT 1) TOUCH & MOUSE EVENTS
 
         private void CanvasLeft_PreviewTouchDown(object sender, TouchEventArgs e)
         {
-            Point pos = e.GetTouchPoint(canvasLeft).Position;
+            Point pos = ClampPoint(e.GetTouchPoint(canvasLeft).Position, canvasLeft);
             int touchId = e.TouchDevice.Id;
 
             if (_isLeftEraser)
@@ -172,7 +186,7 @@ namespace QASmartTouch.Controls
 
         private void CanvasLeft_PreviewTouchMove(object sender, TouchEventArgs e)
         {
-            Point pos = e.GetTouchPoint(canvasLeft).Position;
+            Point pos = ClampPoint(e.GetTouchPoint(canvasLeft).Position, canvasLeft);
             int touchId = e.TouchDevice.Id;
 
             if (_isLeftEraser)
@@ -224,7 +238,7 @@ namespace QASmartTouch.Controls
             if (e.StylusDevice != null) return; // Chặn Touch promoted
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                Point pos = e.GetPosition(canvasLeft);
+                Point pos = ClampPoint(e.GetPosition(canvasLeft), canvasLeft);
                 if (_isLeftEraser)
                 {
                     EraseAtPoint(canvasLeft, _leftHistory, pos);
@@ -244,7 +258,7 @@ namespace QASmartTouch.Controls
         private void CanvasLeft_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.StylusDevice != null) return;
-            Point pos = e.GetPosition(canvasLeft);
+            Point pos = ClampPoint(e.GetPosition(canvasLeft), canvasLeft);
 
             if (_isLeftEraser && e.LeftButton == MouseButtonState.Pressed)
             {
@@ -271,7 +285,7 @@ namespace QASmartTouch.Controls
 
         private void CanvasRight_PreviewTouchDown(object sender, TouchEventArgs e)
         {
-            Point pos = e.GetTouchPoint(canvasRight).Position;
+            Point pos = ClampPoint(e.GetTouchPoint(canvasRight).Position, canvasRight);
             int touchId = e.TouchDevice.Id;
 
             if (_isRightEraser)
@@ -295,7 +309,7 @@ namespace QASmartTouch.Controls
 
         private void CanvasRight_PreviewTouchMove(object sender, TouchEventArgs e)
         {
-            Point pos = e.GetTouchPoint(canvasRight).Position;
+            Point pos = ClampPoint(e.GetTouchPoint(canvasRight).Position, canvasRight);
             int touchId = e.TouchDevice.Id;
 
             if (_isRightEraser)
@@ -347,7 +361,7 @@ namespace QASmartTouch.Controls
             if (e.StylusDevice != null) return;
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                Point pos = e.GetPosition(canvasRight);
+                Point pos = ClampPoint(e.GetPosition(canvasRight), canvasRight);
                 if (_isRightEraser)
                 {
                     EraseAtPoint(canvasRight, _rightHistory, pos);
@@ -367,7 +381,7 @@ namespace QASmartTouch.Controls
         private void CanvasRight_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.StylusDevice != null) return;
-            Point pos = e.GetPosition(canvasRight);
+            Point pos = ClampPoint(e.GetPosition(canvasRight), canvasRight);
 
             if (_isRightEraser && e.LeftButton == MouseButtonState.Pressed)
             {

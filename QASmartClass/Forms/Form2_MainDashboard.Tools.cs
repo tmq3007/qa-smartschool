@@ -221,12 +221,9 @@ namespace QASmartTouch.Forms
             // ✅ GIAI ĐOẠN 2: Lọc bỏ hình chữ nhật nền bảng để không gom nhầm vào đối tượng vẽ của người dùng
             if (element is FrameworkElement feBg && feBg.Tag?.ToString() == "BackgroundLayer") return true;
 
-            // ✅ Bảo vệ các thành phần chia bảng và overlay đa người dùng
-            if (element is FrameworkElement feMulti && 
-                (feMulti.Tag?.ToString() == "MultiUserDivider" || 
-                 feMulti.Tag?.ToString() == "MultiUserLabel" || 
-                 feMulti.Tag?.ToString() == "MultiUserSplitLine"))
-                return true;
+            // ⚠️ LƯU Ý: MultiUserDivider, MultiUserLabel, Student1Stroke, Student2Stroke
+            // KHÔNG PHẢI system element — chúng là nội dung trang multi-user cụ thể,
+            // cần được lưu/load cùng BoardState.CanvasElements của trang đó.
 
             return false;
         }

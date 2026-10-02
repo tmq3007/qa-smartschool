@@ -855,18 +855,20 @@ namespace QASmartTouch.Forms
                         double scaleX = e.ActualAreaWidth > 0 ? (targetW / e.ActualAreaWidth) : 1.0;
                         double scaleY = e.ActualAreaHeight > 0 ? (targetH / e.ActualAreaHeight) : 1.0;
 
-                        // 4. Clone nét vẽ Học sinh 1 (Nửa trái)
+                        // 4. Clone nét vẽ Học sinh 1 (Nửa trái) — clip trong vùng [0, halfW]
+                        var leftClip = new Rect(0, 0, halfW, targetH);
                         foreach (var pl in e.LeftPolylines)
                         {
-                            var clone = ClonePolyline(pl, 0, 0, scaleX, scaleY);
+                            var clone = ClonePolyline(pl, 0, 0, scaleX, scaleY, leftClip);
                             clone.Tag = "Student1Stroke";
                             elements.Add(clone);
                         }
 
-                        // 5. Clone nét vẽ Học sinh 2 (Nửa phải: offset halfW)
+                        // 5. Clone nét vẽ Học sinh 2 (Nửa phải: offset halfW) — clip trong vùng [halfW, targetW]
+                        var rightClip = new Rect(halfW, 0, halfW, targetH);
                         foreach (var pl in e.RightPolylines)
                         {
-                            var clone = ClonePolyline(pl, halfW, 0, scaleX, scaleY);
+                            var clone = ClonePolyline(pl, halfW, 0, scaleX, scaleY, rightClip);
                             clone.Tag = "Student2Stroke";
                             elements.Add(clone);
                         }
@@ -876,6 +878,15 @@ namespace QASmartTouch.Forms
                         newBoard.CanvasWidth = targetW;
                         newBoard.CanvasHeight = targetH;
                         newBoard.LastModifiedAt = DateTime.Now;
+
+                        // FIX BUG 3: Copy background settings từ trang hiện tại
+                        // để trang multi-user mới không bị nhận default (Colors.White + grid)
+                        var currentBoard = _boardManager.CurrentBoard;
+                        newBoard.BackgroundColor = currentBoard.BackgroundColor;
+                        newBoard.BackgroundColorHex = currentBoard.BackgroundColorHex;
+                        newBoard.BackgroundPattern = currentBoard.BackgroundPattern;
+                        newBoard.LineSpacing = currentBoard.LineSpacing;
+                        newBoard.LineOpacity = currentBoard.LineOpacity;
 
                         ShowSmartStatusBadge($"💾 Đã lưu bài làm thành Trang {_boardManager.Boards.Count}: {newBoard.Name}");
                     }
@@ -898,7 +909,8 @@ namespace QASmartTouch.Forms
         }
 
         private System.Windows.Shapes.Polyline ClonePolyline(
-            System.Windows.Shapes.Polyline source, double offsetX, double offsetY, double scaleX = 1.0, double scaleY = 1.0)
+            System.Windows.Shapes.Polyline source, double offsetX, double offsetY,
+            double scaleX = 1.0, double scaleY = 1.0, Rect? clipRect = null)
         {
             var polyline = new System.Windows.Shapes.Polyline
             {
@@ -914,7 +926,17 @@ namespace QASmartTouch.Forms
             var points = new PointCollection();
             foreach (var pt in source.Points)
             {
-                points.Add(new Point((pt.X * scaleX) + offsetX, (pt.Y * scaleY) + offsetY));
+                double x = (pt.X * scaleX) + offsetX;
+                double y = (pt.Y * scaleY) + offsetY;
+
+                // Clip tọa độ trong vùng cho phép để nét vẽ không tràn sang phần người khác
+                if (clipRect.HasValue)
+                {
+                    x = Math.Max(clipRect.Value.Left, Math.Min(x, clipRect.Value.Right));
+                    y = Math.Max(clipRect.Value.Top, Math.Min(y, clipRect.Value.Bottom));
+                }
+
+                points.Add(new Point(x, y));
             }
             polyline.Points = points;
             Panel.SetZIndex(polyline, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
