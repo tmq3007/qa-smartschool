@@ -71,32 +71,15 @@ namespace QASmartTouch.Helpers
         }
 
         /// <summary>
-        /// Lấy hoặc tạo mới đối tượng CoreWebView2Environment dùng chung.
-        /// </summary>
-        public static async Task<CoreWebView2Environment> GetSharedEnvironmentAsync()
-        {
-            if (_sharedEnvironment != null) return _sharedEnvironment;
-
-            try
-            {
-                _sharedEnvironment = await CoreWebView2Environment.CreateAsync(null, UserDataFolder);
-                return _sharedEnvironment;
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "[WebView2Helper] Không thể khởi tạo CoreWebView2Environment dùng chung");
-                throw;
-            }
-        }
-
-        /// <summary>
         /// Khởi tạo an toàn cho một đối tượng WebView2 bất kỳ.
+        /// Bằng cách truyền null, WebView2 sẽ tự động nhận diện biến môi trường WEBVIEW2_USER_DATA_FOLDER
+        /// đã được thiết lập ở InitializeEnvironment(), tránh lỗi xung đột (already initialized with different env)
+        /// khi có các WebView2 được gán thuộc tính Source trực tiếp trong XAML.
         /// </summary>
         public static async Task EnsureInitializedAsync(Microsoft.Web.WebView2.Wpf.WebView2 webView)
         {
             if (webView == null || webView.CoreWebView2 != null) return;
-            var env = await GetSharedEnvironmentAsync();
-            await webView.EnsureCoreWebView2Async(env);
+            await webView.EnsureCoreWebView2Async(null);
         }
     }
 }

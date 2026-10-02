@@ -360,6 +360,7 @@ namespace QASmartTouch.Forms
 
         private void btnOpenYouTube_Click(object sender, RoutedEventArgs e)
         {
+            if (!this.IsVisible) return;
             try
             {
                 // Ẩn menu trước khi mở YouTube browser
@@ -384,6 +385,7 @@ namespace QASmartTouch.Forms
 
         private void btnWikipedia_Click(object sender, RoutedEventArgs e)
         {
+            if (!this.IsVisible) return;
             try
             {
                 // Ẩn menu trước khi mở Wikipedia
@@ -408,6 +410,7 @@ namespace QASmartTouch.Forms
 
         private void btnGoogleSearch_Click(object sender, RoutedEventArgs e)
         {
+            if (!this.IsVisible) return;
             try
             {
                 // Ẩn menu trước khi mở Google Search
@@ -432,6 +435,7 @@ namespace QASmartTouch.Forms
 
         private void btnBingTranslator_Click(object sender, RoutedEventArgs e)
         {
+            if (!this.IsVisible) return;
             try
             {
                 // Ẩn menu trước khi mở Bing Translator

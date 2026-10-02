@@ -2451,34 +2451,12 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                if (MainScrollViewer == null || MainInteractiveBoard == null)
-                    return;
-
-                // Get viewport size (visible area)
-                double viewportWidth = MainScrollViewer.ViewportWidth;
-                double viewportHeight = MainScrollViewer.ViewportHeight;
-
-                // Get canvas size
-                double canvasWidth = MainInteractiveBoard.Width;
-                double canvasHeight = MainInteractiveBoard.Height;
-
-                // Add tolerance: only show scrollbar if canvas significantly larger than viewport
-                // This prevents scrollbar from appearing due to minor size differences
-                const double TOLERANCE = 200; // pixels (increased to prevent showing on startup)
-
-                // Show horizontal scrollbar only if canvas is significantly wider than viewport
-                bool needHorizontalScroll = (canvasWidth - viewportWidth) > TOLERANCE;
-                MainScrollViewer.HorizontalScrollBarVisibility = needHorizontalScroll 
-                    ? ScrollBarVisibility.Auto 
-                    : ScrollBarVisibility.Hidden;
-
-                // Show vertical scrollbar only if canvas is significantly taller than viewport
-                bool needVerticalScroll = (canvasHeight - viewportHeight) > TOLERANCE;
-                MainScrollViewer.VerticalScrollBarVisibility = needVerticalScroll 
-                    ? ScrollBarVisibility.Auto 
-                    : ScrollBarVisibility.Hidden;
-
-                System.Diagnostics.Debug.WriteLine($"[ScrollBar] Canvas: {canvasWidth}x{canvasHeight}, Viewport: {viewportWidth}x{viewportHeight}, H-Scroll: {needHorizontalScroll}, V-Scroll: {needVerticalScroll}");
+                if (MainScrollViewer != null)
+                {
+                    // Always hide scrollbars to provide a clean whiteboard experience
+                    MainScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                    MainScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                }
             }
             catch (Exception ex)
             {

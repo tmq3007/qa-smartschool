@@ -23,10 +23,11 @@ namespace QASmartTouch
             GlobalExceptionHandler.Initialize();
 
             // JSON structured logging setup
+            string logFilePath = System.IO.Path.Combine(QASmartClass.Services.AppPaths.LogsDir, "qasmarttouch-.json");
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(),
-                    "logs/qasmarttouch-.json",
+                    logFilePath,
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 30)
                 .CreateLogger();
