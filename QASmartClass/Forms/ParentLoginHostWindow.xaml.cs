@@ -8,17 +8,8 @@ namespace QASmartTouch.Forms
         public ParentLoginHostWindow()
         {
             InitializeComponent();
-            
-            var page = new QASmartClass.ParentPortal.Views.ParentLoginPage();
-            page.LoginSuccess += (student) =>
-            {
-                var db = QASmartClass.Services.AppServices.Database ?? new QASmartClass.Data.AppDbContext();
-                var shell = new QASmartClass.ParentPortal.ParentShell(db, student);
-                shell.Show();
-                this.DialogResult = true;
-                this.Close();
-            };
-            mainFrame.Navigate(page);
+            MessageBox.Show("Chức năng Phụ Huynh đã bị loại bỏ.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            this.Loaded += (s, e) => { this.DialogResult = false; this.Close(); };
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)

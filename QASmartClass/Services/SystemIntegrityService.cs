@@ -100,7 +100,7 @@ namespace QASmartClass.Services
                         DbMigrator.Migrate(tempDb, currentDbVersion);
                         DatabaseSeeder.SeedIfEmpty(tempDb);
                         SampleDataSeeder.SeedIfEmpty(tempDb, tempRoster);
-                        QASmartClass.Staff.Services.StaffDataSeeder.SeedAll(tempDb);
+
                     }
                 }
                 finally
@@ -240,7 +240,7 @@ namespace QASmartClass.Services
                         DbMigrator.Migrate(tempDb, currentDbVersion);
                         DatabaseSeeder.SeedIfEmpty(tempDb);
                         SampleDataSeeder.SeedIfEmpty(tempDb, tempRoster);
-                        QASmartClass.Staff.Services.StaffDataSeeder.SeedAll(tempDb);
+
                     }
                 }
                 finally

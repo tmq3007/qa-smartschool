@@ -161,10 +161,7 @@ namespace QASmartClass.LearningTools.Views.Multi
                 {
                     app.NetworkService.MessageReceived += NetworkService_MessageReceived;
                 }
-                else if (app?.UserRoleService?.CurrentRole == QASmartClass.Shared.UserRole.Student && app.StudentNetwork != null)
-                {
-                    _ = app.StudentNetwork.SendAsync("CMD|REQUEST_FOCUS_SYNC");
-                }
+
             };
             Unloaded += (_, _) =>
             {
@@ -969,24 +966,7 @@ namespace QASmartClass.LearningTools.Views.Multi
             {
                 BroadcastTimerState();
             }
-            else if (app?.UserRoleService?.CurrentRole == QASmartClass.Shared.UserRole.Student)
-            {
-                if (sender is CheckBox chk && chk.DataContext is FocusGoalItem item)
-                {
-                    int index = _goalsList.IndexOf(item);
-                    if (index >= 0)
-                    {
-                        // Thay thế ký tự | bằng - để tránh tiêm nhiễm gói tin mạng LAN UDP
-                        string stuCode = (app.StudentNetwork?.StudentCode ?? "STU_TEMP").Replace("|", "-");
-                        string stuName = (app.StudentNetwork?.StudentName ?? stuCode).Replace("|", "-");
-                        var cmd = $"CMD|FOCUS_GOAL_SYNC|{stuCode}|{stuName}|{index}|{item.IsCompleted}";
-                        if (app.StudentNetwork != null)
-                        {
-                            _ = app.StudentNetwork.SendAsync(cmd);
-                        }
-                    }
-                }
-            }
+
         }
 
         private void TxtNewGoal_KeyDown(object sender, KeyEventArgs e)

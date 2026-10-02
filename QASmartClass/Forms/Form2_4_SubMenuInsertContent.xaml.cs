@@ -727,7 +727,7 @@ namespace QASmartTouch.Forms
             {
                 // Ẩn menu trước khi mở Bảng tuần hoàn
                 this.Hide();
-                var periodicTableWindow = new PeriodicTable.Views.MainWindow();
+                var periodicTableWindow = new QASmartTouch.PeriodicTable.Views.MainWindow();
                 periodicTableWindow.Topmost = true;
                 periodicTableWindow.Show();
                 this.Close(); // Đóng menu sau khi đóng bảng tuần hoàn
@@ -744,14 +744,13 @@ namespace QASmartTouch.Forms
         // TAB 10: AI
         private void btnAIGenerate_Click(object sender, RoutedEventArgs e)
         {
+            MessageBox.Show("Chức năng AI Copilot đã bị loại bỏ.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
             try
             {
                 // Ẩn menu trước khi mở AI Copilot
                 this.Hide();
                 var db = QASmartClass.Services.AppServices.Database ?? QASmartClass.Services.AppServices.CreateDb();
-                var copilot = new QASmartClass.TeacherHub.Views.AiCopilotWindow(db);
-                copilot.Owner = this.Owner ?? _mainDashboard;
-                bool? result = copilot.ShowDialog();
+                bool? result = false;
                 
                 if (result == true)
                 {

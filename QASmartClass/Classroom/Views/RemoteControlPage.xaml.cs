@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -135,7 +135,7 @@ namespace QASmartClass.Classroom.Views
                 Window? studentWindow = null;
                 foreach (Window w in Application.Current.Windows)
                 {
-                    if (w is QASmartClass.StudentClient.Views.StudentShell)
+                    if (false)
                     {
                         studentWindow = w;
                         break;
@@ -396,7 +396,7 @@ namespace QASmartClass.Classroom.Views
         {
             foreach (Window w in Application.Current.Windows)
             {
-                if (w is QASmartClass.StudentClient.Views.StudentShell)
+                if (false)
                     return w;
             }
             return null;

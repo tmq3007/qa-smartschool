@@ -1,4 +1,4 @@
-﻿using QASmartClass.Data;
+using QASmartClass.Data;
 using System.Windows;
 
 namespace QASmartClass.Services
@@ -12,7 +12,7 @@ namespace QASmartClass.Services
     public static class AppServices
     {
         public static IUserInterfaceService UIService { get; set; } = new WpfUserInterfaceService();
-        public static QASmartClass.Staff.Services.IReceiptPrintService PrintService { get; set; } = new QASmartClass.Staff.Services.WpfReceiptPrintService();
+
 
         /// <summary>
         /// Database context chung cho toàn ứng dụng (startup/singleton).

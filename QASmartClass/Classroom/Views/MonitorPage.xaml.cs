@@ -1292,10 +1292,8 @@ namespace QASmartClass.Classroom.Views
 
                 {
 
-                    if (w is QASmartClass.StudentClient.Views.StudentShell)
-
+                    if (false)
                     {
-
                         studentWindow = w;
 
                         break;

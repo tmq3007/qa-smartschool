@@ -935,28 +935,16 @@ namespace QASmartClass.Classroom.ViewModels
         {
             if (value)
             {
-                var security = new QASmartClass.Services.AdminSecurityService();
-                if (security.IsFirstSetup)
-                {
-                    MessageBox.Show("Hệ thống chưa thiết lập mã PIN Admin. Vui lòng tạo mã PIN mới.", "Thiết lập PIN", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    var pinDialog = new QASmartClass.Admin.Views.PinDialog();
-                    if (pinDialog.ShowDialog() != true)
-                    {
-                        enableAdminLock = false;
-                        OnPropertyChanged(nameof(EnableAdminLock));
-                    }
-                }
+                MessageBox.Show("Chức năng Admin đã bị vô hiệu hóa.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                enableAdminLock = false;
+                OnPropertyChanged(nameof(EnableAdminLock));
             }
         }
 
         [RelayCommand]
         private void SetupAdminPin()
         {
-            var pinDialog = new QASmartClass.Admin.Views.PinDialog();
-            if (pinDialog.ShowDialog() == true)
-            {
-                MessageBox.Show("Mã PIN Admin đã được lưu thành công!", "Bảo mật", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            MessageBox.Show("Chức năng Admin đã bị vô hiệu hóa.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         [RelayCommand]
@@ -1114,12 +1102,7 @@ namespace QASmartClass.Classroom.ViewModels
         [RelayCommand]
         private void OpenStudentClient()
         {
-            try
-            {
-                var app = (QASmartTouch.App)Application.Current;
-                app.ShowStudentClient();
-            }
-            catch (Exception ex) { MessageBox.Show($"Lỗi: {ex.Message}"); }
+            MessageBox.Show("Tính năng Học sinh đã bị loại bỏ.");
         }
     }
 

@@ -112,11 +112,6 @@ namespace QASmartClass.Services
         public static void Log(AppDbContext db, string action, string details)
         {
             string actor = Environment.MachineName;
-            var user = QASmartClass.Staff.Services.StaffSession.CurrentUser;
-            if (user != null && !string.IsNullOrWhiteSpace(user.TeacherCode))
-            {
-                actor = $"{Environment.MachineName} (User: {user.TeacherCode})";
-            }
             Log(db, action, actor, details);
         }
 

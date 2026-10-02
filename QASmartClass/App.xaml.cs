@@ -7,7 +7,6 @@ using QASmartTouch.Forms;
 using QASmartClass.Shared;
 using QASmartClass.Classroom.Views;
 using QASmartClass.Classroom.Services;
-using QASmartClass.StudentClient.Views;
 using QASmartClass.Data;
 using Serilog;
 using Microsoft.EntityFrameworkCore;
@@ -20,12 +19,9 @@ namespace QASmartTouch
         public ModeService ModeService { get; } = new ModeService();
         public AppDbContext Database { get; private set; } = null!;
         public NetworkDiscoveryService NetworkService { get; } = new NetworkDiscoveryService();
-        public QASmartClass.StudentClient.Services.StudentNetworkClient StudentNetwork { get; } = new();
-
         // ═══ File Transfer Services (TCP 29879) ═══
         private FileTransferService? _fileTransferService;
         public FileTransferService FileTransfer => _fileTransferService ??= new FileTransferService(NetworkService);
-        public QASmartClass.StudentClient.Services.StudentFileTransfer StudentFileTransfer { get; } = new();
 
         // ═══ Device Memory Service — ghi nhớ thiết bị trong lớp ═══
         private DeviceMemoryService? _deviceMemoryService;
@@ -69,7 +65,6 @@ namespace QASmartTouch
         internal QASmartClass.Shared.FloatingModeBar? _floatingModeBar;
         internal ClassroomShell? _classroomShell;
         internal Form2_MainDashboard? _whiteboardShell;
-        internal StudentShell? _studentShell;
         // [LOI_VID_50] Cờ cho phép đóng Window thật khi thoát ứng dụng
         internal static bool _isAppShuttingDown = false;
         internal System.Windows.Window? _staffShell;
@@ -499,7 +494,6 @@ namespace QASmartTouch
 
             // [LOI_VID_50] Fade-out cửa sổ cũ thay vì Hide đột ngột
             FadeOutWindow(_whiteboardShell);
-            _studentShell?.Hide();
 
             if (_classroomShell == null)
             {
@@ -522,7 +516,6 @@ namespace QASmartTouch
         {
             // [LOI_VID_50] Fade-out cửa sổ cũ thay vì Hide đột ngột
             FadeOutWindow(_classroomShell);
-            _studentShell?.Hide();
 
             if (_whiteboardShell == null)
             {
@@ -549,7 +542,6 @@ namespace QASmartTouch
             // [LOI_VID_50] Fade-out cả hai cửa sổ
             FadeOutWindow(_classroomShell);
             FadeOutWindow(_whiteboardShell);
-            _studentShell?.Hide();
             
             EnsureFloatingModeBar();
             
@@ -579,45 +571,6 @@ namespace QASmartTouch
             }
         }
 
-        // ═══════════════════════════════════════════════════════
-        //  STUDENT CLIENT
-        // ═══════════════════════════════════════════════════════
-
-        public void ShowStudentClient()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                _classroomShell?.Hide();
-                _whiteboardShell?.Hide();
-
-                var login = new QASmartClass.StudentClient.Views.StudentLoginWindow();
-                if (login.ShowDialog() == true)
-                {
-                    if (_studentShell == null)
-                    {
-                        _studentShell = new QASmartClass.StudentClient.Views.StudentShell();
-                        _studentShell.Closed += (s, e) => _studentShell = null;
-                    }
-                    _studentShell.Show();
-                    _studentShell.Activate();
-                    Log.Information("Student client opened");
-                }
-                else
-                {
-                    Log.Information("Student login cancelled, falling back to Teacher mode");
-                    UserRoleService.SaveRole(QASmartClass.Shared.UserRole.Teacher);
-
-                    if (_classroomShell == null)
-                    {
-                        _classroomShell = new ClassroomShell();
-                    }
-                    _classroomShell.Show();
-                    _classroomShell.Activate();
-
-                    EnsureFloatingModeBar();
-                }
-            });
-        }
 
         private void GlobalKeyDownHandler(object sender, System.Windows.Input.KeyEventArgs e)
         {
@@ -625,13 +578,6 @@ namespace QASmartTouch
                 System.Windows.Input.Keyboard.Modifiers == (System.Windows.Input.ModifierKeys.Control | System.Windows.Input.ModifierKeys.Shift | System.Windows.Input.ModifierKeys.Alt))
             {
                 e.Handled = true;
-
-                var pinDialog = new QASmartClass.Admin.Views.PinDialog();
-                if (pinDialog.ShowDialog() == true)
-                {
-                    var console = new QASmartClass.Admin.Views.AdminConsoleWindow();
-                    console.ShowDialog();
-                }
             }
         }
 

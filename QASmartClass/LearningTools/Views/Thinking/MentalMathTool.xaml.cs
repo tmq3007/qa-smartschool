@@ -880,19 +880,7 @@ namespace QASmartClass.LearningTools.Views.Thinking
 
                 string base64 = Convert.ToBase64String(imgBytes);
 
-                var app = Application.Current as QASmartTouch.App;
-                if (app?.StudentNetwork != null && app.StudentNetwork.IsConnected)
-                {
-                    string studentCode = app.StudentNetwork.StudentCode;
-                    string packet = $"SUBMIT_SCRATCHPAD|{studentCode}|{base64}";
-                    await app.StudentNetwork.SendAsync(packet);
-                    _lastSubmitTime = DateTime.Now;
-                    MessageBox.Show(GetLocText("Đã gửi nháp thành công đến Giáo viên!", "Scratchpad successfully submitted to the Teacher!"), GetLocText("Thông báo", "Notification"), MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(GetLocText("Không kết nối được với máy Giáo viên. Vui lòng kiểm tra lại kết nối mạng!", "Could not connect to the Teacher's computer. Please check your network connection!"), GetLocText("Lỗi kết nối", "Connection Error"), MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
+                MessageBox.Show(GetLocText("Chức năng nộp bài đã bị vô hiệu hóa.", "Submit feature disabled."), GetLocText("Cảnh báo", "Warning"), MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {

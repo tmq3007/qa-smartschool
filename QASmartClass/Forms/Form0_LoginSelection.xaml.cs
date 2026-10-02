@@ -378,28 +378,7 @@ namespace QASmartTouch.Forms
             }
 
             var app = (App)Application.Current;
-            var studentLogin = new QASmartClass.StudentClient.Views.StudentLoginWindow();
-            this.Hide();
-
-            if (studentLogin.ShowDialog() == true)
-            {
-                app.UserRoleService.SaveRole(UserRole.Student);
-                if (app._studentShell == null)
-                {
-                    app._studentShell = new QASmartClass.StudentClient.Views.StudentShell();
-                    app._studentShell.Closed += (s, ev) => app._studentShell = null;
-                }
-                app._studentShell.Show();
-                app._studentShell.Activate();
-                try { this.Close(); } catch { }
-            }
-            else
-            {
-                if (!_isClosing)
-                {
-                    try { this.Show(); } catch (InvalidOperationException) { }
-                }
-            }
+            MessageBox.Show("Tính năng Học sinh đã bị loại bỏ.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void CardParent_Click(object sender, MouseButtonEventArgs e)
@@ -441,27 +420,7 @@ namespace QASmartTouch.Forms
                 return;
             }
 
-            var staffLogin = new QASmartClass.Staff.Views.StaffLoginWindow();
-            staffLogin.Owner = this;
-            this.Hide();
-
-            if (staffLogin.ShowDialog() == true)
-            {
-                var app = (App)Application.Current;
-                if (app._staffShell == null)
-                {
-                    app._staffShell = new QASmartClass.Staff.Views.StaffDashboardWindow();
-                    app._staffShell.Closed += StaffShell_Closed;
-                }
-                app._staffShell.Show();
-            }
-            else
-            {
-                if (!_isClosing)
-                {
-                    try { this.Show(); } catch (InvalidOperationException) { }
-                }
-            }
+            MessageBox.Show("Tính năng Staff đã bị loại bỏ.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // --- Hàm xử lý Closed của Window để giải phóng bộ nhớ ---
@@ -501,8 +460,8 @@ namespace QASmartTouch.Forms
         // --- Settings Overlay Panel ---
         private void btnSettings_Click(object sender, RoutedEventArgs e)
         {
-            var pinDialog = new QASmartClass.Admin.Views.PinDialog();
-            if (pinDialog.ShowDialog() == true)
+            MessageBox.Show("Tính năng Admin đã bị loại bỏ.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (false)
             {
                 // Nạp trạng thái ActiveUserRole
                 string currentRole = AppSettings.ActiveUserRole;
