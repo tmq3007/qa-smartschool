@@ -161,6 +161,12 @@ namespace QASmartTouch.Helpers
                     continue;
                 }
 
+                if (child is FrameworkElement fe && (fe.Tag?.ToString() == "DragHandle" || fe.Name == "btnMove" || fe.Cursor == Cursors.SizeAll))
+                {
+                    Stylus.SetIsPressAndHoldEnabled(fe, false);
+                    continue;
+                }
+
                 if (child is ButtonBase buttonBase)
                 {
                     WireButton(buttonBase);
@@ -263,6 +269,11 @@ namespace QASmartTouch.Helpers
         public static void WireButton(ButtonBase button)
         {
             if (button == null || GetIsTouchWired(button)) return;
+            if (button.Tag?.ToString() == "DragHandle" || button.Name == "btnMove" || button.Cursor == Cursors.SizeAll)
+            {
+                Stylus.SetIsPressAndHoldEnabled(button, false);
+                return;
+            }
             SetIsTouchWired(button, true);
 
             button.Focusable = false;

@@ -403,6 +403,7 @@ namespace QASmartTouch.Forms
 
             button.Template = CreateBoardButtonTemplate();
             button.Click += btnNewBoard_Click;
+            TouchActivationHelper.WireButton(button); 
 
             return button;
         }

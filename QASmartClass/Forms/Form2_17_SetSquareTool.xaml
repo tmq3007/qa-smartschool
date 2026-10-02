@@ -262,6 +262,7 @@
 
                 <Button x:Name="btnMove"
                         Content="✥"
+                        Tag="DragHandle"
                         Width="32" Height="32"
                         FontSize="14"
                         FontWeight="Bold"
@@ -276,7 +277,6 @@
                         PreviewTouchDown="btnMove_PreviewTouchDown"
                         TouchMove="btnMove_TouchMove"
                         TouchUp="btnMove_TouchUp"
-                        LostTouchCapture="btnMove_LostTouchCapture"
                         Style="{StaticResource SetSquareButtonStyle}"/>
 
 

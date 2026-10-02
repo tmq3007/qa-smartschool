@@ -38,6 +38,8 @@ namespace QASmartTouch.Forms
         // Dragging states
         private bool _isDragging = false;
         private Point _dragStartPoint;
+        private double _originalLeft;
+        private double _originalTop;
         
         // ✨ Resizable Ruler - NEW
         private double _rulerLengthCm = 30; // Current ruler length in cm
@@ -56,8 +58,9 @@ namespace QASmartTouch.Forms
         public Form2_15_RulerTool(Form2_MainDashboard mainDashboard)
         {
             InitializeComponent();
-            // QC_4.2_TOUCH_PIPELINE: STEM Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
-            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
+            // QC_4.2_TOUCH_PIPELINE: STEM Window — Sử dụng Apply tương tự Compa (Form2_19_CircleDrawingTool)
+            QASmartTouch.Helpers.TouchActivationHelper.Apply(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
+            Stylus.SetIsPressAndHoldEnabled(btnMove, false);
             _mainDashboard = mainDashboard;
             
             // ✨ Load brush settings từ cấu hình đã lưu
@@ -276,47 +279,81 @@ namespace QASmartTouch.Forms
         }
         
         // ============ WINDOW DRAGGING ============
-        
-        private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct Win32Point
         {
-            if (e.ChangedButton == MouseButton.Left)
-            {
-                this.DragMove();
-            }
+            public int X;
+            public int Y;
         }
-        
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool GetCursorPos(out Win32Point lpPoint);
+
+        private Point GetScreenPoint(InputEventArgs e)
+        {
+            try
+            {
+                var dpi = VisualTreeHelper.GetDpi(this);
+                double scaleX = dpi.DpiScaleX > 0 ? dpi.DpiScaleX : 1.0;
+                double scaleY = dpi.DpiScaleY > 0 ? dpi.DpiScaleY : 1.0;
+
+                // ✅ FIX: Ưu tiên tọa độ từ chính sự kiện đầu vào (Touch/Mouse)
+                // thay vì GetCursorPos() — vì GetCursorPos trả vị trí cursor "promoted"
+                // bị trễ/sai lệch trên màn hình cảm ứng IFP.
+                if (e is TouchEventArgs te)
+                {
+                    var pt = PointToScreen(te.GetTouchPoint(this).Position);
+                    return new Point(pt.X / scaleX, pt.Y / scaleY);
+                }
+                if (e is MouseEventArgs me)
+                {
+                    var pt = PointToScreen(me.GetPosition(this));
+                    return new Point(pt.X / scaleX, pt.Y / scaleY);
+                }
+
+                // Fallback: GetCursorPos cho Stylus thuần hoặc trường hợp đặc biệt
+                if (GetCursorPos(out Win32Point p))
+                {
+                    return new Point(p.X / scaleX, p.Y / scaleY);
+                }
+            }
+            catch { }
+            return new Point(0, 0);
+        }
+
         // ============ CONTROL BUTTONS ============
         
         private void btnMove_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (e.ChangedButton == MouseButton.Left || e.LeftButton == MouseButtonState.Pressed)
             {
                 _isDragging = true;
-                _dragStartPoint = PointToScreen(e.GetPosition(this));
+                _dragStartPoint = GetScreenPoint(e);
+                _originalLeft = this.Left;
+                _originalTop = this.Top;
 
-                // ✅ CaptureMouse: mọi MouseMove/MouseUp sẽ đến btnMove dù di chuột nhanh
+                // CaptureMouse: mọi MouseMove/MouseUp sẽ đến btnMove dù di chuột nhanh
                 if (sender is UIElement el)
                     el.CaptureMouse();
 
-                RulerLayerRoot.CacheMode = new BitmapCache { RenderAtScale = 1 };
                 e.Handled = true;
             }
         }
 
         private void btnMove_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            // ✅ Logic xử lý ở đây vì CaptureMouse() route tất cả events về btnMove
             if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
             {
-                var currentScreenPoint = PointToScreen(e.GetPosition(this));
+                var currentScreenPoint = GetScreenPoint(e);
 
-                double offsetX = currentScreenPoint.X - _dragStartPoint.X;
-                double offsetY = currentScreenPoint.Y - _dragStartPoint.Y;
+                double deltaX = currentScreenPoint.X - _dragStartPoint.X;
+                double deltaY = currentScreenPoint.Y - _dragStartPoint.Y;
 
-                this.Left += offsetX;
-                this.Top  += offsetY;
+                this.Left = _originalLeft + deltaX;
+                this.Top  = _originalTop + deltaY;
 
-                _dragStartPoint = currentScreenPoint;
                 e.Handled = true;
             }
         }
@@ -330,7 +367,6 @@ namespace QASmartTouch.Forms
                 if (sender is UIElement el)
                     el.ReleaseMouseCapture();
 
-                RulerLayerRoot.CacheMode = null;
                 e.Handled = true;
             }
         }
@@ -344,11 +380,11 @@ namespace QASmartTouch.Forms
             {
                 _moveTouchDeviceId = e.TouchDevice.Id;
                 _isDragging = true;
-                _dragStartPoint = PointToScreen(e.GetTouchPoint(this).Position);
+                _dragStartPoint = GetScreenPoint(e);
+                _originalLeft = this.Left;
+                _originalTop = this.Top;
 
                 el.CaptureTouch(e.TouchDevice);
-
-                RulerLayerRoot.CacheMode = new BitmapCache { RenderAtScale = 1 };
                 e.Handled = true;
             }
         }
@@ -357,15 +393,14 @@ namespace QASmartTouch.Forms
         {
             if (_isDragging && _moveTouchDeviceId == e.TouchDevice.Id)
             {
-                var currentScreenPoint = PointToScreen(e.GetTouchPoint(this).Position);
+                var currentScreenPoint = GetScreenPoint(e);
 
-                double offsetX = currentScreenPoint.X - _dragStartPoint.X;
-                double offsetY = currentScreenPoint.Y - _dragStartPoint.Y;
+                double deltaX = currentScreenPoint.X - _dragStartPoint.X;
+                double deltaY = currentScreenPoint.Y - _dragStartPoint.Y;
 
-                this.Left += offsetX;
-                this.Top  += offsetY;
+                this.Left = _originalLeft + deltaX;
+                this.Top  = _originalTop + deltaY;
 
-                _dragStartPoint = currentScreenPoint;
                 e.Handled = true;
             }
         }
@@ -380,42 +415,7 @@ namespace QASmartTouch.Forms
                 if (sender is UIElement el && e.TouchDevice.Captured == el)
                     el.ReleaseTouchCapture(e.TouchDevice);
 
-                RulerLayerRoot.CacheMode = null;
                 e.Handled = true;
-            }
-        }
-
-        private void btnMove_LostTouchCapture(object sender, TouchEventArgs e)
-        {
-            if (_moveTouchDeviceId == e.TouchDevice.Id)
-            {
-                _isDragging = false;
-                _moveTouchDeviceId = null;
-                RulerLayerRoot.CacheMode = null;
-            }
-        }
-
-        private void Window_MouseMove(object sender, MouseEventArgs e)
-        {
-            // Fallback: xử lý trường hợp drag ko qua btnMove (an toàn)
-            if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
-            {
-                var currentScreenPoint = PointToScreen(e.GetPosition(this));
-                double offsetX = currentScreenPoint.X - _dragStartPoint.X;
-                double offsetY = currentScreenPoint.Y - _dragStartPoint.Y;
-                this.Left += offsetX;
-                this.Top  += offsetY;
-                _dragStartPoint = currentScreenPoint;
-            }
-        }
-
-        private void Window_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            // Fallback: đảm bảo drag kết thúc
-            if (_isDragging && e.ChangedButton == MouseButton.Left)
-            {
-                _isDragging = false;
-                RulerLayerRoot.CacheMode = null;
             }
         }
         
