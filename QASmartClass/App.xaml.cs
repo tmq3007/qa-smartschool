@@ -160,6 +160,10 @@ namespace QASmartTouch
                 // var loginSelection = new Form0_LoginSelection(true);
                 // loginSelection.Show();
 
+                // Hiển thị Splash Screen để báo đang load thay vì màn hình trống
+                var splash = new Forms.SplashScreen();
+                splash.Show();
+
                 // Chạy ngầm tác vụ khởi tạo
                 System.Threading.Tasks.Task.Run(async () =>
                 {
@@ -172,6 +176,10 @@ namespace QASmartTouch
                             // {
                             //     loginSelection.UpdateLoadingStatus(status, progress);
                             // });
+                            Dispatcher.Invoke(() =>
+                            {
+                                splash.UpdateStatus(status, progress);
+                            });
                         });
 
                         // Khởi tạo Database thực tế ở Background Thread để tránh block Main UI
@@ -184,9 +192,14 @@ namespace QASmartTouch
                         await Dispatcher.InvokeAsync(() =>
                         {
                             Database = tempDb;
+
                             // [SMARTTOUCH_ONLY] Bỏ qua login → vào thẳng SmartTouch
                             // loginSelection.HideLoadingOverlay();
                             // InitializeModeAndRoleAfterLoading();
+
+                            // Đóng Splash Screen khi load xong
+                            splash.UpdateStatus("Sẵn sàng!", 100);
+                            splash.Close();
 
                             // Hard-code Teacher + đăng ký events + mở bảng vẽ trực tiếp
                             UserRoleService.SaveRole(QASmartClass.Shared.UserRole.Teacher);
