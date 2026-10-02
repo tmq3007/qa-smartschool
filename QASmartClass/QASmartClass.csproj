@@ -14,6 +14,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 
+    <!-- Ngăn MSBuild tự động nhúng ảnh/video vào Resource -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);Assets\**\*;Modules\**\*</DefaultItemExcludes>
+
     <!-- Tối ưu hóa hiệu suất & khởi động -->
     <TieredCompilation>true</TieredCompilation>
     <PublishReadyToRun>true</PublishReadyToRun>
@@ -141,36 +144,28 @@
 
 
   <ItemGroup>
-
-    <None Update="Assets\**">
-
+    <!-- Loại bỏ nhúng (embed) toàn bộ ảnh/video/sách vào DLL để giảm dung lượng file exe -->
+    <Resource Remove="Assets\**\*" />
+    <Resource Remove="Modules\**\*" />
+    
+    <Content Include="Assets\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
 
-    </None>
-
-    <None Update="Resources\**">
-
+    <Content Include="Resources\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
 
-    </None>
-
-    <None Update="PeriodicTable\Data\**">
-
+    <Content Include="PeriodicTable\Data\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-
-    </None>
-
+    </Content>
   </ItemGroup>
 
 
 
   <ItemGroup>
 
-    <Resource Include="Assets\Images\app_*.png" />
-
-    <Resource Include="Assets\Images\app_*.jpg" />
-
-    <Resource Include="Assets\Data\DefaultTimelineEvents.json" />
+    <Content Include="Assets\Data\DefaultTimelineEvents.json" />
 
   </ItemGroup>
 
@@ -366,11 +361,9 @@
 
 
 
-  <!-- <Target Name="PrintCompileItems" BeforeTargets="CoreCompile">
-
-    <WriteLinesToFile File="C:\Users\DELL\.gemini\antigravity\brain\8d35128e-83a8-4867-a538-719d76764236\compile_items_$(MSBuildProjectName).txt" Lines="@(Compile)" Overwrite="true" />
-
-  </Target> -->
+  <Target Name="PrintResourceItems" BeforeTargets="CoreCompile">
+    <WriteLinesToFile File="resource_items_$(MSBuildProjectName).txt" Lines="@(Resource)" Overwrite="true" />
+  </Target>
 
 
 

@@ -1,0 +1,4 @@
+Resources\Fonts\Inter-Regular.ttf
+Resources\Fonts\Inter-Bold.ttf
+Resources\Fonts\Outfit-Regular.ttf
+Resources\Fonts\Outfit-Bold.ttf

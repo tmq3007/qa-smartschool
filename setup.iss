@@ -12,7 +12,7 @@ AppPublisherURL=https://qasmartschool.com
 DefaultDirName={autopf}\QA SmartSchool\QA SmartClass
 DefaultGroupName=QA SmartSchool
 UninstallDisplayIcon={app}\{#MyAppExeName}
-Compression=lzma2
+Compression=lzma2/ultra64
 SolidCompression=yes
 ; Nơi lưu file bộ cài (Setup.exe) sau khi build xong
 OutputDir=d:\Document\_Projects\qa-smartschool\Installer
