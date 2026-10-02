@@ -74,8 +74,17 @@ namespace QASmartTouch
         internal static bool _isAppShuttingDown = false;
         internal System.Windows.Window? _staffShell;
 
+        static App()
+        {
+            // === QC_4.2_WEBVIEW2: Khởi tạo biến môi trường UserData cho WebView2 toàn ứng dụng ===
+            QASmartTouch.Helpers.WebView2Helper.InitializeEnvironment();
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Đảm bảo thư mục và biến môi trường WebView2 sẵn sàng
+            QASmartTouch.Helpers.WebView2Helper.InitializeEnvironment();
+
             base.OnStartup(e);
 
             // === QC_4.2_TOUCH_SLIDER: Tối ưu cảm ứng 1 chạm cho thanh trượt Slider toàn hệ thống ===

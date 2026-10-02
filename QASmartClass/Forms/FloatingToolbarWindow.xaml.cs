@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -41,6 +42,7 @@ namespace QASmartTouch.Forms
         public FloatingToolbarWindow()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             this.WindowStartupLocation = WindowStartupLocation.Manual;
             
             // Mặc định ban đầu ở cạnh dưới theo chiều ngang

@@ -25,7 +25,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             // QC_4.2_TOUCH_PIPELINE: STEM Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
-            QASmartTouch.Helpers.TouchActivationHelper.Apply(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
             
             _compassBuilder = new Compass3DBuilder();
             _state = new Compass3DState();

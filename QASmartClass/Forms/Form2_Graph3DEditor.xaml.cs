@@ -34,6 +34,7 @@ namespace QASmartTouch.Forms
         public Form2_Graph3DEditor()
         {
             InitializeComponent();
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
 
             _config = new Graph3DConfiguration();
             

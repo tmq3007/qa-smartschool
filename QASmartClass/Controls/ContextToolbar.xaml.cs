@@ -45,6 +45,22 @@ namespace QASmartTouch.Controls
         {
             InitializeComponent();
             this.Visibility = Visibility.Collapsed;
+
+            // ✅ QC_4.2_TOUCH_ACTIVATION: Đảm bảo toàn bộ Toolbar và Popups nhận diện cảm ứng 1 chạm ngay lập tức
+            this.Loaded += (s, e) =>
+            {
+                QASmartTouch.Helpers.TouchActivationHelper.WireAllInteractiveControls(this);
+            };
+
+            if (ColorPalettePopup != null)
+            {
+                QASmartTouch.Helpers.TouchActivationHelper.ApplyToPopup(ColorPalettePopup);
+            }
+
+            if (HandwritingCandidatesPopup != null)
+            {
+                QASmartTouch.Helpers.TouchActivationHelper.ApplyToPopup(HandwritingCandidatesPopup);
+            }
         }
 
         #endregion
@@ -257,6 +273,7 @@ namespace QASmartTouch.Controls
                 btn.Template = template;
 
                 btn.Click += CandidateOption_Click;
+                QASmartTouch.Helpers.TouchActivationHelper.WireButton(btn);
                 CandidatesContainer.Children.Add(btn);
             }
 

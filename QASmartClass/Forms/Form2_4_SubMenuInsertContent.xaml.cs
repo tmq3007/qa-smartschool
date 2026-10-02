@@ -373,7 +373,7 @@ namespace QASmartTouch.Forms
             }
             catch (Exception ex)
             {
-                this.Show();
+                try { this.Show(); } catch { }
                 MessageBox.Show($"Lỗi khi mở YouTube:\n{ex.Message}", 
                               "Lỗi", 
                               MessageBoxButton.OK, 
@@ -397,7 +397,7 @@ namespace QASmartTouch.Forms
             }
             catch (Exception ex)
             {
-                this.Show();
+                try { this.Show(); } catch { }
                 MessageBox.Show($"Lỗi khi mở Wikipedia:\n{ex.Message}", 
                               "Lỗi", 
                               MessageBoxButton.OK, 
@@ -421,7 +421,7 @@ namespace QASmartTouch.Forms
             }
             catch (Exception ex)
             {
-                this.Show();
+                try { this.Show(); } catch { }
                 MessageBox.Show($"Lỗi khi mở Google Search:\n{ex.Message}", 
                               "Lỗi", 
                               MessageBoxButton.OK, 

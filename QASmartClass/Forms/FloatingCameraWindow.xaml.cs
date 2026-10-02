@@ -18,6 +18,7 @@ namespace QASmartTouch.Forms
         public FloatingCameraWindow()
         {
             InitializeComponent();
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
             Loaded += FloatingCameraWindow_Loaded;
             Unloaded += FloatingCameraWindow_Unloaded;
         }

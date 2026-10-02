@@ -671,6 +671,7 @@ namespace QASmartTouch.Controls
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
                 ResizeMode = System.Windows.ResizeMode.NoResize
             };
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(dialog);
 
             var panel = new WrapPanel { Margin = new Thickness(10) };
             string? selectedColor = null;
@@ -685,7 +686,8 @@ namespace QASmartTouch.Controls
                     Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)),
                     BorderThickness = new Thickness(2),
                     BorderBrush = Brushes.Gray,
-                    Tag = color
+                    Tag = color,
+                    Focusable = false
                 };
 
                 btn.Click += (s, e) =>
@@ -695,6 +697,7 @@ namespace QASmartTouch.Controls
                     dialog.Close();
                 };
 
+                QASmartTouch.Helpers.TouchActivationHelper.WireButton(btn);
                 panel.Children.Add(btn);
             }
 

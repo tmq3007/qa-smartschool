@@ -73,6 +73,15 @@ namespace QASmartTouch.Helpers
             if (msg == WM_MOUSEACTIVATE)
             {
                 handled = true;
+                try
+                {
+                    var src = HwndSource.FromHwnd(hwnd);
+                    if (src?.RootVisual is Window win && !win.IsActive)
+                    {
+                        win.Activate();
+                    }
+                }
+                catch { }
                 return new IntPtr(MA_ACTIVATE); // Kích hoạt cửa sổ VÀ KHÔNG NUỐT cú chạm/click
             }
             return IntPtr.Zero;
@@ -111,7 +120,32 @@ namespace QASmartTouch.Helpers
         }
 
         /// <summary>
-        /// Duyệt đệ quy cây Visual Tree, gắn pipeline cảm ứng cho ButtonBase, Slider, ComboBox...
+        /// Áp dụng cho WPF Popup (như ColorPalettePopup, CandidatesPopup...):
+        /// 1. Hook WM_MOUSEACTIVATE trên Win32 PopupRoot trả về MA_ACTIVATE để OS không nuốt cú chạm đầu tiên.
+        /// 2. Tự động duyệt cây Visual Tree của Popup.Child khi mở để gắn pipeline cảm ứng cho các nút bấm bên trong.
+        /// </summary>
+        public static void ApplyToPopup(Popup popup)
+        {
+            if (popup == null) return;
+
+            popup.Opened += (s, e) =>
+            {
+                if (popup.Child != null)
+                {
+                    var source = PresentationSource.FromVisual(popup.Child) as HwndSource;
+                    if (source != null)
+                    {
+                        source.RemoveHook(WndProc);
+                        source.AddHook(WndProc);
+                    }
+
+                    WireAllInteractiveControls(popup.Child);
+                }
+            };
+        }
+
+        /// <summary>
+        /// Duyệt đệ quy cây Visual Tree, gắn pipeline cảm ứng cho ButtonBase, Slider, ComboBox, TabControl, TabItem, Canvas...
         /// </summary>
         public static void WireAllInteractiveControls(DependencyObject parent, FrameworkElement? exclude = null)
         {
@@ -139,10 +173,66 @@ namespace QASmartTouch.Helpers
                 {
                     WireComboBox(comboBox);
                 }
+                else if (child is TabControl tabControl)
+                {
+                    WireTabControl(tabControl);
+                }
+                else if (child is TabItem tabItem)
+                {
+                    WireTabItem(tabItem);
+                }
+                else if (child is Canvas canvas)
+                {
+                    Stylus.SetIsPressAndHoldEnabled(canvas, false);
+                }
 
                 // Đệ quy tiếp vào các con
                 WireAllInteractiveControls(child, exclude);
             }
+        }
+
+        /// <summary>
+        /// Tự động lắng nghe TabControl để wire các controls con khi người dùng chuyển Tab (deferred rendering).
+        /// </summary>
+        public static void WireTabControl(TabControl tabControl)
+        {
+            if (tabControl == null || GetIsTouchWired(tabControl)) return;
+            SetIsTouchWired(tabControl, true);
+
+            tabControl.SelectionChanged += (s, e) =>
+            {
+                // Chỉ xử lý nếu sự kiện bắn ra từ chính tabControl này (tránh bubble từ ComboBox con)
+                if (e.OriginalSource == tabControl)
+                {
+                    tabControl.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        WireAllInteractiveControls(tabControl);
+                    }), System.Windows.Threading.DispatcherPriority.Loaded);
+                }
+            };
+        }
+
+        /// <summary>
+        /// Gắn cảm ứng tức thì cho TabItem:
+        /// Tắt PressAndHold và chuyển tab ngay khi ngón tay vừa chạm vào tiêu đề tab trên IFP.
+        /// </summary>
+        public static void WireTabItem(TabItem tabItem)
+        {
+            if (tabItem == null || GetIsTouchWired(tabItem)) return;
+            SetIsTouchWired(tabItem, true);
+
+            tabItem.Focusable = false;
+            Stylus.SetIsPressAndHoldEnabled(tabItem, false);
+
+            tabItem.PreviewTouchDown += (s, e) =>
+            {
+                tabItem.IsSelected = true;
+            };
+
+            tabItem.PreviewStylusDown += (s, e) =>
+            {
+                tabItem.IsSelected = true;
+            };
         }
 
         /// <summary>
@@ -227,13 +317,14 @@ namespace QASmartTouch.Helpers
                     ? Math.Sqrt(Math.Pow(currentPoint.X - startPoint.Value.X, 2) + Math.Pow(currentPoint.Y - startPoint.Value.Y, 2))
                     : 0;
 
+                // ✅ Dung sai biên ±15px phù hợp diện tích tiếp xúc ngón tay trên màn hình IFP kích thước lớn
                 bool isInside = (button.ActualWidth > 0 && button.ActualHeight > 0)
-                    ? (currentPoint.X >= 0 && currentPoint.X <= button.ActualWidth &&
-                       currentPoint.Y >= 0 && currentPoint.Y <= button.ActualHeight)
+                    ? (currentPoint.X >= -15 && currentPoint.X <= button.ActualWidth + 15 &&
+                       currentPoint.Y >= -15 && currentPoint.Y <= button.ActualHeight + 15)
                     : true;
 
-                // Tap (< 15px) và nằm trong phạm vi nút -> Kích hoạt ngay lập tức
-                if (dist < 15 && isInside)
+                // Tap (< 35px) và nằm trong phạm vi nút -> Kích hoạt ngay lập tức
+                if (dist < 35 && isInside)
                 {
                     button.Dispatcher.BeginInvoke(new Action(() =>
                     {
@@ -273,6 +364,12 @@ namespace QASmartTouch.Helpers
                 toggle.RaiseEvent(new RoutedEventArgs(
                     toggle.IsChecked == true ? ToggleButton.CheckedEvent : ToggleButton.UncheckedEvent, 
                     toggle));
+            }
+
+            // Kích hoạt ICommand nếu nút bấm có Command binding
+            if (button.Command != null && button.Command.CanExecute(button.CommandParameter))
+            {
+                button.Command.Execute(button.CommandParameter);
             }
 
             button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));

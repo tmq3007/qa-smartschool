@@ -21,6 +21,8 @@ namespace QASmartTouch.Forms
         public ColorPickerPopup(Color initialColor, double initialThickness)
         {
             InitializeComponent();
+            // QC_4.2_TOUCH_ACTIVATION: Đảm bảo ColorPickerPopup nhận diện cảm ứng 1 chạm ngay lập tức
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
             
             _selectedColor = initialColor;
             _selectedThickness = initialThickness;

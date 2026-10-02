@@ -1364,16 +1364,7 @@ namespace QASmartTouch.Forms
             }
             catch { }
             
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                try 
-                { 
-                    _mainDashboard?.Activate();
-                    _mainDashboard?.Focus();
-                } 
-                catch { }
-                this.Close();
-            }), System.Windows.Threading.DispatcherPriority.Input);
+            this.Close();
         }
     }
 

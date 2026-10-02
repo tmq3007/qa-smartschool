@@ -253,13 +253,12 @@ namespace QASmartTouch.Forms
             {
                 // Open advanced color picker dialog
                 var colorPicker = new Form5_1_ColorPicker(currentPenColor);
-                colorPicker.Owner = this; // Set owner to center on this window
-            
-            if (colorPicker.ShowDialog() == true)
-            {
-                // User selected a color
-                currentPenColor = colorPicker.SelectedColor;
                 
+                if (QASmartTouch.Shared.WindowHelper.ShowChildDialog(colorPicker, this) == true)
+                {
+                    // User selected a color
+                    currentPenColor = colorPicker.SelectedColor;
+                    
                     // Update custom color display
                     txtCustomColorHex.Text = $"#{currentPenColor.R:X2}{currentPenColor.G:X2}{currentPenColor.B:X2}";
                     
@@ -267,9 +266,9 @@ namespace QASmartTouch.Forms
                     {
                         border.Background = new SolidColorBrush(currentPenColor);
                     }
-                
-                UpdatePreview();
-            }
+                    
+                    UpdatePreview();
+                }
             }
             catch (Exception ex)
             {

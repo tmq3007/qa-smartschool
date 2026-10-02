@@ -141,6 +141,15 @@ namespace QASmartTouch.Shared
             {
                 window.Activate();
                 window.Focus();
+                window.Dispatcher.BeginInvoke(new System.Action(() =>
+                {
+                    try
+                    {
+                        window.Activate();
+                        window.Focus();
+                    }
+                    catch { }
+                }), System.Windows.Threading.DispatcherPriority.Input);
             }
         }
     }
