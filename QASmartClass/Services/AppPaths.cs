@@ -21,9 +21,23 @@ namespace QASmartClass.Services
             get
             {
                 if (_databaseFileOverride.Value != null) return _databaseFileOverride.Value;
-                string dbName = string.Equals(QASmartTouch.Services.AppSettings.RunningMode, "Test", StringComparison.OrdinalIgnoreCase) 
-                    ? "smartclass_test.db" 
+
+                string dbName = string.Equals(QASmartTouch.Services.AppSettings.RunningMode, "Test", StringComparison.OrdinalIgnoreCase)
+                    ? "smartclass_test.db"
                     : "smartclass.db";
+
+                // Priority 1: Biến môi trường override (cho sysadmin/deploy linh hoạt)
+                string? envPath = Environment.GetEnvironmentVariable("QASC_DB_PATH");
+                if (!string.IsNullOrWhiteSpace(envPath))
+                    return Path.IsPathRooted(envPath) ? envPath : Path.Combine(envPath, dbName);
+
+                // Priority 2: Cạnh file .exe (thư mục cài đặt) — nếu DB đã tồn tại ở đó
+                string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+                string exeDbPath = Path.Combine(exeDir, dbName);
+                if (File.Exists(exeDbPath))
+                    return exeDbPath;
+
+                // Priority 3: %LocalAppData%\QASmartClass (mặc định, không cần quyền Admin)
                 return Path.Combine(RootDir, dbName);
             }
             set => _databaseFileOverride.Value = value;

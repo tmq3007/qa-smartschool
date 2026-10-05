@@ -42,7 +42,7 @@ namespace QASmartClass.Services
 
         {
 
-            targetVersion = "6.04.0"; // Force all database migrations up to the current EF Core model version (5.70.0)
+            targetVersion = "6.05.0"; // Force all database migrations up to the current EF Core model version (5.70.0)
 
             var dbPath = AppPaths.DatabaseFile;
 
@@ -3347,6 +3347,24 @@ namespace QASmartClass.Services
                         }
                     }
 
+
+
+
+                    // v6.05.0: Thêm các cột SmartLibrary cho bảng Students
+
+                    if (ver < ParseVersion("6.05.0"))
+
+                    {
+
+                        RunSafeSql(db, "ALTER TABLE Students ADD COLUMN StudentLexileScore INTEGER NOT NULL DEFAULT 400");
+
+                        RunSafeSql(db, "ALTER TABLE Students ADD COLUMN ReservationBlockedUntil TEXT NULL");
+
+                        RunSafeSql(db, "ALTER TABLE Students ADD COLUMN ConsecutiveSuccessfulPickups INTEGER NOT NULL DEFAULT 0");
+
+                        Log.Information("[DbMigrator] Applied migration to v6.05.0 (SmartLibrary student columns)");
+
+                    }
 
 
 
