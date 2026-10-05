@@ -2644,6 +2644,20 @@ namespace QASmartTouch.Forms
             }
         }
 
+        private void btn11_SmartClass_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            
+            CloseAllSubmenus();
+            SelectTool(button);
+            
+            var app = Application.Current as App;
+            if (app?.ModeService != null)
+            {
+                _ = app.ModeService.GoToClassAsync();
+            }
+        }
+
         private void btn12_MoreExtended_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;

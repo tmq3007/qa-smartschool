@@ -41,14 +41,14 @@ namespace QASmartClass.Shared
             PositionAtBottom();
 
             // SmartTouchOnly / Guest: ẩn nút Smart Class + các nút chức năng quản lý lớp học
-            if (_roleService?.IsSmartTouchOnly == true || _roleService?.CurrentRole == UserRole.Guest)
-            {
-                btnClass.Visibility = Visibility.Collapsed;
-                btnVoice.Visibility = Visibility.Collapsed;
-                btnBroadcast.Visibility = Visibility.Collapsed;
-                Log.Information("FloatingModeBar: SmartTouchOnly/Guest mode — " +
-                    "btnClass, btnVoice, btnBroadcast COLLAPSED");
-            }
+            //if (_roleService?.IsSmartTouchOnly == true || _roleService?.CurrentRole == UserRole.Guest)
+            //{
+            //    btnClass.Visibility = Visibility.Collapsed;
+            //    btnVoice.Visibility = Visibility.Collapsed;
+            //    btnBroadcast.Visibility = Visibility.Collapsed;
+            //    Log.Information("FloatingModeBar: SmartTouchOnly/Guest mode — " +
+            //        "btnClass, btnVoice, btnBroadcast COLLAPSED");
+            //}
 
             // Keyboard shortcuts: Ctrl+1 = Class, Ctrl+2 = Screen, Ctrl+3 = Desktop
             InputBindings.Add(new KeyBinding(new RelayCommand(() =>
