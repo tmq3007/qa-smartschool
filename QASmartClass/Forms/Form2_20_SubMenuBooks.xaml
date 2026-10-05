@@ -4,6 +4,8 @@
 
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 
+        xmlns:conv="clr-namespace:QASmartTouch.Converters"
+
         Title="Thư viện sách giáo khoa tương tác" 
 
         Width="1200" Height="750"
@@ -22,7 +24,9 @@
 
         ShowInTaskbar="False">
 
-
+    <Window.Resources>
+        <conv:ImagePathToBitmapConverter x:Key="ImagePathToBitmapConverter" />
+    </Window.Resources>
 
     <Border Background="White" 
 
@@ -580,15 +584,7 @@
 
                                         <!-- Book Cover Image -->
 
-                                        <Image Stretch="UniformToFill">
-
-                                            <Image.Source>
-
-                                                <Binding Path="CoverImagePath"/>
-
-                                            </Image.Source>
-
-                                        </Image>
+                                        <Image Stretch="UniformToFill" Source="{Binding CoverImagePath, Converter={StaticResource ImagePathToBitmapConverter}, ConverterParameter=200, IsAsync=True}" />
 
                                         
 
