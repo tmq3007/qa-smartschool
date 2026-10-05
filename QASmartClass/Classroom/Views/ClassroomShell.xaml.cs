@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using System.IO;
 
@@ -45,7 +45,7 @@ namespace QASmartClass.Classroom.Views
 
 		private readonly DispatcherTimer _clockTimer;
 
-		private string _currentPage = "F1";
+		private string _currentPage = ""; // Khởi tạo rỗng để NavigateTo("F1") lần đầu không bị skip
 
 		private int _unreadCount = 0;
 
@@ -1213,7 +1213,15 @@ namespace QASmartClass.Classroom.Views
 
 					disposable.Dispose();
 
-					Log.Information("Successfully disposed previous page of type {Page}", contentFrame.Content.GetType().Name);
+						Log.Information("Successfully disposed previous page of type {Page}", contentFrame.Content.GetType().Name);
+
+					// Xóa page đã Dispose khỏi cache để tránh tái sử dụng trang zombie
+					var disposeKey = _pageCache.FirstOrDefault(kv => kv.Value == contentFrame.Content).Key;
+					if (disposeKey != null)
+					{
+						_pageCache.Remove(disposeKey);
+						Log.Information("Removed disposed page {Key} from cache", disposeKey);
+					}
 
 				}
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,6 +12,9 @@ namespace QASmartClass.Classroom.Views
 {
     public partial class DashboardPage : Page, INavigatedPage, IDisposable
     {
+        private bool _isDataLoaded = false;
+        private bool _isLoading = false;
+
         public DashboardPage()
         {
             InitializeComponent();
@@ -20,11 +23,16 @@ namespace QASmartClass.Classroom.Views
 
         private void OnPageLoaded(object sender, RoutedEventArgs e)
         {
-            _ = LoadDataAsync();
+            // Chỉ load nếu OnNavigatedToAsync() chưa kịp chạy (fallback)
+            if (!_isDataLoaded && !_isLoading)
+            {
+                _ = LoadDataAsync();
+            }
         }
 
         private void Refresh_Click(object sender, RoutedEventArgs e)
         {
+            _isDataLoaded = false; // Cho phép reload
             _ = LoadDataAsync();
         }
 
@@ -47,6 +55,9 @@ namespace QASmartClass.Classroom.Views
 
         private async Task LoadDataAsync()
         {
+            if (_isLoading) return; // Guard chống gọi trùng lặp
+            _isLoading = true;
+
             try
             {
                 // → ClassroomAppContext
@@ -173,11 +184,16 @@ namespace QASmartClass.Classroom.Views
 
                 Log.Information("Dashboard loaded for Roster {RosterId}", rosterId);
                 await UpdateStepIndicatorStatesAsync();
+                _isDataLoaded = true;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed to load Dashboard data");
                 ClassroomDialog.Error($"Lỗi tải dữ liệu Dashboard: {ex.Message}", "Lỗi");
+            }
+            finally
+            {
+                _isLoading = false;
             }
         }
 
