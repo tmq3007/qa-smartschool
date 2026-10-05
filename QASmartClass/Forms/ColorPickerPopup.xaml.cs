@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 
 namespace QASmartTouch.Forms
@@ -13,18 +14,60 @@ namespace QASmartTouch.Forms
         private Color _selectedColor = Colors.Red;
         private double _selectedThickness = 3;
 
-        public ColorPickerPopup()
+        public ColorPickerPopup() : this(Colors.Red, 3)
+        {
+        }
+
+        public ColorPickerPopup(Color initialColor, double initialThickness)
         {
             InitializeComponent();
+            // QC_4.2_TOUCH_ACTIVATION: Đảm bảo ColorPickerPopup nhận diện cảm ứng 1 chạm ngay lập tức
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
+            
+            _selectedColor = initialColor;
+            _selectedThickness = initialThickness;
             
             // Set initial values
             sliderThickness.Value = _selectedThickness;
             
-            // Highlight default color (Red)
-            btnColorRed.BorderBrush = new SolidColorBrush(Color.FromRgb(136, 192, 208));
-            btnColorRed.BorderThickness = new Thickness(3);
+            // Highlight initial color button
+            HighlightMatchingColorButton(initialColor);
             
-            System.Diagnostics.Debug.WriteLine("✅ ColorPickerPopup initialized");
+            // Auto close when clicking outside
+            this.Deactivated += (s, e) => 
+            {
+                System.Diagnostics.Debug.WriteLine("❌ ColorPickerPopup deactivated - auto closing");
+                this.Close();
+            };
+            
+            System.Diagnostics.Debug.WriteLine($"✅ ColorPickerPopup initialized (color={initialColor}, thickness={initialThickness:F0}px)");
+        }
+
+        /// <summary>
+        /// Highlight the color button matching the given color
+        /// </summary>
+        private void HighlightMatchingColorButton(Color color)
+        {
+            ResetColorButtonBorders();
+            
+            string hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+            Button? matchBtn = null;
+            
+            foreach (var child in ((UniformGrid)((StackPanel)((Border)this.Content).Child).Children[0]).Children)
+            {
+                if (child is Button btn && btn.Tag is string tag && 
+                    string.Equals(tag, hex, StringComparison.OrdinalIgnoreCase))
+                {
+                    matchBtn = btn;
+                    break;
+                }
+            }
+            
+            if (matchBtn != null)
+            {
+                matchBtn.BorderBrush = new SolidColorBrush(Color.FromRgb(136, 192, 208));
+                matchBtn.BorderThickness = new Thickness(3);
+            }
         }
 
         private void ColorButton_Click(object sender, RoutedEventArgs e)

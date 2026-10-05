@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Input;
 using QASmartTouch.Managers;
 using QASmartTouch.Services;
@@ -259,8 +259,8 @@ namespace QASmartTouch.Handlers
         {
             if (_selectionManager?.HasSelectedObjects() == true)
             {
-                _selectionManager.CopySelectedObject();
-                // Auto-paste would happen on next canvas click
+                _selectionManager.DuplicateSelectedObjects(30, 30);
+                _selectionManager.ClearClipboard();
                 OnShortcutExecuted?.Invoke(this, "Duplicate");
                 System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+D: Duplicate");
                 return true;

@@ -9,6 +9,7 @@ using Path = System.Windows.Shapes.Path;
 using QASmartTouch.Managers;
 using QASmartTouch.Services.VersionManagement;
 using QASmartClass.Properties;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -23,10 +24,58 @@ namespace QASmartTouch.Forms
         public Form2_7_SubMenuBoardManagement(Form2_MainDashboard? mainDashboard = null)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             if (btnClose != null)
             {
-                btnClose.PreviewTouchDown += (s, e) => { this.Close(); e.Handled = true; };
-                btnClose.PreviewStylusDown += (s, e) => { this.Close(); e.Handled = true; };
+                System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
+
+                btnClose.PreviewTouchDown += (s, e) =>
+                {
+                    e.TouchDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewTouchUp += (s, e) =>
+                {
+                    if (e.TouchDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseTouchCapture(e.TouchDevice);
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
+
+                btnClose.PreviewStylusDown += (s, e) =>
+                {
+                    e.StylusDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewStylusUp += (s, e) =>
+                {
+                    if (e.StylusDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseStylusCapture();
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
             }
             _mainDashboard = mainDashboard;
             Loaded += Window_Loaded;
@@ -40,6 +89,7 @@ namespace QASmartTouch.Forms
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
+            try { this.Owner?.Activate(); } catch { }
             this.Close();
         }
 
@@ -177,34 +227,43 @@ namespace QASmartTouch.Forms
             ApplyBoardButtonStyle(button, isActive);
 
             button.Click += BoardButton_Click;
+            TouchActivationHelper.WireButton(button);
 
             // Add button to container
             container.Children.Add(button);
 
-            // Add delete button overlay (only for inactive boards)
-            if (!isActive)
+            // Add delete button overlay (if more than 1 board exists in total)
+            if (_currentBoardCount > 1)
             {
                 var deleteButton = CreateDeleteButtonOverlay(boardIndex);
-                deleteButton.Visibility = Visibility.Collapsed;
+                Panel.SetZIndex(deleteButton, 20);
+                TouchActivationHelper.WireButton(deleteButton);
+
+                // Active board: hiển thị sẵn để người dùng nhận diện và xóa được ngay
+                // Inactive board: ẩn mặc định, hiển thị khi hover chuột hoặc chạm
+                deleteButton.Visibility = isActive ? Visibility.Visible : Visibility.Collapsed;
                 container.Children.Add(deleteButton);
 
                 // Show/hide delete button on hover
                 container.MouseEnter += (s, e) =>
                 {
                     deleteButton.Visibility = Visibility.Visible;
-                    button.Opacity = 0.8;
+                    button.Opacity = isActive ? 0.95 : 0.8;
                 };
 
                 container.MouseLeave += (s, e) =>
                 {
-                    deleteButton.Visibility = Visibility.Collapsed;
+                    if (!isActive)
+                    {
+                        deleteButton.Visibility = Visibility.Collapsed;
+                    }
                     button.Opacity = 1.0;
                 };
             }
             else
             {
-                // Active board - just hover effect, no delete
-                container.MouseEnter += (s, e) => button.Opacity = 0.95;
+                // Only 1 board exists - just hover effect, no delete allowed
+                container.MouseEnter += (s, e) => button.Opacity = isActive ? 0.95 : 1.0;
                 container.MouseLeave += (s, e) => button.Opacity = 1.0;
             }
 
@@ -219,15 +278,16 @@ namespace QASmartTouch.Forms
         {
             var deleteBtn = new Button
             {
-                Width = 18,
-                Height = 18,
+                Width = 22,
+                Height = 22,
                 Background = new SolidColorBrush(Color.FromRgb(255, 107, 107)),
                 BorderThickness = new Thickness(0),
                 Cursor = Cursors.Hand,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness(0, -6, -6, 0),
-                Tag = boardIndex.ToString()
+                Tag = boardIndex.ToString(),
+                ToolTip = $"Xóa Bảng {boardIndex}"
             };
 
             // Create X icon
@@ -235,8 +295,8 @@ namespace QASmartTouch.Forms
             {
                 Fill = Brushes.White,
                 Data = Geometry.Parse("M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"),
-                Width = 10,
-                Height = 10,
+                Width = 11,
+                Height = 11,
                 Stretch = Stretch.Uniform,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
@@ -248,7 +308,7 @@ namespace QASmartTouch.Forms
             var template = new ControlTemplate(typeof(Button));
             var border = new FrameworkElementFactory(typeof(Border));
             border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(9)); // Circular
+            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(11)); // Circular
             border.SetValue(Border.BorderBrushProperty, new SolidColorBrush(Colors.White));
             border.SetValue(Border.BorderThicknessProperty, new Thickness(1.5));
 
@@ -343,6 +403,7 @@ namespace QASmartTouch.Forms
 
             button.Template = CreateBoardButtonTemplate();
             button.Click += btnNewBoard_Click;
+            TouchActivationHelper.WireButton(button); 
 
             return button;
         }
@@ -429,24 +490,9 @@ namespace QASmartTouch.Forms
             }
         }
 
-        private void ShowTemporaryMessage(string message)
-        {
-            MessageBox.Show(message, "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
 
         #endregion
 
-        private void Board_Click(object sender, MouseButtonEventArgs e)
-        {
-            // Switch to selected board
-            var border = sender as Border;
-            if (border != null)
-            {
-                string boardNumber = border.Tag?.ToString() ?? "?";
-                MessageBox.Show($"Đã chuyển sang Bảng {boardNumber}", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-                this.Close();
-            }
-        }
 
         private void btnDeleteBoard_Click(object sender, RoutedEventArgs e)
         {
@@ -463,13 +509,6 @@ namespace QASmartTouch.Forms
                 return;
             }
 
-            // Can't delete active board
-            if (boardIndex == _activeBoardIndex)
-            {
-                MessageBox.Show("Không thể xóa bảng đang hiển thị!\nVui lòng chuyển sang bảng khác trước.", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
             var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa Bảng {boardNumber}?\nDữ liệu sẽ không thể khôi phục.",
                                        "Xác nhận xóa",
                                        MessageBoxButton.YesNo,
@@ -483,20 +522,16 @@ namespace QASmartTouch.Forms
                     bool success = _mainDashboard.BoardManager.DeleteBoard(boardIndex - 1); // Convert to 0-based
                     if (success)
                     {
-                        _currentBoardCount--;
-                        
-                        // If deleted board is before active, adjust active index
-                        if (boardIndex < _activeBoardIndex)
-                        {
-                            _activeBoardIndex--;
-                        }
+                        _currentBoardCount = _mainDashboard.BoardManager.BoardCount;
+                        _activeBoardIndex = _mainDashboard.BoardManager.CurrentBoardIndex + 1;
 
                         RenderBoardButtons();
-                        MessageBox.Show($"Đã xóa Bảng {boardNumber}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                        UpdateBoardCountDisplay();
+                        UpdateActiveBoardInfo();
                     }
                     else
                     {
-                        MessageBox.Show($"Không thể xóa Bảng {boardNumber}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(this, $"Không thể xóa Bảng {boardNumber}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
@@ -510,7 +545,8 @@ namespace QASmartTouch.Forms
                     }
 
                     RenderBoardButtons();
-                    MessageBox.Show($"Đã xóa Bảng {boardNumber}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    UpdateBoardCountDisplay();
+                    UpdateActiveBoardInfo();
                 }
             }
         }
@@ -530,8 +566,14 @@ namespace QASmartTouch.Forms
                 if (newBoard != null)
                 {
                     _currentBoardCount++;
+                    // ✅ GIAI ĐOẠN 2: Tự động chuyển ngay sang bảng mới vừa tạo
+                    int newIndex = _mainDashboard.BoardManager.BoardCount - 1;
+                    _mainDashboard.BoardManager.SwitchBoard(newIndex);
+                    _activeBoardIndex = newIndex + 1;
+
                     RenderBoardButtons();
-                    // Silent creation - no message box
+                    UpdateBoardCountDisplay();
+                    UpdateActiveBoardInfo();
                 }
                 else
                 {
@@ -542,8 +584,10 @@ namespace QASmartTouch.Forms
             {
                 // Fallback if no BoardManager
                 _currentBoardCount++;
+                _activeBoardIndex = _currentBoardCount;
                 RenderBoardButtons();
-                // Silent creation - no message box
+                UpdateBoardCountDisplay();
+                UpdateActiveBoardInfo();
             }
         }
 
@@ -563,11 +607,14 @@ namespace QASmartTouch.Forms
                 if (duplicatedBoard != null)
                 {
                     _currentBoardCount++;
+                    // ✅ GIAI ĐOẠN 2: Tự động chuyển ngay sang bảng nhân bản
+                    int newIndex = _mainDashboard.BoardManager.BoardCount - 1;
+                    _mainDashboard.BoardManager.SwitchBoard(newIndex);
+                    _activeBoardIndex = newIndex + 1;
+
                     RenderBoardButtons();
-                    MessageBox.Show($"Đã nhân bản '{duplicatedBoard.Name}' với {duplicatedBoard.ObjectCount} đối tượng", 
-                                  "Thành công", 
-                                  MessageBoxButton.OK, 
-                                  MessageBoxImage.Information);
+                    UpdateBoardCountDisplay();
+                    UpdateActiveBoardInfo();
                 }
                 else
                 {
@@ -578,8 +625,10 @@ namespace QASmartTouch.Forms
             {
                 // Fallback if no BoardManager
                 _currentBoardCount++;
+                _activeBoardIndex = _currentBoardCount;
                 RenderBoardButtons();
-                MessageBox.Show("Đã nhân bản Bảng hiện tại", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                UpdateBoardCountDisplay();
+                UpdateActiveBoardInfo();
             }
         }
 
@@ -598,7 +647,6 @@ namespace QASmartTouch.Forms
             {
                 if (_mainDashboard != null)
                 {
-                    // ✨ Check if custom image is selected
                     if (bgSelector.SelectedBackgroundImage != null)
                     {
                         // Apply custom background image
@@ -606,58 +654,23 @@ namespace QASmartTouch.Forms
                             bgSelector.SelectedBackgroundImage,
                             bgSelector.SelectedPattern
                         );
-                        
-                        // Build message
-                        string message = "Đã áp dụng ảnh nền tùy chỉnh";
-                        if (!string.IsNullOrEmpty(bgSelector.SelectedPattern))
-                            message += $"\n• Mẫu: {bgSelector.SelectedPattern}";
-                            
-                        MessageBox.Show(message, 
-                                      "Thành công", 
-                                      MessageBoxButton.OK, 
-                                      MessageBoxImage.Information);
                     }
                     else
                     {
-                        // Apply color and pattern (original logic) with line spacing and opacity
+                        // Apply color and pattern directly
                         _mainDashboard.ApplyCanvasBackground(
                             bgSelector.SelectedColor,
                             bgSelector.SelectedPattern,
                             bgSelector.LineSpacing,
                             bgSelector.LineOpacity
                         );
-                        
-                        // Build message
-                        string message = "Đã áp dụng nền:\n";
-                        if (!string.IsNullOrEmpty(bgSelector.SelectedColor))
-                            message += $"• Màu: {bgSelector.SelectedColor}\n";
-                        if (!string.IsNullOrEmpty(bgSelector.SelectedPattern))
-                        {
-                            message += $"• Mẫu: {bgSelector.SelectedPattern}";
-                            if (bgSelector.SelectedPattern == "Grid" || bgSelector.SelectedPattern == "Lines" || bgSelector.SelectedPattern == "MusicStaff")
-                            {
-                                message += $"\n• Khoảng cách: {bgSelector.LineSpacing}px";
-                                message += $"\n• Độ đậm nhạt: {bgSelector.LineOpacity}%";
-                            }
-                        }
-                        
-                        if (string.IsNullOrEmpty(bgSelector.SelectedColor) && string.IsNullOrEmpty(bgSelector.SelectedPattern))
-                            message = "Đã áp dụng nền mặc định (Trắng)";
-                            
-                        MessageBox.Show(message, 
-                                      "Thành công", 
-                                      MessageBoxButton.OK, 
-                                      MessageBoxImage.Information);
                     }
                 }
-                else
-                {
-                    MessageBox.Show("Lỗi: Không tìm thấy MainDashboard.", 
-                                  "Cảnh báo", 
-                                  MessageBoxButton.OK, 
-                                  MessageBoxImage.Warning);
-                }
+                
+                // Đóng sub-menu và đưa bảng chính về tiêu điểm hoạt động (tránh nhảy ra desktop)
                 this.Close();
+                _mainDashboard?.Activate();
+                _mainDashboard?.Focus();
             }
         }
 
@@ -683,37 +696,16 @@ namespace QASmartTouch.Forms
                 {
                     if (multiUserDialog.IsMultiUserEnabled)
                     {
-                        // Apply multi-user mode to MainDashboard
-                        _mainDashboard.EnableMultiUserMode(
-                            multiUserDialog.SelectedSplitMode,
+                        // Khởi chạy chế độ Đa người dùng Umind Sandbox chuyên biệt
+                        _mainDashboard.StartMultiUserSession(
                             multiUserDialog.Student1,
-                            multiUserDialog.Student2,
-                            multiUserDialog.ZoneIsolationEnabled,
-                            multiUserDialog.ShowSplitLine
+                            multiUserDialog.Student2
                         );
-
-                        string isolationStatus = multiUserDialog.ZoneIsolationEnabled ? "Bật" : "Tắt";
-                        string splitLineStatus = multiUserDialog.ShowSplitLine ? "Hiện" : "Ẩn";
-
-                        MessageBox.Show($"Đã bật chế độ 2 học sinh:\n\n" +
-                                      $"• {multiUserDialog.Student1.Name} ({GetColorName(multiUserDialog.Student1.Color)})\n" +
-                                      $"• {multiUserDialog.Student2.Name} ({GetColorName(multiUserDialog.Student2.Color)})\n\n" +
-                                      $"Chia bảng: {(multiUserDialog.SelectedSplitMode == SplitMode.Vertical ? "Dọc" : "Ngang")}\n" +
-                                      $"Cách ly vùng: {isolationStatus}\n" +
-                                      $"Đường chia: {splitLineStatus}",
-                                      "Chế độ Đa người dùng",
-                                      MessageBoxButton.OK,
-                                      MessageBoxImage.Information);
                     }
                     else
                     {
-                        // Disable multi-user mode
+                        // Tắt chế độ đa người dùng nếu bỏ chọn
                         _mainDashboard.DisableMultiUserMode();
-
-                        MessageBox.Show("Đã tắt chế độ đa người dùng",
-                                      "Thông báo",
-                                      MessageBoxButton.OK,
-                                      MessageBoxImage.Information);
                     }
 
                     this.Close();
@@ -729,18 +721,6 @@ namespace QASmartTouch.Forms
             }
         }
 
-        private string GetColorName(System.Windows.Media.Color color)
-        {
-            if (color == System.Windows.Media.Colors.Blue) return "Xanh dương";
-            if (color == System.Windows.Media.Colors.Red) return "Đỏ";
-            if (color == System.Windows.Media.Colors.Green) return "Xanh lá";
-            if (color == System.Windows.Media.Colors.Purple) return "Tím";
-            if (color == System.Windows.Media.Colors.Orange) return "Cam";
-            if (color == System.Windows.Media.Colors.Gold) return "Vàng";
-            if (color == System.Windows.Media.Colors.Brown) return "Nâu";
-            if (color == System.Windows.Media.Colors.Black) return "Đen";
-            return "Khác";
-        }
 
         private void btnSpotlight_Click(object sender, RoutedEventArgs e)
         {
@@ -854,47 +834,49 @@ namespace QASmartTouch.Forms
                 // Apply new size using SetCanvasSize() to trigger scrollbar auto-update
                 _mainDashboard.SetCanvasSize(newWidth, newHeight);
 
+                // ✅ Cập nhật ngay vào CurrentBoard để phân lập kích thước theo từng trang
+                var currentBoard = _mainDashboard.BoardManager?.CurrentBoard;
+                if (currentBoard != null)
+                {
+                    currentBoard.CanvasWidth = newWidth;
+                    currentBoard.CanvasHeight = newHeight;
+                }
+
+                _mainDashboard.MarkAsDirty();
+
                 System.Diagnostics.Debug.WriteLine($"✅ Canvas resized: {currentWidth}x{currentHeight} → {newWidth}x{newHeight}");
                 
-                // ✨ Re-apply background to cover the new expanded area
-                // Use Dispatcher to ensure canvas is fully resized before applying background
+                // ✨ Bảo toàn 100% màu nền, hoa văn, hoặc ảnh nền của trang hiện tại khi mở rộng
                 _mainDashboard.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     try
                     {
-                        // Get saved background settings
-                        string savedColor = QASmartClass.Properties.Settings.Default.DefaultBackgroundColor ?? "";
-                        string savedPattern = QASmartClass.Properties.Settings.Default.DefaultBackgroundPattern ?? "";
-                        
-                        // Default to Grid pattern if none saved
-                        if (string.IsNullOrEmpty(savedPattern))
+                        if (currentBoard != null)
                         {
-                            savedPattern = "Grid";
+                            if (!string.IsNullOrEmpty(currentBoard.BackgroundImagePath) && System.IO.File.Exists(currentBoard.BackgroundImagePath))
+                            {
+                                var bitmap = new System.Windows.Media.Imaging.BitmapImage(new Uri(currentBoard.BackgroundImagePath, UriKind.Absolute));
+                                _mainDashboard.ApplyCanvasBackgroundImage(bitmap, currentBoard.BackgroundPattern);
+                            }
+                            else
+                            {
+                                _mainDashboard.ApplyCanvasBackground(
+                                    currentBoard.BackgroundColorHex ?? "#3D6D64",
+                                    currentBoard.BackgroundPattern,
+                                    currentBoard.LineSpacing > 0 ? currentBoard.LineSpacing : 40,
+                                    currentBoard.LineOpacity > 0 ? currentBoard.LineOpacity : 10
+                                );
+                            }
+                            System.Diagnostics.Debug.WriteLine($"✅ Preserved current board background: Color='{currentBoard.BackgroundColorHex}', Pattern='{currentBoard.BackgroundPattern}'");
                         }
-                        
-                        // Default to Green color if none saved
-                        if (string.IsNullOrEmpty(savedColor))
-                        {
-                            savedColor = "Green";
-                        }
-                        
-                        System.Diagnostics.Debug.WriteLine($"🔍 Applying - Color: '{savedColor}', Pattern: '{savedPattern}'");
-                        
-                        // Always re-apply background after resize
-                        _mainDashboard.ApplyCanvasBackground(savedColor, savedPattern, 40);
-                        System.Diagnostics.Debug.WriteLine($"✅ Background re-applied successfully");
                     }
                     catch (Exception bgEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ Could not re-apply background: {bgEx.Message}");
-                        MessageBox.Show($"Lưu ý: Nền chưa được áp dụng lại.\nVui lòng chọn lại nền từ 'Đổi nền'.",
-                                      "Thông báo",
-                                      MessageBoxButton.OK,
-                                      MessageBoxImage.Information);
+                        System.Diagnostics.Debug.WriteLine($"❌ Could not refresh background: {bgEx.Message}");
                     }
                 }), System.Windows.Threading.DispatcherPriority.Background);
                 
-                // Show quick notification (optional)
+                // Show quick notification
                 MessageBox.Show($"Đã mở rộng kích thước bảng gấp đôi:\n{currentWidth:F0} × {currentHeight:F0} px → {newWidth:F0} × {newHeight:F0} px",
                               "Mở rộng thành công",
                               MessageBoxButton.OK,
@@ -969,6 +951,16 @@ namespace QASmartTouch.Forms
             {
                 System.Diagnostics.Debug.WriteLine($"[Form2_7_SubMenuBoardManagement] Error applying feature visibility: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// ✅ Đảm bảo khi đóng SubMenu thì MainDashboard luôn được kích hoạt lại trên cùng
+        /// </summary>
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            _mainDashboard?.Activate();
+            _mainDashboard?.Focus();
         }
 
         #endregion

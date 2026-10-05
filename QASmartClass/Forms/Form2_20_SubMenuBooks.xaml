@@ -1,8 +1,10 @@
-﻿<Window x:Class="QASmartTouch.Forms.Form2_20_SubMenuBooks"
+<Window x:Class="QASmartTouch.Forms.Form2_20_SubMenuBooks"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        xmlns:conv="clr-namespace:QASmartTouch.Converters"
 
         Title="Thư viện sách giáo khoa tương tác" 
 
@@ -22,7 +24,9 @@
 
         ShowInTaskbar="False">
 
-
+    <Window.Resources>
+        <conv:ImagePathToBitmapConverter x:Key="ImagePathToBitmapConverter" />
+    </Window.Resources>
 
     <Border Background="White" 
 
@@ -386,6 +390,10 @@
 
                                    MouseLeftButtonDown="BookCard_Click"
 
+                                   PreviewTouchUp="BookCard_TouchUp"
+
+                                   PreviewStylusUp="BookCard_StylusUp"
+
                                    RenderTransformOrigin="0.5,0.5">
 
                                 <Border.RenderTransform>
@@ -576,15 +584,7 @@
 
                                         <!-- Book Cover Image -->
 
-                                        <Image Stretch="UniformToFill">
-
-                                            <Image.Source>
-
-                                                <Binding Path="CoverImagePath"/>
-
-                                            </Image.Source>
-
-                                        </Image>
+                                        <Image Stretch="UniformToFill" Source="{Binding CoverImagePath, Converter={StaticResource ImagePathToBitmapConverter}, ConverterParameter=200, IsAsync=True}" />
 
                                         
 

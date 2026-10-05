@@ -2489,9 +2489,8 @@ namespace QASmartClass.Classroom.Views
 
 				var app = (QASmartTouch.App)Application.Current;
 
-				app.ShowStudentClient();
-
-				Log.Information("Switched to Student Client from top bar");
+				app.ShowWhiteboard();
+				Log.Information("Switched to Whiteboard from top bar");
 
 			}
 

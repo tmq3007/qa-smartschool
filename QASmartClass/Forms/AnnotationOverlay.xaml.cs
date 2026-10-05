@@ -244,6 +244,15 @@ namespace QASmartTouch.Forms
             System.Diagnostics.Debug.WriteLine($"📏 Thickness changed to: {thickness}");
         }
 
+        public bool HasBackground
+        {
+            get
+            {
+                return DrawingCanvas.Children.OfType<System.Windows.Controls.Image>()
+                    .Any(img => img.Tag?.ToString() == "BackgroundImage");
+            }
+        }
+
         public void SetBackground(System.Windows.Media.Imaging.BitmapSource screenshot)
         {
             try
@@ -261,8 +270,8 @@ namespace QASmartTouch.Forms
                 {
                     Source = screenshot,
                     Stretch = Stretch.Fill,
-                    Width = screenshot.PixelWidth,
-                    Height = screenshot.PixelHeight,
+                    Width = SystemParameters.PrimaryScreenWidth,
+                    Height = SystemParameters.PrimaryScreenHeight,
                     Tag = "BackgroundImage" // Mark as background
                 };
                 
@@ -372,6 +381,8 @@ namespace QASmartTouch.Forms
             };
 
             _currentStroke.Points.Add(point);
+            // ✨ DOT SUPPORT: Thêm điểm vi mô (+0.01px) để WPF render chấm tròn tức thì khi click chuột
+            _currentStroke.Points.Add(new Point(point.X + 0.01, point.Y));
             DrawingCanvas.Children.Add(_currentStroke);
             _strokes.Add(_currentStroke);
 
@@ -382,7 +393,15 @@ namespace QASmartTouch.Forms
         {
             if (_currentStroke != null)
             {
-                _currentStroke.Points.Add(point);
+                // Nếu mới chỉ có 1 điểm gốc và 1 điểm vi mô preview, thay thế điểm vi mô bằng điểm thực tế đầu tiên
+                if (_currentStroke.Points.Count == 2 && Math.Abs(_currentStroke.Points[1].X - _currentStroke.Points[0].X - 0.01) < 0.001 && _currentStroke.Points[1].Y == _currentStroke.Points[0].Y)
+                {
+                    _currentStroke.Points[1] = point;
+                }
+                else
+                {
+                    _currentStroke.Points.Add(point);
+                }
             }
         }
 
@@ -390,6 +409,13 @@ namespace QASmartTouch.Forms
         {
             if (_currentStroke != null)
             {
+                // ✨ DOT FALLBACK: Đảm bảo nếu chỉ có 1 điểm thì thêm điểm vi mô thứ hai
+                if (_currentStroke.Points.Count == 1)
+                {
+                    Point pt = _currentStroke.Points[0];
+                    _currentStroke.Points.Add(new Point(pt.X + 0.01, pt.Y));
+                }
+
                 System.Diagnostics.Debug.WriteLine($"✅ Completed stroke with {_currentStroke.Points.Count} points");
                 
                 // Record action for undo/redo

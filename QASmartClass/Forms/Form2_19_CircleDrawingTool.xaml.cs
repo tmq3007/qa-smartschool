@@ -66,6 +66,7 @@ namespace QASmartTouch.Forms
         public Form2_19_CircleDrawingTool()
         {
             InitializeComponent();
+            QASmartTouch.Helpers.TouchActivationHelper.Apply(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
         }
 
         #endregion
@@ -76,9 +77,8 @@ namespace QASmartTouch.Forms
         {
             if (_mainDashboard == null) return;
 
-            // ✅ FIX: Ẩn cửa sổ ảo 1x1px bằng cách đặt WindowState = Minimized rồi đóng sau khi tạo UI
-            // Tránh hiện tượng "nháy" màn hình chính khi mở Compa từ menu Chèn nội dung
-            this.WindowState = WindowState.Minimized;
+            // ✅ QC_4.2_TOUCH_ACTIVATION: Giữ cửa sổ ảo không chiếm taskbar mà không đổi WindowState = Minimized
+            // Tránh việc hệ điều hành Windows thu hồi trạng thái Active/Focus của ứng dụng
             this.ShowInTaskbar = false;
 
             // Set initial circle center (middle of screen)
@@ -95,6 +95,14 @@ namespace QASmartTouch.Forms
             this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
             {
                 this.Visibility = Visibility.Collapsed;
+                // ✅ QC_4.2_TOUCH_ACTIVATION: Kích hoạt lại MainDashboard ngay lập tức
+                // Đảm bảo MainDashboard luôn Active và có Keyboard Focus, loại bỏ hoàn toàn hiện tượng nuốt cú chạm đầu tiên
+                try
+                {
+                    _mainDashboard?.Activate();
+                    _mainDashboard?.Focus();
+                }
+                catch { }
             }));
         }
 
@@ -350,6 +358,7 @@ namespace QASmartTouch.Forms
             var btnDraw = CreateStandardButton("✓ Vẽ", Color.FromRgb(76, 175, 80), 50);
             btnDraw.Click += btnDraw_Click;
             btnDraw.Margin = new Thickness(0, 0, 5, 0);
+            QASmartTouch.Helpers.TouchActivationHelper.WireButton(btnDraw);
             controlRow.Children.Add(btnDraw);
 
             // Move button (chuẩn như thước kẻ Form2_15_RulerTool)
@@ -371,6 +380,11 @@ namespace QASmartTouch.Forms
             btnMove.PreviewMouseDown += btnMove_PreviewMouseDown;
             btnMove.PreviewMouseMove += btnMove_PreviewMouseMove;
             btnMove.PreviewMouseUp += btnMove_PreviewMouseUp;
+            // QC_4.2_TOUCH_PIPELINE: Hỗ trợ Touch trực tiếp trên IFP, chặn gesture delay và coordinate loop
+            btnMove.PreviewTouchDown += btnMove_PreviewTouchDown;
+            btnMove.TouchMove += btnMove_TouchMove;
+            btnMove.TouchUp += btnMove_TouchUp;
+            btnMove.LostTouchCapture += btnMove_LostTouchCapture;
 
             controlRow.Children.Add(btnMove);
 
@@ -379,6 +393,7 @@ namespace QASmartTouch.Forms
             btnClose.Click += btnClose_Click;
             btnClose.FontSize = 13;
             btnClose.FontWeight = FontWeights.Bold;
+            QASmartTouch.Helpers.TouchActivationHelper.WireButton(btnClose);
             controlRow.Children.Add(btnClose);
 
             mainStack.Children.Add(controlRow);
@@ -425,6 +440,9 @@ namespace QASmartTouch.Forms
             Panel.SetZIndex(_controlPanel, 10002); // Cao nhất
 
             _mainDashboard.MainInteractiveBoard.Children.Add(_controlPanel);
+
+            // ✅ QC_4.2_TOUCH_ACTIVATION: Quét toàn bộ control panel để gắn pipeline cảm ứng (bỏ qua btnMove để bảo toàn kéo thả)
+            QASmartTouch.Helpers.TouchActivationHelper.WireAllInteractiveControls(_controlPanel, btnMove);
         }
 
         private Button CreateStandardButton(string content, Color bgColor, double width)
@@ -438,8 +456,10 @@ namespace QASmartTouch.Forms
                 Foreground = Brushes.White,
                 BorderThickness = new Thickness(0),
                 FontSize = 12,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Focusable = false // ✅ QC_4.2_TOUCH_ACTIVATION: Vô hiệu hóa Focusable để không nuốt cú chạm đầu tiên trên IFP
             };
+            Stylus.SetIsPressAndHoldEnabled(button, false);
 
             button.Template = new ControlTemplate(typeof(Button))
             {
@@ -476,8 +496,10 @@ namespace QASmartTouch.Forms
                 FontSize = 11,
                 FontWeight = FontWeights.Bold,
                 Margin = new Thickness(0, 0, 5, 0),
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Focusable = false // ✅ QC_4.2_TOUCH_ACTIVATION: Vô hiệu hóa Focusable để không nuốt cú chạm đầu tiên trên IFP
             };
+            Stylus.SetIsPressAndHoldEnabled(button, false);
 
             button.Click += (s, e) =>
             {
@@ -489,6 +511,9 @@ namespace QASmartTouch.Forms
             {
                 VisualTree = CreateQuickButtonTemplate()
             };
+
+            // ✅ QC_4.2_TOUCH_ACTIVATION: Gắn trực tiếp Touch Pipeline cho nút kích thước nhanh
+            QASmartTouch.Helpers.TouchActivationHelper.WireButton(button);
 
             return button;
         }
@@ -912,6 +937,12 @@ namespace QASmartTouch.Forms
         {
             RemoveAllFromCanvas();
             this.Close();
+            try
+            {
+                _mainDashboard?.Activate();
+                _mainDashboard?.Focus();
+            }
+            catch { }
         }
 
         /// <summary>
@@ -921,6 +952,12 @@ namespace QASmartTouch.Forms
         {
             RemoveAllFromCanvas();
             base.OnClosed(e);
+            try
+            {
+                _mainDashboard?.Activate();
+                _mainDashboard?.Focus();
+            }
+            catch { }
         }
 
 
@@ -1109,6 +1146,63 @@ namespace QASmartTouch.Forms
                     el.ReleaseMouseCapture();
 
                 e.Handled = true;
+            }
+        }
+
+        // ============ TOUCH MOVE HANDLERS (QC_4.2_TOUCH_PIPELINE) ============
+        private int? _panelTouchId = null;
+
+        private void btnMove_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            if (_mainDashboard == null || _controlPanel == null) return;
+
+            if (sender is UIElement el)
+            {
+                _panelTouchId = e.TouchDevice.Id;
+                _isDraggingPanel = true;
+                _panelDragStart = _mainDashboard.PointToScreen(e.GetTouchPoint(_mainDashboard).Position);
+                el.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (!_isDraggingPanel || _mainDashboard == null || _controlPanel == null) return;
+            if (_panelTouchId != e.TouchDevice.Id) return;
+
+            var currentScreenPoint = _mainDashboard.PointToScreen(e.GetTouchPoint(_mainDashboard).Position);
+
+            double deltaX = currentScreenPoint.X - _panelDragStart.X;
+            double deltaY = currentScreenPoint.Y - _panelDragStart.Y;
+
+            _circleCenter = new Point(_circleCenter.X + deltaX, _circleCenter.Y + deltaY);
+            _panelDragStart = currentScreenPoint;
+
+            UpdateCircle();
+            e.Handled = true;
+        }
+
+        private void btnMove_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (_panelTouchId == e.TouchDevice.Id)
+            {
+                _isDraggingPanel = false;
+                _panelTouchId = null;
+
+                if (sender is UIElement el && e.TouchDevice.Captured == el)
+                    el.ReleaseTouchCapture(e.TouchDevice);
+
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_LostTouchCapture(object sender, TouchEventArgs e)
+        {
+            if (_panelTouchId == e.TouchDevice.Id)
+            {
+                _isDraggingPanel = false;
+                _panelTouchId = null;
             }
         }
 

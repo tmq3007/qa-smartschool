@@ -1,4 +1,4 @@
-﻿<Window x:Class="QASmartTouch.Forms.Form2_16_ProtractorTool"
+<Window x:Class="QASmartTouch.Forms.Form2_16_ProtractorTool"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -93,46 +93,34 @@
 
 
                     <!-- Ray A Handle -->
-
                     <Ellipse x:Name="RayAHandle"
-
                              Width="16" Height="16"
-
                              Fill="#FFFF5722"
-
                              Stroke="White"
-
                              StrokeThickness="2"
-
                              Cursor="Hand"
-
+                             Stylus.IsPressAndHoldEnabled="False"
                              MouseLeftButtonDown="RayAHandle_MouseDown"
-
                              MouseLeftButtonUp="RayAHandle_MouseUp"
-
-                             MouseMove="RayAHandle_MouseMove"/>
-
-
+                             MouseMove="RayAHandle_MouseMove"
+                             TouchDown="RayAHandle_TouchDown"
+                             TouchUp="RayAHandle_TouchUp"
+                             TouchMove="RayAHandle_TouchMove"/>
 
                     <!-- Ray B Handle -->
-
                     <Ellipse x:Name="RayBHandle"
-
                              Width="16" Height="16"
-
                              Fill="#FF4CAF50"
-
                              Stroke="White"
-
                              StrokeThickness="2"
-
                              Cursor="Hand"
-
+                             Stylus.IsPressAndHoldEnabled="False"
                              MouseLeftButtonDown="RayBHandle_MouseDown"
-
                              MouseLeftButtonUp="RayBHandle_MouseUp"
-
-                             MouseMove="RayBHandle_MouseMove"/>
+                             MouseMove="RayBHandle_MouseMove"
+                             TouchDown="RayBHandle_TouchDown"
+                             TouchUp="RayBHandle_TouchUp"
+                             TouchMove="RayBHandle_TouchMove"/>
 
 
 
@@ -301,26 +289,22 @@
                         <!-- Di chuyển -->
 
                         <Button x:Name="btnMove"
-
                                 Content="✥"
-
+                                Tag="DragHandle"
                                 Width="30" ToolTip="Di chuyển"
-
                                 Background="#E8EEFF" BorderBrush="#667EEA"
-
                                 Foreground="#667EEA"
-
                                 FontSize="13"
-
+                                Focusable="False"
+                                Stylus.IsPressAndHoldEnabled="False"
                                 Style="{StaticResource CtrlBtnStyle}"
-
                                 Cursor="SizeAll"
-
                                 PreviewMouseDown="btnMove_MouseDown"
-
+                                PreviewMouseMove="btnMove_MouseMove"
                                 PreviewMouseUp="btnMove_MouseUp"
-
-                                PreviewMouseMove="btnMove_MouseMove"/>
+                                PreviewTouchDown="btnMove_PreviewTouchDown"
+                                TouchMove="btnMove_TouchMove"
+                                TouchUp="btnMove_TouchUp"/>
 
 
 

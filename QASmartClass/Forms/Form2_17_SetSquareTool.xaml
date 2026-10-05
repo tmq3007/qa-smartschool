@@ -1,4 +1,4 @@
-﻿<Window x:Class="QASmartTouch.Forms.Form2_17_SetSquareTool"
+<Window x:Class="QASmartTouch.Forms.Form2_17_SetSquareTool"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -261,27 +261,22 @@
                 <!-- Move Button -->
 
                 <Button x:Name="btnMove"
-
                         Content="✥"
-
+                        Tag="DragHandle"
                         Width="32" Height="32"
-
                         FontSize="14"
-
                         FontWeight="Bold"
-
+                        Focusable="False"
+                        Stylus.IsPressAndHoldEnabled="False"
                         ToolTip="Di chuyển"
-
                         Margin="5,5,2,5"
-
                         Cursor="SizeAll"
-
                         PreviewMouseDown="btnMove_PreviewMouseDown"
-
                         PreviewMouseMove="btnMove_PreviewMouseMove"
-
                         PreviewMouseUp="btnMove_PreviewMouseUp"
-
+                        PreviewTouchDown="btnMove_PreviewTouchDown"
+                        TouchMove="btnMove_TouchMove"
+                        TouchUp="btnMove_TouchUp"
                         Style="{StaticResource SetSquareButtonStyle}"/>
 
 

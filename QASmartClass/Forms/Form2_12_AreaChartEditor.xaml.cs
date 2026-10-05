@@ -10,6 +10,7 @@ using Microsoft.Win32;
 using System.Windows.Media.Imaging;
 using System.IO;
 using WpfPath = System.Windows.Shapes.Path;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -38,6 +39,8 @@ namespace QASmartTouch.Forms
         public Form2_12_AreaChartEditor(Form2_MainDashboard? mainDashboard = null)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             _mainDashboard = mainDashboard;
             chartSeries = new List<AreaChartSeries>();
             InitializeDefaultData();

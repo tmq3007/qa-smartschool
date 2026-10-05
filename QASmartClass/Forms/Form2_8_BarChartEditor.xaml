@@ -194,9 +194,13 @@
 
             <!-- Control Panel -->
 
-            <ScrollViewer Grid.Column="1" Background="#F0F2F5" 
+            <ScrollViewer x:Name="MainScrollViewer" Grid.Column="1" Background="#F0F2F5" 
 
-                         VerticalScrollBarVisibility="Auto">
+                          VerticalScrollBarVisibility="Auto"
+
+                          PanningMode="Both"
+
+                          PanningDeceleration="0.002">
 
                 <StackPanel Margin="20">
 
@@ -246,7 +250,15 @@
 
                             
 
-                            <ScrollViewer MaxHeight="250" VerticalScrollBarVisibility="Auto" Margin="0,0,0,10">
+                            <ScrollViewer x:Name="DataEntriesScrollViewer" MaxHeight="250" 
+
+                                          VerticalScrollBarVisibility="Auto" 
+
+                                          PanningMode="Both"
+
+                                          PanningDeceleration="0.002"
+
+                                          Margin="0,0,0,10">
 
                                 <StackPanel x:Name="DataEntriesPanel"/>
 

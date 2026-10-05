@@ -1,4 +1,4 @@
-﻿<Window x:Class="QASmartTouch.Forms.Form2_13_ScatterChartEditor"
+<Window x:Class="QASmartTouch.Forms.Form2_13_ScatterChartEditor"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -160,7 +160,7 @@
 
             <!-- Control Panel -->
 
-            <ScrollViewer Grid.Column="1" Background="#F0F2F5" 
+            <ScrollViewer x:Name="MainScrollViewer" Grid.Column="1" Background="#F0F2F5" PanningMode="Both" PanningDeceleration="0.002" 
 
                           VerticalScrollBarVisibility="Auto">
 

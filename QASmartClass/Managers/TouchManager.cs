@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
@@ -50,7 +50,7 @@ namespace QASmartTouch.Managers
             _activeStrokes = new Dictionary<int, Polyline>();
             _touchColors = new Dictionary<int, Color>();
             _defaultColor = Colors.White;
-            _defaultThickness = 2;
+            _defaultThickness = 5;
             _defaultBrushType = "Normal";
         }
 
@@ -105,6 +105,8 @@ namespace QASmartTouch.Managers
             };
 
             stroke.Points.Add(startPoint);
+            // ✨ DOT SUPPORT: Thêm điểm vi mô (+0.01px) để WPF render chấm tròn tức thì khi chạm
+            stroke.Points.Add(new Point(startPoint.X + 0.01, startPoint.Y));
             
             _activeStrokes[touchId] = stroke;
             _touchColors[touchId] = strokeColor;
@@ -121,7 +123,16 @@ namespace QASmartTouch.Managers
         {
             if (_activeStrokes.ContainsKey(touchId))
             {
-                _activeStrokes[touchId].Points.Add(point);
+                var stroke = _activeStrokes[touchId];
+                // Nếu mới chỉ có 1 điểm gốc và 1 điểm vi mô preview, thay thế điểm vi mô bằng điểm di chuyển thực tế đầu tiên
+                if (stroke.Points.Count == 2 && Math.Abs(stroke.Points[1].X - stroke.Points[0].X - 0.01) < 0.001 && stroke.Points[1].Y == stroke.Points[0].Y)
+                {
+                    stroke.Points[1] = point;
+                }
+                else
+                {
+                    stroke.Points.Add(point);
+                }
             }
         }
 

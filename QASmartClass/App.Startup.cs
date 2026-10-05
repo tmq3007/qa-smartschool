@@ -23,10 +23,11 @@ namespace QASmartTouch
             GlobalExceptionHandler.Initialize();
 
             // JSON structured logging setup
+            string logFilePath = System.IO.Path.Combine(QASmartClass.Services.AppPaths.LogsDir, "qasmarttouch-.json");
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(),
-                    "logs/qasmarttouch-.json",
+                    logFilePath,
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 30)
                 .CreateLogger();
@@ -144,16 +145,6 @@ namespace QASmartTouch
                             {
                                 Log.Information("Cleaned up {Count} orphaned blackboard images from disk in background", deleteCount);
                             }
-                        }
-
-                        // 3. SQLite Offline Queue Log Auto-Cleanup (7 days)
-                        try
-                        {
-                            await QASmartClass.StudentClient.Services.StudentNetworkClient.CleanupOldQueueLogsAsync();
-                        }
-                        catch (Exception cleanupEx)
-                        {
-                            Log.Warning("Background SQLite offline queue cleanup failed: {Err}", cleanupEx.Message);
                         }
                     }
                     catch (Exception ex)
@@ -288,12 +279,12 @@ namespace QASmartTouch
 
             if (isStudentMode)
             {
-                Log.Information("Starting in STUDENT mode (command-line override)");
+                Log.Information("Starting in STUDENT mode (command-line override) - REMOVED, opening Whiteboard");
                 UserRoleService.SaveRole(UserRole.Student);
                 splash.UpdateStatus("Sẵn sàng!", 100);
                 System.Threading.Thread.Sleep(300);
                 splash.Close();
-                this.ShowStudentClient();
+                this.ShowWhiteboard();
                 this.ShutdownMode = ShutdownMode.OnLastWindowClose;
             }
             else
@@ -313,60 +304,11 @@ namespace QASmartTouch
                         var loginWindow = new Form1_MainLogin();
                         loginWindow.Show();
                     }
-                    else if (activeRole.Equals("Student", StringComparison.OrdinalIgnoreCase))
+                    else if (activeRole.Equals("Student", StringComparison.OrdinalIgnoreCase) || 
+                             activeRole.Equals("Staff", StringComparison.OrdinalIgnoreCase))
                     {
-                        UserRoleService.SaveRole(UserRole.Student);
-                        if (splash.IsVisible)
-                        {
-                            splash.Close();
-                        }
-                        var studentLogin = new QASmartClass.StudentClient.Views.StudentLoginWindow();
-                        if (studentLogin.ShowDialog() == true)
-                        {
-                            var app = (App)Application.Current;
-                            if (app._studentShell == null)
-                            {
-                                app._studentShell = new QASmartClass.StudentClient.Views.StudentShell();
-                                app._studentShell.Closed += (s, ev) => app._studentShell = null;
-                            }
-                            this.ShutdownMode = ShutdownMode.OnLastWindowClose;
-                            app._studentShell.Show();
-                            app._studentShell.Activate();
-                        }
-                        else
-                        {
-                            this.Shutdown();
-                        }
-                    }
-                    else if (activeRole.Equals("Parent", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var parentHost = new QASmartTouch.Forms.ParentLoginHostWindow();
-                        parentHost.Show();
-                    }
-                    else if (activeRole.Equals("Staff", StringComparison.OrdinalIgnoreCase))
-
-                    {
-
-                        var staffLogin = new QASmartClass.Staff.Views.StaffLoginWindow();
-
-                        if (staffLogin.ShowDialog() == true)
-
-                        {
-
-                            var staffDash = new QASmartClass.Staff.Views.StaffDashboardWindow();
-
-                            staffDash.Show();
-
-                        }
-
-                        else
-
-                        {
-
-                            this.Shutdown();
-
-                        }
-
+                        var loginSelection = new Form0_LoginSelection();
+                        loginSelection.Show();
                     }
                     else
                     {

@@ -1,6 +1,8 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using Serilog;
 
@@ -14,6 +16,19 @@ namespace QASmartClass.Shared
         private bool _isRecording = false;
         private bool _isBroadcasting = false;
 
+        #region Win32 Native Drag Constants & APIs
+
+        [DllImport("user32.dll")]
+        private static extern bool ReleaseCapture();
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
+        private const int WM_NCLBUTTONDOWN = 0xA1;
+        private const int HTCAPTION = 0x2;
+
+        #endregion
+
         public FloatingModeBar(ModeService modeService, UserRoleService? roleService = null)
         {
             InitializeComponent();
@@ -22,16 +37,13 @@ namespace QASmartClass.Shared
             _roleService = roleService;
             _modeService.ModeChanged += OnModeChanged;
 
-            // Vị trí mặc định: trên cùng giữa màn hình
-            var screen = SystemParameters.PrimaryScreenWidth;
-            Left = (screen - Width) / 2;
-            Top = 8;
+            // Đặt vị trí mặc định ở phía DƯỚI màn hình (trên Taskbar)
+            PositionAtBottom();
 
             // SmartTouchOnly / Guest: ẩn nút Smart Class + các nút chức năng quản lý lớp học
             if (_roleService?.IsSmartTouchOnly == true || _roleService?.CurrentRole == UserRole.Guest)
             {
                 btnClass.Visibility = Visibility.Collapsed;
-                // Ẩn các nút chức năng quản lý lớp học (yêu cầu kết nối mạng HS)
                 btnVoice.Visibility = Visibility.Collapsed;
                 btnBroadcast.Visibility = Visibility.Collapsed;
                 Log.Information("FloatingModeBar: SmartTouchOnly/Guest mode — " +
@@ -39,7 +51,6 @@ namespace QASmartClass.Shared
             }
 
             // Keyboard shortcuts: Ctrl+1 = Class, Ctrl+2 = Screen, Ctrl+3 = Desktop
-            // [LOI_VID_49] Keyboard shortcuts cũng kiểm tra IsTransitioning
             InputBindings.Add(new KeyBinding(new RelayCommand(() =>
             {
                 if (_modeService.IsTransitioning) return;
@@ -61,19 +72,121 @@ namespace QASmartClass.Shared
                 new KeyGesture(Key.D3, ModifierKeys.Control)));
 
             UpdateUI(_modeService.CurrentMode);
-            Log.Information("FloatingModeBar initialized - Ctrl+1/2/3/4 shortcuts active");
+            Log.Information("FloatingModeBar initialized at bottom - Smooth Native Drag enabled");
         }
 
-        // Mode switch handlers
-        // [LOI_VID_49] Tất cả handler chuyển mode đều kiểm tra IsTransitioning
-        // để chống bấm đúp gây crash. Sử dụng async + visual pressed feedback.
+        /// <summary>
+        /// Đặt vị trí thanh công cụ ở phía dưới màn hình (căn giữa)
+        /// </summary>
+        public void PositionAtBottom()
+        {
+            try
+            {
+                var workArea = SystemParameters.WorkArea;
+                var screenW = SystemParameters.PrimaryScreenWidth;
+                var targetWidth = this.ActualWidth > 0 ? this.ActualWidth : 660;
+                var targetHeight = this.ActualHeight > 0 ? this.ActualHeight : 50;
+
+                Left = (screenW - targetWidth) / 2;
+                Top = Math.Max(20, workArea.Bottom - targetHeight - 12);
+
+                EnsureWithinScreenBounds();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("PositionAtBottom error: {Err}", ex.Message);
+            }
+        }
+
+        #region Smooth Native Drag & Bounds Management
+
+        private void DragHandle_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                StartNativeDrag();
+            }
+        }
+
+        private void OnDragBar(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                StartNativeDrag();
+            }
+        }
+
+        private void StartNativeDrag()
+        {
+            try
+            {
+                var helper = new WindowInteropHelper(this);
+                if (helper.Handle != IntPtr.Zero)
+                {
+                    ReleaseCapture();
+                    SendMessage(helper.Handle, WM_NCLBUTTONDOWN, (IntPtr)HTCAPTION, IntPtr.Zero);
+                    EnsureWithinScreenBounds();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("StartNativeDrag fallback: {Err}", ex.Message);
+                try { DragMove(); EnsureWithinScreenBounds(); } catch { }
+            }
+        }
+
+        private void EnsureWithinScreenBounds()
+        {
+            try
+            {
+                var virtualLeft = SystemParameters.VirtualScreenLeft;
+                var virtualTop = SystemParameters.VirtualScreenTop;
+                var virtualWidth = SystemParameters.VirtualScreenWidth;
+                var virtualHeight = SystemParameters.VirtualScreenHeight;
+
+                var currentWidth = this.ActualWidth > 0 ? this.ActualWidth : 660;
+                var currentHeight = this.ActualHeight > 0 ? this.ActualHeight : 50;
+
+                if (this.Left < virtualLeft)
+                    this.Left = virtualLeft;
+                if (this.Top < virtualTop)
+                    this.Top = virtualTop;
+                if (this.Left + currentWidth > virtualLeft + virtualWidth)
+                    this.Left = virtualLeft + virtualWidth - currentWidth;
+                if (this.Top + currentHeight > virtualTop + virtualHeight)
+                    this.Top = virtualTop + virtualHeight - currentHeight;
+            }
+            catch { }
+        }
+
+        #endregion
+
+        #region Collapse / Expand Handlers
+
+        private void OnCollapseClick(object sender, MouseButtonEventArgs e)
+        {
+            pnlExpanded.Visibility = Visibility.Collapsed;
+            pnlCollapsed.Visibility = Visibility.Visible;
+            EnsureWithinScreenBounds();
+            Log.Debug("FloatingModeBar collapsed");
+        }
+
+        private void btnExpandModeBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            pnlCollapsed.Visibility = Visibility.Collapsed;
+            pnlExpanded.Visibility = Visibility.Visible;
+            EnsureWithinScreenBounds();
+            Log.Debug("FloatingModeBar expanded instantly");
+        }
+
+        #endregion
+
+        #region Mode Switch Handlers
 
         private async void OnClassClick(object sender, MouseButtonEventArgs e)
         {
-            // Chặn bấm đúp
             if (_modeService.IsTransitioning) return;
 
-            // SmartTouchOnly / Guest: không cho phép chuyển sang Smart Class
             if (_roleService?.IsSmartTouchOnly == true || _roleService?.CurrentRole == UserRole.Guest)
             {
                 Log.Debug("SmartTouchOnly: blocked Smart Class switch");
@@ -90,8 +203,6 @@ namespace QASmartClass.Shared
             await _modeService.GoToScreenAsync();
         }
 
-        private void OnSchoolClick(object sender, MouseButtonEventArgs e) { }
-
         private async void OnDesktopClick(object sender, MouseButtonEventArgs e)
         {
             if (_modeService.IsTransitioning) return;
@@ -99,15 +210,11 @@ namespace QASmartClass.Shared
             await _modeService.GoToDesktopAsync();
         }
 
-        /// <summary>
-        /// [LOI_VID_49] Visual Touch Feedback — Scale 0.95 + Opacity 0.7 trong 50ms
-        /// khi bấm nút chuyển mode, đảm bảo phản hồi < 50ms trên TV 86".
-        /// </summary>
         private static void ApplyPressedFeedback(System.Windows.Controls.Border button)
         {
             try
             {
-                var scaleTransform = new System.Windows.Media.ScaleTransform(1, 1);
+                var scaleTransform = new ScaleTransform(1, 1);
                 button.RenderTransform = scaleTransform;
                 button.RenderTransformOrigin = new Point(0.5, 0.5);
 
@@ -128,9 +235,9 @@ namespace QASmartClass.Shared
                 };
 
                 scaleTransform.BeginAnimation(
-                    System.Windows.Media.ScaleTransform.ScaleXProperty, scaleXAnim);
+                    ScaleTransform.ScaleXProperty, scaleXAnim);
                 scaleTransform.BeginAnimation(
-                    System.Windows.Media.ScaleTransform.ScaleYProperty, scaleYAnim);
+                    ScaleTransform.ScaleYProperty, scaleYAnim);
                 button.BeginAnimation(OpacityProperty, opacityAnim);
             }
             catch (Exception ex)
@@ -139,13 +246,9 @@ namespace QASmartClass.Shared
             }
         }
 
-        private void OnDragBar(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-                DragMove();
-        }
+        #endregion
 
-        // Quick Action handlers
+        #region Quick Action Handlers
 
         /// <summary>Hiển thị / Ẩn cửa sổ chính</summary>
         private void OnShowHideClick(object sender, MouseButtonEventArgs e)
@@ -166,7 +269,6 @@ namespace QASmartClass.Shared
 
                 if (targetWindow == null)
                 {
-                    // Fallback: Tìm cửa sổ chính đầu tiên có thể toggled
                     foreach (Window w in app.Windows)
                     {
                         var name = w.GetType().Name;
@@ -236,7 +338,6 @@ namespace QASmartClass.Shared
         {
             try
             {
-                // Switch to SmartScreen mode for annotation
                 _modeService.GoToScreen();
                 Log.Information("Pen annotation: switched to SmartScreen");
             }
@@ -274,7 +375,6 @@ namespace QASmartClass.Shared
             catch (Exception ex) { Log.Warning("Record error: {Err}", ex.Message); }
         }
 
-        /// <summary>Quảng bá bảng trắng SmartScreen cho tất cả HS - chụp canvas liên tục</summary>
         private System.Windows.Threading.DispatcherTimer? _broadcastTimer;
         private int _broadcastTickCount = 0;
 
@@ -286,9 +386,6 @@ namespace QASmartClass.Shared
 
                 if (!_isBroadcasting)
                 {
-                    // BẬT: capture SmartScreen + phát cho HS
-
-                    // Tìm SmartScreen canvas
                     System.Windows.Controls.Canvas? canvas = null;
                     foreach (Window win in Application.Current.Windows)
                     {
@@ -311,10 +408,8 @@ namespace QASmartClass.Shared
                     _broadcastTickCount = 0;
                     QASmartTouch.App.BroadcastState.IsScreenBroadcastActive = true;
 
-                    // Chụp lần đầu
                     CaptureSmartScreenCanvas(app);
 
-                    // Gửi lệnh START
                     var startCmd = $"CMD|SCREEN_BROADCAST_START|{QASmartTouch.App.BroadcastState.ScreenCapturePath}";
                     QASmartTouch.App.LessonState.LastTeacherCommand = startCmd;
                     QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
@@ -322,7 +417,6 @@ namespace QASmartClass.Shared
                     if (net?.IsBroadcasting == true) _ = net.SendCommandAsync(startCmd);
                     else app.RaiseLocalCommand(startCmd);
 
-                    // Timer cập nhật định kỳ
                     _broadcastTimer = new System.Windows.Threading.DispatcherTimer
                     {
                         Interval = TimeSpan.FromSeconds(QASmartTouch.App.BroadcastState.ScreenBroadcastIntervalSec)
@@ -353,7 +447,6 @@ namespace QASmartClass.Shared
                 }
                 else
                 {
-                    // TẮT: dừng timer + gửi STOP
                     _isBroadcasting = false;
                     QASmartTouch.App.BroadcastState.IsScreenBroadcastActive = false;
 
@@ -385,7 +478,6 @@ namespace QASmartClass.Shared
             catch (Exception ex) { Log.Warning("Broadcast error: {Err}", ex.Message); }
         }
 
-        /// <summary>Chụp SmartScreen canvas để lưu PNG</summary>
         private static void CaptureSmartScreenCanvas(QASmartTouch.App app)
         {
             try
@@ -423,10 +515,8 @@ namespace QASmartClass.Shared
             catch (Exception ex) { Log.Warning("CaptureSmartScreenCanvas error: {Err}", ex.Message); }
         }
 
-        /// <summary>Thoát - ẩn thanh công cụ nổi</summary>
         private void OnCloseClick(object sender, MouseButtonEventArgs e)
         {
-            // Kiểm tra các tiến trình đang phát sóng ngầm
             bool isTransmitting = _isBroadcasting || _isVoiceBroadcasting || _isRecording;
             
             string warningMsg = "Ẩn thanh công cụ nổi?\n\nBạn có thể mở lại bằng cách nhấn vào biểu tượng Công cụ nổi ở menu chính hoặc dùng tổ hợp phím Ctrl+Alt+M.";
@@ -444,7 +534,6 @@ namespace QASmartClass.Shared
 
             if (result == MessageBoxResult.Yes)
             {
-                // Nếu chọn Yes, dừng toàn bộ truyền phát ngầm
                 if (_isBroadcasting) OnBroadcastClick(sender, e);
                 if (_isVoiceBroadcasting) OnVoiceClick(sender, e);
                 if (_isRecording) OnRecordClick(sender, e);
@@ -456,48 +545,69 @@ namespace QASmartClass.Shared
             {
                 if (isTransmitting)
                 {
-                    // Vẫn giữ truyền phát nhưng ẩn thanh điều hướng
                     Hide();
                     Log.Information("FloatingModeBar hidden, transmissions remain running in background");
                 }
                 else
                 {
-                    // Trường hợp bình thường chọn No thì không đóng
                     Log.Debug("Close cancelled by user");
                 }
             }
         }
 
-        // Mode UI update
+        #endregion
+
+        #region Mode UI Update
 
         private void OnModeChanged(object? sender, ModeChangedEventArgs e)
         {
-            Dispatcher.Invoke(() => UpdateUI(e.NewMode));
+            Dispatcher.Invoke(() =>
+            {
+                UpdateUI(e.NewMode);
+                // Khi chuyển sang DESKTOP, tự động đưa thanh xuống dưới đáy màn hình
+                if (e.NewMode == AppMode.Desktop)
+                {
+                    PositionAtBottom();
+                }
+            });
         }
 
-        /// <summary>
-        /// Cập nhật UI highlight cho mode đang active
-        /// </summary>
         private void UpdateUI(AppMode mode)
         {
             var inactiveColor = Brushes.Transparent;
 
-            // Brand Colors riêng cho từng sub-brand
             var classColor   = new SolidColorBrush(Color.FromRgb(0x19, 0x76, 0xD2)); // #1976D2 Xanh
             var screenColor  = new SolidColorBrush(Color.FromRgb(0x5C, 0x6B, 0xC0)); // #5C6BC0 Indigo
-            var schoolColor  = new SolidColorBrush(Color.FromRgb(0xE6, 0x51, 0x00)); // #E65100 Cam
             var desktopColor = new SolidColorBrush(Color.FromRgb(0x45, 0x5A, 0x64)); // #455A64 Xám
 
             btnClass.Background   = mode == AppMode.SmartClass  ? classColor   : inactiveColor;
             btnScreen.Background  = mode == AppMode.SmartScreen  ? screenColor  : inactiveColor;
-            // btnSchool.Background  = mode == AppMode.SmartSchool  ? schoolColor  : inactiveColor;
             btnDesktop.Background = mode == AppMode.Desktop      ? desktopColor : inactiveColor;
 
-            // Update text colors
             SetButtonTextColor(btnClass,   mode == AppMode.SmartClass);
             SetButtonTextColor(btnScreen,  mode == AppMode.SmartScreen);
-            // SetButtonTextColor(btnSchool,  mode == AppMode.SmartSchool);
             SetButtonTextColor(btnDesktop, mode == AppMode.Desktop);
+
+            // Cập nhật trạng thái cho Mini Pill (khi thu gọn)
+            if (txtMiniModeName != null && bdrMiniModeBadge != null)
+            {
+                switch (mode)
+                {
+                    case AppMode.SmartClass:
+                        txtMiniModeName.Text = "📚 SMART CLASS";
+                        bdrMiniModeBadge.Background = classColor;
+                        break;
+                    case AppMode.SmartScreen:
+                        txtMiniModeName.Text = "🖊️ SMART TOUCH";
+                        bdrMiniModeBadge.Background = screenColor;
+                        break;
+                    case AppMode.Desktop:
+                    default:
+                        txtMiniModeName.Text = "🔲 DESKTOP";
+                        bdrMiniModeBadge.Background = desktopColor;
+                        break;
+                }
+            }
 
             Log.Debug("FloatingModeBar updated: {Mode}", mode);
         }
@@ -517,5 +627,7 @@ namespace QASmartClass.Shared
                 }
             }
         }
+
+        #endregion
     }
 }

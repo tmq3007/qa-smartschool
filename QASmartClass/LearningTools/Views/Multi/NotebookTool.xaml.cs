@@ -1186,15 +1186,7 @@ namespace QASmartClass.LearningTools.Views.Multi
                     dummyEncoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(dummyBitmap));
                     
                     string prefix = "HocSinh";
-                    try
-                    {
-                        var app = Application.Current as QASmartTouch.App;
-                        if (app?.StudentNetwork != null && !string.IsNullOrWhiteSpace(app.StudentNetwork.StudentCode))
-                        {
-                            prefix = app.StudentNetwork.StudentCode;
-                        }
-                    }
-                    catch { }
+
 
                     string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                     string file = $"{prefix}_Notebook_{_currentNotebook?.Title ?? "Notes"}_Page_{(_currentNotebook?.CurrentPageIndex ?? 0) + 1}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.png";
@@ -1233,15 +1225,7 @@ namespace QASmartClass.LearningTools.Views.Multi
                 pngEncoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(renderBitmap));
 
                 string studentPrefix = "HocSinh";
-                try
-                {
-                    var app = Application.Current as QASmartTouch.App;
-                    if (app?.StudentNetwork != null && !string.IsNullOrWhiteSpace(app.StudentNetwork.StudentCode))
-                    {
-                        studentPrefix = app.StudentNetwork.StudentCode;
-                    }
-                }
-                catch { }
+
 
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 string fileName = $"{studentPrefix}_Notebook_{_currentNotebook?.Title ?? "Notes"}_Page_{(_currentNotebook?.CurrentPageIndex ?? 0) + 1}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.png";

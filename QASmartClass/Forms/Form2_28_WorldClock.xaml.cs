@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
 
@@ -9,15 +9,15 @@ namespace QASmartTouch.Forms
         public Form2_28_WorldClock()
         {
             InitializeComponent();
-            _ = InitializeWebView();
+            this.Loaded += async (s, e) => await InitializeWebView();
         }
 
         private async System.Threading.Tasks.Task InitializeWebView()
         {
             try
             {
-                // Initialize WebView2
-                await webView.EnsureCoreWebView2Async(null);
+                // Initialize WebView2 với cấu hình UserDataFolder an toàn từ WebView2Helper
+                await QASmartTouch.Helpers.WebView2Helper.EnsureInitializedAsync(webView);
                 
                 System.Diagnostics.Debug.WriteLine("✅ World Clock WebView2 initialized successfully");
             }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using QASmartTouch.Models;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -43,6 +44,7 @@ namespace QASmartTouch.Forms
         public HandwritingRecognitionDialog()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
         }
 
         #endregion

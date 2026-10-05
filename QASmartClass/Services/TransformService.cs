@@ -28,7 +28,7 @@ namespace QASmartTouch.Services
         }
 
         /// <summary>
-        /// Di chuyển object theo delta (Hỗ trợ Nhóm đối tượng & Nét vẽ Polyline/Path)
+        /// Di chuyển object theo delta (Hỗ trợ Nhóm đối tượng, Nét vẽ Polyline, Polygon, Line & Path)
         /// </summary>
         public void MoveBy(SelectableObject obj, Vector delta)
         {
@@ -50,8 +50,15 @@ namespace QASmartTouch.Services
                     if (member == null || member.IsLocked) continue;
                     MoveBy(member, delta);
                 }
-                obj.Position = new Point(obj.Position.X + delta.X, obj.Position.Y + delta.Y);
-                obj.UpdateBounds();
+                if (obj.RotationAngle == 0)
+                {
+                    RecalculateGroupBounds(obj);
+                }
+                else
+                {
+                    obj.Position = new Point(obj.Position.X + delta.X, obj.Position.Y + delta.Y);
+                    obj.Bounds = new Rect(obj.Bounds.X + delta.X, obj.Bounds.Y + delta.Y, obj.Bounds.Width, obj.Bounds.Height);
+                }
                 return;
             }
 
@@ -68,6 +75,28 @@ namespace QASmartTouch.Services
                         polyline.Points[i] = new Point(pt.X + delta.X, pt.Y + delta.Y);
                     }
                 }
+                if (!double.IsNaN(CanvasControl.GetLeft(polyline))) CanvasControl.SetLeft(polyline, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(polyline))) CanvasControl.SetTop(polyline, double.NaN);
+            }
+            else if (obj.Element is System.Windows.Shapes.Polygon polygon)
+            {
+                if (polygon.Points != null && polygon.Points.Count > 0)
+                {
+                    for (int i = 0; i < polygon.Points.Count; i++)
+                    {
+                        var pt = polygon.Points[i];
+                        polygon.Points[i] = new Point(pt.X + delta.X, pt.Y + delta.Y);
+                    }
+                }
+                if (!double.IsNaN(CanvasControl.GetLeft(polygon))) CanvasControl.SetLeft(polygon, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(polygon))) CanvasControl.SetTop(polygon, double.NaN);
+            }
+            else if (obj.Element is System.Windows.Shapes.Line line)
+            {
+                line.X1 += delta.X; line.Y1 += delta.Y;
+                line.X2 += delta.X; line.Y2 += delta.Y;
+                if (!double.IsNaN(CanvasControl.GetLeft(line))) CanvasControl.SetLeft(line, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(line))) CanvasControl.SetTop(line, double.NaN);
             }
             else if (obj.Element is System.Windows.Shapes.Path path && path.Data != null)
             {
@@ -182,8 +211,22 @@ namespace QASmartTouch.Services
             // NG-5: Handle different element types
             if (obj.Element is System.Windows.Shapes.Line line)
             {
-                line.X2 = line.X1 + newSize.Width;
-                line.Y2 = line.Y1 + newSize.Height;
+                double minX = Math.Min(line.X1, line.X2);
+                double minY = Math.Min(line.Y1, line.Y2);
+                double maxX = Math.Max(line.X1, line.X2);
+                double maxY = Math.Max(line.Y1, line.Y2);
+                double oldW = maxX - minX;
+                double oldH = maxY - minY;
+                double scaleX = oldW > 0 ? newSize.Width / oldW : 1.0;
+                double scaleY = oldH > 0 ? newSize.Height / oldH : 1.0;
+
+                line.X1 = obj.Position.X + (line.X1 - minX) * scaleX;
+                line.Y1 = obj.Position.Y + (line.Y1 - minY) * scaleY;
+                line.X2 = obj.Position.X + (line.X2 - minX) * scaleX;
+                line.Y2 = obj.Position.Y + (line.Y2 - minY) * scaleY;
+
+                if (!double.IsNaN(CanvasControl.GetLeft(line))) CanvasControl.SetLeft(line, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(line))) CanvasControl.SetTop(line, double.NaN);
                 System.Diagnostics.Debug.WriteLine($"🔧 Resize Line: ({line.X1:F0},{line.Y1:F0}) → ({line.X2:F0},{line.Y2:F0})");
             }
             else if (obj.Element is System.Windows.Shapes.Polyline polyline)
@@ -193,35 +236,137 @@ namespace QASmartTouch.Services
                 polyline.Fill = null;
 
                 // Polyline (drawn handwriting stroke): Scale all points proportionally
-                if (polyline.Points.Count > 0)
+                if (polyline.Points != null && polyline.Points.Count > 0)
                 {
-                    double minX = double.MaxValue, minY = double.MaxValue;
-                    double maxX = double.MinValue, maxY = double.MinValue;
-                    
-                    foreach (var pt in polyline.Points)
+                    if (obj.RotationAngle != 0 && obj.Size.Width > 0 && obj.Size.Height > 0)
                     {
-                        minX = Math.Min(minX, pt.X);
-                        minY = Math.Min(minY, pt.Y);
-                        maxX = Math.Max(maxX, pt.X);
-                        maxY = Math.Max(maxY, pt.Y);
+                        double angle = obj.RotationAngle;
+                        double rad = angle * Math.PI / 180.0;
+                        double cos = Math.Cos(rad);
+                        double sin = Math.Sin(rad);
+
+                        Point center = new Point(obj.Position.X + obj.Size.Width / 2.0, obj.Position.Y + obj.Size.Height / 2.0);
+                        double scaleX = newSize.Width / obj.Size.Width;
+                        double scaleY = newSize.Height / obj.Size.Height;
+
+                        for (int i = 0; i < polyline.Points.Count; i++)
+                        {
+                            var pt = polyline.Points[i];
+                            double dx = pt.X - center.X;
+                            double dy = pt.Y - center.Y;
+
+                            double xLoc = dx * cos + dy * sin;
+                            double yLoc = -dx * sin + dy * cos;
+
+                            double xLocScaled = xLoc * scaleX;
+                            double yLocScaled = yLoc * scaleY;
+
+                            polyline.Points[i] = new Point(
+                                center.X + (xLocScaled * cos - yLocScaled * sin),
+                                center.Y + (xLocScaled * sin + yLocScaled * cos)
+                            );
+                        }
                     }
-                    
-                    double oldWidth = maxX - minX;
-                    double oldHeight = maxY - minY;
-                    
-                    double scaleX = oldWidth > 0 ? newSize.Width / oldWidth : 1.0;
-                    double scaleY = oldHeight > 0 ? newSize.Height / oldHeight : 1.0;
-                    
-                    for (int i = 0; i < polyline.Points.Count; i++)
+                    else
                     {
-                        var pt = polyline.Points[i];
-                        double newX = oldWidth > 0 ? obj.Position.X + (pt.X - minX) * scaleX : obj.Position.X;
-                        double newY = oldHeight > 0 ? obj.Position.Y + (pt.Y - minY) * scaleY : obj.Position.Y;
-                        polyline.Points[i] = new Point(newX, newY);
+                        double minX = double.MaxValue, minY = double.MaxValue;
+                        double maxX = double.MinValue, maxY = double.MinValue;
+                        
+                        foreach (var pt in polyline.Points)
+                        {
+                            minX = Math.Min(minX, pt.X);
+                            minY = Math.Min(minY, pt.Y);
+                            maxX = Math.Max(maxX, pt.X);
+                            maxY = Math.Max(maxY, pt.Y);
+                        }
+                        
+                        double oldWidth = maxX - minX;
+                        double oldHeight = maxY - minY;
+                        
+                        double scaleX = oldWidth > 0 ? newSize.Width / oldWidth : 1.0;
+                        double scaleY = oldHeight > 0 ? newSize.Height / oldHeight : 1.0;
+                        
+                        for (int i = 0; i < polyline.Points.Count; i++)
+                        {
+                            var pt = polyline.Points[i];
+                            double newX = oldWidth > 0 ? obj.Position.X + (pt.X - minX) * scaleX : obj.Position.X;
+                            double newY = oldHeight > 0 ? obj.Position.Y + (pt.Y - minY) * scaleY : obj.Position.Y;
+                            polyline.Points[i] = new Point(newX, newY);
+                        }
                     }
 
-                    // ✅ AUD-05 FIX: Scale StrokeThickness tỉ lệ để giữ đúng tỉ lệ visual
+                    if (!double.IsNaN(CanvasControl.GetLeft(polyline))) CanvasControl.SetLeft(polyline, double.NaN);
+                    if (!double.IsNaN(CanvasControl.GetTop(polyline))) CanvasControl.SetTop(polyline, double.NaN);
+
                     System.Diagnostics.Debug.WriteLine($"🔧 Resize Polyline: {polyline.Points.Count} points scaled");
+                }
+            }
+            else if (obj.Element is System.Windows.Shapes.Polygon polygon)
+            {
+                // Polygon (2D shapes - Triangle, Star, Arrow, Diamond...): Scale all points proportionally
+                if (polygon.Points != null && polygon.Points.Count > 0)
+                {
+                    if (obj.RotationAngle != 0 && obj.Size.Width > 0 && obj.Size.Height > 0)
+                    {
+                        double angle = obj.RotationAngle;
+                        double rad = angle * Math.PI / 180.0;
+                        double cos = Math.Cos(rad);
+                        double sin = Math.Sin(rad);
+
+                        Point center = new Point(obj.Position.X + obj.Size.Width / 2.0, obj.Position.Y + obj.Size.Height / 2.0);
+                        double scaleX = newSize.Width / obj.Size.Width;
+                        double scaleY = newSize.Height / obj.Size.Height;
+
+                        for (int i = 0; i < polygon.Points.Count; i++)
+                        {
+                            var pt = polygon.Points[i];
+                            double dx = pt.X - center.X;
+                            double dy = pt.Y - center.Y;
+
+                            double xLoc = dx * cos + dy * sin;
+                            double yLoc = -dx * sin + dy * cos;
+
+                            double xLocScaled = xLoc * scaleX;
+                            double yLocScaled = yLoc * scaleY;
+
+                            polygon.Points[i] = new Point(
+                                center.X + (xLocScaled * cos - yLocScaled * sin),
+                                center.Y + (xLocScaled * sin + yLocScaled * cos)
+                            );
+                        }
+                    }
+                    else
+                    {
+                        double minX = double.MaxValue, minY = double.MaxValue;
+                        double maxX = double.MinValue, maxY = double.MinValue;
+                        
+                        foreach (var pt in polygon.Points)
+                        {
+                            minX = Math.Min(minX, pt.X);
+                            minY = Math.Min(minY, pt.Y);
+                            maxX = Math.Max(maxX, pt.X);
+                            maxY = Math.Max(maxY, pt.Y);
+                        }
+                        
+                        double oldWidth = maxX - minX;
+                        double oldHeight = maxY - minY;
+                        
+                        double scaleX = oldWidth > 0 ? newSize.Width / oldWidth : 1.0;
+                        double scaleY = oldHeight > 0 ? newSize.Height / oldHeight : 1.0;
+                        
+                        for (int i = 0; i < polygon.Points.Count; i++)
+                        {
+                            var pt = polygon.Points[i];
+                            double newX = oldWidth > 0 ? obj.Position.X + (pt.X - minX) * scaleX : obj.Position.X;
+                            double newY = oldHeight > 0 ? obj.Position.Y + (pt.Y - minY) * scaleY : obj.Position.Y;
+                            polygon.Points[i] = new Point(newX, newY);
+                        }
+                    }
+
+                    if (!double.IsNaN(CanvasControl.GetLeft(polygon))) CanvasControl.SetLeft(polygon, double.NaN);
+                    if (!double.IsNaN(CanvasControl.GetTop(polygon))) CanvasControl.SetTop(polygon, double.NaN);
+
+                    System.Diagnostics.Debug.WriteLine($"🔧 Resize Polygon: {polygon.Points.Count} points scaled");
                 }
             }
             else if (obj.Element is System.Windows.Shapes.Path path && path.Data != null)
@@ -232,9 +377,26 @@ namespace QASmartTouch.Services
                     path.Fill = null;
                 }
 
-                // Path (smooth Bezier handwriting stroke or shape): Apply RenderTransform
+                // Path (smooth Bezier handwriting stroke, shape, or touch dot): Apply RenderTransform
                 var bounds = path.Data.Bounds;
-                if (!bounds.IsEmpty && bounds.Width > 0 && bounds.Height > 0)
+                bool isDotOrMicro = bounds.IsEmpty || (bounds.Width <= 0.05 && bounds.Height <= 0.05);
+                Point targetCenter = new Point(obj.Position.X + newSize.Width / 2.0, obj.Position.Y + newSize.Height / 2.0);
+
+                if (isDotOrMicro)
+                {
+                    // ✨ TOUCH DOT SUPPORT: Dấu chấm cảm ứng - tịnh tiến tâm về targetCenter mà không scale vi mô
+                    var tg = new TransformGroup();
+                    double dotOrigX = !bounds.IsEmpty ? (bounds.X + bounds.Width / 2.0) : obj.Position.X;
+                    double dotOrigY = !bounds.IsEmpty ? (bounds.Y + bounds.Height / 2.0) : obj.Position.Y;
+                    tg.Children.Add(new TranslateTransform(targetCenter.X - dotOrigX, targetCenter.Y - dotOrigY));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                    System.Diagnostics.Debug.WriteLine($"🔧 Resize Path touch dot: targetCenter=({targetCenter.X:F2},{targetCenter.Y:F2})");
+                }
+                else if (bounds.Width > 0.05 && bounds.Height > 0.05)
                 {
                     double scaleX = newSize.Width / bounds.Width;
                     double scaleY = newSize.Height / bounds.Height;
@@ -242,18 +404,82 @@ namespace QASmartTouch.Services
                     var tg = new TransformGroup();
                     tg.Children.Add(new ScaleTransform(scaleX, scaleY, bounds.X, bounds.Y));
                     tg.Children.Add(new TranslateTransform(obj.Position.X - bounds.X, obj.Position.Y - bounds.Y));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
+                    }
                     path.RenderTransform = tg;
 
                     System.Diagnostics.Debug.WriteLine($"🔧 Resize Path stroke: scale=({scaleX:F2},{scaleY:F2})");
                 }
+                else if (bounds.Width > 0.05) // Đoạn thẳng nằm ngang thuần túy
+                {
+                    double scaleX = newSize.Width / bounds.Width;
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(scaleX, 1.0, bounds.X, bounds.Y));
+                    tg.Children.Add(new TranslateTransform(obj.Position.X - bounds.X, targetCenter.Y - (bounds.Y + bounds.Height / 2.0)));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                }
+                else if (bounds.Height > 0.05) // Đoạn thẳng thẳng đứng thuần túy
+                {
+                    double scaleY = newSize.Height / bounds.Height;
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(1.0, scaleY, bounds.X, bounds.Y));
+                    tg.Children.Add(new TranslateTransform(targetCenter.X - (bounds.X + bounds.Width / 2.0), obj.Position.Y - bounds.Y));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                }
+            }
+            else if (obj.Element is CanvasControl canvas)
+            {
+                double baseW = !double.IsNaN(canvas.Width) && canvas.Width > 0 ? canvas.Width : (canvas.ActualWidth > 0 ? canvas.ActualWidth : 200);
+                double baseH = !double.IsNaN(canvas.Height) && canvas.Height > 0 ? canvas.Height : (canvas.ActualHeight > 0 ? canvas.ActualHeight : 200);
+
+                CanvasControl.SetLeft(canvas, obj.Position.X);
+                CanvasControl.SetTop(canvas, obj.Position.Y);
+
+                if (baseW > 0 && baseH > 0)
+                {
+                    double scaleX = newSize.Width / baseW;
+                    double scaleY = newSize.Height / baseH;
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(scaleX, scaleY, 0, 0));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, (baseW * scaleX) / 2.0, (baseH * scaleY) / 2.0));
+                    }
+                    canvas.RenderTransform = tg;
+                    System.Diagnostics.Debug.WriteLine($"🔧 Resize Canvas: scale=({scaleX:F2},{scaleY:F2})");
+                }
             }
             else if (obj.Element is FrameworkElement element)
             {
+                // QC_4.2_RESIZE_GUARD: Tự động gỡ bỏ giới hạn MaxWidth/MaxHeight nếu người dùng phóng to vượt quá giới hạn cũ
+                if (!double.IsPositiveInfinity(element.MaxWidth) && element.MaxWidth < newSize.Width)
+                {
+                    element.MaxWidth = double.PositiveInfinity;
+                }
+                if (!double.IsPositiveInfinity(element.MaxHeight) && element.MaxHeight < newSize.Height)
+                {
+                    element.MaxHeight = double.PositiveInfinity;
+                }
+
                 // Rectangle, Ellipse, TextBlock, Border, Image
                 CanvasControl.SetLeft(element, obj.Position.X);
                 CanvasControl.SetTop(element, obj.Position.Y);
                 element.Width = newSize.Width;
                 element.Height = newSize.Height;
+                if (obj.RotationAngle != 0)
+                {
+                    element.RenderTransform = new RotateTransform(obj.RotationAngle, newSize.Width / 2.0, newSize.Height / 2.0);
+                }
                 
                 System.Diagnostics.Debug.WriteLine($"🔧 Resize {obj.Type}: {newSize.Width:F0}x{newSize.Height:F0}");
             }
@@ -262,7 +488,9 @@ namespace QASmartTouch.Services
         }
 
         /// <summary>
-        /// NG-5: Resize từ một góc/cạnh cụ thể dựa trên kích thước & vị trí gốc ban đầu
+        /// NG-5: Resize từ một góc/cạnh cụ thể dựa trên kích thước & vị trí gốc ban đầu.
+        /// Chuẩn hóa theo phương pháp Neo 2 cạnh (Opposite Anchor Point) trong không gian xoay OBB.
+        /// Cố định góc đối diện làm điểm neo, bảo toàn 100% hướng nghiêng và không bao giờ làm nét bị méo/thò ra ngoài.
         /// </summary>
         public void ResizeFromHandle(
             SelectableObject obj, 
@@ -271,83 +499,140 @@ namespace QASmartTouch.Services
             Point startPoint, 
             Size originalSize, 
             Point originalPosition,
-            System.Collections.Generic.Dictionary<SelectableObject, (Point pos, Size size)>? memberSnapshots = null)
+            System.Collections.Generic.Dictionary<SelectableObject, (Point pos, Size size)>? memberSnapshots = null,
+            System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState>? initialStates = null)
         {
-            if (obj == null || obj.IsLocked)
+            if (obj == null || obj.IsLocked || originalSize.Width <= 0 || originalSize.Height <= 0)
                 return;
 
             Vector delta = currentPoint - startPoint;
+            double angle = obj.RotationAngle;
+            double rad = angle * Math.PI / 180.0;
+            double cos = Math.Cos(rad);
+            double sin = Math.Sin(rad);
 
-            double newWidth = originalSize.Width;
-            double newHeight = originalSize.Height;
-            Point newPosition = originalPosition;
+            // Vector chỉ phương của 2 trục chiếc hộp (OBB):
+            // u: trục Width (từ Trái sang Phải)
+            // v: trục Height (từ Trên xuống Dưới)
+            Vector u = new Vector(cos, sin);
+            Vector v = new Vector(-sin, cos);
+
+            // Chiếu độ dời chuột (delta) lên 2 trục cục bộ của chiếc hộp
+            double deltaW = delta.X * cos + delta.Y * sin;
+            double deltaH = -delta.X * sin + delta.Y * cos;
+
+            const double MIN_SIZE = 15;
+            double rawWidth = originalSize.Width;
+            double rawHeight = originalSize.Height;
+
+            // localAnchor: Tọa độ điểm neo đối diện trong hệ toạ độ cục bộ (gốc là tâm ban đầu C0)
+            Point localAnchor;
 
             switch (mode)
             {
                 case Models.ResizeMode.TopLeft:
-                    newPosition.X = originalPosition.X + delta.X;
-                    newPosition.Y = originalPosition.Y + delta.Y;
-                    newWidth = originalSize.Width - delta.X;
-                    newHeight = originalSize.Height - delta.Y;
+                    // Kéo TopLeft -> Điểm neo cố định: BottomRight (+W0/2, +H0/2)
+                    localAnchor = new Point(originalSize.Width / 2.0, originalSize.Height / 2.0);
+                    rawWidth = originalSize.Width - deltaW;
+                    rawHeight = originalSize.Height - deltaH;
                     break;
 
                 case Models.ResizeMode.TopRight:
-                    newPosition.Y = originalPosition.Y + delta.Y;
-                    newWidth = originalSize.Width + delta.X;
-                    newHeight = originalSize.Height - delta.Y;
+                    // Kéo TopRight -> Điểm neo cố định: BottomLeft (-W0/2, +H0/2)
+                    localAnchor = new Point(-originalSize.Width / 2.0, originalSize.Height / 2.0);
+                    rawWidth = originalSize.Width + deltaW;
+                    rawHeight = originalSize.Height - deltaH;
                     break;
 
                 case Models.ResizeMode.BottomLeft:
-                    newPosition.X = originalPosition.X + delta.X;
-                    newWidth = originalSize.Width - delta.X;
-                    newHeight = originalSize.Height + delta.Y;
+                    // Kéo BottomLeft -> Điểm neo cố định: TopRight (+W0/2, -H0/2)
+                    localAnchor = new Point(originalSize.Width / 2.0, -originalSize.Height / 2.0);
+                    rawWidth = originalSize.Width - deltaW;
+                    rawHeight = originalSize.Height + deltaH;
                     break;
 
                 case Models.ResizeMode.BottomRight:
-                    newWidth = originalSize.Width + delta.X;
-                    newHeight = originalSize.Height + delta.Y;
+                default:
+                    // Kéo BottomRight -> Điểm neo cố định: TopLeft (-W0/2, -H0/2)
+                    localAnchor = new Point(-originalSize.Width / 2.0, -originalSize.Height / 2.0);
+                    rawWidth = originalSize.Width + deltaW;
+                    rawHeight = originalSize.Height + deltaH;
                     break;
 
                 case Models.ResizeMode.Top:
-                    newPosition.Y = originalPosition.Y + delta.Y;
-                    newHeight = originalSize.Height - delta.Y;
+                    localAnchor = new Point(0, originalSize.Height / 2.0);
+                    rawHeight = originalSize.Height - deltaH;
                     break;
 
                 case Models.ResizeMode.Bottom:
-                    newHeight = originalSize.Height + delta.Y;
+                    localAnchor = new Point(0, -originalSize.Height / 2.0);
+                    rawHeight = originalSize.Height + deltaH;
                     break;
 
                 case Models.ResizeMode.Left:
-                    newPosition.X = originalPosition.X + delta.X;
-                    newWidth = originalSize.Width - delta.X;
+                    localAnchor = new Point(originalSize.Width / 2.0, 0);
+                    rawWidth = originalSize.Width - deltaW;
                     break;
 
                 case Models.ResizeMode.Right:
-                    newWidth = originalSize.Width + delta.X;
+                    localAnchor = new Point(-originalSize.Width / 2.0, 0);
+                    rawWidth = originalSize.Width + deltaW;
                     break;
             }
 
-            // Clamp minimum size TRƯỚC khi gán vị trí & kích thước mới
-            const double MIN_SIZE = 15;
-            if (newWidth < MIN_SIZE)
+            double newWidth = Math.Max(MIN_SIZE, rawWidth);
+            double newHeight = Math.Max(MIN_SIZE, rawHeight);
+
+            // Vector từ điểm neo đến tâm mới C_new trong không gian cục bộ
+            Vector anchorToNewCenterLocal;
+            switch (mode)
             {
-                if (mode == Models.ResizeMode.TopLeft || mode == Models.ResizeMode.BottomLeft || mode == Models.ResizeMode.Left)
-                {
-                    newPosition.X = originalPosition.X + (originalSize.Width - MIN_SIZE);
-                }
-                newWidth = MIN_SIZE;
-            }
-            if (newHeight < MIN_SIZE)
-            {
-                if (mode == Models.ResizeMode.TopLeft || mode == Models.ResizeMode.TopRight || mode == Models.ResizeMode.Top)
-                {
-                    newPosition.Y = originalPosition.Y + (originalSize.Height - MIN_SIZE);
-                }
-                newHeight = MIN_SIZE;
+                case Models.ResizeMode.TopLeft:
+                    anchorToNewCenterLocal = new Vector(-newWidth / 2.0, -newHeight / 2.0);
+                    break;
+                case Models.ResizeMode.TopRight:
+                    anchorToNewCenterLocal = new Vector(newWidth / 2.0, -newHeight / 2.0);
+                    break;
+                case Models.ResizeMode.BottomLeft:
+                    anchorToNewCenterLocal = new Vector(-newWidth / 2.0, newHeight / 2.0);
+                    break;
+                case Models.ResizeMode.BottomRight:
+                default:
+                    anchorToNewCenterLocal = new Vector(newWidth / 2.0, newHeight / 2.0);
+                    break;
+                case Models.ResizeMode.Top:
+                    anchorToNewCenterLocal = new Vector(0, -newHeight / 2.0);
+                    break;
+                case Models.ResizeMode.Bottom:
+                    anchorToNewCenterLocal = new Vector(0, newHeight / 2.0);
+                    break;
+                case Models.ResizeMode.Left:
+                    anchorToNewCenterLocal = new Vector(-newWidth / 2.0, 0);
+                    break;
+                case Models.ResizeMode.Right:
+                    anchorToNewCenterLocal = new Vector(newWidth / 2.0, 0);
+                    break;
             }
 
-            // QC_4.2_GROUP_RESIZE_FIX: Hỗ trợ ResizeFromHandle cho Nhóm đối tượng (Group / Multi-Selection)
-            // FIX: Sử dụng snapshot cố định từ MouseDown để tránh compounding scale error
+            // Tâm ban đầu trong toạ độ Canvas:
+            Point center0 = new Point(originalPosition.X + originalSize.Width / 2.0, originalPosition.Y + originalSize.Height / 2.0);
+
+            // Toạ độ thế giới của điểm neo cố định (ĐỨNG YÊN 100% trên màn hình):
+            Point anchorWorld = new Point(
+                center0.X + localAnchor.X * u.X + localAnchor.Y * v.X,
+                center0.Y + localAnchor.X * u.Y + localAnchor.Y * v.Y
+            );
+
+            // Tâm mới trong toạ độ Canvas:
+            Point newCenter = new Point(
+                anchorWorld.X + anchorToNewCenterLocal.X * u.X + anchorToNewCenterLocal.Y * v.X,
+                anchorWorld.Y + anchorToNewCenterLocal.X * u.Y + anchorToNewCenterLocal.Y * v.Y
+            );
+
+            // Vị trí Position mới (TopLeft unrotated của bounding box):
+            Point newPosition = new Point(newCenter.X - newWidth / 2.0, newCenter.Y - newHeight / 2.0);
+
+            // 1. QC_4.2_GROUP_RESIZE_FIX: Hỗ trợ ResizeFromHandle cho Nhóm đối tượng (Group / Multi-Selection)
             if (obj.IsGroup || obj.Type == ObjectType.Group || (obj.GroupMembers != null && obj.GroupMembers.Count > 0))
             {
                 if (originalSize.Width > 0 && originalSize.Height > 0)
@@ -359,42 +644,46 @@ namespace QASmartTouch.Services
                     {
                         if (member == null || member.IsLocked) continue;
 
-                        Point origMemPos;
-                        Size origMemSize;
+                        ElementTransformState? mState = null;
+                        initialStates?.TryGetValue(member, out mState);
+
+                        double origMemX = mState != null ? mState.Position.X : member.Position.X;
+                        double origMemY = mState != null ? mState.Position.Y : member.Position.Y;
+                        double origMemW = mState != null ? mState.Size.Width : member.Size.Width;
+                        double origMemH = mState != null ? mState.Size.Height : member.Size.Height;
 
                         if (memberSnapshots != null && memberSnapshots.TryGetValue(member, out var snap))
                         {
-                            origMemPos = snap.pos;
-                            origMemSize = snap.size;
-                        }
-                        else
-                        {
-                            double prevScaleX = (obj.Size.Width > 0) ? obj.Size.Width / originalSize.Width : 1.0;
-                            double prevScaleY = (obj.Size.Height > 0) ? obj.Size.Height / originalSize.Height : 1.0;
-                            double currentRelX = member.Position.X - obj.Position.X;
-                            double currentRelY = member.Position.Y - obj.Position.Y;
-                            double origRelX = (prevScaleX > 0) ? currentRelX / prevScaleX : currentRelX;
-                            double origRelY = (prevScaleY > 0) ? currentRelY / prevScaleY : currentRelY;
-                            origMemPos = new Point(originalPosition.X + origRelX, originalPosition.Y + origRelY);
-                            origMemSize = new Size(
-                                (prevScaleX > 0) ? member.Size.Width / prevScaleX : member.Size.Width,
-                                (prevScaleY > 0) ? member.Size.Height / prevScaleY : member.Size.Height
-                            );
+                            origMemX = snap.pos.X;
+                            origMemY = snap.pos.Y;
+                            origMemW = snap.size.Width;
+                            origMemH = snap.size.Height;
                         }
 
-                        double origRelXFixed = origMemPos.X - originalPosition.X;
-                        double origRelYFixed = origMemPos.Y - originalPosition.Y;
+                        // Tâm thành viên ban đầu:
+                        Point memCenter0 = new Point(origMemX + origMemW / 2.0, origMemY + origMemH / 2.0);
+                        double dx = memCenter0.X - center0.X;
+                        double dy = memCenter0.Y - center0.Y;
 
-                        double newMemX = newPosition.X + origRelXFixed * scaleX;
-                        double newMemY = newPosition.Y + origRelYFixed * scaleY;
-                        member.Position = new Point(newMemX, newMemY);
+                        // Đưa tâm thành viên về hệ toạ độ cục bộ của nhóm quanh center0:
+                        double memLocX = dx * cos + dy * sin;
+                        double memLocY = -dx * sin + dy * cos;
 
-                        Size newMemSize = new Size(
-                            Math.Max(5, origMemSize.Width * scaleX),
-                            Math.Max(5, origMemSize.Height * scaleY)
+                        // Scale tâm thành viên trong không gian cục bộ:
+                        double newMemLocX = memLocX * scaleX;
+                        double newMemLocY = memLocY * scaleY;
+
+                        // Xoay tâm thành viên trở lại không gian thế giới quanh newCenter:
+                        Point newMemCenter = new Point(
+                            newCenter.X + (newMemLocX * cos - newMemLocY * sin),
+                            newCenter.Y + (newMemLocX * sin + newMemLocY * cos)
                         );
 
-                        Resize(member, newMemSize, 1);
+                        double newMemW = Math.Max(5, origMemW * scaleX);
+                        double newMemH = Math.Max(5, origMemH * scaleY);
+                        Point newMemPos = new Point(newMemCenter.X - newMemW / 2.0, newMemCenter.Y - newMemH / 2.0);
+
+                        ResizeSingleFromInitialState(member, newMemPos, new Size(newMemW, newMemH), origMemPos: new Point(origMemX, origMemY), origMemSize: new Size(origMemW, origMemH), mState);
                     }
                 }
 
@@ -404,8 +693,249 @@ namespace QASmartTouch.Services
                 return;
             }
 
+            // 2. Xử lý đối tượng đơn lẻ trực tiếp từ initial state
+            ElementTransformState? selfState = null;
+            initialStates?.TryGetValue(obj, out selfState);
+
+            ResizeSingleFromInitialState(obj, newPosition, new Size(newWidth, newHeight), originalPosition, originalSize, selfState);
+        }
+
+        private void ResizeSingleFromInitialState(
+            SelectableObject obj,
+            Point newPosition,
+            Size newSize,
+            Point origMemPos,
+            Size origMemSize,
+            ElementTransformState? state)
+        {
             obj.Position = newPosition;
-            Resize(obj, new Size(newWidth, newHeight));
+            obj.Size = newSize;
+
+            double angle = obj.RotationAngle;
+            double rad = angle * Math.PI / 180.0;
+            double cos = Math.Cos(rad);
+            double sin = Math.Sin(rad);
+
+            Point origCenter = new Point(origMemPos.X + origMemSize.Width / 2.0, origMemPos.Y + origMemSize.Height / 2.0);
+            Point newCenter = new Point(newPosition.X + newSize.Width / 2.0, newPosition.Y + newSize.Height / 2.0);
+
+            double scaleX = origMemSize.Width > 0 ? newSize.Width / origMemSize.Width : 1.0;
+            double scaleY = origMemSize.Height > 0 ? newSize.Height / origMemSize.Height : 1.0;
+
+            // 1. Line & DashedLine: Bảo toàn 100% hướng dốc và tính chất
+            if (obj.Element is System.Windows.Shapes.Line line)
+            {
+                double origX1 = state != null ? state.LineX1 : line.X1;
+                double origY1 = state != null ? state.LineY1 : line.Y1;
+                double origX2 = state != null ? state.LineX2 : line.X2;
+                double origY2 = state != null ? state.LineY2 : line.Y2;
+
+                // Transform pt1
+                double dx1 = origX1 - origCenter.X;
+                double dy1 = origY1 - origCenter.Y;
+                double xLoc1 = (dx1 * cos + dy1 * sin) * scaleX;
+                double yLoc1 = (-dx1 * sin + dy1 * cos) * scaleY;
+                line.X1 = newCenter.X + (xLoc1 * cos - yLoc1 * sin);
+                line.Y1 = newCenter.Y + (xLoc1 * sin + yLoc1 * cos);
+
+                // Transform pt2
+                double dx2 = origX2 - origCenter.X;
+                double dy2 = origY2 - origCenter.Y;
+                double xLoc2 = (dx2 * cos + dy2 * sin) * scaleX;
+                double yLoc2 = (-dx2 * sin + dy2 * cos) * scaleY;
+                line.X2 = newCenter.X + (xLoc2 * cos - yLoc2 * sin);
+                line.Y2 = newCenter.Y + (xLoc2 * sin + yLoc2 * cos);
+
+                if (!double.IsNaN(CanvasControl.GetLeft(line))) CanvasControl.SetLeft(line, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(line))) CanvasControl.SetTop(line, double.NaN);
+            }
+            // 2. Polygon (2D shapes, Block Arrows): Scale từ snapshot điểm gốc trong không gian OBB
+            else if (obj.Element is System.Windows.Shapes.Polygon polygon)
+            {
+                if (state != null && state.PolygonPoints != null && state.PolygonPoints.Length > 0 && origMemSize.Width > 0 && origMemSize.Height > 0)
+                {
+                    var newPoints = new PointCollection(state.PolygonPoints.Length);
+                    for (int i = 0; i < state.PolygonPoints.Length; i++)
+                    {
+                        var pt = state.PolygonPoints[i];
+                        double dx = pt.X - origCenter.X;
+                        double dy = pt.Y - origCenter.Y;
+
+                        double xLoc = dx * cos + dy * sin;
+                        double yLoc = -dx * sin + dy * cos;
+
+                        double xLocScaled = xLoc * scaleX;
+                        double yLocScaled = yLoc * scaleY;
+
+                        double newX = newCenter.X + (xLocScaled * cos - yLocScaled * sin);
+                        double newY = newCenter.Y + (xLocScaled * sin + yLocScaled * cos);
+
+                        newPoints.Add(new Point(newX, newY));
+                    }
+                    polygon.Points = newPoints;
+                }
+                else
+                {
+                    Resize(obj, newSize);
+                    return;
+                }
+
+                if (!double.IsNaN(CanvasControl.GetLeft(polygon))) CanvasControl.SetLeft(polygon, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(polygon))) CanvasControl.SetTop(polygon, double.NaN);
+            }
+            // 3. Polyline (Handwriting strokes): Scale từ snapshot nét vẽ gốc trong không gian OBB
+            else if (obj.Element is System.Windows.Shapes.Polyline polyline)
+            {
+                polyline.Fill = null;
+
+                if (state != null && state.PolylinePoints != null && state.PolylinePoints.Length > 0 && origMemSize.Width > 0 && origMemSize.Height > 0)
+                {
+                    var newPoints = new PointCollection(state.PolylinePoints.Length);
+                    for (int i = 0; i < state.PolylinePoints.Length; i++)
+                    {
+                        var pt = state.PolylinePoints[i];
+                        double dx = pt.X - origCenter.X;
+                        double dy = pt.Y - origCenter.Y;
+
+                        double xLoc = dx * cos + dy * sin;
+                        double yLoc = -dx * sin + dy * cos;
+
+                        double xLocScaled = xLoc * scaleX;
+                        double yLocScaled = yLoc * scaleY;
+
+                        double newX = newCenter.X + (xLocScaled * cos - yLocScaled * sin);
+                        double newY = newCenter.Y + (xLocScaled * sin + yLocScaled * cos);
+
+                        newPoints.Add(new Point(newX, newY));
+                    }
+                    polyline.Points = newPoints;
+                }
+                else
+                {
+                    Resize(obj, newSize);
+                    return;
+                }
+
+                if (!double.IsNaN(CanvasControl.GetLeft(polyline))) CanvasControl.SetLeft(polyline, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(polyline))) CanvasControl.SetTop(polyline, double.NaN);
+            }
+            // 4. Path (ArrowLine, DoubleArrowLine, Bezier strokes, Touch Dots): ScaleTransform + TranslateTransform + RotateTransform
+            else if (obj.Element is System.Windows.Shapes.Path path && path.Data != null)
+            {
+                if (obj.Type == ObjectType.Stroke || obj.Type == ObjectType.Drawing)
+                {
+                    path.Fill = null;
+                }
+
+                var bounds = path.Data.Bounds;
+                bool isDotOrMicro = bounds.IsEmpty || (bounds.Width <= 0.05 && bounds.Height <= 0.05);
+
+                if (isDotOrMicro)
+                {
+                    // ✨ TOUCH DOT SUPPORT: Dấu chấm trên màn hình cảm ứng là Path chứa StreamGeometry vi mô (0.01px).
+                    // Với dấu chấm tròn, hình ảnh thực tế được tạo nên từ StrokeThickness và PenLineCap.Round.
+                    // Tịnh tiến tâm dấu chấm chính xác đến newCenter của nhóm, không áp dụng scale vi mô (tránh chia cho 0/biến dạng).
+                    var tg = new TransformGroup();
+                    double dotOrigX = !bounds.IsEmpty ? (bounds.X + bounds.Width / 2.0) : origCenter.X;
+                    double dotOrigY = !bounds.IsEmpty ? (bounds.Y + bounds.Height / 2.0) : origCenter.Y;
+                    tg.Children.Add(new TranslateTransform(newCenter.X - dotOrigX, newCenter.Y - dotOrigY));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                }
+                else if (bounds.Width > 0.05 && bounds.Height > 0.05)
+                {
+                    double pathScaleX = newSize.Width / bounds.Width;
+                    double pathScaleY = newSize.Height / bounds.Height;
+
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(pathScaleX, pathScaleY, bounds.X, bounds.Y));
+                    tg.Children.Add(new TranslateTransform(newPosition.X - bounds.X, newPosition.Y - bounds.Y));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                }
+                else if (bounds.Width > 0.05) // Đoạn thẳng nằm ngang thuần túy (Height == 0)
+                {
+                    double pathScaleX = newSize.Width / bounds.Width;
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(pathScaleX, 1.0, bounds.X, bounds.Y));
+                    tg.Children.Add(new TranslateTransform(newPosition.X - bounds.X, newCenter.Y - (bounds.Y + bounds.Height / 2.0)));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                }
+                else if (bounds.Height > 0.05) // Đoạn thẳng thẳng đứng thuần túy (Width == 0)
+                {
+                    double pathScaleY = newSize.Height / bounds.Height;
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(1.0, pathScaleY, bounds.X, bounds.Y));
+                    tg.Children.Add(new TranslateTransform(newCenter.X - (bounds.X + bounds.Width / 2.0), newPosition.Y - bounds.Y));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
+                    }
+                    path.RenderTransform = tg;
+                }
+            }
+            // 5. Canvas Container (3D Shape, STEM diagrams, etc.): Áp dụng ScaleTransform vector mượt mà
+            else if (obj.Element is CanvasControl canvas)
+            {
+                CanvasControl.SetLeft(canvas, newPosition.X);
+                CanvasControl.SetTop(canvas, newPosition.Y);
+
+                double baseW = !double.IsNaN(canvas.Width) && canvas.Width > 0 ? canvas.Width : (canvas.ActualWidth > 0 ? canvas.ActualWidth : (state != null && !double.IsNaN(state.Width) && state.Width > 0 ? state.Width : 200));
+                double baseH = !double.IsNaN(canvas.Height) && canvas.Height > 0 ? canvas.Height : (canvas.ActualHeight > 0 ? canvas.ActualHeight : (state != null && !double.IsNaN(state.Height) && state.Height > 0 ? state.Height : 200));
+
+                if (baseW > 0 && baseH > 0)
+                {
+                    double sX = newSize.Width / baseW;
+                    double sY = newSize.Height / baseH;
+
+                    var tg = new TransformGroup();
+                    tg.Children.Add(new ScaleTransform(sX, sY, 0, 0));
+                    if (obj.RotationAngle != 0)
+                    {
+                        tg.Children.Add(new RotateTransform(obj.RotationAngle, (baseW * sX) / 2.0, (baseH * sY) / 2.0));
+                    }
+                    canvas.RenderTransform = tg;
+                }
+                else
+                {
+                    canvas.Width = newSize.Width;
+                    canvas.Height = newSize.Height;
+                }
+            }
+            // 6. FrameworkElement (Rectangle, Ellipse, TextBlock, Image, Border)
+            else if (obj.Element is FrameworkElement element)
+            {
+                // QC_4.2_RESIZE_GUARD: Tự động gỡ bỏ giới hạn MaxWidth/MaxHeight nếu người dùng phóng to vượt quá giới hạn cũ
+                if (!double.IsPositiveInfinity(element.MaxWidth) && element.MaxWidth < newSize.Width)
+                {
+                    element.MaxWidth = double.PositiveInfinity;
+                }
+                if (!double.IsPositiveInfinity(element.MaxHeight) && element.MaxHeight < newSize.Height)
+                {
+                    element.MaxHeight = double.PositiveInfinity;
+                }
+
+                CanvasControl.SetLeft(element, newPosition.X);
+                CanvasControl.SetTop(element, newPosition.Y);
+                element.Width = newSize.Width;
+                element.Height = newSize.Height;
+                if (obj.RotationAngle != 0)
+                {
+                    element.RenderTransform = new RotateTransform(obj.RotationAngle, newSize.Width / 2.0, newSize.Height / 2.0);
+                }
+            }
+
+            obj.UpdateBounds();
         }
 
         #endregion
@@ -413,15 +943,298 @@ namespace QASmartTouch.Services
         #region Public Methods - Rotate
 
         /// <summary>
-        /// Rotate object đến góc cụ thể
+        /// Xoay đối tượng hoặc nhóm đối tượng từ trạng thái snapshot ban đầu quanh tâm bất biến.
+        /// Đảm bảo tính toán chính xác 100%, không bị tích lũy sai số trôi tọa độ và SelectionBox luôn đồng bộ hoàn toàn với đối tượng.
+        /// </summary>
+        public void RotateFromInitialState(
+            SelectableObject obj,
+            Point center,
+            double targetAngleDegrees,
+            System.Collections.Generic.Dictionary<SelectableObject, ElementTransformState> initialStates)
+        {
+            if (obj == null || obj.IsLocked || initialStates == null || initialStates.Count == 0) return;
+
+            double initialAngle = 0;
+            if (initialStates.TryGetValue(obj, out var selfState))
+            {
+                initialAngle = selfState.RotationAngle;
+            }
+
+            double deltaAngleDegrees = targetAngleDegrees - initialAngle;
+            double rad = deltaAngleDegrees * Math.PI / 180.0;
+            double cos = Math.Cos(rad);
+            double sin = Math.Sin(rad);
+
+            // 1. Nhóm đối tượng (Group / Multi-Selection)
+            if (obj.IsGroup || obj.Type == ObjectType.Group || (obj.GroupMembers != null && obj.GroupMembers.Count > 0))
+            {
+                foreach (var member in obj.GroupMembers)
+                {
+                    if (member == null || member.IsLocked) continue;
+                    if (!initialStates.TryGetValue(member, out var mState)) continue;
+
+                    RotateMemberFromState(member, mState, center, deltaAngleDegrees, cos, sin);
+                }
+                return;
+            }
+
+            // 2. Đối tượng đơn lẻ
+            if (initialStates.TryGetValue(obj, out var singleState))
+            {
+                RotateSingleFromState(obj, singleState, center, targetAngleDegrees, deltaAngleDegrees, cos, sin);
+            }
+        }
+
+        private void RotateMemberFromState(
+            SelectableObject member,
+            ElementTransformState state,
+            Point center,
+            double deltaAngleDegrees,
+            double cos,
+            double sin)
+        {
+            if (member.Element is System.Windows.Shapes.Polyline polyline && state.PolylinePoints != null)
+            {
+                var newPoints = new PointCollection(state.PolylinePoints.Length);
+                for (int i = 0; i < state.PolylinePoints.Length; i++)
+                {
+                    var pt = state.PolylinePoints[i];
+                    double dx = pt.X - center.X;
+                    double dy = pt.Y - center.Y;
+                    newPoints.Add(new Point(center.X + (dx * cos - dy * sin), center.Y + (dx * sin + dy * cos)));
+                }
+                polyline.Points = newPoints;
+                polyline.RenderTransform = Transform.Identity;
+                member.UpdateBounds();
+            }
+            else if (member.Element is System.Windows.Shapes.Polygon polygon && state.PolygonPoints != null)
+            {
+                var newPoints = new PointCollection(state.PolygonPoints.Length);
+                for (int i = 0; i < state.PolygonPoints.Length; i++)
+                {
+                    var pt = state.PolygonPoints[i];
+                    double dx = pt.X - center.X;
+                    double dy = pt.Y - center.Y;
+                    newPoints.Add(new Point(center.X + (dx * cos - dy * sin), center.Y + (dx * sin + dy * cos)));
+                }
+                polygon.Points = newPoints;
+                polygon.RenderTransform = Transform.Identity;
+                member.UpdateBounds();
+            }
+            else if (member.Element is System.Windows.Shapes.Line line)
+            {
+                double dx1 = state.LineX1 - center.X;
+                double dy1 = state.LineY1 - center.Y;
+                line.X1 = center.X + (dx1 * cos - dy1 * sin);
+                line.Y1 = center.Y + (dx1 * sin + dy1 * cos);
+
+                double dx2 = state.LineX2 - center.X;
+                double dy2 = state.LineY2 - center.Y;
+                line.X2 = center.X + (dx2 * cos - dy2 * sin);
+                line.Y2 = center.Y + (dx2 * sin + dy2 * cos);
+
+                line.RenderTransform = Transform.Identity;
+                member.UpdateBounds();
+            }
+            else if (member.Element is System.Windows.Shapes.Path path && path.Data != null)
+            {
+                var tg = new TransformGroup();
+                if (state.RenderTransform != null && state.RenderTransform != Transform.Identity)
+                {
+                    tg.Children.Add(state.RenderTransform.Clone());
+                }
+                tg.Children.Add(new RotateTransform(deltaAngleDegrees, center.X, center.Y));
+                path.RenderTransform = tg;
+                member.UpdateBounds();
+            }
+            else if (member.Element is CanvasControl canvas)
+            {
+                double memCenterX = state.Position.X + (state.Size.Width / 2.0);
+                double memCenterY = state.Position.Y + (state.Size.Height / 2.0);
+
+                double dx = memCenterX - center.X;
+                double dy = memCenterY - center.Y;
+
+                double newCenterX = center.X + (dx * cos - dy * sin);
+                double newCenterY = center.Y + (dx * sin + dy * cos);
+
+                double newLeft = newCenterX - (state.Size.Width / 2.0);
+                double newTop = newCenterY - (state.Size.Height / 2.0);
+
+                CanvasControl.SetLeft(canvas, newLeft);
+                CanvasControl.SetTop(canvas, newTop);
+
+                member.Position = new Point(newLeft, newTop);
+                member.RotationAngle = (state.RotationAngle + deltaAngleDegrees) % 360;
+
+                double baseW = !double.IsNaN(canvas.Width) && canvas.Width > 0 ? canvas.Width : (canvas.ActualWidth > 0 ? canvas.ActualWidth : 200);
+                double baseH = !double.IsNaN(canvas.Height) && canvas.Height > 0 ? canvas.Height : (canvas.ActualHeight > 0 ? canvas.ActualHeight : 200);
+
+                double currentW = state.Size.Width > 0 ? state.Size.Width : baseW;
+                double currentH = state.Size.Height > 0 ? state.Size.Height : baseH;
+
+                double scaleX = currentW / baseW;
+                double scaleY = currentH / baseH;
+
+                var tg = new TransformGroup();
+                tg.Children.Add(new ScaleTransform(scaleX, scaleY, 0, 0));
+                if (member.RotationAngle != 0)
+                {
+                    tg.Children.Add(new RotateTransform(member.RotationAngle, (baseW * scaleX) / 2.0, (baseH * scaleY) / 2.0));
+                }
+                canvas.RenderTransform = tg;
+                member.UpdateBounds();
+            }
+            else if (member.Element is FrameworkElement fe)
+            {
+                double memCenterX = state.Position.X + (state.Size.Width / 2.0);
+                double memCenterY = state.Position.Y + (state.Size.Height / 2.0);
+
+                double dx = memCenterX - center.X;
+                double dy = memCenterY - center.Y;
+
+                double newCenterX = center.X + (dx * cos - dy * sin);
+                double newCenterY = center.Y + (dx * sin + dy * cos);
+
+                double newLeft = newCenterX - (state.Size.Width / 2.0);
+                double newTop = newCenterY - (state.Size.Height / 2.0);
+
+                CanvasControl.SetLeft(fe, newLeft);
+                CanvasControl.SetTop(fe, newTop);
+
+                member.Position = new Point(newLeft, newTop);
+                member.RotationAngle = (state.RotationAngle + deltaAngleDegrees) % 360;
+
+                double w = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : state.Size.Width);
+                double h = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : state.Size.Height);
+                var rotateTransform = new RotateTransform(member.RotationAngle, w / 2.0, h / 2.0);
+                fe.RenderTransform = rotateTransform;
+                member.UpdateBounds();
+            }
+        }
+
+        private void RotateSingleFromState(
+            SelectableObject obj,
+            ElementTransformState state,
+            Point center,
+            double targetAngleDegrees,
+            double deltaAngleDegrees,
+            double cos,
+            double sin)
+        {
+            if (obj.Element is System.Windows.Shapes.Polyline polyline && state.PolylinePoints != null)
+            {
+                var newPoints = new PointCollection(state.PolylinePoints.Length);
+                for (int i = 0; i < state.PolylinePoints.Length; i++)
+                {
+                    var pt = state.PolylinePoints[i];
+                    double dx = pt.X - center.X;
+                    double dy = pt.Y - center.Y;
+                    newPoints.Add(new Point(center.X + (dx * cos - dy * sin), center.Y + (dx * sin + dy * cos)));
+                }
+                polyline.Points = newPoints;
+                polyline.RenderTransform = Transform.Identity;
+            }
+            else if (obj.Element is System.Windows.Shapes.Polygon polygon && state.PolygonPoints != null)
+            {
+                var newPoints = new PointCollection(state.PolygonPoints.Length);
+                for (int i = 0; i < state.PolygonPoints.Length; i++)
+                {
+                    var pt = state.PolygonPoints[i];
+                    double dx = pt.X - center.X;
+                    double dy = pt.Y - center.Y;
+                    newPoints.Add(new Point(center.X + (dx * cos - dy * sin), center.Y + (dx * sin + dy * cos)));
+                }
+                polygon.Points = newPoints;
+                polygon.RenderTransform = Transform.Identity;
+            }
+            else if (obj.Element is System.Windows.Shapes.Line line)
+            {
+                double dx1 = state.LineX1 - center.X;
+                double dy1 = state.LineY1 - center.Y;
+                line.X1 = center.X + (dx1 * cos - dy1 * sin);
+                line.Y1 = center.Y + (dx1 * sin + dy1 * cos);
+
+                double dx2 = state.LineX2 - center.X;
+                double dy2 = state.LineY2 - center.Y;
+                line.X2 = center.X + (dx2 * cos - dy2 * sin);
+                line.Y2 = center.Y + (dx2 * sin + dy2 * cos);
+
+                line.RenderTransform = Transform.Identity;
+            }
+            else if (obj.Element is System.Windows.Shapes.Path path && path.Data != null)
+            {
+                var tg = new TransformGroup();
+                if (state.RenderTransform != null && state.RenderTransform != Transform.Identity)
+                {
+                    tg.Children.Add(state.RenderTransform.Clone());
+                }
+                tg.Children.Add(new RotateTransform(deltaAngleDegrees, center.X, center.Y));
+                path.RenderTransform = tg;
+            }
+            else if (obj.Element is CanvasControl canvas)
+            {
+                obj.RotationAngle = targetAngleDegrees;
+
+                double baseW = !double.IsNaN(canvas.Width) && canvas.Width > 0 ? canvas.Width : (canvas.ActualWidth > 0 ? canvas.ActualWidth : 200);
+                double baseH = !double.IsNaN(canvas.Height) && canvas.Height > 0 ? canvas.Height : (canvas.ActualHeight > 0 ? canvas.ActualHeight : 200);
+
+                double currentW = state.Size.Width > 0 ? state.Size.Width : baseW;
+                double currentH = state.Size.Height > 0 ? state.Size.Height : baseH;
+
+                double scaleX = currentW / baseW;
+                double scaleY = currentH / baseH;
+
+                var tg = new TransformGroup();
+                tg.Children.Add(new ScaleTransform(scaleX, scaleY, 0, 0));
+                if (targetAngleDegrees != 0)
+                {
+                    tg.Children.Add(new RotateTransform(targetAngleDegrees, (baseW * scaleX) / 2.0, (baseH * scaleY) / 2.0));
+                }
+                canvas.RenderTransform = tg;
+            }
+            else if (obj.Element is FrameworkElement fe)
+            {
+                obj.RotationAngle = targetAngleDegrees;
+                double w = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : state.Size.Width);
+                double h = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : state.Size.Height);
+                var rotateTransform = new RotateTransform(targetAngleDegrees, w / 2.0, h / 2.0);
+                fe.RenderTransform = rotateTransform;
+            }
+        }
+
+        /// <summary>
+        /// Rotate object đến góc cụ thể (Hỗ trợ cả đối tượng đơn lẻ và Group)
         /// </summary>
         public void Rotate(SelectableObject obj, double angleDegrees)
         {
             if (obj == null || obj.IsLocked)
                 return;
 
-            obj.RotationAngle = angleDegrees % 360;
+            double normalizedAngle = (angleDegrees % 360 + 360) % 360;
+
+            // 1. Nhóm đối tượng (Group / Multi-Selection)
+            if (obj.IsGroup || obj.Type == ObjectType.Group || (obj.GroupMembers != null && obj.GroupMembers.Count > 0))
+            {
+                double deltaAngle = normalizedAngle - obj.RotationAngle;
+                RotateInPlace(obj, deltaAngle);
+                obj.RotationAngle = normalizedAngle;
+                return;
+            }
+
+            // 2. Nét vẽ Polyline / Polygon / Line: Xoay các điểm trực tiếp theo delta quanh tâm
+            if (obj.Element is System.Windows.Shapes.Polyline || obj.Element is System.Windows.Shapes.Polygon || obj.Element is System.Windows.Shapes.Line)
+            {
+                double deltaAngle = normalizedAngle - obj.RotationAngle;
+                RotateInPlace(obj, deltaAngle);
+                obj.RotationAngle = normalizedAngle;
+                return;
+            }
+
+            // 3. FrameworkElement / Path: Sử dụng RenderTransform RotateTransform
+            obj.RotationAngle = normalizedAngle;
             obj.ApplyTransform();
+            obj.UpdateBounds();
         }
 
         /// <summary>
@@ -468,6 +1281,20 @@ namespace QASmartTouch.Services
                             polyline.Points[i] = new Point(groupCenterX + (pdx * cos - pdy * sin), groupCenterY + (pdx * sin + pdy * cos));
                         }
                         polyline.RenderTransform = Transform.Identity;
+                        member.RotationAngle = 0;
+                        member.UpdateBounds();
+                    }
+                    else if (member.Element is System.Windows.Shapes.Polygon polygon && polygon.Points != null && polygon.Points.Count > 0)
+                    {
+                        for (int i = 0; i < polygon.Points.Count; i++)
+                        {
+                            var pt = polygon.Points[i];
+                            double pdx = pt.X - groupCenterX;
+                            double pdy = pt.Y - groupCenterY;
+                            polygon.Points[i] = new Point(groupCenterX + (pdx * cos - pdy * sin), groupCenterY + (pdx * sin + pdy * cos));
+                        }
+                        polygon.RenderTransform = Transform.Identity;
+                        member.RotationAngle = 0;
                         member.UpdateBounds();
                     }
                     else if (member.Element is System.Windows.Shapes.Line line)
@@ -483,6 +1310,7 @@ namespace QASmartTouch.Services
                         line.Y2 = groupCenterY + (dx2 * sin + dy2 * cos);
 
                         line.RenderTransform = Transform.Identity;
+                        member.RotationAngle = 0;
                         member.UpdateBounds();
                     }
                     else if (member.Element is System.Windows.Shapes.Path path && path.Data != null)
@@ -500,7 +1328,7 @@ namespace QASmartTouch.Services
                         path.RenderTransform = tg;
                         member.UpdateBounds();
                     }
-                    else
+                    else if (member.Element is FrameworkElement fe)
                     {
                         double memCenterX = member.Position.X + (member.Size.Width / 2.0);
                         double memCenterY = member.Position.Y + (member.Size.Height / 2.0);
@@ -516,12 +1344,15 @@ namespace QASmartTouch.Services
                             newCenterX - (member.Size.Width / 2.0),
                             newCenterY - (member.Size.Height / 2.0)
                         );
+                        CanvasControl.SetLeft(fe, member.Position.X);
+                        CanvasControl.SetTop(fe, member.Position.Y);
                         member.ApplyTransform();
                         member.UpdateBounds();
                     }
                 }
 
-                // ✅ FIX: Recalculate group bounds từ members (obj.Element==null cho virtual group)
+                // ✅ FIX: Recalculate group bounds từ members
+                obj.RotationAngle = 0;
                 RecalculateGroupBounds(obj);
                 System.Diagnostics.Debug.WriteLine($"🔄 Group RotateInPlace: {obj.GroupMembers?.Count} members processed, new Bounds={obj.Bounds}");
                 return;
@@ -541,6 +1372,21 @@ namespace QASmartTouch.Services
                     singlePolyline.Points[i] = new Point(centerX + (dx * cos - dy * sin), centerY + (dx * sin + dy * cos));
                 }
                 singlePolyline.RenderTransform = Transform.Identity;
+                obj.RotationAngle = 0;
+                obj.UpdateBounds();
+            }
+            else if (obj.Element is System.Windows.Shapes.Polygon singlePolygon && singlePolygon.Points != null && singlePolygon.Points.Count > 0)
+            {
+                for (int i = 0; i < singlePolygon.Points.Count; i++)
+                {
+                    var pt = singlePolygon.Points[i];
+                    double dx = pt.X - centerX;
+                    double dy = pt.Y - centerY;
+                    singlePolygon.Points[i] = new Point(centerX + (dx * cos - dy * sin), centerY + (dx * sin + dy * cos));
+                }
+                singlePolygon.RenderTransform = Transform.Identity;
+                obj.RotationAngle = 0;
+                obj.UpdateBounds();
             }
             else if (obj.Element is System.Windows.Shapes.Line singleLine)
             {
@@ -555,30 +1401,33 @@ namespace QASmartTouch.Services
                 singleLine.Y2 = centerY + (dx2 * sin + dy2 * cos);
 
                 singleLine.RenderTransform = Transform.Identity;
+                obj.RotationAngle = 0;
+                obj.UpdateBounds();
             }
             else
             {
                 obj.RotationAngle = (obj.RotationAngle + deltaAngleDegrees) % 360;
                 obj.ApplyTransform();
+                obj.UpdateBounds();
             }
-
-            obj.UpdateBounds();
         }
 
         /// <summary>
-        /// Calculate rotation angle từ mouse position
+        /// Calculate rotation angle từ mouse position so với đỉnh trên (Top Handle = 0°)
         /// </summary>
         public double CalculateRotationAngle(Point center, Point currentPoint)
         {
             Vector vector = currentPoint - center;
             double angleRadians = Math.Atan2(vector.Y, vector.X);
-            double angleDegrees = angleRadians * 180 / Math.PI;
+            double angleDegrees = angleRadians * 180.0 / Math.PI;
             
-            // Adjust to 0-360 range
-            if (angleDegrees < 0)
-                angleDegrees += 360;
+            // Chốt xoay nằm ở đỉnh trên (12h, vector = (0, -1)).
+            // Atan2(0, -1) = -90° (270°). Thêm 90° để quy chuẩn đỉnh trên là 0°.
+            double angleFromTop = (angleDegrees + 90.0) % 360.0;
+            if (angleFromTop < 0)
+                angleFromTop += 360.0;
 
-            return angleDegrees;
+            return angleFromTop;
         }
 
         #endregion
@@ -609,6 +1458,20 @@ namespace QASmartTouch.Services
                             polyline.Points[i] = new Point(2 * groupCenterX - pt.X, pt.Y);
                         }
                         polyline.RenderTransform = Transform.Identity;
+                        if (!double.IsNaN(CanvasControl.GetLeft(polyline))) CanvasControl.SetLeft(polyline, double.NaN);
+                        if (!double.IsNaN(CanvasControl.GetTop(polyline))) CanvasControl.SetTop(polyline, double.NaN);
+                        member.UpdateBounds();
+                    }
+                    else if (member.Element is System.Windows.Shapes.Polygon polygon && polygon.Points != null && polygon.Points.Count > 0)
+                    {
+                        for (int i = 0; i < polygon.Points.Count; i++)
+                        {
+                            var pt = polygon.Points[i];
+                            polygon.Points[i] = new Point(2 * groupCenterX - pt.X, pt.Y);
+                        }
+                        polygon.RenderTransform = Transform.Identity;
+                        if (!double.IsNaN(CanvasControl.GetLeft(polygon))) CanvasControl.SetLeft(polygon, double.NaN);
+                        if (!double.IsNaN(CanvasControl.GetTop(polygon))) CanvasControl.SetTop(polygon, double.NaN);
                         member.UpdateBounds();
                     }
                     else if (member.Element is System.Windows.Shapes.Line line)
@@ -616,6 +1479,8 @@ namespace QASmartTouch.Services
                         line.X1 = 2 * groupCenterX - line.X1;
                         line.X2 = 2 * groupCenterX - line.X2;
                         line.RenderTransform = Transform.Identity;
+                        if (!double.IsNaN(CanvasControl.GetLeft(line))) CanvasControl.SetLeft(line, double.NaN);
+                        if (!double.IsNaN(CanvasControl.GetTop(line))) CanvasControl.SetTop(line, double.NaN);
                         member.UpdateBounds();
                     }
                     else if (member.Element is System.Windows.Shapes.Path path && path.Data != null)
@@ -665,6 +1530,22 @@ namespace QASmartTouch.Services
                     singlePolyline.Points[i] = new Point(2 * centerX - pt.X, pt.Y);
                 }
                 singlePolyline.RenderTransform = Transform.Identity;
+                if (!double.IsNaN(CanvasControl.GetLeft(singlePolyline))) CanvasControl.SetLeft(singlePolyline, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(singlePolyline))) CanvasControl.SetTop(singlePolyline, double.NaN);
+                obj.UpdateBounds();
+                return;
+            }
+
+            if (obj.Element is System.Windows.Shapes.Polygon singlePolygon && singlePolygon.Points != null && singlePolygon.Points.Count > 0)
+            {
+                for (int i = 0; i < singlePolygon.Points.Count; i++)
+                {
+                    var pt = singlePolygon.Points[i];
+                    singlePolygon.Points[i] = new Point(2 * centerX - pt.X, pt.Y);
+                }
+                singlePolygon.RenderTransform = Transform.Identity;
+                if (!double.IsNaN(CanvasControl.GetLeft(singlePolygon))) CanvasControl.SetLeft(singlePolygon, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(singlePolygon))) CanvasControl.SetTop(singlePolygon, double.NaN);
                 obj.UpdateBounds();
                 return;
             }
@@ -674,6 +1555,8 @@ namespace QASmartTouch.Services
                 singleLine.X1 = 2 * centerX - singleLine.X1;
                 singleLine.X2 = 2 * centerX - singleLine.X2;
                 singleLine.RenderTransform = Transform.Identity;
+                if (!double.IsNaN(CanvasControl.GetLeft(singleLine))) CanvasControl.SetLeft(singleLine, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(singleLine))) CanvasControl.SetTop(singleLine, double.NaN);
                 obj.UpdateBounds();
                 return;
             }
@@ -710,6 +1593,20 @@ namespace QASmartTouch.Services
                             polyline.Points[i] = new Point(pt.X, 2 * groupCenterY - pt.Y);
                         }
                         polyline.RenderTransform = Transform.Identity;
+                        if (!double.IsNaN(CanvasControl.GetLeft(polyline))) CanvasControl.SetLeft(polyline, double.NaN);
+                        if (!double.IsNaN(CanvasControl.GetTop(polyline))) CanvasControl.SetTop(polyline, double.NaN);
+                        member.UpdateBounds();
+                    }
+                    else if (member.Element is System.Windows.Shapes.Polygon polygon && polygon.Points != null && polygon.Points.Count > 0)
+                    {
+                        for (int i = 0; i < polygon.Points.Count; i++)
+                        {
+                            var pt = polygon.Points[i];
+                            polygon.Points[i] = new Point(pt.X, 2 * groupCenterY - pt.Y);
+                        }
+                        polygon.RenderTransform = Transform.Identity;
+                        if (!double.IsNaN(CanvasControl.GetLeft(polygon))) CanvasControl.SetLeft(polygon, double.NaN);
+                        if (!double.IsNaN(CanvasControl.GetTop(polygon))) CanvasControl.SetTop(polygon, double.NaN);
                         member.UpdateBounds();
                     }
                     else if (member.Element is System.Windows.Shapes.Line line)
@@ -717,6 +1614,8 @@ namespace QASmartTouch.Services
                         line.Y1 = 2 * groupCenterY - line.Y1;
                         line.Y2 = 2 * groupCenterY - line.Y2;
                         line.RenderTransform = Transform.Identity;
+                        if (!double.IsNaN(CanvasControl.GetLeft(line))) CanvasControl.SetLeft(line, double.NaN);
+                        if (!double.IsNaN(CanvasControl.GetTop(line))) CanvasControl.SetTop(line, double.NaN);
                         member.UpdateBounds();
                     }
                     else if (member.Element is System.Windows.Shapes.Path path && path.Data != null)
@@ -766,6 +1665,22 @@ namespace QASmartTouch.Services
                     singlePolyline.Points[i] = new Point(pt.X, 2 * centerY - pt.Y);
                 }
                 singlePolyline.RenderTransform = Transform.Identity;
+                if (!double.IsNaN(CanvasControl.GetLeft(singlePolyline))) CanvasControl.SetLeft(singlePolyline, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(singlePolyline))) CanvasControl.SetTop(singlePolyline, double.NaN);
+                obj.UpdateBounds();
+                return;
+            }
+
+            if (obj.Element is System.Windows.Shapes.Polygon singlePolygon && singlePolygon.Points != null && singlePolygon.Points.Count > 0)
+            {
+                for (int i = 0; i < singlePolygon.Points.Count; i++)
+                {
+                    var pt = singlePolygon.Points[i];
+                    singlePolygon.Points[i] = new Point(pt.X, 2 * centerY - pt.Y);
+                }
+                singlePolygon.RenderTransform = Transform.Identity;
+                if (!double.IsNaN(CanvasControl.GetLeft(singlePolygon))) CanvasControl.SetLeft(singlePolygon, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(singlePolygon))) CanvasControl.SetTop(singlePolygon, double.NaN);
                 obj.UpdateBounds();
                 return;
             }
@@ -775,6 +1690,8 @@ namespace QASmartTouch.Services
                 singleLine.Y1 = 2 * centerY - singleLine.Y1;
                 singleLine.Y2 = 2 * centerY - singleLine.Y2;
                 singleLine.RenderTransform = Transform.Identity;
+                if (!double.IsNaN(CanvasControl.GetLeft(singleLine))) CanvasControl.SetLeft(singleLine, double.NaN);
+                if (!double.IsNaN(CanvasControl.GetTop(singleLine))) CanvasControl.SetTop(singleLine, double.NaN);
                 obj.UpdateBounds();
                 return;
             }

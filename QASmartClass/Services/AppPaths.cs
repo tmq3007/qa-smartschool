@@ -78,12 +78,13 @@ namespace QASmartClass.Services
             }
         }
         public static string SystemRestoreBackupDir => Path.Combine(DocumentsDir, "Backups", "SystemRestore");
+        public static string WebView2UserDataDir => Path.Combine(RootDir, "WebView2");
 
         /// <summary>Tạo tất cả thư mục cần thiết khi khởi động</summary>
         public static void EnsureDirectories()
         {
             foreach (var dir in new[] { RootDir, SettingsDir, LogsDir, BackupsDir,
-                ExportsDir, SharedFilesDir, ReceivedFilesDir, SubmittedFilesDir, TempDir, CrashesDir, SystemRestoreBackupDir })
+                ExportsDir, SharedFilesDir, ReceivedFilesDir, SubmittedFilesDir, TempDir, CrashesDir, SystemRestoreBackupDir, WebView2UserDataDir })
             {
                 Directory.CreateDirectory(dir);
             }

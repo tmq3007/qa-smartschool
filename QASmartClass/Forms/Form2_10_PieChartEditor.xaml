@@ -229,15 +229,17 @@
 
             </Border>
 
-
-
             <!-- Control Panel -->
 
-            <ScrollViewer 
+            <ScrollViewer x:Name="MainScrollViewer"
 
                           Background="#F0F2F5" 
 
                           VerticalScrollBarVisibility="Auto"
+
+                          PanningMode="Both"
+
+                          PanningDeceleration="0.002"
 
                           Padding="20" Margin="990,0,10,0" Grid.ColumnSpan="2">
 
@@ -251,9 +253,9 @@
 
                             Padding="15" 
 
-                            Margin="0,0,0,15"
+                            Margin="0,0,0,15" 
 
-                            BorderBrush="#667eea"
+                            BorderBrush="#667eea" 
 
                             BorderThickness="4,0,0,0">
 
@@ -285,11 +287,11 @@
 
                             <TextBox x:Name="TxtChartTitle" 
 
-                                     Text="Thị phần sản phẩm năm 2024"
+                                     Text="Thị phần sản phẩm năm 2024" 
 
-                                     Style="{StaticResource ModernTextBox}"
+                                     Style="{StaticResource ModernTextBox}" 
 
-                                     Margin="0,0,0,15"
+                                     Margin="0,0,0,15" 
 
                                      TextChanged="OnChartPropertyChanged"/>
 
@@ -311,9 +313,9 @@
 
                                     Padding="8" 
 
-                                    BorderBrush="#FFC107"
+                                    BorderBrush="#FFC107" 
 
-                                    BorderThickness="3,0,0,0"
+                                    BorderThickness="3,0,0,0" 
 
                                     Margin="0,0,0,10">
 
@@ -323,7 +325,7 @@
 
                                            FontStyle="Italic" 
 
-                                           Foreground="#888"
+                                           Foreground="#888" 
 
                                            TextWrapping="Wrap"/>
 
@@ -331,9 +333,13 @@
 
 
 
-                            <ScrollViewer MaxHeight="300" 
+                            <ScrollViewer x:Name="DataEntriesScrollViewer" MaxHeight="300" 
 
-                                          VerticalScrollBarVisibility="Auto"
+                                          VerticalScrollBarVisibility="Auto" 
+
+                                          PanningMode="Both"
+
+                                          PanningDeceleration="0.002"
 
                                           Margin="0,0,0,10">
 

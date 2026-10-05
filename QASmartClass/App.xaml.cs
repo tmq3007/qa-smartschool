@@ -7,7 +7,6 @@ using QASmartTouch.Forms;
 using QASmartClass.Shared;
 using QASmartClass.Classroom.Views;
 using QASmartClass.Classroom.Services;
-using QASmartClass.StudentClient.Views;
 using QASmartClass.Data;
 using Serilog;
 using Microsoft.EntityFrameworkCore;
@@ -20,12 +19,9 @@ namespace QASmartTouch
         public ModeService ModeService { get; } = new ModeService();
         public AppDbContext Database { get; private set; } = null!;
         public NetworkDiscoveryService NetworkService { get; } = new NetworkDiscoveryService();
-        public QASmartClass.StudentClient.Services.StudentNetworkClient StudentNetwork { get; } = new();
-
         // ═══ File Transfer Services (TCP 29879) ═══
         private FileTransferService? _fileTransferService;
         public FileTransferService FileTransfer => _fileTransferService ??= new FileTransferService(NetworkService);
-        public QASmartClass.StudentClient.Services.StudentFileTransfer StudentFileTransfer { get; } = new();
 
         // ═══ Device Memory Service — ghi nhớ thiết bị trong lớp ═══
         private DeviceMemoryService? _deviceMemoryService;
@@ -69,14 +65,25 @@ namespace QASmartTouch
         internal QASmartClass.Shared.FloatingModeBar? _floatingModeBar;
         internal ClassroomShell? _classroomShell;
         internal Form2_MainDashboard? _whiteboardShell;
-        internal StudentShell? _studentShell;
         // [LOI_VID_50] Cờ cho phép đóng Window thật khi thoát ứng dụng
         internal static bool _isAppShuttingDown = false;
         internal System.Windows.Window? _staffShell;
 
+        static App()
+        {
+            // === QC_4.2_WEBVIEW2: Khởi tạo biến môi trường UserData cho WebView2 toàn ứng dụng ===
+            QASmartTouch.Helpers.WebView2Helper.InitializeEnvironment();
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Đảm bảo thư mục và biến môi trường WebView2 sẵn sàng
+            QASmartTouch.Helpers.WebView2Helper.InitializeEnvironment();
+
             base.OnStartup(e);
+
+            // === QC_4.2_TOUCH_SLIDER: Tối ưu cảm ứng 1 chạm cho thanh trượt Slider toàn hệ thống ===
+            QASmartTouch.Helpers.TouchSliderHelper.Initialize();
 
             // === UPGRADE_06: CommandLine Auto-Fix Firewall ===
             if (e.Args != null && System.Linq.Enumerable.Contains(e.Args, "--configure-firewall"))
@@ -150,9 +157,16 @@ namespace QASmartTouch
             // Nếu phân hệ là All (mặc định) và không có tham số dòng lệnh override
             if (!isTestMode && !isStudentMode && (string.IsNullOrEmpty(activeRole) || activeRole.Equals("All", StringComparison.OrdinalIgnoreCase)))
             {
-                // Hiển thị ngay màn hình chọn đăng nhập nhưng KHÔNG kích hoạt overlay block toàn màn hình
-                var loginSelection = new Form0_LoginSelection(true);
-                loginSelection.Show();
+                // [SMARTTOUCH_ONLY] Chặn WPF tự thoát khi chưa có Window nào
+                this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+                // [SMARTTOUCH_ONLY] Bỏ qua đăng nhập — vào thẳng bảng vẽ
+                // var loginSelection = new Form0_LoginSelection(true);
+                // loginSelection.Show();
+
+                // Hiển thị Splash Screen để báo đang load thay vì màn hình trống
+                var splash = new Forms.SplashScreen();
+                splash.Show();
 
                 // Chạy ngầm tác vụ khởi tạo
                 System.Threading.Tasks.Task.Run(async () =>
@@ -161,10 +175,14 @@ namespace QASmartTouch
                     {
                         InitializeCoreServices(e, (status, progress) =>
                         {
+                            // [SMARTTOUCH_ONLY] Không cần cập nhật UI vì không có form đăng nhập
+                            // Dispatcher.Invoke(() =>
+                            // {
+                            //     loginSelection.UpdateLoadingStatus(status, progress);
+                            // });
                             Dispatcher.Invoke(() =>
                             {
-                                // Cập nhật progress bar nhúng trong Form thay vì block overlay
-                                loginSelection.UpdateLoadingStatus(status, progress);
+                                splash.UpdateStatus(status, progress);
                             });
                         });
 
@@ -178,8 +196,23 @@ namespace QASmartTouch
                         await Dispatcher.InvokeAsync(() =>
                         {
                             Database = tempDb;
-                            loginSelection.HideLoadingOverlay();
-                            InitializeModeAndRoleAfterLoading();
+
+                            // [SMARTTOUCH_ONLY] Bỏ qua login → vào thẳng SmartTouch
+                            // loginSelection.HideLoadingOverlay();
+                            // InitializeModeAndRoleAfterLoading();
+
+                            // Đóng Splash Screen khi load xong
+                            splash.UpdateStatus("Sẵn sàng!", 100);
+                            splash.Close();
+
+                            // Hard-code Teacher + đăng ký events + mở bảng vẽ trực tiếp
+                            UserRoleService.SaveRole(QASmartClass.Shared.UserRole.Teacher);
+                            ModeService.ModeChanged += OnModeChanged;
+                            ModeService.ModeTransitionStarted += OnModeTransitionStarted;
+                            ModeService.ModeTransitionCompleted += OnModeTransitionCompleted;
+                            ShowWhiteboard();
+                            this.ShutdownMode = ShutdownMode.OnLastWindowClose;
+                            EnsureFloatingModeBar();
                         });
                     }
                     catch (Exception ex)
@@ -456,9 +489,11 @@ namespace QASmartTouch
 
         public void ShowClassroom()
         {
+            // ✅ FIX: Đóng tool windows trước khi ẩn whiteboard
+            _whiteboardShell?.CloseAllToolWindows();
+
             // [LOI_VID_50] Fade-out cửa sổ cũ thay vì Hide đột ngột
             FadeOutWindow(_whiteboardShell);
-            _studentShell?.Hide();
 
             if (_classroomShell == null)
             {
@@ -467,6 +502,7 @@ namespace QASmartTouch
                 ConfigureWindowCaching(_classroomShell);
             }
 
+            MainWindow = _classroomShell;
             // [LOI_VID_50] Fade-in cửa sổ mới
             FadeInWindow(_classroomShell);
 
@@ -480,7 +516,6 @@ namespace QASmartTouch
         {
             // [LOI_VID_50] Fade-out cửa sổ cũ thay vì Hide đột ngột
             FadeOutWindow(_classroomShell);
-            _studentShell?.Hide();
 
             if (_whiteboardShell == null)
             {
@@ -489,6 +524,7 @@ namespace QASmartTouch
                 ConfigureWindowCaching(_whiteboardShell);
             }
 
+            MainWindow = _whiteboardShell;
             // [LOI_VID_50] Fade-in cửa sổ mới
             FadeInWindow(_whiteboardShell);
 
@@ -500,10 +536,12 @@ namespace QASmartTouch
 
         private void HideAll()
         {
+            // ✅ FIX: Đóng tool windows trước khi ẩn whiteboard
+            _whiteboardShell?.CloseAllToolWindows();
+
             // [LOI_VID_50] Fade-out cả hai cửa sổ
             FadeOutWindow(_classroomShell);
             FadeOutWindow(_whiteboardShell);
-            _studentShell?.Hide();
             
             EnsureFloatingModeBar();
             
@@ -512,60 +550,27 @@ namespace QASmartTouch
 
         public void EnsureFloatingModeBar()
         {
-            if (UserRoleService.ShouldShowModeBar)
+            // [SMARTTOUCH_ONLY] Ẩn hoàn toàn thanh Floating Mode Bar để khóa cứng ở bảng vẽ
+            // if (UserRoleService.ShouldShowModeBar)
+            // {
+            //     if (_floatingModeBar == null)
+            //     {
+            //         _floatingModeBar = new FloatingModeBar(ModeService, UserRoleService);
+            //     }
+            //     _floatingModeBar.Show();
+            //     _floatingModeBar.Activate();
+            // }
+            // else
+            // {
+            //     _floatingModeBar?.Hide();
+            // }
+            
+            if (_floatingModeBar != null)
             {
-                if (_floatingModeBar == null)
-                {
-                    _floatingModeBar = new FloatingModeBar(ModeService, UserRoleService);
-                }
-                _floatingModeBar.Show();
-                _floatingModeBar.Activate();
-            }
-            else
-            {
-                _floatingModeBar?.Hide();
+                _floatingModeBar.Hide();
             }
         }
 
-        // ═══════════════════════════════════════════════════════
-        //  STUDENT CLIENT
-        // ═══════════════════════════════════════════════════════
-
-        public void ShowStudentClient()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                _classroomShell?.Hide();
-                _whiteboardShell?.Hide();
-
-                var login = new QASmartClass.StudentClient.Views.StudentLoginWindow();
-                if (login.ShowDialog() == true)
-                {
-                    if (_studentShell == null)
-                    {
-                        _studentShell = new QASmartClass.StudentClient.Views.StudentShell();
-                        _studentShell.Closed += (s, e) => _studentShell = null;
-                    }
-                    _studentShell.Show();
-                    _studentShell.Activate();
-                    Log.Information("Student client opened");
-                }
-                else
-                {
-                    Log.Information("Student login cancelled, falling back to Teacher mode");
-                    UserRoleService.SaveRole(QASmartClass.Shared.UserRole.Teacher);
-
-                    if (_classroomShell == null)
-                    {
-                        _classroomShell = new ClassroomShell();
-                    }
-                    _classroomShell.Show();
-                    _classroomShell.Activate();
-
-                    EnsureFloatingModeBar();
-                }
-            });
-        }
 
         private void GlobalKeyDownHandler(object sender, System.Windows.Input.KeyEventArgs e)
         {
@@ -573,13 +578,6 @@ namespace QASmartTouch
                 System.Windows.Input.Keyboard.Modifiers == (System.Windows.Input.ModifierKeys.Control | System.Windows.Input.ModifierKeys.Shift | System.Windows.Input.ModifierKeys.Alt))
             {
                 e.Handled = true;
-
-                var pinDialog = new QASmartClass.Admin.Views.PinDialog();
-                if (pinDialog.ShowDialog() == true)
-                {
-                    var console = new QASmartClass.Admin.Views.AdminConsoleWindow();
-                    console.ShowDialog();
-                }
             }
         }
 

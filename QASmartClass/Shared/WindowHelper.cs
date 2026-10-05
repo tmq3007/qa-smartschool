@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Windows;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Shared
 {
@@ -10,6 +11,8 @@ namespace QASmartTouch.Shared
     /// Giải quyết lỗi Form con bị chìm xuống dưới cửa sổ chính khi cửa sổ chính có Topmost = true
     /// (ví dụ: khi MainDashboard ở chế độ Fullscreen, hoặc PeriodicTable MainWindow luôn Topmost)
     /// bằng cách tự động thiết lập Owner, kế thừa Topmost, và đảm bảo Focus/Activate cho cửa sổ con.
+    /// Đồng thời tự động tích hợp TouchActivationHelper để đảm bảo cú chạm đầu tiên trên màn hình
+    /// tương tác (IFP) luôn được kích hoạt ngay lập tức (Zero 2nd tap).
     /// 
     /// Cách sử dụng:
     ///   - Modal:     WindowHelper.ShowChildDialog(childWindow, ownerWindow);
@@ -55,7 +58,10 @@ namespace QASmartTouch.Shared
                 childWindow.Topmost = true;
             }
 
-            // 4. Đảm bảo Focus và Activate khi cửa sổ con hiển thị
+            // 4. QC_4.2_TOUCH_ACTIVATION: Đảm bảo cửa sổ nhận cú chạm đầu tiên trên màn hình tương tác (IFP)
+            TouchActivationHelper.ApplyToWindow(childWindow);
+
+            // 5. Đảm bảo Focus và Activate khi cửa sổ con hiển thị
             childWindow.Loaded += ChildWindow_Loaded;
 
             try
@@ -102,7 +108,10 @@ namespace QASmartTouch.Shared
                 childWindow.Topmost = true;
             }
 
-            // 4. Đảm bảo Focus và Activate
+            // 4. QC_4.2_TOUCH_ACTIVATION: Đảm bảo cửa sổ nhận cú chạm đầu tiên trên màn hình tương tác (IFP)
+            TouchActivationHelper.ApplyToWindow(childWindow);
+
+            // 5. Đảm bảo Focus và Activate
             childWindow.Loaded += ChildWindow_Loaded;
 
             childWindow.Show();
@@ -132,6 +141,15 @@ namespace QASmartTouch.Shared
             {
                 window.Activate();
                 window.Focus();
+                window.Dispatcher.BeginInvoke(new System.Action(() =>
+                {
+                    try
+                    {
+                        window.Activate();
+                        window.Focus();
+                    }
+                    catch { }
+                }), System.Windows.Threading.DispatcherPriority.Input);
             }
         }
     }

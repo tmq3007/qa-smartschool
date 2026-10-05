@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -13,6 +13,8 @@ namespace QASmartTouch.Forms
         public Form5_1_ColorPicker()
         {
             InitializeComponent();
+            // QC_4.2_TOUCH_ACTIVATION: Đảm bảo hộp thoại nhận cú chạm đầu tiên trên IFP (chống WM_MOUSEACTIVATE nuốt chạm)
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
             SelectedColor = Colors.Red;
             UpdatePreview();
         }
@@ -184,19 +186,28 @@ namespace QASmartTouch.Forms
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
+            try { this.Owner?.Activate(); this.Owner?.Focus(); } catch { }
             this.Close();
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
+            try { this.Owner?.Activate(); this.Owner?.Focus(); } catch { }
             this.Close();
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
+            try { this.Owner?.Activate(); this.Owner?.Focus(); } catch { }
             this.Close();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            try { this.Owner?.Activate(); this.Owner?.Focus(); } catch { }
         }
     }
 }

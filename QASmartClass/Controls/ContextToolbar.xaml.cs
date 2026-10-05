@@ -45,6 +45,22 @@ namespace QASmartTouch.Controls
         {
             InitializeComponent();
             this.Visibility = Visibility.Collapsed;
+
+            // ✅ QC_4.2_TOUCH_ACTIVATION: Đảm bảo toàn bộ Toolbar và Popups nhận diện cảm ứng 1 chạm ngay lập tức
+            this.Loaded += (s, e) =>
+            {
+                QASmartTouch.Helpers.TouchActivationHelper.WireAllInteractiveControls(this);
+            };
+
+            if (ColorPalettePopup != null)
+            {
+                QASmartTouch.Helpers.TouchActivationHelper.ApplyToPopup(ColorPalettePopup);
+            }
+
+            if (HandwritingCandidatesPopup != null)
+            {
+                QASmartTouch.Helpers.TouchActivationHelper.ApplyToPopup(HandwritingCandidatesPopup);
+            }
         }
 
         #endregion
@@ -72,7 +88,7 @@ namespace QASmartTouch.Controls
             // Tránh ContextToolbar bị trôi ra ngoài lề trái hoặc lề dưới màn hình làm che khuất nút công cụ
             Action applyBoundsClamping = () =>
             {
-                double width = this.ActualWidth > 0 ? this.ActualWidth : 420;
+                double width = this.ActualWidth > 0 ? this.ActualWidth : 220;
                 double height = this.ActualHeight > 0 ? this.ActualHeight : 44;
 
                 var parent = this.Parent as Canvas;
@@ -122,8 +138,16 @@ namespace QASmartTouch.Controls
 
         #region Button Click Events
 
+        private void btnCopy_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            btnCopy_Click(sender, e);
+        }
+
         private void btnCopy_Click(object sender, RoutedEventArgs e)
         {
+            if (ColorPalettePopup != null) ColorPalettePopup.IsOpen = false;
+            if (HandwritingCandidatesPopup != null) HandwritingCandidatesPopup.IsOpen = false;
             CopyClicked?.Invoke(this, EventArgs.Empty);
         }
 
@@ -167,8 +191,16 @@ namespace QASmartTouch.Controls
             FlipVerticalClicked?.Invoke(this, EventArgs.Empty);
         }
 
+        private void btnThickness_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            btnThickness_Click(sender, e);
+        }
+
         private void btnThickness_Click(object sender, RoutedEventArgs e)
         {
+            if (ColorPalettePopup != null) ColorPalettePopup.IsOpen = false;
+            if (HandwritingCandidatesPopup != null) HandwritingCandidatesPopup.IsOpen = false;
             ThicknessClicked?.Invoke(this, EventArgs.Empty);
         }
 
@@ -241,6 +273,7 @@ namespace QASmartTouch.Controls
                 btn.Template = template;
 
                 btn.Click += CandidateOption_Click;
+                QASmartTouch.Helpers.TouchActivationHelper.WireButton(btn);
                 CandidatesContainer.Children.Add(btn);
             }
 

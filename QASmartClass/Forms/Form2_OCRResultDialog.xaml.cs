@@ -1,7 +1,8 @@
-﻿using QASmartTouch.Services;
+using QASmartTouch.Services;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -13,6 +14,7 @@ namespace QASmartTouch.Forms
         public Form2_OCRResultDialog(BitmapSource previewImage, List<OCRResult> results)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             
             _results = results;
             

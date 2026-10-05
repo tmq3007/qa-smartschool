@@ -210,6 +210,9 @@
     <Compile Include="V42CloseButtonUpgradesTests.cs" />
     <Compile Include="ChessToolTests.cs" />
     <Compile Include="CaroToolTests.cs" />
+    <Compile Include="V42ExportSaveLectureTests.cs" />
+    <Compile Include="V42BoardResizeAndIsolationTests.cs" />
+    <Compile Include="V42TouchActivationSubMenuTests.cs" />
   </ItemGroup>
 
 </Project>

@@ -1,15 +1,11 @@
 <Window x:Class="QASmartTouch.Forms.Form2_MainDashboard"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-
+        xmlns:controls="clr-namespace:QASmartTouch.Controls"
         Title="QASmartTouch - Dashboard"
-
         WindowState="Maximized"
-
         WindowStyle="None"
-
         Background="#F5F6FA">
 
     
@@ -80,7 +76,7 @@
 
         <!-- ROW 1: CONTENT PANEL (Canvas + Welcome State) -->
 
-        <Grid Grid.Row="1" Background="#3D6D64">
+        <Grid x:Name="ContentGrid" Grid.Row="1" Background="#3D6D64" ClipToBounds="True">
 
             <!-- ScrollViewer for Pan/Scroll functionality -->
 
@@ -94,7 +90,12 @@
 
                          Background="Transparent"
 
-                         SizeChanged="MainScrollViewer_SizeChanged">
+                         ClipToBounds="False"
+
+                         SizeChanged="MainScrollViewer_SizeChanged"
+                         PreviewMouseDown="MainScrollViewer_PreviewMouseDown"
+                         PreviewTouchDown="MainScrollViewer_PreviewTouchDown"
+                         PreviewStylusDown="MainScrollViewer_PreviewStylusDown">
 
                 <!-- Main Interactive Board (Canvas) -->
 
@@ -110,7 +111,7 @@
 
                         Background="#3D6D64"
 
-                        ClipToBounds="True"
+                        ClipToBounds="False"
 
                         UseLayoutRounding="True"
 
@@ -134,18 +135,8 @@
 
                         MouseLeave="MainInteractiveBoard_MouseLeave"
 
-                        MouseEnter="MainInteractiveBoard_MouseEnter">
-
-                    <Canvas.CacheMode>
-
-                        <BitmapCache EnableClearType="True" 
-
-                                     RenderAtScale="1.0" 
-
-                                     SnapsToDevicePixels="True"/>
-
-                    </Canvas.CacheMode>
-
+                        MouseEnter="MainInteractiveBoard_MouseEnter"
+                        MouseWheel="MainInteractiveBoard_MouseWheel">
                 </Canvas>
 
             </ScrollViewer>
@@ -713,7 +704,6 @@
                        Click="btn9_5_ScreenCurtain_Click"
 
                        ToolTip="Màn che bảng"
-
                        Visibility="Collapsed">
 
                     <Button.Template>
@@ -896,9 +886,118 @@
 
         </Border>
 
+        <!-- ZOOM INDICATOR HUD (Góc dưới bên phải) -->
+        <Border x:Name="hudZoomIndicator"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="0,0,24,6"
+                Background="#EE1E1E1E"
+                BorderBrush="#404040"
+                BorderThickness="1"
+                CornerRadius="18"
+                Padding="6,4">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Direction="270" ShadowDepth="2" BlurRadius="10" Opacity="0.45"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Zoom Out (-) -->
+                <Button x:Name="btnHudZoomOut" 
+                        Width="28" Height="28" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Cursor="Hand"
+                        Click="btnHudZoomOut_Click"
+                        ToolTip="Thu nhỏ (Ctrl + Lăn chuột lùi)">
+                    <TextBlock Text="−" FontSize="18" FontWeight="Bold" Foreground="#CCCCCC" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+
+                <!-- Zoom Percent Badge (Click to reset 100%) -->
+                <Button x:Name="btnHudZoomReset" 
+                        Background="#2A2A2A" 
+                        BorderThickness="0" 
+                        Cursor="Hand"
+                        Margin="4,0"
+                        Padding="8,2"
+                        Click="btnHudZoomReset_Click"
+                        ToolTip="Mức phóng to hiện tại. Nhấn để về 100% (Ctrl+0)">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <TextBlock x:Name="txtHudZoomPercent" Text="100%" FontSize="12" FontWeight="Bold" Foreground="#2E86DE" VerticalAlignment="Center"/>
+                </Button>
+
+                <!-- Zoom In (+) -->
+                <Button x:Name="btnHudZoomIn" 
+                        Width="28" Height="28" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Cursor="Hand"
+                        Click="btnHudZoomIn_Click"
+                        ToolTip="Phóng to (Ctrl + Lăn chuột tới)">
+                    <TextBlock Text="+" FontSize="18" FontWeight="Bold" Foreground="#CCCCCC" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+
+                <!-- Fit to Screen (⛶) -->
+                <Button x:Name="btnHudZoomFit" 
+                        Width="28" Height="28" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Cursor="Hand"
+                        Margin="2,0,0,0"
+                        Click="btnHudZoomFit_Click"
+                        ToolTip="Vừa khung hình 100%">
+                    <Viewbox Width="14" Height="14">
+                        <Canvas Width="24" Height="24">
+                            <Path Fill="#AAAAAA" Data="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z"/>
+                        </Canvas>
+                    </Viewbox>
+                </Button>
+
+                <!-- Separator -->
+                <Border Width="1" Height="16" Background="#444444" Margin="5,0"/>
+
+                <!-- Touch Mode: Multi-touch (🖐) vs Single-touch Gesture (✌) -->
+                <Button x:Name="btnHudTouchMode" 
+                        Height="28" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        Cursor="Hand"
+                        Margin="2,0,0,0"
+                        Padding="6,2"
+                        Click="btnHudTouchMode_Click"
+                        ToolTip="Chế độ cảm ứng: Đa chạm (Mặc định: nhiều ngón cùng viết vẽ). Nhấn để bật Cử chỉ 2 ngón (Pinch/Pan)">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="PART_TouchModeBorder" Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Viewbox Width="13" Height="13" Margin="0,0,3,0">
+                                        <Canvas Width="24" Height="24">
+                                            <Path x:Name="iconHudTouchMode" Fill="#AAAAAA" 
+                                                  Data="M21,11A1,1 0 0,0 20,10A1,1 0 0,0 19,11V15.5L18.06,14.56C17.67,14.17 17.04,14.17 16.65,14.56L15.71,15.5L18.82,21.68C19.18,22.4 19.92,22.86 20.73,22.86H21.5A2.5,2.5 0 0,0 24,20.36V14A1,1 0 0,0 23,13A1,1 0 0,0 22,14V12A1,1 0 0,0 21,11M13,2A1,1 0 0,0 12,3V10.5L11.06,9.56C10.67,9.17 10.04,9.17 9.65,9.56L8.71,10.5L11.82,16.68C12.18,17.4 12.92,17.86 13.73,17.86H14.5A2.5,2.5 0 0,0 17,15.36V9A1,1 0 0,0 16,8A1,1 0 0,0 15,9V4A1,1 0 0,0 14,3A1,1 0 0,0 13,2M5,6A1,1 0 0,0 4,7V14.5L3.06,13.56C2.67,13.17 2.04,13.17 1.65,13.56L0.71,14.5L3.82,20.68C4.18,21.4 4.92,21.86 5.73,21.86H6.5A2.5,2.5 0 0,0 9,19.36V13A1,1 0 0,0 8,12A1,1 0 0,0 7,13V8A1,1 0 0,0 6,7A1,1 0 0,0 5,6Z"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                    <TextBlock x:Name="txtHudTouchMode" Text="Đa chạm" FontSize="11" FontWeight="SemiBold" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Multi-User Dedicated Dual Board Overlay (Umind style) -->
+        <controls:MultiUserBoardOverlay x:Name="multiUserOverlay"
+                                        Visibility="Collapsed"
+                                        Panel.ZIndex="4000"/>
+
         </Grid>
 
     </Grid>
 
 </Window>
+
 

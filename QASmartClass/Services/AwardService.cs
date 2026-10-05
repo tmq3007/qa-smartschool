@@ -380,7 +380,7 @@ namespace QASmartClass.Services
                                 text.Span(record.TargetName).FontSize(18).Bold();
                             });
 
-                            string awardDesc = QASmartClass.Leadership.Views.AwardManagementView.MapAwardTypeDesc(record.AwardType);
+                            string awardDesc = record.AwardType;
                             string reason = $"Đã có thành tích xuất sắc trong học tập và rèn luyện - Đạt danh hiệu {awardDesc} học kỳ {record.Semester} năm học {record.SchoolYear}";
                             col.Item().PaddingTop(15).AlignCenter().Text(reason).FontSize(14);
                             

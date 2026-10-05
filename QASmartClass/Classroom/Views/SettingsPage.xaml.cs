@@ -91,37 +91,6 @@ namespace QASmartClass.Classroom.Views
 
         private void CheckAdminLock()
         {
-            try
-            {
-                var config = QASmartClass.Services.AppConfig.Load();
-                if (config.EnableAdminLock)
-                {
-                    var security = new QASmartClass.Services.AdminSecurityService();
-                    if (!security.IsFirstSetup)
-                    {
-                        var pinDialog = new QASmartClass.Admin.Views.PinDialog();
-                        if (pinDialog.ShowDialog() != true)
-                        {
-                            if (this.NavigationService != null && this.NavigationService.CanGoBack)
-                            {
-                                this.NavigationService.GoBack();
-                            }
-                            else
-                            {
-                                this.IsEnabled = false;
-                            }
-                        }
-                        else
-                        {
-                            this.IsEnabled = true;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Serilog.Log.Error("CheckAdminLock error: {Err}", ex.Message);
-            }
         }
     }
 }

@@ -25,8 +25,8 @@ namespace QASmartTouch.Forms
         // Drag State for Window
         private bool _isDragging = false;
         private Point _dragStartPoint;
-        private double _originalLeft = 0;
-        private double _originalTop = 0;
+        private double _originalLeft;
+        private double _originalTop;
 
         // Flip State
         private bool _isFlipped = false;
@@ -52,7 +52,9 @@ namespace QASmartTouch.Forms
         public Form2_17_SetSquareTool(Form2_MainDashboard mainDashboard)
         {
             InitializeComponent();
-            // QC_4.2_TOUCH_PIPELINE: STEM Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
+            // QC_4.2_TOUCH_PIPELINE: STEM Window — Sử dụng Apply tương tự Compa (Form2_19_CircleDrawingTool)
+            QASmartTouch.Helpers.TouchActivationHelper.Apply(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
+            Stylus.SetIsPressAndHoldEnabled(btnMove, false);
 
             _mainDashboard = mainDashboard;
 
@@ -654,24 +656,61 @@ namespace QASmartTouch.Forms
 
         #region Button Events - Move
 
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct Win32Point
+        {
+            public int X;
+            public int Y;
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool GetCursorPos(out Win32Point lpPoint);
+
+        private Point GetScreenPoint(InputEventArgs e)
+        {
+            try
+            {
+                var dpi = VisualTreeHelper.GetDpi(this);
+                double scaleX = dpi.DpiScaleX > 0 ? dpi.DpiScaleX : 1.0;
+                double scaleY = dpi.DpiScaleY > 0 ? dpi.DpiScaleY : 1.0;
+
+                // ✅ FIX: Ưu tiên tọa độ từ chính sự kiện đầu vào (Touch/Mouse)
+                // thay vì GetCursorPos() — vì GetCursorPos trả vị trí cursor "promoted"
+                // bị trễ/sai lệch trên màn hình cảm ứng IFP.
+                if (e is TouchEventArgs te)
+                {
+                    var pt = PointToScreen(te.GetTouchPoint(this).Position);
+                    return new Point(pt.X / scaleX, pt.Y / scaleY);
+                }
+                if (e is MouseEventArgs me)
+                {
+                    var pt = PointToScreen(me.GetPosition(this));
+                    return new Point(pt.X / scaleX, pt.Y / scaleY);
+                }
+
+                // Fallback: GetCursorPos cho Stylus thuần hoặc trường hợp đặc biệt
+                if (GetCursorPos(out Win32Point p))
+                {
+                    return new Point(p.X / scaleX, p.Y / scaleY);
+                }
+            }
+            catch { }
+            return new Point(0, 0);
+        }
+
         private void btnMove_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 _isDragging = true;
-                _dragStartPoint = PointToScreen(e.GetPosition(this));
+                _dragStartPoint = GetScreenPoint(e);
+                _originalLeft = this.Left;
+                _originalTop = this.Top;
 
                 // CaptureMouse: nhận mọi events dù di nhanh
                 if (sender is UIElement el)
                     el.CaptureMouse();
-
-                SetSquareLayerRoot.CacheMode = new BitmapCache
-                {
-                    RenderAtScale = 2.0,
-                    EnableClearType = true,
-                    SnapsToDevicePixels = true
-                };
-                RenderOptions.SetEdgeMode(SetSquareLayerRoot, EdgeMode.Aliased);
 
                 e.Handled = true;
             }
@@ -681,19 +720,13 @@ namespace QASmartTouch.Forms
         {
             if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
             {
-                // Lấy vị trí chuột hiện tại trên màn hình
-                var currentScreenPoint = PointToScreen(e.GetPosition(this));
+                var currentScreenPoint = GetScreenPoint(e);
                 
-                // Tính khoảng cách di chuyển so với lần cập nhật trước
-                double offsetX = currentScreenPoint.X - _dragStartPoint.X;
-                double offsetY = currentScreenPoint.Y - _dragStartPoint.Y;
+                double deltaX = currentScreenPoint.X - _dragStartPoint.X;
+                double deltaY = currentScreenPoint.Y - _dragStartPoint.Y;
                 
-                // Cập nhật vị trí window
-                this.Left += offsetX;
-                this.Top += offsetY;
-                
-                // Cập nhật điểm tham chiếu cho lần di chuyển tiếp theo
-                _dragStartPoint = currentScreenPoint;
+                this.Left = _originalLeft + deltaX;
+                this.Top = _originalTop + deltaY;
                 
                 e.Handled = true;
             }
@@ -709,11 +742,53 @@ namespace QASmartTouch.Forms
                 if (sender is UIElement el)
                     el.ReleaseMouseCapture();
 
-                SetSquareLayerRoot.CacheMode = null;
-                RenderOptions.SetEdgeMode(SetSquareLayerRoot, EdgeMode.Unspecified);
-                SetSquareLayerRoot.InvalidateVisual();
+                e.Handled = true;
+            }
+        }
 
-                _drawnLinesCount = 0;
+        // ============ TOUCH MOVE HANDLERS (QC_4.2_TOUCH_PIPELINE) ============
+        private int? _setSquareTouchId = null;
+
+        private void btnMove_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            if (sender is UIElement el)
+            {
+                _setSquareTouchId = e.TouchDevice.Id;
+                _isDragging = true;
+                _dragStartPoint = GetScreenPoint(e);
+                _originalLeft = this.Left;
+                _originalTop = this.Top;
+
+                el.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (_isDragging && _setSquareTouchId == e.TouchDevice.Id)
+            {
+                var currentScreenPoint = GetScreenPoint(e);
+
+                double deltaX = currentScreenPoint.X - _dragStartPoint.X;
+                double deltaY = currentScreenPoint.Y - _dragStartPoint.Y;
+
+                this.Left = _originalLeft + deltaX;
+                this.Top = _originalTop + deltaY;
+
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (_setSquareTouchId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _setSquareTouchId = null;
+
+                if (sender is UIElement el && e.TouchDevice.Captured == el)
+                    el.ReleaseTouchCapture(e.TouchDevice);
 
                 e.Handled = true;
             }

@@ -1,10 +1,11 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using QASmartTouch.Services;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Navigation;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -18,6 +19,7 @@ namespace QASmartTouch.Forms
         public Form2_OCRSettingsDialog()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             LoadSettings();
         }
 
