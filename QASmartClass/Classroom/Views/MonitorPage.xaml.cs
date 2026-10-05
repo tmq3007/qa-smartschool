@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 using System.Collections.Generic;
 
@@ -27,6 +27,8 @@ using System.Windows.Threading;
 using Serilog;
 
 
+
+using QASmartClass.Classroom.Helpers;
 
 namespace QASmartClass.Classroom.Views
 
@@ -235,9 +237,9 @@ namespace QASmartClass.Classroom.Views
 
                 {
 
-                    var app = (QASmartTouch.App)Application.Current;
+                    // app → ClassroomAppContext (refactored)
 
-                    app.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
 
                 }
 
@@ -286,13 +288,13 @@ namespace QASmartClass.Classroom.Views
 
             {
 
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
 
-                if (app?.ClassRoster != null)
+                if (ClassroomAppContext.ClassRoster != null)
 
                 {
 
-                    app.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
 
                 }
 
@@ -320,9 +322,9 @@ namespace QASmartClass.Classroom.Views
 
             {
 
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
 
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
 
                 if (net != null)
 
@@ -390,9 +392,9 @@ namespace QASmartClass.Classroom.Views
 
             {
 
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
 
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
 
                 if (net != null)
 
@@ -1120,7 +1122,7 @@ namespace QASmartClass.Classroom.Views
 
             {
 
-                var app       = Application.Current as QASmartTouch.App;
+                // app → ClassroomAppContext (refactored)
 
                 var rosterStudents = QASmartClass.Classroom.Services.RosterHelper.GetStudents();
 
@@ -1597,9 +1599,9 @@ namespace QASmartClass.Classroom.Views
 
             {
 
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
 
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
 
                 if (net == null || !net.IsBroadcasting) return;
 
@@ -1855,9 +1857,9 @@ namespace QASmartClass.Classroom.Views
 
             {
 
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
 
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
 
                 if (net?.IsBroadcasting == true)
 
@@ -2185,9 +2187,9 @@ namespace QASmartClass.Classroom.Views
 
             {
 
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
 
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
 
                 if (net?.IsBroadcasting == true)
 
@@ -2207,7 +2209,7 @@ namespace QASmartClass.Classroom.Views
 
                     // Fallback: broadcast (local)
 
-                    app.RaiseLocalCommand(cmd);
+                    ClassroomAppContext.DispatchCommand(cmd);
 
                 }
 
@@ -2345,9 +2347,7 @@ namespace QASmartClass.Classroom.Views
 
             AddLog("Giao bài tập", $"Đã gửi bài tập tới {online} HS", "#E8F5E9", "#2E7D32");
 
-            MessageBox.Show($"Đã giao bài tập tới {online} học sinh đang online!\n\nHS sẽ thấy bài tập trên màn hình của mình.",
-
-                "Giao bài", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info($"Đã giao bài tập tới {online} học sinh đang online!\n\nHS sẽ thấy bài tập trên màn hình của mình.", "Giao bài");
 
         }
 
@@ -2369,9 +2369,7 @@ namespace QASmartClass.Classroom.Views
 
             AddLog("Thu bài học sinh", $"Đã thu bài từ {online} HS → {System.IO.Path.GetFileName(folder)}", "#E3F2FD", "#1565C0");
 
-            MessageBox.Show($"Đã thu bài làm từ {online} học sinh online!\n\nThư mục lưu:\n{folder}",
-
-                "Thu bài", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info($"Đã thu bài làm từ {online} học sinh online!\n\nThư mục lưu:\n{folder}", "Thu bài");
 
         }
 
@@ -2385,9 +2383,7 @@ namespace QASmartClass.Classroom.Views
 
             AddLog("Chụp màn hình lớp", $"Đã chụp màn hình {online} HS", "#F3E5F5", "#6A1B9A");
 
-            MessageBox.Show($"Đã gửi lệnh chụp màn hình tới {online} máy!\n\nẢnh sẽ được lưu tự động.",
-
-                "Chụp màn hình", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info($"Đã gửi lệnh chụp màn hình tới {online} máy!\n\nẢnh sẽ được lưu tự động.", "Chụp màn hình");
 
         }
 
@@ -3178,9 +3174,9 @@ namespace QASmartClass.Classroom.Views
 
             {
 
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
 
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
 
                 if (net?.IsBroadcasting != true) return;
 
@@ -3226,15 +3222,15 @@ namespace QASmartClass.Classroom.Views
 
         {
 
-            var app = (QASmartTouch.App)Application.Current;
+            // app → ClassroomAppContext (refactored)
 
-            QASmartTouch.App.LessonState.LastTeacherCommand = cmd;
+            ClassroomAppContext.LessonState.LastTeacherCommand = cmd;
 
-            QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+            ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
 
 
-            var net = app.NetworkService;
+            var net = ClassroomAppContext.Network;
 
             if (net?.IsBroadcasting == true)
 
@@ -3242,7 +3238,7 @@ namespace QASmartClass.Classroom.Views
 
             else
 
-                app.RaiseLocalCommand(cmd);
+                ClassroomAppContext.DispatchCommand(cmd);
 
         }
 
@@ -3358,11 +3354,11 @@ namespace QASmartClass.Classroom.Views
             };
             if (ofd.ShowDialog() == true)
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
                 int webPort = 8080;
-                if (app.NetworkService?.WebBridge != null)
+                if (ClassroomAppContext.Network?.WebBridge != null)
                 {
-                    webPort = app.NetworkService.WebBridge.WebPort;
+                    webPort = ClassroomAppContext.Network.WebBridge.WebPort;
                 }
 
                 int online = _allStudents.Count(s => s.IsOnline);
@@ -3451,8 +3447,8 @@ namespace QASmartClass.Classroom.Views
 
         private void NetworkDiag_Click(object sender, RoutedEventArgs e)
         {
-            var app = (QASmartTouch.App)Application.Current;
-            var shell = app.MainWindow as ClassroomShell;
+            // app → ClassroomAppContext (refactored)
+            var shell = System.Windows.Application.Current.MainWindow as ClassroomShell;
             if (shell != null)
             {
                 _ = shell.NavigateToAsync("F35");

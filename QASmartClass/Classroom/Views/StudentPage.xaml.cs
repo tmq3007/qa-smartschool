@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using QASmartClass.Data;
 using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -27,12 +28,12 @@ namespace QASmartClass.Classroom.Views
             InitializeComponent();
             Loaded += (_, _) =>
             {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app != null)
+                // → ClassroomAppContext
+                if (ClassroomAppContext.Network != null || true)
                 {
-                    app.NetworkService.MessageReceived += NetworkService_MessageReceived;
-                    app.NetworkService.StudentConnected += NetworkService_StudentConnected;
-                    app.NetworkService.StudentDisconnected += NetworkService_StudentDisconnected;
+                    ClassroomAppContext.Network.MessageReceived += NetworkService_MessageReceived;
+                    ClassroomAppContext.Network.StudentConnected += NetworkService_StudentConnected;
+                    ClassroomAppContext.Network.StudentDisconnected += NetworkService_StudentDisconnected;
                 }
                 PopulateClassFilter();
                 LoadStudents();
@@ -45,12 +46,12 @@ namespace QASmartClass.Classroom.Views
             };
             Unloaded += (_, _) =>
             {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app != null)
+                // → ClassroomAppContext
+                if (ClassroomAppContext.Network != null || true)
                 {
-                    app.NetworkService.MessageReceived -= NetworkService_MessageReceived;
-                    app.NetworkService.StudentConnected -= NetworkService_StudentConnected;
-                    app.NetworkService.StudentDisconnected -= NetworkService_StudentDisconnected;
+                    ClassroomAppContext.Network.MessageReceived -= NetworkService_MessageReceived;
+                    ClassroomAppContext.Network.StudentConnected -= NetworkService_StudentConnected;
+                    ClassroomAppContext.Network.StudentDisconnected -= NetworkService_StudentDisconnected;
                 }
             };
 
@@ -87,20 +88,20 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var activeRoster = app.ClassRoster.ActiveRoster;
+                // → ClassroomAppContext
+                var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 List<Student> students = null;
 
                 await Task.Run(() =>
                 {
                     if (activeRoster != null)
                     {
-                        students = app.ClassRoster.GetActiveStudents();
+                        students = ClassroomAppContext.ClassRoster.GetActiveStudents();
                     }
                     else
                     {
                         students = VietnameseNameHelper.SortByVietnameseName(
-                            app.Database.Students.ToList(), s => s.FullName);
+                            ClassroomAppContext.Db.Students.ToList(), s => s.FullName);
                     }
                 });
 
@@ -260,8 +261,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var rosters = app.ClassRoster.GetAllRosters();
+                // → ClassroomAppContext
+                var rosters = ClassroomAppContext.ClassRoster.GetAllRosters();
                 
                 cmbClassFilter.SelectionChanged -= ClassFilter_Changed; // Ngăn chặn loop
                 cmbClassFilter.Items.Clear();
@@ -269,7 +270,7 @@ namespace QASmartClass.Classroom.Views
                 var allItem = new ComboBoxItem { Content = "📋 Tất cả lớp", Tag = "ALL" };
                 cmbClassFilter.Items.Add(allItem);
                 
-                var activeRoster = app.ClassRoster.ActiveRoster;
+                var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 ComboBoxItem selectedItem = allItem;
                 
                 foreach (var r in rosters)
@@ -300,21 +301,21 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 if (tag == "ALL")
                 {
-                    app.ClassRoster.SetActiveRoster(null); // Giải phóng active roster tránh lỗi reload
+                    ClassroomAppContext.ClassRoster.SetActiveRoster(null); // Giải phóng active roster tránh lỗi reload
                     _allStudents = VietnameseNameHelper.SortByVietnameseName(
-                        app.Database.Students.ToList(), s => s.FullName);
+                        ClassroomAppContext.Db.Students.ToList(), s => s.FullName);
                     txtSubtitle.Text = $"Danh sách học sinh — Tất cả ({_allStudents.Count} HS)";
                 }
                 else if (int.TryParse(tag, out int rosterId))
                 {
-                    var roster = app.ClassRoster.GetAllRosters().FirstOrDefault(r => r.Id == rosterId);
+                    var roster = ClassroomAppContext.ClassRoster.GetAllRosters().FirstOrDefault(r => r.Id == rosterId);
                     if (roster != null)
                     {
-                        app.ClassRoster.SetActiveRoster(roster);
-                        _allStudents = app.ClassRoster.GetActiveStudents();
+                        ClassroomAppContext.ClassRoster.SetActiveRoster(roster);
+                        _allStudents = ClassroomAppContext.ClassRoster.GetActiveStudents();
                         txtSubtitle.Text = $"Danh sách học sinh — {roster.DisplayName} ({_allStudents.Count} HS)";
                     }
                 }
@@ -367,7 +368,7 @@ namespace QASmartClass.Classroom.Views
             if (studentDataGrid.SelectedItem is Student s)
                 ShowStudentEditor(s);
             else
-                MessageBox.Show("Vui lòng chọn 1 học sinh trước!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info("Vui lòng chọn 1 học sinh trước!", "Thông báo");
         }
 
         private void StudentGrid_DoubleClick(object sender, MouseButtonEventArgs e)
@@ -404,8 +405,8 @@ namespace QASmartClass.Classroom.Views
             int maxIPNum = 100;
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var allDbStudents = app.Database.Students.ToList();
+                // → ClassroomAppContext
+                var allDbStudents = ClassroomAppContext.Db.Students.ToList();
                 foreach (var s in allDbStudents)
                 {
                     if (s.StudentCode != null && s.StudentCode.StartsWith("HS"))
@@ -529,7 +530,7 @@ namespace QASmartClass.Classroom.Views
             {
                 if (string.IsNullOrWhiteSpace(tbName.Text))
                 {
-                    MessageBox.Show("Vui lòng nhập họ tên!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng nhập họ tên!", "Thiếu thông tin");
                     return;
                 }
                 var ipText = tbIP.Text.Trim();
@@ -546,7 +547,7 @@ namespace QASmartClass.Classroom.Views
 
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
+                    // → ClassroomAppContext
                     var studentName = tbName.Text.Trim();
                     var studentCode = tbCode.Text.Trim();
                     int studentId = isNew ? 0 : existing!.Id;
@@ -554,12 +555,11 @@ namespace QASmartClass.Classroom.Views
                     // ── Duplicate code check (áp dụng cho cả Thêm và Sửa) ──
                     Student? dupCode = null;
                     await Task.Run(() => {
-                        dupCode = app.Database.Students.FirstOrDefault(x => x.StudentCode == studentCode && (isNew || x.Id != studentId));
+                        dupCode = ClassroomAppContext.Db.Students.FirstOrDefault(x => x.StudentCode == studentCode && (isNew || x.Id != studentId));
                     });
                     if (dupCode != null)
                     {
-                        MessageBox.Show($"Mã HS \"{studentCode}\" đã tồn tại!\nHS hiện tại: {dupCode.FullName}\n\nVui lòng nhập mã khác.",
-                            "⚠️ Trùng mã HS", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn($"Mã HS \"{studentCode}\" đã tồn tại!\nHS hiện tại: {dupCode.FullName}\n\nVui lòng nhập mã khác.", "⚠️ Trùng mã HS");
                         return;
                     }
 
@@ -569,7 +569,7 @@ namespace QASmartClass.Classroom.Views
                     if (!string.IsNullOrWhiteSpace(pcName))
                     {
                         await Task.Run(() => {
-                            dupPC = app.Database.Students.FirstOrDefault(x => x.PCName == pcName && (isNew || x.Id != studentId));
+                            dupPC = ClassroomAppContext.Db.Students.FirstOrDefault(x => x.PCName == pcName && (isNew || x.Id != studentId));
                         });
                         if (dupPC != null)
                         {
@@ -585,7 +585,7 @@ namespace QASmartClass.Classroom.Views
                     if (!string.IsNullOrWhiteSpace(ipText))
                     {
                         await Task.Run(() => {
-                            dupIP = app.Database.Students.FirstOrDefault(x => x.IPAddress == ipText && (isNew || x.Id != studentId));
+                            dupIP = ClassroomAppContext.Db.Students.FirstOrDefault(x => x.IPAddress == ipText && (isNew || x.Id != studentId));
                         });
                         if (dupIP != null)
                         {
@@ -607,7 +607,7 @@ namespace QASmartClass.Classroom.Views
                             IsOnline = cmbStatus.SelectedIndex == 0,
                             LastSeen = DateTime.Now
                         };
-                        app.Database.Students.Add(student);
+                        ClassroomAppContext.Db.Students.Add(student);
                     }
                     else
                     {
@@ -618,14 +618,14 @@ namespace QASmartClass.Classroom.Views
                         existing.IsOnline = cmbStatus.SelectedIndex == 0;
                     }
 
-                    await Task.Run(() => app.Database.SaveChanges()); // Lưu DB bất đồng bộ hoàn toàn
+                    await Task.Run(() => ClassroomAppContext.Db.SaveChanges()); // Lưu DB bất đồng bộ hoàn toàn
                     wnd.Close();
                     LoadStudents();
-                    MessageBox.Show(isNew ? "✅ Đã thêm học sinh!" : "✅ Đã cập nhật!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info(isNew ? "✅ Đã thêm học sinh!" : "✅ Đã cập nhật!", "Thành công");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
                 }
             };
             btnPanel.Children.Add(btnCancel);
@@ -658,17 +658,17 @@ namespace QASmartClass.Classroom.Views
                 {
                     try
                     {
-                        var app = (QASmartTouch.App)Application.Current;
+                        // → ClassroomAppContext
                         await Task.Run(() =>
                         {
                             // 1. Tìm và xóa liên kết lớp học tránh dữ liệu mồ côi (Orphan rows)
-                            var links = app.Database.ClassRosterStudents.Where(rs => rs.StudentId == s.Id).ToList();
+                            var links = ClassroomAppContext.Db.ClassRosterStudents.Where(rs => rs.StudentId == s.Id).ToList();
                             if (links.Any())
-                                app.Database.ClassRosterStudents.RemoveRange(links);
+                                ClassroomAppContext.Db.ClassRosterStudents.RemoveRange(links);
 
                             // 2. Xóa học sinh chính
-                            app.Database.Students.Remove(s);
-                            app.Database.SaveChanges();
+                            ClassroomAppContext.Db.Students.Remove(s);
+                            ClassroomAppContext.Db.SaveChanges();
                         });
                         LoadStudents();
                         MessageBox.Show("✅ Đã xóa học sinh và các liên kết liên quan thành công.", "Thành công");
@@ -695,7 +695,7 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 var filePath = dlg.FileName;
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
                 var result = await Task.Run(() =>
                 {
@@ -724,7 +724,7 @@ namespace QASmartClass.Classroom.Views
                     int maxIPNum = 100;
                     try
                     {
-                        var allDbStudents = app.Database.Students.ToList();
+                        var allDbStudents = ClassroomAppContext.Db.Students.ToList();
                         foreach (var s in allDbStudents)
                         {
                             if (s.StudentCode != null && s.StudentCode.StartsWith("HS"))
@@ -750,7 +750,7 @@ namespace QASmartClass.Classroom.Views
                     var ipWarnings = new List<string>();
                     int rowNum = 1;
 
-                    using var transaction = app.Database.Database.BeginTransaction();
+                    using var transaction = ClassroomAppContext.Db.Database.BeginTransaction();
                     try
                     {
                         foreach (System.Data.DataRow row in dt.Rows)
@@ -789,11 +789,11 @@ namespace QASmartClass.Classroom.Views
                             }
 
                             // Kiểm tra trùng lặp PCName trong bộ nhớ DB hiện tại
-                            var dupPC = app.Database.Students.Any(s => s.PCName == pcName);
+                            var dupPC = ClassroomAppContext.Db.Students.Any(s => s.PCName == pcName);
                             if (dupPC) pcName = $"PC-{(++maxPCNum):D2}";
 
                             // Kiểm tra trùng lặp IPAddress trong bộ nhớ DB hiện tại
-                            var dupIP = app.Database.Students.Any(s => s.IPAddress == ipAddress);
+                            var dupIP = ClassroomAppContext.Db.Students.Any(s => s.IPAddress == ipAddress);
                             if (dupIP && !string.IsNullOrEmpty(ipAddress))
                             {
                                 maxIPNum++;
@@ -801,7 +801,7 @@ namespace QASmartClass.Classroom.Views
                                 ipAddress = $"192.168.1.{maxIPNum}";
                             }
 
-                            var existingStudent = app.Database.Students.FirstOrDefault(s => s.StudentCode == studentCode);
+                            var existingStudent = ClassroomAppContext.Db.Students.FirstOrDefault(s => s.StudentCode == studentCode);
                             if (existingStudent == null)
                             {
                                 // Sinh mật khẩu mặc định băm HMACSHA512 theo chuẩn v4.1
@@ -818,11 +818,11 @@ namespace QASmartClass.Classroom.Views
                                     IsOnline = false,
                                     LastSeen = DateTime.Now
                                 };
-                                app.Database.Students.Add(student);
+                                ClassroomAppContext.Db.Students.Add(student);
                                 count++;
                             }
                         }
-                        app.Database.SaveChanges();
+                        ClassroomAppContext.Db.SaveChanges();
                         transaction.Commit();
                         return (Success: true, Count: count, Message: $"Đã import {count} học sinh thành công!", Warnings: ipWarnings);
                     }
@@ -850,12 +850,12 @@ namespace QASmartClass.Classroom.Views
                 }
                 else
                 {
-                    MessageBox.Show(result.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn(result.Message, "Lỗi");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi import: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi import: {ex.Message}", "Lỗi");
             }
         }
 
@@ -919,7 +919,7 @@ namespace QASmartClass.Classroom.Views
                         File.WriteAllLines(filePath, lines, System.Text.Encoding.UTF8);
                     });
 
-                    MessageBox.Show($"✅ Đã xuất {studentsToExport.Count} học sinh ra CSV!", "Export thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"✅ Đã xuất {studentsToExport.Count} học sinh ra CSV!", "Export thành công");
                     Log.Information("Exported {Count} students to CSV", studentsToExport.Count);
                 }
                 catch (Exception ex) { MessageBox.Show($"Lỗi: {ex.Message}"); }
@@ -956,8 +956,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var rosters = await Task.Run(() => app.ClassRoster.GetAllRosters());
+                // → ClassroomAppContext
+                var rosters = await Task.Run(() => ClassroomAppContext.ClassRoster.GetAllRosters());
                 rosterDataGrid.ItemsSource = rosters;
                 txtRosterCount.Text = $"{rosters.Count} lớp";
                 Log.Information("Loaded {Count} rosters", rosters.Count);
@@ -1096,26 +1096,25 @@ namespace QASmartClass.Classroom.Views
             {
                 if (string.IsNullOrWhiteSpace(tbClass.Text))
                 {
-                    MessageBox.Show("Vui lòng nhập tên lớp!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng nhập tên lớp!", "Thiếu thông tin");
                     return;
                 }
                 var className = tbClass.Text.Trim();
                 var invalidChars = System.IO.Path.GetInvalidFileNameChars();
                 if (className.Any(c => invalidChars.Contains(c)))
                 {
-                    MessageBox.Show("Tên lớp chứa ký tự không hợp lệ! Vui lòng không nhập các ký tự đặc biệt như \\ / : * ? \" < > | để tránh lỗi ghi file.", 
-                        "⚠️ Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Tên lớp chứa ký tự không hợp lệ! Vui lòng không nhập các ký tự đặc biệt như \\ / : * ? \" < > | để tránh lỗi ghi file.", "⚠️ Cảnh báo");
                     return;
                 }
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
+                    // → ClassroomAppContext
                     string grade = (cmbGrade.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "10";
                     string sem = (cmbSem.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "HK2";
 
                     if (isNew)
                     {
-                        await Task.Run(() => app.ClassRoster.CreateRoster(
+                        await Task.Run(() => ClassroomAppContext.ClassRoster.CreateRoster(
                             className, grade, tbSubject.Text.Trim(),
                             tbTeacher.Text.Trim(), tbYear.Text.Trim(), sem));
                     }
@@ -1128,15 +1127,15 @@ namespace QASmartClass.Classroom.Views
                         existing.SchoolYear = tbYear.Text.Trim();
                         existing.Semester = sem;
                         existing.Notes = tbNotes.Text.Trim();
-                        await Task.Run(() => app.ClassRoster.UpdateRoster(existing));
+                        await Task.Run(() => ClassroomAppContext.ClassRoster.UpdateRoster(existing));
                     }
                     wnd.Close();
                     LoadRosters();
-                    MessageBox.Show(isNew ? "✅ Đã tạo lớp mới!" : "✅ Đã cập nhật!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info(isNew ? "✅ Đã tạo lớp mới!" : "✅ Đã cập nhật!", "Thành công");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
                 }
             };
             btnPanel.Children.Add(btnCancel);
@@ -1156,9 +1155,9 @@ namespace QASmartClass.Classroom.Views
                 "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (r == MessageBoxResult.Yes)
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 var rosterId = roster.Id;
-                await Task.Run(() => app.ClassRoster.DeleteRoster(rosterId));
+                await Task.Run(() => ClassroomAppContext.ClassRoster.DeleteRoster(rosterId));
                 LoadRosters();
                 MessageBox.Show("✅ Đã xóa lớp.", "Thành công");
             }
@@ -1170,21 +1169,20 @@ namespace QASmartClass.Classroom.Views
                 return;
 
             SelectClassFilterItem(roster.Id); // Tự động kích hoạt ClassFilter_Changed đồng bộ hoàn chỉnh
-            MessageBox.Show($"✅ Đã chọn lớp: {roster.DisplayName}\n{roster.StudentCount} học sinh đã được tải.",
-                "Chọn lớp thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info($"✅ Đã chọn lớp: {roster.DisplayName}\n{roster.StudentCount} học sinh đã được tải.", "Chọn lớp thành công");
         }
 
         private async void ImportRosterCsv_Click(object sender, RoutedEventArgs e)
         {
             // Chọn hoặc tạo roster trước
-            var app = (QASmartTouch.App)Application.Current;
-            var rosters = app.ClassRoster.GetAllRosters();
+            // → ClassroomAppContext
+            var rosters = ClassroomAppContext.ClassRoster.GetAllRosters();
 
             if (!rosters.Any())
             {
-                MessageBox.Show("Vui lòng tạo lớp trước khi import!", "Chưa có lớp", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info("Vui lòng tạo lớp trước khi import!", "Chưa có lớp");
                 CreateRoster_Click(sender, e);
-                rosters = app.ClassRoster.GetAllRosters();
+                rosters = ClassroomAppContext.ClassRoster.GetAllRosters();
                 if (!rosters.Any()) return;
             }
 
@@ -1235,10 +1233,10 @@ namespace QASmartClass.Classroom.Views
 
             var rosterId = selectedRosterId;
             var fileName = dlg.FileName;
-            var (imported, skipped, message) = await Task.Run(() => app.ClassRoster.ImportStudentsFromCsv(rosterId, fileName));
+            var (imported, skipped, message) = await Task.Run(() => ClassroomAppContext.ClassRoster.ImportStudentsFromCsv(rosterId, fileName));
             LoadRosters();
             LoadStudents();
-            MessageBox.Show($"📥 {message}", "Kết quả Import", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info($"📥 {message}", "Kết quả Import");
         }
 
         private async void ExportRoster_Click(object sender, RoutedEventArgs e)
@@ -1256,12 +1254,12 @@ namespace QASmartClass.Classroom.Views
             {
                 var filePath = dlg.FileName;
                 var rosterId = roster.Id;
-                var app = (QASmartTouch.App)Application.Current;
-                var success = await Task.Run(() => app.ClassRoster.ExportRosterToCsv(rosterId, filePath));
+                // → ClassroomAppContext
+                var success = await Task.Run(() => ClassroomAppContext.ClassRoster.ExportRosterToCsv(rosterId, filePath));
                 if (success)
                     MessageBox.Show($"✅ Đã xuất danh sách {roster.ClassName}!", "Export thành công");
                 else
-                    MessageBox.Show("Lỗi khi xuất file.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error("Lỗi khi xuất file.", "Lỗi");
             }
         }
 
@@ -1288,7 +1286,7 @@ namespace QASmartClass.Classroom.Views
                 {
                     var sourcePath = dlg.FileName;
                     var studentId = student.Id;
-                    var app = (QASmartTouch.App)Application.Current;
+                    // → ClassroomAppContext
 
                     await Task.Run(() =>
                     {
@@ -1312,14 +1310,13 @@ namespace QASmartClass.Classroom.Views
                     });
 
                     LoadStudents();
-                    MessageBox.Show($"Đã cập nhật ảnh đại diện cho {student.FullName}",
-                        "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"Đã cập nhật ảnh đại diện cho {student.FullName}", "Thành công");
                 }
             }
             catch (Exception ex)
             {
                 Serilog.Log.Warning("Student avatar error: {Err}", ex.Message);
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn($"Lỗi: {ex.Message}", "Lỗi");
             }
         }
 
@@ -1331,12 +1328,12 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 var result = await Task.Run(() =>
                 {
                     return (
-                        Devices: app.DeviceMemory.GetAllDevices(),
-                        Connected: app.NetworkService.GetConnectedStudents()
+                        Devices: ClassroomAppContext.DeviceMemory.GetAllDevices(),
+                        Connected: ClassroomAppContext.Network.GetConnectedStudents()
                     );
                 });
 
@@ -1390,15 +1387,15 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
+                    // → ClassroomAppContext
                     int count = 0;
-                    await Task.Run(() => { count = app.DeviceMemory.ClearAll(); });
+                    await Task.Run(() => { count = ClassroomAppContext.DeviceMemory.ClearAll(); });
                     LoadDevices();
                     MessageBox.Show($"✅ Đã xóa {count} thiết bị.", "Thành công");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
                 }
             }
         }
@@ -1447,9 +1444,9 @@ namespace QASmartClass.Classroom.Views
             };
             btnSave.Click += async (s, e2) =>
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 var noteText = tbNote.Text.Trim();
-                await Task.Run(() => app.DeviceMemory.UpdateNotes(device.Id, noteText));
+                await Task.Run(() => ClassroomAppContext.DeviceMemory.UpdateNotes(device.Id, noteText));
                 wnd.Close();
                 LoadDevices();
             };
@@ -1473,9 +1470,9 @@ namespace QASmartClass.Classroom.Views
 
             if (result == MessageBoxResult.Yes)
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 var deviceId = device.Id;
-                await Task.Run(() => app.DeviceMemory.RemoveDevice(deviceId));
+                await Task.Run(() => ClassroomAppContext.DeviceMemory.RemoveDevice(deviceId));
                 LoadDevices();
             }
         }
@@ -1564,7 +1561,7 @@ namespace QASmartClass.Classroom.Views
             gridBrush.Drawing = geometryDrawing;
             SeatingCanvas.Background = gridBrush;
 
-            var app = (QASmartTouch.App)Application.Current;
+            // → ClassroomAppContext
 
 
             double canvasWidth = SeatingCanvas.ActualWidth > 0 ? SeatingCanvas.ActualWidth : 1000;
@@ -1810,7 +1807,7 @@ namespace QASmartClass.Classroom.Views
                     Margin = new Thickness(0, 0, 2, 0)
                 };
 
-                var connStudent = app.ClassroomSession?.ConnectedStudents?.FirstOrDefault(s => s.StudentCode.Equals(student.StudentCode, StringComparison.OrdinalIgnoreCase));
+                var connStudent = ClassroomAppContext.Session?.ConnectedStudents?.FirstOrDefault(s => s.StudentCode.Equals(student.StudentCode, StringComparison.OrdinalIgnoreCase));
                 bool isHeadphoneOk = connStudent?.IsHeadphoneOk ?? true;
                 bool isMicOk = connStudent?.IsMicOk ?? true;
 
@@ -2078,19 +2075,19 @@ namespace QASmartClass.Classroom.Views
                 {
                     double left = Canvas.GetLeft(_draggedElement);
                     double top = Canvas.GetTop(_draggedElement);
-                    var app = (QASmartTouch.App)Application.Current;
+                    // → ClassroomAppContext
                     double canvasWidth = SeatingCanvas.ActualWidth > 0 ? SeatingCanvas.ActualWidth : 1000;
                     double canvasHeight = SeatingCanvas.ActualHeight > 0 ? SeatingCanvas.ActualHeight : 600;
                     student.PositionX = left / canvasWidth;
                     student.PositionY = top / canvasHeight;
                     try
                     {
-                        var dbStudent = app.Database.Students.FirstOrDefault(s => s.Id == student.Id);
+                        var dbStudent = ClassroomAppContext.Db.Students.FirstOrDefault(s => s.Id == student.Id);
                         if (dbStudent != null)
                         {
                             dbStudent.PositionX = student.PositionX;
                             dbStudent.PositionY = student.PositionY;
-                            await app.Database.SaveChangesAsync();
+                            await ClassroomAppContext.Db.SaveChangesAsync();
                             Log.Information("Saved seating chart coordinates for student {Name} ({X}, {Y})", student.FullName, student.PositionX, student.PositionY);
                         }
                     }
@@ -2142,19 +2139,19 @@ namespace QASmartClass.Classroom.Views
                 {
                     double left = Canvas.GetLeft(_draggedElement);
                     double top = Canvas.GetTop(_draggedElement);
-                    var app = (QASmartTouch.App)Application.Current;
+                    // → ClassroomAppContext
                     double canvasWidth = SeatingCanvas.ActualWidth > 0 ? SeatingCanvas.ActualWidth : 1000;
                     double canvasHeight = SeatingCanvas.ActualHeight > 0 ? SeatingCanvas.ActualHeight : 600;
                     student.PositionX = left / canvasWidth;
                     student.PositionY = top / canvasHeight;
                     try
                     {
-                        var dbStudent = app.Database.Students.FirstOrDefault(s => s.Id == student.Id);
+                        var dbStudent = ClassroomAppContext.Db.Students.FirstOrDefault(s => s.Id == student.Id);
                         if (dbStudent != null)
                         {
                             dbStudent.PositionX = student.PositionX;
                             dbStudent.PositionY = student.PositionY;
-                            await app.Database.SaveChangesAsync();
+                            await ClassroomAppContext.Db.SaveChangesAsync();
                             Log.Information("Saved seating chart touch coordinates for student {Name} ({X}, {Y})", student.FullName, student.PositionX, student.PositionY);
                         }
                     }
@@ -2196,20 +2193,20 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
+                    // → ClassroomAppContext
                     foreach (var student in _allStudents)
                     {
                         student.PositionX = 0.0;
                         student.PositionY = 0.0;
 
-                        var dbStudent = app.Database.Students.FirstOrDefault(s => s.Id == student.Id);
+                        var dbStudent = ClassroomAppContext.Db.Students.FirstOrDefault(s => s.Id == student.Id);
                         if (dbStudent != null)
                         {
                             dbStudent.PositionX = 0.0;
                             dbStudent.PositionY = 0.0;
                         }
                     }
-                    await app.Database.SaveChangesAsync();
+                    await ClassroomAppContext.Db.SaveChangesAsync();
                     RenderSeatingChart();
                 }
                 catch (Exception ex)
@@ -2267,16 +2264,16 @@ namespace QASmartClass.Classroom.Views
             if (AssetCanvas == null) return;
             AssetCanvas.Children.Clear();
 
-            var app = (QASmartTouch.App)Application.Current;
-            var assets = app.Database.SchoolAssets.ToList();
+            // → ClassroomAppContext
+            var assets = ClassroomAppContext.Db.SchoolAssets.ToList();
 
             if (!assets.Any())
             {
-                app.Database.SchoolAssets.Add(new SchoolAsset { AssetType = "Smartboard", AssetCode = "SB-001", Location = "Phòng Lab", PositionX = 0.5, PositionY = 0.1 });
-                app.Database.SchoolAssets.Add(new SchoolAsset { AssetType = "Projector", AssetCode = "PRJ-001", Location = "Phòng Lab", PositionX = 0.15, PositionY = 0.15 });
-                app.Database.SchoolAssets.Add(new SchoolAsset { AssetType = "Router", AssetCode = "RT-001", Location = "Phòng Lab", PositionX = 0.85, PositionY = 0.15 });
-                app.Database.SaveChanges();
-                assets = app.Database.SchoolAssets.ToList();
+                ClassroomAppContext.Db.SchoolAssets.Add(new SchoolAsset { AssetType = "Smartboard", AssetCode = "SB-001", Location = "Phòng Lab", PositionX = 0.5, PositionY = 0.1 });
+                ClassroomAppContext.Db.SchoolAssets.Add(new SchoolAsset { AssetType = "Projector", AssetCode = "PRJ-001", Location = "Phòng Lab", PositionX = 0.15, PositionY = 0.15 });
+                ClassroomAppContext.Db.SchoolAssets.Add(new SchoolAsset { AssetType = "Router", AssetCode = "RT-001", Location = "Phòng Lab", PositionX = 0.85, PositionY = 0.15 });
+                ClassroomAppContext.Db.SaveChanges();
+                assets = ClassroomAppContext.Db.SchoolAssets.ToList();
             }
 
             double canvasWidth = AssetCanvas.ActualWidth > 0 ? AssetCanvas.ActualWidth : 1000;
@@ -2341,7 +2338,7 @@ namespace QASmartClass.Classroom.Views
         {
             if (chkAssetEdit.IsChecked == true)
             {
-                MessageBox.Show("\uD83D\uDD27 \u0110\u00E3 b\u1EADt ch\u1EBF \u0111\u1ED9 thi\u1EBFt k\u1EBF. B\u1EA1n c\u00F3 th\u1EC3 k\u00E9o th\u1EA3 \u0111\u1EC3 s\u1EAFp x\u1EBFp v\u1ECB tr\u00ED c\u00E1c thi\u1EBFt b\u1ECB th\u01B0\u1EDDng tr\u1EF1c ph\u00F2ng Lab.", "Thi\u1EBFt k\u1EBF S\u01A1 \u0111\u1ED3 t\u00E0i s\u1EA3n", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info("\uD83D\uDD27 \u0110\u00E3 b\u1EADt ch\u1EBF \u0111\u1ED9 thi\u1EBFt k\u1EBF. B\u1EA1n c\u00F3 th\u1EC3 k\u00E9o th\u1EA3 \u0111\u1EC3 s\u1EAFp x\u1EBFp v\u1ECB tr\u00ED c\u00E1c thi\u1EBFt b\u1ECB th\u01B0\u1EDDng tr\u1EF1c ph\u00F2ng Lab.", "Thi\u1EBFt k\u1EBF S\u01A1 \u0111\u1ED3 t\u00E0i s\u1EA3n");
             }
         }
 
@@ -2389,13 +2386,13 @@ namespace QASmartClass.Classroom.Views
                     asset.PositionY = top / canvasHeight;
                     try
                     {
-                        var app = (QASmartTouch.App)Application.Current;
-                        var dbAsset = app.Database.SchoolAssets.FirstOrDefault(a => a.Id == asset.Id);
+                        // → ClassroomAppContext
+                        var dbAsset = ClassroomAppContext.Db.SchoolAssets.FirstOrDefault(a => a.Id == asset.Id);
                         if (dbAsset != null)
                         {
                             dbAsset.PositionX = asset.PositionX;
                             dbAsset.PositionY = asset.PositionY;
-                            await app.Database.SaveChangesAsync();
+                            await ClassroomAppContext.Db.SaveChangesAsync();
                             Log.Information("Saved asset coordinates for {Code} ({X}, {Y})", asset.AssetCode, asset.PositionX, asset.PositionY);
                         }
                     }

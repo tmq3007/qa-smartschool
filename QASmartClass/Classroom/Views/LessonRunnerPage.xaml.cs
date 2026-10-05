@@ -1,4 +1,4 @@
-﻿﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using QASmartClass.Data;
 using QASmartTouch.Services;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -57,7 +58,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 _lesson = db.Lessons.Find(id);
                 if (_lesson == null) return;
 
@@ -165,15 +166,15 @@ namespace QASmartClass.Classroom.Views
             string capturedData = data; // capture for lambda
             focusBtn.Click += (s, e) =>
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 var cmd = $"CMD|LESSON_FOCUS|{capturedSort}|{capturedType}";
 
-                QASmartTouch.App.LessonState.LastTeacherCommand = cmd;
-                QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+                ClassroomAppContext.LessonState.LastTeacherCommand = cmd;
+                ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
                 QASmartTouch.App.FocusState.ActiveFocusSort = capturedSort;
                 QASmartTouch.App.FocusState.ActiveFocusType = capturedType;
 
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
                 if (net?.IsBroadcasting == true)
                 {
                     // 1. Send standard CMD to all (TCP + WebSocket + local bus)
@@ -214,7 +215,7 @@ namespace QASmartClass.Classroom.Views
                     }
                 }
                 else
-                    app.RaiseLocalCommand(cmd);
+                    ClassroomAppContext.DispatchCommand(cmd);
 
                 // ═══ GV SIDE: Zoom + mờ (từ AppSettings) ═══
                 var zoomScale = AppSettings.FocusZoomScale;
@@ -271,15 +272,15 @@ namespace QASmartClass.Classroom.Views
             };
             unfocusBtn.Click += (s, e) =>
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 var cmd2 = "CMD|LESSON_UNFOCUS";
-                QASmartTouch.App.LessonState.LastTeacherCommand = cmd2;
-                QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+                ClassroomAppContext.LessonState.LastTeacherCommand = cmd2;
+                ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
                 QASmartTouch.App.FocusState.ActiveFocusSort = -1;
                 QASmartTouch.App.FocusState.ActiveFocusType = string.Empty;
-                var net2 = app.NetworkService;
+                var net2 = ClassroomAppContext.Network;
                 if (net2?.IsBroadcasting == true) _ = net2.SendCommandAsync(cmd2);
-                else app.RaiseLocalCommand(cmd2);
+                else ClassroomAppContext.DispatchCommand(cmd2);
 
                 // Reset GV blocks
                 foreach (var child in lessonContentBlocks.Children)
@@ -328,16 +329,14 @@ namespace QASmartClass.Classroom.Views
 
                     if (targetWin == null)
                     {
-                        MessageBox.Show("Chưa mở SmartScreen. Hãy mở SmartScreen trước.",
-                            "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ClassroomDialog.Info("Chưa mở SmartScreen. Hãy mở SmartScreen trước.", "Bảng Trắng");
                         return;
                     }
 
                     var canvas = targetWin.FindName("MainInteractiveBoard") as Canvas;
                     if (canvas == null)
                     {
-                        MessageBox.Show("Không tìm thấy canvas SmartScreen.",
-                            "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn("Không tìm thấy canvas SmartScreen.", "Bảng Trắng");
                         return;
                     }
 
@@ -411,7 +410,7 @@ namespace QASmartClass.Classroom.Views
                 catch (Exception ex)
                 {
                     Log.Warning("Board capture error: {Err}", ex.Message);
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn($"Lỗi: {ex.Message}", "Bảng Trắng");
                 }
             };
             btnPanel.Children.Add(boardBtn);
@@ -1074,26 +1073,26 @@ namespace QASmartClass.Classroom.Views
         {
             if (_lessonContents.Count == 0)
             {
-                MessageBox.Show("Chưa có nội dung bài giảng!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Chưa có nội dung bài giảng!", "Thông báo");
                 return;
             }
 
-            var app = (QASmartTouch.App)Application.Current;
+            // → ClassroomAppContext
 
             // Gửi LESSON_START để HS chuyển sang trang bài giảng
-            QASmartTouch.App.LessonState.IsLessonActive = true;
-            QASmartTouch.App.LessonState.ActiveLessonId = _lesson?.Id ?? 0;
-            QASmartTouch.App.LessonState.ActiveLessonStage = 3;
-            QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+            ClassroomAppContext.LessonState.IsLessonActive = true;
+            ClassroomAppContext.LessonState.ActiveLessonId = _lesson?.Id ?? 0;
+            ClassroomAppContext.LessonState.ActiveLessonStage = 3;
+            ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
             var cmd = $"CMD|LESSON_START|{_lesson?.Id ?? 0}";
-            QASmartTouch.App.LessonState.LastTeacherCommand = cmd;
+            ClassroomAppContext.LessonState.LastTeacherCommand = cmd;
 
-            var net = app.NetworkService;
+            var net = ClassroomAppContext.Network;
             if (net?.IsBroadcasting == true)
                 _ = net.StartLessonAsync(_lesson?.Id ?? 0);
             else
-                app.RaiseLocalCommand(cmd);
+                ClassroomAppContext.DispatchCommand(cmd);
 
             // Sau 500ms, gửi stage 3
             var stageTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
@@ -1103,7 +1102,7 @@ namespace QASmartClass.Classroom.Views
                 if (net?.IsBroadcasting == true)
                     _ = net.SetLessonStageAsync(3);
                 else
-                    app.RaiseLocalCommand("CMD|LESSON_STAGE|3");
+                    ClassroomAppContext.DispatchCommand("CMD|LESSON_STAGE|3");
             };
             stageTimer.Start();
 
@@ -1117,7 +1116,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 var last = db.Lessons
                     .Where(l => l.Status == "Approved" || l.Status == "Taught")
                     .OrderByDescending(l => l.LastTaughtAt ?? l.UpdatedAt)
@@ -1171,19 +1170,19 @@ namespace QASmartClass.Classroom.Views
             // ═══ Update shared state + Broadcast LESSON_STAGE ═══
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
                 // Luôn cập nhật shared state
-                QASmartTouch.App.LessonState.ActiveLessonStage = stage;
-                QASmartTouch.App.LessonState.LastTeacherCommand = $"CMD|LESSON_STAGE|{stage}";
-                QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+                ClassroomAppContext.LessonState.ActiveLessonStage = stage;
+                ClassroomAppContext.LessonState.LastTeacherCommand = $"CMD|LESSON_STAGE|{stage}";
+                ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
                 // Gửi qua network + local bus
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
                 if (net?.IsBroadcasting == true)
                     await net.SetLessonStageAsync(stage);
                 else
-                    app.RaiseLocalCommand($"CMD|LESSON_STAGE|{stage}");
+                    ClassroomAppContext.DispatchCommand($"CMD|LESSON_STAGE|{stage}");
             }
             catch { }
         }
@@ -1205,17 +1204,17 @@ namespace QASmartClass.Classroom.Views
             // ═══ Broadcast + Save shared state → HS nhận được dù mở trước hay sau ═══
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
                 // Luôn cập nhật shared state (HS đọc khi mở lên)
-                QASmartTouch.App.LessonState.IsLessonActive = true;
-                QASmartTouch.App.LessonState.ActiveLessonId = _lesson?.Id ?? 0;
-                QASmartTouch.App.LessonState.ActiveLessonStage = 2;
-                QASmartTouch.App.LessonState.LastTeacherCommand = $"CMD|LESSON_START|{_lesson?.Id ?? 0}";
-                QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+                ClassroomAppContext.LessonState.IsLessonActive = true;
+                ClassroomAppContext.LessonState.ActiveLessonId = _lesson?.Id ?? 0;
+                ClassroomAppContext.LessonState.ActiveLessonStage = 2;
+                ClassroomAppContext.LessonState.LastTeacherCommand = $"CMD|LESSON_START|{_lesson?.Id ?? 0}";
+                ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
                 // Gửi qua network (cho HS trên mạng)
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
                 if (net?.IsBroadcasting == true && _lesson != null)
                 {
                     await net.StartLessonAsync(_lesson.Id);
@@ -1224,8 +1223,8 @@ namespace QASmartClass.Classroom.Views
                 else
                 {
                     // Nếu chưa broadcast qua mạng, vẫn gửi local bus
-                    app.RaiseLocalCommand($"CMD|LESSON_START|{_lesson?.Id ?? 0}");
-                    app.RaiseLocalCommand("CMD|LESSON_STAGE|2");
+                    ClassroomAppContext.DispatchCommand($"CMD|LESSON_START|{_lesson?.Id ?? 0}");
+                    ClassroomAppContext.DispatchCommand("CMD|LESSON_STAGE|2");
                 }
             }
             catch (Exception ex) { Log.Warning("Broadcast lesson start error: {Err}", ex.Message); }
@@ -1267,8 +1266,7 @@ namespace QASmartClass.Classroom.Views
             // Navigate to QuizPage pre-configured for "review" mode
             if (Window.GetWindow(this) is ClassroomShell shell)
             {
-                MessageBox.Show("🚀 Đang phát Quiz Kiểm Tra Bài Cũ lên SmartScreen!\n\nHS sẽ nhận câu hỏi trên thiết bị trong vài giây.",
-                    "Quick Quiz", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info("🚀 Đang phát Quiz Kiểm Tra Bài Cũ lên SmartScreen!\n\nHS sẽ nhận câu hỏi trên thiết bị trong vài giây.", "Quick Quiz");
 
                 ShowQuizResult("AI đang tạo 5 câu kiểm tra bài cũ...\n✅ Đã phát lên SmartScreen\n• 35/35 HS đã nhận câu hỏi");
                 Log.Information("Quick Quiz launched");
@@ -1279,8 +1277,7 @@ namespace QASmartClass.Classroom.Views
         private void LaunchPoll_Click(object sender, RoutedEventArgs e) => LaunchPollInternal();
         private void LaunchPollInternal()
         {
-            MessageBox.Show("📊 Quick Poll đã được phát!\n\nHS đang trả lời câu hỏi trên thiết bị của mình.",
-                "Poll", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info("📊 Quick Poll đã được phát!\n\nHS đang trả lời câu hỏi trên thiết bị của mình.", "Poll");
             Log.Information("Poll launched");
         }
 
@@ -1320,41 +1317,39 @@ namespace QASmartClass.Classroom.Views
         /// </summary>
         private void ToggleBroadcastScreen_Click(object sender, MouseButtonEventArgs e)
         {
-            var app = (QASmartTouch.App)Application.Current;
+            // → ClassroomAppContext
 
-            if (!QASmartTouch.App.BroadcastState.IsScreenBroadcastActive)
+            if (!ClassroomAppContext.BroadcastState.IsScreenBroadcastActive)
             {
                 // ── BẬT chế độ phát ──
-                StartScreenBroadcast(app);
+                StartScreenBroadcast();
             }
             else
             {
                 // ── TẮT chế độ phát ──
-                StopScreenBroadcast(app);
+                StopScreenBroadcast();
             }
         }
 
-        private void StartScreenBroadcast(QASmartTouch.App app)
+        private void StartScreenBroadcast()
         {
             // 1. Kiểm tra SmartScreen có sẵn không
             Window? targetWin = FindSmartScreenWindow();
             if (targetWin == null)
             {
-                MessageBox.Show("Chưa mở SmartScreen.\nHãy chuyển sang SmartScreen trước để có nội dung phát.",
-                    "📺 Phát Bảng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Chưa mở SmartScreen.\nHãy chuyển sang SmartScreen trước để có nội dung phát.", "📺 Phát Bảng");
                 return;
             }
 
             var canvas = targetWin.FindName("MainInteractiveBoard") as Canvas;
             if (canvas == null || canvas.ActualWidth < 1)
             {
-                MessageBox.Show("Canvas SmartScreen trống hoặc chưa sẵn sàng.",
-                    "📺 Phát Bảng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Canvas SmartScreen trống hoặc chưa sẵn sàng.", "📺 Phát Bảng");
                 return;
             }
 
             // 2. Bật flag
-            QASmartTouch.App.BroadcastState.IsScreenBroadcastActive = true;
+            ClassroomAppContext.BroadcastState.IsScreenBroadcastActive = true;
             _broadcastCount = 0;
 
             // 3. Cập nhật UI card
@@ -1366,48 +1361,48 @@ namespace QASmartClass.Classroom.Views
             txtBroadcastDesc.Foreground = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255));
 
             // 4. Chụp lần đầu ngay lập tức
-            CaptureAndBroadcastScreen(app);
+            CaptureAndBroadcastScreen();
 
             // 5. Gửi lệnh BẬT cho HS → mở overlay
-            var startCmd = $"CMD|SCREEN_BROADCAST_START|{QASmartTouch.App.BroadcastState.ScreenCapturePath}";
-            QASmartTouch.App.LessonState.LastTeacherCommand = startCmd;
-            QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
-            var net = app.NetworkService;
+            var startCmd = $"CMD|SCREEN_BROADCAST_START|{ClassroomAppContext.BroadcastState.ScreenCapturePath}";
+            ClassroomAppContext.LessonState.LastTeacherCommand = startCmd;
+            ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
+            var net = ClassroomAppContext.Network;
             if (net?.IsBroadcasting == true) _ = net.SendCommandAsync(startCmd);
-            else app.RaiseLocalCommand(startCmd);
+            else ClassroomAppContext.DispatchCommand(startCmd);
 
             // 6. Khởi tạo Timer cập nhật định kỳ
             _broadcastTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(QASmartTouch.App.BroadcastState.ScreenBroadcastIntervalSec)
+                Interval = TimeSpan.FromSeconds(ClassroomAppContext.BroadcastState.ScreenBroadcastIntervalSec)
             };
             _broadcastTimer.Tick += (s, ev) =>
             {
-                if (!QASmartTouch.App.BroadcastState.IsScreenBroadcastActive) { StopScreenBroadcast(app); return; }
+                if (!ClassroomAppContext.BroadcastState.IsScreenBroadcastActive) { StopScreenBroadcast(); return; }
 
-                CaptureAndBroadcastScreen(app);
+                CaptureAndBroadcastScreen();
 
                 // Gửi CMD cập nhật cho HS
-                var updateCmd = $"CMD|SCREEN_BROADCAST_UPDATE|{QASmartTouch.App.BroadcastState.ScreenCapturePath}";
+                var updateCmd = $"CMD|SCREEN_BROADCAST_UPDATE|{ClassroomAppContext.BroadcastState.ScreenCapturePath}";
                 if (net?.IsBroadcasting == true) _ = net.SendCommandAsync(updateCmd);
-                else app.RaiseLocalCommand(updateCmd);
+                else ClassroomAppContext.DispatchCommand(updateCmd);
 
                 _broadcastCount++;
                 txtBroadcastDesc.Text = $"Đang phát... (cập nhật #{_broadcastCount})";
             };
             _broadcastTimer.Start();
 
-            Log.Information("Screen broadcast STARTED (interval={Sec}s)", QASmartTouch.App.BroadcastState.ScreenBroadcastIntervalSec);
+            Log.Information("Screen broadcast STARTED (interval={Sec}s)", ClassroomAppContext.BroadcastState.ScreenBroadcastIntervalSec);
         }
 
-        private void StopScreenBroadcast(QASmartTouch.App app)
+        private void StopScreenBroadcast()
         {
             // 1. Tắt timer
             _broadcastTimer?.Stop();
             _broadcastTimer = null;
 
             // 2. Tắt flag
-            QASmartTouch.App.BroadcastState.IsScreenBroadcastActive = false;
+            ClassroomAppContext.BroadcastState.IsScreenBroadcastActive = false;
 
             // 3. Cập nhật UI card
             broadcastCard.Background = new SolidColorBrush(Color.FromRgb(243, 229, 245));
@@ -1419,17 +1414,17 @@ namespace QASmartClass.Classroom.Views
 
             // 4. Gửi lệnh TẮT cho HS → đóng overlay
             var stopCmd = "CMD|SCREEN_BROADCAST_STOP";
-            QASmartTouch.App.LessonState.LastTeacherCommand = stopCmd;
-            QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
-            var net = app.NetworkService;
+            ClassroomAppContext.LessonState.LastTeacherCommand = stopCmd;
+            ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
+            var net = ClassroomAppContext.Network;
             if (net?.IsBroadcasting == true) _ = net.SendCommandAsync(stopCmd);
-            else app.RaiseLocalCommand(stopCmd);
+            else ClassroomAppContext.DispatchCommand(stopCmd);
 
             Log.Information("Screen broadcast STOPPED (total captures: {Count})", _broadcastCount);
         }
 
         /// <summary>Chụp SmartScreen canvas → lưu PNG → cập nhật App state</summary>
-        private void CaptureAndBroadcastScreen(QASmartTouch.App app)
+        private void CaptureAndBroadcastScreen()
         {
             try
             {
@@ -1456,8 +1451,8 @@ namespace QASmartClass.Classroom.Views
                 using (var fs = System.IO.File.Create(filePath))
                     encoder.Save(fs);
 
-                QASmartTouch.App.BroadcastState.ScreenCapturePath = filePath;
-                QASmartTouch.App.BroadcastState.ScreenCaptureTime = DateTime.Now;
+                ClassroomAppContext.BroadcastState.ScreenCapturePath = filePath;
+                ClassroomAppContext.BroadcastState.ScreenCaptureTime = DateTime.Now;
             }
             catch (Exception ex)
             {
@@ -1491,7 +1486,7 @@ namespace QASmartClass.Classroom.Views
         {
             // R-BUG-02 fix: Let teacher choose group size
             int studentCount = 35;
-            try { studentCount = ((QASmartTouch.App)Application.Current).Database.Students.Count(s => s.IsOnline); } catch { }
+            try { studentCount = ClassroomAppContext.Db.Students.Count(s => s.IsOnline); } catch { }
             if (studentCount <= 0) studentCount = 35;
 
             // Simple input dialog
@@ -1527,8 +1522,7 @@ namespace QASmartClass.Classroom.Views
 
         private void LaunchSimulation_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("🔬 Đang mở PhET Simulation trên SmartScreen!\n\nHS có thể tương tác trực tiếp.",
-                "Mô Phỏng", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info("🔬 Đang mở PhET Simulation trên SmartScreen!\n\nHS có thể tương tác trực tiếp.", "Mô Phỏng");
             StartActivity("🔬 Mô phỏng đang chạy", 15 * 60);
             Log.Information("Simulation launched");
         }
@@ -1536,8 +1530,7 @@ namespace QASmartClass.Classroom.Views
         private void LaunchChallenge_Click(object sender, RoutedEventArgs e)
         {
             StartActivity("🚀 Real Challenge đang diễn ra", 25 * 60);
-            MessageBox.Show("🚀 Challenge đã phát!\n\nNhóm HS đang brainstorm và thiết kế giải pháp.",
-                "Challenge", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info("🚀 Challenge đã phát!\n\nNhóm HS đang brainstorm và thiết kế giải pháp.", "Challenge");
             Log.Information("Challenge launched");
         }
 
@@ -1578,7 +1571,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 int count = db.Students.Count(s => s.IsOnline);
                 return Math.Max(2, count / 5); // ~5 người/nhóm
             }
@@ -1603,8 +1596,7 @@ namespace QASmartClass.Classroom.Views
 
         private void AutoGrade_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("✅ Đã chấm điểm tự động!\n\n• Điểm được tính theo rubric\n• Đã ghi vào Gradebook\n• Thông báo đang gửi đến HS",
-                "Auto-Grade", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info("✅ Đã chấm điểm tự động!\n\n• Điểm được tính theo rubric\n• Đã ghi vào Gradebook\n• Thông báo đang gửi đến HS", "Auto-Grade");
             Log.Information("Auto-grade executed");
         }
 
@@ -1619,7 +1611,7 @@ namespace QASmartClass.Classroom.Views
             int hwId = 0;
             if (_lesson != null)
             {
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 _lesson.HomeworkText = txtHomework.Text;
                 _lesson.HasHomework = true;
                 
@@ -1642,7 +1634,7 @@ namespace QASmartClass.Classroom.Views
             // ═══ Broadcast ASSIGNMENT ═══
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 var hwText = txtHomework.Text[..Math.Min(200, txtHomework.Text.Length)];
                 
                 string cleanDesc = hwText.Replace("|", " ");
@@ -1652,19 +1644,18 @@ namespace QASmartClass.Classroom.Views
                 
                 string cmd = $"CMD|ASSIGNMENT|{hwId}|{subjectName}|{hwTitle}|{deadlineStr}|{cleanDesc}|";
 
-                QASmartTouch.App.LessonState.LastTeacherCommand = cmd;
-                QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+                ClassroomAppContext.LessonState.LastTeacherCommand = cmd;
+                ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
                 if (net?.IsBroadcasting == true)
                     await net.SendCommandAsync(cmd);
                 else
-                    app.RaiseLocalCommand(cmd);
+                    ClassroomAppContext.DispatchCommand(cmd);
             }
             catch { }
 
-            MessageBox.Show("📤 Đã gửi bài tập về nhà cho tất cả HS!\n\nHS sẽ nhận thông báo trên SmartScreen.",
-                "Bài Tập Về Nhà", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info("📤 Đã gửi bài tập về nhà cho tất cả HS!\n\nHS sẽ nhận thông báo trên SmartScreen.", "Bài Tập Về Nhà");
             Log.Information("Homework assigned: {Text}", txtHomework.Text[..Math.Min(50, txtHomework.Text.Length)]);
         }
 
@@ -1682,7 +1673,7 @@ namespace QASmartClass.Classroom.Views
             {
                 if (_lesson != null)
                 {
-                    var db = ((QASmartTouch.App)Application.Current).Database;
+                    var db = ClassroomAppContext.Db;
                     _lesson.Status = "Taught";
                     _lesson.LastTaughtAt = DateTime.Now;
                     _lesson.UseCount++;
@@ -1700,19 +1691,19 @@ namespace QASmartClass.Classroom.Views
             // ═══ Clear shared state + Broadcast LESSON_END ═══
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
                 // Clear shared state
-                QASmartTouch.App.LessonState.IsLessonActive = false;
-                QASmartTouch.App.LessonState.ActiveLessonStage = 0;
-                QASmartTouch.App.LessonState.LastTeacherCommand = "CMD|LESSON_END|0";
-                QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+                ClassroomAppContext.LessonState.IsLessonActive = false;
+                ClassroomAppContext.LessonState.ActiveLessonStage = 0;
+                ClassroomAppContext.LessonState.LastTeacherCommand = "CMD|LESSON_END|0";
+                ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
                 if (net?.IsBroadcasting == true)
                     await net.EndLessonAsync();
                 else
-                    app.RaiseLocalCommand("CMD|LESSON_END|0");
+                    ClassroomAppContext.DispatchCommand("CMD|LESSON_END|0");
             }
             catch { }
 

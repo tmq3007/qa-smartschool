@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -129,7 +130,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
                 // ═══ Find StudentShell window (visible OR hidden) ═══
                 Window? studentWindow = null;
@@ -208,7 +209,7 @@ namespace QASmartClass.Classroom.Views
         {
             if (_selected == null)
             {
-                MessageBox.Show("Vui lòng chọn học sinh trước!", "Chưa chọn HS", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng chọn học sinh trước!", "Chưa chọn HS");
                 return;
             }
 
@@ -293,33 +294,31 @@ namespace QASmartClass.Classroom.Views
                     using var fs = File.Create(filePath);
                     encoder.Save(fs);
 
-                    MessageBox.Show($"📸 Đã lưu ảnh màn hình:\n\n{filePath}",
-                        "Chụp màn hình", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"📸 Đã lưu ảnh màn hình:\n\n{filePath}", "Chụp màn hình");
                     Log.Information("Screenshot saved: {Path}", filePath);
                 }
                 else
                 {
-                    MessageBox.Show("Chưa có ảnh màn hình để lưu.", "Chụp màn hình",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Chưa có ảnh màn hình để lưu.", "Chụp màn hình");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi lưu ảnh: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi lưu ảnh: {ex.Message}", "Lỗi");
             }
         }
 
         private void SendCommand(string cmd)
         {
-            var app = (QASmartTouch.App)Application.Current;
-            QASmartTouch.App.LessonState.LastTeacherCommand = cmd;
-            QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+            // → ClassroomAppContext
+            ClassroomAppContext.LessonState.LastTeacherCommand = cmd;
+            ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
-            var net = app.NetworkService;
+            var net = ClassroomAppContext.Network;
             if (net?.IsBroadcasting == true)
                 _ = net.SendCommandAsync(cmd);
             else
-                app.RaiseLocalCommand(cmd);
+                ClassroomAppContext.DispatchCommand(cmd);
         }
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)

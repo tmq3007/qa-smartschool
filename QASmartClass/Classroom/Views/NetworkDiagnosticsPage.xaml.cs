@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -34,8 +35,8 @@ namespace QASmartClass.Classroom.Views
                 _cts?.Cancel();
             }
 
-            var app = (QASmartTouch.App)Application.Current;
-            var shell = app.MainWindow as ClassroomShell;
+            // → ClassroomAppContext
+            var shell = System.Windows.Application.Current.MainWindow as ClassroomShell;
             if (shell != null)
             {
                 // Go back to MonitorPage (FormID F04) or BroadcastPage (FormID F05)
@@ -57,11 +58,11 @@ namespace QASmartClass.Classroom.Views
         private void LoadConnectedStudents()
         {
             _studentsList.Clear();
-            var app = (QASmartTouch.App)Application.Current;
-            if (app.NetworkService == null) return;
+            // → ClassroomAppContext
+            if (ClassroomAppContext.Network == null) return;
 
             // Get connected students from network service
-            var clients = app.NetworkService.GetConnectedStudents();
+            var clients = ClassroomAppContext.Network.GetConnectedStudents();
             if (clients == null || !clients.Any())
             {
                 // Fallback to roster/DB students for testing

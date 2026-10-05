@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Serilog;
 using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using QASmartTouch.Services;
 
 namespace QASmartClass.Classroom.ViewModels
@@ -60,15 +61,15 @@ namespace QASmartClass.Classroom.ViewModels
             _stopwatchTimer.Tick += StopwatchTimer_Tick;
 
             // Session active sync
-            var app = Application.Current as QASmartTouch.App;
-            if (app?.ClassroomSession != null)
+            // → ClassroomAppContext
+            if (ClassroomAppContext.Session != null)
             {
-                IsSessionActive = app.ClassroomSession.IsSessionActive;
-                app.ClassroomSession.PropertyChanged += (s, e) =>
+                IsSessionActive = ClassroomAppContext.Session.IsSessionActive;
+                ClassroomAppContext.Session.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(ClassroomSessionService.IsSessionActive))
                     {
-                        IsSessionActive = app.ClassroomSession.IsSessionActive;
+                        IsSessionActive = ClassroomAppContext.Session.IsSessionActive;
                     }
                 };
             }
@@ -247,18 +248,15 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = Application.Current as QASmartTouch.App;
-                if (app != null)
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
+                if (net?.IsBroadcasting == true)
                 {
-                    var net = app.NetworkService;
-                    if (net?.IsBroadcasting == true)
-                    {
-                        _ = net.SendCommandAsync(cmd);
-                    }
-                    else
-                    {
-                        app.RaiseLocalCommand(cmd);
-                    }
+                    _ = net.SendCommandAsync(cmd);
+                }
+                else
+                {
+                    ClassroomAppContext.DispatchCommand(cmd);
                 }
             }
             catch (Exception ex)

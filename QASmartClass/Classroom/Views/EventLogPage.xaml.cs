@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -31,8 +32,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                _allLogs = app.Database.EventLogs
+                // → ClassroomAppContext
+                _allLogs = ClassroomAppContext.Db.EventLogs
                     .OrderByDescending(e => e.Timestamp)
                     .Take(500)
                     .ToList();
@@ -201,8 +202,7 @@ namespace QASmartClass.Classroom.Views
                 lines.AddRange(items.Select(l =>
                     $"{l.Timestamp:yyyy-MM-dd HH:mm:ss}\t{l.EventType}\t{l.Actor}\t{l.Details}\t{l.MacAddress}\t{l.ClientIP}"));
                 System.IO.File.WriteAllLines(dlg.FileName, lines);
-                MessageBox.Show($"✅ Đã xuất {items.Count} sự kiện ra:\n{dlg.FileName}",
-                    "Xuất thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info($"✅ Đã xuất {items.Count} sự kiện ra:\n{dlg.FileName}", "Xuất thành công");
                 Log.Information("EventLog exported: {File}, {Count} events", dlg.FileName, items.Count);
             }
         }

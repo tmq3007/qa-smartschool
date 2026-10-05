@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,6 +18,7 @@ using System.Windows.Shapes;
 using Microsoft.VisualBasic;
 using Microsoft.Win32;
 using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using QASmartClass.Data;
 using QASmartClass.Services;
 using QASmartTouch;
@@ -182,7 +183,7 @@ namespace QASmartClass.Classroom.Views
     			}
     			try
     			{
-    				if (Application.Current is App { NetworkService: not null } app && app.NetworkService.IsBroadcasting)
+    				if (Application.Current is App { NetworkService: not null } app && ClassroomAppContext.Network.IsBroadcasting)
     				{
     					Stroke stroke = e.Stroke;
     					string value = stroke.DrawingAttributes.Color.ToString();
@@ -191,7 +192,7 @@ namespace QASmartClass.Classroom.Views
     					double w = drawCanvas.ActualWidth;
     					double h = drawCanvas.ActualHeight;
     					string command = $"CMD|WHITEBOARD_DRAW|{value}|{value2}|{value3}|{w:F1}|{h:F1}";
-    					app.NetworkService.SendCommandAsync(command);
+    					ClassroomAppContext.Network.SendCommandAsync(command);
     				}
     			}
     			catch (Exception ex)
@@ -231,7 +232,7 @@ namespace QASmartClass.Classroom.Views
     			_lastStrokeState = drawCanvas.Strokes.Clone();
     			if (Application.Current is App { NetworkService: not null } app)
     			{
-    				app.NetworkService.MessageReceived += NetworkService_MessageReceived;
+    				ClassroomAppContext.Network.MessageReceived += NetworkService_MessageReceived;
     			}
     			Window window = Window.GetWindow(this);
     			if (window != null)
@@ -284,7 +285,7 @@ namespace QASmartClass.Classroom.Views
     		{
     			if (Application.Current is App { NetworkService: not null } app)
     			{
-    				app.NetworkService.MessageReceived -= NetworkService_MessageReceived;
+    				ClassroomAppContext.Network.MessageReceived -= NetworkService_MessageReceived;
     			}
     			Window window = Window.GetWindow(this);
     			if (window != null)
@@ -867,9 +868,9 @@ namespace QASmartClass.Classroom.Views
     			{
     				text = $"Bảng vẽ_{DateTime.Now:yyyyMMdd_HHmmss}";
     			}
-    			App app = (App)Application.Current;
-    			Lesson lesson = app.Database.Lessons.Find(_lessonId);
-    			string text2 = app.Database.TeacherProfiles.FirstOrDefault()?.FullName ?? "Giáo viên";
+    			// → ClassroomAppContext
+    			Lesson lesson = ClassroomAppContext.Db.Lessons.Find(_lessonId);
+    			string text2 = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault()?.FullName ?? "Giáo viên";
     			string text3 = text;
     			if (lesson != null && !string.Equals(lesson.TeacherName?.Trim(), text2.Trim(), StringComparison.OrdinalIgnoreCase))
     			{
@@ -886,7 +887,7 @@ namespace QASmartClass.Classroom.Views
     			string value = string.Join("_", text3.Split(System.IO.Path.GetInvalidFileNameChars()));
     			string text4 = System.IO.Path.Combine(picturesDir, $"Lesson_{_lessonId}_Board_{DateTime.Now:yyyyMMdd_HHmmss}_{value}.png");
     			SaveAsPng(text4);
-    			int sortOrder = app.Database.LessonContents.Count((LessonContent c) => c.LessonId == _lessonId);
+    			int sortOrder = ClassroomAppContext.Db.LessonContents.Count((LessonContent c) => c.LessonId == _lessonId);
     			LessonContent entity = new LessonContent
     			{
     				LessonId = _lessonId,
@@ -894,8 +895,8 @@ namespace QASmartClass.Classroom.Views
     				Data = text4,
     				SortOrder = sortOrder
     			};
-    			app.Database.LessonContents.Add(entity);
-    			app.Database.SaveChanges();
+    			ClassroomAppContext.Db.LessonContents.Add(entity);
+    			ClassroomAppContext.Db.SaveChanges();
     			MessageBox.Show("Đã lưu bảng vẽ thành một Slide mới trong bài học hiện tại!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Asterisk);
     			Log.Information("Saved canvas as lesson content image: {Path} for Lesson ID {LessonId}", text4, _lessonId);
     			LoadLessonOnCanvas(_lessonId);
@@ -1338,9 +1339,9 @@ namespace QASmartClass.Classroom.Views
     		focusOverlay.Visibility = Visibility.Collapsed;
     		try
     		{
-    			if (Application.Current is App { NetworkService: not null } app && app.NetworkService.IsBroadcasting)
+    			if (Application.Current is App { NetworkService: not null } app && ClassroomAppContext.Network.IsBroadcasting)
     			{
-    				app.NetworkService.SendCommandAsync("CMD|WHITEBOARD_CLEAR|ALL");
+    				ClassroomAppContext.Network.SendCommandAsync("CMD|WHITEBOARD_CLEAR|ALL");
     			}
     		}
     		catch (Exception ex)
@@ -1351,8 +1352,8 @@ namespace QASmartClass.Classroom.Views
 
     	private void GoToSmartScreen_Click(object sender, RoutedEventArgs e)
     	{
-    		App app = (App)Application.Current;
-    		app.ModeService.GoToScreen();
+    		// → ClassroomAppContext
+    		((QASmartTouch.App)System.Windows.Application.Current).ModeService.GoToScreen();
     	}
 
     	private void Canvas_MouseEnter(object sender, MouseEventArgs e)
@@ -1490,8 +1491,8 @@ namespace QASmartClass.Classroom.Views
     			{
     				return;
     			}
-    			App app = (App)Application.Current;
-    			HashSet<string> hashSet = (from p in (from c in app.Database.LessonContents
+    			// → ClassroomAppContext
+    			HashSet<string> hashSet = (from p in (from c in ClassroomAppContext.Db.LessonContents
     					where c.ContentType.StartsWith("Image")
     					select c.Data).ToList()
     				select System.IO.Path.GetFullPath(p).ToLowerInvariant()).ToHashSet();
@@ -1550,13 +1551,13 @@ namespace QASmartClass.Classroom.Views
     		}
     		try
     		{
-    			App app = (App)Application.Current;
-    			Lesson lesson = app.Database.Lessons.Find(lessonId);
+    			// → ClassroomAppContext
+    			Lesson lesson = ClassroomAppContext.Db.Lessons.Find(lessonId);
     			if (lesson == null)
     			{
     				return;
     			}
-    			List<LessonContent> list = (from c in app.Database.LessonContents
+    			List<LessonContent> list = (from c in ClassroomAppContext.Db.LessonContents
     				where c.LessonId == lessonId
     				orderby c.SortOrder
     				select c).ToList();
@@ -1918,11 +1919,11 @@ namespace QASmartClass.Classroom.Views
     	{
     		try
     		{
-    			if (!(Application.Current is App { NetworkService: not null } app) || !app.NetworkService.IsBroadcasting)
+    			if (!(Application.Current is App { NetworkService: not null } app) || !ClassroomAppContext.Network.IsBroadcasting)
     			{
     				return;
     			}
-    			app.NetworkService.SendCommandAsync("CMD|WHITEBOARD_CLEAR|ALL");
+    			ClassroomAppContext.Network.SendCommandAsync("CMD|WHITEBOARD_CLEAR|ALL");
     			double w = drawCanvas.ActualWidth;
     			double h = drawCanvas.ActualHeight;
     			foreach (Stroke stroke in drawCanvas.Strokes)
@@ -1931,7 +1932,7 @@ namespace QASmartClass.Classroom.Views
     				string value2 = stroke.DrawingAttributes.Width.ToString("F1");
     				string value3 = string.Join(";", stroke.StylusPoints.Select((StylusPoint p) => $"{p.X:F1},{p.Y:F1}"));
     				string command = $"CMD|WHITEBOARD_DRAW|{value}|{value2}|{value3}|{w:F1}|{h:F1}";
-    				app.NetworkService.SendCommandAsync(command);
+    				ClassroomAppContext.Network.SendCommandAsync(command);
     			}
     			foreach (UIElement element in _shapeElements)
     			{
@@ -1953,7 +1954,7 @@ namespace QASmartClass.Classroom.Views
     					string typeName = element is System.Windows.Shapes.Rectangle ? "Rectangle" : "Ellipse";
     					string coordsStr = $"{left:F1},{top:F1}|{(left + width):F1},{(top + height):F1}";
     					string command = $"CMD|WHITEBOARD_SHAPE|{typeName}|{coordsStr}|{color.ToString()}|{strokeThickness:F1}|{w:F1}|{h:F1}";
-    					app.NetworkService.SendCommandAsync(command);
+    					ClassroomAppContext.Network.SendCommandAsync(command);
     				}
     				else if (element is System.Windows.Shapes.Line line)
     				{
@@ -1961,7 +1962,7 @@ namespace QASmartClass.Classroom.Views
     					if (line.Stroke is SolidColorBrush brush) color = brush.Color;
     					string coordsStr = $"{line.X1:F1},{line.Y1:F1}|{line.X2:F1},{line.Y2:F1}";
     					string command = $"CMD|WHITEBOARD_SHAPE|Line|{coordsStr}|{color.ToString()}|{line.StrokeThickness:F1}|{w:F1}|{h:F1}";
-    					app.NetworkService.SendCommandAsync(command);
+    					ClassroomAppContext.Network.SendCommandAsync(command);
     				}
     				else if (element is System.Windows.Shapes.Path path)
     				{
@@ -1976,7 +1977,7 @@ namespace QASmartClass.Classroom.Views
     					}
     					string coordsStr = $"{start.X:F1},{start.Y:F1}|{end.X:F1},{end.Y:F1}";
     					string command = $"CMD|WHITEBOARD_SHAPE|Arrow|{coordsStr}|{color.ToString()}|{path.StrokeThickness:F1}|{w:F1}|{h:F1}";
-    					app.NetworkService.SendCommandAsync(command);
+    					ClassroomAppContext.Network.SendCommandAsync(command);
     				}
     				else if (element is TextBlock tb)
     				{
@@ -1988,7 +1989,7 @@ namespace QASmartClass.Classroom.Views
     					if (tb.Foreground is SolidColorBrush brush) color = brush.Color;
     					string escapedText = tb.Text.Replace("|", "\\|").Replace("\n", "\\n").Replace("\r", "\\r");
     					string command = $"CMD|WHITEBOARD_TEXT|{escapedText}|{left:F1},{top:F1}|{color.ToString()}|{tb.FontSize:F1}|{w:F1}|{h:F1}";
-    					app.NetworkService.SendCommandAsync(command);
+    					ClassroomAppContext.Network.SendCommandAsync(command);
     				}
     			}
     		}

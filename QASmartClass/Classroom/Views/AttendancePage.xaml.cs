@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -26,8 +27,8 @@ namespace QASmartClass.Classroom.Views
                 // Subscribe to roster change events for live sync
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
+                    // → ClassroomAppContext
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
                 }
                 catch { }
             };
@@ -36,8 +37,8 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                    // → ClassroomAppContext
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
                 }
                 catch { }
             };
@@ -57,8 +58,8 @@ namespace QASmartClass.Classroom.Views
             if (attendanceList == null || txtTotal == null) return;
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var activeRoster = app.ClassRoster.ActiveRoster;
+                // → ClassroomAppContext
+                var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 
                 List<Data.Student> students = null!;
                 string rosterName = activeRoster != null ? activeRoster.DisplayName : "Chưa chọn lớp";
@@ -67,12 +68,12 @@ namespace QASmartClass.Classroom.Views
                 {
                     if (activeRoster != null)
                     {
-                        students = app.ClassRoster.GetActiveStudents();
+                        students = ClassroomAppContext.ClassRoster.GetActiveStudents();
                     }
                     else
                     {
                         students = Services.VietnameseNameHelper.SortByVietnameseName(
-                            app.Database?.Students?.ToList() ?? new List<Data.Student>(), s => s.FullName);
+                            ClassroomAppContext.Db?.Students?.ToList() ?? new List<Data.Student>(), s => s.FullName);
                     }
                 });
 
@@ -101,7 +102,7 @@ namespace QASmartClass.Classroom.Views
 
                 await Task.Run(() =>
                 {
-                    savedRecords = app.Database.AttendanceRecords
+                    savedRecords = ClassroomAppContext.Db.AttendanceRecords
                         .Where(r => r.RosterId == rosterId && r.Date.Date == targetDate)
                         .ToList();
                 });
@@ -330,13 +331,13 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var activeRoster = app.ClassRoster.ActiveRoster;
+                // → ClassroomAppContext
+                var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 int rosterId = activeRoster?.Id ?? 0;
                 
                 if (rosterId == 0)
                 {
-                    MessageBox.Show("Vui lòng chọn lớp học ở danh sách bên trái trước khi lưu!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng chọn lớp học ở danh sách bên trái trước khi lưu!", "Lỗi");
                     return;
                 }
 
@@ -355,7 +356,7 @@ namespace QASmartClass.Classroom.Views
                 // 2. Chạy tác vụ ghi cơ sở dữ liệu trên background thread
                 await Task.Run(() =>
                 {
-                    var existingRecords = app.Database.AttendanceRecords
+                    var existingRecords = ClassroomAppContext.Db.AttendanceRecords
                         .Where(r => r.RosterId == rosterId && r.Date.Date == selectedDateCopy)
                         .ToList();
 
@@ -371,7 +372,7 @@ namespace QASmartClass.Classroom.Views
                         }
                         else
                         {
-                            app.Database.AttendanceRecords.Add(new Data.AttendanceRecord
+                            ClassroomAppContext.Db.AttendanceRecords.Add(new Data.AttendanceRecord
                             {
                                 StudentId = row.StudentId,
                                 RosterId = rosterId,
@@ -384,7 +385,7 @@ namespace QASmartClass.Classroom.Views
                         }
                     }
 
-                    app.Database.SaveChanges();
+                    ClassroomAppContext.Db.SaveChanges();
                 });
 
                 // 3. Cập nhật giao diện trên UI Thread
@@ -396,7 +397,7 @@ namespace QASmartClass.Classroom.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi lưu điểm danh: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn($"Lỗi lưu điểm danh: {ex.Message}", "Lỗi");
             }
         }
 
@@ -464,15 +465,14 @@ namespace QASmartClass.Classroom.Views
                         File.WriteAllText(filePath, sb.ToString(), new UTF8Encoding(true));
                     });
 
-                    MessageBox.Show($"✅ Đã xuất file báo cáo điểm danh thành công:\n{filePath}",
-                        "Xuất thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"✅ Đã xuất file báo cáo điểm danh thành công:\n{filePath}", "Xuất thành công");
                     
                     Log.Information("Attendance exported asynchronously to {Path}", filePath);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi xuất file: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn($"Lỗi xuất file: {ex.Message}", "Lỗi");
             }
         }
     }

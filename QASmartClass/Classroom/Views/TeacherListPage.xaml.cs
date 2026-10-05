@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,6 +11,7 @@ using System.Windows.Media;
 using Microsoft.Win32;
 using QASmartClass.Data;
 using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -35,11 +36,11 @@ namespace QASmartClass.Classroom.Views
             if (listViewBody == null || txtTotalCount == null) return; // Not yet initialized
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 List<TeacherProfile> all = null;
                 await Task.Run(() =>
                 {
-                    all = app.Database.TeacherProfiles.ToList();
+                    all = ClassroomAppContext.Db.TeacherProfiles.ToList();
                 });
 
                 // Stats
@@ -241,8 +242,8 @@ namespace QASmartClass.Classroom.Views
         {
             if (sender is Button btn && btn.Tag is int id)
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var teacher = app.Database.TeacherProfiles.FirstOrDefault(t => t.Id == id);
+                // → ClassroomAppContext
+                var teacher = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault(t => t.Id == id);
                 if (teacher != null) ShowTeacherDialog(teacher);
             }
         }
@@ -269,11 +270,11 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    int count = app.Database.TeacherProfiles.Count();
+                    // → ClassroomAppContext
+                    int count = ClassroomAppContext.Db.TeacherProfiles.Count();
                     autoCode = $"GV{count + 1:D3}";
                     // Ensure uniqueness
-                    while (app.Database.TeacherProfiles.Any(t => t.TeacherCode == autoCode))
+                    while (ClassroomAppContext.Db.TeacherProfiles.Any(t => t.TeacherCode == autoCode))
                     {
                         count++;
                         autoCode = $"GV{count + 1:D3}";
@@ -308,12 +309,12 @@ namespace QASmartClass.Classroom.Views
 
                 if (string.IsNullOrEmpty(code))
                 {
-                    MessageBox.Show("Vui lòng nhập mã giáo viên!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng nhập mã giáo viên!", "Thiếu thông tin");
                     return;
                 }
                 if (string.IsNullOrEmpty(name))
                 {
-                    MessageBox.Show("Vui lòng nhập họ tên!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng nhập họ tên!", "Thiếu thông tin");
                     return;
                 }
 
@@ -339,20 +340,19 @@ namespace QASmartClass.Classroom.Views
 
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
+                    // → ClassroomAppContext
                     int teacherId = isEdit ? existing!.Id : 0;
 
                     // ── Duplicate check ──
                     TeacherProfile? dupCode = null;
                     await Task.Run(() =>
                     {
-                        dupCode = app.Database.TeacherProfiles
+                        dupCode = ClassroomAppContext.Db.TeacherProfiles
                             .FirstOrDefault(t => t.TeacherCode == code && (!isEdit || t.Id != teacherId));
                     });
                     if (dupCode != null)
                     {
-                        MessageBox.Show($"Mã GV \"{code}\" đã tồn tại!\nGV hiện tại: {dupCode.FullName}\n\nVui lòng nhập mã khác.",
-                            "⚠️ Trùng mã GV", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn($"Mã GV \"{code}\" đã tồn tại!\nGV hiện tại: {dupCode.FullName}\n\nVui lòng nhập mã khác.", "⚠️ Trùng mã GV");
                         return;
                     }
 
@@ -362,7 +362,7 @@ namespace QASmartClass.Classroom.Views
                         TeacherProfile? dupPhone = null;
                         await Task.Run(() =>
                         {
-                            dupPhone = app.Database.TeacherProfiles
+                            dupPhone = ClassroomAppContext.Db.TeacherProfiles
                                 .FirstOrDefault(t => t.Phone == phone && (!isEdit || t.Id != teacherId));
                         });
                         if (dupPhone != null)
@@ -378,7 +378,7 @@ namespace QASmartClass.Classroom.Views
                         TeacherProfile? dupEmail = null;
                         await Task.Run(() =>
                         {
-                            dupEmail = app.Database.TeacherProfiles
+                            dupEmail = ClassroomAppContext.Db.TeacherProfiles
                                 .FirstOrDefault(t => t.Email == email && (!isEdit || t.Id != teacherId));
                         });
                         if (dupEmail != null)
@@ -391,7 +391,7 @@ namespace QASmartClass.Classroom.Views
                     TeacherProfile? dupName = null;
                     await Task.Run(() =>
                     {
-                        dupName = app.Database.TeacherProfiles
+                        dupName = ClassroomAppContext.Db.TeacherProfiles
                             .FirstOrDefault(t => t.FullName == name && (!isEdit || t.Id != teacherId));
                     });
                     if (dupName != null)
@@ -405,12 +405,12 @@ namespace QASmartClass.Classroom.Views
                     TeacherProfile tp;
                     if (isEdit)
                     {
-                        tp = app.Database.TeacherProfiles.FirstOrDefault(t => t.Id == existing!.Id)!;
+                        tp = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault(t => t.Id == existing!.Id)!;
                     }
                     else
                     {
                         tp = new TeacherProfile();
-                        app.Database.TeacherProfiles.Add(tp);
+                        ClassroomAppContext.Db.TeacherProfiles.Add(tp);
                     }
                     tp.TeacherCode = code;
                     tp.FullName = name;
@@ -423,15 +423,15 @@ namespace QASmartClass.Classroom.Views
                     tp.IsActive = chkActive.IsChecked == true;
                     tp.UpdatedAt = DateTime.Now;
 
-                    await Task.Run(() => app.Database.SaveChanges());
+                    await Task.Run(() => ClassroomAppContext.Db.SaveChanges());
                     Log.Information("Teacher {Action}: {Code} — {Name}", isEdit ? "updated" : "added", code, name);
                     dlg.Close();
                     LoadTeachers();
-                    MessageBox.Show(isEdit ? "✅ Đã cập nhật thông tin!" : "✅ Đã thêm giáo viên thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info(isEdit ? "✅ Đã cập nhật thông tin!" : "✅ Đã thêm giáo viên thành công!", "Thành công");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
                 }
             };
             btnPanel.Children.Add(btnCancel);
@@ -495,11 +495,11 @@ namespace QASmartClass.Classroom.Views
         {
             if (sender is Button btn && btn.Tag is int id)
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 TeacherProfile? t = null;
                 await Task.Run(() =>
                 {
-                    t = app.Database.TeacherProfiles.FirstOrDefault(x => x.Id == id);
+                    t = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault(x => x.Id == id);
                 });
                 if (t == null) return;
                 var r = MessageBox.Show($"Bạn chắc chắn muốn xóa GV \"{t.FullName}\"?\nMọi dữ liệu liên quan sẽ bị xóa khỏi hệ thống.", "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Warning);
@@ -509,15 +509,15 @@ namespace QASmartClass.Classroom.Views
                     {
                         await Task.Run(() =>
                         {
-                            app.Database.TeacherProfiles.Remove(t);
-                            app.Database.SaveChanges();
+                            ClassroomAppContext.Db.TeacherProfiles.Remove(t);
+                            ClassroomAppContext.Db.SaveChanges();
                         });
                         Log.Information("Teacher deleted: {Name}", t.FullName);
                         LoadTeachers();
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Lỗi xóa: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ClassroomDialog.Error($"Lỗi xóa: {ex.Message}", "Lỗi");
                     }
                 }
             }
@@ -580,7 +580,7 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 var filePath = dlg.FileName;
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
                 var result = await Task.Run(() =>
                 {
@@ -613,7 +613,7 @@ namespace QASmartClass.Classroom.Views
                     // Quét mã lớn nhất có sẵn trong DB (Tránh lỗi SQL N+1)
                     try
                     {
-                        var allDb = app.Database.TeacherProfiles.ToList();
+                        var allDb = ClassroomAppContext.Db.TeacherProfiles.ToList();
                         foreach (var t in allDb)
                         {
                             if (t.TeacherCode != null && t.TeacherCode.StartsWith("GV"))
@@ -625,7 +625,7 @@ namespace QASmartClass.Classroom.Views
                     }
                     catch { }
 
-                    using var transaction = app.Database.Database.BeginTransaction();
+                    using var transaction = ClassroomAppContext.Db.Database.BeginTransaction();
                     try
                     {
                         int rowNum = 1;
@@ -686,11 +686,11 @@ namespace QASmartClass.Classroom.Views
                             TeacherProfile? existing = null;
                             if (!string.IsNullOrEmpty(email))
                             {
-                                existing = app.Database.TeacherProfiles.FirstOrDefault(t => t.Email == email);
+                                existing = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault(t => t.Email == email);
                             }
                             if (existing == null && !string.IsNullOrEmpty(phone))
                             {
-                                existing = app.Database.TeacherProfiles.FirstOrDefault(t => t.Phone == phone);
+                                existing = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault(t => t.Phone == phone);
                             }
 
                             if (existing != null)
@@ -731,11 +731,11 @@ namespace QASmartClass.Classroom.Views
                                     IsActive = true,
                                     UpdatedAt = DateTime.Now
                                 };
-                                app.Database.TeacherProfiles.Add(tp);
+                                ClassroomAppContext.Db.TeacherProfiles.Add(tp);
                                 added++;
                             }
                         }
-                        app.Database.SaveChanges();
+                        ClassroomAppContext.Db.SaveChanges();
                         transaction.Commit();
                         return (Success: true, Count: added, Message: $"Đã nhập thành công {added} giáo viên mới, cập nhật {updated} giáo viên!", Warnings: warnings);
                     }
@@ -760,12 +760,12 @@ namespace QASmartClass.Classroom.Views
                 }
                 else
                 {
-                    MessageBox.Show(result.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn(result.Message, "Lỗi");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi nhập dữ liệu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi nhập dữ liệu: {ex.Message}", "Lỗi");
             }
         }
 
@@ -808,12 +808,12 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 var filePath = dlg.FileName;
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 
                 List<TeacherProfile> teachers = null;
                 await Task.Run(() =>
                 {
-                    teachers = app.Database.TeacherProfiles.OrderBy(t => t.FullName).ToList();
+                    teachers = ClassroomAppContext.Db.TeacherProfiles.OrderBy(t => t.FullName).ToList();
                 });
 
                 await Task.Run(() =>
@@ -838,11 +838,11 @@ namespace QASmartClass.Classroom.Views
                 });
 
                 Log.Information("Exported {Count} teachers to CSV", teachers.Count);
-                MessageBox.Show($"✅ Đã xuất {teachers.Count} giáo viên ra tệp CSV thành công!", "Xuất thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info($"✅ Đã xuất {teachers.Count} giáo viên ra tệp CSV thành công!", "Xuất thành công");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi xuất CSV: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi xuất CSV: {ex.Message}", "Lỗi");
             }
         }
 

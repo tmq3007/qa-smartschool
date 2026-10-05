@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Shapes;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 using System.Threading.Tasks;
 
@@ -72,8 +73,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var activeRoster = app.ClassRoster.ActiveRoster;
+                // → ClassroomAppContext
+                var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 int rosterId = activeRoster?.Id ?? 0;
                 
                 if (rosterId == 0)
@@ -85,13 +86,13 @@ namespace QASmartClass.Classroom.Views
                 List<GroupVm>? loadedGroups = null;
 
                 // 1. Kiểm tra trong bộ nhớ RAM
-                if (app.CurrentGroups != null && app.CurrentGroups.Count > 0)
+                if (ClassroomAppContext.CurrentGroups != null && ClassroomAppContext.CurrentGroups.Count > 0)
                 {
-                    var groupStudents = app.CurrentGroups.SelectMany(g => g.Members).ToList();
+                    var groupStudents = ClassroomAppContext.CurrentGroups.SelectMany(g => g.Members).ToList();
                     bool isSameRoster = groupStudents.Count > 0 && groupStudents.All(name => _studentNames.Contains(name));
                     if (isSameRoster)
                     {
-                        loadedGroups = app.CurrentGroups;
+                        loadedGroups = ClassroomAppContext.CurrentGroups;
                     }
                 }
 
@@ -224,8 +225,8 @@ namespace QASmartClass.Classroom.Views
             // Sync groups to App for other pages (BroadcastPage etc.)
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                app.CurrentGroups = new List<GroupVm>(_groups);
+                // → ClassroomAppContext
+                ClassroomAppContext.CurrentGroups = new List<GroupVm>(_groups);
             }
             catch { }
         }
@@ -803,7 +804,7 @@ namespace QASmartClass.Classroom.Views
                 }
                 wnd.Close();
                 RenderAll();
-                MessageBox.Show("✅ Đã giao nhiệm vụ cho tất cả các nhóm!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info("✅ Đã giao nhiệm vụ cho tất cả các nhóm!", "Thành công");
             };
             sp.Children.Add(btnSave);
 
@@ -858,13 +859,13 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var activeRoster = app.ClassRoster.ActiveRoster;
+                // → ClassroomAppContext
+                var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 int rosterId = activeRoster?.Id ?? 0;
                 if (rosterId == 0) return;
 
                 // 1. Đồng bộ trạng thái RAM toàn cục để các page khác đọc
-                app.CurrentGroups = new List<GroupVm>(_groups);
+                ClassroomAppContext.CurrentGroups = new List<GroupVm>(_groups);
 
                 // 2. Chụp snapshot dữ liệu (sao chép sâu) tránh xung đột đa luồng
                 var groupsCopy = _groups.Select(g => new GroupVm
@@ -919,15 +920,14 @@ namespace QASmartClass.Classroom.Views
 
                 // Hiển thị thông báo trên UI thread
                 var summary = string.Join("\n", _groups.Select(g => $"  {g.Emoji} {g.Name}: {g.Members.Count} HS" + (string.IsNullOrEmpty(g.Leader) ? "" : $" (Trưởng: {g.Leader})")));
-                MessageBox.Show($"✅ Đã lưu {_groups.Count} nhóm học tập thành công và ghi nhận vào hệ thống!\n\n{summary}\n\nHọc sinh sẽ thấy nhóm của mình trên thiết bị.",
-                    "Lưu nhóm", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info($"✅ Đã lưu {_groups.Count} nhóm học tập thành công và ghi nhận vào hệ thống!\n\n{summary}\n\nHọc sinh sẽ thấy nhóm của mình trên thiết bị.", "Lưu nhóm");
                     
-                var activeRoster = ((QASmartTouch.App)Application.Current).ClassRoster.ActiveRoster;
+                var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 Log.Information("Groups saved manually for roster: {RosterId}", activeRoster?.Id ?? 0);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi lưu nhóm: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn($"Lỗi lưu nhóm: {ex.Message}", "Lỗi");
             }
         }
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Data;
@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 using QASmartClass.Services;
 using QuestPDF.Fluent;
@@ -38,8 +39,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                _db = app.Database;
+                // → ClassroomAppContext
+                _db = ClassroomAppContext.Db;
 
                 // Load grade type master config
                 _gradeTypes = _db.GradeTypeMasters
@@ -870,7 +871,7 @@ namespace QASmartClass.Classroom.Views
             if (_selectedRosterId <= 0) return;
             if (_isSimulatorMode)
             {
-                MessageBox.Show("Không thể lưu khi đang ở chế độ giả lập điểm!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Không thể lưu khi đang ở chế độ giả lập điểm!", "Cảnh báo");
                 return;
             }
 
@@ -919,13 +920,12 @@ namespace QASmartClass.Classroom.Views
                 _db.SaveChanges();
                 LoadGradeTable(_selectedRosterId); // Refresh
 
-                MessageBox.Show($"✅ Đã lưu {saved} ô điểm!", "Lưu thành công",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info($"✅ Đã lưu {saved} ô điểm!", "Lưu thành công");
                 Log.Information("SaveAllGrades: {Count} cells for roster {Id}", saved, _selectedRosterId);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
             }
         }
 
@@ -1058,8 +1058,7 @@ namespace QASmartClass.Classroom.Views
             {
                 if (_selectedRosterId <= 0 || _dataTable.Rows.Count == 0)
                 {
-                    MessageBox.Show("Vui lòng chọn lớp và nhập điểm trước khi xuất.",
-                        "Chưa có dữ liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng chọn lớp và nhập điểm trước khi xuất.", "Chưa có dữ liệu");
                     return;
                 }
 
@@ -1078,7 +1077,7 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex)
             {
                 Log.Error(ex, "Export gradebook error");
-                MessageBox.Show($"Lỗi xuất: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi xuất: {ex.Message}", "Lỗi");
             }
         }
 
@@ -1302,7 +1301,7 @@ namespace QASmartClass.Classroom.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
             }
         }
 
@@ -1324,7 +1323,7 @@ namespace QASmartClass.Classroom.Views
 
                 if (lines.Count < 2)
                 {
-                    MessageBox.Show("File không có dữ liệu.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("File không có dữ liệu.", "Lỗi");
                     return;
                 }
 
@@ -1333,7 +1332,7 @@ namespace QASmartClass.Classroom.Views
                 int codeIdx = header.IndexOf("Mã HS");
                 if (codeIdx < 0)
                 {
-                    MessageBox.Show("File thiếu cột 'Mã HS'. Vui lòng dùng form mẫu.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error("File thiếu cột 'Mã HS'. Vui lòng dùng form mẫu.", "Lỗi");
                     return;
                 }
 
@@ -1395,13 +1394,12 @@ namespace QASmartClass.Classroom.Views
                 _db.SaveChanges();
                 LoadGradeTable(_selectedRosterId); // Refresh grid
 
-                MessageBox.Show($"✅ Import thành công!\n\n• {imported} ô điểm đã nhập\n• Bảng điểm đã cập nhật",
-                    "Import Điểm", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info($"✅ Import thành công!\n\n• {imported} ô điểm đã nhập\n• Bảng điểm đã cập nhật", "Import Điểm");
                 Log.Information("Imported {Count} grades from CSV: {File}", imported, dlg.FileName);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi import: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi import: {ex.Message}", "Lỗi");
             }
         }
 

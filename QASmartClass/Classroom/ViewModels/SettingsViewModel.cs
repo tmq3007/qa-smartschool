@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -8,7 +8,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Serilog;
 using QASmartClass.Shared;
+using QASmartClass.Classroom.Helpers;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using QASmartTouch.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -137,7 +139,7 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 if (File.Exists(SettingsFilePath))
                 {
                     var json = File.ReadAllText(SettingsFilePath);
@@ -168,14 +170,14 @@ namespace QASmartClass.Classroom.ViewModels
                 LoadRoles();
 
                 // Load master settings from database
-                AppSettings.LoadFromDatabase(app.Database);
+                AppSettings.LoadFromDatabase(ClassroomAppContext.Db);
                 BroadcastUdpHeartbeatTimeout = AppSettings.Broadcast_UdpHeartbeatTimeout;
                 BroadcastEnableScreenExclusion = AppSettings.Broadcast_EnableScreenExclusion;
                 BroadcastAllowTurboMode = AppSettings.Broadcast_AllowTurboMode;
                 BroadcastTurboDisableExclusion = AppSettings.Broadcast_TurboDisableExclusion;
                 BroadcastTurboStudentBg = AppSettings.Broadcast_TurboStudentBg;
 
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
                 if (net != null && !string.IsNullOrEmpty(net.ServerIP))
                 {
                     if (net.IsBroadcasting)
@@ -248,8 +250,8 @@ namespace QASmartClass.Classroom.ViewModels
                 AppSettings.Broadcast_TurboDisableExclusion = BroadcastTurboDisableExclusion;
                 AppSettings.Broadcast_TurboStudentBg = BroadcastTurboStudentBg;
 
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
 
                 var timeoutSetting = db.SystemSettings.FirstOrDefault(s => s.Id == "Broadcast_UdpHeartbeatTimeout");
                 if (timeoutSetting == null)
@@ -299,10 +301,10 @@ namespace QASmartClass.Classroom.ViewModels
                 db.SaveChanges();
 
                 // Broadcast settings update to active student clients
-                if (app.NetworkService?.IsBroadcasting == true)
+                if (ClassroomAppContext.Network?.IsBroadcasting == true)
                 {
                     string configCmd = $"CMD|SESSION_CONFIG|Broadcast_UdpHeartbeatTimeout={BroadcastUdpHeartbeatTimeout}|Broadcast_EnableScreenExclusion={BroadcastEnableScreenExclusion}|Broadcast_TurboMode={AppSettings.Broadcast_TurboMode}|Broadcast_AllowTurboMode={BroadcastAllowTurboMode}|Broadcast_TurboDisableExclusion={BroadcastTurboDisableExclusion}|Broadcast_TurboStudentBg={BroadcastTurboStudentBg}";
-                    _ = app.NetworkService.SendCommandAsync(configCmd);
+                    _ = ClassroomAppContext.Network.SendCommandAsync(configCmd);
                 }
 
                 Log.Information("Settings and Master Settings saved to DB & JSON. Broadcasted configCmd.");
@@ -317,8 +319,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 if (db != null)
                 {
                     CountLessons = db.Lessons.Count().ToString();
@@ -413,8 +415,8 @@ namespace QASmartClass.Classroom.ViewModels
                 var dbPath = QASmartClass.Services.AppPaths.DatabaseFile;
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    var db = app.Database;
+                    // → ClassroomAppContext
+                    var db = ClassroomAppContext.Db;
                     
                     if (db != null)
                     {
@@ -449,8 +451,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 var teacher = db.TeacherProfiles.FirstOrDefault();
                 if (teacher != null)
                 {
@@ -468,8 +470,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 var teacher = db.TeacherProfiles.FirstOrDefault();
 
                 if (teacher == null)
@@ -499,8 +501,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 var teacher = db.TeacherProfiles.FirstOrDefault();
 
                 bool isCorrect = false;
@@ -628,8 +630,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var types = app.Database.GradeTypeMasters.OrderBy(g => g.SortOrder).ToList();
+                // → ClassroomAppContext
+                var types = ClassroomAppContext.Db.GradeTypeMasters.OrderBy(g => g.SortOrder).ToList();
                 GradeTypes.Clear();
                 foreach (var t in types) GradeTypes.Add(t);
                 UpdateFormulaPreview();
@@ -642,8 +644,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 int nextOrder = db.GradeTypeMasters.Any() ? db.GradeTypeMasters.Max(g => g.SortOrder) + 1 : 1;
                 var gt = new GradeTypeMaster
                 {
@@ -667,8 +669,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                app.Database.SaveChanges();
+                // → ClassroomAppContext
+                ClassroomAppContext.Db.SaveChanges();
                 UpdateFormulaPreview();
             }
             catch (Exception ex) { MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error); }
@@ -680,8 +682,8 @@ namespace QASmartClass.Classroom.ViewModels
             if (gt == null) return;
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 bool hasGrades = db.StudentGrades.Any(sg => sg.GradeTypeId == gt.Id);
                 if (hasGrades)
                 {
@@ -724,8 +726,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var rosters = app.Database.ClassRosters.Where(r => r.IsActive).OrderBy(r => r.GradeLevel).ThenBy(r => r.ClassName).ToList();
+                // → ClassroomAppContext
+                var rosters = ClassroomAppContext.Db.ClassRosters.Where(r => r.IsActive).OrderBy(r => r.GradeLevel).ThenBy(r => r.ClassName).ToList();
                 RosterRows.Clear();
                 foreach (var r in rosters) RosterRows.Add(r);
                 RosterSummary = $"🏫 {rosters.Count} lớp • Khối: {string.Join(", ", rosters.Select(r => r.GradeLevel).Distinct().OrderBy(x => x))}";
@@ -738,8 +740,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 db.ClassRosters.Add(new ClassRoster
                 {
                     ClassName = "Lớp mới",
@@ -760,8 +762,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                app.Database.SaveChanges();
+                // → ClassroomAppContext
+                ClassroomAppContext.Db.SaveChanges();
                 LoadRosterRows();
                 MessageBox.Show("Đã lưu cấu hình trường học!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -774,8 +776,8 @@ namespace QASmartClass.Classroom.ViewModels
             if (roster == null) return;
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 bool hasStudents = db.ClassRosterStudents.Any(rs => rs.RosterId == roster.Id);
                 bool hasGrades = db.StudentGrades.Any(sg => sg.RosterId == roster.Id);
 
@@ -803,8 +805,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var currentRole = app.UserRoleService.CurrentRole;
+                // → ClassroomAppContext
+                var currentRole = ClassroomAppContext.Role.CurrentRole;
                 var currentInfo = UserRoleService.GetRoleInfo(currentRole);
 
                 CurrentRoleIcon = currentInfo.Icon;
@@ -827,13 +829,13 @@ namespace QASmartClass.Classroom.ViewModels
 
         private void ChangeRole(UserRole role)
         {
-            var app = (QASmartTouch.App)Application.Current;
-            if (role == app.UserRoleService.CurrentRole) return;
+            // → ClassroomAppContext
+            if (role == ClassroomAppContext.Role.CurrentRole) return;
 
             var info = UserRoleService.GetRoleInfo(role);
             if (MessageBox.Show($"Chuyển vai trò sang: {info.Icon} {info.Name}?\n\nỨng dụng sẽ khởi động lại để áp dụng.", "Thay đổi vai trò sử dụng", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
-                app.UserRoleService.SaveRole(role);
+                ClassroomAppContext.Role.SaveRole(role);
                 var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
                 if (!string.IsNullOrEmpty(exePath))
                 {
@@ -989,8 +991,8 @@ namespace QASmartClass.Classroom.ViewModels
 
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    var db = app.Database;
+                    // → ClassroomAppContext
+                    var db = ClassroomAppContext.Db;
                     string oldDbFile = QASmartClass.Services.AppPaths.DatabaseFile;
                     string newDbFile = Path.Combine(newPath, Path.GetFileName(oldDbFile));
 
@@ -1116,8 +1118,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                app.ShowStudentClient();
+                // → ClassroomAppContext
+                ((QASmartTouch.App)System.Windows.Application.Current).ShowStudentClient();
             }
             catch (Exception ex) { MessageBox.Show($"Lỗi: {ex.Message}"); }
         }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 using System.IO;
 
@@ -25,6 +25,7 @@ using System.Windows.Threading;
 using Microsoft.Win32;
 
 using QASmartClass.Shared;
+using QASmartClass.Classroom.Helpers;
 
 using Serilog;
 
@@ -102,7 +103,7 @@ namespace QASmartClass.Classroom.Views
 
 			// Get ModeService from App
 
-			_modeService = ((QASmartTouch.App)Application.Current).ModeService;
+			_modeService = ((QASmartTouch.App)System.Windows.Application.Current).ModeService;
 
 
 
@@ -214,9 +215,9 @@ namespace QASmartClass.Classroom.Views
 
 			{
 
-				var app = (QASmartTouch.App)Application.Current;
+				// app → ClassroomAppContext (refactored)
 
-				var net = app.NetworkService;
+				var net = ClassroomAppContext.Network;
 
 				if (net != null && !net.IsBroadcasting)
 
@@ -224,9 +225,9 @@ namespace QASmartClass.Classroom.Views
 
 					// Get teacher info from DB
 
-					var teacher = app.Database.TeacherProfiles.FirstOrDefault();
+					var teacher = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault();
 
-					var classroom = app.Database.Classrooms.FirstOrDefault();
+					var classroom = ClassroomAppContext.Db.Classrooms.FirstOrDefault();
 
 
 
@@ -310,11 +311,11 @@ namespace QASmartClass.Classroom.Views
 
 								{
 
-									var app = (QASmartTouch.App)Application.Current;
+									// app → ClassroomAppContext (refactored)
 
 									var state = QASmartClass.Services.BroadcastStateService.Instance;
 
-									if (state != null && state.IsScreenBroadcastActive && app.NetworkService != null)
+									if (state != null && state.IsScreenBroadcastActive && ClassroomAppContext.Network != null)
 
 									{
 
@@ -326,17 +327,17 @@ namespace QASmartClass.Classroom.Views
 
 										int webPort = 8080;
 
-										if (app.NetworkService.WebBridge != null)
+										if (ClassroomAppContext.Network.WebBridge != null)
 
 										{
 
-											webPort = app.NetworkService.WebBridge.WebPort;
+											webPort = ClassroomAppContext.Network.WebBridge.WebPort;
 
 										}
 
 										string cmd = $"CMD|SCREEN_BROADCAST_START|{filePath}|{(isForce ? "FORCE_WATCH|" : "")}{webPort}|{token}";
 
-										_ = app.NetworkService.SendToStudentAsync(args.StudentCode, cmd);
+										_ = ClassroomAppContext.Network.SendToStudentAsync(args.StudentCode, cmd);
 
 										Log.Information("[BroadcastPage] Resent broadcast start to reconnected student {Code} (Force: {Force})", args.StudentCode, isForce);
 
@@ -366,9 +367,9 @@ namespace QASmartClass.Classroom.Views
 
 								{
 
-									var dbApp = (QASmartTouch.App)Application.Current;
+									// app → ClassroomAppContext (refactored)
 
-									string classCode = dbApp?.ClassroomSession?.ClassCode ?? "DEFAULT_CLASS";
+									string classCode = ClassroomAppContext.Session?.ClassCode ?? "DEFAULT_CLASS";
 
 									if (string.IsNullOrEmpty(classCode)) classCode = "DEFAULT_CLASS";
 
@@ -474,9 +475,9 @@ namespace QASmartClass.Classroom.Views
 
 								{
 
-									var dbApp = (QASmartTouch.App)Application.Current;
+									// app → ClassroomAppContext (refactored)
 
-									string classCode = dbApp?.ClassroomSession?.ClassCode ?? "DEFAULT_CLASS";
+									string classCode = ClassroomAppContext.Session?.ClassCode ?? "DEFAULT_CLASS";
 
 									if (string.IsNullOrEmpty(classCode)) classCode = "DEFAULT_CLASS";
 
@@ -622,9 +623,9 @@ namespace QASmartClass.Classroom.Views
 
 								{
 
-									var app = (QASmartTouch.App)Application.Current;
+									// app → ClassroomAppContext (refactored)
 
-									var session = app?.ClassroomSession;
+									var session = ClassroomAppContext.Session;
 
 									if (session != null)
 
@@ -756,9 +757,9 @@ namespace QASmartClass.Classroom.Views
 
 									{
 
-										var dbApp = (QASmartTouch.App)Application.Current;
+										// app → ClassroomAppContext (refactored)
 
-										var gamification = dbApp.NetworkService.Gamification;
+										var gamification = ClassroomAppContext.Network.Gamification;
 
 										if (gamification != null)
 
@@ -860,7 +861,7 @@ namespace QASmartClass.Classroom.Views
 
 									IncrementBadge();
 
-									if (!QASmartTouch.App.LessonState.IsLessonActive)
+									if (!ClassroomAppContext.LessonState.IsLessonActive)
 
 									{
 
@@ -928,13 +929,13 @@ namespace QASmartClass.Classroom.Views
 
 								{
 
-									var dbApp = (QASmartTouch.App)Application.Current;
+									// app → ClassroomAppContext (refactored)
 
-									if (dbApp?.Database != null)
+									if (ClassroomAppContext.Db != null)
 
 									{
 
-										dbApp.Database.EventLogs.Add(new QASmartClass.Data.EventLog
+										ClassroomAppContext.Db.EventLogs.Add(new QASmartClass.Data.EventLog
 
 										{
 
@@ -948,7 +949,7 @@ namespace QASmartClass.Classroom.Views
 
 										});
 
-										dbApp.Database.SaveChanges();
+										ClassroomAppContext.Db.SaveChanges();
 
 									}
 
@@ -1535,7 +1536,7 @@ namespace QASmartClass.Classroom.Views
 				catch (Exception ex)
 				{
 					Log.Error("Failed to create page {FormId}: {Err}", formId, ex.Message);
-					MessageBox.Show($"Không thể mở trang này do lỗi hệ thống: {ex.Message}", "Lỗi tải trang", MessageBoxButton.OK, MessageBoxImage.Error);
+					ClassroomDialog.Error($"Không thể mở trang này do lỗi hệ thống: {ex.Message}", "Lỗi tải trang");
 					page = null;
 
 					if (cts != null)
@@ -2148,9 +2149,9 @@ namespace QASmartClass.Classroom.Views
 
 			{
 
-				var app = (QASmartTouch.App)Application.Current;
+				// app → ClassroomAppContext (refactored)
 
-				var rosters = app.ClassRoster.GetAllRosters();
+				var rosters = ClassroomAppContext.ClassRoster.GetAllRosters();
 
 
 
@@ -2160,11 +2161,9 @@ namespace QASmartClass.Classroom.Views
 
 					// Chưa có lớp → chuyển đến trang Student để tạo
 
-					System.Windows.MessageBox.Show(
+					ClassroomDialog.Info(
 
-						"Chưa có danh sách lớp nào.\nVui lòng vào Quản lý Học sinh → Danh sách lớp để tạo.",
-
-						"Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+						"Chưa có danh sách lớp nào.\nVui lòng vào Quản lý Học sinh → Danh sách lớp để tạo.", "Thông báo");
 
 					NavigateTo("F15");
 
@@ -2210,7 +2209,7 @@ namespace QASmartClass.Classroom.Views
 
 
 
-				var activeRoster = app.ClassRoster.ActiveRoster;
+				var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
 
 				var lstBox = new ListBox { FontSize = 13, Height = 180 };
 
@@ -2278,7 +2277,7 @@ namespace QASmartClass.Classroom.Views
 
 					{
 
-						app.ClassRoster.SetActiveRoster(roster);
+						ClassroomAppContext.ClassRoster.SetActiveRoster(roster);
 
 						UpdateActiveRosterUI(roster);
 
@@ -2487,9 +2486,9 @@ namespace QASmartClass.Classroom.Views
 
 			{
 
-				var app = (QASmartTouch.App)Application.Current;
+				// app → ClassroomAppContext (refactored)
 
-				app.ShowStudentClient();
+				((QASmartTouch.App)System.Windows.Application.Current).ShowStudentClient();
 
 				Log.Information("Switched to Student Client from top bar");
 
@@ -2501,7 +2500,7 @@ namespace QASmartClass.Classroom.Views
 
 				Log.Warning("Switch to student error: {Err}", ex.Message);
 
-				System.Windows.MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+				ClassroomDialog.Warn($"Lỗi: {ex.Message}", "Lỗi");
 
 			}
 
@@ -2567,9 +2566,9 @@ namespace QASmartClass.Classroom.Views
 
 			{
 
-				var app = (QASmartTouch.App)Application.Current;
+				// app → ClassroomAppContext (refactored)
 
-				var profile = app.Database.TeacherProfiles.FirstOrDefault();
+				var profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault();
 
 				if (profile == null)
 
@@ -2589,9 +2588,9 @@ namespace QASmartClass.Classroom.Views
 
 					};
 
-					app.Database.TeacherProfiles.Add(profile);
+					ClassroomAppContext.Db.TeacherProfiles.Add(profile);
 
-					app.Database.SaveChanges();
+					ClassroomAppContext.Db.SaveChanges();
 
 				}
 
@@ -2667,9 +2666,9 @@ namespace QASmartClass.Classroom.Views
 
 					// Update DB
 
-					var app = (QASmartTouch.App)Application.Current;
+					// app → ClassroomAppContext (refactored)
 
-					var profile = app.Database.TeacherProfiles.FirstOrDefault();
+					var profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault();
 
 					if (profile != null)
 
@@ -2679,7 +2678,7 @@ namespace QASmartClass.Classroom.Views
 
 						profile.UpdatedAt = DateTime.Now;
 
-						app.Database.SaveChanges();
+						ClassroomAppContext.Db.SaveChanges();
 
 					}
 
@@ -2701,7 +2700,7 @@ namespace QASmartClass.Classroom.Views
 
 				Log.Warning("Teacher avatar change error: {Err}", ex.Message);
 
-				System.Windows.MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+				ClassroomDialog.Warn($"Lỗi: {ex.Message}", "Lỗi");
 
 			}
 

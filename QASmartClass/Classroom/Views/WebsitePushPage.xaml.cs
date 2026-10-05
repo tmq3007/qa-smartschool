@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -92,7 +93,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 bool isAllowed = toggleWebAccess.IsChecked == true;
                 
                 // Update state
@@ -107,10 +108,10 @@ namespace QASmartClass.Classroom.Views
                 string cmd = isAllowed ? "CMD|BLOCK_WEB_OFF" : "CMD|BLOCK_WEB_ON";
                 
                 // Broadcast policy
-                if (app.NetworkService?.IsBroadcasting == true)
-                    _ = app.NetworkService.SendCommandAsync(cmd);
+                if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                    _ = ClassroomAppContext.Network.SendCommandAsync(cmd);
                 else
-                    app.RaiseLocalCommand(cmd);
+                    ClassroomAppContext.DispatchCommand(cmd);
 
                 // Save event via local context (thread-safe)
                 using (var db = new QASmartClass.Data.AppDbContext())
@@ -135,7 +136,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 bool isWhitelist = toggleWhitelistMode.IsChecked == true;
                 
                 // Update state
@@ -150,19 +151,19 @@ namespace QASmartClass.Classroom.Views
                 string cmd = isWhitelist ? "CMD|WEB_WHITELIST_ON" : "CMD|WEB_WHITELIST_OFF";
                 
                 // Broadcast policy
-                if (app.NetworkService?.IsBroadcasting == true)
-                    _ = app.NetworkService.SendCommandAsync(cmd);
+                if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                    _ = ClassroomAppContext.Network.SendCommandAsync(cmd);
                 else
-                    app.RaiseLocalCommand(cmd);
+                    ClassroomAppContext.DispatchCommand(cmd);
 
                 // If whitelist mode was turned on and we have existing whitelist URLs, broadcast them
                 if (isWhitelist && !string.IsNullOrEmpty(control.WebWhitelistUrls))
                 {
                     string whitelistCmd = $"CMD|WHITELIST_ADD|{control.WebWhitelistUrls}";
-                    if (app.NetworkService?.IsBroadcasting == true)
-                        _ = app.NetworkService.SendCommandAsync(whitelistCmd);
+                    if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                        _ = ClassroomAppContext.Network.SendCommandAsync(whitelistCmd);
                     else
-                        app.RaiseLocalCommand(whitelistCmd);
+                        ClassroomAppContext.DispatchCommand(whitelistCmd);
                 }
 
                 // Save event via local context (thread-safe)
@@ -189,7 +190,7 @@ namespace QASmartClass.Classroom.Views
             string url = txtUrl.Text.Trim();
             if (string.IsNullOrEmpty(url) || url == "https://")
             {
-                MessageBox.Show("Vui lòng nhập URL!", "Thiếu URL", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng nhập URL!", "Thiếu URL");
                 return;
             }
 
@@ -201,13 +202,13 @@ namespace QASmartClass.Classroom.Views
             if (!Uri.TryCreate(url, UriKind.Absolute, out var tempUri) || 
                 (tempUri.Scheme != Uri.UriSchemeHttp && tempUri.Scheme != Uri.UriSchemeHttps))
             {
-                MessageBox.Show("Định dạng URL không hợp lệ! Vui lòng nhập địa chỉ website bắt đầu bằng http:// hoặc https://", "URL không hợp lệ", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Định dạng URL không hợp lệ! Vui lòng nhập địa chỉ website bắt đầu bằng http:// hoặc https://", "URL không hợp lệ");
                 return;
             }
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 var control = QASmartClass.Services.ClassControlService.Instance;
                 
                 // Update whitelist in service
@@ -223,20 +224,20 @@ namespace QASmartClass.Classroom.Views
 
                 // Broadcast whitelist update command first
                 string whitelistCmd = $"CMD|WHITELIST_ADD|{url}";
-                if (app.NetworkService?.IsBroadcasting == true)
-                    _ = app.NetworkService.SendCommandAsync(whitelistCmd);
+                if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                    _ = ClassroomAppContext.Network.SendCommandAsync(whitelistCmd);
                 else
-                    app.RaiseLocalCommand(whitelistCmd);
+                    ClassroomAppContext.DispatchCommand(whitelistCmd);
 
                 // Broadcast opening URL
                 string cmd = $"CMD|OPEN_URL|{url}";
 
                 // Send via network if available, otherwise local bus
                 // ⚠️ MUTUAL EXCLUSION: chỉ gửi 1 kênh để tránh HS mở trùng tab
-                if (app.NetworkService?.IsBroadcasting == true)
-                    _ = app.NetworkService.SendCommandAsync(cmd);
+                if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                    _ = ClassroomAppContext.Network.SendCommandAsync(cmd);
                 else
-                    app.RaiseLocalCommand(cmd);
+                    ClassroomAppContext.DispatchCommand(cmd);
 
                 // Add to history
                 _history.Insert(0, (DateTime.Now, url));
@@ -255,14 +256,13 @@ namespace QASmartClass.Classroom.Views
                     db.SaveChanges();
                 }
 
-                MessageBox.Show($"✅ Đã gửi URL đến tất cả HS!\n\n🌐 {url}",
-                    "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info($"✅ Đã gửi URL đến tất cả HS!\n\n🌐 {url}", "Thành công");
 
                 Log.Information("URL pushed to students: {Url}", url);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn($"Lỗi: {ex.Message}", "Lỗi");
             }
         }
 

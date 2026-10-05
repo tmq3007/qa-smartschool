@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -23,7 +24,7 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 var app = (QASmartTouch.App)Application.Current;
-                var lesson = app.Database.Lessons.Find(id);
+                var lesson = ClassroomAppContext.Db.Lessons.Find(id);
                 if (lesson == null) return;
 
                 txtTitle.Text = lesson.Title;
@@ -37,7 +38,7 @@ namespace QASmartClass.Classroom.Views
                     { cmbGrade.SelectedIndex = i; break; }
 
                 // ═══ Load lesson content blocks from DB ═══
-                var contents = app.Database.LessonContents
+                var contents = ClassroomAppContext.Db.LessonContents
                     .Where(c => c.LessonId == id)
                     .OrderBy(c => c.SortOrder)
                     .ToList();
@@ -80,12 +81,12 @@ namespace QASmartClass.Classroom.Views
 
                 if (_currentLessonId > 0)
                 {
-                    lesson = app.Database.Lessons.Find(_currentLessonId) ?? new Lesson();
+                    lesson = ClassroomAppContext.Db.Lessons.Find(_currentLessonId) ?? new Lesson();
                 }
                 else
                 {
                     lesson = new Lesson { CreatedAt = DateTime.Now };
-                    app.Database.Lessons.Add(lesson);
+                    ClassroomAppContext.Db.Lessons.Add(lesson);
                 }
 
                 lesson.Title = txtTitle.Text.Trim();
@@ -94,16 +95,16 @@ namespace QASmartClass.Classroom.Views
                 lesson.Description = txtDescription.Text.Trim();
                 lesson.UpdatedAt = DateTime.Now;
 
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.SaveChanges();
                 _currentLessonId = lesson.Id;
 
                 // ── v4.1: PERSIST CONTENT BLOCKS TO DB ──
                 try
                 {
                     // Remove old content blocks
-                    var oldBlocks = app.Database.LessonContents
+                    var oldBlocks = ClassroomAppContext.Db.LessonContents
                         .Where(c => c.LessonId == lesson.Id).ToList();
-                    app.Database.LessonContents.RemoveRange(oldBlocks);
+                    ClassroomAppContext.Db.LessonContents.RemoveRange(oldBlocks);
 
                     // Save current blocks from editor
                     int sortOrder = 0;
@@ -132,7 +133,7 @@ namespace QASmartClass.Classroom.Views
 
                             if (!string.IsNullOrWhiteSpace(data) || !string.IsNullOrWhiteSpace(contentType))
                             {
-                                app.Database.LessonContents.Add(new LessonContent
+                                ClassroomAppContext.Db.LessonContents.Add(new LessonContent
                                 {
                                     LessonId = lesson.Id,
                                     ContentType = contentType,
@@ -142,7 +143,7 @@ namespace QASmartClass.Classroom.Views
                             }
                         }
                     }
-                    app.Database.SaveChanges();
+                    ClassroomAppContext.Db.SaveChanges();
                 }
                 catch (Exception ex2)
                 {
@@ -161,8 +162,8 @@ namespace QASmartClass.Classroom.Views
                         ChangeNote     = $"Lưu lần {DateTime.Now:HH:mm dd/MM/yyyy}",
                         SavedAt        = DateTime.Now
                     };
-                    app.Database.LessonHistories.Add(hist);
-                    app.Database.SaveChanges();
+                    ClassroomAppContext.Db.LessonHistories.Add(hist);
+                    ClassroomAppContext.Db.SaveChanges();
                 }
                 catch { /* history is non-critical */ }
 

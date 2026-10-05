@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using QASmartClass.Classroom.Helpers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -33,8 +34,8 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var list = app.Database.Homeworks
+                // → ClassroomAppContext
+                var list = ClassroomAppContext.Db.Homeworks
                     .OrderByDescending(h => h.CreatedAt)
                     .ToList();
 
@@ -536,8 +537,8 @@ namespace QASmartClass.Classroom.ViewModels
                 RenderList();
                 UpdateStats();
 
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
                 
                 string cleanSubject = newHw.Subject.Replace("|", " ");
                 string cleanTitle = newHw.Title.Replace("|", " ").Replace("\n", " ");
@@ -550,7 +551,7 @@ namespace QASmartClass.Classroom.ViewModels
                 if (net?.IsBroadcasting == true)
                     _ = net.SendCommandAsync(cmd);
                 else
-                    app.RaiseLocalCommand(cmd);
+                    ClassroomAppContext.DispatchCommand(cmd);
 
                 MessageBox.Show($"✅ Đã giao BTVN và gửi đến HS!\n\n📝 {newHw.Title}\n📚 {newHw.Subject}\n⏰ Hạn: {newHw.Deadline:dd/MM/yyyy HH:mm}",
                     "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -593,12 +594,12 @@ namespace QASmartClass.Classroom.ViewModels
                 {
                     if (hw.EventLogId > 0)
                     {
-                        var app = (QASmartTouch.App)Application.Current;
-                        var existing = app.Database.Homeworks.Find(hw.EventLogId);
+                        // → ClassroomAppContext
+                        var existing = ClassroomAppContext.Db.Homeworks.Find(hw.EventLogId);
                         if (existing != null)
                         {
-                            app.Database.Homeworks.Remove(existing);
-                            app.Database.SaveChanges();
+                            ClassroomAppContext.Db.Homeworks.Remove(existing);
+                            ClassroomAppContext.Db.SaveChanges();
                         }
                     }
 
@@ -619,11 +620,11 @@ namespace QASmartClass.Classroom.ViewModels
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
                 if (isUpdate && hw.EventLogId > 0)
                 {
-                    var existing = app.Database.Homeworks.Find(hw.EventLogId);
+                    var existing = ClassroomAppContext.Db.Homeworks.Find(hw.EventLogId);
                     if (existing != null)
                     {
                         existing.Subject = hw.Subject;
@@ -631,7 +632,7 @@ namespace QASmartClass.Classroom.ViewModels
                         existing.Description = hw.Description;
                         existing.Deadline = hw.Deadline;
                         existing.AttachmentPath = hw.Attachment ?? string.Empty;
-                        app.Database.SaveChanges();
+                        ClassroomAppContext.Db.SaveChanges();
                     }
                 }
                 else
@@ -646,8 +647,8 @@ namespace QASmartClass.Classroom.ViewModels
                         AttachmentPath = hw.Attachment ?? string.Empty,
                         ClassId = ""
                     };
-                    app.Database.Homeworks.Add(newHw);
-                    app.Database.SaveChanges();
+                    ClassroomAppContext.Db.Homeworks.Add(newHw);
+                    ClassroomAppContext.Db.SaveChanges();
                     hw.EventLogId = newHw.Id; // Sync newly created database ID
                 }
             }
@@ -826,8 +827,8 @@ namespace QASmartClass.Classroom.ViewModels
 
             ResendCommand = new RelayCommand(() =>
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
                 
                 string cleanSubject = Item.Subject.Replace("|", " ");
                 string cleanTitle = Item.Title.Replace("|", " ").Replace("\n", " ");
@@ -840,7 +841,7 @@ namespace QASmartClass.Classroom.ViewModels
                 if (net?.IsBroadcasting == true)
                     _ = net.SendCommandAsync(cmd);
                 else
-                    app.RaiseLocalCommand(cmd);
+                    ClassroomAppContext.DispatchCommand(cmd);
                 MessageBox.Show($"✅ Đã gửi lại BTVN cho HS!\n\n📝 {Item.Title}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             });
         }

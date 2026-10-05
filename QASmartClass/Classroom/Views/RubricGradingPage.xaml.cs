@@ -5,7 +5,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using QASmartClass.Services;
+using QASmartClass.Classroom.Helpers;
 
 namespace QASmartClass.Classroom.Views
 {
@@ -19,9 +21,9 @@ namespace QASmartClass.Classroom.Views
         {
             InitializeComponent();
 
-            if (Application.Current is QASmartTouch.App app && app.Database != null)
+            if (Application.Current is QASmartTouch.App app && ClassroomAppContext.Db != null)
             {
-                _db = app.Database;
+                _db = ClassroomAppContext.Db;
                 _rubricService = new RubricService(_db);
             }
             else
@@ -140,11 +142,11 @@ namespace QASmartClass.Classroom.Views
                     )).ToList();
 
                     _rubricService.GradeStudent(rubric.Id, student.Id, "GV_Admin", grades);
-                    MessageBox.Show("Lưu điểm thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info("Lưu điểm thành công!", "Thông báo");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi khi lưu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error($"Lỗi khi lưu: {ex.Message}", "Lỗi");
                 }
             }
         }

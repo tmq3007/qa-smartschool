@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -12,6 +12,7 @@ using System.Windows.Threading;
 using Microsoft.EntityFrameworkCore;
 using QASmartClass.Data;
 using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -61,11 +62,11 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var quiz = app.Database.Quizzes.FirstOrDefault();
+                // app → ClassroomAppContext (refactored)
+                var quiz = ClassroomAppContext.Db.Quizzes.FirstOrDefault();
                 if (quiz != null)
                 {
-                    _questions = app.Database.Questions
+                    _questions = ClassroomAppContext.Db.Questions
                         .Where(q => q.QuizId == quiz.Id)
                         .OrderBy(q => q.SortOrder)
                         .ToList();
@@ -99,8 +100,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // app → ClassroomAppContext (refactored)
+                var db = ClassroomAppContext.Db;
                 var corrupted = db.QuizResults
                     .Where(r => r.AnswersJson.Contains("\"QuestionId\":0"))
                     .ToList();
@@ -190,10 +191,10 @@ namespace QASmartClass.Classroom.Views
             _timer?.Stop(); _battleTimer?.Stop(); _pollRefreshTimer?.Stop();
             _quizActive = false;
 
-            var app = (QASmartTouch.App)Application.Current;
-            if (app.NetworkService != null)
+            // app → ClassroomAppContext (refactored)
+            if (ClassroomAppContext.Network != null)
             {
-                app.NetworkService.MessageReceived -= OnNetworkMessageReceived;
+                ClassroomAppContext.Network.MessageReceived -= OnNetworkMessageReceived;
             }
         }
 
@@ -235,14 +236,14 @@ namespace QASmartClass.Classroom.Views
             // Send quiz to students via network
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // app → ClassroomAppContext (refactored)
+                var net = ClassroomAppContext.Network;
                 if (net != null)
                 {
                     net.MessageReceived -= OnNetworkMessageReceived;
                     net.MessageReceived += OnNetworkMessageReceived;
                 }
-                var quiz = app.Database.Quizzes.FirstOrDefault();
+                var quiz = ClassroomAppContext.Db.Quizzes.FirstOrDefault();
                 int quizId = quiz?.Id ?? 0;
 
                 if (net != null && net.IsBroadcasting)
@@ -271,17 +272,17 @@ namespace QASmartClass.Classroom.Views
                 }
 
                 // Local command bus
-                app.RaiseLocalCommand($"CMD|QUIZ_START|{quizId}");
+                ClassroomAppContext.DispatchCommand($"CMD|QUIZ_START|{quizId}");
 
                 // Log event
-                app.Database.EventLogs.Add(new EventLog
+                ClassroomAppContext.Db.EventLogs.Add(new EventLog
                 {
                     EventType = "QUIZ_START",
                     Actor = "GV",
                     Details = $"Bat dau Quiz: {quiz?.Title ?? "Demo"} â€” {_questions.Count} cau, {_questions.Sum(q => q.Points)} diem",
                     Timestamp = DateTime.Now
                 });
-                await app.Database.SaveChangesAsync();
+                await ClassroomAppContext.Db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -332,8 +333,8 @@ namespace QASmartClass.Classroom.Views
             // Send current question to student
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                app.RaiseLocalCommand($"CMD|QUIZ_QUESTION|{index}|{q.Content}");
+                // app → ClassroomAppContext (refactored)
+                ClassroomAppContext.DispatchCommand($"CMD|QUIZ_QUESTION|{index}|{q.Content}");
             }
             catch { }
         }
@@ -376,7 +377,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
 
                 int studentId = 0; // Giáo viên thực hiện trên bảng tương tác -> gán ID mặc định 0
 
@@ -399,8 +400,8 @@ namespace QASmartClass.Classroom.Views
                     TimeSpentSeconds = 30 - _timeLeft,
                     SubmittedAt = DateTime.Now
                 };
-                app.Database.QuizResults.Add(result);
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.QuizResults.Add(result);
+                ClassroomAppContext.Db.SaveChanges();
             }
             catch { /* non-critical */ }
         }
@@ -432,22 +433,22 @@ namespace QASmartClass.Classroom.Views
             foreach (var log in _answerLog)
                 sb.AppendLine(log);
 
-            MessageBox.Show(sb.ToString(), "Kết quả Quiz", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info(sb.ToString(), "Kết quả Quiz");
 
             // Send QUIZ_END to students
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // app → ClassroomAppContext (refactored)
+                var net = ClassroomAppContext.Network;
                 if (net != null && net.IsBroadcasting)
                 {
                     await net.EndQuizAsync();
                     Log.Information("QUIZ_END sent to students");
                 }
 
-                app.RaiseLocalCommand("CMD|QUIZ_END|0");
+                ClassroomAppContext.DispatchCommand("CMD|QUIZ_END|0");
 
-                app.Database.EventLogs.Add(new EventLog
+                ClassroomAppContext.Db.EventLogs.Add(new EventLog
                 {
                     EventType = "QUIZ_END",
                     Actor = "GV",
@@ -455,8 +456,8 @@ namespace QASmartClass.Classroom.Views
                     Timestamp = DateTime.Now
                 });
 
-                var quiz = app.Database.Quizzes.FirstOrDefault();
-                app.Database.QuizResults.Add(new QuizResult
+                var quiz = ClassroomAppContext.Db.Quizzes.FirstOrDefault();
+                ClassroomAppContext.Db.QuizResults.Add(new QuizResult
                 {
                     QuizId = quiz?.Id ?? 0,
                     StudentId = 0,
@@ -469,7 +470,7 @@ namespace QASmartClass.Classroom.Views
                     SubmittedAt = DateTime.Now
                 });
 
-                await app.Database.SaveChangesAsync();
+                await ClassroomAppContext.Db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -485,10 +486,10 @@ namespace QASmartClass.Classroom.Views
             _quizActive = false;
             btnStartQuiz.Content = "Bắt đầu";
 
-            var app = (QASmartTouch.App)Application.Current;
-            if (app.NetworkService != null)
+            // app → ClassroomAppContext (refactored)
+            if (ClassroomAppContext.Network != null)
             {
-                app.NetworkService.MessageReceived -= OnNetworkMessageReceived;
+                ClassroomAppContext.Network.MessageReceived -= OnNetworkMessageReceived;
             }
         }
 
@@ -505,14 +506,14 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
-                var quiz = app.Database.Quizzes.FirstOrDefault();
+                // app → ClassroomAppContext (refactored)
+                var net = ClassroomAppContext.Network;
+                var quiz = ClassroomAppContext.Db.Quizzes.FirstOrDefault();
                 if (net != null && net.IsBroadcasting)
                 {
                     await net.StartQuizAsync(quiz?.Id ?? 0);
                 }
-                app.RaiseLocalCommand($"CMD|QUIZ_START|{quiz?.Id ?? 0}");
+                ClassroomAppContext.DispatchCommand($"CMD|QUIZ_START|{quiz?.Id ?? 0}");
 
                 if (net != null)
                 {
@@ -521,14 +522,14 @@ namespace QASmartClass.Classroom.Views
                 }
                 _quizActive = true;
 
-                app.Database.EventLogs.Add(new EventLog
+                ClassroomAppContext.Db.EventLogs.Add(new EventLog
                 {
                     EventType = "QUIZ_BATTLE_START",
                     Actor = "GV",
                     Details = $"Quiz Battle bat dau â€” {_questions.Count} cau, 4 nhom",
                     Timestamp = DateTime.Now
                 });
-                await app.Database.SaveChangesAsync();
+                await ClassroomAppContext.Db.SaveChangesAsync();
             }
             catch (Exception ex) { Log.Warning("StartBattle network error: {Err}", ex.Message); }
 
@@ -623,10 +624,10 @@ namespace QASmartClass.Classroom.Views
             UpdateBattleLeaderboard();
             await SaveBattleResults();
 
-            var app = (QASmartTouch.App)Application.Current;
-            if (app.NetworkService != null)
+            // app → ClassroomAppContext (refactored)
+            if (ClassroomAppContext.Network != null)
             {
-                app.NetworkService.MessageReceived -= OnNetworkMessageReceived;
+                ClassroomAppContext.Network.MessageReceived -= OnNetworkMessageReceived;
             }
             _quizActive = false;
             btnStartQuiz.Content = "Bắt đầu";
@@ -639,14 +640,14 @@ namespace QASmartClass.Classroom.Views
             foreach (var (g, i) in _groups.OrderByDescending(g => g.Score).Select((g, i) => (g, i)))
                 sb.AppendLine($"  {i + 1}. {g.Name}: {g.Score}d");
 
-            MessageBox.Show(sb.ToString(), "Quiz Battle", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info(sb.ToString(), "Quiz Battle");
 
             try
             {
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
                 if (net != null && net.IsBroadcasting)
                     await net.EndQuizAsync();
-                app.RaiseLocalCommand("CMD|QUIZ_END|0");
+                ClassroomAppContext.DispatchCommand("CMD|QUIZ_END|0");
             }
             catch (Exception ex) { Log.Warning("EndBattle network error: {Err}", ex.Message); }
 
@@ -658,7 +659,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 var quiz = db.Quizzes.FirstOrDefault();
                 int quizId = quiz?.Id ?? 0;
 
@@ -727,14 +728,14 @@ namespace QASmartClass.Classroom.Views
                 if (!int.TryParse(parts[1], out int quizId)) return;
                 string answersJson = parts[2];
 
-                var app = (QASmartTouch.App)Application.Current;
-                if (app?.Database == null) return;
+                // app → ClassroomAppContext (refactored)
+                if (ClassroomAppContext.Db == null) return;
 
-                var quiz = app.Database.Quizzes.Find(quizId);
+                var quiz = ClassroomAppContext.Db.Quizzes.Find(quizId);
                 if (quiz == null) return;
 
                 string subject = "";
-                var lesson = app.Database.Lessons.Find(quiz.LessonId);
+                var lesson = ClassroomAppContext.Db.Lessons.Find(quiz.LessonId);
                 if (lesson != null)
                 {
                     subject = lesson.Subject ?? "";
@@ -768,13 +769,13 @@ namespace QASmartClass.Classroom.Views
                 int finalScore = totalPoints > 0 ? (int)Math.Round((double)earnedPoints / totalPoints * 100) : 0;
 
                 // Find student ID on teacher side
-                var student = app.Database.Students.FirstOrDefault(s => s.StudentCode == studentCode);
+                var student = ClassroomAppContext.Db.Students.FirstOrDefault(s => s.StudentCode == studentCode);
                 int studentId = student?.Id ?? 0;
 
                 if (studentId > 0)
                 {
                     // Save to QuizResults on teacher side
-                    var existingResult = app.Database.QuizResults.FirstOrDefault(r => r.QuizId == quizId && r.StudentId == studentId);
+                    var existingResult = ClassroomAppContext.Db.QuizResults.FirstOrDefault(r => r.QuizId == quizId && r.StudentId == studentId);
                     if (existingResult != null)
                     {
                         existingResult.Score = finalScore;
@@ -798,16 +799,16 @@ namespace QASmartClass.Classroom.Views
                             AnswersJson = answersJson,
                             SubmittedAt = DateTime.Now
                         };
-                        app.Database.QuizResults.Add(result);
+                        ClassroomAppContext.Db.QuizResults.Add(result);
                     }
 
                     // Save to StudentGrades on teacher side
                     string className = student.ClassName ?? "";
-                    var roster = app.Database.ClassRosters.FirstOrDefault(r => r.IsActive && r.ClassName == className);
+                    var roster = ClassroomAppContext.Db.ClassRosters.FirstOrDefault(r => r.IsActive && r.ClassName == className);
                     if (roster != null)
                     {
-                        var gradeType = app.Database.GradeTypeMasters.FirstOrDefault(g => g.Code == "Quiz" || g.ShortName == "15p") 
-                                     ?? app.Database.GradeTypeMasters.FirstOrDefault();
+                        var gradeType = ClassroomAppContext.Db.GradeTypeMasters.FirstOrDefault(g => g.Code == "Quiz" || g.ShortName == "15p") 
+                                     ?? ClassroomAppContext.Db.GradeTypeMasters.FirstOrDefault();
 
                         if (gradeType != null)
                         {
@@ -825,7 +826,7 @@ namespace QASmartClass.Classroom.Views
                                 }
                             }
 
-                            app.Database.StudentGrades.Add(new Data.StudentGrade
+                            ClassroomAppContext.Db.StudentGrades.Add(new Data.StudentGrade
                             {
                                 StudentId = studentId,
                                 RosterId = roster.Id,
@@ -838,12 +839,12 @@ namespace QASmartClass.Classroom.Views
                         }
                     }
 
-                    await app.Database.SaveChangesAsync();
+                    await ClassroomAppContext.Db.SaveChangesAsync();
                 }
 
                 // Send the private grade payload back to student client
                 string correctAnswersJson = System.Text.Json.JsonSerializer.Serialize(correctAnswersMap);
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
                 if (net != null)
                 {
                     await net.SendToStudentAsync(studentCode, $"CMD|QUIZ_GRADE|{quizId}|{finalScore}|{correctCount}|{_questions.Count}|{correctAnswersJson}");
@@ -940,11 +941,11 @@ namespace QASmartClass.Classroom.Views
             _activePollId = $"POLL_{DateTime.Now:yyyyMMdd_HHmmss}";
 
             // Save poll state to App for students to read
-            var app = (QASmartTouch.App)Application.Current;
+            // app → ClassroomAppContext (refactored)
             string targetClasses = "ALL";
-            if (app.ClassRoster?.ActiveRoster != null)
+            if (ClassroomAppContext.ClassRoster?.ActiveRoster != null)
             {
-                targetClasses = app.ClassRoster.ActiveRoster.ClassName;
+                targetClasses = ClassroomAppContext.ClassRoster.ActiveRoster.ClassName;
             }
 
             QASmartTouch.App.AssessmentState.ActivePollId = _activePollId;
@@ -956,24 +957,24 @@ namespace QASmartClass.Classroom.Views
             // Send Poll to students via network + local bus
             try
             {
-                var net = app.NetworkService;
+                var net = ClassroomAppContext.Network;
                 if (net != null && net.IsBroadcasting)
                 {
                     await net.SendCommandAsync($"CMD|SURVEY_CUSTOM|0|{targetClasses}|{question}|{opt1}|{opt2}|{opt3}|{opt4}");
                     Log.Information("Poll sent to students via network: {Q} | Target: {Target}", question, targetClasses);
                 }
 
-                app.RaiseLocalCommand($"CMD|SURVEY_CUSTOM|0|{targetClasses}|{question}|{opt1}|{opt2}|{opt3}|{opt4}");
+                ClassroomAppContext.DispatchCommand($"CMD|SURVEY_CUSTOM|0|{targetClasses}|{question}|{opt1}|{opt2}|{opt3}|{opt4}");
 
                 // Log poll start
-                app.Database.EventLogs.Add(new EventLog
+                ClassroomAppContext.Db.EventLogs.Add(new EventLog
                 {
                     EventType = "POLL_START",
                     Actor = "GV",
                     Details = $"PollId:{_activePollId}|Q:{question}|{opt1}|{opt2}|{opt3}|{opt4}",
                     Timestamp = DateTime.Now
                 });
-                await app.Database.SaveChangesAsync();
+                await ClassroomAppContext.Db.SaveChangesAsync();
             }
             catch (Exception ex) { Log.Warning("LaunchPoll network error: {Err}", ex.Message); }
 
@@ -985,13 +986,13 @@ namespace QASmartClass.Classroom.Views
             int maxVoters = 0;
             try
             {
-                var students = app.NetworkService?.GetConnectedStudents();
+                var students = ClassroomAppContext.Network?.GetConnectedStudents();
                 maxVoters = students?.Count ?? 0;
             }
             catch { }
             if (maxVoters <= 0)
             {
-                maxVoters = app.Database.Students.Count();
+                maxVoters = ClassroomAppContext.Db.Students.Count();
                 if (maxVoters <= 0) maxVoters = 35;
             }
 
@@ -1006,7 +1007,7 @@ namespace QASmartClass.Classroom.Views
                 try
                 {
                     // Read POLL_VOTE events from DB that match this poll session
-                    var db = ((QASmartTouch.App)Application.Current).Database;
+                    var db = ClassroomAppContext.Db;
                     var votes = await db.EventLogs
                         .Where(el => el.EventType == "POLL_VOTE" && el.Details.Contains($"PollId:{_activePollId}"))
                         .ToListAsync();
@@ -1045,12 +1046,11 @@ namespace QASmartClass.Classroom.Views
             };
             _pollRefreshTimer.Start();
 
-            MessageBox.Show(
+            ClassroomDialog.Info(
                 $"Poll da phat toi tat ca HS!\n\nCau hoi: {question}\n\n" +
                 $"Tong so HS: {localMaxVoters}\n" +
                 $"Poll ID: {_activePollId}\n\n" +
-                $"Ket qua se tu dong cap nhat khi HS tra loi.",
-                "Quick Poll", MessageBoxButton.OK, MessageBoxImage.Information);
+                $"Ket qua se tu dong cap nhat khi HS tra loi.", "Quick Poll");
             Log.Information("Poll launched: {Q}, PollId={Id}, MaxVoters={Max}", question, _activePollId, localMaxVoters);
         }
 
@@ -1059,7 +1059,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 var sb = new StringBuilder();
                 sb.AppendLine($"Poll: {question}");
                 sb.AppendLine($"PollId: {_activePollId}");
@@ -1077,7 +1077,7 @@ namespace QASmartClass.Classroom.Views
                 await db.SaveChangesAsync();
 
                 // Clear active poll state
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
                 QASmartTouch.App.AssessmentState.ActivePollId = string.Empty;
                 QASmartTouch.App.AssessmentState.ActivePollOptions = Array.Empty<string>();
 
@@ -1097,8 +1097,8 @@ namespace QASmartClass.Classroom.Views
             if (_mode == QuizMode.Battle) return;
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db  = app.Database;
+                // app → ClassroomAppContext (refactored)
+                var db  = ClassroomAppContext.Db;
 
                 var top = await db.QuizResults
                     .GroupBy(r => r.StudentId)
@@ -1184,8 +1184,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // app → ClassroomAppContext (refactored)
+                var db = ClassroomAppContext.Db;
 
                 var allResults = await db.QuizResults.ToListAsync();
                 if (!allResults.Any())
@@ -1340,8 +1340,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db  = app.Database;
+                // app → ClassroomAppContext (refactored)
+                var db  = ClassroomAppContext.Db;
 
                 var sb = new StringBuilder();
                 sb.AppendLine("STT,Hoc sinh,Tong diem,Dung,Tong cau,Ty le %,Thoi gian (s),Ngay nop");
@@ -1406,7 +1406,7 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex)
             {
                 Log.Error(ex, "Export results error");
-                MessageBox.Show($"Loi xuat: {ex.Message}", "Loi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Loi xuat: {ex.Message}", "Loi");
             }
         }
 
@@ -1431,8 +1431,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // app → ClassroomAppContext (refactored)
+                var db = ClassroomAppContext.Db;
 
                 _reviewStudentId = studentId;
                 _reviewStudentName = studentName;
@@ -1445,8 +1445,7 @@ namespace QASmartClass.Classroom.Views
 
                 if (!results.Any())
                 {
-                    MessageBox.Show($"Chua co bai lam cua {studentName}.",
-                        "Xem bai", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"Chua co bai lam cua {studentName}.", "Xem bai");
                     return;
                 }
 
@@ -1752,7 +1751,7 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex)
             {
                 Log.Warning("ShowStudentReview error: {Err}", ex.Message);
-                MessageBox.Show($"Loi xem bai: {ex.Message}", "Loi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Loi xem bai: {ex.Message}", "Loi");
             }
         }
 
@@ -1771,9 +1770,9 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
-                var net = app.NetworkService;
+                // app → ClassroomAppContext (refactored)
+                var db = ClassroomAppContext.Db;
+                var net = ClassroomAppContext.Network;
 
                 // Build review data as JSON
                 var results = db.QuizResults
@@ -1869,7 +1868,7 @@ namespace QASmartClass.Classroom.Views
                 }
 
                 // Local command bus
-                app.RaiseLocalCommand($"CMD|QUIZ_REVIEW|{json}");
+                ClassroomAppContext.DispatchCommand($"CMD|QUIZ_REVIEW|{json}");
 
                 // Log event
                 db.EventLogs.Add(new EventLog
@@ -1883,19 +1882,18 @@ namespace QASmartClass.Classroom.Views
                 });
                 await db.SaveChangesAsync();
 
-                MessageBox.Show(
+                ClassroomDialog.Info(
                     $"Da trinh chieu bai lam cua {_reviewStudentName} cho ca lop!\n\n" +
                     $"Diem: {reviewData.TotalScore}/{reviewData.TotalPoints}\n" +
                     $"Dung: {reviewData.CorrectCount}/{questions.Count} cau\n\n" +
-                    $"Tat ca HS dang xem bai lam mau.",
-                    "Trinh chieu bai lam", MessageBoxButton.OK, MessageBoxImage.Information);
+                    $"Tat ca HS dang xem bai lam mau.", "Trinh chieu bai lam");
 
                 Log.Information("Quiz review broadcast sent for {Name}", _reviewStudentName);
             }
             catch (Exception ex)
             {
                 Log.Warning("BroadcastReview error: {Err}", ex.Message);
-                MessageBox.Show($"Loi trinh chieu: {ex.Message}", "Loi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Loi trinh chieu: {ex.Message}", "Loi");
             }
         }
 

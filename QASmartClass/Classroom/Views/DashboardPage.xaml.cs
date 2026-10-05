@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -48,9 +49,9 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
-                var activeRoster = app.ClassRoster?.ActiveRoster;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
+                var activeRoster = ClassroomAppContext.ClassRoster?.ActiveRoster;
 
                 if (activeRoster == null)
                 {
@@ -63,7 +64,7 @@ namespace QASmartClass.Classroom.Views
                 int rosterId = activeRoster.Id;
 
                 // 1. Sĩ số
-                int totalStudents = app.ClassRoster.GetActiveStudents().Count;
+                int totalStudents = ClassroomAppContext.ClassRoster.GetActiveStudents().Count;
                 txtTotalStudents.Text = totalStudents.ToString();
 
                 // 2. Điểm danh
@@ -176,7 +177,7 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed to load Dashboard data");
-                MessageBox.Show($"Lỗi tải dữ liệu Dashboard: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi tải dữ liệu Dashboard: {ex.Message}", "Lỗi");
             }
         }
 
@@ -223,9 +224,9 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
-                var activeRoster = app.ClassRoster?.ActiveRoster;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
+                var activeRoster = ClassroomAppContext.ClassRoster?.ActiveRoster;
 
                 int step1 = 0;
                 int step2 = 0;
@@ -277,7 +278,7 @@ namespace QASmartClass.Classroom.Views
                 // Step 4: Giảng dạy
                 if (step3 == 2)
                 {
-                    if (app.ClassroomSession != null && app.ClassroomSession.IsSessionActive)
+                    if (ClassroomAppContext.Session != null && ClassroomAppContext.Session.IsSessionActive)
                     {
                         step4 = 2;
                     }

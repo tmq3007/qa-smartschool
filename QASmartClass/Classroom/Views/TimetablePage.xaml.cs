@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -70,9 +71,9 @@ namespace QASmartClass.Classroom.Views
                 // Auto-refresh khi GV chuyển lớp — N7 FIX: Dùng named handler để Unsubscribe tránh memory leak
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
-                    app.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
+                    // → ClassroomAppContext
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
                 }
                 catch { }
             };
@@ -81,8 +82,8 @@ namespace QASmartClass.Classroom.Views
                 StopTimer();
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                    // → ClassroomAppContext
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
                 }
                 catch { }
             };
@@ -97,8 +98,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var roster = app.ClassRoster.ActiveRoster;
+                // → ClassroomAppContext
+                var roster = ClassroomAppContext.ClassRoster.ActiveRoster;
 
                 if (roster != null)
                 {
@@ -128,8 +129,8 @@ namespace QASmartClass.Classroom.Views
             if (txtClassInfo == null) return; // Prevent NRE during XAML initialization
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var roster = app.ClassRoster.ActiveRoster;
+                // → ClassroomAppContext
+                var roster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 string semester = (roster?.Semester == "HK2" || (DateTime.Today.Month >= 1 && DateTime.Today.Month <= 5)) ? "Học kỳ 2" : "Học kỳ 1";
                 string subject = roster != null && !string.IsNullOrWhiteSpace(roster.Subject) ? $"  •  {roster.Subject}" : "";
                 
@@ -140,7 +141,7 @@ namespace QASmartClass.Classroom.Views
                 }
                 else
                 {
-                    var profile = app.Database.TeacherProfiles.FirstOrDefault();
+                    var profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault();
                     string teacherName = profile?.FullName ?? (roster?.TeacherName ?? "Giáo viên");
                     txtClassInfo.Text = $"👨‍🏫 Giáo viên: {teacherName}  •  Năm học {_schoolYear}  •  {semester}";
                 }
@@ -283,9 +284,9 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var profile = app.Database.TeacherProfiles.FirstOrDefault();
-                return profile?.FullName ?? (app.ClassRoster.ActiveRoster?.TeacherName ?? "Giáo viên");
+                // → ClassroomAppContext
+                var profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault();
+                return profile?.FullName ?? (ClassroomAppContext.ClassRoster.ActiveRoster?.TeacherName ?? "Giáo viên");
             }
             catch
             {
@@ -297,7 +298,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
                 string timetableKey;
                 if (_viewMode == "Class")
@@ -311,7 +312,7 @@ namespace QASmartClass.Classroom.Views
                 }
 
                 // 1) Try loading from EventLogs first (edited timetable)
-                var logs = app.Database.EventLogs
+                var logs = ClassroomAppContext.Db.EventLogs
                     .Where(e => e.EventType == timetableKey)
                     .OrderByDescending(e => e.Timestamp)
                     .FirstOrDefault();
@@ -325,7 +326,7 @@ namespace QASmartClass.Classroom.Views
                 }
 
                 // 2) Fallback to Lessons table
-                var query = app.Database.Lessons.Where(l => l.Period > 0 && !string.IsNullOrEmpty(l.DayOfWeek));
+                var query = ClassroomAppContext.Db.Lessons.Where(l => l.Period > 0 && !string.IsNullOrEmpty(l.DayOfWeek));
 
                 if (_viewMode == "Class")
                 {
@@ -381,7 +382,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 var json = System.Text.Json.JsonSerializer.Serialize(_slots);
                 
                 string timetableKey;
@@ -396,18 +397,18 @@ namespace QASmartClass.Classroom.Views
                 }
 
                 // Remove old for this class/teacher key
-                var old = app.Database.EventLogs.Where(e => e.EventType == timetableKey).ToList();
-                app.Database.EventLogs.RemoveRange(old);
+                var old = ClassroomAppContext.Db.EventLogs.Where(e => e.EventType == timetableKey).ToList();
+                ClassroomAppContext.Db.EventLogs.RemoveRange(old);
 
                 // Add new record
-                app.Database.EventLogs.Add(new Data.EventLog
+                ClassroomAppContext.Db.EventLogs.Add(new Data.EventLog
                 {
                     EventType = timetableKey,
                     Actor = "GV",
                     Details = json,
                     Timestamp = DateTime.Now
                 });
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.SaveChanges();
                 Log.Information("Saved timetable to EventLog for key {Key}: {Count} slots", timetableKey, _slots.Count);
             }
             catch (Exception ex) 
@@ -471,14 +472,14 @@ namespace QASmartClass.Classroom.Views
                     }
 
                     System.IO.File.WriteAllText(dlg.FileName, sb.ToString(), System.Text.Encoding.UTF8);
-                    MessageBox.Show($"Đã xuất thời khóa biểu ra file:\n{dlg.FileName}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"Đã xuất thời khóa biểu ra file:\n{dlg.FileName}", "Thành công");
                     Log.Information("Exported Timetable for {Class} to {Path}", _className, dlg.FileName);
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Export timetable error");
-                MessageBox.Show($"Lỗi khi xuất file: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi khi xuất file: {ex.Message}", "Lỗi");
             }
         }
 
@@ -507,13 +508,13 @@ namespace QASmartClass.Classroom.Views
                     }
                     else
                     {
-                        MessageBox.Show("Định dạng file không được hỗ trợ. Vui lòng chọn file .xlsx hoặc .csv.", "Lỗi định dạng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn("Định dạng file không được hỗ trợ. Vui lòng chọn file .xlsx hoặc .csv.", "Lỗi định dạng");
                         return;
                     }
 
                     if (dt == null || dt.Rows.Count == 0)
                     {
-                        MessageBox.Show("File dữ liệu không có dòng thông tin hợp lệ nào!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn("File dữ liệu không có dòng thông tin hợp lệ nào!", "Thông báo");
                         return;
                     }
 
@@ -579,7 +580,7 @@ namespace QASmartClass.Classroom.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi nhập TKB: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi nhập TKB: {ex.Message}", "Lỗi");
                 Log.Error(ex, "Import timetable error");
             }
         }

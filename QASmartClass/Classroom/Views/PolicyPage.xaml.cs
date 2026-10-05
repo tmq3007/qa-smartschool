@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -35,12 +36,12 @@ namespace QASmartClass.Classroom.Views
                 InitializeStudentStatusList();
                 InitializeAckRetryTimer();
 
-                var app = (QASmartTouch.App)Application.Current;
-                if (app.NetworkService != null)
+                // → ClassroomAppContext
+                if (ClassroomAppContext.Network != null)
                 {
-                    app.NetworkService.CommandAckReceived += NetworkService_CommandAckReceived;
-                    app.NetworkService.StudentConnected += NetworkService_StudentConnected;
-                    app.NetworkService.StudentDisconnected += NetworkService_StudentDisconnected;
+                    ClassroomAppContext.Network.CommandAckReceived += NetworkService_CommandAckReceived;
+                    ClassroomAppContext.Network.StudentConnected += NetworkService_StudentConnected;
+                    ClassroomAppContext.Network.StudentDisconnected += NetworkService_StudentDisconnected;
                 }
             };
             Unloaded += (_, _) =>
@@ -48,12 +49,12 @@ namespace QASmartClass.Classroom.Views
                 StopIdleTimer();
                 StopAckRetryTimer();
 
-                var app = (QASmartTouch.App)Application.Current;
-                if (app.NetworkService != null)
+                // → ClassroomAppContext
+                if (ClassroomAppContext.Network != null)
                 {
-                    app.NetworkService.CommandAckReceived -= NetworkService_CommandAckReceived;
-                    app.NetworkService.StudentConnected -= NetworkService_StudentConnected;
-                    app.NetworkService.StudentDisconnected -= NetworkService_StudentDisconnected;
+                    ClassroomAppContext.Network.CommandAckReceived -= NetworkService_CommandAckReceived;
+                    ClassroomAppContext.Network.StudentConnected -= NetworkService_StudentConnected;
+                    ClassroomAppContext.Network.StudentDisconnected -= NetworkService_StudentDisconnected;
                 }
 
                 foreach (var item in _studentStatuses)
@@ -68,8 +69,8 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 var control = QASmartClass.Services.ClassControlService.Instance;
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
 
                 // Load Exit PIN config from Database using DPAPI
                 var settingRequired = db.SystemSettings.FirstOrDefault(s => s.Id == "Security_IsExitPinRequired");
@@ -275,8 +276,7 @@ namespace QASmartClass.Classroom.Views
             {
                 if (string.IsNullOrEmpty(exitPinCode) || exitPinCode.Length < 4 || exitPinCode.Length > 6 || !exitPinCode.All(char.IsDigit))
                 {
-                    MessageBox.Show("Mã PIN thoát ứng dụng phải từ 4 đến 6 chữ số.",
-                        "Lỗi nhập liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Mã PIN thoát ứng dụng phải từ 4 đến 6 chữ số.", "Lỗi nhập liệu");
                     return;
                 }
             }
@@ -288,8 +288,7 @@ namespace QASmartClass.Classroom.Views
                            ?? new System.Collections.Generic.List<string>();
                 if (list.Count == 0)
                 {
-                    MessageBox.Show("Danh sách Whitelist ứng dụng đang trống.\nVui lòng bấm 'Cấu hình' để thêm ít nhất một ứng dụng trước khi áp dụng.",
-                        "Danh sách trống", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Danh sách Whitelist ứng dụng đang trống.\nVui lòng bấm 'Cấu hình' để thêm ít nhất một ứng dụng trước khi áp dụng.", "Danh sách trống");
                     return;
                 }
             }
@@ -301,8 +300,7 @@ namespace QASmartClass.Classroom.Views
 
             if (activeCount == 0)
             {
-                MessageBox.Show("Bạn chưa chọn chính sách nào để áp dụng.\nVui lòng tích chọn ít nhất 1 mục.",
-                    "Chưa chọn chính sách", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Bạn chưa chọn chính sách nào để áp dụng.\nVui lòng tích chọn ít nhất 1 mục.", "Chưa chọn chính sách");
                 return;
             }
 
@@ -310,14 +308,14 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
 
                 var control = QASmartClass.Services.ClassControlService.Instance;
                 control.IsExitPinRequired = requireExitPin;
                 control.ExitPinCode = requireExitPin ? exitPinCode : string.Empty;
 
-                string classCode = app.ClassroomSession?.ClassCode ?? "DEFAULT_CLASS";
+                string classCode = ClassroomAppContext.Session?.ClassCode ?? "DEFAULT_CLASS";
                 if (string.IsNullOrEmpty(classCode)) classCode = "DEFAULT_CLASS";
                 string sessionSalt = QASmartClass.Services.ClassControlService.Instance.SessionSalt;
                 string salt = !string.IsNullOrEmpty(sessionSalt) ? sessionSalt : classCode;
@@ -337,7 +335,7 @@ namespace QASmartClass.Classroom.Views
                 control.IsPrintBlocked = blockPrint;
 
                 // Save to Database SQLite
-                var db = app.Database;
+                var db = ClassroomAppContext.Db;
                 void SaveOrUpdateSetting(string id, string val, string cat = "Security")
                 {
                     var setting = db.SystemSettings.FirstOrDefault(s => s.Id == id);
@@ -428,14 +426,14 @@ namespace QASmartClass.Classroom.Views
 
                 // Log event
                 string appWhitelistDetails = whitelistOnly ? $" WhitelistApps:{control.AppWhitelist}" : string.Empty;
-                app.Database.EventLogs.Add(new Data.EventLog
+                ClassroomAppContext.Db.EventLogs.Add(new Data.EventLog
                 {
                     EventType = "POLICY",
                     Actor = "GV",
                     Details = $"Áp dụng {activeCount} chính sách: Internet:{blockInternet} Desktop:{lockDesktop} USB:{blockUsb} Apps:{blockApps} Quiet:{quietMode} ExitPIN:{requireExitPin}{appWhitelistDetails}",
                     Timestamp = DateTime.Now
                 });
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.SaveChanges();
 
                 UpdateStatus($"✅ Đã áp dụng {activeCount} chính sách", "#2E7D32");
                 txtPolicyTime.Text = $"Lúc {DateTime.Now:HH:mm:ss dd/MM/yyyy}";
@@ -444,8 +442,7 @@ namespace QASmartClass.Classroom.Views
                 Log.Information("Policy applied: {Count} rules, Internet={I} Desktop={D} USB={U} ExitPIN={E}", activeCount, blockInternet, lockDesktop, blockUsb, requireExitPin);
                 LoadRecentLogs();
 
-                MessageBox.Show($"✅ Đã áp dụng {activeCount} chính sách cho tất cả máy học sinh đang kết nối!",
-                    "Áp dụng thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info($"✅ Đã áp dụng {activeCount} chính sách cho tất cả máy học sinh đang kết nối!", "Áp dụng thành công");
             }
             catch (Exception ex)
             {
@@ -482,14 +479,14 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
 
                 var control = QASmartClass.Services.ClassControlService.Instance;
                 control.Reset();
 
                 // Save to Database SQLite
-                var db = app.Database;
+                var db = ClassroomAppContext.Db;
                 void SaveOrUpdateSetting(string id, string val, string cat = "Security")
                 {
                     var setting = db.SystemSettings.FirstOrDefault(s => s.Id == id);
@@ -568,13 +565,13 @@ namespace QASmartClass.Classroom.Views
                     await net.SendCommandAsync(pinCmd);
                 }
 
-                app.Database.EventLogs.Add(new Data.EventLog
+                ClassroomAppContext.Db.EventLogs.Add(new Data.EventLog
                 {
                     EventType = "POLICY_RESET", Actor = "GV",
                     Details = "Đặt lại tất cả chính sách về mặc định",
                     Timestamp = DateTime.Now
                 });
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.SaveChanges();
 
                 UpdateStatus("🔓 Tất cả chính sách đã được đặt lại", "#558B2F");
                 txtPolicyTime.Text = $"Lúc {DateTime.Now:HH:mm:ss dd/MM/yyyy}";
@@ -601,15 +598,15 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
                 if (net != null) await net.LockAllScreensAsync();
 
                 UpdateStatus("🔒 Đã khóa tất cả màn hình", "#C62828");
                 txtPolicyTime.Text = $"Lúc {DateTime.Now:HH:mm:ss}";
 
-                app.Database.EventLogs.Add(new Data.EventLog { EventType = "LOCK_SCREEN", Actor = "GV", Details = "Khóa tất cả màn hình HS", Timestamp = DateTime.Now });
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.EventLogs.Add(new Data.EventLog { EventType = "LOCK_SCREEN", Actor = "GV", Details = "Khóa tất cả màn hình HS", Timestamp = DateTime.Now });
+                ClassroomAppContext.Db.SaveChanges();
                 LoadRecentLogs();
             }
             catch (Exception ex) { Log.Warning("Lock error: {Err}", ex.Message); }
@@ -619,15 +616,15 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
                 if (net != null) await net.UnlockAllScreensAsync();
 
                 UpdateStatus("🔓 Đã mở khóa tất cả màn hình", "#2E7D32");
                 txtPolicyTime.Text = $"Lúc {DateTime.Now:HH:mm:ss}";
 
-                app.Database.EventLogs.Add(new Data.EventLog { EventType = "UNLOCK_SCREEN", Actor = "GV", Details = "Mở khóa tất cả màn hình HS", Timestamp = DateTime.Now });
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.EventLogs.Add(new Data.EventLog { EventType = "UNLOCK_SCREEN", Actor = "GV", Details = "Mở khóa tất cả màn hình HS", Timestamp = DateTime.Now });
+                ClassroomAppContext.Db.SaveChanges();
                 LoadRecentLogs();
             }
             catch (Exception ex) { Log.Warning("Unlock error: {Err}", ex.Message); }
@@ -641,16 +638,16 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
                 if (net != null && net.IsBroadcasting)
                     await net.SendCommandAsync("LOCK_KEYBOARD|enabled=true");
 
                 UpdateStatus("⌨️ Đã khóa bàn phím + chuột tất cả HS", "#E65100");
                 txtPolicyTime.Text = $"Lúc {DateTime.Now:HH:mm:ss}";
 
-                app.Database.EventLogs.Add(new Data.EventLog { EventType = "LOCK_KEYBOARD", Actor = "GV", Details = "Khóa bàn phím + chuột tất cả HS", Timestamp = DateTime.Now });
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.EventLogs.Add(new Data.EventLog { EventType = "LOCK_KEYBOARD", Actor = "GV", Details = "Khóa bàn phím + chuột tất cả HS", Timestamp = DateTime.Now });
+                ClassroomAppContext.Db.SaveChanges();
                 Log.Information("Keyboard locked for all students");
                 LoadRecentLogs();
             }
@@ -661,16 +658,16 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
                 if (net != null && net.IsBroadcasting)
                     await net.SendCommandAsync("LOCK_KEYBOARD|enabled=false");
 
                 UpdateStatus("⌨️ Đã mở khóa bàn phím + chuột", "#1565C0");
                 txtPolicyTime.Text = $"Lúc {DateTime.Now:HH:mm:ss}";
 
-                app.Database.EventLogs.Add(new Data.EventLog { EventType = "UNLOCK_KEYBOARD", Actor = "GV", Details = "Mở khóa bàn phím + chuột tất cả HS", Timestamp = DateTime.Now });
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.EventLogs.Add(new Data.EventLog { EventType = "UNLOCK_KEYBOARD", Actor = "GV", Details = "Mở khóa bàn phím + chuột tất cả HS", Timestamp = DateTime.Now });
+                ClassroomAppContext.Db.SaveChanges();
                 Log.Information("Keyboard unlocked for all students");
                 LoadRecentLogs();
             }
@@ -684,13 +681,13 @@ namespace QASmartClass.Classroom.Views
                 chkQuietMode.IsChecked = !(chkQuietMode.IsChecked == true);
                 bool quiet = chkQuietMode.IsChecked == true;
 
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
                 if (net != null && net.IsBroadcasting)
                     await net.SendCommandAsync($"QUIET_MODE|enabled={quiet}");
 
                 // Đồng bộ và lưu trạng thái QuietMode vào SQLite để khôi phục sau này
-                var db = app.Database;
+                var db = ClassroomAppContext.Db;
                 var setting = db.SystemSettings.FirstOrDefault(s => s.Id == "Policy_QuietMode");
                 if (setting == null)
                 {
@@ -706,13 +703,13 @@ namespace QASmartClass.Classroom.Views
                     quiet ? "#7B1FA2" : "#2E7D32");
                 txtPolicyTime.Text = $"Lúc {DateTime.Now:HH:mm:ss}";
 
-                app.Database.EventLogs.Add(new Data.EventLog
+                ClassroomAppContext.Db.EventLogs.Add(new Data.EventLog
                 {
                     EventType = quiet ? "QUIET_ON" : "QUIET_OFF", Actor = "GV",
                     Details = $"Chế độ im lặng: {(quiet ? "BẬT" : "TẮT")}",
                     Timestamp = DateTime.Now
                 });
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.SaveChanges();
                 Log.Information("Quiet mode: {Mode}", quiet);
                 LoadRecentLogs();
             }
@@ -728,8 +725,8 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // → ClassroomAppContext
+                var net = ClassroomAppContext.Network;
 
                 _isSilenced = !_isSilenced;
 
@@ -748,13 +745,13 @@ namespace QASmartClass.Classroom.Views
                 }
                 txtPolicyTime.Text = $"Lúc {DateTime.Now:HH:mm:ss}";
 
-                app.Database.EventLogs.Add(new Data.EventLog
+                ClassroomAppContext.Db.EventLogs.Add(new Data.EventLog
                 {
                     EventType = _isSilenced ? "SILENCE_ON" : "SILENCE_OFF", Actor = "GV",
                     Details = $"Màn hình đen: {(_isSilenced ? "BẬT" : "TẮT")}",
                     Timestamp = DateTime.Now
                 });
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.SaveChanges();
                 Log.Information("Silence mode: {Mode}", _isSilenced);
                 LoadRecentLogs();
             }
@@ -769,8 +766,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var logs = app.Database.EventLogs
+                // → ClassroomAppContext
+                var logs = ClassroomAppContext.Db.EventLogs
                     .Where(l => l.EventType.StartsWith("POLICY") || l.EventType.StartsWith("LOCK") ||
                                 l.EventType.StartsWith("UNLOCK") || l.EventType.StartsWith("QUIET") ||
                                 l.EventType.StartsWith("SILENCE"))
@@ -840,7 +837,7 @@ namespace QASmartClass.Classroom.Views
                 // Update online count
                 try
                 {
-                    var net = app.NetworkService;
+                    var net = ClassroomAppContext.Network;
                     if (net != null)
                     {
                         int count = net.GetConnectedStudents()?.Count ?? 0;
@@ -988,7 +985,7 @@ namespace QASmartClass.Classroom.Views
             }
             if (exists)
             {
-                MessageBox.Show("Ứng dụng này đã tồn tại trong Whitelist.", "Trùng lặp", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Ứng dụng này đã tồn tại trong Whitelist.", "Trùng lặp");
                 return;
             }
             lstWhitelistApps.Items.Add(friendlyName);
@@ -1003,7 +1000,7 @@ namespace QASmartClass.Classroom.Views
             }
             else
             {
-                MessageBox.Show("Vui lòng chọn một ứng dụng từ danh sách để xóa.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info("Vui lòng chọn một ứng dụng từ danh sách để xóa.", "Thông báo");
             }
         }
 
@@ -1020,8 +1017,8 @@ namespace QASmartClass.Classroom.Views
             // Lưu vào SQLite
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 var setting = db.SystemSettings.FirstOrDefault(s => s.Id == "Policy_AppWhitelist");
                 if (setting == null)
                 {
@@ -1047,7 +1044,7 @@ namespace QASmartClass.Classroom.Views
 
             gridWhitelistPopup.Visibility = Visibility.Collapsed;
             SetBackgroundFocusEnabled(true);
-            MessageBox.Show("Đã lưu danh sách Whitelist ứng dụng!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info("Đã lưu danh sách Whitelist ứng dụng!", "Thành công");
         }
 
         // Khóa phím Tab nền khi mở Popup
@@ -1078,8 +1075,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
 
                 // Giữ lại 3 mẫu mặc định ban đầu
                 while (cboPresets.Items.Count > 3)
@@ -1189,14 +1186,14 @@ namespace QASmartClass.Classroom.Views
 
             if (name == "Mặc định (Mở khóa)" || name == "Thi cử nghiêm ngặt" || name == "Thực hành Tin học")
             {
-                MessageBox.Show("Không thể ghi đè các mẫu mặc định của hệ thống.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Không thể ghi đè các mẫu mặc định của hệ thống.", "Lỗi");
                 return;
             }
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
 
                 var data = new PresetData
                 {
@@ -1236,11 +1233,11 @@ namespace QASmartClass.Classroom.Views
                 db.SaveChanges();
 
                 LoadPresets();
-                MessageBox.Show($"Đã lưu mẫu thiết lập '{name}' thành công!", "Lưu mẫu", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info($"Đã lưu mẫu thiết lập '{name}' thành công!", "Lưu mẫu");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi lưu mẫu: {ex.Message}", "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi khi lưu mẫu: {ex.Message}", "Lỗi hệ thống");
             }
         }
 
@@ -1249,8 +1246,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 string key = "Policy_Template_" + presetName;
 
                 var setting = db.SystemSettings.FirstOrDefault(s => s.Id == key);
@@ -1295,7 +1292,7 @@ namespace QASmartClass.Classroom.Views
 
                 if (lstWhitelistApps.Items.Contains(appName))
                 {
-                    MessageBox.Show($"Ứng dụng '{appName}' đã tồn tại trong Whitelist.", "Trùng lặp", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn($"Ứng dụng '{appName}' đã tồn tại trong Whitelist.", "Trùng lặp");
                     return;
                 }
 
@@ -1354,8 +1351,8 @@ namespace QASmartClass.Classroom.Views
             string classCode = "DEFAULT_CLASS";
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                classCode = app.ClassroomSession?.ClassCode ?? "DEFAULT_CLASS";
+                // → ClassroomAppContext
+                classCode = ClassroomAppContext.Session?.ClassCode ?? "DEFAULT_CLASS";
                 if (string.IsNullOrEmpty(classCode)) classCode = "DEFAULT_CLASS";
             }
             catch { }
@@ -1387,7 +1384,7 @@ namespace QASmartClass.Classroom.Views
             }
             else
             {
-                MessageBox.Show("Mã PIN không chính xác. Vui lòng nhập lại.", "Mở khóa thất bại", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error("Mã PIN không chính xác. Vui lòng nhập lại.", "Mở khóa thất bại");
                 ClearOtpFields();
                 txtPinDigit1.Focus();
             }
@@ -1442,8 +1439,8 @@ namespace QASmartClass.Classroom.Views
                 // Lưu cấu hình vào SQLite
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    var db = app.Database;
+                    // → ClassroomAppContext
+                    var db = ClassroomAppContext.Db;
                     var setting = db.SystemSettings.FirstOrDefault(s => s.Id == "Policy_IdleLockDuration");
                     if (setting == null)
                     {
@@ -1551,8 +1548,8 @@ namespace QASmartClass.Classroom.Views
                 item.PropertyChanged -= StudentStatus_PropertyChanged;
             }
             _studentStatuses.Clear();
-            var app = (QASmartTouch.App)Application.Current;
-            var net = app.NetworkService;
+            // → ClassroomAppContext
+            var net = ClassroomAppContext.Network;
             if (net != null)
             {
                 var students = net.GetConnectedStudents();
@@ -1602,8 +1599,8 @@ namespace QASmartClass.Classroom.Views
 
         private async void btnRefreshConnection_Click(object sender, RoutedEventArgs e)
         {
-            var app = (QASmartTouch.App)Application.Current;
-            var net = app.NetworkService;
+            // → ClassroomAppContext
+            var net = ClassroomAppContext.Network;
             if (net == null) return;
 
             // Debounce (chống spam 5 giây)
@@ -1709,8 +1706,8 @@ namespace QASmartClass.Classroom.Views
         private async void AckRetryTimer_Tick(object? sender, EventArgs e)
         {
             var now = DateTime.Now;
-            var app = (QASmartTouch.App)Application.Current;
-            var net = app.NetworkService;
+            // → ClassroomAppContext
+            var net = ClassroomAppContext.Network;
             if (net == null) return;
 
             foreach (var key in _activeTrackers.Keys.ToList())
@@ -1759,8 +1756,8 @@ namespace QASmartClass.Classroom.Views
             }
 
             // Update UI status
-            var app = (QASmartTouch.App)Application.Current;
-            var net = app.NetworkService;
+            // → ClassroomAppContext
+            var net = ClassroomAppContext.Network;
             string pcName = e.StudentCode;
             if (net != null)
             {
@@ -1814,7 +1811,7 @@ namespace QASmartClass.Classroom.Views
         {
             if (cboPresets.SelectedItem == null)
             {
-                MessageBox.Show("Vui lòng chọn một mẫu thiết lập để xuất.", "Xuất mẫu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng chọn một mẫu thiết lập để xuất.", "Xuất mẫu");
                 return;
             }
 
@@ -1850,8 +1847,8 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    var db = app.Database;
+                    // → ClassroomAppContext
+                    var db = ClassroomAppContext.Db;
                     string key = "Policy_Template_" + presetName;
                     var setting = db.SystemSettings.FirstOrDefault(s => s.Id == key);
                     if (setting != null)
@@ -1867,7 +1864,7 @@ namespace QASmartClass.Classroom.Views
 
             if (data == null)
             {
-                MessageBox.Show("Không thể tải thông tin mẫu thiết lập này.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error("Không thể tải thông tin mẫu thiết lập này.", "Lỗi");
                 return;
             }
 
@@ -1889,7 +1886,7 @@ namespace QASmartClass.Classroom.Views
                 }
                 catch (Exception exWrite)
                 {
-                    MessageBox.Show($"Lỗi ghi file: {exWrite.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error($"Lỗi ghi file: {exWrite.Message}", "Lỗi");
                 }
             }
         }
@@ -1916,14 +1913,13 @@ namespace QASmartClass.Classroom.Views
                     }
                     catch (Exception jsonEx)
                     {
-                        MessageBox.Show($"File JSON sai cấu trúc hoặc bị hỏng:\n{jsonEx.Message}", 
-                                        "Lỗi cấu trúc tệp", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ClassroomDialog.Error($"File JSON sai cấu trúc hoặc bị hỏng:\n{jsonEx.Message}", "Lỗi cấu trúc tệp");
                         return;
                     }
 
                     if (data == null)
                     {
-                        MessageBox.Show("Mẫu thiết lập trống hoặc không hợp lệ.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn("Mẫu thiết lập trống hoặc không hợp lệ.", "Lỗi");
                         return;
                     }
 
@@ -1934,12 +1930,12 @@ namespace QASmartClass.Classroom.Views
 
                     if (name == "Mặc định (Mở khóa)" || name == "Thi cử nghiêm ngặt" || name == "Thực hành Tin học")
                     {
-                        MessageBox.Show("Không thể ghi đè các mẫu mặc định của hệ thống.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn("Không thể ghi đè các mẫu mặc định của hệ thống.", "Lỗi");
                         return;
                     }
 
-                    var app = (QASmartTouch.App)Application.Current;
-                    var db = app.Database;
+                    // → ClassroomAppContext
+                    var db = ClassroomAppContext.Db;
                     string key = "Policy_Template_" + name;
 
                     string serializedData = Newtonsoft.Json.JsonConvert.SerializeObject(data);
@@ -1967,11 +1963,11 @@ namespace QASmartClass.Classroom.Views
                         }
                     }
 
-                    MessageBox.Show($"Nhập khẩu mẫu thiết lập '{name}' thành công!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"Nhập khẩu mẫu thiết lập '{name}' thành công!", "Thành công");
                 }
                 catch (Exception exImport)
                 {
-                    MessageBox.Show($"Lỗi nhập khẩu mẫu: {exImport.Message}", "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error($"Lỗi nhập khẩu mẫu: {exImport.Message}", "Lỗi hệ thống");
                 }
             }
         }

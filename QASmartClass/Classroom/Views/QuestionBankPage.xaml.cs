@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -26,8 +27,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
 
                 // Load quizzes into combo
                 var quizzes = db.Quizzes.ToList();
@@ -63,8 +64,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                _allQuestions = app.Database.Questions
+                // → ClassroomAppContext
+                _allQuestions = ClassroomAppContext.Db.Questions
                     .Where(q => q.QuizId == quizId)
                     .OrderBy(q => q.SortOrder)
                     .ToList();
@@ -81,8 +82,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 txtTotalQuizzes.Text = db.Quizzes.Count().ToString();
                 txtTotalQuestions.Text = db.Questions.Count().ToString();
             }
@@ -118,17 +119,17 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.Database.Questions.Add(dlg.Result);
-                    app.Database.SaveChanges();
+                    // → ClassroomAppContext
+                    ClassroomAppContext.Db.Questions.Add(dlg.Result);
+                    ClassroomAppContext.Db.SaveChanges();
                     LoadQuestions(_selectedQuizId);
                     UpdateStats();
-                    MessageBox.Show("✅ Đã thêm câu hỏi!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info("✅ Đã thêm câu hỏi!", "Thành công");
                     Log.Information("Question added to quiz {Id}", _selectedQuizId);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
                 }
             }
         }
@@ -210,19 +211,19 @@ namespace QASmartClass.Classroom.Views
                 var title = tbTitle.Text.Trim();
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
+                    // → ClassroomAppContext
                     var quizType = (cmbType.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "Competition";
                     int.TryParse(tbTime.Text, out int timeLimit);
                     if (timeLimit <= 0) timeLimit = 300;
                     var quiz = new Quiz { Title = title, QuizType = quizType, TimeLimitSeconds = timeLimit, CreatedAt = DateTime.Now };
-                    app.Database.Quizzes.Add(quiz);
-                    app.Database.SaveChanges();
+                    ClassroomAppContext.Db.Quizzes.Add(quiz);
+                    ClassroomAppContext.Db.SaveChanges();
                     LoadData();
-                    MessageBox.Show($"✅ Đã tạo Quiz: {title}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"✅ Đã tạo Quiz: {title}", "Thành công");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
                 }
             }
         }
@@ -234,9 +235,9 @@ namespace QASmartClass.Classroom.Views
                 var r = MessageBox.Show($"Xóa câu hỏi: \"{q.Content}\"?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (r == MessageBoxResult.Yes)
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.Database.Questions.Remove(q);
-                    app.Database.SaveChanges();
+                    // → ClassroomAppContext
+                    ClassroomAppContext.Db.Questions.Remove(q);
+                    ClassroomAppContext.Db.SaveChanges();
                     LoadQuestions(_selectedQuizId);
                     UpdateStats();
                 }
@@ -247,19 +248,19 @@ namespace QASmartClass.Classroom.Views
         {
             if (_selectedQuizId == 0)
             {
-                MessageBox.Show("Vui lòng chọn một Quiz cần xóa!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng chọn một Quiz cần xóa!", "Thông báo");
                 return;
             }
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
                 var quiz = db.Quizzes.FirstOrDefault(q => q.Id == _selectedQuizId);
 
                 if (quiz == null)
                 {
-                    MessageBox.Show("Không tìm thấy thông tin Quiz cần xóa.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ClassroomDialog.Error("Không tìm thấy thông tin Quiz cần xóa.", "Lỗi");
                     return;
                 }
 
@@ -281,7 +282,7 @@ namespace QASmartClass.Classroom.Views
                     db.SaveChanges();
 
                     Log.Information("Quiz '{Title}' (ID: {Id}) and {QCount} questions were deleted by teacher.", quiz.Title, quiz.Id, relatedQuestions.Count);
-                    MessageBox.Show($"✅ Đã xóa thành công Quiz: {quiz.Title}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"✅ Đã xóa thành công Quiz: {quiz.Title}", "Thành công");
 
                     // 4. Reset selection và nạp lại danh sách Quiz
                     _selectedQuizId = 0;
@@ -291,7 +292,7 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex)
             {
                 Log.Warning("DeleteQuiz error: {Err}", ex.Message);
-                MessageBox.Show($"Lỗi khi xóa Quiz: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi khi xóa Quiz: {ex.Message}", "Lỗi");
             }
         }
 
@@ -396,7 +397,7 @@ namespace QASmartClass.Classroom.Views
             btnImport.Click += (s, e2) =>
             {
                 int count = 0;
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 int sortBase = _allQuestions.Any() ? _allQuestions.Max(x => x.SortOrder) + 1 : 0;
                 foreach (var (cb, item) in checkboxes)
                 {
@@ -407,7 +408,7 @@ namespace QASmartClass.Classroom.Views
                             { "MCQ", "MultipleChoice" }, { "TF", "TrueFalse" }, { "FIB", "FillBlank" },
                             { "MATCH", "Matching" }, { "SHORT", "ShortAnswer" }, { "ORDER", "Ordering" }
                         };
-                        app.Database.Questions.Add(new Question
+                        ClassroomAppContext.Db.Questions.Add(new Question
                         {
                             QuizId = _selectedQuizId,
                             SortOrder = sortBase + count,
@@ -423,14 +424,14 @@ namespace QASmartClass.Classroom.Views
                 }
                 if (count > 0)
                 {
-                    app.Database.SaveChanges();
+                    ClassroomAppContext.Db.SaveChanges();
                     LoadQuestions(_selectedQuizId);
                     UpdateStats();
-                    MessageBox.Show($"✅ Đã import {count} câu hỏi vào Quiz!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"✅ Đã import {count} câu hỏi vào Quiz!", "Thành công");
                     wnd.Close();
                 }
                 else
-                    MessageBox.Show("Vui lòng chọn ít nhất 1 câu hỏi!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng chọn ít nhất 1 câu hỏi!", "Thông báo");
             };
             btnRow.Children.Add(btnImport);
             stack.Children.Add(btnRow);
@@ -444,8 +445,8 @@ namespace QASmartClass.Classroom.Views
         {
             if (_selectedQuizId == 0) { MessageBox.Show("Vui lòng chọn Quiz trước!", "Thông báo"); return; }
 
-            var app = (QASmartTouch.App)Application.Current;
-            var quiz = app.Database.Quizzes.Find(_selectedQuizId);
+            // → ClassroomAppContext
+            var quiz = ClassroomAppContext.Db.Quizzes.Find(_selectedQuizId);
             if (quiz == null) return;
 
             var dlg = new Microsoft.Win32.SaveFileDialog
@@ -456,7 +457,7 @@ namespace QASmartClass.Classroom.Views
             };
             if (dlg.ShowDialog() == true)
             {
-                var questions = app.Database.Questions.Where(q => q.QuizId == _selectedQuizId).OrderBy(q => q.SortOrder).ToList();
+                var questions = ClassroomAppContext.Db.Questions.Where(q => q.QuizId == _selectedQuizId).OrderBy(q => q.SortOrder).ToList();
                 var export = new
                 {
                     Quiz = new { quiz.Title, quiz.QuizType, quiz.TimeLimitSeconds },
@@ -488,7 +489,7 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 int importedCount = 0;
 
                 if (dlg.FileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
@@ -513,8 +514,8 @@ namespace QASmartClass.Classroom.Views
                         if (result == MessageBoxResult.Yes)
                         {
                             var newQuiz = new Quiz { Title = title, QuizType = quizType, TimeLimitSeconds = timeLimit, CreatedAt = DateTime.Now };
-                            app.Database.Quizzes.Add(newQuiz);
-                            app.Database.SaveChanges();
+                            ClassroomAppContext.Db.Quizzes.Add(newQuiz);
+                            ClassroomAppContext.Db.SaveChanges();
                             targetQuizId = newQuiz.Id;
                         }
                     }
@@ -523,12 +524,12 @@ namespace QASmartClass.Classroom.Views
 
                     if (root.TryGetProperty("Questions", out var questionsEl))
                     {
-                        int sortBase = app.Database.Questions.Where(q => q.QuizId == targetQuizId).Any()
-                            ? app.Database.Questions.Where(q => q.QuizId == targetQuizId).Max(q => q.SortOrder) + 1 : 0;
+                        int sortBase = ClassroomAppContext.Db.Questions.Where(q => q.QuizId == targetQuizId).Any()
+                            ? ClassroomAppContext.Db.Questions.Where(q => q.QuizId == targetQuizId).Max(q => q.SortOrder) + 1 : 0;
 
                         foreach (var qEl in questionsEl.EnumerateArray())
                         {
-                            app.Database.Questions.Add(new Question
+                            ClassroomAppContext.Db.Questions.Add(new Question
                             {
                                 QuizId = targetQuizId,
                                 SortOrder = sortBase + importedCount,
@@ -542,50 +543,50 @@ namespace QASmartClass.Classroom.Views
                             importedCount++;
                         }
                     }
-                    app.Database.SaveChanges();
+                    ClassroomAppContext.Db.SaveChanges();
                     LoadData();
-                    MessageBox.Show($"✅ Đã import {importedCount} câu hỏi từ JSON!", "Import thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"✅ Đã import {importedCount} câu hỏi từ JSON!", "Import thành công");
                 }
                 else if (dlg.FileName.EndsWith(".docx", StringComparison.OrdinalIgnoreCase))
                 {
                     if (_selectedQuizId == 0) { MessageBox.Show("Vui lòng chọn Quiz trước khi import Word!", "Lỗi"); return; }
                     var parsed = ParseWordFile(dlg.FileName);
-                    ImportParsedQuestions(parsed, _selectedQuizId, app);
+                    ImportParsedQuestions(parsed, _selectedQuizId);
                 }
                 else if (dlg.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     if (_selectedQuizId == 0) { MessageBox.Show("Vui lòng chọn Quiz trước khi import CSV!", "Lỗi"); return; }
                     var parsed = ParseCsvFile(dlg.FileName);
-                    ImportParsedQuestions(parsed, _selectedQuizId, app);
+                    ImportParsedQuestions(parsed, _selectedQuizId);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi import: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi import: {ex.Message}", "Lỗi");
             }
         }
 
-        private void ImportParsedQuestions(List<Question> parsed, int targetQuizId, QASmartTouch.App app)
+        private void ImportParsedQuestions(List<Question> parsed, int targetQuizId)
         {
             if (parsed.Count == 0)
             {
-                MessageBox.Show("Không tìm thấy câu hỏi hợp lệ trong file!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Không tìm thấy câu hỏi hợp lệ trong file!", "Thông báo");
                 return;
             }
 
-            int sortBase = app.Database.Questions.Where(q => q.QuizId == targetQuizId).Any()
-                ? app.Database.Questions.Where(q => q.QuizId == targetQuizId).Max(q => q.SortOrder) + 1 : 0;
+            int sortBase = ClassroomAppContext.Db.Questions.Where(q => q.QuizId == targetQuizId).Any()
+                ? ClassroomAppContext.Db.Questions.Where(q => q.QuizId == targetQuizId).Max(q => q.SortOrder) + 1 : 0;
 
             for (int i = 0; i < parsed.Count; i++)
             {
                 parsed[i].QuizId = targetQuizId;
                 parsed[i].SortOrder = sortBase + i;
-                app.Database.Questions.Add(parsed[i]);
+                ClassroomAppContext.Db.Questions.Add(parsed[i]);
             }
             
-            app.Database.SaveChanges();
+            ClassroomAppContext.Db.SaveChanges();
             LoadData();
-            MessageBox.Show($"✅ Đã nạp thành công {parsed.Count} câu hỏi!", "Import thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            ClassroomDialog.Info($"✅ Đã nạp thành công {parsed.Count} câu hỏi!", "Import thành công");
         }
 
         private List<Question> ParseWordFile(string filePath)
@@ -1137,7 +1138,7 @@ namespace QASmartClass.Classroom.Views
             var contentText = GetContentText();
             if (string.IsNullOrWhiteSpace(contentText))
             {
-                MessageBox.Show("Vui lòng nhập nội dung câu hỏi!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng nhập nội dung câu hỏi!", "Thiếu thông tin");
                 return;
             }
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using QASmartClass.Data;
 using Serilog;
 
@@ -122,10 +123,10 @@ namespace QASmartClass.Classroom.Views
             // Subscribe to active roster changes
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app?.ClassRoster != null)
+                // app → ClassroomAppContext (refactored)
+                if (ClassroomAppContext.ClassRoster != null)
                 {
-                    app.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
                 }
             }
             catch { }
@@ -134,10 +135,10 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    if (app?.ClassRoster != null)
+                    // app → ClassroomAppContext (refactored)
+                    if (ClassroomAppContext.ClassRoster != null)
                     {
-                        app.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                        ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
                     }
                 }
                 catch { }
@@ -197,7 +198,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
                 var contactsList = new List<ChatContact>();
 
                 using (var db = new AppDbContext())
@@ -274,7 +275,7 @@ namespace QASmartClass.Classroom.Views
 
                     // 3. Load study groups from Nhóm Học Tập (GroupPage)
                     List<GroupVm> currentGroups = null;
-                    Dispatcher.Invoke(() => currentGroups = app.CurrentGroups?.ToList());
+                    Dispatcher.Invoke(() => currentGroups = ClassroomAppContext.CurrentGroups?.ToList());
                     if (currentGroups?.Count > 0)
                     {
                         foreach (var sg in currentGroups)
@@ -320,7 +321,7 @@ namespace QASmartClass.Classroom.Views
                     var networkOnlineCodes = new System.Collections.Generic.HashSet<string>();
                     try
                     {
-                        var net = app.NetworkService;
+                        var net = ClassroomAppContext.Network;
                         if (net != null)
                         {
                             foreach (var client in net.GetConnectedStudents())
@@ -347,10 +348,10 @@ namespace QASmartClass.Classroom.Views
                     List<Student> students = null;
                     Dispatcher.Invoke(() =>
                     {
-                        var roster = app.ClassRoster.ActiveRoster;
+                        var roster = ClassroomAppContext.ClassRoster.ActiveRoster;
                         if (roster != null)
                         {
-                            students = app.ClassRoster.GetActiveStudents();
+                            students = ClassroomAppContext.ClassRoster.GetActiveStudents();
                         }
                     });
 
@@ -415,7 +416,7 @@ namespace QASmartClass.Classroom.Views
                     var existingCodes = contactsList.Select(c => c.Code).ToHashSet();
                     try
                     {
-                        var net = app.NetworkService;
+                        var net = ClassroomAppContext.Network;
                         if (net != null)
                         {
                             foreach (var client in net.GetConnectedStudents())
@@ -645,8 +646,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var net = app.NetworkService;
+                // app → ClassroomAppContext (refactored)
+                var net = ClassroomAppContext.Network;
                 if (net == null)
                 {
                     Log.Warning("[MessagingPage] NetworkService is null. Skipping message events registration.");
@@ -683,8 +684,8 @@ namespace QASmartClass.Classroom.Views
                         {
                             try
                             {
-                                var dbApp = (QASmartTouch.App)Application.Current;
-                                string classCode = dbApp?.ClassroomSession?.ClassCode ?? "DEFAULT_CLASS";
+                                // app → ClassroomAppContext (refactored)
+                                string classCode = ClassroomAppContext.Session?.ClassCode ?? "DEFAULT_CLASS";
                                 if (string.IsNullOrEmpty(classCode)) classCode = "DEFAULT_CLASS";
                                 
                                 string encryptedText = msg.Replace("STUDENT_QUESTION_ENC|text=", "");
@@ -737,8 +738,8 @@ namespace QASmartClass.Classroom.Views
                         {
                             try
                             {
-                                var dbApp = (QASmartTouch.App)Application.Current;
-                                string classCode = dbApp?.ClassroomSession?.ClassCode ?? "DEFAULT_CLASS";
+                                // app → ClassroomAppContext (refactored)
+                                string classCode = ClassroomAppContext.Session?.ClassCode ?? "DEFAULT_CLASS";
                                 if (string.IsNullOrEmpty(classCode)) classCode = "DEFAULT_CLASS";
                                 
                                 string encryptedText = msg.Replace("HAND_RAISE_ENC|payload=", "");
@@ -956,7 +957,7 @@ namespace QASmartClass.Classroom.Views
                         // Update DB
                         try
                         {
-                            var a = (QASmartTouch.App)Application.Current;
+                            // app → ClassroomAppContext (refactored)
                             using (var db = new AppDbContext())
                             {
                                 var stu = db.Students.FirstOrDefault(st => st.StudentCode == args.StudentCode);
@@ -969,10 +970,10 @@ namespace QASmartClass.Classroom.Views
                             }
 
                             // Send Mute status to newly connected student
-                            _ = a.NetworkService?.SendToStudentAsync(args.StudentCode, $"CMD|CLASS_CHAT_MUTE|{_isClassChatMuted}");
+                            _ = ClassroomAppContext.Network?.SendToStudentAsync(args.StudentCode, $"CMD|CLASS_CHAT_MUTE|{_isClassChatMuted}");
                             
                             // Send Anonymous feedback status to newly connected student
-                            _ = a.NetworkService?.SendToStudentAsync(args.StudentCode, $"CMD|CLASS_CHAT_ANONYMOUS|{_isFeedbackAnonymous}");
+                            _ = ClassroomAppContext.Network?.SendToStudentAsync(args.StudentCode, $"CMD|CLASS_CHAT_ANONYMOUS|{_isFeedbackAnonymous}");
 
                             // Send recent message history to newly connected student
                             var recentMsgs = Messages
@@ -984,7 +985,7 @@ namespace QASmartClass.Classroom.Views
                             {
                                 foreach (var histMsg in recentMsgs)
                                 {
-                                    _ = a.NetworkService?.BroadcastMessage(
+                                    _ = ClassroomAppContext.Network?.BroadcastMessage(
                                         $"MSG_HISTORY|{histMsg.Time:HH:mm}|{histMsg.Text}");
                                 }
                                 Log.Information("Sent {Count} history messages to {Student}", recentMsgs.Count, args.StudentCode);
@@ -1135,11 +1136,11 @@ namespace QASmartClass.Classroom.Views
                 // Study group from Nhóm Học Tập
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
+                    // app → ClassroomAppContext (refactored)
                     if (int.TryParse(channelCode.Replace("STUDY_", ""), out int sIdx)
-                        && app.CurrentGroups?.Count > sIdx)
+                        && ClassroomAppContext.CurrentGroups?.Count > sIdx)
                     {
-                        var sg = app.CurrentGroups[sIdx];
+                        var sg = ClassroomAppContext.CurrentGroups[sIdx];
                         chatAvatarText.Text = sg.Emoji;
                         chatAvatar.Background = new SolidColorBrush(sg.HeaderColor);
                         txtChatTitle.Text = $"{sg.Emoji} {sg.Name}";
@@ -1181,11 +1182,11 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
+                    // app → ClassroomAppContext (refactored)
                     if (int.TryParse(_activeChannel.Replace("STUDY_", ""), out int sIdx)
-                        && app.CurrentGroups?.Count > sIdx)
+                        && ClassroomAppContext.CurrentGroups?.Count > sIdx)
                     {
-                        foreach (var name in app.CurrentGroups[sIdx].Members)
+                        foreach (var name in ClassroomAppContext.CurrentGroups[sIdx].Members)
                             studyMemberNames.Add(name);
                     }
                 }
@@ -1295,10 +1296,10 @@ namespace QASmartClass.Classroom.Views
                 }
                 else if (_activeChannel.StartsWith("STUDY_"))
                 {
-                    var app = (QASmartTouch.App)Application.Current;
+                    // app → ClassroomAppContext (refactored)
                     if (int.TryParse(_activeChannel.Replace("STUDY_", ""), out int sIdx)
-                        && app.CurrentGroups?.Count > sIdx)
-                        txtTabMembers.Text = $"👥 {app.CurrentGroups[sIdx].Members.Count} thành viên";
+                        && ClassroomAppContext.CurrentGroups?.Count > sIdx)
+                        txtTabMembers.Text = $"👥 {ClassroomAppContext.CurrentGroups[sIdx].Members.Count} thành viên";
                 }
                 else
                 {
@@ -1670,15 +1671,12 @@ namespace QASmartClass.Classroom.Views
 
         private void VoiceRecord_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(
+            ClassroomDialog.Info(
                 "🎤 Tính năng Ghi âm giọng nói sẽ được cập nhật trong phiên bản tiếp theo.\n\n" +
                 "Bạn có thể:\n" +
                 "• Gõ tin nhắn text\n" +
                 "• Gửi biểu cảm 😊\n" +
-                "• Đính kèm file 📎",
-                "🎤 Ghi âm — Sắp ra mắt",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                "• Đính kèm file 📎", "🎤 Ghi âm — Sắp ra mắt");
         }
 
         private void SendMessage()
@@ -1698,10 +1696,10 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var a = (QASmartTouch.App)Application.Current;
+                    // app → ClassroomAppContext (refactored)
                     if (int.TryParse(_activeChannel.Replace("STUDY_", ""), out int sIdx)
-                        && a.CurrentGroups?.Count > sIdx)
-                        channelLabel = a.CurrentGroups[sIdx].Name;
+                        && ClassroomAppContext.CurrentGroups?.Count > sIdx)
+                        channelLabel = ClassroomAppContext.CurrentGroups[sIdx].Name;
                 }
                 catch { }
             }
@@ -1722,28 +1720,28 @@ namespace QASmartClass.Classroom.Views
             // Send via network
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
 
                 if (_activeChannel == "ALL")
                 {
                     // Lấy danh sách học sinh đang online thực tế (TCP + Web)
                     var onlineStudents = new List<QASmartClass.Controls.NotificationWindow.FailedStudentItem>();
-                    if (app.NetworkService != null)
+                    if (ClassroomAppContext.Network != null)
                     {
-                        foreach (var s in app.NetworkService.GetConnectedStudents())
+                        foreach (var s in ClassroomAppContext.Network.GetConnectedStudents())
                         {
                             onlineStudents.Add(new QASmartClass.Controls.NotificationWindow.FailedStudentItem { Code = s.Code, Name = s.Name });
                         }
-                        if (app.NetworkService.WebBridge != null)
+                        if (ClassroomAppContext.Network.WebBridge != null)
                         {
-                            foreach (var w in app.NetworkService.WebBridge.GetConnectedWebStudents())
+                            foreach (var w in ClassroomAppContext.Network.WebBridge.GetConnectedWebStudents())
                             {
                                 onlineStudents.Add(new QASmartClass.Controls.NotificationWindow.FailedStudentItem { Code = w.Code, Name = w.Name });
                             }
                         }
                     }
 
-                    if (onlineStudents.Count > 0 && app.NetworkService != null)
+                    if (onlineStudents.Count > 0 && ClassroomAppContext.Network != null)
                     {
                         // Khởi tạo Custom Notification Window ở trạng thái Processing
                         var notifyWin = new QASmartClass.Controls.NotificationWindow();
@@ -1766,9 +1764,9 @@ namespace QASmartClass.Classroom.Views
                         {
                             lock (lockObj)
                             {
-                                if (app.NetworkService != null && ackHandler != null)
+                                if (ClassroomAppContext.Network != null && ackHandler != null)
                                 {
-                                    app.NetworkService.CommandAckReceived -= ackHandler;
+                                    ClassroomAppContext.Network.CommandAckReceived -= ackHandler;
                                     ackHandler = null;
                                 }
                                 if (timeoutTimer != null)
@@ -1807,7 +1805,7 @@ namespace QASmartClass.Classroom.Views
                             }
                         };
 
-                        app.NetworkService.CommandAckReceived += ackHandler;
+                        ClassroomAppContext.Network.CommandAckReceived += ackHandler;
 
                         // Bắt đầu đếm ngược 3 giây
                         timeoutTimer = new System.Windows.Threading.DispatcherTimer
@@ -1840,7 +1838,7 @@ namespace QASmartClass.Classroom.Views
                                     // Logic gửi lại riêng lẻ (Resend)
                                     string resendCmd = $"MSG|🔒 {_myName} (Gửi lại): {text}";
                                     resendCmd = Classroom.Services.NetworkDiscoveryService.AppendCommandId(resendCmd);
-                                    _ = app.NetworkService?.SendToStudentAsync(failedCode, resendCmd);
+                                    _ = ClassroomAppContext.Network?.SendToStudentAsync(failedCode, resendCmd);
                                 });
 
                                 // Gửi lại hàng loạt cho toàn bộ danh sách máy lỗi (v4.3)
@@ -1850,7 +1848,7 @@ namespace QASmartClass.Classroom.Views
                                     {
                                         string resendCmd = $"MSG|🔒 {_myName} (Gửi lại): {text}";
                                         resendCmd = Classroom.Services.NetworkDiscoveryService.AppendCommandId(resendCmd);
-                                        _ = app.NetworkService?.SendToStudentAsync(failedCode, resendCmd);
+                                        _ = ClassroomAppContext.Network?.SendToStudentAsync(failedCode, resendCmd);
                                     }
                                 };
                             }
@@ -1862,12 +1860,12 @@ namespace QASmartClass.Classroom.Views
                         timeoutTimer.Start();
 
                         // Thực hiện gửi lệnh đi
-                        _ = app.NetworkService.SendCommandAsync(rawCommand);
+                        _ = ClassroomAppContext.Network.SendCommandAsync(rawCommand);
                     }
                     else
                     {
                         // Không có học sinh online, phát bình thường
-                        _ = app.NetworkService?.BroadcastMessage($"📢 GV: {text}");
+                        _ = ClassroomAppContext.Network?.BroadcastMessage($"📢 GV: {text}");
                     }
                 }
                 else if (_activeChannel.StartsWith("GROUP_"))
@@ -1876,21 +1874,21 @@ namespace QASmartClass.Classroom.Views
                     var grpId = _activeChannel.Replace("GROUP_", "");
                     var grp = _groups.FirstOrDefault(g => g.Id == grpId);
                     if (grp != null && grp.MemberCodes.Count > 0)
-                        _ = app.NetworkService?.SendToStudentsAsync(grp.MemberCodes, $"MSG|📨 [{grp.Name}] GV: {text}");
+                        _ = ClassroomAppContext.Network?.SendToStudentsAsync(grp.MemberCodes, $"MSG|📨 [{grp.Name}] GV: {text}");
                     else
-                        _ = app.NetworkService?.BroadcastMessage($"📨 [{grp?.Name ?? "Nhóm"}] GV: {text}");
+                        _ = ClassroomAppContext.Network?.BroadcastMessage($"📨 [{grp?.Name ?? "Nhóm"}] GV: {text}");
                 }
                 else if (_activeChannel.StartsWith("STUDY_"))
                 {
                     // Study group → send only to study group members
                     try
                     {
-                        var studyApp = (QASmartTouch.App)Application.Current;
+                        // app → ClassroomAppContext (refactored)
                         if (int.TryParse(_activeChannel.Replace("STUDY_", ""), out int sIdx)
-                            && studyApp.CurrentGroups?.Count > sIdx)
+                            && ClassroomAppContext.CurrentGroups?.Count > sIdx)
                         {
                             // Get student codes from study group member names
-                            var memberNames = studyApp.CurrentGroups[sIdx].Members;
+                            var memberNames = ClassroomAppContext.CurrentGroups[sIdx].Members;
                             var memberCodes = new System.Collections.Generic.List<string>();
                             foreach (var name in memberNames)
                             {
@@ -1899,24 +1897,24 @@ namespace QASmartClass.Classroom.Views
                                 if (contact != null) memberCodes.Add(contact.Code);
                             }
                             if (memberCodes.Count > 0)
-                                _ = app.NetworkService?.SendToStudentsAsync(memberCodes, $"MSG|📚 [{channelLabel}] GV: {text}");
+                                _ = ClassroomAppContext.Network?.SendToStudentsAsync(memberCodes, $"MSG|📚 [{channelLabel}] GV: {text}");
                             else
-                                _ = app.NetworkService?.BroadcastMessage($"📚 [{channelLabel}] GV: {text}");
+                                _ = ClassroomAppContext.Network?.BroadcastMessage($"📚 [{channelLabel}] GV: {text}");
                         }
                         else
                         {
-                            _ = app.NetworkService?.BroadcastMessage($"📚 [{channelLabel}] GV: {text}");
+                            _ = ClassroomAppContext.Network?.BroadcastMessage($"📚 [{channelLabel}] GV: {text}");
                         }
                     }
                     catch
                     {
-                        _ = app.NetworkService?.BroadcastMessage($"📚 [{channelLabel}] GV: {text}");
+                        _ = ClassroomAppContext.Network?.BroadcastMessage($"📚 [{channelLabel}] GV: {text}");
                     }
                 }
                 else
                 {
                     // Private → send ONLY to this specific student
-                    _ = app.NetworkService?.SendToStudentAsync(_activeChannel, $"MSG|🔒 {_myName}: {text}");
+                    _ = ClassroomAppContext.Network?.SendToStudentAsync(_activeChannel, $"MSG|🔒 {_myName}: {text}");
                 }
 
                 // Save to DB in background thread
@@ -2395,14 +2393,12 @@ namespace QASmartClass.Classroom.Views
                 var selected = checkBoxes.Where(x => x.cb.IsChecked == true).Select(x => x.code).ToList();
                 if (selected.Count == 0)
                 {
-                    MessageBox.Show("⚠️ Vui lòng chọn ít nhất 1 học sinh!", "Chưa chọn thành viên",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("⚠️ Vui lòng chọn ít nhất 1 học sinh!", "Chưa chọn thành viên");
                     return;
                 }
                 if (string.IsNullOrWhiteSpace(txtGroupName.Text))
                 {
-                    MessageBox.Show("⚠️ Vui lòng nhập tên nhóm!", "Tên nhóm trống",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("⚠️ Vui lòng nhập tên nhóm!", "Tên nhóm trống");
                     return;
                 }
                 dlg.DialogResult = true;
@@ -2452,8 +2448,8 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                _ = app.NetworkService?.BroadcastMessage(text);
+                // app → ClassroomAppContext (refactored)
+                _ = ClassroomAppContext.Network?.BroadcastMessage(text);
                 WriteLogBackground("TEACHER_CHAT", _myName, $"Tin nhắn: {text}");
             }
             catch { }
@@ -2552,11 +2548,11 @@ namespace QASmartClass.Classroom.Views
             }
             else if (_activeChannel.StartsWith("STUDY_"))
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
                 if (int.TryParse(_activeChannel.Replace("STUDY_", ""), out int sIdx)
-                    && app.CurrentGroups?.Count > sIdx)
+                    && ClassroomAppContext.CurrentGroups?.Count > sIdx)
                 {
-                    var studyGroup = app.CurrentGroups[sIdx];
+                    var studyGroup = ClassroomAppContext.CurrentGroups[sIdx];
                     foreach (var name in studyGroup.Members)
                     {
                         var c = _allContacts.FirstOrDefault(contact => !contact.IsGroup && contact.DisplayName.Contains(name));
@@ -2826,10 +2822,10 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 _isClassChatMuted = !_isClassChatMuted;
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
 
                 // Send broadcast command to all students
-                app.NetworkService?.SendCommandAsync($"CMD|CLASS_CHAT_MUTE|{_isClassChatMuted}");
+                ClassroomAppContext.Network?.SendCommandAsync($"CMD|CLASS_CHAT_MUTE|{_isClassChatMuted}");
 
                 // Update UI button state
                 btnToggleMuteChat.Content = _isClassChatMuted ? "🔒 Mở khóa chat" : "🔓 Khóa chat";
@@ -2867,10 +2863,10 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 _isFeedbackAnonymous = isAnonymous;
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
                 
                 // Broadcast anonymous command to all students
-                app.NetworkService?.SendCommandAsync($"CMD|CLASS_CHAT_ANONYMOUS|{isAnonymous}");
+                ClassroomAppContext.Network?.SendCommandAsync($"CMD|CLASS_CHAT_ANONYMOUS|{isAnonymous}");
                 
                 // Redraw or clear contact list feedback emojis
                 foreach (var contact in _allContacts)
@@ -2969,9 +2965,9 @@ namespace QASmartClass.Classroom.Views
             {
                 if (contactList.SelectedItem is ChatContact contact && !contact.IsGroup)
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    _ = app.NetworkService?.SendToStudentAsync(contact.Code, $"CMD|CLASS_CHAT_MUTE_STUDENT|{contact.Code}|false");
-                    _ = app.NetworkService?.SendToStudentAsync(contact.Code, $"CMD|TURN_GRANTED|{contact.Code}");
+                    // app → ClassroomAppContext (refactored)
+                    _ = ClassroomAppContext.Network?.SendToStudentAsync(contact.Code, $"CMD|CLASS_CHAT_MUTE_STUDENT|{contact.Code}|false");
+                    _ = ClassroomAppContext.Network?.SendToStudentAsync(contact.Code, $"CMD|TURN_GRANTED|{contact.Code}");
                     AddSystemMessage($"🔓 Đã mở khóa chat riêng và duyệt phát biểu cho học sinh {contact.DisplayName}");
                 }
             }
@@ -2987,8 +2983,8 @@ namespace QASmartClass.Classroom.Views
             {
                 if (contactList.SelectedItem is ChatContact contact && !contact.IsGroup)
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    _ = app.NetworkService?.SendToStudentAsync(contact.Code, $"CMD|CLASS_CHAT_MUTE_STUDENT|{contact.Code}|true");
+                    // app → ClassroomAppContext (refactored)
+                    _ = ClassroomAppContext.Network?.SendToStudentAsync(contact.Code, $"CMD|CLASS_CHAT_MUTE_STUDENT|{contact.Code}|true");
                     AddSystemMessage($"🔒 Đã khóa chat riêng học sinh {contact.DisplayName}");
                 }
             }

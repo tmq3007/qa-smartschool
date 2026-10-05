@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -31,7 +32,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 _lessons = db.Lessons
                     .OrderByDescending(l => l.UpdatedAt)
                     .Select(l => new LessonComboItem { Id = l.Id, Title = l.Title, Status = l.Status })
@@ -78,7 +79,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 var histories = db.LessonHistories
                     .Where(h => h.LessonId == lessonId)
                     .OrderByDescending(h => h.SavedAt)
@@ -160,8 +161,7 @@ namespace QASmartClass.Classroom.Views
         {
             if (_selectedHistoryId <= 0)
             {
-                MessageBox.Show("Vui lòng chọn một phiên bản để khôi phục!", "Chọn phiên bản",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng chọn một phiên bản để khôi phục!", "Chọn phiên bản");
                 return;
             }
 
@@ -173,7 +173,7 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 var hist = db.LessonHistories.Find(_selectedHistoryId);
                 if (hist == null) return;
 
@@ -197,9 +197,8 @@ namespace QASmartClass.Classroom.Views
                 lesson.UpdatedAt = DateTime.Now;
                 db.SaveChanges();
 
-                MessageBox.Show(
-                    $"✅ Đã khôi phục phiên bản!\n\nBài giảng: \"{lesson.Title}\"\nTrạng thái: {lesson.Status}",
-                    "Khôi phục thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info(
+                    $"✅ Đã khôi phục phiên bản!\n\nBài giảng: \"{lesson.Title}\"\nTrạng thái: {lesson.Status}", "Khôi phục thành công");
 
                 LoadHistory(_selectedLessonId);
                 Log.Information("Lesson {Id} restored to history {HId}", lesson.Id, _selectedHistoryId);
@@ -207,7 +206,7 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex)
             {
                 Log.Error(ex, "Restore error");
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
             }
         }
 
@@ -218,7 +217,7 @@ namespace QASmartClass.Classroom.Views
             if (r != MessageBoxResult.Yes) return;
             try
             {
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 var hist = db.LessonHistories.Find(_selectedHistoryId);
                 if (hist != null) { db.LessonHistories.Remove(hist); db.SaveChanges(); }
                 _selectedHistoryId = 0;

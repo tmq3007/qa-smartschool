@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using System.Windows.Media;
 using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -62,9 +63,9 @@ namespace QASmartClass.Classroom.Views
                 // Load students and groups
                 try
                 {
-                    var appRef = (QASmartTouch.App)Application.Current;
-                    var studentsQuery = appRef.Database?.Students?.AsQueryable();
-                    string activeClass = appRef.ClassroomSession?.CurrentClassName;
+                    // → ClassroomAppContext
+                    var studentsQuery = ClassroomAppContext.Db?.Students?.AsQueryable();
+                    string activeClass = ClassroomAppContext.Session?.CurrentClassName;
                     if (!string.IsNullOrEmpty(activeClass))
                     {
                         studentsQuery = studentsQuery?.Where(s => s.ClassName == activeClass);
@@ -122,7 +123,7 @@ namespace QASmartClass.Classroom.Views
                 cmbDeadlineMinute.SelectedValue = "59";
 
                 // Restore assignment desc if any
-                var app = Application.Current as QASmartTouch.App;
+                // → ClassroomAppContext
                 if (!string.IsNullOrEmpty(QASmartTouch.App.AssessmentState.AssignmentDescription))
                 {
                     txtAssignmentDesc.Text = QASmartTouch.App.AssessmentState.AssignmentDescription;
@@ -176,8 +177,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = Application.Current as QASmartTouch.App;
-                var ft = app?.FileTransfer;
+                // → ClassroomAppContext
+                var ft = ClassroomAppContext.FileTransfer;
 
                 if (ft != null)
                 {
@@ -353,7 +354,7 @@ namespace QASmartClass.Classroom.Views
             txtStatus.Text = $"📤 Đang phát {_files.Count} file...";
 
             // ═══ Save assignment metadata to App shared state ═══
-            var appState = Application.Current as QASmartTouch.App;
+            // → ClassroomAppContext
             var desc = _isDescPlaceholderActive ? "" : (txtAssignmentDesc.Text?.Trim() ?? "");
             QASmartTouch.App.AssessmentState.AssignmentDescription = desc;
             QASmartTouch.App.AssessmentState.AssignmentSentTime = DateTime.Now;
@@ -382,7 +383,7 @@ namespace QASmartClass.Classroom.Views
             var targetCodes = GetTargetStudentCodes();
             var deadlineStr = QASmartTouch.App.AssessmentState.AssignmentDeadline?.ToString("yyyy-MM-dd HH:mm") ?? "none";
             var cmdAssignment = $"CMD|ASSIGNMENT|{deadlineStr}|{QASmartTouch.App.AssessmentState.AssignmentDescription}";
-            var net = appState?.NetworkService;
+            var net = ClassroomAppContext.Network;
             if (net?.IsBroadcasting == true)
             {
                 if (targetCodes == null)
@@ -392,22 +393,22 @@ namespace QASmartClass.Classroom.Views
             }
             else
             {
-                appState?.RaiseLocalCommand(cmdAssignment);
+                ClassroomAppContext.DispatchCommand(cmdAssignment);
             }
 
             try
             {
-                var app = Application.Current as QASmartTouch.App;
-                var ft = app?.FileTransfer;
+                // → ClassroomAppContext
+                var ft = ClassroomAppContext.FileTransfer;
                 int totalSent = 0;
                 bool localCopyDone = false;
 
                 // Lấy danh sách học sinh online thực tế (TCP) để theo dõi kết quả
                 var onlineStudents = new List<QASmartClass.Controls.NotificationWindow.FailedStudentItem>();
-                if (appState?.NetworkService != null)
+                if (ClassroomAppContext.Network != null)
                 {
                     var targetSet = targetCodes != null ? new HashSet<string>(targetCodes, StringComparer.OrdinalIgnoreCase) : null;
-                    foreach (var s in appState.NetworkService.GetConnectedStudents())
+                    foreach (var s in ClassroomAppContext.Network.GetConnectedStudents())
                     {
                         if (targetSet == null || targetSet.Contains(s.Code))
                         {
@@ -483,9 +484,9 @@ namespace QASmartClass.Classroom.Views
                     // ═══ Gửi CMD|FILE_BROADCAST cho HS hiển thị nội dung file ═══
                     QASmartClass.Services.BroadcastStateService.Instance.AddBroadcastFile(file.Path);
                     int webPort = 8080;
-                    if (app?.NetworkService?.WebBridge != null)
+                    if (ClassroomAppContext.Network?.WebBridge != null)
                     {
-                        webPort = app.NetworkService.WebBridge.WebPort;
+                        webPort = ClassroomAppContext.Network.WebBridge.WebPort;
                     }
                     if (string.IsNullOrEmpty(QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken))
                     {
@@ -493,10 +494,10 @@ namespace QASmartClass.Classroom.Views
                     }
                     var token = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
                     var cmd = $"CMD|FILE_BROADCAST|{file.Path}|{webPort}|{token}";
-                    QASmartTouch.App.LessonState.LastTeacherCommand = cmd;
-                    QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+                    ClassroomAppContext.LessonState.LastTeacherCommand = cmd;
+                    ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
-                    net = app?.NetworkService;
+                    net = ClassroomAppContext.Network;
                     if (net?.IsBroadcasting == true)
                     {
                         if (targetCodes == null)
@@ -506,7 +507,7 @@ namespace QASmartClass.Classroom.Views
                     }
                     else
                     {
-                        app?.RaiseLocalCommand(cmd);
+                        ClassroomAppContext.DispatchCommand(cmd);
                     }
                 }
 
@@ -596,8 +597,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = Application.Current as QASmartTouch.App;
-                var folder = app?.FileTransfer?.ReceiveFolder;
+                // → ClassroomAppContext
+                var folder = ClassroomAppContext.FileTransfer?.ReceiveFolder;
                 Directory.CreateDirectory(folder);
 
                 // Count received files
@@ -626,13 +627,12 @@ namespace QASmartClass.Classroom.Views
                 }
                 else
                 {
-                    MessageBox.Show(
+                    ClassroomDialog.Info(
                         $"📂 Thư mục thu bài:\n{folder}\n\n" +
                         $"Chưa có bài nào được nộp.\n\n" +
                         $"💡 HS nộp bài:\n" +
                         $"  • Qua mạng: TCP port {FileTransferService.FILE_PORT}\n" +
-                        $"  • Cùng máy: Nhấn \"Nộp bài\" ở giao diện HS",
-                        "Thu bài", MessageBoxButton.OK, MessageBoxImage.Information);
+                        $"  • Cùng máy: Nhấn \"Nộp bài\" ở giao diện HS", "Thu bài");
                 }
 
                 Log.Information("Collect folder opened: {Folder}, files: {Count}", folder, files.Length);
@@ -652,8 +652,8 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 submissionList.Children.Clear();
-                var app = Application.Current as QASmartTouch.App;
-                var folder = app?.FileTransfer?.ReceiveFolder;
+                // → ClassroomAppContext
+                var folder = ClassroomAppContext.FileTransfer?.ReceiveFolder;
                 Directory.CreateDirectory(folder);
 
                 var files = Directory.GetFiles(folder)
@@ -939,11 +939,11 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 groupCheckList.Children.Clear();
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
-                // Ưu tiên dữ liệu từ GroupPage (App.CurrentGroups)
+                // Ưu tiên dữ liệu từ GroupPage (ClassroomAppContext.CurrentGroups)
                 var state = QASmartClass.Services.BroadcastStateService.Instance;
-                var groups = app.CurrentGroups;
+                var groups = ClassroomAppContext.CurrentGroups;
                 if (groups != null && groups.Count > 0)
                 {
                     foreach (var g in groups)
@@ -1051,8 +1051,8 @@ namespace QASmartClass.Classroom.Views
                 // Sắp xếp Alphabet theo tên tiếng Việt
                 var sortedList = list.OrderBy(s => s.FullName).ToList();
 
-                var app = (QASmartTouch.App)Application.Current;
-                var onlineStudents = app.NetworkService?.GetConnectedStudents();
+                // → ClassroomAppContext
+                var onlineStudents = ClassroomAppContext.Network?.GetConnectedStudents();
 
                 var state = QASmartClass.Services.BroadcastStateService.Instance;
 
@@ -1192,8 +1192,8 @@ namespace QASmartClass.Classroom.Views
 
             if (rbGroup.IsChecked == true)
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var groups = app.CurrentGroups;
+                // → ClassroomAppContext
+                var groups = ClassroomAppContext.CurrentGroups;
 
                 foreach (var cb in groupCheckList.Children.OfType<CheckBox>())
                 {

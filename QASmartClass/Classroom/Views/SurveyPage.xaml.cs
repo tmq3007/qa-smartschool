@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -75,10 +76,10 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 classCheckList.Children.Clear();
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
                 // Lấy danh sách ClassName duy nhất từ DB
-                var students = app.Database?.Students?.ToList();
+                var students = ClassroomAppContext.Db?.Students?.ToList();
                 var classNames = students?.Select(s => s.ClassName)
                     .Where(c => !string.IsNullOrWhiteSpace(c))
                     .Distinct().OrderBy(c => c).ToList();
@@ -138,10 +139,10 @@ namespace QASmartClass.Classroom.Views
         {
             if (rbAllStudents.IsChecked == true)
             {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app.ClassRoster?.ActiveRoster != null)
+                // → ClassroomAppContext
+                if (ClassroomAppContext.ClassRoster?.ActiveRoster != null)
                 {
-                    return app.ClassRoster.ActiveRoster.ClassName;
+                    return ClassroomAppContext.ClassRoster.ActiveRoster.ClassName;
                 }
                 return "ALL";
             }
@@ -243,8 +244,8 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app?.Database != null)
+                // → ClassroomAppContext
+                if (ClassroomAppContext.Db != null)
                 {
                     var newSurvey = new Survey
                     {
@@ -260,8 +261,8 @@ namespace QASmartClass.Classroom.Views
                         CreatedByTeacher = "GV",
                         CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                     };
-                    app.Database.Surveys.Add(newSurvey);
-                    app.Database.SaveChanges();
+                    ClassroomAppContext.Db.Surveys.Add(newSurvey);
+                    ClassroomAppContext.Db.SaveChanges();
                 }
             }
             catch (Exception exDb) { Log.Warning("Save Survey to DB error: {Err}", exDb.Message); }
@@ -291,10 +292,10 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app?.Database == null) return;
+                // → ClassroomAppContext
+                if (ClassroomAppContext.Db == null) return;
 
-                var templates = app.Database.SurveyTemplates.ToList();
+                var templates = ClassroomAppContext.Db.SurveyTemplates.ToList();
                 cboSavedTemplates.Items.Clear();
 
                 var defaultItem = new ComboBoxItem
@@ -372,10 +373,10 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app?.Database == null) return;
+                // → ClassroomAppContext
+                if (ClassroomAppContext.Db == null) return;
 
-                var existing = app.Database.SurveyTemplates.FirstOrDefault(t => t.QuestionText == question);
+                var existing = ClassroomAppContext.Db.SurveyTemplates.FirstOrDefault(t => t.QuestionText == question);
                 if (existing != null)
                 {
                     var result = MessageBox.Show(
@@ -388,7 +389,7 @@ namespace QASmartClass.Classroom.Views
                     {
                         existing.OptionsJson = System.Text.Json.JsonSerializer.Serialize(options);
                         existing.CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                        app.Database.SaveChanges();
+                        ClassroomAppContext.Db.SaveChanges();
                         ShowToast("✅ Cập nhật mẫu câu hỏi thành công!", "#2E7D32");
                         LoadTemplates();
                     }
@@ -408,8 +409,8 @@ namespace QASmartClass.Classroom.Views
                     CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                 };
 
-                app.Database.SurveyTemplates.Add(newTemplate);
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.SurveyTemplates.Add(newTemplate);
+                ClassroomAppContext.Db.SaveChanges();
 
                 ShowToast("✅ Lưu câu hỏi mẫu thành công!", "#2E7D32");
                 LoadTemplates();
@@ -453,8 +454,8 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app?.Database != null)
+                // → ClassroomAppContext
+                if (ClassroomAppContext.Db != null)
                 {
                     var newSurvey = new Survey
                     {
@@ -470,8 +471,8 @@ namespace QASmartClass.Classroom.Views
                         CreatedByTeacher = "GV",
                         CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                     };
-                    app.Database.Surveys.Add(newSurvey);
-                    app.Database.SaveChanges();
+                    ClassroomAppContext.Db.Surveys.Add(newSurvey);
+                    ClassroomAppContext.Db.SaveChanges();
                 }
             }
             catch (Exception exDb) { Log.Warning("Save Survey to DB error: {Err}", exDb.Message); }
@@ -509,7 +510,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 _activeSurveyId = surveyId;
 
                 // Set shared state
@@ -553,10 +554,10 @@ namespace QASmartClass.Classroom.Views
                 ShowToast($"✅ Đã gửi khảo sát: \"{question}\"", "#2E7D32");
 
                 // Send command
-                if (app.NetworkService?.IsBroadcasting == true)
-                    await app.NetworkService.SendCommandAsync(command);
+                if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                    await ClassroomAppContext.Network.SendCommandAsync(command);
                 else
-                    Dispatcher.BeginInvoke(new Action(() => app.RaiseLocalCommand(command)), DispatcherPriority.Background);
+                    Dispatcher.BeginInvoke(new Action(() => ClassroomAppContext.DispatchCommand(command)), DispatcherPriority.Background);
 
                 Log.Information("Survey sent (JSON): {Type} — {Q} — Target: {Target} — {N} options — {T}s", surveyType, question, targetClasses, options.Count, timeSec);
             }
@@ -690,12 +691,12 @@ namespace QASmartClass.Classroom.Views
                     // Send end command
                     try
                     {
-                        var app = (QASmartTouch.App)Application.Current;
+                        // → ClassroomAppContext
                         var endCmd = "CMD|SURVEY_END|0";
-                        if (app.NetworkService?.IsBroadcasting == true)
-                            _ = app.NetworkService.SendCommandAsync(endCmd);
+                        if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                            _ = ClassroomAppContext.Network.SendCommandAsync(endCmd);
                         else
-                            app.RaiseLocalCommand(endCmd);
+                            ClassroomAppContext.DispatchCommand(endCmd);
                         QASmartTouch.App.AssessmentState.ActiveSurveyQuestion = ""; // Clear shared state
                     }
                     catch { }
@@ -717,10 +718,10 @@ namespace QASmartClass.Classroom.Views
 
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
 
                 // Local command bus
-                app.LocalCommandReceived += (s, cmd) =>
+                ((QASmartTouch.App)System.Windows.Application.Current).LocalCommandReceived += (s, cmd) =>
                 {
                     if (cmd.StartsWith("CMD|SURVEY_RESPONSE"))
                     {
@@ -734,9 +735,9 @@ namespace QASmartClass.Classroom.Views
                 };
 
                 // Network
-                if (app.NetworkService != null)
+                if (ClassroomAppContext.Network != null)
                 {
-                    app.NetworkService.MessageReceived += (s, args) =>
+                    ClassroomAppContext.Network.MessageReceived += (s, args) =>
                     {
                         if (!string.IsNullOrEmpty(args.Message))
                         {
@@ -865,10 +866,10 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app?.Database == null) return;
-                app.Database.EventLogs.Add(new EventLog { EventType = type, Actor = actor, Details = details, Timestamp = DateTime.Now });
-                app.Database.SaveChanges();
+                // → ClassroomAppContext
+                if (ClassroomAppContext.Db == null) return;
+                ClassroomAppContext.Db.EventLogs.Add(new EventLog { EventType = type, Actor = actor, Details = details, Timestamp = DateTime.Now });
+                ClassroomAppContext.Db.SaveChanges();
             }
             catch (Exception ex) { Log.Warning("SaveEventLog error: {Err}", ex.Message); }
         }

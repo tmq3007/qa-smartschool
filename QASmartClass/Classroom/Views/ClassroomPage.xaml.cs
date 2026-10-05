@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using QASmartClass.Data;
 using Serilog;
 
@@ -22,7 +23,7 @@ namespace QASmartClass.Classroom.Views
             InitializeComponent();
             
             // Lấy Instance Singleton của ClassroomSessionService từ App
-            _sessionService = ((QASmartTouch.App)Application.Current).ClassroomSession;
+            _sessionService = ClassroomAppContext.Session;
 
             Loaded += (_, _) =>
             {
@@ -45,9 +46,9 @@ namespace QASmartClass.Classroom.Views
                 // Đăng ký sự kiện thay đổi Roster (Chọn lớp) - Hủy đăng ký trước để tránh memory leak
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
-                    app.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
+                    // app → ClassroomAppContext (refactored)
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
                 }
                 catch (Exception ex)
                 {
@@ -71,8 +72,8 @@ namespace QASmartClass.Classroom.Views
                 StopLocalTimer();
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                    // app → ClassroomAppContext (refactored)
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
                 }
                 catch { }
                 try
@@ -135,7 +136,7 @@ namespace QASmartClass.Classroom.Views
                 }
 
                 if (txtSessionName != null) txtSessionName.Text = $" {rosterName}";
-                if (txtSessionIP != null) txtSessionIP.Text = $"IP: {((QASmartTouch.App)Application.Current).NetworkService.ServerIP}";
+                if (txtSessionIP != null) txtSessionIP.Text = $"IP: {ClassroomAppContext.Network.ServerIP}";
                 if (txtSessionCode != null) txtSessionCode.Text = "Mã lớp: --";
                 
                 UpdateStudentCount();
@@ -159,8 +160,8 @@ namespace QASmartClass.Classroom.Views
             var rosterName = RosterHelper.GetActiveRosterName();
             if (txtSessionName != null) txtSessionName.Text = $" {rosterName}";
 
-            var app = (QASmartTouch.App)Application.Current;
-            if (txtSessionIP != null) txtSessionIP.Text = $"IP: {app.NetworkService.ServerIP}";
+            // app → ClassroomAppContext (refactored)
+            if (txtSessionIP != null) txtSessionIP.Text = $"IP: {ClassroomAppContext.Network.ServerIP}";
             if (txtSessionCode != null) txtSessionCode.Text = string.IsNullOrEmpty(_sessionService.ClassCode) ? "Mã lớp: --" : $"Mã lớp: {_sessionService.ClassCode}";
 
             UpdateStudentCount();
@@ -225,8 +226,8 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                string localIP = app.NetworkService?.ServerIP ?? "";
+                // app → ClassroomAppContext (refactored)
+                string localIP = ClassroomAppContext.Network?.ServerIP ?? "";
 
                 if (localIP == "127.0.0.1" || string.IsNullOrEmpty(localIP))
                 {
@@ -260,7 +261,7 @@ namespace QASmartClass.Classroom.Views
                 if (!_sessionService.IsSessionActive)
                 {
                     var rosterName = RosterHelper.GetActiveRosterName();
-                    string teacherName = ((QASmartTouch.App)Application.Current).UserRoleService.DisplayName;
+                    string teacherName = ClassroomAppContext.Role.DisplayName;
                     if (string.IsNullOrEmpty(teacherName)) teacherName = "Teacher";
 
                     await _sessionService.StartSessionAsync(rosterName, teacherName);
@@ -270,8 +271,7 @@ namespace QASmartClass.Classroom.Views
                         shell.UpdateSessionInfo(rosterName, _sessionService.ConnectedStudents.Count(s => s.IsOnline));
 
                     Log.Information("Classroom session started successfully.");
-                    MessageBox.Show($"✅ Lớp học đã bắt đầu!\n\n👥 {_sessionService.ConnectedStudents.Count} HS trong danh sách lớp.\n📡 Đang khám phá các thiết bị kết nối dưới mạng LAN...",
-                        "Bắt đầu lớp học", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"✅ Lớp học đã bắt đầu!\n\n👥 {_sessionService.ConnectedStudents.Count} HS trong danh sách lớp.\n📡 Đang khám phá các thiết bị kết nối dưới mạng LAN...", "Bắt đầu lớp học");
                 }
                 else
                 {
@@ -283,7 +283,7 @@ namespace QASmartClass.Classroom.Views
                         if (Window.GetWindow(this) is ClassroomShell shell)
                             shell.UpdateSessionInfo("Chưa chọn lớp", 0);
 
-                        MessageBox.Show("⏹️ Lớp học đã kết thúc. Đã đóng kết nối với các thiết bị học sinh.", "Kết thúc lớp học", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ClassroomDialog.Info("⏹️ Lớp học đã kết thúc. Đã đóng kết nối với các thiết bị học sinh.", "Kết thúc lớp học");
                     }
                 }
 
@@ -292,7 +292,7 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex)
             {
                 Log.Error("Lỗi chuyển đổi trạng thái phiên học: {Err}", ex.Message);
-                MessageBox.Show($"Không thể thực hiện yêu cầu: {ex.Message}", "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Không thể thực hiện yêu cầu: {ex.Message}", "Lỗi hệ thống");
             }
             finally
             {
@@ -310,18 +310,18 @@ namespace QASmartClass.Classroom.Views
         {
             if (!_sessionService.IsSessionActive)
             {
-                MessageBox.Show("Vui lòng bắt đầu lớp học trước khi thực hiện khóa màn hình!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng bắt đầu lớp học trước khi thực hiện khóa màn hình!", "Cảnh báo");
                 return;
             }
 
             try
             {
                 await _sessionService.LockAllAsync();
-                MessageBox.Show($"🔒 Đã phát lệnh khóa màn hình đến tất cả học sinh trực tuyến!", "Khóa màn hình", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn($"🔒 Đã phát lệnh khóa màn hình đến tất cả học sinh trực tuyến!", "Khóa màn hình");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Không thể khóa màn hình: {ex.Message}", "Lỗi kết nối", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Không thể khóa màn hình: {ex.Message}", "Lỗi kết nối");
             }
         }
 
@@ -332,11 +332,11 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 await _sessionService.UnlockAllAsync();
-                MessageBox.Show("🔓 Đã phát lệnh mở khóa màn hình đến tất cả học sinh!", "Mở khóa", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info("🔓 Đã phát lệnh mở khóa màn hình đến tất cả học sinh!", "Mở khóa");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Không thể mở khóa màn hình: {ex.Message}", "Lỗi kết nối", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Không thể mở khóa màn hình: {ex.Message}", "Lỗi kết nối");
             }
         }
 
@@ -362,7 +362,7 @@ namespace QASmartClass.Classroom.Views
         {
             if (!_sessionService.IsSessionActive)
             {
-                MessageBox.Show("Vui lòng bắt đầu lớp học trước khi thực hiện lệnh!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng bắt đầu lớp học trước khi thực hiện lệnh!", "Cảnh báo");
                 return;
             }
 
@@ -371,18 +371,18 @@ namespace QASmartClass.Classroom.Views
                 if (_sessionService.IsSilenceActive)
                 {
                     await _sessionService.ClearSilenceAllAsync();
-                    MessageBox.Show("🔊 Đã gỡ bỏ trạng thái Im lặng thành công!", "Mở im lặng", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info("🔊 Đã gỡ bỏ trạng thái Im lặng thành công!", "Mở im lặng");
                 }
                 else
                 {
                     await _sessionService.SilenceAllAsync();
-                    MessageBox.Show("🔇 Đã kích hoạt chế độ Im lặng trên toàn bộ các máy trạm học sinh thành công!", "Im lặng", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info("🔇 Đã kích hoạt chế độ Im lặng trên toàn bộ các máy trạm học sinh thành công!", "Im lặng");
                 }
                 UpdateClassroomUI();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi truyền tin: {ex.Message}", "Lỗi kết nối mạng", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi truyền tin: {ex.Message}", "Lỗi kết nối mạng");
                 Log.Error(ex, "Lỗi khi truyền lệnh im lặng đến máy học sinh");
             }
         }
@@ -408,10 +408,10 @@ namespace QASmartClass.Classroom.Views
                 {
                     student.IsHandRaised = false;
 
-                    var app = (QASmartTouch.App)Application.Current;
-                    if (app.NetworkService != null && !string.IsNullOrEmpty(student.StudentCode))
+                    // app → ClassroomAppContext (refactored)
+                    if (ClassroomAppContext.Network != null && !string.IsNullOrEmpty(student.StudentCode))
                     {
-                        _ = app.NetworkService.SendToStudentAsync(student.StudentCode, "CMD|HAND_LOWER");
+                        _ = ClassroomAppContext.Network.SendToStudentAsync(student.StudentCode, "CMD|HAND_LOWER");
                         Log.Information("Teacher manually lowered hand for student: {Code}", student.StudentCode);
                     }
                 }
@@ -428,10 +428,10 @@ namespace QASmartClass.Classroom.Views
                 }
             }
 
-            var app = (QASmartTouch.App)Application.Current;
-            if (app.NetworkService != null)
+            // app → ClassroomAppContext (refactored)
+            if (ClassroomAppContext.Network != null)
             {
-                _ = app.NetworkService.SendCommandAsync("CMD|HAND_LOWER");
+                _ = ClassroomAppContext.Network.SendCommandAsync("CMD|HAND_LOWER");
                 Log.Information("Teacher manually lowered hands for all students");
             }
         }
@@ -464,7 +464,7 @@ namespace QASmartClass.Classroom.Views
         {
             if (!_sessionService.IsSessionActive)
             {
-                MessageBox.Show("Vui lòng bắt đầu lớp học trước khi thực hiện chẩn đoán!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng bắt đầu lớp học trước khi thực hiện chẩn đoán!", "Cảnh báo");
                 return;
             }
 
@@ -474,14 +474,14 @@ namespace QASmartClass.Classroom.Views
                 {
                     if (!student.IsOnline)
                     {
-                        MessageBox.Show("Học sinh này đang offline. Không thể chẩn đoán từ xa!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn("Học sinh này đang offline. Không thể chẩn đoán từ xa!", "Cảnh báo");
                         return;
                     }
 
-                    var app = (QASmartTouch.App)Application.Current;
-                    if (app.NetworkService != null && !string.IsNullOrEmpty(student.StudentCode))
+                    // app → ClassroomAppContext (refactored)
+                    if (ClassroomAppContext.Network != null && !string.IsNullOrEmpty(student.StudentCode))
                     {
-                        _ = app.NetworkService.SendCheckIntegrityAsync(student.StudentCode);
+                        _ = ClassroomAppContext.Network.SendCheckIntegrityAsync(student.StudentCode);
                         Log.Information("Teacher requested integrity check for student: {Code}", student.StudentCode);
                         MessageBox.Show($"📡 Đang gửi yêu cầu chẩn đoán tới trạm {student.Name} ({student.PCName})...", "Chẩn đoán từ xa", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
@@ -505,7 +505,7 @@ namespace QASmartClass.Classroom.Views
         {
             if (!_sessionService.IsSessionActive)
             {
-                MessageBox.Show("Vui lòng bắt đầu lớp học trước khi thực hiện khôi phục!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng bắt đầu lớp học trước khi thực hiện khôi phục!", "Cảnh báo");
                 return;
             }
 
@@ -515,7 +515,7 @@ namespace QASmartClass.Classroom.Views
                 {
                     if (!student.IsOnline)
                     {
-                        MessageBox.Show("Học sinh này đang offline. Không thể khôi phục từ xa!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn("Học sinh này đang offline. Không thể khôi phục từ xa!", "Cảnh báo");
                         return;
                     }
 
@@ -528,8 +528,8 @@ namespace QASmartClass.Classroom.Views
 
                         if (dialog.Password == expectedPassword)
                         {
-                            var app = (QASmartTouch.App)Application.Current;
-                            if (app.NetworkService != null && !string.IsNullOrEmpty(student.StudentCode))
+                            // app → ClassroomAppContext (refactored)
+                            if (ClassroomAppContext.Network != null && !string.IsNullOrEmpty(student.StudentCode))
                             {
                                 string timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
                                 string salt = QASmartClass.Services.ClassControlService.Instance.SessionSalt;
@@ -537,14 +537,14 @@ namespace QASmartClass.Classroom.Views
                                 string signature = ComputeHmacSha256(payload, dialog.Password);
                                 string secureCommand = $"CMD|RESTORE_DEFAULTS|{timestamp}|{signature}";
 
-                                await app.NetworkService.SendToStudentAsync(student.StudentCode, secureCommand);
+                                await ClassroomAppContext.Network.SendToStudentAsync(student.StudentCode, secureCommand);
                                 Log.Information("Teacher triggered secure restore default config for student: {Code}", student.StudentCode);
                                 MessageBox.Show($"Đã phát lệnh khôi phục cài đặt gốc an toàn tới trạm {student.Name} ({student.PCName}). Trạm học sinh số tự động xác thᱱc chữ ký và khởi động lại.", "Khôi phục cài đặt gốc", MessageBoxButton.OK, MessageBoxImage.Information);
                             }
                         }
                         else
                         {
-                            MessageBox.Show("Mật khẩu Giáo viên không chính xác. Yêu c���u khôi phục bị từ chối!", "Xác thᱱc thất bại", MessageBoxButton.OK, MessageBoxImage.Error);
+                            ClassroomDialog.Error("Mật khẩu Giáo viên không chính xác. Yêu c���u khôi phục bị từ chối!", "Xác thᱱc thất bại");
                         }
                     }
                 }

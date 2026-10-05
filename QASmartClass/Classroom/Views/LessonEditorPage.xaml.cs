@@ -8,6 +8,8 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Services;
+using QASmartClass.Classroom.Helpers;
 using QASmartTouch.Services;
 using Serilog;
 
@@ -105,8 +107,8 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    var net = app.NetworkService;
+                    // app → ClassroomAppContext (refactored)
+                    var net = ClassroomAppContext.Network;
                     QASmartTouch.App.FocusState.ActiveFocusSort = currentSort;
                     QASmartTouch.App.FocusState.ActiveFocusType = contentType;
 
@@ -144,7 +146,7 @@ namespace QASmartClass.Classroom.Views
                         }
                     }
                     else
-                        app.RaiseLocalCommand($"CMD|LESSON_FOCUS|{currentSort}|{contentType}");
+                        ClassroomAppContext.DispatchCommand($"CMD|LESSON_FOCUS|{currentSort}|{contentType}");
 
                     // ═══ GV SIDE: Zoom block focus + mờ các block khác (từ AppSettings) ═══
                     var zoomScale = AppSettings.FocusZoomScale;
@@ -205,17 +207,17 @@ namespace QASmartClass.Classroom.Views
                 try
                 {
                     // Gửi lệnh UNFOCUS cho HS
-                    var app = (QASmartTouch.App)Application.Current;
-                    var net = app.NetworkService;
+                    // app → ClassroomAppContext (refactored)
+                    var net = ClassroomAppContext.Network;
                     var cmd = "CMD|LESSON_UNFOCUS";
-                    QASmartTouch.App.LessonState.LastTeacherCommand = cmd;
-                    QASmartTouch.App.LessonState.LastCommandTime = DateTime.Now;
+                    ClassroomAppContext.LessonState.LastTeacherCommand = cmd;
+                    ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
                     QASmartTouch.App.FocusState.ActiveFocusSort = -1;
                     QASmartTouch.App.FocusState.ActiveFocusType = string.Empty;
                     if (net?.IsBroadcasting == true)
                         _ = net.SendCommandAsync(cmd);
                     else
-                        app.RaiseLocalCommand(cmd);
+                        ClassroomAppContext.DispatchCommand(cmd);
 
                     // ═══ Khôi phục tất cả block GV ═══
                     ResetAllBlocksFocus();
@@ -253,16 +255,14 @@ namespace QASmartClass.Classroom.Views
 
                     if (targetWin == null)
                     {
-                        MessageBox.Show("Chưa mở SmartScreen. Hãy mở SmartScreen trước.",
-                            "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ClassroomDialog.Info("Chưa mở SmartScreen. Hãy mở SmartScreen trước.", "Bảng Trắng");
                         return;
                     }
 
                     var canvas = targetWin.FindName("MainInteractiveBoard") as Canvas;
                     if (canvas == null)
                     {
-                        MessageBox.Show("Không tìm thấy canvas SmartScreen.",
-                            "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn("Không tìm thấy canvas SmartScreen.", "Bảng Trắng");
                         return;
                     }
 
@@ -394,7 +394,7 @@ namespace QASmartClass.Classroom.Views
                 catch (Exception ex)
                 {
                     Log.Warning("Board capture error: {Err}", ex.Message);
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn($"Lỗi: {ex.Message}", "Bảng Trắng");
                 }
             };
             actionsPanel.Children.Add(boardBtn);
@@ -410,8 +410,7 @@ namespace QASmartClass.Classroom.Views
             };
             screenBtn.Click += (s, e2) =>
             {
-                MessageBox.Show($"📺 Đã phát nội dung [{label}] lên SmartScreen!\n\nHS sẽ thấy nội dung này trên màn hình lớn.",
-                    "Trình chiếu", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info($"📺 Đã phát nội dung [{label}] lên SmartScreen!\n\nHS sẽ thấy nội dung này trên màn hình lớn.", "Trình chiếu");
                 Log.Information("Content broadcast to SmartScreen: Block {Sort} ({Type})", currentSort, contentType);
             };
             actionsPanel.Children.Add(screenBtn);
@@ -512,16 +511,16 @@ namespace QASmartClass.Classroom.Views
                 // Cập nhật DB
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
+                    // app → ClassroomAppContext (refactored)
                     if (_currentLessonId > 0)
                     {
-                        var dbContent = app.Database.LessonContents
+                        var dbContent = ClassroomAppContext.Db.LessonContents
                             .Where(c => c.LessonId == _currentLessonId && c.SortOrder == (currentSort - 1))
                             .FirstOrDefault();
                         if (dbContent != null)
                         {
                             dbContent.Data = currentData;
-                            app.Database.SaveChanges();
+                            ClassroomAppContext.Db.SaveChanges();
                             Log.Information("Block #{Sort} content updated in DB", currentSort);
                         }
                     }
@@ -1270,7 +1269,7 @@ namespace QASmartClass.Classroom.Views
                 catch (Exception ex)
                 {
                     Log.Warning("PDF snip error: {Err}", ex.Message);
-                    MessageBox.Show($"Không thể chụp vùng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn($"Không thể chụp vùng: {ex.Message}", "Lỗi");
                 }
             };
 
@@ -2781,11 +2780,11 @@ namespace QASmartClass.Classroom.Views
                 }
                 if (count > 0)
                 {
-                    MessageBox.Show($"Đã import {count} câu hỏi vào quiz!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info($"Đã import {count} câu hỏi vào quiz!", "Thành công");
                     wnd.Close();
                 }
                 else
-                    MessageBox.Show("Vui lòng chọn ít nhất 1 câu hỏi!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng chọn ít nhất 1 câu hỏi!", "Thông báo");
             };
             btnRow.Children.Add(btnImport);
             stack.Children.Add(btnRow);
@@ -2962,7 +2961,7 @@ namespace QASmartClass.Classroom.Views
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Lỗi import: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ClassroomDialog.Error($"Lỗi import: {ex.Message}", "Lỗi");
                     }
                 }
             }
@@ -3027,7 +3026,7 @@ namespace QASmartClass.Classroom.Views
                     Grade = (cmbGrade.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? ""
                 });
                 db.SaveChanges();
-                MessageBox.Show("✅ Đã lưu câu hỏi vào ngân hàng!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info("✅ Đã lưu câu hỏi vào ngân hàng!", "Thành công");
                 wnd.Close();
             };
             sp.Children.Add(btnSave);
@@ -3096,7 +3095,7 @@ namespace QASmartClass.Classroom.Views
                 }
                 else
                 {
-                    MessageBox.Show("Vui lòng nhập URL hợp lệ!", "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng nhập URL hợp lệ!", "Thiếu thông tin");
                 }
             };
             sp.Children.Add(btnAdd);
@@ -3188,8 +3187,7 @@ namespace QASmartClass.Classroom.Views
         {
             if (_blockCount == 0)
             {
-                MessageBox.Show("Bài giảng chưa có nội dung để xem trước.\nHãy thêm block hoặc nhấn \"Bắt đầu soạn bài\".",
-                    "Chưa có nội dung", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info("Bài giảng chưa có nội dung để xem trước.\nHãy thêm block hoặc nhấn \"Bắt đầu soạn bài\".", "Chưa có nội dung");
                 return;
             }
 
@@ -3747,7 +3745,7 @@ namespace QASmartClass.Classroom.Views
                 var url = urlBox.Text.Trim();
                 if (string.IsNullOrEmpty(url) || url == "https://phet.colorado.edu/sims/html/")
                 {
-                    MessageBox.Show("Vui lòng nhập link mô phỏng!", "Mô phỏng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng nhập link mô phỏng!", "Mô phỏng");
                     return;
                 }
                 try
@@ -3755,15 +3753,15 @@ namespace QASmartClass.Classroom.Views
                     blockBorder.Tag = $"Simulation|{url}";
                     if (_currentLessonId > 0)
                     {
-                        var app = (QASmartTouch.App)Application.Current;
-                        app.Database.LessonContents.Add(new Data.LessonContent
+                        // app → ClassroomAppContext (refactored)
+                        ClassroomAppContext.Db.LessonContents.Add(new Data.LessonContent
                         {
                             LessonId = _currentLessonId,
                             ContentType = "Simulation",
                             Data = url,
                             SortOrder = currentSort - 1
                         });
-                        app.Database.SaveChanges();
+                        ClassroomAppContext.Db.SaveChanges();
                     }
                     confirmBtn.Content = "✅ Đã lưu";
                     confirmBtn.IsEnabled = false;
@@ -3772,7 +3770,7 @@ namespace QASmartClass.Classroom.Views
                 catch (Exception ex)
                 {
                     Log.Warning("Simulation save error: {Err}", ex.Message);
-                    MessageBox.Show($"Lỗi lưu: {ex.Message}", "Mô phỏng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn($"Lỗi lưu: {ex.Message}", "Mô phỏng");
                 }
             };
             actionsBar.Children.Add(confirmBtn);
@@ -3789,14 +3787,14 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    var net = app.NetworkService;
+                    // app → ClassroomAppContext (refactored)
+                    var net = ClassroomAppContext.Network;
                     QASmartTouch.App.FocusState.ActiveFocusSort = currentSort;
                     QASmartTouch.App.FocusState.ActiveFocusType = "Simulation";
                     if (net?.IsBroadcasting == true)
                         await net.FocusContentAsync(currentSort, "Simulation");
                     else
-                        app.RaiseLocalCommand($"CMD|LESSON_FOCUS|{currentSort}|Simulation");
+                        ClassroomAppContext.DispatchCommand($"CMD|LESSON_FOCUS|{currentSort}|Simulation");
                     focusBtn.Content = "✅ Đang Focus";
                     focusBtn.IsEnabled = false;
                 }
@@ -3836,7 +3834,7 @@ namespace QASmartClass.Classroom.Views
                     var url = urlBox.Text.Trim();
                     if (string.IsNullOrEmpty(url) || url == "https://phet.colorado.edu/sims/html/")
                     {
-                        MessageBox.Show("Vui lòng nhập link mô phỏng trước!", "Mô phỏng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn("Vui lòng nhập link mô phỏng trước!", "Mô phỏng");
                         return;
                     }
                     Window? targetWin = null;
@@ -3846,9 +3844,9 @@ namespace QASmartClass.Classroom.Views
                         if (typeName.Contains("MainDashboard") || typeName.Contains("Form2"))
                         { targetWin = win; break; }
                     }
-                    if (targetWin == null) { MessageBox.Show("Chưa mở SmartScreen.", "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Information); return; }
+                    if (targetWin == null) { ClassroomDialog.Info("Chưa mở SmartScreen.", "Bảng Trắng"); return; }
                     var canvas = targetWin.FindName("MainInteractiveBoard") as Canvas;
-                    if (canvas == null) { MessageBox.Show("Không tìm thấy canvas SmartScreen.", "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+                    if (canvas == null) { ClassroomDialog.Warn("Không tìm thấy canvas SmartScreen.", "Bảng Trắng"); return; }
 
                     var simTitle = string.IsNullOrWhiteSpace(titleBox.Text) ? "PhET Simulation" : titleBox.Text.Trim();
                     double viewerW = Math.Min(canvas.ActualWidth * 0.85, 1000);
@@ -3937,14 +3935,14 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    var net = app.NetworkService;
+                    // app → ClassroomAppContext (refactored)
+                    var net = ClassroomAppContext.Network;
                     QASmartTouch.App.FocusState.ActiveFocusSort = currentSort;
                     QASmartTouch.App.FocusState.ActiveFocusType = "PDF";
                     if (net?.IsBroadcasting == true)
                         await net.FocusContentAsync(currentSort, "PDF");
                     else
-                        app.RaiseLocalCommand($"CMD|LESSON_FOCUS|{currentSort}|PDF");
+                        ClassroomAppContext.DispatchCommand($"CMD|LESSON_FOCUS|{currentSort}|PDF");
                     focusBtn.Content = "✅ Đang Focus";
                     focusBtn.IsEnabled = false;
                 }
@@ -3991,15 +3989,13 @@ namespace QASmartClass.Classroom.Views
                     }
                     if (targetWin == null)
                     {
-                        MessageBox.Show("Chưa mở SmartScreen. Hãy mở SmartScreen trước.",
-                            "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ClassroomDialog.Info("Chưa mở SmartScreen. Hãy mở SmartScreen trước.", "Bảng Trắng");
                         return;
                     }
                     var canvas = targetWin.FindName("MainInteractiveBoard") as Canvas;
                     if (canvas == null)
                     {
-                        MessageBox.Show("Không tìm thấy canvas SmartScreen.",
-                            "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ClassroomDialog.Warn("Không tìm thấy canvas SmartScreen.", "Bảng Trắng");
                         return;
                     }
 
@@ -4024,7 +4020,7 @@ namespace QASmartClass.Classroom.Views
                 catch (Exception ex)
                 {
                     Log.Warning("PDF board error: {Err}", ex.Message);
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn($"Lỗi: {ex.Message}", "Bảng Trắng");
                 }
             };
             actionsPanel.Children.Add(boardBtn);
@@ -4104,15 +4100,15 @@ namespace QASmartClass.Classroom.Views
                 {
                     if (_currentLessonId > 0)
                     {
-                        var app = (QASmartTouch.App)Application.Current;
-                        app.Database.LessonContents.Add(new Data.LessonContent
+                        // app → ClassroomAppContext (refactored)
+                        ClassroomAppContext.Db.LessonContents.Add(new Data.LessonContent
                         {
                             LessonId = _currentLessonId,
                             ContentType = "PDF",
                             Data = filePath,
                             SortOrder = currentSort - 1
                         });
-                        app.Database.SaveChanges();
+                        ClassroomAppContext.Db.SaveChanges();
                         Log.Information("PDF block saved to DB: {File}", fileName);
                     }
                 }
@@ -4163,7 +4159,7 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex)
             {
                 Log.Warning("DownloadWordTemplate error: {Err}", ex.Message);
-                MessageBox.Show($"Lỗi tạo file Word: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn($"Lỗi tạo file Word: {ex.Message}", "Lỗi");
             }
         }
 
@@ -4187,10 +4183,9 @@ namespace QASmartClass.Classroom.Views
 
                 if (blocks.Count == 0)
                 {
-                    MessageBox.Show("Không tìm thấy nội dung bài giảng trong file Word.\n\n" +
+                    ClassroomDialog.Warn("Không tìm thấy nội dung bài giảng trong file Word.\n\n" +
                         "Hãy đảm bảo file có cấu trúc [SECTION MARKER] đúng format.\n" +
-                        "Dùng nút \"📄 Tải mẫu Word\" để lấy file mẫu.",
-                        "Không có nội dung", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        "Dùng nút \"📄 Tải mẫu Word\" để lấy file mẫu.", "Không có nội dung");
                     return;
                 }
 
@@ -4229,19 +4224,17 @@ namespace QASmartClass.Classroom.Views
                     RenderContentBlock(block.ContentType, block.Data);
                 }
 
-                MessageBox.Show(
+                ClassroomDialog.Info(
                     $"✅ Import thành công!\n\n" +
                     $"Đã thêm {blocks.Count} block nội dung vào bài giảng.\n" +
-                    "Nhấn \"💾 Lưu bài giảng\" để lưu vào hệ thống.",
-                    "Import Word thành công",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Nhấn \"💾 Lưu bài giảng\" để lưu vào hệ thống.", "Import Word thành công");
 
                 Log.Information("Word imported: {File} → {Count} blocks", dlg.FileName, blocks.Count);
             }
             catch (Exception ex)
             {
                 Log.Warning("ImportWordFile error: {Err}", ex.Message);
-                MessageBox.Show($"Lỗi import file Word: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn($"Lỗi import file Word: {ex.Message}", "Lỗi");
             }
         }
 
@@ -4349,20 +4342,20 @@ namespace QASmartClass.Classroom.Views
             {
                 var q = questionBox.Text.Trim();
                 if (string.IsNullOrEmpty(q) || q == "Nhập câu hỏi tại đây...")
-                { MessageBox.Show("Vui lòng nhập câu hỏi!", "Quiz", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+                { ClassroomDialog.Warn("Vui lòng nhập câu hỏi!", "Quiz"); return; }
                 try
                 {
                     var data = BuildQuizData();
                     blockBorder.Tag = $"Quiz|{data}";
                     if (_currentLessonId > 0)
                     {
-                        var app = (QASmartTouch.App)Application.Current;
-                        app.Database.LessonContents.Add(new Data.LessonContent
+                        // app → ClassroomAppContext (refactored)
+                        ClassroomAppContext.Db.LessonContents.Add(new Data.LessonContent
                         {
                             LessonId = _currentLessonId, ContentType = "Quiz",
                             Data = data, SortOrder = currentSort - 1
                         });
-                        app.Database.SaveChanges();
+                        ClassroomAppContext.Db.SaveChanges();
                     }
                     confirmBtn.Content = "✅ Đã lưu"; confirmBtn.IsEnabled = false;
                     Log.Information("Quiz confirmed: {Q}", q);
@@ -4383,11 +4376,11 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    var net = app.NetworkService;
+                    // app → ClassroomAppContext (refactored)
+                    var net = ClassroomAppContext.Network;
                     QASmartTouch.App.FocusState.ActiveFocusSort = currentSort; QASmartTouch.App.FocusState.ActiveFocusType = "Quiz";
                     if (net?.IsBroadcasting == true) await net.FocusContentAsync(currentSort, "Quiz");
-                    else app.RaiseLocalCommand($"CMD|LESSON_FOCUS|{currentSort}|Quiz");
+                    else ClassroomAppContext.DispatchCommand($"CMD|LESSON_FOCUS|{currentSort}|Quiz");
                     focusBtn.Content = "✅ Đang Focus"; focusBtn.IsEnabled = false;
                 }
                 catch (Exception ex) { Log.Warning("Focus error: {Err}", ex.Message); }
@@ -4420,16 +4413,16 @@ namespace QASmartClass.Classroom.Views
                 {
                     var q = questionBox.Text.Trim();
                     if (string.IsNullOrEmpty(q) || q == "Nhập câu hỏi tại đây...")
-                    { MessageBox.Show("Vui lòng nhập câu hỏi trước!", "Quiz", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+                    { ClassroomDialog.Warn("Vui lòng nhập câu hỏi trước!", "Quiz"); return; }
                     Window? targetWin = null;
                     foreach (Window win in Application.Current.Windows)
                     {
                         var tn = win.GetType().Name;
                         if (tn.Contains("MainDashboard") || tn.Contains("Form2")) { targetWin = win; break; }
                     }
-                    if (targetWin == null) { MessageBox.Show("Chưa mở SmartScreen.", "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Information); return; }
+                    if (targetWin == null) { ClassroomDialog.Info("Chưa mở SmartScreen.", "Bảng Trắng"); return; }
                     var canvas = targetWin.FindName("MainInteractiveBoard") as Canvas;
-                    if (canvas == null) { MessageBox.Show("Không tìm thấy canvas.", "Bảng Trắng", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+                    if (canvas == null) { ClassroomDialog.Warn("Không tìm thấy canvas.", "Bảng Trắng"); return; }
 
                     var data = BuildQuizData();
                     double cardW = Math.Min(canvas.ActualWidth * 0.6, 700);
@@ -4592,408 +4585,9 @@ namespace QASmartClass.Classroom.Views
             Log.Information("New editable text block added, total: {Count}", _blockCount);
         }
 
-        /// <summary>
-        /// Táº¡o mini toolbar cho formatting text
-        /// Gồm: B I U | H1 H2 | Font Size [▼ 14 ▲] | Colors | Highlight | Clear
-        /// </summary>
-        private static StackPanel CreateMiniToolbar()
-        {
-            var toolbar = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 6) };
-
-            // ── Group 1: Bold / Italic / Underline ──
-            var biu = new (string content, string tag, string tooltip)[]
-            {
-                ("B", "Bold", "In đậm (Ctrl+B)"),
-                ("I", "Italic", "In nghiêng (Ctrl+I)"),
-                ("U", "Underline", "Gạch chân (Ctrl+U)"),
-            };
-            foreach (var (content, tag, tooltip) in biu)
-            {
-                toolbar.Children.Add(MakeToolbarBtn(content, tag, tooltip,
-                    tag == "Bold" ? FontWeights.Bold : FontWeights.Normal,
-                    tag == "Italic" ? FontStyles.Italic : FontStyles.Normal));
-            }
-
-            // Separator
-            toolbar.Children.Add(MakeSeparator());
-
-            // ── Group 2: H1 / H2 ──
-            toolbar.Children.Add(MakeToolbarBtn("H1", "H1", "Tiêu đề lớn (20px)"));
-            toolbar.Children.Add(MakeToolbarBtn("H2", "H2", "Tiêu đề vừa (16px)"));
-
-            // Separator
-            toolbar.Children.Add(MakeSeparator());
-
-            // ── Group 3: Font Size Spinbox [▼ 14 ▲] ──
-            var fontSizePanel = new Border
-            {
-                BorderBrush = new SolidColorBrush(Color.FromRgb(200, 200, 200)),
-                BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4),
-                Margin = new Thickness(0, 0, 3, 0), VerticalAlignment = VerticalAlignment.Center,
-                ToolTip = "Cỡ chữ — Nhập số hoặc nhấn ▲▼ để điều chỉnh"
-            };
-            var fsInner = new StackPanel { Orientation = Orientation.Horizontal };
-
-            // Down button
-            var btnDown = new Button
-            {
-                Content = "â–¼", Tag = "FontDown", FontSize = 8, Width = 20, Height = 26,
-                Background = new SolidColorBrush(Color.FromRgb(245, 245, 245)),
-                BorderThickness = new Thickness(0, 0, 1, 0),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(220, 220, 220)),
-                Cursor = Cursors.Hand, Padding = new Thickness(0),
-                ToolTip = "Giảm cỡ chữ (-2)"
-            };
-
-            // Size display/input
-            var txtFontSize = new TextBox
-            {
-                Text = "14", Width = 32, Height = 26, FontSize = 11,
-                TextAlignment = TextAlignment.Center, BorderThickness = new Thickness(0),
-                Background = Brushes.White, VerticalContentAlignment = VerticalAlignment.Center,
-                Tag = "FontSizeBox", ToolTip = "Nhập cỡ chữ (8-72)"
-            };
-
-            // Up button
-            var btnUp = new Button
-            {
-                Content = "â–²", Tag = "FontUp", FontSize = 8, Width = 20, Height = 26,
-                Background = new SolidColorBrush(Color.FromRgb(245, 245, 245)),
-                BorderThickness = new Thickness(1, 0, 0, 0),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(220, 220, 220)),
-                Cursor = Cursors.Hand, Padding = new Thickness(0),
-                ToolTip = "Tăng cỡ chữ (+2)"
-            };
-
-            fsInner.Children.Add(btnDown);
-            fsInner.Children.Add(txtFontSize);
-            fsInner.Children.Add(btnUp);
-            fontSizePanel.Child = fsInner;
-            toolbar.Children.Add(fontSizePanel);
-
-            // Separator
-            toolbar.Children.Add(MakeSeparator());
-
-            // ── Group 4: Colors — Real WPF color swatches ──
-            var colorDefs = new (string tag, string tooltip, byte r, byte g, byte b)[]
-            {
-                ("Blue",   "Chữ xanh dương",    25, 118, 210),
-                ("Red",    "Chữ đỏ",           198,  40,  40),
-                ("Green",  "Chữ xanh lá",       46, 125,  50),
-                ("Orange", "Chữ cam",           230, 126,  34),
-                ("Purple", "Chữ tím",           142,  68, 173),
-                ("Black",  "Chữ đen (mặc định)", 33,  33,  33),
-            };
-            foreach (var (tag, tooltip, r, g, b) in colorDefs)
-                toolbar.Children.Add(MakeColorBtn(tag, tooltip, r, g, b));
-
-            // Separator
-            toolbar.Children.Add(MakeSeparator());
-
-            // ── Group 5: Highlight (yellow swatch) + Clear Format ──
-            toolbar.Children.Add(MakeHighlightBtn());
-            toolbar.Children.Add(MakeClearFormatBtn());
-
-            return toolbar;
-        }
-
-        /// <summary>Helper: Tạo 1 nút toolbar text</summary>
-        private static Button MakeToolbarBtn(string content, string tag, string tooltip,
-            FontWeight? fontWeight = null, FontStyle? fontStyle = null)
-        {
-            return new Button
-            {
-                Content = content, Tag = tag, ToolTip = tooltip,
-                Width = 30, Height = 26, FontSize = content.Length <= 2 ? 12 : 11,
-                FontWeight = fontWeight ?? FontWeights.Normal,
-                FontStyle = fontStyle ?? FontStyles.Normal,
-                Background = new SolidColorBrush(Color.FromRgb(245, 245, 245)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
-                BorderThickness = new Thickness(1),
-                Margin = new Thickness(0, 0, 3, 0),
-                Cursor = Cursors.Hand, Padding = new Thickness(0)
-            };
-        }
-
-        /// <summary>Helper: Tạo nút màu chữ với ô tròn màu thực</summary>
-        private static Button MakeColorBtn(string tag, string tooltip, byte r, byte g, byte b)
-        {
-            var colorCircle = new System.Windows.Shapes.Ellipse
-            {
-                Width = 14, Height = 14,
-                Fill = new SolidColorBrush(Color.FromRgb(r, g, b)),
-                Stroke = new SolidColorBrush(Color.FromRgb(180, 180, 180)),
-                StrokeThickness = 1
-            };
-
-            return new Button
-            {
-                Content = colorCircle, Tag = tag, ToolTip = tooltip,
-                Width = 26, Height = 26,
-                Background = new SolidColorBrush(Color.FromRgb(250, 250, 250)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
-                BorderThickness = new Thickness(1),
-                Margin = new Thickness(0, 0, 2, 0),
-                Cursor = Cursors.Hand, Padding = new Thickness(0)
-            };
-        }
-
-        /// <summary>Helper: Nút Highlight nền vàng</summary>
-        private static Button MakeHighlightBtn()
-        {
-            var stack = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center };
-            var swatch = new Border
-            {
-                Width = 16, Height = 10,
-                Background = new SolidColorBrush(Color.FromRgb(255, 245, 157)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(200, 190, 100)),
-                BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(2),
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            var txt = new TextBlock
-            {
-                Text = "A", FontSize = 10, FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(100, 100, 0)),
-                VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(2, 0, 0, 0)
-            };
-            stack.Children.Add(swatch);
-            stack.Children.Add(txt);
-
-            return new Button
-            {
-                Content = stack, Tag = "Highlight", ToolTip = "Đánh dấu nền vàng",
-                Width = 38, Height = 26,
-                Background = new SolidColorBrush(Color.FromRgb(250, 250, 250)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
-                BorderThickness = new Thickness(1),
-                Margin = new Thickness(0, 0, 2, 0),
-                Cursor = Cursors.Hand, Padding = new Thickness(2, 0, 2, 0)
-            };
-        }
-
-        /// <summary>Helper: Nút Clear Format</summary>
-        private static Button MakeClearFormatBtn()
-        {
-            var stack = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center };
-            var txt = new TextBlock
-            {
-                Text = "Aa", FontSize = 10,
-                Foreground = new SolidColorBrush(Color.FromRgb(150, 150, 150)),
-                TextDecorations = TextDecorations.Strikethrough,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            stack.Children.Add(txt);
-
-            return new Button
-            {
-                Content = stack, Tag = "ClearFormat", ToolTip = "Xóa định dạng (reset về mặc định)",
-                Width = 30, Height = 26,
-                Background = new SolidColorBrush(Color.FromRgb(250, 250, 250)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
-                BorderThickness = new Thickness(1),
-                Margin = new Thickness(0, 0, 3, 0),
-                Cursor = Cursors.Hand, Padding = new Thickness(0)
-            };
-        }
-
-        /// <summary>Helper: Separator dọc giữa các nhóm nút</summary>
-        private static Border MakeSeparator()
-        {
-            return new Border
-            {
-                Width = 1, Height = 20, Background = new SolidColorBrush(Color.FromRgb(210, 210, 210)),
-                Margin = new Thickness(4, 3, 4, 3), VerticalAlignment = VerticalAlignment.Center
-            };
-        }
-
-        /// <summary>
-        /// Wire toolbar buttons to apply formatting to RichTextBox
-        /// </summary>
-        private static void WireMiniToolbar(StackPanel toolbar, RichTextBox rtb)
-        {
-            // Find FontSize TextBox
-            TextBox? fontSizeBox = null;
-            foreach (var tbChild in toolbar.Children)
-            {
-                if (tbChild is Border border && border.Child is StackPanel sp)
-                {
-                    foreach (var spChild in sp.Children)
-                    {
-                        if (spChild is TextBox tb && tb.Tag?.ToString() == "FontSizeBox")
-                        {
-                            fontSizeBox = tb;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Update fontSizeBox when cursor moves in RichTextBox
-            if (fontSizeBox != null)
-            {
-                var fsBox = fontSizeBox; // capture for lambda
-                rtb.SelectionChanged += (s, e) =>
-                {
-                    try
-                    {
-                        var val = rtb.Selection.GetPropertyValue(TextElement.FontSizeProperty);
-                        if (val is double d)
-                            fsBox.Text = ((int)d).ToString();
-                    }
-                    catch { }
-                };
-
-                // Allow typing font size and pressing Enter
-                fontSizeBox.KeyDown += (s, e) =>
-                {
-                    if (e.Key == System.Windows.Input.Key.Enter)
-                    {
-                        if (double.TryParse(fsBox.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double sz))
-                        {
-                            sz = Math.Clamp(sz, 8, 72);
-                            fsBox.Text = ((int)sz).ToString();
-                            if (!rtb.Selection.IsEmpty)
-                                rtb.Selection.ApplyPropertyValue(TextElement.FontSizeProperty, sz);
-                            rtb.Focus();
-                        }
-                    }
-                };
-            }
-
-            // Wire all buttons
-            void WireAllButtons(UIElementCollection children)
-            {
-                foreach (var child in children)
-                {
-                    if (child is Button btn && btn.Tag != null)
-                    {
-                        btn.Click += (s, e) =>
-                        {
-                            var tag = (s as Button)?.Tag?.ToString();
-                            var sel = rtb.Selection;
-
-                            switch (tag)
-                            {
-                                case "Bold":
-                                    if (sel.IsEmpty) return;
-                                    var curW = sel.GetPropertyValue(TextElement.FontWeightProperty);
-                                    sel.ApplyPropertyValue(TextElement.FontWeightProperty,
-                                        curW is FontWeight fw && fw == FontWeights.Bold ? FontWeights.Normal : FontWeights.Bold);
-                                    break;
-
-                                case "Italic":
-                                    if (sel.IsEmpty) return;
-                                    var curS = sel.GetPropertyValue(TextElement.FontStyleProperty);
-                                    sel.ApplyPropertyValue(TextElement.FontStyleProperty,
-                                        curS is FontStyle fs && fs == FontStyles.Italic ? FontStyles.Normal : FontStyles.Italic);
-                                    break;
-
-                                case "Underline":
-                                    if (sel.IsEmpty) return;
-                                    var curDec = sel.GetPropertyValue(Inline.TextDecorationsProperty);
-                                    sel.ApplyPropertyValue(Inline.TextDecorationsProperty,
-                                        curDec == TextDecorations.Underline ? null : TextDecorations.Underline);
-                                    break;
-
-                                case "H1":
-                                    if (sel.IsEmpty) return;
-                                    sel.ApplyPropertyValue(TextElement.FontSizeProperty, 20.0);
-                                    sel.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Bold);
-                                    if (fontSizeBox != null) fontSizeBox.Text = "20";
-                                    break;
-
-                                case "H2":
-                                    if (sel.IsEmpty) return;
-                                    sel.ApplyPropertyValue(TextElement.FontSizeProperty, 16.0);
-                                    sel.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.SemiBold);
-                                    if (fontSizeBox != null) fontSizeBox.Text = "16";
-                                    break;
-
-                                case "FontUp":
-                                    {
-                                        double curSize = 14;
-                                        if (fontSizeBox != null && double.TryParse(fontSizeBox.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double cs)) curSize = cs;
-                                        curSize = Math.Min(curSize + 2, 72);
-                                        if (fontSizeBox != null) fontSizeBox.Text = ((int)curSize).ToString();
-                                        if (!sel.IsEmpty)
-                                            sel.ApplyPropertyValue(TextElement.FontSizeProperty, curSize);
-                                    }
-                                    break;
-
-                                case "FontDown":
-                                    {
-                                        double curSize = 14;
-                                        if (fontSizeBox != null && double.TryParse(fontSizeBox.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double cs)) curSize = cs;
-                                        curSize = Math.Max(curSize - 2, 8);
-                                        if (fontSizeBox != null) fontSizeBox.Text = ((int)curSize).ToString();
-                                        if (!sel.IsEmpty)
-                                            sel.ApplyPropertyValue(TextElement.FontSizeProperty, curSize);
-                                    }
-                                    break;
-
-                                case "Blue":
-                                    if (sel.IsEmpty) return;
-                                    sel.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(Color.FromRgb(25, 118, 210)));
-                                    break;
-
-                                case "Red":
-                                    if (sel.IsEmpty) return;
-                                    sel.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(Color.FromRgb(198, 40, 40)));
-                                    break;
-
-                                case "Green":
-                                    if (sel.IsEmpty) return;
-                                    sel.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(Color.FromRgb(46, 125, 50)));
-                                    break;
-
-                                case "Orange":
-                                    if (sel.IsEmpty) return;
-                                    sel.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(Color.FromRgb(230, 126, 34)));
-                                    break;
-
-                                case "Purple":
-                                    if (sel.IsEmpty) return;
-                                    sel.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(Color.FromRgb(142, 68, 173)));
-                                    break;
-
-                                case "Black":
-                                    if (sel.IsEmpty) return;
-                                    sel.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Black);
-                                    break;
-
-                                case "Highlight":
-                                    if (sel.IsEmpty) return;
-                                    var curBg = sel.GetPropertyValue(TextElement.BackgroundProperty);
-                                    var yellow = new SolidColorBrush(Color.FromRgb(255, 245, 157));
-                                    if (curBg is SolidColorBrush sb && sb.Color == yellow.Color)
-                                        sel.ApplyPropertyValue(TextElement.BackgroundProperty, null);
-                                    else
-                                        sel.ApplyPropertyValue(TextElement.BackgroundProperty, yellow);
-                                    break;
-
-                                case "ClearFormat":
-                                    if (sel.IsEmpty) return;
-                                    sel.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Normal);
-                                    sel.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
-                                    sel.ApplyPropertyValue(Inline.TextDecorationsProperty, null);
-                                    sel.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Black);
-                                    sel.ApplyPropertyValue(TextElement.BackgroundProperty, null);
-                                    sel.ApplyPropertyValue(TextElement.FontSizeProperty, 14.0);
-                                    if (fontSizeBox != null) fontSizeBox.Text = "14";
-                                    break;
-                            }
-                            rtb.Focus();
-                        };
-                    }
-                    // Recurse into containers  
-                    else if (child is Border brd && brd.Child is StackPanel innerSp)
-                    {
-                        WireAllButtons(innerSp.Children);
-                    }
-                }
-            }
-            WireAllButtons(toolbar.Children);
-        }
+        // ── Toolbar Methods → LessonEditorPage.Toolbar.cs ────────────────────
+        // CreateMiniToolbar, MakeToolbarBtn, MakeColorBtn, MakeHighlightBtn,
+        // MakeClearFormatBtn, MakeSeparator, WireMiniToolbar
 
 
 
@@ -5097,7 +4691,7 @@ namespace QASmartClass.Classroom.Views
         {
             if (_currentLessonId <= 0)
             {
-                MessageBox.Show("Vui lòng lưu bài giảng trước khi mở trên bảng!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng lưu bài giảng trước khi mở trên bảng!", "Thông báo");
                 return;
             }
 
@@ -5114,22 +4708,21 @@ namespace QASmartClass.Classroom.Views
             // Auto-save first
             if (string.IsNullOrWhiteSpace(txtTitle.Text))
             {
-                MessageBox.Show("Vui lòng nhập tiêu đề trước khi gửi phê duyệt!", "Thiếu thông tin",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Vui lòng nhập tiêu đề trước khi gửi phê duyệt!", "Thiếu thông tin");
                 return;
             }
 
             // Save and set status = PendingApproval
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // app → ClassroomAppContext (refactored)
                 Lesson lesson;
                 if (_currentLessonId > 0)
-                    lesson = app.Database.Lessons.Find(_currentLessonId) ?? new Lesson();
+                    lesson = ClassroomAppContext.Db.Lessons.Find(_currentLessonId) ?? new Lesson();
                 else
                 {
                     lesson = new Lesson { CreatedAt = DateTime.Now };
-                    app.Database.Lessons.Add(lesson);
+                    ClassroomAppContext.Db.Lessons.Add(lesson);
                 }
 
                 lesson.Title       = txtTitle.Text.Trim();
@@ -5139,23 +4732,22 @@ namespace QASmartClass.Classroom.Views
                 lesson.UpdatedAt   = DateTime.Now;
                 lesson.Status      = "PendingApproval";
 
-                app.Database.SaveChanges();
+                ClassroomAppContext.Db.SaveChanges();
                 _currentLessonId = lesson.Id;
 
                 UpdateStatusBadge("PendingApproval");
 
-                MessageBox.Show(
+                ClassroomDialog.Info(
                     $"📤 Đã gửi bài giảng \"{lesson.Title}\" lên Tổ Chuyên Môn!\n\n" +
                     "• Tổ trưởng sẽ nhận thông báo và review trong 3-5 ngày\n" +
-                    "• Trạng thái: Chờ phê duyệt ⏳",
-                    "Gửi Phê Duyệt", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "• Trạng thái: Chờ phê duyệt ⏳", "Gửi Phê Duyệt");
 
                 Log.Information("Lesson submitted for approval: {Title} (ID={Id})", lesson.Title, lesson.Id);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "SubmitApproval error");
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
             }
         }
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -31,9 +32,9 @@ namespace QASmartClass.Classroom.Views
                 // Auto-refresh khi GV chuyển lớp — N7 FIX: Dùng named handler để Unsubscribe tránh memory leak
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
-                    app.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
+                    // → ClassroomAppContext
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
                 }
                 catch { }
             };
@@ -42,8 +43,8 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                    // → ClassroomAppContext
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
                 }
                 catch { }
             };
@@ -62,9 +63,9 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db = app.Database;
-                var roster = app.ClassRoster.ActiveRoster;
+                // → ClassroomAppContext
+                var db = ClassroomAppContext.Db;
+                var roster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 _activeClassName = roster?.ClassName ?? "";
 
                 // Lấy tên GV đăng nhập từ TeacherProfile
@@ -666,7 +667,7 @@ namespace QASmartClass.Classroom.Views
                 {
                     int.TryParse(tbWeek.Text, out int week); if (week <= 0) week = 1;
                     int.TryParse(cmbDur.SelectedItem?.ToString(), out int dur); if (dur <= 0) dur = 45;
-                    var db = ((QASmartTouch.App)Application.Current).Database;
+                    var db = ClassroomAppContext.Db;
                     db.Lessons.Add(new Lesson
                     {
                         Title = tbTitle.Text.Trim(),
@@ -688,7 +689,7 @@ namespace QASmartClass.Classroom.Views
                     db.SaveChanges();
                     wnd.Close();
                     LoadLessons();
-                    MessageBox.Show("✅ Đã tạo bài giảng!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClassroomDialog.Info("✅ Đã tạo bài giảng!", "Thành công");
                 }
                 catch (Exception ex) { MessageBox.Show($"Lỗi: {ex.Message}"); }
             };
@@ -734,7 +735,7 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var db     = ((QASmartTouch.App)Application.Current).Database;
+                    var db     = ClassroomAppContext.Db;
                     var lesson = db.Lessons.Find(vm.Id);
                     if (lesson != null)
                     {
@@ -757,7 +758,7 @@ namespace QASmartClass.Classroom.Views
                 if (r != MessageBoxResult.Yes) return;
                 try
                 {
-                    var db = ((QASmartTouch.App)Application.Current).Database;
+                    var db = ClassroomAppContext.Db;
                     var lesson = db.Lessons.Find(vm.Id);
                     if (lesson != null) { db.Lessons.Remove(lesson); db.SaveChanges(); }
                     LoadLessons();
@@ -773,7 +774,7 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var db     = ((QASmartTouch.App)Application.Current).Database;
+                    var db     = ClassroomAppContext.Db;
                     var lesson = db.Lessons.Find(vm.Id);
                     if (lesson != null)
                     {
@@ -799,8 +800,7 @@ namespace QASmartClass.Classroom.Views
                         db.Lessons.Add(copy);
                         db.SaveChanges();
                         LoadLessons();
-                        MessageBox.Show($"✅ Đã sao chép:\n\"{copy.Title}\"",
-                            "Sao chép thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ClassroomDialog.Info($"✅ Đã sao chép:\n\"{copy.Title}\"", "Sao chép thành công");
                     }
                 }
                 catch (Exception ex) { Log.Warning("Duplicate: {Err}", ex.Message); }
@@ -814,7 +814,7 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var db     = ((QASmartTouch.App)Application.Current).Database;
+                    var db     = ClassroomAppContext.Db;
                     var lesson = db.Lessons.Find(vm.Id);
                     if (lesson != null && lesson.Status == "PendingApproval")
                     {
@@ -848,12 +848,11 @@ namespace QASmartClass.Classroom.Views
                 string path = System.IO.Path.Combine(folder, $"LessonList_{DateTime.Now:yyyyMMdd_HHmm}.csv");
                 System.IO.File.WriteAllText(path, sb.ToString(), System.Text.Encoding.UTF8);
                 System.Diagnostics.Process.Start("explorer.exe", folder);
-                MessageBox.Show($"✅ Đã xuất {_allLessons.Count} bài giảng!\n{path}",
-                    "Xuất danh sách", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info($"✅ Đã xuất {_allLessons.Count} bài giảng!\n{path}", "Xuất danh sách");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi: {ex.Message}", "Lỗi");
             }
         }
 
@@ -896,7 +895,7 @@ namespace QASmartClass.Classroom.Views
             Action renderGrid = () => {
                 string mode = (typeCb.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "Class";
                 
-                var db = ((QASmartTouch.App)Application.Current).Database;
+                var db = ClassroomAppContext.Db;
                 List<Lesson> lessons = new List<Lesson>();
                 
                 if (mode == "Class") {

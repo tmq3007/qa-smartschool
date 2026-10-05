@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 using QASmartClass.Data;
 
@@ -31,8 +32,8 @@ namespace QASmartClass.Classroom.Views
                 LoadStudents();
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
+                    // → ClassroomAppContext
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
                 }
                 catch { }
             };
@@ -40,8 +41,8 @@ namespace QASmartClass.Classroom.Views
             {
                 try
                 {
-                    var app = (QASmartTouch.App)Application.Current;
-                    app.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                    // → ClassroomAppContext
+                    ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
                 }
                 catch { }
             };
@@ -97,12 +98,12 @@ namespace QASmartClass.Classroom.Views
             _absentStudentIds.Clear();
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
+                // → ClassroomAppContext
                 var targetDate = DateTime.Today.Date;
-                var activeRoster = app.ClassRoster.ActiveRoster;
+                var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 int rosterId = activeRoster?.Id ?? 0;
 
-                var absentRecords = app.Database.AttendanceRecords
+                var absentRecords = ClassroomAppContext.Db.AttendanceRecords
                     .Where(r => r.RosterId == rosterId && r.Date.Date == targetDate && r.Status == "absent")
                     .Select(r => r.StudentId)
                     .ToList();
@@ -246,7 +247,7 @@ namespace QASmartClass.Classroom.Views
         {
             if (_filteredAllStudents.Count == 0)
             {
-                MessageBox.Show("Không có học sinh nào khả dụng để chọn!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClassroomDialog.Warn("Không có học sinh nào khả dụng để chọn!", "Thông báo");
                 return;
             }
 
@@ -272,7 +273,7 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex)
             {
                 Log.Error("RandomPicker error during spin: {Err}", ex.Message);
-                MessageBox.Show("Đã xảy ra lỗi trong quá trình chọn học sinh ngẫu nhiên.", "Lỗi hệ thống", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error("Đã xảy ra lỗi trong quá trình chọn học sinh ngẫu nhiên.", "Lỗi hệ thống");
             }
             finally
             {

@@ -4,7 +4,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using QASmartClass.Services;
+using QASmartClass.Classroom.Helpers;
 
 namespace QASmartClass.Classroom.Views
 {
@@ -18,9 +20,9 @@ namespace QASmartClass.Classroom.Views
         {
             InitializeComponent();
             
-            if (Application.Current is QASmartTouch.App app && app.Database != null)
+            if (Application.Current is QASmartTouch.App app && ClassroomAppContext.Db != null)
             {
-                _db = app.Database;
+                _db = ClassroomAppContext.Db;
                 _rubricService = new RubricService(_db);
             }
             else
@@ -61,13 +63,13 @@ namespace QASmartClass.Classroom.Views
             {
                 if (string.IsNullOrWhiteSpace(txtTitle.Text))
                 {
-                    MessageBox.Show("Vui lòng nhập tên Rubric!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Vui lòng nhập tên Rubric!", "Lỗi");
                     return;
                 }
 
                 if (!CriteriaList.Any())
                 {
-                    MessageBox.Show("Cần ít nhất 1 tiêu chí!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ClassroomDialog.Warn("Cần ít nhất 1 tiêu chí!", "Lỗi");
                     return;
                 }
 
@@ -81,7 +83,7 @@ namespace QASmartClass.Classroom.Views
 
                 _rubricService.CreateRubric(txtTitle.Text, subject, grade, teacherName, criteriaData);
 
-                MessageBox.Show("Lưu Rubric thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                ClassroomDialog.Info("Lưu Rubric thành công!", "Thông báo");
                 
                 // Reset form
                 txtTitle.Text = "";
@@ -90,7 +92,7 @@ namespace QASmartClass.Classroom.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi lưu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                ClassroomDialog.Error($"Lỗi khi lưu: {ex.Message}", "Lỗi");
             }
         }
     }

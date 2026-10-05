@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Services
@@ -156,37 +157,6 @@ namespace QASmartClass.Classroom.Services
             Log.Information("NetworkDiscovery: Stopped");
         }
 
-        // ═══════════════════════════════════════════════════════════
-        //  UDP BEACON
-        // ═══════════════════════════════════════════════════════════
-
-        private async Task RunUdpBroadcastAsync(string beacon, CancellationToken ct)
-        {
-            var bytes    = Encoding.UTF8.GetBytes(beacon);
-            var endpoint = new IPEndPoint(IPAddress.Broadcast, DISCOVERY_PORT);
-
-            try
-            {
-                _udpBroadcaster = new UdpClient { EnableBroadcast = true };
-                Log.Information("UDP beacon active on :{Port}", DISCOVERY_PORT);
-
-                while (!ct.IsCancellationRequested)
-                {
-                    try
-                    {
-                        await _udpBroadcaster.SendAsync(bytes, bytes.Length, endpoint);
-                        await Task.Delay(BEACON_INTERVAL_MS, ct);
-                    }
-                    catch (OperationCanceledException) { break; }
-                    catch (Exception ex) when (!ct.IsCancellationRequested)
-                    {
-                        Log.Warning("UDP send error: {Err}", ex.Message);
-                        await Task.Delay(5000, ct);
-                    }
-                }
-            }
-            catch (Exception ex) { Log.Error("UDP broadcaster fatal: {Err}", ex.Message); }
-        }
 
         // ═══════════════════════════════════════════════════════════
         //  TCP LISTENER
@@ -369,10 +339,10 @@ namespace QASmartClass.Classroom.Services
                 {
                     if (System.Windows.Application.Current is QASmartTouch.App app)
                     {
-                        app.DeviceMemory.SaveOrUpdateDevice(
+                        ClassroomAppContext.DeviceMemory.SaveOrUpdateDevice(
                             info.PCName, info.Code, info.Name,
                             remoteIP, info.Version);
-                        app.DeviceMemory.SyncToStudentTable(
+                        ClassroomAppContext.DeviceMemory.SyncToStudentTable(
                             info.Code, info.PCName, remoteIP);
                     }
                 }
@@ -444,7 +414,7 @@ namespace QASmartClass.Classroom.Services
                     try
                     {
                         if (System.Windows.Application.Current is QASmartTouch.App app)
-                            app.DeviceMemory.MarkStudentOffline(info.Code);
+                            ClassroomAppContext.DeviceMemory.MarkStudentOffline(info.Code);
                     }
                     catch { }
                 }
@@ -587,41 +557,6 @@ namespace QASmartClass.Classroom.Services
             }
         }
 
-        // ═══════════════════════════════════════════════════════════
-        //  HEARTBEAT WATCHDOG
-        // ═══════════════════════════════════════════════════════════
-
-        private async Task RunHeartbeatWatchdogAsync(CancellationToken ct)
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                await Task.Delay(5000, ct);
-                var now     = DateTime.Now;
-                var timeout = TimeSpan.FromSeconds(HEARTBEAT_TIMEOUT_S);
-
-                foreach (var (code, client) in _clients)
-                {
-                    var timeSinceLastSeen = now - client.LastSeen;
-
-                    // Active ping: if no message seen for > 12 seconds, send a PING command
-                    if (timeSinceLastSeen > TimeSpan.FromSeconds(12) && timeSinceLastSeen <= timeout)
-                    {
-                        try
-                        {
-                            _ = SendToStudentDirectAsync(client, "CMD|PING");
-                        }
-                        catch { }
-                    }
-
-                    // Passive timeout: if no message seen for > 30 seconds, disconnect
-                    if (timeSinceLastSeen > timeout)
-                    {
-                        Log.Warning("Heartbeat timeout: {Name} ({Code})", client.Name, code);
-                        client.TcpClient?.Close();
-                    }
-                }
-            }
-        }
 
         // ═══════════════════════════════════════════════════════════
         //  COMMANDS → BROADCAST TO ALL STUDENTS
@@ -1016,94 +951,6 @@ namespace QASmartClass.Classroom.Services
             => _clients.Values as IReadOnlyCollection<ClientInfo>
                ?? new List<ClientInfo>(_clients.Values);
 
-        public static List<string> GetActiveLocalIPv4Addresses()
-        {
-            var ips = new List<string>();
-            try
-            {
-                foreach (var ni in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
-                {
-                    if (ni.OperationalStatus != System.Net.NetworkInformation.OperationalStatus.Up)
-                        continue;
-
-                    if (ni.NetworkInterfaceType == System.Net.NetworkInformation.NetworkInterfaceType.Loopback ||
-                        ni.NetworkInterfaceType == System.Net.NetworkInformation.NetworkInterfaceType.Tunnel)
-                        continue;
-
-                    string name = ni.Name.ToLower();
-                    string desc = ni.Description.ToLower();
-                    if (name.Contains("virtual") || desc.Contains("virtual") ||
-                        name.Contains("vmware") || desc.Contains("vbox") ||
-                        name.Contains("virtualbox") || desc.Contains("wsl") ||
-                        name.Contains("hyper-v") || desc.Contains("npcap") ||
-                        name.Contains("docker") || desc.Contains("loopback") ||
-                        name.Contains("teredo") || desc.Contains("host-only") ||
-                        name.Contains("fortinet") || desc.Contains("anyconnect") ||
-                        name.Contains("nordvpn") || desc.Contains("zerotier") ||
-                        name.Contains("tailscale") || desc.Contains("wireguard") ||
-                        name.Contains("vpn"))
-                        continue;
-
-                    var ipProps = ni.GetIPProperties();
-                    if (ipProps == null) continue;
-
-                    foreach (var addr in ipProps.UnicastAddresses)
-                    {
-                        if (addr.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                        {
-                            string ipStr = addr.Address.ToString();
-                            if (ipStr.StartsWith("127.")) continue;
-
-                            bool hasGateway = ipProps.GatewayAddresses != null && ipProps.GatewayAddresses.Count > 0;
-                            if (hasGateway)
-                                ips.Insert(0, ipStr);
-                            else
-                                ips.Add(ipStr);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error enumerating network interfaces: {Err}", ex.Message);
-            }
-
-            if (ips.Count == 0)
-            {
-                try
-                {
-                    using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
-                    socket.Connect("8.8.8.8", 65530);
-                    var ip = ((IPEndPoint?)socket.LocalEndPoint)?.Address.ToString();
-                    if (!string.IsNullOrEmpty(ip) && ip != "127.0.0.1")
-                    {
-                        ips.Add(ip);
-                    }
-                }
-                catch { }
-            }
-
-            if (ips.Count == 0)
-            {
-                ips.Add("127.0.0.1");
-            }
-
-            var uniqueIps = new List<string>();
-            foreach (var ip in ips)
-            {
-                if (!uniqueIps.Contains(ip))
-                {
-                    uniqueIps.Add(ip);
-                }
-            }
-            return uniqueIps;
-        }
-
-        private static string GetLocalIPAddress()
-        {
-            var ips = GetActiveLocalIPv4Addresses();
-            return ips.Count > 0 ? ips[0] : "127.0.0.1";
-        }
 
         // ─── QoS 1 & Reliable Delivery ───────────────────────────────
         private readonly System.Collections.Concurrent.ConcurrentDictionary<string, PendingQosCommand> _pendingQosCommands = new();

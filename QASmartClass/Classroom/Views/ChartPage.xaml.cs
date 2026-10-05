@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -21,8 +22,8 @@ namespace QASmartClass.Classroom.Views
             if (barChart == null) return; // guard — XAML not ready yet
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                var db  = app.Database;
+                // → ClassroomAppContext
+                var db  = ClassroomAppContext.Db;
 
                 List<BarItem> bars;
                 double max = 10, min = 0, avg = 0;
