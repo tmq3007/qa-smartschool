@@ -73,6 +73,7 @@ namespace QASmartTouch
         // [LOI_VID_50] Cờ cho phép đóng Window thật khi thoát ứng dụng
         internal static bool _isAppShuttingDown = false;
         internal System.Windows.Window? _staffShell;
+        public static string? StartupLecturePath { get; private set; }
 
         static App()
         {
@@ -82,6 +83,36 @@ namespace QASmartTouch
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // 1. Cố định thư mục làm việc luôn là thư mục cài đặt ứng dụng,
+            // tránh lỗi nạp tài nguyên/thư viện tương đối khi mở file từ Explorer
+            try
+            {
+                System.IO.Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+            }
+            catch { }
+
+            // 2. Tiếp nhận tham số tệp bài giảng .qasc khi người dùng click đúp mở từ Explorer
+            try
+            {
+                var rawArgs = Environment.GetCommandLineArgs().Skip(1).Concat(e.Args ?? Array.Empty<string>());
+                var lectureArg = rawArgs.FirstOrDefault(a => 
+                    !string.IsNullOrWhiteSpace(a) && 
+                    a.EndsWith(".qasc", StringComparison.OrdinalIgnoreCase) && 
+                    System.IO.File.Exists(a));
+                if (!string.IsNullOrEmpty(lectureArg))
+                {
+                    StartupLecturePath = System.IO.Path.GetFullPath(lectureArg);
+                    Log.Information("[Startup] Phát hiện yêu cầu mở tệp bài giảng: {Path}", StartupLecturePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "[Startup] Lỗi phân tích tham số dòng lệnh mở file bài giảng");
+            }
+
+            // 3. Đảm bảo liên kết định dạng tệp .qasc trong Windows Registry cho CurrentUser
+            System.Threading.Tasks.Task.Run(() => QASmartClass.Helpers.FileAssociationHelper.EnsureFileAssociation());
+
             // Đảm bảo thư mục và biến môi trường WebView2 sẵn sàng
             QASmartTouch.Helpers.WebView2Helper.InitializeEnvironment();
 
@@ -425,7 +456,25 @@ namespace QASmartTouch
                 // [LOI_VID_50] Cho phép đóng thật khi app đang shutdown
                 if (_isAppShuttingDown) return;
 
-                // Chặn đóng thật → chỉ ẩn (giữ trong cache)
+                // Nếu không còn cửa sổ nào khác đang hiển thị ngoài cửa sổ này, thực hiện shutdown toàn bộ ứng dụng
+                bool hasOtherVisibleWindow = false;
+                try
+                {
+                    hasOtherVisibleWindow = System.Windows.Application.Current.Windows
+                        .OfType<Window>()
+                        .Any(w => w != window && w.IsVisible);
+                }
+                catch { }
+
+                if (!hasOtherVisibleWindow)
+                {
+                    Log.Information("[App] Cửa sổ {Name} đóng và không còn cửa sổ hiển thị khác -> Shutdown ứng dụng.", window.GetType().Name);
+                    _isAppShuttingDown = true;
+                    System.Windows.Application.Current.Shutdown();
+                    return;
+                }
+
+                // Chặn đóng thật → chỉ ẩn (giữ trong cache khi còn window khác như Classroom)
                 e.Cancel = true;
                 window.Hide();
                 Log.Debug("[LOI_VID_50] Window {Name} Closing intercepted → Hidden (cached)",
@@ -537,6 +586,27 @@ namespace QASmartTouch
 
             EnsureFloatingModeBar();
 
+            // Nếu có tệp bài giảng cần nạp lúc khởi động (.qasc)
+            if (!string.IsNullOrEmpty(StartupLecturePath) && System.IO.File.Exists(StartupLecturePath))
+            {
+                string lectureToOpen = StartupLecturePath;
+                StartupLecturePath = null;
+                if (_whiteboardShell.IsLoaded)
+                {
+                    _whiteboardShell.LoadLecture(lectureToOpen);
+                }
+                else
+                {
+                    _whiteboardShell.Loaded += (s, ev) =>
+                    {
+                        _whiteboardShell.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            _whiteboardShell.LoadLecture(lectureToOpen);
+                        }), System.Windows.Threading.DispatcherPriority.Background);
+                    };
+                }
+            }
+
             Log.Information("Switched to SMART TOUCH mode (cached={Cached})",
                 _whiteboardShell != null);
         }
@@ -640,6 +710,14 @@ namespace QASmartTouch
             // [LOI_VID_50] Cho phép đóng tất cả Window cached
             _isAppShuttingDown = true;
 
+            try
+            {
+                _singleInstanceMutex?.ReleaseMutex();
+                _singleInstanceMutex?.Dispose();
+                _singleInstanceMutex = null;
+            }
+            catch { }
+
             SettingsManager.Instance.SaveSettings();
             QASmartClass.Services.TelemetryService.Instance.EndSession();
             QASmartClass.Services.StatusReportService.Instance.Stop();
@@ -670,6 +748,9 @@ namespace QASmartTouch
             Log.Information("=== QA SmartTouch Shutting Down ===");
             Log.CloseAndFlush();
             base.OnExit(e);
+
+            // Chấm dứt tiến trình triệt để, tránh sót zombie process
+            Environment.Exit(0);
         }
 
         private void SyncThematicImages()
@@ -798,7 +879,7 @@ namespace QASmartTouch
 
         private bool IsUnitTest => AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName.StartsWith("xunit", StringComparison.OrdinalIgnoreCase));
 
-        private static class NativeMethods
+        internal static class NativeMethods
         {
             [System.Runtime.InteropServices.DllImport("user32.dll")]
             [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
@@ -807,7 +888,44 @@ namespace QASmartTouch
             [System.Runtime.InteropServices.DllImport("user32.dll")]
             public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
+            [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+            public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, ref COPYDATASTRUCT lParam);
+
             public const int SW_RESTORE = 9;
+            public const uint WM_COPYDATA = 0x004A;
+
+            [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+            public struct COPYDATASTRUCT
+            {
+                public IntPtr dwData;
+                public int cbData;
+                public IntPtr lpData;
+            }
+        }
+
+        private static void SendLecturePathToProcess(IntPtr hWnd, string filePath)
+        {
+            if (hWnd == IntPtr.Zero || string.IsNullOrEmpty(filePath)) return;
+
+            IntPtr ptr = System.Runtime.InteropServices.Marshal.StringToHGlobalUni(filePath);
+            try
+            {
+                var cds = new NativeMethods.COPYDATASTRUCT
+                {
+                    dwData = new IntPtr(0x5141),
+                    cbData = (filePath.Length + 1) * 2,
+                    lpData = ptr
+                };
+                NativeMethods.SendMessage(hWnd, NativeMethods.WM_COPYDATA, IntPtr.Zero, ref cds);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "[SingleInstance] Gửi đường dẫn bài giảng tới tiến trình đang chạy thất bại");
+            }
+            finally
+            {
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(ptr);
+            }
         }
 
         private static System.Threading.Mutex? _singleInstanceMutex;
@@ -822,25 +940,47 @@ namespace QASmartTouch
 
             if (!createdNew)
             {
-                Log.Warning("[SingleInstance] Instance already running (OS Mutex locked). Bringing active window to front.");
+                Log.Warning("[SingleInstance] Instance already running (OS Mutex locked). Checking for active window.");
                 var currentProc = System.Diagnostics.Process.GetCurrentProcess();
                 var duplicateProcs = System.Diagnostics.Process.GetProcessesByName(currentProc.ProcessName)
                     .Where(p => p.Id != currentProc.Id)
                     .ToList();
 
+                bool foundActive = false;
                 foreach (var proc in duplicateProcs)
                 {
                     try
                     {
-                        IntPtr hWnd = proc.MainWindowHandle;
-                        if (hWnd != IntPtr.Zero)
+                        if (proc.Responding && proc.MainWindowHandle != IntPtr.Zero)
                         {
-                            NativeMethods.ShowWindow(hWnd, NativeMethods.SW_RESTORE);
-                            NativeMethods.SetForegroundWindow(hWnd);
+                            NativeMethods.ShowWindow(proc.MainWindowHandle, NativeMethods.SW_RESTORE);
+                            NativeMethods.SetForegroundWindow(proc.MainWindowHandle);
+
+                            if (!string.IsNullOrEmpty(StartupLecturePath))
+                            {
+                                SendLecturePathToProcess(proc.MainWindowHandle, StartupLecturePath);
+                            }
+
+                            foundActive = true;
                             break;
                         }
+                        else
+                        {
+                            // Tiến trình cũ bị treo hoặc không có cửa sổ (zombie) -> Hủy bỏ để giải phóng mutex
+                            Log.Warning("[SingleInstance] Killing zombie/unresponsive process ID {Id}", proc.Id);
+                            proc.Kill(true);
+                        }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        Log.Warning(ex, "[SingleInstance] Error checking process ID {Id}", proc.Id);
+                    }
+                }
+
+                if (!foundActive)
+                {
+                    Log.Information("[SingleInstance] No active window found among existing processes. Proceeding with startup.");
+                    return;
                 }
 
                 Environment.Exit(0);

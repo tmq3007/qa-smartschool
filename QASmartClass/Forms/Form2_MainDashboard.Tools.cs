@@ -328,8 +328,7 @@ namespace QASmartTouch.Forms
                         _selectionManager?.ClearRegistrations();
                     }
                     
-                    // Show welcome state again since board is empty
-                    ShowWelcomeState();
+                    HideWelcomeState();
                 }
                 else
                 {

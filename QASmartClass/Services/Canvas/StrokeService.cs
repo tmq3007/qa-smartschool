@@ -277,12 +277,10 @@ namespace QASmartTouch.Services.Canvas
             // Map string brush type to enum (for compatibility with DrawingEngine)
             var mappedType = brushType.ToLowerInvariant() switch
             {
-                "normal" => BrushType.Normal,
-                "hoc" => BrushType.Hoc,
-                "ai" => BrushType.AI,
-                "simple" => BrushType.Simple,
-                "marker" => BrushType.Marker,
-                "maskpen" => BrushType.MaskPen,
+                "normal" or "hoc" or "simple" or "ai" => BrushType.Normal,
+                "shape" or "calligraphy" => BrushType.Shape,
+                "highlighter" or "marker" or "mask" or "maskpen" => BrushType.Highlighter,
+                "laser" => BrushType.Laser,
                 _ => BrushType.Normal
             };
             
@@ -290,31 +288,33 @@ namespace QASmartTouch.Services.Canvas
             {
                 case BrushType.Normal:
                     // Standard solid stroke
+                    stroke.StrokeLineJoin = PenLineJoin.Round;
+                    stroke.StrokeStartLineCap = PenLineCap.Round;
+                    stroke.StrokeEndLineCap = PenLineCap.Round;
                     break;
                     
-                case BrushType.Hoc:
-                    // Educational brush - slightly thicker, smoother
-                    stroke.StrokeThickness *= 1.2;
+                case BrushType.Shape:
+                    // Shape recognition pen - clean solid stroke
+                    stroke.StrokeLineJoin = PenLineJoin.Round;
+                    stroke.StrokeStartLineCap = PenLineCap.Round;
+                    stroke.StrokeEndLineCap = PenLineCap.Round;
                     break;
                     
-                case BrushType.AI:
-                    // AI brush - smooth with slight opacity
-                    stroke.Opacity = 0.9;
+                case BrushType.Highlighter:
+                    // Highlighter - thick, semi-transparent
+                    stroke.StrokeThickness *= 2.2;
+                    stroke.Opacity = 0.4;
+                    stroke.StrokeStartLineCap = PenLineCap.Flat;
+                    stroke.StrokeEndLineCap = PenLineCap.Flat;
+                    stroke.StrokeLineJoin = PenLineJoin.Miter;
                     break;
                     
-                case BrushType.Simple:
-                    // Simple brush - basic settings
-                    break;
-                    
-                case BrushType.Marker:
-                    // Marker - thicker with slight transparency
-                    stroke.StrokeThickness *= 1.5;
-                    stroke.Opacity = 0.7;
-                    break;
-                    
-                case BrushType.MaskPen:
-                    // Mask pen - semi-transparent
-                    stroke.Opacity = 0.5;
+                case BrushType.Laser:
+                    // Laser pen - vibrant indicator
+                    stroke.StrokeThickness *= 1.3;
+                    stroke.Opacity = 0.95;
+                    stroke.StrokeStartLineCap = PenLineCap.Round;
+                    stroke.StrokeEndLineCap = PenLineCap.Round;
                     break;
             }
         }

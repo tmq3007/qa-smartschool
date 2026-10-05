@@ -14,12 +14,18 @@ namespace QASmartTouch.Managers
     /// </summary>
     public enum BrushType
     {
-        Normal,         // Standard brush
-        Hoc,            // Educational brush
-        AI,             // AI-enhanced brush
-        Simple,         // Simple brush
-        Marker,         // Marker pen
-        MaskPen         // Mask pen
+        Normal,         // Standard board pen (Bút viết bảng)
+        Shape,          // Shape recognition pen (Bút nhận dạng hình)
+        Highlighter,    // Transparent highlighter pen (Bút dạ quang)
+        Laser,          // Self-fading indicator pen (Bút laser tự xóa)
+
+        // Backward compatibility
+        Calligraphy,
+        Hoc,
+        AI,
+        Simple,
+        Marker,
+        MaskPen
     }
     
     /// <summary>

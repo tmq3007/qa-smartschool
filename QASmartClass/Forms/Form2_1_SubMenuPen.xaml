@@ -168,8 +168,6 @@
 
                         <ColumnDefinition Width="*"/>
 
-                        <ColumnDefinition Width="*"/>
-
                     </Grid.ColumnDefinitions>
 
                     <Grid.RowDefinitions>
@@ -182,63 +180,39 @@
 
 
 
-                    <!-- Brush Type 1: Bút thường -->
+                    <!-- 1. Bút viết bảng (Normal) -->
 
-                    <Button x:Name="btnBrushNormal" 
+                    <Button x:Name="btnBrushNormal"
 
-                           Grid.Column="0" Grid.Row="0"
+                            Grid.Column="0" Grid.Row="0"
 
-                           Width="90" Height="70"
+                            Height="72" Margin="3"
 
-                           Margin="3"
+                            Background="#FFF4E6" BorderThickness="0" Cursor="Hand"
 
-                           Background="#FFF4E6"
+                            Click="btnBrushType_Click" MouseDoubleClick="btnBrushType_DoubleClick"
 
-                           BorderThickness="0"
-
-                           Cursor="Hand"
-
-                           Click="btnBrushType_Click"
-
-                           MouseDoubleClick="btnBrushType_DoubleClick"
-
-                           Tag="Normal">
+                            Tag="Normal">
 
                         <Button.Template>
 
                             <ControlTemplate TargetType="Button">
 
-                                <Border Background="{TemplateBinding Background}" 
+                                <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="8">
 
-                                       CornerRadius="10"
+                                    <StackPanel VerticalAlignment="Center">
 
-                                       Padding="8">
-
-                                    <StackPanel>
-
-                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
+                                        <Viewbox Width="26" Height="26" Margin="0,0,0,4">
 
                                             <Canvas Width="24" Height="24">
 
-                                                <Path Fill="#FFA500" 
-
-                                                     Data="M4.5,8.5L6,10l6.5-6.5L11,2L4.5,8.5M12,12c-1.11,0-2,0.89-2,2s0.89,2,2,2s2-0.89,2-2S13.11,12,12,12z"/>
+                                                <Path Fill="#FFA500" Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
 
                                             </Canvas>
 
                                         </Viewbox>
 
-                                        <TextBlock Text="Bút thường" 
-
-                                                  FontSize="12" 
-
-                                                  FontWeight="SemiBold"
-
-                                                  Foreground="#2F3542"
-
-                                                  TextAlignment="Center"
-
-                                                  TextWrapping="Wrap"/>
+                                        <TextBlock Text="Bút viết bảng" FontSize="12" FontWeight="SemiBold" Foreground="#2F3542" TextAlignment="Center"/>
 
                                     </StackPanel>
 
@@ -252,63 +226,39 @@
 
 
 
-                    <!-- Brush Type 2: Bút học -->
+                    <!-- 2. Bút nhận diện hình (Shape) -->
 
-                    <Button x:Name="btnBrushHoc" 
+                    <Button x:Name="btnBrushShape"
 
-                           Grid.Column="1" Grid.Row="0"
+                            Grid.Column="1" Grid.Row="0"
 
-                           Width="90" Height="70"
+                            Height="72" Margin="3"
 
-                           Margin="3"
+                            Background="#F3E5F5" BorderThickness="0" Cursor="Hand"
 
-                           Background="#E8F5E9"
+                            Click="btnBrushType_Click" MouseDoubleClick="btnBrushType_DoubleClick"
 
-                           BorderThickness="0"
-
-                           Cursor="Hand"
-
-                           Click="btnBrushType_Click"
-
-                           MouseDoubleClick="btnBrushType_DoubleClick"
-
-                           Tag="Hoc">
+                            Tag="Shape">
 
                         <Button.Template>
 
                             <ControlTemplate TargetType="Button">
 
-                                <Border Background="{TemplateBinding Background}" 
+                                <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="8">
 
-                                       CornerRadius="10"
+                                    <StackPanel VerticalAlignment="Center">
 
-                                       Padding="8">
-
-                                    <StackPanel>
-
-                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
+                                        <Viewbox Width="26" Height="26" Margin="0,0,0,4">
 
                                             <Canvas Width="24" Height="24">
 
-                                                <Path Fill="#4CAF50" 
-
-                                                     Data="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
+                                                <Path Fill="#9C27B0" Data="M11,13.5V21.5H3V13.5H11M12,2L17.5,11H6.5L12,2M17.5,13A4.5,4.5 0 1,1 17.49,13Z"/>
 
                                             </Canvas>
 
                                         </Viewbox>
 
-                                        <TextBlock Text="Bút học" 
-
-                                                  FontSize="12" 
-
-                                                  FontWeight="SemiBold"
-
-                                                  Foreground="#2F3542"
-
-                                                  TextAlignment="Center"
-
-                                                  TextWrapping="Wrap"/>
+                                        <TextBlock Text="Bút nhận diện hình" FontSize="12" FontWeight="SemiBold" Foreground="#2F3542" TextAlignment="Center"/>
 
                                     </StackPanel>
 
@@ -322,65 +272,39 @@
 
 
 
-                    <Button x:Name="btnBrushAI" 
+                    <!-- 3. Bút dạ quang (Highlighter) -->
 
-                           Grid.Column="2" Grid.Row="0"
+                    <Button x:Name="btnBrushHighlighter"
 
-                           Width="90" Height="70"
+                            Grid.Column="0" Grid.Row="1"
 
-                           Margin="3"
+                            Height="72" Margin="3"
 
-                           Background="#E3F2FD"
+                            Background="#FFFDE7" BorderThickness="0" Cursor="Hand"
 
-                           BorderThickness="0"
+                            Click="btnBrushType_Click" MouseDoubleClick="btnBrushType_DoubleClick"
 
-                           Cursor="Hand"
-
-                           Click="btnBrushType_Click"
-
-                           MouseDoubleClick="btnBrushType_DoubleClick"
-
-                           Tag="AI">
+                            Tag="Highlighter">
 
                         <Button.Template>
 
                             <ControlTemplate TargetType="Button">
 
-                                <Border Background="{TemplateBinding Background}" 
+                                <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="8">
 
-                                       CornerRadius="10"
+                                    <StackPanel VerticalAlignment="Center">
 
-                                       Padding="8">
-
-                                    <StackPanel>
-
-                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
+                                        <Viewbox Width="26" Height="26" Margin="0,0,0,4">
 
                                             <Canvas Width="24" Height="24">
 
-                                                <!-- Pen icon with transparency effect -->
-
-                                                <Path Fill="#2196F3" 
-
-                                                      Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"
-
-                                                      Opacity="0.6"/>
+                                                <Path Fill="#FBC02D" Data="M18.5,1.15C17.97,1.15 17.46,1.34 17.07,1.73L11.26,7.55L16.91,13.2L22.73,7.39C23.5,6.61 23.5,5.35 22.73,4.56L19.89,1.73C19.5,1.34 19,1.15 18.5,1.15M10.3,8.5L4.34,14.46C3.56,15.24 3.56,16.5 4.34,17.29L7.08,20.03C7.86,20.81 9.13,20.81 9.91,20.03L15.86,14.07L10.3,8.5M2,21.5H11V23H2V21.5Z"/>
 
                                             </Canvas>
 
                                         </Viewbox>
 
-                                        <TextBlock Text="Bút AI" 
-
-                                                  FontSize="12" 
-
-                                                  FontWeight="SemiBold"
-
-                                                  Foreground="#2F3542"
-
-                                                  TextAlignment="Center"
-
-                                                  TextWrapping="Wrap"/>
+                                        <TextBlock Text="Bút dạ quang" FontSize="12" FontWeight="SemiBold" Foreground="#2F3542" TextAlignment="Center"/>
 
                                     </StackPanel>
 
@@ -394,203 +318,39 @@
 
 
 
-                    <!-- Brush Type 4: Bút đơn giản -->
+                    <!-- 4. Bút Laser chỉ điểm (Laser) -->
 
-                    <Button x:Name="btnBrushSimple" 
+                    <Button x:Name="btnBrushLaser"
 
-                           Grid.Column="0" Grid.Row="1"
+                            Grid.Column="1" Grid.Row="1"
 
-                           Width="90" Height="70"
+                            Height="72" Margin="3"
 
-                           Margin="3"
+                            Background="#FFEBEE" BorderThickness="0" Cursor="Hand"
 
-                           Background="#F3E5F5"
+                            Click="btnBrushType_Click" MouseDoubleClick="btnBrushType_DoubleClick"
 
-                           BorderThickness="0"
-
-                           Cursor="Hand"
-
-                           Click="btnBrushType_Click"
-
-                           MouseDoubleClick="btnBrushType_DoubleClick"
-
-                           Tag="Simple">
+                            Tag="Laser">
 
                         <Button.Template>
 
                             <ControlTemplate TargetType="Button">
 
-                                <Border Background="{TemplateBinding Background}" 
+                                <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="8">
 
-                                       CornerRadius="10"
+                                    <StackPanel VerticalAlignment="Center">
 
-                                       Padding="8">
-
-                                    <StackPanel>
-
-                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
+                                        <Viewbox Width="26" Height="26" Margin="0,0,0,4">
 
                                             <Canvas Width="24" Height="24">
 
-                                                <Path Fill="#9C27B0" 
-
-                                                     Data="M20.71,4.63L19.37,3.29C19,2.9 18.35,2.9 17.96,3.29L9,12.25L11.75,15L20.71,6.04C21.1,5.65 21.1,5 20.71,4.63M7,14A3,3 0 0,0 4,17C4,18.31 2.84,19 2,19C2.92,20.22 4.5,21 6,21A4,4 0 0,0 10,17A3,3 0 0,0 7,14Z"/>
+                                                <Path Fill="#E53935" Data="M7.5,5.6L5,7L6.4,4.5L5,2L7.5,3.4L10,2L8.6,4.5L10,7L7.5,5.6M19.5,15.4L22,14L20.6,16.5L22,19L19.5,17.6L17,19L18.4,16.5L17,14L19.5,15.4M22,2L20.6,4.5L22,7L19.5,5.6L17,7L18.4,4.5L17,2L19.5,3.4L22,2M13.34,12.78L15.78,10.34L13.66,8.22L11.22,10.66L13.34,12.78M14.37,7.29L16.71,9.63C17.1,10.02 17.1,10.65 16.71,11.04L5.04,22.71C4.65,23.1 4.02,23.1 3.63,22.71L1.29,20.37C0.9,19.98 0.9,19.35 1.29,18.96L12.96,7.29C13.35,6.9 13.98,6.9 14.37,7.29Z"/>
 
                                             </Canvas>
 
                                         </Viewbox>
 
-                                        <TextBlock Text="Bút đơn giản" 
-
-                                                  FontSize="12" 
-
-                                                  FontWeight="SemiBold"
-
-                                                  Foreground="#2F3542"
-
-                                                  TextAlignment="Center"
-
-                                                  TextWrapping="Wrap"/>
-
-                                    </StackPanel>
-
-                                </Border>
-
-                            </ControlTemplate>
-
-                        </Button.Template>
-
-                    </Button>
-
-
-
-                    <!-- Brush Type 5: Marker -->
-
-                    <Button x:Name="btnMarker" 
-
-                           Grid.Column="1" Grid.Row="1"
-
-                           Width="90" Height="70"
-
-                           Margin="3"
-
-                           Background="#FCE4EC"
-
-                           BorderThickness="0"
-
-                           Cursor="Hand"
-
-                           Click="btnBrushType_Click"
-
-                           MouseDoubleClick="btnBrushType_DoubleClick"
-
-                           Tag="Marker">
-
-                        <Button.Template>
-
-                            <ControlTemplate TargetType="Button">
-
-                                <Border Background="{TemplateBinding Background}" 
-
-                                       CornerRadius="10"
-
-                                       Padding="8">
-
-                                    <StackPanel>
-
-                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
-
-                                            <Canvas Width="24" Height="24">
-
-                                                <Path Fill="#E91E63" 
-
-                                                     Data="M9.75,20.85C11.53,20.15 11.14,18.22 10.24,17C9.35,15.75 8.12,14.89 6.88,14.06C6,13.5 5.19,12.8 4.54,12C4.26,11.67 3.69,11.06 4.27,10.94C4.86,10.82 5.88,11.4 6.4,11.62C7.31,12 8.21,12.44 9.05,12.96L10.06,11.26C8.5,10.23 6.5,9.32 4.64,9.05C3.58,8.89 2.46,9.11 2.1,10.26C1.78,11.25 2.29,12.25 2.87,13.03C4.24,14.86 6.37,15.74 7.96,17.32C8.3,17.65 8.71,18.04 8.91,18.5C9.12,18.94 9.07,18.97 8.6,18.97C7.36,18.97 5.81,18 4.8,17.36L3.79,19.06C5.32,20 7.88,21.47 9.75,20.85M20.84,5.25C21.06,5.03 21.06,4.67 20.84,4.46L19.54,3.16C19.33,2.95 18.97,2.95 18.76,3.16L17.74,4.18L19.82,6.26M11,10.92V13H13.08L19.23,6.85L17.15,4.77L11,10.92Z"/>
-
-                                            </Canvas>
-
-                                        </Viewbox>
-
-                                        <TextBlock Text="Marker" 
-
-                                                  FontSize="12" 
-
-                                                  FontWeight="SemiBold"
-
-                                                  Foreground="#2F3542"
-
-                                                  TextAlignment="Center"
-
-                                                  TextWrapping="Wrap"/>
-
-                                    </StackPanel>
-
-                                </Border>
-
-                            </ControlTemplate>
-
-                        </Button.Template>
-
-                    </Button>
-
-
-
-                    <!-- Brush Type 6: Mask Pen -->
-
-                    <Button x:Name="btnMaskPen" 
-
-                           Grid.Column="2" Grid.Row="1"
-
-                           Width="90" Height="70"
-
-                           Margin="3"
-
-                           Background="#FFF9C4"
-
-                           BorderThickness="0"
-
-                           Cursor="Hand"
-
-                           Click="btnBrushType_Click"
-
-                           MouseDoubleClick="btnBrushType_DoubleClick"
-
-                           Tag="Mask">
-
-                        <Button.Template>
-
-                            <ControlTemplate TargetType="Button">
-
-                                <Border Background="{TemplateBinding Background}" 
-
-                                       CornerRadius="10"
-
-                                       Padding="8">
-
-                                    <StackPanel>
-
-                                        <Viewbox Width="28" Height="28" Margin="0,0,0,5">
-
-                                            <Canvas Width="24" Height="24">
-
-                                                <Path Fill="#FDD835" 
-
-                                                     Data="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M16.59,7.58L10,14.17L7.41,11.59L6,13L10,17L18,9L16.59,7.58Z"/>
-
-                                            </Canvas>
-
-                                        </Viewbox>
-
-                                        <TextBlock Text="Mask Pen" 
-
-                                                  FontSize="12" 
-
-                                                  FontWeight="SemiBold"
-
-                                                  Foreground="#2F3542"
-
-                                                  TextAlignment="Center"
-
-                                                  TextWrapping="Wrap"/>
+                                        <TextBlock Text="Bút laser (tự xóa)" FontSize="12" FontWeight="SemiBold" Foreground="#2F3542" TextAlignment="Center"/>
 
                                     </StackPanel>
 
@@ -603,6 +363,7 @@
                     </Button>
 
                 </Grid>
+
 
             </StackPanel>
 
@@ -952,4 +713,3 @@
     </Border>
 
 </Window>
-

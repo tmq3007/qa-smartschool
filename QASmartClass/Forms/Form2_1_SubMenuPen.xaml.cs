@@ -156,7 +156,28 @@ namespace QASmartTouch.Forms
             if (rectStrokePreview == null) return; // ✅ Null check
             
             rectStrokePreview.Fill = new SolidColorBrush(currentPenColor);
-            rectStrokePreview.Height = currentPenSize * 2; // Scale for visibility
+
+            // Tùy biến preview theo loại bút
+            switch (currentBrushType)
+            {
+                case "Shape" or "Calligraphy":
+                    rectStrokePreview.Height = currentPenSize * 2.2;
+                    rectStrokePreview.Opacity = 1.0;
+                    break;
+                case "Highlighter" or "Marker" or "Mask" or "MaskPen":
+                    rectStrokePreview.Height = Math.Max(currentPenSize * 3.2, 12);
+                    rectStrokePreview.Opacity = 0.45;
+                    break;
+                case "Laser":
+                    rectStrokePreview.Height = currentPenSize * 2.2;
+                    rectStrokePreview.Opacity = 0.95;
+                    rectStrokePreview.Fill = new SolidColorBrush(Color.FromRgb(255, 59, 48)); // Đỏ laser đặc trưng
+                    break;
+                default:
+                    rectStrokePreview.Height = currentPenSize * 2;
+                    rectStrokePreview.Opacity = 1.0;
+                    break;
+            }
 
             // Tự động điều chỉnh tương phản nền cho nét vẽ
             if (rectStrokePreview.Parent is Border parentBorder)
@@ -183,12 +204,10 @@ namespace QASmartTouch.Forms
             if (btnBrushNormal == null) return; // ✅ Null check for buttons
             
             // Reset all brush type buttons to default background
-            btnBrushNormal.Background = new SolidColorBrush(Color.FromRgb(255, 244, 230));
-            btnBrushHoc.Background = new SolidColorBrush(Color.FromRgb(232, 245, 233));
-            btnBrushAI.Background = new SolidColorBrush(Color.FromRgb(227, 242, 253));
-            btnBrushSimple.Background = new SolidColorBrush(Color.FromRgb(243, 229, 245));
-            btnMarker.Background = new SolidColorBrush(Color.FromRgb(252, 228, 236));
-            btnMaskPen.Background = new SolidColorBrush(Color.FromRgb(255, 249, 196));
+            btnBrushNormal.Background = new SolidColorBrush(Color.FromRgb(255, 244, 230));     // #FFF4E6
+            btnBrushShape.Background = new SolidColorBrush(Color.FromRgb(243, 229, 245)); // #F3E5F5
+            btnBrushHighlighter.Background = new SolidColorBrush(Color.FromRgb(255, 253, 231)); // #FFFDE7
+            btnBrushLaser.Background = new SolidColorBrush(Color.FromRgb(255, 235, 238));       // #FFEBEE
 
             // Highlight selected button
             selectedButton.Background = new SolidColorBrush(Color.FromRgb(46, 134, 222));
@@ -199,11 +218,11 @@ namespace QASmartTouch.Forms
         private void btnBrushType_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-            if (button != null)
+            if (button != null && button.Tag != null)
             {
-                currentBrushType = button.Tag.ToString();
+                currentBrushType = button.Tag.ToString() ?? "Normal";
                 HighlightBrushType(button);
-                // No message box needed - just highlight the selected brush type
+                UpdatePreview();
             }
         }
 
@@ -374,12 +393,10 @@ namespace QASmartTouch.Forms
             // Find and highlight the appropriate brush type button
             Button? targetButton = currentBrushType switch
             {
-                "Normal" => btnBrushNormal,
-                "Hoc" => btnBrushHoc,
-                "AI" => btnBrushAI,
-                "Simple" => btnBrushSimple,
-                "Marker" => btnMarker,
-                "Mask" => btnMaskPen,
+                "Normal" or "Hoc" or "Simple" or "AI" => btnBrushNormal,
+                "Shape" or "Calligraphy" => btnBrushShape,
+                "Highlighter" or "Marker" or "Mask" or "MaskPen" => btnBrushHighlighter,
+                "Laser" => btnBrushLaser,
                 _ => btnBrushNormal
             };
             if (targetButton != null)

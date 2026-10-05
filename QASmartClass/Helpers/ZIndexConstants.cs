@@ -10,6 +10,9 @@ namespace QASmartTouch.Helpers
         public const int Background = 0;
         public const int GridOverlay = 1;
         
+        // Layer 50: Highlighter Layer (bút dạ quang nằm DƯỚI nét mực UserContentBase nhưng TRÊN nền)
+        public const int HighlighterLayer = 50;
+        
         // Layer 100-999: User Content (Strokes, Shapes, Images, Text)
         public const int UserContentBase = 100;
         // ✅ QC_4.2_TABLE_ZINDEX (T9): Bảng nằm TRÊN nét vẽ thường nhưng DƯỚI Widget

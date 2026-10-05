@@ -298,7 +298,11 @@ namespace QASmartTouch.Forms
             _touchHandler = new TouchHandler(MainInteractiveBoard);
             _touchHandler.RegisterOuterTouchSurface(MainScrollViewer);
             _touchHandler.SetEraserEngine(_eraserEngine);
-            _touchHandler.SetRecordAddAction(RecordAddAction);
+            _touchHandler.SetRecordAddAction((elem, desc) =>
+            {
+                RecordAddAction(elem, desc);
+                RegisterNewObjectWithSelectionManager(elem);
+            });
             _touchHandler.SetRecordRemoveAction(RecordRemoveAction); // QC_4.2_TOUCH_ERASER_FIX: Wire undo cho touch erase
             _touchHandler.SetRecordEraseSessionAction(FinalizeEraseSession); // Wire atomic batch undo for touch erase
             _touchHandler.SetUpdateEraserPreviewAction(UpdateEraserCursorPreview); // ✅ Wire eraser preview callback for touch
@@ -521,6 +525,15 @@ namespace QASmartTouch.Forms
 
         private const int WM_MOUSEACTIVATE = 0x0021;
         private const int MA_ACTIVATE = 1;
+        private const int WM_COPYDATA = 0x004A;
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct COPYDATASTRUCT
+        {
+            public IntPtr dwData;
+            public int cbData;
+            public IntPtr lpData;
+        }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
@@ -551,6 +564,35 @@ namespace QASmartTouch.Forms
             {
                 handled = true;
                 return new IntPtr(MA_ACTIVATE); // Kích hoạt cửa sổ VÀ KHÔNG ĐƯỢC NUỐT cú chạm/click!
+            }
+            else if (msg == WM_COPYDATA)
+            {
+                try
+                {
+                    var cds = (COPYDATASTRUCT)System.Runtime.InteropServices.Marshal.PtrToStructure(lParam, typeof(COPYDATASTRUCT))!;
+                    if (cds.dwData == (IntPtr)0x5141 && cds.lpData != IntPtr.Zero)
+                    {
+                        string path = System.Runtime.InteropServices.Marshal.PtrToStringUni(cds.lpData)!;
+                        if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+                        {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                if (WindowState == WindowState.Minimized)
+                                {
+                                    WindowState = WindowState.Maximized;
+                                }
+                                Activate();
+                                LoadLecture(path);
+                            }), System.Windows.Threading.DispatcherPriority.Input);
+                            handled = true;
+                            return new IntPtr(1);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Form2] Error handling WM_COPYDATA: {ex.Message}");
+                }
             }
             return IntPtr.Zero;
         }

@@ -1410,14 +1410,43 @@ namespace QASmartTouch.Forms
                     System.Diagnostics.Debug.WriteLine($"✨ Stroke optimized: {originalCount} → {smoothedPoints.Count} points (Decimation + 20% smoothing)");
                 }
 
-                // Đưa nét vẽ hoàn thành về tầng nội dung chuẩn (UserContentBase = 100)
-                Panel.SetZIndex(_currentStroke, ZIndexConstants.UserContentBase);
+                // Đưa nét vẽ hoàn thành về tầng nội dung chuẩn
+                if (_currentBrushType == "Laser")
+                {
+                    AnimateAndRemoveLaserStroke(_currentStroke);
+                }
+                else if (_currentBrushType == "Shape" || _currentBrushType == "Calligraphy")
+                {
+                    var recognizedShape = ShapeRecognizer.TryRecognizeShape(_currentStroke, _currentPenColor, _currentPenSize);
+                    if (recognizedShape != null)
+                    {
+                        MainInteractiveBoard.Children.Remove(_currentStroke);
+                        Panel.SetZIndex(recognizedShape, ZIndexConstants.UserContentBase);
+                        MainInteractiveBoard.Children.Add(recognizedShape);
+                        RecordAddAction(recognizedShape, "Recognized Shape");
+                        RegisterNewObjectWithSelectionManager(recognizedShape);
+                    }
+                    else
+                    {
+                        // Fallback an toàn: Giữ nguyên nét vẽ tự do
+                        Panel.SetZIndex(_currentStroke, ZIndexConstants.UserContentBase);
+                        RecordAddAction(_currentStroke, "Draw stroke");
+                        RegisterNewObjectWithSelectionManager(_currentStroke);
+                    }
+                }
+                else
+                {
+                    int zIndex = (_currentBrushType == "Highlighter" || _currentBrushType == "Marker" || _currentBrushType == "Mask" || _currentBrushType == "MaskPen")
+                        ? ZIndexConstants.HighlighterLayer
+                        : ZIndexConstants.UserContentBase;
+                    Panel.SetZIndex(_currentStroke, zIndex);
 
-                // Add completed stroke to undo stack
-                RecordAddAction(_currentStroke, "Draw stroke");
-                
-                // BUGFIX: Register new Polyline with SelectionManager
-                RegisterNewObjectWithSelectionManager(_currentStroke);
+                    // Add completed stroke to undo stack
+                    RecordAddAction(_currentStroke, "Draw stroke");
+                    
+                    // BUGFIX: Register new Polyline with SelectionManager
+                    RegisterNewObjectWithSelectionManager(_currentStroke);
+                }
                 
                 _isDrawing = false;
                 _currentStroke = null;
@@ -8429,52 +8458,49 @@ namespace QASmartTouch.Forms
             // Apply different styles based on brush type
             switch (_currentBrushType)
             {
-                case "Normal":
+                case "Normal" or "Simple" or "AI":
                     // Standard smooth pen
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
                     stroke.StrokeEndLineCap = PenLineCap.Round;
+                    stroke.StrokeThickness = _currentPenSize;
                     break;
 
-                case "Hoc":
-                    // Educational pen - thicker, more visible
+                case "Calligraphy" or "Hoc" or "Shape":
+                    // Educational calligraphy - thicker, round caps
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
                     stroke.StrokeEndLineCap = PenLineCap.Round;
-                    stroke.StrokeThickness = _currentPenSize * 1.2; // 20% thicker
+                    stroke.StrokeThickness = _currentPenSize * 1.25;
+                    break;
+
+                case "Highlighter" or "Marker" or "Mask" or "MaskPen":
+                    // Highlighter - semi-transparent, flat ends, wider
+                    stroke.StrokeLineJoin = PenLineJoin.Miter;
+                    stroke.StrokeStartLineCap = PenLineCap.Flat;
+                    stroke.StrokeEndLineCap = PenLineCap.Flat;
+                    stroke.Opacity = 0.4;
+                    stroke.StrokeThickness = Math.Max(_currentPenSize * 2.2, 10);
+                    break;
+
+                case "Laser":
+                    // Laser pen - vibrant glowing indicator
+                    stroke.StrokeLineJoin = PenLineJoin.Round;
+                    stroke.StrokeStartLineCap = PenLineCap.Round;
+                    stroke.StrokeEndLineCap = PenLineCap.Round;
+                    stroke.Opacity = 0.95;
+                    stroke.StrokeThickness = Math.Max(_currentPenSize * 1.3, 4);
+                    if (_currentPenColor == Colors.Black)
+                    {
+                        stroke.Stroke = new SolidColorBrush(Color.FromRgb(255, 59, 48));
+                    }
                     break;
 
                 case "Transparent":
-                    // Transparent pen - smooth with slight transparency (Bút mờ)
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
                     stroke.StrokeEndLineCap = PenLineCap.Round;
                     stroke.Opacity = 0.85;
-                    break;
-
-                case "Simple":
-                    // Simple pen - basic sharp edges
-                    stroke.StrokeLineJoin = PenLineJoin.Miter;
-                    stroke.StrokeStartLineCap = PenLineCap.Flat;
-                    stroke.StrokeEndLineCap = PenLineCap.Flat;
-                    break;
-
-                case "Marker":
-                    // Marker - semi-transparent, wider
-                    stroke.StrokeLineJoin = PenLineJoin.Round;
-                    stroke.StrokeStartLineCap = PenLineCap.Round;
-                    stroke.StrokeEndLineCap = PenLineCap.Round;
-                    stroke.Opacity = 0.6; // Semi-transparent like real marker
-                    stroke.StrokeThickness = _currentPenSize * 1.5; // Wider
-                    break;
-
-                case "Mask":
-                    // Mask Pen - for highlighting/masking areas
-                    stroke.StrokeLineJoin = PenLineJoin.Round;
-                    stroke.StrokeStartLineCap = PenLineCap.Round;
-                    stroke.StrokeEndLineCap = PenLineCap.Round;
-                    stroke.Opacity = 0.3; // Very transparent
-                    stroke.StrokeThickness = _currentPenSize * 2; // Very wide
                     break;
 
                 default:
@@ -8482,10 +8508,42 @@ namespace QASmartTouch.Forms
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
                     stroke.StrokeEndLineCap = PenLineCap.Round;
+                    stroke.StrokeThickness = _currentPenSize;
                     break;
             }
 
             return stroke;
+        }
+
+        /// <summary>
+        /// Tự động làm mờ và giải phóng nét bút laser sau 2.5 giây
+        /// </summary>
+        private void AnimateAndRemoveLaserStroke(UIElement stroke)
+        {
+            if (stroke == null) return;
+            
+            var anim = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = stroke.Opacity,
+                To = 0.0,
+                BeginTime = TimeSpan.FromSeconds(1.5),
+                Duration = TimeSpan.FromSeconds(1.0),
+                FillBehavior = System.Windows.Media.Animation.FillBehavior.Stop
+            };
+            
+            anim.Completed += (s, e) =>
+            {
+                try
+                {
+                    if (MainInteractiveBoard.Children.Contains(stroke))
+                    {
+                        MainInteractiveBoard.Children.Remove(stroke);
+                    }
+                }
+                catch { }
+            };
+            
+            stroke.BeginAnimation(UIElement.OpacityProperty, anim);
         }
 
         private void EraseStrokeAt(Point point)
