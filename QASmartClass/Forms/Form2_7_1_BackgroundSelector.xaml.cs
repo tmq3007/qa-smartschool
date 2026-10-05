@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using QASmartClass.Properties; // ✨ Add for Settings
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -21,6 +22,7 @@ namespace QASmartTouch.Forms
         public Form2_7_1_BackgroundSelector()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             
             // ✨ Sync sliders with default values
             LineOpacitySlider.Value = LineOpacity;
@@ -220,14 +222,14 @@ namespace QASmartTouch.Forms
                 message += $"• Màu nền: {GetColorDisplayName(SelectedColor)}\n";
                 message += $"• Mẫu nền: {GetPatternDisplayName(SelectedPattern)}";
                 
-                MessageBox.Show(message, 
+                MessageBox.Show(this, message, 
                                "Thành công", 
                                MessageBoxButton.OK, 
                                MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi lưu cài đặt:\n{ex.Message}", 
+                MessageBox.Show(this, $"Lỗi khi lưu cài đặt:\n{ex.Message}", 
                                "Lỗi", 
                                MessageBoxButton.OK, 
                                MessageBoxImage.Error);

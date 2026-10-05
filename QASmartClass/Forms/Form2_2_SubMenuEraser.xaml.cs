@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -18,11 +19,59 @@ namespace QASmartTouch.Forms
         public Form2_2_SubMenuEraser()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             // QC_4.2_TOUCH_PIPELINE: Popup Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
             if (btnClose != null)
             {
-                btnClose.PreviewTouchDown += (s, e) => { this.Close(); e.Handled = true; };
-                btnClose.PreviewStylusDown += (s, e) => { this.Close(); e.Handled = true; };
+                System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
+
+                btnClose.PreviewTouchDown += (s, e) =>
+                {
+                    e.TouchDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewTouchUp += (s, e) =>
+                {
+                    if (e.TouchDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseTouchCapture(e.TouchDevice);
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
+
+                btnClose.PreviewStylusDown += (s, e) =>
+                {
+                    e.StylusDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewStylusUp += (s, e) =>
+                {
+                    if (e.StylusDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseStylusCapture();
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
             }
             
             // Sync selected mode UI on load
@@ -30,6 +79,10 @@ namespace QASmartTouch.Forms
             {
                 UpdateEraserModeUI();
             };
+
+            if (btnEraseByStroke != null) WireTouchActivation(btnEraseByStroke, btnEraseMode_Click);
+            if (btnEraseByPoint != null) WireTouchActivation(btnEraseByPoint, btnEraseMode_Click);
+            if (btnClearAll != null) WireTouchActivation(btnClearAll, btnClearAll_Click);
             
             // Set closing flag to prevent re-entrant Close() from any source
             this.Closing += (s, e) =>
@@ -52,22 +105,22 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void HighlightMode(Button selectedButton)
         {
-            if (btnEraseByStroke == null || btnEraseByDrag == null || btnClearAll == null) return;
+            if (btnEraseByStroke == null || btnEraseByPoint == null || btnClearAll == null) return;
 
             // Reset backgrounds to default soft pastel colors
             btnEraseByStroke.Background = new SolidColorBrush(Color.FromRgb(227, 242, 253)); // #E3F2FD
-            btnEraseByDrag.Background = new SolidColorBrush(Color.FromRgb(243, 229, 245));   // #F3E5F5
+            btnEraseByPoint.Background = new SolidColorBrush(Color.FromRgb(243, 229, 245));   // #F3E5F5
             btnClearAll.Background = new SolidColorBrush(Color.FromRgb(255, 235, 238));      // #FFEBEE
 
             // Reset borders (remove selection outline)
             btnEraseByStroke.BorderThickness = new Thickness(0);
-            btnEraseByDrag.BorderThickness = new Thickness(0);
+            btnEraseByPoint.BorderThickness = new Thickness(0);
             btnClearAll.BorderThickness = new Thickness(0);
 
             // Set uniform dark slate foreground for high contrast text readability
             var textDarkSlate = new SolidColorBrush(Color.FromRgb(47, 53, 66)); // #2F3542
             btnEraseByStroke.Foreground = textDarkSlate;
-            btnEraseByDrag.Foreground = textDarkSlate;
+            btnEraseByPoint.Foreground = textDarkSlate;
             btnClearAll.Foreground = textDarkSlate;
 
             // Highlight selected button with a distinct thick border of its brand color
@@ -76,7 +129,7 @@ namespace QASmartTouch.Forms
                 selectedButton.BorderBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243)); // #2196F3
                 selectedButton.BorderThickness = new Thickness(2);
             }
-            else if (selectedButton == btnEraseByDrag)
+            else if (selectedButton == btnEraseByPoint)
             {
                 selectedButton.BorderBrush = new SolidColorBrush(Color.FromRgb(156, 39, 176)); // #9C27B0
                 selectedButton.BorderThickness = new Thickness(2);
@@ -109,7 +162,11 @@ namespace QASmartTouch.Forms
                 if (!_isClosing)
                 {
                     _isClosing = true;
-                    this.Close();
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try { this.Owner?.Activate(); } catch { }
+                        this.Close();
+                    }), System.Windows.Threading.DispatcherPriority.Input);
                 }
             }
         }
@@ -127,7 +184,11 @@ namespace QASmartTouch.Forms
             currentEraserMode = "ClearAll";
             HighlightMode(btnClearAll);
             IsApplied = true;
-            this.Close();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try { this.Owner?.Activate(); } catch { }
+                this.Close();
+            }), System.Windows.Threading.DispatcherPriority.Input);
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
@@ -135,6 +196,7 @@ namespace QASmartTouch.Forms
             if (_isClosing) return; // ✅ Guard: Deactivated may have already started closing
             _isClosing = true;
             IsApplied = true;
+            try { this.Owner?.Activate(); } catch { }
             this.Close();
         }
 
@@ -174,7 +236,8 @@ namespace QASmartTouch.Forms
             Button? targetButton = currentEraserMode switch
             {
                 "Stroke" => btnEraseByStroke,
-                "Drag" => btnEraseByDrag,
+                "Point" => btnEraseByPoint,
+                "Drag" => btnEraseByPoint,
                 "ClearAll" => btnClearAll,
                 _ => btnEraseByStroke
             };
@@ -183,5 +246,73 @@ namespace QASmartTouch.Forms
         }
 
         #endregion
+
+        /// <summary>
+        /// QC_4.2_TOUCH_PIPELINE: Trực tiếp kích hoạt cảm ứng cho nút bấm trong SubMenu.
+        /// Bắt trực tiếp PreviewTouchDown/Up và PreviewStylusDown/Up để đảm bảo 100% cú chạm đầu tiên
+        /// kích hoạt hành động ngay lập tức (Zero 2nd tap) trên màn hình tương tác.
+        /// </summary>
+        private void WireTouchActivation(Button button, RoutedEventHandler clickHandler)
+        {
+            if (button == null) return;
+            button.Focusable = false;
+            System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(button, false);
+
+            button.PreviewTouchDown += (s, e) =>
+            {
+                e.TouchDevice.Capture(button);
+                e.Handled = true;
+            };
+
+            button.PreviewTouchUp += (s, e) =>
+            {
+                if (e.TouchDevice.Captured == button)
+                {
+                    button.ReleaseTouchCapture(e.TouchDevice);
+                    try
+                    {
+                        var pos = e.GetTouchPoint(button).Position;
+                        if (pos.X >= 0 && pos.X <= button.ActualWidth &&
+                            pos.Y >= 0 && pos.Y <= button.ActualHeight)
+                        {
+                            clickHandler(button, new RoutedEventArgs(Button.ClickEvent, button));
+                        }
+                    }
+                    catch
+                    {
+                        clickHandler(button, new RoutedEventArgs(Button.ClickEvent, button));
+                    }
+                }
+                e.Handled = true;
+            };
+
+            button.PreviewStylusDown += (s, e) =>
+            {
+                e.StylusDevice.Capture(button);
+                e.Handled = true;
+            };
+
+            button.PreviewStylusUp += (s, e) =>
+            {
+                if (e.StylusDevice.Captured == button)
+                {
+                    button.ReleaseStylusCapture();
+                    try
+                    {
+                        var pos = e.GetPosition(button);
+                        if (pos.X >= 0 && pos.X <= button.ActualWidth &&
+                            pos.Y >= 0 && pos.Y <= button.ActualHeight)
+                        {
+                            clickHandler(button, new RoutedEventArgs(Button.ClickEvent, button));
+                        }
+                    }
+                    catch
+                    {
+                        clickHandler(button, new RoutedEventArgs(Button.ClickEvent, button));
+                    }
+                }
+                e.Handled = true;
+            };
+        }
     }
 }

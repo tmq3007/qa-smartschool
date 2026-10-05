@@ -1,37 +1,36 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using QASmartTouch.Managers;
 using WpfCanvas = System.Windows.Controls.Canvas;
 using WpfPrintDialog = System.Windows.Controls.PrintDialog;
+using Size = System.Windows.Size;
 
 namespace QASmartTouch.Services
 {
     /// <summary>
-    /// Export Service — Xuất canvas bảng trắng thành PDF/PNG/Print
-    /// Sử dụng RenderTargetBitmap + XPS (built-in WPF) để tạo PDF-like output
+    /// Export Service — Xuất canvas bảng trắng thành PDF (QuestPDF) / PNG / JPEG / Print
+    /// Hỗ trợ xuất 1 trang hoặc toàn bộ các trang của BoardManager
     /// </summary>
     public static class CanvasExportService
     {
         /// <summary>
         /// Xuất toàn bộ canvas thành file PNG chất lượng cao
         /// </summary>
-        public static bool ExportToPng(WpfCanvas canvas, string filePath, double dpi = 192)
+        public static bool ExportToPng(WpfCanvas canvas, string filePath, double dpi = 192, Func<UIElement, bool>? isSystemElementPredicate = null)
         {
             try
             {
-                if (canvas == null || canvas.ActualWidth <= 0 || canvas.ActualHeight <= 0) return false;
+                var bytes = CaptureCanvasToImageBytes(canvas, dpi, isSystemElementPredicate, isJpeg: false);
+                if (bytes == null) return false;
 
-                var renderBitmap = RenderCanvas(canvas, dpi);
-                if (renderBitmap == null) return false;
-
-                var encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
-
-                using var fs = File.Create(filePath);
-                encoder.Save(fs);
-
+                File.WriteAllBytes(filePath, bytes);
                 System.Diagnostics.Debug.WriteLine($"[Export] PNG saved: {filePath}");
                 return true;
             }
@@ -43,40 +42,316 @@ namespace QASmartTouch.Services
         }
 
         /// <summary>
-        /// Xuất toàn bộ canvas thành file PDF (sử dụng XPS → PDF concept)
-        /// WPF native approach: render to high-res PNG rồi embed vào XPS document
+        /// Xuất toàn bộ canvas thành file JPEG chất lượng cao
         /// </summary>
-        public static bool ExportToPdf(WpfCanvas canvas, string filePath, double dpi = 192)
+        public static bool ExportToJpeg(WpfCanvas canvas, string filePath, double dpi = 192, Func<UIElement, bool>? isSystemElementPredicate = null)
         {
             try
             {
-                if (canvas == null || canvas.ActualWidth <= 0 || canvas.ActualHeight <= 0) return false;
+                var bytes = CaptureCanvasToImageBytes(canvas, dpi, isSystemElementPredicate, isJpeg: true);
+                if (bytes == null) return false;
 
-                // Strategy: Export as high-quality PNG (PDF cần thêm thư viện bên ngoài)
-                // Tạm thời export PNG chất lượng cao, sau này tích hợp PdfSharp/iTextSharp
-                string pngPath = Path.ChangeExtension(filePath, ".png");
-                bool success = ExportToPng(canvas, pngPath, 288); // 3x DPI for print quality
+                File.WriteAllBytes(filePath, bytes);
+                System.Diagnostics.Debug.WriteLine($"[Export] JPEG saved: {filePath}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Export] JPEG error: {ex.Message}");
+                return false;
+            }
+        }
 
-                if (success)
+        /// <summary>
+        /// Chụp Canvas thành mảng byte hình ảnh (PNG hoặc JPEG) chất lượng cao, tạm ẩn System UI controls
+        /// Bảo toàn 100% lớp nền bảng (BackgroundLayer)
+        /// </summary>
+        public static byte[]? CaptureCanvasToImageBytes(
+            WpfCanvas canvas, 
+            double dpi = 192, 
+            Func<UIElement, bool>? isSystemElementPredicate = null,
+            bool isJpeg = false)
+        {
+            try
+            {
+                if (canvas == null || canvas.ActualWidth <= 0 || canvas.ActualHeight <= 0) return null;
+
+                // Tạm ẩn các control UI hệ thống (SelectionBox, ContextToolbar, EraserPreview...)
+                // ✅ RÀNG BUỘC SỐNG CÒN (QC_4.2_BUGFIX_PROTOCOL):
+                // Tuyệt đối KHÔNG ẩn lớp nền bảng (BackgroundLayer) để bảo toàn màu nền và lưới ô ly khi xuất ảnh/PDF!
+                var hiddenElements = new List<(UIElement element, Visibility original)>();
+                foreach (UIElement child in canvas.Children)
                 {
-                    // Nếu user yêu cầu PDF, tạo XPS (native WPF) 
-                    try
+                    if (child is FrameworkElement fe && fe.Tag?.ToString() == "BackgroundLayer")
                     {
-                        ExportToXps(canvas, Path.ChangeExtension(filePath, ".xps"));
-                        System.Diagnostics.Debug.WriteLine($"[Export] XPS saved alongside PNG");
+                        continue;
                     }
-                    catch
+
+                    if (isSystemElementPredicate != null && isSystemElementPredicate(child) && child.Visibility == Visibility.Visible)
                     {
-                        // XPS export is optional bonus
+                        hiddenElements.Add((child, child.Visibility));
+                        child.Visibility = Visibility.Hidden;
                     }
                 }
 
-                return success;
+                try
+                {
+                    canvas.UpdateLayout();
+
+                    int width = (int)(canvas.ActualWidth * dpi / 96.0);
+                    int height = (int)(canvas.ActualHeight * dpi / 96.0);
+                    if (width <= 0 || height <= 0) return null;
+
+                    var renderBitmap = new RenderTargetBitmap(width, height, dpi, dpi, PixelFormats.Pbgra32);
+
+                    // Kiểm tra xem canvas có BackgroundLayer hiển thị hay không
+                    bool hasVisibleBgLayer = false;
+                    foreach (UIElement child in canvas.Children)
+                    {
+                        if (child is FrameworkElement fe && fe.Tag?.ToString() == "BackgroundLayer" && child.Visibility == Visibility.Visible)
+                        {
+                            hasVisibleBgLayer = true;
+                            break;
+                        }
+                    }
+
+                    // Nếu không có BackgroundLayer và canvas.Background là transparent/null -> vẽ nền mặc định #3D6D64 trước khi vẽ canvas để tránh trong suốt
+                    if (!hasVisibleBgLayer && (canvas.Background == null || canvas.Background == Brushes.Transparent))
+                    {
+                        var bgVisual = new DrawingVisual();
+                        using (var dc = bgVisual.RenderOpen())
+                        {
+                            var bgBrush = new SolidColorBrush((System.Windows.Media.Color)ColorConverter.ConvertFromString("#3D6D64"));
+                            dc.DrawRectangle(bgBrush, null, new Rect(0, 0, canvas.ActualWidth, canvas.ActualHeight));
+                        }
+                        renderBitmap.Render(bgVisual);
+                    }
+
+                    renderBitmap.Render(canvas);
+
+                    BitmapEncoder encoder = isJpeg
+                        ? new JpegBitmapEncoder { QualityLevel = 95 }
+                        : new PngBitmapEncoder();
+
+                    encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+
+                    using var ms = new MemoryStream();
+                    encoder.Save(ms);
+                    return ms.ToArray();
+                }
+                finally
+                {
+                    // Khôi phục hiển thị
+                    foreach (var (element, original) in hiddenElements)
+                    {
+                        element.Visibility = original;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Export] Capture error: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Chụp Canvas thành mảng byte PNG chất lượng cao, tạm ẩn System UI controls
+        /// </summary>
+        public static byte[]? CaptureCanvasToPngBytes(WpfCanvas canvas, double dpi = 192, Func<UIElement, bool>? isSystemElementPredicate = null)
+        {
+            return CaptureCanvasToImageBytes(canvas, dpi, isSystemElementPredicate, isJpeg: false);
+        }
+
+        /// <summary>
+        /// Xuất canvas hiện tại thành file PDF chuẩn A4 Ngang (QuestPDF)
+        /// </summary>
+        public static bool ExportToPdf(WpfCanvas canvas, string filePath, string lectureTitle = "QA SmartClass", double dpi = 192, Func<UIElement, bool>? isSystemElementPredicate = null)
+        {
+            try
+            {
+                var imageBytes = CaptureCanvasToPngBytes(canvas, dpi, isSystemElementPredicate);
+                if (imageBytes == null) return false;
+
+                return ExportImagesToPdf(new List<(byte[] ImageBytes, string PageTitle)> { (imageBytes, "Bảng trắng") }, filePath, lectureTitle);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Export] PDF error: {ex.Message}");
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Xuất danh sách các ảnh chụp thành file PDF chuẩn A4 Ngang qua QuestPDF
+        /// </summary>
+        public static bool ExportImagesToPdf(List<(byte[] ImageBytes, string PageTitle)> pages, string filePath, string lectureTitle = "QA SmartClass")
+        {
+            if (pages == null || pages.Count == 0 || string.IsNullOrWhiteSpace(filePath)) return false;
+
+            try
+            {
+                QuestPDF.Settings.License = LicenseType.Community;
+
+                var doc = Document.Create(container =>
+                {
+                    int totalPages = pages.Count;
+                    int pageIndex = 1;
+
+                    foreach (var (imageBytes, pageTitle) in pages)
+                    {
+                        int currentPage = pageIndex;
+                        string title = !string.IsNullOrWhiteSpace(pageTitle) ? pageTitle : $"Trang {currentPage}";
+
+                        container.Page(page =>
+                        {
+                            page.Size(PageSizes.A4.Landscape());
+                            page.Margin(12, Unit.Point);
+
+                            // Header
+                            page.Header().PaddingBottom(4, Unit.Point).Row(row =>
+                            {
+                                row.RelativeItem().Text(lectureTitle).Bold().FontSize(11).FontColor(QuestPDF.Helpers.Colors.Grey.Darken3);
+                                row.RelativeItem().AlignRight().Text($"{title} ({currentPage}/{totalPages})").FontSize(9).FontColor(QuestPDF.Helpers.Colors.Grey.Medium);
+                            });
+
+                            // Content: Fit canvas image into A4 landscape
+                            page.Content().Image(imageBytes).FitArea();
+
+                            // Footer
+                            page.Footer().PaddingTop(4, Unit.Point).Row(row =>
+                            {
+                                row.RelativeItem().Text($"Xuất ngày {DateTime.Now:dd/MM/yyyy HH:mm}").FontSize(8).FontColor(QuestPDF.Helpers.Colors.Grey.Lighten1);
+                                row.RelativeItem().AlignRight().Text("QA SmartClass - Bảng vẽ tương tác").FontSize(8).FontColor(QuestPDF.Helpers.Colors.Grey.Lighten1);
+                            });
+                        });
+
+                        pageIndex++;
+                    }
+                });
+
+                doc.GeneratePdf(filePath);
+                System.Diagnostics.Debug.WriteLine($"[Export] ✅ PDF đã xuất thành công: {filePath} ({pages.Count} trang)");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Export] ❌ Lỗi xuất PDF qua QuestPDF: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Xuất tất cả các trang của BoardManager thành 1 file PDF A4 Ngang ghép trang
+        /// </summary>
+        public static bool ExportBoardsToPdf(BoardManager boardManager, WpfCanvas canvas, string filePath, string lectureTitle = "QA SmartClass", double dpi = 192, Action<int, int>? progressCallback = null)
+        {
+            if (boardManager == null || canvas == null) return false;
+
+            int originalIndex = boardManager.CurrentBoardIndex;
+            var capturedPages = new List<(byte[] ImageBytes, string PageTitle)>();
+
+            try
+            {
+                int total = boardManager.BoardCount;
+                for (int i = 0; i < total; i++)
+                {
+                    progressCallback?.Invoke(i + 1, total);
+
+                    if (boardManager.CurrentBoardIndex != i)
+                    {
+                        boardManager.SwitchBoard(i);
+                    }
+
+                    canvas.UpdateLayout();
+
+                    var bytes = CaptureCanvasToPngBytes(canvas, dpi, boardManager.IsSystemElement);
+                    if (bytes != null)
+                    {
+                        capturedPages.Add((bytes, boardManager.Boards[i].Name));
+                    }
+                }
+
+                if (capturedPages.Count == 0) return false;
+
+                return ExportImagesToPdf(capturedPages, filePath, lectureTitle);
+            }
+            finally
+            {
+                if (boardManager.CurrentBoardIndex != originalIndex)
+                {
+                    boardManager.SwitchBoard(originalIndex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Xuất tất cả các trang của BoardManager thành các file ảnh riêng lẻ trong thư mục
+        /// </summary>
+        public static bool ExportBoardsToImages(BoardManager boardManager, WpfCanvas canvas, string outputDirectory, string baseFileName, string format = "png", double dpi = 192, Action<int, int>? progressCallback = null)
+        {
+            if (boardManager == null || canvas == null || string.IsNullOrWhiteSpace(outputDirectory)) return false;
+
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            int originalIndex = boardManager.CurrentBoardIndex;
+            bool isJpeg = format.Equals("jpg", StringComparison.OrdinalIgnoreCase) || format.Equals("jpeg", StringComparison.OrdinalIgnoreCase);
+            string ext = isJpeg ? ".jpg" : ".png";
+
+            try
+            {
+                int total = boardManager.BoardCount;
+                for (int i = 0; i < total; i++)
+                {
+                    progressCallback?.Invoke(i + 1, total);
+
+                    if (boardManager.CurrentBoardIndex != i)
+                    {
+                        boardManager.SwitchBoard(i);
+                    }
+
+                    canvas.UpdateLayout();
+
+                    string fileName = $"{baseFileName}_Trang_{i + 1}{ext}";
+                    string filePath = Path.Combine(outputDirectory, fileName);
+
+                    if (isJpeg)
+                    {
+                        ExportToJpeg(canvas, filePath, dpi, boardManager.IsSystemElement);
+                    }
+                    else
+                    {
+                        ExportToPng(canvas, filePath, dpi, boardManager.IsSystemElement);
+                    }
+                }
+
+                return true;
+            }
+            finally
+            {
+                if (boardManager.CurrentBoardIndex != originalIndex)
+                {
+                    boardManager.SwitchBoard(originalIndex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Xuất 1 trang đơn lẻ sang file ảnh PNG hoặc JPEG
+        /// </summary>
+        public static bool ExportSingleBoardToImage(WpfCanvas canvas, string filePath, string format = "png", double dpi = 192, Func<UIElement, bool>? isSystemElementPredicate = null)
+        {
+            bool isJpeg = format.Equals("jpg", StringComparison.OrdinalIgnoreCase) || format.Equals("jpeg", StringComparison.OrdinalIgnoreCase);
+            if (isJpeg)
+            {
+                return ExportToJpeg(canvas, filePath, dpi, isSystemElementPredicate);
+            }
+            else
+            {
+                return ExportToPng(canvas, filePath, dpi, isSystemElementPredicate);
             }
         }
 
@@ -257,29 +532,6 @@ namespace QASmartTouch.Services
                     "Lỗi",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-            }
-        }
-
-        /// <summary>
-        /// Export to JPEG
-        /// </summary>
-        private static bool ExportToJpeg(WpfCanvas canvas, string filePath, double dpi = 192)
-        {
-            try
-            {
-                var renderBitmap = RenderCanvas(canvas, dpi);
-                if (renderBitmap == null) return false;
-
-                var encoder = new JpegBitmapEncoder { QualityLevel = 95 };
-                encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
-
-                using var fs = File.Create(filePath);
-                encoder.Save(fs);
-                return true;
-            }
-            catch
-            {
-                return false;
             }
         }
     }

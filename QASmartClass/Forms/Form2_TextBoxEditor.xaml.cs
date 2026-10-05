@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using QASmartTouch.Controls;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -16,6 +17,7 @@ namespace QASmartTouch.Forms
         public Form2_TextBoxEditor()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             // QC_4.2_TOUCH_PIPELINE: TextBox Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
             
             // Set default custom template
@@ -24,7 +26,12 @@ namespace QASmartTouch.Forms
             Loaded += (s, e) =>
             {
                 textBoxEditor.Focus();
-                QASmartTouch.Forms.Form2_MainDashboard.ShowTouchKeyboard();
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            };
+
+            Closed += (s, e) =>
+            {
+                TouchKeyboardHelper.HideTouchKeyboard();
             };
         }
 

@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using QASmartTouch.Modules.InteractiveBooks.Models;
 using QASmartTouch.Modules.InteractiveBooks.Services;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -20,10 +21,58 @@ namespace QASmartTouch.Forms
         public Form2_20_SubMenuBooks()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             if (btnClose != null)
             {
-                btnClose.PreviewTouchDown += (s, e) => { this.Close(); e.Handled = true; };
-                btnClose.PreviewStylusDown += (s, e) => { this.Close(); e.Handled = true; };
+                System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
+
+                btnClose.PreviewTouchDown += (s, e) =>
+                {
+                    e.TouchDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewTouchUp += (s, e) =>
+                {
+                    if (e.TouchDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseTouchCapture(e.TouchDevice);
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
+
+                btnClose.PreviewStylusDown += (s, e) =>
+                {
+                    e.StylusDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewStylusUp += (s, e) =>
+                {
+                    if (e.StylusDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseStylusCapture();
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
             }
             _bookService = new BookService();
             _allBooks = new List<Book>();
@@ -101,6 +150,7 @@ namespace QASmartTouch.Forms
             button.Template = template;
 
             button.Click += GradeTab_Click;
+            TouchActivationHelper.WireButton(button);
 
             return button;
         }
@@ -248,6 +298,7 @@ namespace QASmartTouch.Forms
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
+            try { this.Owner?.Activate(); } catch { }
             this.Close();
         }
 
@@ -263,6 +314,24 @@ namespace QASmartTouch.Forms
             var border = (Border)sender;
             var book = (Book)border.DataContext;
             OpenBook(book);
+        }
+
+        private void BookCard_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (sender is Border border && border.DataContext is Book book)
+            {
+                OpenBook(book);
+                e.Handled = true;
+            }
+        }
+
+        private void BookCard_StylusUp(object sender, StylusEventArgs e)
+        {
+            if (sender is Border border && border.DataContext is Book book)
+            {
+                OpenBook(book);
+                e.Handled = true;
+            }
         }
 
         private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)

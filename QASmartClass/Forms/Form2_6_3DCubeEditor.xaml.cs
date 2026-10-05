@@ -9,6 +9,7 @@ using System.Windows.Shapes;
 using System.IO;
 using Microsoft.Win32;
 using System.Windows.Threading;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -38,9 +39,15 @@ namespace QASmartTouch.Forms
         private DispatcherTimer autoRotateTimer;
         private bool isAutoRotating = false;
 
+        // Thao tác cảm ứng / chuột kéo thả xoay trực tiếp
+        private bool _isDragging = false;
+        private Point _lastInteractionPoint;
+        private int? _activeTouchId = null;
+
         public Form2_6_3DCubeEditor()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             InitializeAutoRotateTimer();
             
             // Khởi tạo giá trị mặc định - Khối lập phương đứng thẳng
@@ -293,6 +300,10 @@ namespace QASmartTouch.Forms
             DrawModeComboBox.SelectedIndex = 0; // Wireframe
             EdgeColorComboBox.SelectedIndex = 0; // Đen
             FaceColorComboBox.SelectedIndex = 0; // Không màu
+            if (chkAutoRotate.IsChecked == true)
+            {
+                chkAutoRotate.IsChecked = false;
+            }
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -301,6 +312,147 @@ namespace QASmartTouch.Forms
             this.DialogResult = false;
             this.Close();
         }
+
+        #region Canvas Direct Interaction (Touch & Mouse Drag)
+
+        private void CubeCanvas_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                _isDragging = true;
+                _lastInteractionPoint = e.GetPosition(CubeCanvas);
+                CubeCanvas.CaptureMouse();
+            }
+        }
+
+        private void CubeCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (_isDragging && e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                Point currentPoint = e.GetPosition(CubeCanvas);
+                double deltaX = currentPoint.X - _lastInteractionPoint.X;
+                double deltaY = currentPoint.Y - _lastInteractionPoint.Y;
+
+                UpdateRotationFromDrag(deltaX, deltaY);
+                _lastInteractionPoint = currentPoint;
+            }
+        }
+
+        private void CubeCanvas_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (_isDragging)
+            {
+                _isDragging = false;
+                CubeCanvas.ReleaseMouseCapture();
+            }
+        }
+
+        private void CubeCanvas_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (_isDragging)
+            {
+                _isDragging = false;
+                CubeCanvas.ReleaseMouseCapture();
+            }
+        }
+
+        private void CubeCanvas_TouchDown(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (!_isDragging)
+            {
+                _isDragging = true;
+                _activeTouchId = e.TouchDevice.Id;
+                _lastInteractionPoint = e.GetTouchPoint(CubeCanvas).Position;
+                CubeCanvas.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void CubeCanvas_TouchMove(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (_isDragging && _activeTouchId == e.TouchDevice.Id)
+            {
+                Point currentPoint = e.GetTouchPoint(CubeCanvas).Position;
+                double deltaX = currentPoint.X - _lastInteractionPoint.X;
+                double deltaY = currentPoint.Y - _lastInteractionPoint.Y;
+
+                UpdateRotationFromDrag(deltaX, deltaY);
+                _lastInteractionPoint = currentPoint;
+                e.Handled = true;
+            }
+        }
+
+        private void CubeCanvas_TouchUp(object sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (_isDragging && _activeTouchId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _activeTouchId = null;
+                CubeCanvas.ReleaseTouchCapture(e.TouchDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void UpdateRotationFromDrag(double deltaX, double deltaY)
+        {
+            if (isAutoRotating)
+            {
+                chkAutoRotate.IsChecked = false;
+            }
+
+            double newY = (RotYSlider.Value + deltaX * 0.6) % 360;
+            if (newY < 0) newY += 360;
+
+            double newX = (RotXSlider.Value - deltaY * 0.6) % 360;
+            if (newX < 0) newX += 360;
+
+            RotYSlider.Value = Math.Round(newY);
+            RotXSlider.Value = Math.Round(newX);
+        }
+
+        private void CubeCanvas_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            double step = (e.Delta > 0) ? 10 : -10;
+            double newValue = SizeSlider.Value + step;
+            if (newValue >= SizeSlider.Minimum && newValue <= SizeSlider.Maximum)
+            {
+                SizeSlider.Value = newValue;
+            }
+        }
+
+        #endregion
+
+        #region Preset View Handlers
+
+        private void BtnPresetPerspective_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 0;
+            RotYSlider.Value = 60;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetFront_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 0;
+            RotYSlider.Value = 0;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetTop_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 90;
+            RotYSlider.Value = 0;
+            RotZSlider.Value = 0;
+        }
+
+        private void BtnPresetIsometric_Click(object sender, RoutedEventArgs e)
+        {
+            RotXSlider.Value = 30;
+            RotYSlider.Value = 45;
+            RotZSlider.Value = 0;
+        }
+
+        #endregion
 
         #endregion
 

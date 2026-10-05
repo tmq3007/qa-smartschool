@@ -8,6 +8,7 @@ using System.Windows.Shapes;
 using Microsoft.Win32;
 using System.Windows.Media.Imaging;
 using System.IO;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -38,6 +39,8 @@ namespace QASmartTouch.Forms
         public Form2_13_ScatterChartEditor(Form2_MainDashboard? mainDashboard = null)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             _mainDashboard = mainDashboard;
             dataPoints = new List<ScatterDataPoint>();
             categories = new Dictionary<string, CategoryInfo>();

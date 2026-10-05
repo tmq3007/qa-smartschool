@@ -856,5 +856,161 @@ namespace QASmartClass.Tests
             thread.Start();
             thread.Join();
         }
+
+        /// <summary>
+        /// Test case: Dấu chấm (dot) được vẽ bằng click chuột (Polyline 2 điểm vi mô)
+        /// PHẢI được ghi vào Undo stack và có thể Undo/Redo thành công.
+        /// </summary>
+        [Fact]
+        public void TestMethod_Dashboard_DotStroke_CanBeUndoneAndRedone()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                var dashboard = new QASmartTouch.Forms.Form2_MainDashboard();
+                var canvas = dashboard.MainInteractiveBoard;
+
+                var recordAddAction = typeof(QASmartTouch.Forms.Form2_MainDashboard)
+                    .GetMethod("RecordAddAction", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var undoClickMethod = typeof(QASmartTouch.Forms.Form2_MainDashboard)
+                    .GetMethod("btn3_Undo_Click", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var redoClickMethod = typeof(QASmartTouch.Forms.Form2_MainDashboard)
+                    .GetMethod("btn4_Redo_Click", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                // 1. Tạo nét chấm dot (Polyline có 2 điểm vi mô cách nhau 0.01px)
+                var dotStroke = new System.Windows.Shapes.Polyline
+                {
+                    Stroke = System.Windows.Media.Brushes.Black,
+                    StrokeThickness = 4,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round
+                };
+                dotStroke.Points.Add(new Point(100, 100));
+                dotStroke.Points.Add(new Point(100.01, 100));
+                canvas.Children.Add(dotStroke);
+
+                recordAddAction.Invoke(dashboard, new object[] { dotStroke, "Draw stroke" });
+
+                // 2. Kiểm tra dotStroke đã nằm trong Canvas và Undo stack
+                Assert.Contains(dotStroke, canvas.Children.OfType<UIElement>());
+                var undoStack = (Stack<QASmartTouch.Forms.UndoRedoAction>)typeof(QASmartTouch.Forms.Form2_MainDashboard)
+                    .GetField("_undoStack", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    .GetValue(dashboard);
+                Assert.Equal(1, undoStack.Count);
+
+                // 3. Thực hiện Undo -> dotStroke PHẢI bị xóa khỏi Canvas
+                undoClickMethod.Invoke(dashboard, new object[] { null, null });
+                Assert.DoesNotContain(dotStroke, canvas.Children.OfType<UIElement>());
+                Assert.Equal(0, undoStack.Count);
+
+                // 4. Thực hiện Redo -> dotStroke PHẢI quay trở lại Canvas
+                redoClickMethod.Invoke(dashboard, new object[] { null, null });
+                Assert.Contains(dotStroke, canvas.Children.OfType<UIElement>());
+                Assert.Equal(1, undoStack.Count);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void TestMethod_GroupResize_TouchDot_MovesAlongWithGroup()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                // 1. Tạo nét chấm cảm ứng (Polyline -> ConvertToSmoothPath -> Path)
+                var strokeService = new QASmartTouch.Services.Canvas.StrokeService();
+                var poly = new Polyline
+                {
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 6,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round
+                };
+                poly.Points.Add(new Point(100, 100));
+                poly.Points.Add(new Point(100.01, 100));
+                var touchDotPath = strokeService.ConvertToSmoothPath(poly);
+                Assert.NotNull(touchDotPath);
+
+                var dotObj = new QASmartTouch.Models.SelectableObject
+                {
+                    Element = touchDotPath,
+                    Type = QASmartTouch.Models.ObjectType.Stroke
+                };
+                dotObj.UpdateBounds();
+
+                // 2. Tạo đối tượng đồng hành trong nhóm (Hình chữ nhật)
+                var rect = new Rectangle { Width = 100, Height = 100 };
+                var rectObj = new QASmartTouch.Models.SelectableObject
+                {
+                    Element = rect,
+                    Position = new Point(50, 50),
+                    Size = new Size(100, 100),
+                    Bounds = new Rect(50, 50, 100, 100),
+                    Type = QASmartTouch.Models.ObjectType.Shape
+                };
+
+                // 3. Tạo nhóm đối tượng (Group)
+                var groupObj = new QASmartTouch.Models.SelectableObject
+                {
+                    Type = QASmartTouch.Models.ObjectType.Group,
+                    IsGroup = true,
+                    Position = new Point(50, 50),
+                    Size = new Size(100, 100),
+                    Bounds = new Rect(50, 50, 100, 100),
+                    GroupMembers = new List<QASmartTouch.Models.SelectableObject> { rectObj, dotObj }
+                };
+
+                var snapshots = new Dictionary<QASmartTouch.Models.SelectableObject, (Point pos, Size size)>
+                {
+                    [dotObj] = (dotObj.Position, dotObj.Size),
+                    [rectObj] = (rectObj.Position, rectObj.Size)
+                };
+                var initialStates = new Dictionary<QASmartTouch.Models.SelectableObject, QASmartTouch.Models.ElementTransformState>
+                {
+                    [dotObj] = QASmartTouch.Models.ElementTransformState.Create(dotObj),
+                    [rectObj] = QASmartTouch.Models.ElementTransformState.Create(rectObj)
+                };
+
+                var transformService = new QASmartTouch.Services.TransformService();
+
+                // 4. Thực hiện kéo chốt Resize từ góc BottomRight: Phóng to nhóm từ 100x100 lên 200x200
+                // Anchor cố định tại TopLeft (50, 50)
+                transformService.ResizeFromHandle(
+                    groupObj,
+                    QASmartTouch.Models.ResizeMode.BottomRight,
+                    currentPoint: new Point(250, 250),
+                    startPoint: new Point(150, 150),
+                    originalSize: new Size(100, 100),
+                    originalPosition: new Point(50, 50),
+                    memberSnapshots: snapshots,
+                    initialStates: initialStates
+                );
+
+                // 5. Xác minh:
+                // - Dấu chấm KHÔNG bị đứng yên ở vị trí cũ (100, 100)
+                // - RenderTransform của dấu chấm đã được gán TranslateTransform
+                Assert.NotNull(touchDotPath.RenderTransform);
+                Assert.IsType<TransformGroup>(touchDotPath.RenderTransform);
+                var tg = (TransformGroup)touchDotPath.RenderTransform;
+                var tt = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                Assert.NotNull(tt);
+
+                // Với tỉ lệ phóng to gấp đôi từ chốt neo (50, 50):
+                // Tâm dấu chấm ban đầu (100, 100) cách chốt neo (50, 50) là dx=50, dy=50
+                // Khi phóng to 2x, tâm mới phải là 50 + 50*2 = 150 -> Tịnh tiến dX ≈ 50, dY ≈ 50
+                Assert.True(Math.Abs(tt.X - 50) < 1.0, $"Dấu chấm cảm ứng phải tịnh tiến dX ≈ 50, thực tế={tt.X}");
+                Assert.True(Math.Abs(tt.Y - 50) < 1.0, $"Dấu chấm cảm ứng phải tịnh tiến dY ≈ 50, thực tế={tt.Y}");
+
+                // 6. Kiểm tra cả phương thức Resize (Pinch gesture 2 ngón tay)
+                groupObj.Size = new Size(100, 100);
+                groupObj.Position = new Point(50, 50);
+                transformService.Resize(groupObj, new Size(200, 200));
+
+                Assert.NotNull(touchDotPath.RenderTransform);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
     }
 }

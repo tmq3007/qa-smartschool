@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -12,6 +13,7 @@ namespace QASmartTouch.Forms
         public Form2_22_Graph3D()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             _ = InitializeWebView();
         }
 

@@ -11,6 +11,7 @@ using OxyPlot.Series;
 using OxyPlot.Axes;
 using HelixToolkit.Wpf;
 using QASmartTouch.Models;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -39,6 +40,7 @@ namespace QASmartTouch.Forms
         public Form2_GraphEditorUnified()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
 
             _config = new GraphConfiguration();
             graphsList.ItemsSource = _config.Functions;

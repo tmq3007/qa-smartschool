@@ -1,0 +1,217 @@
+<Window x:Class="QASmartTouch.Forms.Form2_20_ExportLectureDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Xuất bài giảng"
+        Width="520" Height="560"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        Topmost="True"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI, Inter, Arial, sans-serif">
+
+    <Border Background="White" 
+            CornerRadius="16" 
+            BorderBrush="#E2E8F0" 
+            BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect Color="#0F172A" Direction="270" ShadowDepth="6" BlurRadius="24" Opacity="0.18"/>
+        </Border.Effect>
+
+        <Grid Margin="22">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="*"/>    <!-- Content (Options / Progress / Result) -->
+                <RowDefinition Height="Auto"/> <!-- Footer / Actions -->
+            </Grid.RowDefinitions>
+
+            <!-- HEADER -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#EFF6FF" CornerRadius="10" Width="38" Height="38" Margin="0,0,12,0">
+                        <Path Fill="#2563EB" 
+                              Data="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12,19L8,15H10.5V12H13.5V15H16L12,19Z"
+                              Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel>
+                        <TextBlock Text="Xuất bài giảng" FontSize="17" FontWeight="Bold" Foreground="#1E293B"/>
+                        <TextBlock Text="Lưu nội dung bảng viết thành PDF hoặc hình ảnh" FontSize="12" Foreground="#64748B" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Button x:Name="btnClose" 
+                        Width="32" Height="32" 
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Background="#F1F5F9" BorderThickness="0" Cursor="Hand"
+                        Click="btnClose_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="16">
+                                <Path Fill="#64748B" 
+                                      Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                                      Width="12" Height="12" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+
+            <!-- CONTENT: FORM OPTIONS -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,16">
+                <StackPanel x:Name="panelFormOptions">
+                    <!-- PHẠM VI XUẤT -->
+                    <TextBlock Text="1. Phạm vi xuất" FontSize="13" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,8"/>
+                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="10" Margin="0,0,0,16">
+                        <StackPanel>
+                            <RadioButton x:Name="rbScopeAll" IsChecked="True" Margin="4,4,4,8" Cursor="Hand">
+                                <StackPanel Margin="6,0,0,0">
+                                    <TextBlock x:Name="txtScopeAllTitle" Text="Toàn bộ bài giảng (Tất cả các trang)" FontWeight="SemiBold" FontSize="13" Foreground="#1E293B"/>
+                                    <TextBlock x:Name="txtScopeAllDesc" Text="Ghép tất cả các trang bảng thành 1 tệp hoặc xuất hàng loạt ảnh" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </RadioButton>
+                            <Separator Background="#E2E8F0" Margin="0,4"/>
+                            <RadioButton x:Name="rbScopeCurrent" Margin="4,8,4,4" Cursor="Hand">
+                                <StackPanel Margin="6,0,0,0">
+                                    <TextBlock x:Name="txtScopeCurrentTitle" Text="Chỉ trang hiện tại" FontWeight="SemiBold" FontSize="13" Foreground="#1E293B"/>
+                                    <TextBlock x:Name="txtScopeCurrentDesc" Text="Chỉ lưu trang bảng đang mở trên màn hình" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </RadioButton>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ĐỊNH DẠNG TỆP -->
+                    <TextBlock Text="2. Định dạng tệp xuất" FontSize="13" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,8"/>
+                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="10" Margin="0,0,0,16">
+                        <StackPanel>
+                            <RadioButton x:Name="rbFormatPdf" IsChecked="True" Margin="4,4,4,8" Cursor="Hand">
+                                <StackPanel Margin="6,0,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="📄 Tài liệu PDF (.pdf)" FontWeight="SemiBold" FontSize="13" Foreground="#1E293B"/>
+                                        <Border Background="#DCFCE7" CornerRadius="4" Padding="6,1" Margin="8,0,0,0">
+                                            <TextBlock Text="Khuyên dùng" FontSize="10" FontWeight="Bold" Foreground="#15803D"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="Khổ A4 ngang chuẩn sư phạm, sắc nét, dễ in và gửi cho học sinh" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </RadioButton>
+                            <Separator Background="#E2E8F0" Margin="0,4"/>
+                            <RadioButton x:Name="rbFormatPng" Margin="4,8,4,8" Cursor="Hand">
+                                <StackPanel Margin="6,0,0,0">
+                                    <TextBlock Text="🖼️ Hình ảnh PNG (.png)" FontWeight="SemiBold" FontSize="13" Foreground="#1E293B"/>
+                                    <TextBlock Text="Ảnh độ phân giải cao, giữ nguyên chất lượng nét vẽ bảng" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </RadioButton>
+                            <Separator Background="#E2E8F0" Margin="0,4"/>
+                            <RadioButton x:Name="rbFormatJpg" Margin="4,8,4,4" Cursor="Hand">
+                                <StackPanel Margin="6,0,0,0">
+                                    <TextBlock Text="🖼️ Hình ảnh JPEG (.jpg)" FontWeight="SemiBold" FontSize="13" Foreground="#1E293B"/>
+                                    <TextBlock Text="Dung lượng nén gọn nhẹ, tải nhanh" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </RadioButton>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- TIÊU ĐỀ BÀI GIẢNG -->
+                    <TextBlock Text="3. Tên bài giảng" FontSize="13" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,6"/>
+                    <TextBox x:Name="txtLectureTitle" 
+                             Height="40" Padding="10,8" FontSize="13" 
+                             BorderBrush="#CBD5E1" BorderThickness="1"
+                             VerticalContentAlignment="Center">
+                        <TextBox.Resources>
+                            <Style TargetType="{x:Type Border}">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- CONTENT: PROGRESS VIEW (Ẩn mặc định) -->
+            <Grid x:Name="panelProgress" Grid.Row="1" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center">
+                    <ProgressBar x:Name="pbExport" Width="300" Height="8" IsIndeterminate="False" Margin="0,0,0,16"/>
+                    <TextBlock x:Name="txtProgressStatus" Text="Đang xử lý xuất dữ liệu... (Trang 1/3)" FontSize="14" FontWeight="SemiBold" Foreground="#1E293B" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Vui lòng đợi trong giây lát..." FontSize="12" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- CONTENT: SUCCESS VIEW (Ẩn mặc định) -->
+            <Grid x:Name="panelSuccess" Grid.Row="1" Visibility="Collapsed" VerticalAlignment="Center" Margin="10,0">
+                <StackPanel HorizontalAlignment="Center">
+                    <Border Background="#DCFCE7" Width="60" Height="60" CornerRadius="30" HorizontalAlignment="Center" Margin="0,0,0,14">
+                        <Path Fill="#16A34A" 
+                              Data="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"
+                              Width="26" Height="26" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="Xuất bài giảng thành công!" FontSize="18" FontWeight="Bold" Foreground="#15803D" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="txtSuccessPath" Text="D:\BaiGiang_Toan9.pdf" FontSize="11" Foreground="#64748B" TextWrapping="Wrap" MaxWidth="440" HorizontalAlignment="Center" Margin="0,8,0,20" TextAlignment="Center"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="btnOpenFile" Height="44" Padding="18,0" Background="#2563EB" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="btnOpenFile_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Fill="White" Data="M19,19H5V5H12V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3H14Z" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Mở tệp ngay" FontSize="13" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="btnOpenFolder" Height="44" Padding="18,0" Background="#F1F5F9" Foreground="#1E293B" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="btnOpenFolder_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Fill="#1E293B" Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Mở thư mục" FontSize="13" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!-- FOOTER / ACTION BUTTONS -->
+            <Grid Grid.Row="2" x:Name="panelFooterActions">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="btnCancel" Content="Đóng" Width="90" Height="44" 
+                            Background="#F1F5F9" Foreground="#475569" BorderThickness="0" Cursor="Hand" 
+                            FontWeight="SemiBold" FontSize="13" Margin="0,0,10,0" Click="btnCancel_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <Button x:Name="btnStartExport" Width="150" Height="44" 
+                            Background="#2563EB" Foreground="White" BorderThickness="0" Cursor="Hand" 
+                            FontWeight="SemiBold" FontSize="13" Click="btnStartExport_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <StackPanel Orientation="Horizontal">
+                            <Path Fill="White" Data="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12,19L8,15H10.5V12H13.5V15H16L12,19Z" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Bắt đầu xuất" FontSize="13" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

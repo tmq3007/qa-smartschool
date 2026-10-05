@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -13,6 +14,7 @@ namespace QASmartTouch.Forms
         public Form2_7_SubMenuZoom()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this);
         }
 
         private void btnZoomLevel_Click(object sender, RoutedEventArgs e)

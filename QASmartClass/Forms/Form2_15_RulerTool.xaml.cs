@@ -38,8 +38,6 @@ namespace QASmartTouch.Forms
         // Dragging states
         private bool _isDragging = false;
         private Point _dragStartPoint;
-        private double _originalLeft = 0;
-        private double _originalTop = 0;
         
         // ✨ Resizable Ruler - NEW
         private double _rulerLengthCm = 30; // Current ruler length in cm
@@ -59,6 +57,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             // QC_4.2_TOUCH_PIPELINE: STEM Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
+            QASmartTouch.Helpers.TouchActivationHelper.Apply(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
             _mainDashboard = mainDashboard;
             
             // ✨ Load brush settings từ cấu hình đã lưu
@@ -89,6 +88,9 @@ namespace QASmartTouch.Forms
             
             // ✨ Cập nhật Clip khi Canvas thay đổi kích thước
             RulerCanvas.SizeChanged += (s, e) => UpdateRulerClipAndBody();
+            
+            // ✅ FIX: Safety cleanup preview line khi Ruler bị đóng giữa chừng
+            this.Closing += (s, e) => CleanupPreviewLine();
         }
         
         private void LoadBrushSettings()
@@ -330,6 +332,66 @@ namespace QASmartTouch.Forms
 
                 RulerLayerRoot.CacheMode = null;
                 e.Handled = true;
+            }
+        }
+
+        // ============ TOUCH MOVE HANDLERS (QC_4.2_TOUCH_PIPELINE) ============
+        private int? _moveTouchDeviceId = null;
+
+        private void btnMove_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            if (sender is UIElement el)
+            {
+                _moveTouchDeviceId = e.TouchDevice.Id;
+                _isDragging = true;
+                _dragStartPoint = PointToScreen(e.GetTouchPoint(this).Position);
+
+                el.CaptureTouch(e.TouchDevice);
+
+                RulerLayerRoot.CacheMode = new BitmapCache { RenderAtScale = 1 };
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (_isDragging && _moveTouchDeviceId == e.TouchDevice.Id)
+            {
+                var currentScreenPoint = PointToScreen(e.GetTouchPoint(this).Position);
+
+                double offsetX = currentScreenPoint.X - _dragStartPoint.X;
+                double offsetY = currentScreenPoint.Y - _dragStartPoint.Y;
+
+                this.Left += offsetX;
+                this.Top  += offsetY;
+
+                _dragStartPoint = currentScreenPoint;
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_TouchUp(object sender, TouchEventArgs e)
+        {
+            if (_moveTouchDeviceId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _moveTouchDeviceId = null;
+
+                if (sender is UIElement el && e.TouchDevice.Captured == el)
+                    el.ReleaseTouchCapture(e.TouchDevice);
+
+                RulerLayerRoot.CacheMode = null;
+                e.Handled = true;
+            }
+        }
+
+        private void btnMove_LostTouchCapture(object sender, TouchEventArgs e)
+        {
+            if (_moveTouchDeviceId == e.TouchDevice.Id)
+            {
+                _isDragging = false;
+                _moveTouchDeviceId = null;
+                RulerLayerRoot.CacheMode = null;
             }
         }
 

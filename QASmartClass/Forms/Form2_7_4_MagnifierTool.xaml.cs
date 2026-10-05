@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -41,6 +42,7 @@ namespace QASmartTouch.Forms
         public Form2_7_4_MagnifierTool(bool startInMagnifyMode = false)
         {
             InitializeComponent();
+            TouchActivationHelper.Apply(this);
             _startInMagnifyMode = startInMagnifyMode;
             
             // Setup update timer - 30 FPS for better performance

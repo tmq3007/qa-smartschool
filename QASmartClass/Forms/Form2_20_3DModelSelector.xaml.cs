@@ -6,6 +6,7 @@ using System.Windows.Media.Media3D;
 using System.Windows.Media.Animation; // For smooth transitions
 using Microsoft.Win32;
 using QASmartTouch.Services;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -28,6 +29,7 @@ namespace QASmartTouch.Forms
         public Form2_20_3DModelSelector()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
             _importer = new Model3DImporter();
             InitializeAutoRotate();
             ApplyGraphicsSettings();

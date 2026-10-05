@@ -158,24 +158,188 @@ namespace QASmartTouch.Models
         /// </summary>
         public virtual void UpdateBounds()
         {
-            if (Element != null)
+            // ✅ FIX CẢM ỨNG: Cập nhật bounds cho Virtual Group Container từ các thành viên GroupMembers
+            if (IsGroup && GroupMembers != null && GroupMembers.Count > 0)
             {
-                // Thử lấy Canvas cha để dùng BoundsHelper
-                var parentCanvas = FindParentCanvas(Element);
-                if (parentCanvas != null)
+                double minX = double.MaxValue, minY = double.MaxValue;
+                double maxX = double.MinValue, maxY = double.MinValue;
+                foreach (var member in GroupMembers)
                 {
-                    var absoluteBounds = BoundsHelper.GetAbsoluteBounds(Element, parentCanvas);
-                    if (!absoluteBounds.IsEmpty)
+                    if (member == null) continue;
+                    var b = member.Bounds;
+                    if (!b.IsEmpty && b.Width > 0 && b.Height > 0)
                     {
-                        Bounds = absoluteBounds;
-                        Position = new Point(absoluteBounds.X, absoluteBounds.Y);
-                        Size = new Size(absoluteBounds.Width, absoluteBounds.Height);
-                        return;
+                        minX = Math.Min(minX, b.Left);
+                        minY = Math.Min(minY, b.Top);
+                        maxX = Math.Max(maxX, b.Right);
+                        maxY = Math.Max(maxY, b.Bottom);
                     }
                 }
-                
+                if (minX < double.MaxValue && minY < double.MaxValue)
+                {
+                    var aabb = new Rect(minX, minY, maxX - minX, maxY - minY);
+                    Bounds = aabb;
+                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
+                    {
+                        Position = new Point(minX, minY);
+                        Size = new Size(maxX - minX, maxY - minY);
+                    }
+                    return;
+                }
+            }
+
+            if (Element != null)
+            {
+                // 1. Polyline (nét vẽ tay)
+                if (Element is System.Windows.Shapes.Polyline polyline && polyline.Points != null && polyline.Points.Count > 0)
+                {
+                    double minX = double.MaxValue, minY = double.MaxValue;
+                    double maxX = double.MinValue, maxY = double.MinValue;
+                    foreach (var pt in polyline.Points)
+                    {
+                        minX = Math.Min(minX, pt.X); minY = Math.Min(minY, pt.Y);
+                        maxX = Math.Max(maxX, pt.X); maxY = Math.Max(maxY, pt.Y);
+                    }
+                    double pad = Math.Max(polyline.StrokeThickness / 2.0, 2.0);
+                    var aabb = new Rect(minX - pad, minY - pad, Math.Max(maxX - minX + pad * 2, 1), Math.Max(maxY - minY + pad * 2, 1));
+                    Bounds = aabb;
+                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
+                    {
+                        Position = new Point(aabb.X, aabb.Y);
+                        Size = new Size(aabb.Width, aabb.Height);
+                    }
+                    return;
+                }
+
+                // 2. Polygon (đa giác)
+                if (Element is System.Windows.Shapes.Polygon polygon && polygon.Points != null && polygon.Points.Count > 0)
+                {
+                    double minX = double.MaxValue, minY = double.MaxValue;
+                    double maxX = double.MinValue, maxY = double.MinValue;
+                    foreach (var pt in polygon.Points)
+                    {
+                        minX = Math.Min(minX, pt.X); minY = Math.Min(minY, pt.Y);
+                        maxX = Math.Max(maxX, pt.X); maxY = Math.Max(maxY, pt.Y);
+                    }
+                    double pad = Math.Max(polygon.StrokeThickness / 2.0, 2.0);
+                    var aabb = new Rect(minX - pad, minY - pad, Math.Max(maxX - minX + pad * 2, 1), Math.Max(maxY - minY + pad * 2, 1));
+                    Bounds = aabb;
+                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
+                    {
+                        Position = new Point(aabb.X, aabb.Y);
+                        Size = new Size(aabb.Width, aabb.Height);
+                    }
+                    return;
+                }
+
+                // 3. Line (đoạn thẳng)
+                if (Element is System.Windows.Shapes.Line line)
+                {
+                    double minX = Math.Min(line.X1, line.X2);
+                    double minY = Math.Min(line.Y1, line.Y2);
+                    double maxX = Math.Max(line.X1, line.X2);
+                    double maxY = Math.Max(line.Y1, line.Y2);
+                    double pad = Math.Max(line.StrokeThickness / 2.0, 2.0);
+                    var aabb = new Rect(minX - pad, minY - pad, Math.Max(maxX - minX + pad * 2, 1), Math.Max(maxY - minY + pad * 2, 1));
+                    Bounds = aabb;
+                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
+                    {
+                        Position = new Point(aabb.X, aabb.Y);
+                        Size = new Size(aabb.Width, aabb.Height);
+                    }
+                    return;
+                }
+
+                // 4. Path (nét mượt Bezier / Shape Path / ArrowLine)
+                if (Element is System.Windows.Shapes.Path path && path.Data != null)
+                {
+                    var dataBounds = path.Data.Bounds;
+                    Rect transformedBounds = dataBounds;
+                    if (path.RenderTransform != null && path.RenderTransform != Transform.Identity)
+                    {
+                        transformedBounds = path.RenderTransform.TransformBounds(dataBounds);
+                    }
+                    else
+                    {
+                        double left = Canvas.GetLeft(path);
+                        double top = Canvas.GetTop(path);
+                        if (!double.IsNaN(left) && !double.IsNaN(top))
+                        {
+                            transformedBounds = new Rect(left, top, Math.Max(dataBounds.Width, 1), Math.Max(dataBounds.Height, 1));
+                        }
+                    }
+
+                    double pad = Math.Max(path.StrokeThickness / 2.0, 2.0);
+                    var aabb = new Rect(transformedBounds.X - pad, transformedBounds.Y - pad, Math.Max(transformedBounds.Width + pad * 2, 1), Math.Max(transformedBounds.Height + pad * 2, 1));
+                    Bounds = aabb;
+                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
+                    {
+                        Position = new Point(aabb.X, aabb.Y);
+                        Size = new Size(aabb.Width, aabb.Height);
+                    }
+                    return;
+                }
+
+                // 5. FrameworkElement (Image, TextBlock, Border, Rectangle, Ellipse...)
+                if (Element is FrameworkElement fe)
+                {
+                    double left = Canvas.GetLeft(fe);
+                    double top = Canvas.GetTop(fe);
+                    if (double.IsNaN(left)) left = Position.X;
+                    if (double.IsNaN(top)) top = Position.Y;
+                    double w = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : Size.Width);
+                    double h = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : Size.Height);
+                    if (double.IsNaN(w) || w <= 0) w = fe.RenderSize.Width > 0 ? fe.RenderSize.Width : Size.Width;
+                    if (double.IsNaN(h) || h <= 0) h = fe.RenderSize.Height > 0 ? fe.RenderSize.Height : Size.Height;
+
+                    // ✅ QC_4.2_CANVAS_SCALE_SYNC: Đồng bộ kích thước cho Canvas khối 3D khi có ScaleTransform
+                    if (fe is Canvas)
+                    {
+                        double scaleX = 1.0, scaleY = 1.0;
+                        if (fe.RenderTransform is ScaleTransform st)
+                        {
+                            scaleX = st.ScaleX;
+                            scaleY = st.ScaleY;
+                        }
+                        else if (fe.RenderTransform is TransformGroup tg)
+                        {
+                            var foundSt = tg.Children.OfType<ScaleTransform>().FirstOrDefault();
+                            if (foundSt != null)
+                            {
+                                scaleX = foundSt.ScaleX;
+                                scaleY = foundSt.ScaleY;
+                            }
+                        }
+                        double baseWidth = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : 200);
+                        double baseHeight = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : 200);
+                        w = Math.Abs(baseWidth * scaleX);
+                        h = Math.Abs(baseHeight * scaleY);
+                    }
+
+                    Position = new Point(left, top);
+                    Size = new Size(Math.Max(w, 1), Math.Max(h, 1));
+
+                    var parentCanvas = FindParentCanvas(Element);
+                    if (parentCanvas != null)
+                    {
+                        var absoluteBounds = BoundsHelper.GetAbsoluteBounds(Element, parentCanvas);
+                        if (!absoluteBounds.IsEmpty && absoluteBounds.Width > 0 && absoluteBounds.Height > 0)
+                        {
+                            Bounds = absoluteBounds;
+                            return;
+                        }
+                    }
+                    Bounds = new Rect(left, top, Size.Width, Size.Height);
+                    return;
+                }
+
                 // Fallback: dùng Position/Size hiện tại
                 Bounds = new Rect(Position.X, Position.Y, Size.Width, Size.Height);
+            }
+            else
+            {
+                // Fallback khi Element == null
+                Bounds = new Rect(Position.X, Position.Y, Math.Max(0, Size.Width), Math.Max(0, Size.Height));
             }
         }
 
@@ -222,20 +386,68 @@ namespace QASmartTouch.Models
         {
             if (Element != null)
             {
+                // Bảo toàn TranslateTransform hiện tại của Path nếu có
+                TranslateTransform? existingTranslate = null;
+                if (Element is System.Windows.Shapes.Path path)
+                {
+                    if (path.RenderTransform is TransformGroup existingTg)
+                    {
+                        existingTranslate = existingTg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                    }
+                    else if (path.RenderTransform is TranslateTransform tt)
+                    {
+                        existingTranslate = tt;
+                    }
+                }
+
                 var transformGroup = new TransformGroup();
 
                 double left = System.Windows.Controls.Canvas.GetLeft(Element);
                 double top = System.Windows.Controls.Canvas.GetTop(Element);
                 bool isCanvasPositioned = !double.IsNaN(left) && !double.IsNaN(top);
 
-                // Rotation
+                // 1. Existing translation for Path
+                if (existingTranslate != null)
+                {
+                    transformGroup.Children.Add(new TranslateTransform(existingTranslate.X, existingTranslate.Y));
+                }
+
+                // 2. Scale / Flip (Thực hiện trước Rotation)
+                ScaleTransform? existingScale = null;
+                if (Element.RenderTransform is TransformGroup currentTg)
+                {
+                    existingScale = currentTg.Children.OfType<ScaleTransform>().FirstOrDefault();
+                }
+                else if (Element.RenderTransform is ScaleTransform st)
+                {
+                    existingScale = st;
+                }
+
+                double scaleFactorX = 1.0, scaleFactorY = 1.0;
+                if (Scale != null && (Scale.ScaleX != 1 || Scale.ScaleY != 1))
+                {
+                    scaleFactorX = Scale.ScaleX;
+                    scaleFactorY = Scale.ScaleY;
+                    var scaleTransform = new ScaleTransform(Scale.ScaleX, Scale.ScaleY);
+                    transformGroup.Children.Add(scaleTransform);
+                }
+                else if (existingScale != null)
+                {
+                    scaleFactorX = existingScale.ScaleX;
+                    scaleFactorY = existingScale.ScaleY;
+                    transformGroup.Children.Add(existingScale.Clone());
+                }
+
+                // 3. Rotation (Xoay quanh tâm sau khi đã áp dụng tỉ lệ Scale)
                 if (RotationAngle != 0)
                 {
                     var rotateTransform = new RotateTransform(RotationAngle);
-                    if (isCanvasPositioned)
+                    if (isCanvasPositioned && Element is FrameworkElement fe)
                     {
-                        rotateTransform.CenterX = Size.Width / 2.0;
-                        rotateTransform.CenterY = Size.Height / 2.0;
+                        double w = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : Size.Width);
+                        double h = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : Size.Height);
+                        rotateTransform.CenterX = (w * scaleFactorX) / 2.0;
+                        rotateTransform.CenterY = (h * scaleFactorY) / 2.0;
                     }
                     else
                     {
@@ -245,23 +457,7 @@ namespace QASmartTouch.Models
                     transformGroup.Children.Add(rotateTransform);
                 }
 
-                // Scale / Flip
-                if (Scale != null)
-                {
-                    if (isCanvasPositioned)
-                    {
-                        Scale.CenterX = Size.Width / 2.0;
-                        Scale.CenterY = Size.Height / 2.0;
-                    }
-                    else
-                    {
-                        Scale.CenterX = Position.X + (Size.Width / 2.0);
-                        Scale.CenterY = Position.Y + (Size.Height / 2.0);
-                    }
-                    transformGroup.Children.Add(Scale);
-                }
-
-                Element.RenderTransform = transformGroup;
+                Element.RenderTransform = transformGroup.Children.Count > 0 ? transformGroup : Transform.Identity;
             }
         }
 

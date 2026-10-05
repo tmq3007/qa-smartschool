@@ -3,7 +3,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Input;
 using QASmartTouch.Services.VersionManagement;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -11,7 +13,7 @@ namespace QASmartTouch.Forms
     {
         // Current pen settings
         private string currentBrushType = "Normal";
-        private int currentPenSize = 4;
+        private int currentPenSize = 5;
         private Color currentPenColor = Colors.Black;
 
         public bool IsApplied { get; private set; } = false;
@@ -19,16 +21,68 @@ namespace QASmartTouch.Forms
         public Form2_1_SubMenuPen()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             // QC_4.2_TOUCH_PIPELINE: Popup Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
             if (btnClose != null)
             {
-                btnClose.PreviewTouchDown += (s, e) => { this.Close(); e.Handled = true; };
-                btnClose.PreviewStylusDown += (s, e) => { this.Close(); e.Handled = true; };
+                System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
+
+                btnClose.PreviewTouchDown += (s, e) =>
+                {
+                    e.TouchDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewTouchUp += (s, e) =>
+                {
+                    if (e.TouchDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseTouchCapture(e.TouchDevice);
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
+
+                btnClose.PreviewStylusDown += (s, e) =>
+                {
+                    e.StylusDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewStylusUp += (s, e) =>
+                {
+                    if (e.StylusDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseStylusCapture();
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
             }
             
             // Initialize after XAML is loaded
             this.Loaded += (s, e) =>
             {
+                if (sliderPenSize != null)
+                {
+                    sliderPenSize.Value = currentPenSize;
+                }
                 InitializeSizeIndicators();
                 UpdatePreview();
                 UpdateColorUI();
@@ -53,7 +107,25 @@ namespace QASmartTouch.Forms
                     Fill = i <= currentPenSize ? new SolidColorBrush(Color.FromRgb(46, 134, 222)) : new SolidColorBrush(Color.FromRgb(220, 221, 225)),
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    Tag = i
+                    Tag = i,
+                    Cursor = Cursors.Hand
+                };
+
+                // Cho phép chạm hoặc nhấp trực tiếp vào chấm tròn để chọn size ngay lập tức
+                ellipse.MouseDown += (s, e) =>
+                {
+                    if (s is Ellipse el && el.Tag is int size)
+                    {
+                        sliderPenSize.Value = size;
+                    }
+                };
+                ellipse.PreviewTouchDown += (s, e) =>
+                {
+                    if (s is Ellipse el && el.Tag is int size)
+                    {
+                        sliderPenSize.Value = size;
+                        e.Handled = true;
+                    }
                 };
 
                 panelSizeIndicators.Children.Add(ellipse);
@@ -210,10 +282,10 @@ namespace QASmartTouch.Forms
         {
             // Reset to default values
             currentBrushType = "Normal";
-            currentPenSize = 4;
+            currentPenSize = 5;
             currentPenColor = Colors.Black;
 
-            sliderPenSize.Value = 4;
+            sliderPenSize.Value = 5;
             HighlightBrushType(btnBrushNormal);
             
             txtCustomColorHex.Text = "#000000";
@@ -226,11 +298,23 @@ namespace QASmartTouch.Forms
         {
             // Apply settings and close
             IsApplied = true;
+            try
+            {
+                this.Owner?.Activate();
+                this.Owner?.Focus();
+            }
+            catch { }
             this.Close();
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                this.Owner?.Activate();
+                this.Owner?.Focus();
+            }
+            catch { }
             this.Close();
         }
 
@@ -368,6 +452,20 @@ namespace QASmartTouch.Forms
             {
                 System.Diagnostics.Debug.WriteLine($"[Form2_1_SubMenuPen] Error applying feature visibility: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// ✅ Đảm bảo khi đóng SubMenu Pen thì MainDashboard luôn được kích hoạt lại trên cùng
+        /// </summary>
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            try
+            {
+                this.Owner?.Activate();
+                this.Owner?.Focus();
+            }
+            catch { }
         }
 
         #endregion

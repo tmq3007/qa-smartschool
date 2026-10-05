@@ -153,6 +153,27 @@
                                 </Grid>
                             </Button>
 
+                            <Button x:Name="btnOpenLecture" 
+                                    Style="{StaticResource ExtendedMenuItemButton}"
+                                    Click="btnOpenLecture_Click"
+                                    ToolTip="Mở tệp bài giảng đã lưu từ máy tính (.qasc)">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Path Grid.Column="0" Fill="#3F51B5" 
+                                          Data="M19,20H4C2.89,20 2,19.1 2,18V6C2,4.89 2.89,4 4,4H10L12,6H19A2,2 0 0,1 21,8H21L4,8V18L6.14,10H23.21L20.93,18.5C20.7,19.37 19.92,20 19,20Z"
+                                          Width="20" Height="20"
+                                          Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="1" Text="Mở bài giảng (.qasc)" 
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Foreground="#2F3542"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </Button>
+
                             <Button x:Name="btnRecentFiles" 
                                     Style="{StaticResource ExtendedMenuItemButton}"
                                     Click="btnRecentFiles_Click"
@@ -177,7 +198,7 @@
                             <Button x:Name="btnSaveLecture" 
                                     Style="{StaticResource ExtendedMenuItemButton}"
                                     Click="btnSaveLecture_Click"
-                                    ToolTip="Lưu trữ nội dung bài giảng hiện tại">
+                                    ToolTip="Lưu trữ nội dung bài giảng hiện tại (.qasc)">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -195,10 +216,31 @@
                                 </Grid>
                             </Button>
 
+                            <Button x:Name="btnSaveLectureAs" 
+                                    Style="{StaticResource ExtendedMenuItemButton}"
+                                    Click="btnSaveLectureAs_Click"
+                                    ToolTip="Lưu bài giảng thành một tệp mới">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Path Grid.Column="0" Fill="#009688" 
+                                          Data="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"
+                                          Width="20" Height="20"
+                                          Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="1" Text="Lưu thành..." 
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Foreground="#2F3542"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </Button>
+
                             <Button x:Name="btnExportBoard" 
                                     Style="{StaticResource ExtendedMenuItemButton}"
                                     Click="btnExportBoard_Click"
-                                    ToolTip="Xuất nội dung bảng trắng sang định dạng ảnh PNG hoặc XPS">
+                                    ToolTip="Xuất nội dung bài giảng sang PDF hoặc hình ảnh">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -208,7 +250,7 @@
                                           Data="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12,19L8,15H10.5V12H13.5V15H16L12,19Z"
                                           Width="20" Height="20"
                                           Margin="0,0,8,0"/>
-                                    <TextBlock Grid.Column="1" Text="Xuất bảng (PNG/XPS)" 
+                                    <TextBlock Grid.Column="1" Text="Xuất bài giảng (PDF/Ảnh)" 
                                                FontSize="12"
                                                FontWeight="SemiBold"
                                                Foreground="#2F3542"

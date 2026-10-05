@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -28,6 +29,7 @@ namespace QASmartTouch.Forms
         public Form2_19_CountdownTimer()
         {
             InitializeComponent();
+            TouchActivationHelper.Apply(this);
             
             // Initialize timer
             _timer = new DispatcherTimer();

@@ -344,5 +344,69 @@ namespace QASmartTouch.Forms
             return mousePosition.X >= left && mousePosition.X <= right &&
                    mousePosition.Y >= top && mousePosition.Y <= bottom;
         }
+
+        #region Canvas Drag & Drop Integration (UMind Style)
+
+        /// <summary>
+        /// QC_4.2_CANVAS_DRAG_DROP: Kích hoạt khả năng Kéo-Thả ảnh (UMind Style) trực tiếp vào bảng viết.
+        /// Cho phép giáo viên kéo ảnh từ Google Search Browser, Chrome/Edge bên ngoài, hoặc File Explorer và thả thẳng vào bảng.
+        /// </summary>
+        public void InitializeCanvasDragAndDrop()
+        {
+            if (MainInteractiveBoard == null) return;
+
+            MainInteractiveBoard.AllowDrop = true;
+            MainInteractiveBoard.DragEnter += MainInteractiveBoard_DragOver;
+            MainInteractiveBoard.DragOver += MainInteractiveBoard_DragOver;
+            MainInteractiveBoard.Drop += MainInteractiveBoard_Drop;
+
+            System.Diagnostics.Debug.WriteLine("✅ Canvas Drag & Drop initialized (UMind Style)");
+        }
+
+        private void MainInteractiveBoard_DragOver(object sender, DragEventArgs e)
+        {
+            // Kiểm tra xem dữ liệu kéo có chứa hình ảnh hay không
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) ||
+                e.Data.GetDataPresent(DataFormats.Bitmap) ||
+                e.Data.GetDataPresent(DataFormats.Html) ||
+                e.Data.GetDataPresent(DataFormats.UnicodeText) ||
+                e.Data.GetDataPresent(DataFormats.Text) ||
+                e.Data.GetDataPresent("UniformResourceLocator"))
+            {
+                e.Effects = DragDropEffects.Copy;
+                e.Handled = true;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+        }
+
+        private async void MainInteractiveBoard_Drop(object sender, DragEventArgs e)
+        {
+            Point dropPoint = e.GetPosition(MainInteractiveBoard);
+            e.Handled = true;
+
+            try
+            {
+                var bitmap = await QASmartTouch.Helpers.SmartImageLoader.ExtractImageFromDataObjectAsync(e.Data);
+                if (bitmap != null)
+                {
+                    InsertInteractiveImage(bitmap, "Kéo thả từ Web / Máy tính", dropPoint.X, dropPoint.Y);
+                    ShowSmartStatusBadge("🖼️ Đã chèn hình ảnh kéo thả thành công!");
+                    System.Diagnostics.Debug.WriteLine($"✅ Image dropped at ({dropPoint.X:F0}, {dropPoint.Y:F0})");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ No supported image format found in drop data.");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error dropping image on canvas: {ex.Message}");
+            }
+        }
+
+        #endregion
     }
 }

@@ -1,5 +1,10 @@
 using System;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
+using QASmartTouch.Helpers;
 using QASmartTouch.PeriodicTable.Views;
 using QASmartTouch.Services.VersionManagement;
 using QASmartTouch.Shared;
@@ -19,9 +24,70 @@ namespace QASmartTouch.Forms
             // QC_4.2_SUBMENU_CLOSE_TOUCH_FIX: Dam bao nut X mau do dong SubMenu 100% tuc thi voi chuot, ngon tay va put Stylus
             if (btnClose != null)
             {
-                btnClose.PreviewTouchDown += (s, e) => { this.Close(); e.Handled = true; };
-                btnClose.PreviewStylusDown += (s, e) => { this.Close(); e.Handled = true; };
+                System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
+
+                btnClose.PreviewTouchDown += (s, e) =>
+                {
+                    e.TouchDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewTouchUp += (s, e) =>
+                {
+                    if (e.TouchDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseTouchCapture(e.TouchDevice);
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
+
+                btnClose.PreviewStylusDown += (s, e) =>
+                {
+                    e.StylusDevice.Capture(btnClose);
+                    e.Handled = true;
+                };
+
+                btnClose.PreviewStylusUp += (s, e) =>
+                {
+                    if (e.StylusDevice.Captured == btnClose)
+                    {
+                        btnClose.ReleaseStylusCapture();
+                    }
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try 
+                        {
+                            this.Owner?.Activate();
+                            this.Close();
+                        } 
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.Normal);
+                };
             }
+
+            // QC_4.2_TOUCH_ACTIVATION: Fix "phải nhấn 2 lần" trên màn hình tương tác
+            TouchActivationHelper.Apply(this);
+
+            // QC_4.2_TOUCH_PIPELINE: Wire touch activation cho sidebar RadioButtons
+            WireTouchActivationRadio(rbCategory1, Category_Changed);
+            WireTouchActivationRadio(rbCategory2, Category_Changed);
+            WireTouchActivationRadio(rbCategory3, Category_Changed);
+            WireTouchActivationRadio(rbCategory4, Category_Changed);
+            WireTouchActivationRadio(rbCategory5, Category_Changed);
+            WireTouchActivationRadio(rbCategory6, Category_Changed);
+
+            // QC_4.2_TOUCH_PIPELINE: Wire touch activation cho tất cả content Buttons sau khi XAML load xong
+            this.Loaded += (s, e) => WireAllInteractiveControls(this);
         }
 
         /// <summary>
@@ -57,6 +123,7 @@ namespace QASmartTouch.Forms
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
+            try { this.Owner?.Activate(); } catch { }
             this.Close();
         }
 
@@ -92,6 +159,7 @@ namespace QASmartTouch.Forms
                 circleTool.SetMainDashboard(_mainDashboard);
                 circleTool.Show(); // Show (not ShowDialog) để không block
                 this.Close(); // Đóng menu
+                try { this.Owner?.Activate(); } catch { }
             }
             catch (Exception ex)
             {
@@ -369,7 +437,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở Bing Translator
                 this.Hide();
                 var bingTranslator = new Form2_24_BingTranslator();
-                bingTranslator.ShowDialog();
+                WindowHelper.ShowChildDialog(bingTranslator, _mainDashboard);
                 this.Close(); // Close menu after closing Bing Translator
                 
                 System.Diagnostics.Debug.WriteLine("✅ Bing Translator opened");
@@ -392,7 +460,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở Lịch Âm Dương
                 this.Hide();
                 var lichAmDuong = new Form2_27_LichAmDuong();
-                lichAmDuong.ShowDialog();
+                WindowHelper.ShowChildDialog(lichAmDuong, _mainDashboard);
                 this.Close(); // Close menu after closing Lich Am Duong
                 
                 System.Diagnostics.Debug.WriteLine("✅ Lich Am Duong opened");
@@ -415,7 +483,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở World Clock
                 this.Hide();
                 var worldClock = new Form2_28_WorldClock();
-                worldClock.ShowDialog();
+                WindowHelper.ShowChildDialog(worldClock, _mainDashboard);
                 this.Close(); // Close menu after closing World Clock
                 
                 System.Diagnostics.Debug.WriteLine("✅ World Clock opened");
@@ -452,7 +520,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở biểu đồ cột
                 this.Hide();
                 var chartEditor = new Form2_8_BarChartEditor(_mainDashboard);
-                chartEditor.ShowDialog();
+                WindowHelper.ShowChildDialog(chartEditor, _mainDashboard);
                 this.Close(); // Đóng menu sau khi đóng form biểu đồ
             }
             catch (Exception ex)
@@ -470,7 +538,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở biểu đồ đường
                 this.Hide();
                 var chartEditor = new Form2_9_LineChartEditor(_mainDashboard);
-                chartEditor.ShowDialog();
+                WindowHelper.ShowChildDialog(chartEditor, _mainDashboard);
                 this.Close(); // Đóng menu sau khi đóng form biểu đồ
             }
             catch (Exception ex)
@@ -488,7 +556,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở biểu đồ tròn
                 this.Hide();
                 var chartEditor = new Form2_10_PieChartEditor(_mainDashboard);
-                chartEditor.ShowDialog();
+                WindowHelper.ShowChildDialog(chartEditor, _mainDashboard);
                 this.Close(); // Đóng menu sau khi đóng form biểu đồ
             }
             catch (Exception ex)
@@ -506,7 +574,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở biểu đồ vùng
                 this.Hide();
                 var chartEditor = new Form2_12_AreaChartEditor(_mainDashboard);
-                chartEditor.ShowDialog();
+                WindowHelper.ShowChildDialog(chartEditor, _mainDashboard);
                 this.Close(); // Đóng menu sau khi đóng form biểu đồ
             }
             catch (Exception ex)
@@ -524,7 +592,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở biểu đồ phân tán
                 this.Hide();
                 var chartEditor = new Form2_13_ScatterChartEditor(_mainDashboard);
-                chartEditor.ShowDialog();
+                WindowHelper.ShowChildDialog(chartEditor, _mainDashboard);
                 this.Close(); // Đóng menu sau khi đóng form biểu đồ
             }
             catch (Exception ex)
@@ -549,7 +617,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở đồ thị hàm số
                 this.Hide();
                 var graphEditor = new Form2_GraphEditorUnified(); // 🆕 Unified 2D+3D editor
-                bool? result = graphEditor.ShowDialog();
+                bool? result = WindowHelper.ShowChildDialog(graphEditor, _mainDashboard);
                 
                 if (result == true && graphEditor.ExportedGraphImage != null)
                 {
@@ -576,7 +644,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở Graph 3D
                 this.Hide();
                 var Graph3DDialog = new Form2_22_Graph3D();
-                bool? result = Graph3DDialog.ShowDialog();
+                bool? result = WindowHelper.ShowChildDialog(Graph3DDialog, _mainDashboard);
                 
                 if (result == true && Graph3DDialog.WasInserted && !string.IsNullOrEmpty(Graph3DDialog.GraphUrl))
                 {
@@ -603,7 +671,7 @@ namespace QASmartTouch.Forms
                 // Ẩn menu trước khi mở đồ thị 3D
                 this.Hide();
                 var graph3DEditor = new Form2_Graph3DEditor();
-                bool? result = graph3DEditor.ShowDialog();
+                bool? result = WindowHelper.ShowChildDialog(graph3DEditor, _mainDashboard);
                 
                 if (result == true && graph3DEditor.ExportedGraphImage != null)
                 {
@@ -861,15 +929,20 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                // Ẩn menu trước khi mở hộp thoại tìm kiếm để không che khuất dialog
+                this.Hide();
+
                 // Show input dialog for custom location
                 var inputDialog = new Window
                 {
                     Title = "Tìm kiếm địa điểm",
-                    Width = 450,
-                    Height = 180,
+                    Width = 460,
+                    Height = 190,
                     WindowStartupLocation = WindowStartupLocation.CenterScreen,
                     WindowStyle = WindowStyle.ToolWindow,
-                    ResizeMode = ResizeMode.NoResize
+                    ResizeMode = ResizeMode.NoResize,
+                    Owner = this.Owner ?? _mainDashboard,
+                    Topmost = true
                 };
 
                 var stackPanel = new System.Windows.Controls.StackPanel { Margin = new Thickness(20) };
@@ -878,13 +951,14 @@ namespace QASmartTouch.Forms
                 {
                     Text = "Nhập tên địa điểm hoặc tọa độ:",
                     FontSize = 13,
+                    FontWeight = FontWeights.SemiBold,
                     Margin = new Thickness(0, 0, 0, 10)
                 });
 
                 var textBox = new System.Windows.Controls.TextBox
                 {
                     Text = "Hà Nội, Việt Nam",
-                    FontSize = 13,
+                    FontSize = 14,
                     Padding = new Thickness(8),
                     Margin = new Thickness(0, 0, 0, 15)
                 };
@@ -899,45 +973,84 @@ namespace QASmartTouch.Forms
                 var okButton = new System.Windows.Controls.Button
                 {
                     Content = "Tìm kiếm",
-                    Width = 90,
-                    Height = 32,
+                    Width = 100,
+                    Height = 36,
                     Margin = new Thickness(0, 0, 10, 0),
                     Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(66, 133, 244)),
                     Foreground = System.Windows.Media.Brushes.White,
                     BorderThickness = new Thickness(0),
-                    Cursor = System.Windows.Input.Cursors.Hand
-                };
-                okButton.Click += (s, args) =>
-                {
-                    string searchQuery = textBox.Text.Trim();
-                    if (!string.IsNullOrEmpty(searchQuery))
-                    {
-                        string url = $"https://www.google.com/maps/search/{Uri.EscapeDataString(searchQuery)}";
-                        InsertGoogleMapsLocation(url);
-                        inputDialog.Close();
-                    }
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    FontSize = 13,
+                    FontWeight = FontWeights.SemiBold
                 };
 
                 var cancelButton = new System.Windows.Controls.Button
                 {
                     Content = "Hủy",
                     Width = 80,
-                    Height = 32,
+                    Height = 36,
                     Background = System.Windows.Media.Brushes.LightGray,
                     BorderThickness = new Thickness(0),
-                    Cursor = System.Windows.Input.Cursors.Hand
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    FontSize = 13
                 };
+
+                bool searchExecuted = false;
+
+                Action executeSearch = () =>
+                {
+                    string searchQuery = textBox.Text.Trim();
+                    if (!string.IsNullOrEmpty(searchQuery))
+                    {
+                        searchExecuted = true;
+                        string url = $"https://www.google.com/maps/search/{Uri.EscapeDataString(searchQuery)}";
+                        inputDialog.Close();
+                        InsertGoogleMapsLocation(url);
+                    }
+                };
+
+                okButton.Click += (s, args) => executeSearch();
                 cancelButton.Click += (s, args) => inputDialog.Close();
+
+                // Hỗ trợ phím Enter để tìm kiếm, Esc để hủy (thuận tiện cho cả PC và màn hình tương tác)
+                textBox.KeyDown += (s, args) =>
+                {
+                    if (args.Key == Key.Enter)
+                    {
+                        args.Handled = true;
+                        executeSearch();
+                    }
+                    else if (args.Key == Key.Escape)
+                    {
+                        args.Handled = true;
+                        inputDialog.Close();
+                    }
+                };
 
                 buttonPanel.Children.Add(okButton);
                 buttonPanel.Children.Add(cancelButton);
                 stackPanel.Children.Add(buttonPanel);
 
                 inputDialog.Content = stackPanel;
+
+                // Tự động focus và bôi đen text để gõ ngay
+                inputDialog.Loaded += (s, args) =>
+                {
+                    textBox.Focus();
+                    textBox.SelectAll();
+                };
+
                 inputDialog.ShowDialog();
+
+                // Nếu không thực hiện tìm kiếm (người dùng bấm Hủy hoặc đóng cửa sổ), đóng menu để trả lại bảng vẽ
+                if (!searchExecuted)
+                {
+                    this.Close();
+                }
             }
             catch (Exception ex)
             {
+                this.Show();
                 MessageBox.Show($"Lỗi mở dialog tìm kiếm: {ex.Message}", "Lỗi",
                               MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -1037,6 +1150,194 @@ namespace QASmartTouch.Forms
             {
                 System.Diagnostics.Debug.WriteLine($"[Form2_4_SubMenuInsertContent] Error applying feature visibility: {ex.Message}");
             }
+        }
+
+        #endregion
+
+        #region QC_4.2_TOUCH_PIPELINE — Touch Activation cho IFP Touch Screen
+
+        /// <summary>
+        /// Tự động duyệt cây Visual Tree, gắn pipeline cảm ứng cho tất cả Button
+        /// (trừ btnClose đã xử lý riêng). Đảm bảo cú chạm đầu tiên kích hoạt ngay.
+        /// </summary>
+        private void WireAllInteractiveControls(DependencyObject parent)
+        {
+            if (parent == null) return;
+
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is Button button && button != btnClose)
+                {
+                    WireTouchActivationButton(button);
+                }
+
+                // Recurse vào con
+                WireAllInteractiveControls(child);
+            }
+        }
+
+        /// <summary>
+        /// QC_4.2_TOUCH_PIPELINE: Wire touch activation cho Button.
+        /// Bắt trực tiếp PreviewTouchDown/Up để đảm bảo Zero 2nd tap.
+        /// Phân biệt tap (< 15px) vs drag scroll (> 15px) để giữ ScrollViewer hoạt động.
+        /// </summary>
+        private void WireTouchActivationButton(Button button)
+        {
+            if (button == null) return;
+            button.Focusable = false;
+            Stylus.SetIsPressAndHoldEnabled(button, false);
+
+            Point? touchStart = null;
+
+            button.PreviewTouchDown += (s, e) =>
+            {
+                touchStart = e.GetTouchPoint(button).Position;
+                e.TouchDevice.Capture(button);
+                e.Handled = true;
+            };
+
+            button.PreviewTouchUp += (s, e) =>
+            {
+                if (e.TouchDevice.Captured == button)
+                {
+                    button.ReleaseTouchCapture(e.TouchDevice);
+                    try
+                    {
+                        var pos = e.GetTouchPoint(button).Position;
+                        double dist = touchStart.HasValue
+                            ? Math.Sqrt(Math.Pow(pos.X - touchStart.Value.X, 2) + Math.Pow(pos.Y - touchStart.Value.Y, 2))
+                            : 0;
+
+                        // Tap (< 15px) → kích hoạt Click; Drag (>= 15px) → nhường cho ScrollViewer
+                        if (dist < 15 &&
+                            pos.X >= 0 && pos.X <= button.ActualWidth &&
+                            pos.Y >= 0 && pos.Y <= button.ActualHeight)
+                        {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
+                            }), System.Windows.Threading.DispatcherPriority.Normal);
+                        }
+                    }
+                    catch
+                    {
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
+                        }), System.Windows.Threading.DispatcherPriority.Normal);
+                    }
+                }
+                touchStart = null;
+                e.Handled = true;
+            };
+
+            button.PreviewStylusDown += (s, e) =>
+            {
+                e.StylusDevice.Capture(button);
+                e.Handled = true;
+            };
+
+            button.PreviewStylusUp += (s, e) =>
+            {
+                if (e.StylusDevice.Captured == button)
+                {
+                    button.ReleaseStylusCapture();
+                    try
+                    {
+                        var pos = e.GetPosition(button);
+                        if (pos.X >= 0 && pos.X <= button.ActualWidth &&
+                            pos.Y >= 0 && pos.Y <= button.ActualHeight)
+                        {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
+                            }), System.Windows.Threading.DispatcherPriority.Normal);
+                        }
+                    }
+                    catch
+                    {
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
+                        }), System.Windows.Threading.DispatcherPriority.Normal);
+                    }
+                }
+                e.Handled = true;
+            };
+        }
+
+        /// <summary>
+        /// QC_4.2_TOUCH_PIPELINE: Wire touch activation cho RadioButton sidebar.
+        /// Đảm bảo chạm 1 lần là chuyển tab ngay trên IFP.
+        /// </summary>
+        private void WireTouchActivationRadio(RadioButton radio, RoutedEventHandler checkedHandler)
+        {
+            if (radio == null) return;
+            radio.Focusable = false;
+            Stylus.SetIsPressAndHoldEnabled(radio, false);
+
+            radio.PreviewTouchDown += (s, e) =>
+            {
+                e.TouchDevice.Capture(radio);
+                e.Handled = true;
+            };
+
+            radio.PreviewTouchUp += (s, e) =>
+            {
+                if (e.TouchDevice.Captured == radio)
+                {
+                    radio.ReleaseTouchCapture(e.TouchDevice);
+                    try
+                    {
+                        var pos = e.GetTouchPoint(radio).Position;
+                        if (pos.X >= 0 && pos.X <= radio.ActualWidth &&
+                            pos.Y >= 0 && pos.Y <= radio.ActualHeight)
+                        {
+                            radio.IsChecked = true;
+                            checkedHandler(radio, new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
+                        }
+                    }
+                    catch
+                    {
+                        radio.IsChecked = true;
+                        checkedHandler(radio, new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
+                    }
+                }
+                e.Handled = true;
+            };
+
+            radio.PreviewStylusDown += (s, e) =>
+            {
+                e.StylusDevice.Capture(radio);
+                e.Handled = true;
+            };
+
+            radio.PreviewStylusUp += (s, e) =>
+            {
+                if (e.StylusDevice.Captured == radio)
+                {
+                    radio.ReleaseStylusCapture();
+                    try
+                    {
+                        var pos = e.GetPosition(radio);
+                        if (pos.X >= 0 && pos.X <= radio.ActualWidth &&
+                            pos.Y >= 0 && pos.Y <= radio.ActualHeight)
+                        {
+                            radio.IsChecked = true;
+                            checkedHandler(radio, new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
+                        }
+                    }
+                    catch
+                    {
+                        radio.IsChecked = true;
+                        checkedHandler(radio, new RoutedEventArgs(ToggleButton.CheckedEvent, radio));
+                    }
+                }
+                e.Handled = true;
+            };
         }
 
         #endregion
