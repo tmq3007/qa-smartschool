@@ -73,6 +73,10 @@ namespace QASmartClass.Shared
 
             UpdateUI(_modeService.CurrentMode);
             Log.Information("FloatingModeBar initialized at bottom - Smooth Native Drag enabled");
+            
+            // Tự động ẩn thanh công cụ xuống dưới các ứng dụng khác khi ứng dụng mất tiêu điểm
+            Application.Current.Activated += (s, e) => { this.Topmost = true; };
+            Application.Current.Deactivated += (s, e) => { this.Topmost = false; };
         }
 
         /// <summary>

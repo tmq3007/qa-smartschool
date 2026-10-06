@@ -58,22 +58,42 @@ namespace QASmartClass.Data
                 ("12A2", "12", "Tin học", "Bùi Minh Đức", Gen12A2()),
             };
 
+            var random = new Random(2026); // Cố định seed để sinh dữ liệu ngẫu nhiên nhưng đồng nhất
             foreach (var (cls, grade, subject, teacher, students) in classData)
             {
                 var roster = rosterService.CreateRoster(cls, grade, subject, teacher, "2025-2026", "HK2");
 
+                int subnet = Math.Abs(cls.GetHashCode() % 200) + 10;
                 int stt = 0;
                 foreach (var s in students)
                 {
                     stt++;
+                    bool isOnline = random.Next(100) > 30; // 70% online
+                    string lastName = s[0].Split(' ')[0];
+                    string middleName = s[0].Split(' ').Length > 2 ? s[0].Split(' ')[1] : "";
+                    string gender = (middleName.ToLower() == "thị" || middleName.ToLower() == "diễm" || middleName.ToLower() == "ngọc") ? "Nữ" : "Nam";
+                    
+                    var parentNames = new[] { "Nam", "Hải", "Hùng", "Minh", "Tuấn", "Lan", "Hương", "Mai", "Hoa", "Thành", "Bình", "Quyên" };
+                    string parentName = lastName + " " + parentNames[random.Next(parentNames.Length)];
+                    
                     var student = new Student
                     {
                         FullName = s[0],
                         StudentCode = s[1],
                         ClassName = cls,
                         SchoolName = "THPT Quang Ân",
-                        IsOnline = false,
-                        LastSeen = DateTime.Now
+                        IsOnline = isOnline,
+                        LastSeen = isOnline ? DateTime.Now : DateTime.Now.AddMinutes(-random.Next(10, 1440)),
+                        PCName = $"PC-{cls}-{stt:D2}",
+                        IPAddress = $"192.168.{subnet}.{stt + 10}",
+                        ParentName = parentName,
+                        ParentPhone = $"09{random.Next(10000000, 99999999)}",
+                        ConductScore = random.Next(80, 101),
+                        TotalXp = random.Next(500, 5000),
+                        WalletBalance = random.Next(0, 10) * 10000,
+                        Gender = gender,
+                        DailyStreak = random.Next(0, 30),
+                        AvatarPath = ""
                     };
                     db.Students.Add(student);
                     db.SaveChanges();

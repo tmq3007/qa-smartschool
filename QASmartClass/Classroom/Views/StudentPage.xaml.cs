@@ -40,7 +40,6 @@ namespace QASmartClass.Classroom.Views
                 // Auto-expand roster panel when navigating from "Danh sách lớp" menu
                 if (_showRosterFirst)
                 {
-                    rosterExpander.IsExpanded = true;
                     LoadRosters();
                 }
             };
@@ -92,18 +91,15 @@ namespace QASmartClass.Classroom.Views
                 var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 List<Student> students = null;
 
-                await Task.Run(() =>
+                if (activeRoster != null)
                 {
-                    if (activeRoster != null)
-                    {
-                        students = ClassroomAppContext.ClassRoster.GetActiveStudents();
-                    }
-                    else
-                    {
-                        students = VietnameseNameHelper.SortByVietnameseName(
-                            ClassroomAppContext.Db.Students.ToList(), s => s.FullName);
-                    }
-                });
+                    students = ClassroomAppContext.ClassRoster.GetActiveStudents();
+                }
+                else
+                {
+                    students = VietnameseNameHelper.SortByVietnameseName(
+                        ClassroomAppContext.Db.Students.ToList(), s => s.FullName);
+                }
 
                 _allStudents = students ?? new List<Student>();
 
@@ -172,10 +168,13 @@ namespace QASmartClass.Classroom.Views
 
             // Apply search
             if (!string.IsNullOrWhiteSpace(_searchText))
+            {
+                var searchClean = VietnameseNameHelper.RemoveDiacritics(_searchText).ToLower();
                 filtered = filtered.Where(s =>
-                    s.FullName.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
-                    s.StudentCode.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
-                    s.PCName.Contains(_searchText, StringComparison.OrdinalIgnoreCase));
+                    (s.FullName != null && VietnameseNameHelper.RemoveDiacritics(s.FullName).ToLower().Contains(searchClean)) ||
+                    (s.StudentCode != null && s.StudentCode.Contains(_searchText, StringComparison.OrdinalIgnoreCase)) ||
+                    (s.PCName != null && s.PCName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)));
+            }
 
             // Apply sorting
             var list = filtered.ToList();
@@ -257,61 +256,60 @@ namespace QASmartClass.Classroom.Views
         }
 
         /// <summary>Populate class filter ComboBox with all rosters</summary>
-        private void PopulateClassFilter()
+                private void PopulateClassFilter()
         {
             try
             {
-                // → ClassroomAppContext
                 var rosters = ClassroomAppContext.ClassRoster.GetAllRosters();
+                var listItems = new List<QASmartClass.Data.ClassRoster>();
                 
-                cmbClassFilter.SelectionChanged -= ClassFilter_Changed; // Ngăn chặn loop
-                cmbClassFilter.Items.Clear();
+                // Thêm mục "Tất cả lớp"
+                var allItem = new QASmartClass.Data.ClassRoster 
+                { 
+                    Id = -1, 
+                    ClassName = "Tất cả học sinh", 
+                    TeacherName = "Toàn trường", 
+                    StudentCount = ClassroomAppContext.Db.Students.Count() 
+                };
+                listItems.Add(allItem);
+                listItems.AddRange(rosters);
                 
-                var allItem = new ComboBoxItem { Content = "📋 Tất cả lớp", Tag = "ALL" };
-                cmbClassFilter.Items.Add(allItem);
+                lstClasses.SelectionChanged -= LstClasses_SelectionChanged;
+                lstClasses.ItemsSource = listItems;
                 
                 var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
-                ComboBoxItem selectedItem = allItem;
-                
-                foreach (var r in rosters)
+                if (activeRoster != null)
                 {
-                    var item = new ComboBoxItem
-                    {
-                        Content = $"{r.ClassName} — {r.Subject} ({r.StudentCount} HS)",
-                        Tag = r.Id.ToString()
-                    };
-                    if (activeRoster != null && activeRoster.Id == r.Id)
-                    {
-                        selectedItem = item;
-                    }
-                    cmbClassFilter.Items.Add(item);
+                    var selected = listItems.FirstOrDefault(r => r.Id == activeRoster.Id);
+                    lstClasses.SelectedItem = selected ?? allItem;
+                }
+                else
+                {
+                    lstClasses.SelectedItem = allItem;
                 }
                 
-                cmbClassFilter.SelectedItem = selectedItem;
-                cmbClassFilter.SelectionChanged += ClassFilter_Changed;
+                lstClasses.SelectionChanged += LstClasses_SelectionChanged;
             }
             catch (Exception ex) { Log.Warning("PopulateClassFilter error: {Err}", ex.Message); }
         }
 
         /// <summary>When user selects a class from the filter ComboBox</summary>
-        private void ClassFilter_Changed(object sender, SelectionChangedEventArgs e)
+                private void LstClasses_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (cmbClassFilter?.SelectedItem is not ComboBoxItem selected) return;
-            var tag = selected.Tag?.ToString() ?? "ALL";
+            if (lstClasses.SelectedItem is not QASmartClass.Data.ClassRoster selected) return;
 
             try
             {
-                // → ClassroomAppContext
-                if (tag == "ALL")
+                if (selected.Id == -1) // "Tất cả lớp"
                 {
-                    ClassroomAppContext.ClassRoster.SetActiveRoster(null); // Giải phóng active roster tránh lỗi reload
+                    ClassroomAppContext.ClassRoster.SetActiveRoster(null);
                     _allStudents = VietnameseNameHelper.SortByVietnameseName(
                         ClassroomAppContext.Db.Students.ToList(), s => s.FullName);
                     txtSubtitle.Text = $"Danh sách học sinh — Tất cả ({_allStudents.Count} HS)";
                 }
-                else if (int.TryParse(tag, out int rosterId))
+                else
                 {
-                    var roster = ClassroomAppContext.ClassRoster.GetAllRosters().FirstOrDefault(r => r.Id == rosterId);
+                    var roster = ClassroomAppContext.ClassRoster.GetAllRosters().FirstOrDefault(r => r.Id == selected.Id);
                     if (roster != null)
                     {
                         ClassroomAppContext.ClassRoster.SetActiveRoster(roster);
@@ -322,20 +320,20 @@ namespace QASmartClass.Classroom.Views
                 UpdateStats();
                 RefreshGrid();
             }
-            catch (Exception ex) { Log.Warning("ClassFilter error: {Err}", ex.Message); }
+            catch (Exception ex) { Log.Warning("LstClasses_SelectionChanged error: {Err}", ex.Message); }
         }
 
-        private void SelectClassFilterItem(int? rosterId)
+                private void SelectClassFilterItem(int? rosterId)
         {
-            if (cmbClassFilter == null) return;
-            string targetTag = rosterId?.ToString() ?? "ALL";
-            foreach (ComboBoxItem item in cmbClassFilter.Items)
+            if (lstClasses == null) return;
+            var items = lstClasses.ItemsSource as List<QASmartClass.Data.ClassRoster>;
+            if (items == null) return;
+            
+            var targetId = rosterId ?? -1;
+            var target = items.FirstOrDefault(x => x.Id == targetId);
+            if (target != null)
             {
-                if (item.Tag?.ToString() == targetTag)
-                {
-                    cmbClassFilter.SelectedItem = item;
-                    break;
-                }
+                lstClasses.SelectedItem = target;
             }
         }
 
@@ -952,20 +950,9 @@ namespace QASmartClass.Classroom.Views
             LoadRosters();
         }
 
-        private async void LoadRosters()
+                private void LoadRosters()
         {
-            try
-            {
-                // → ClassroomAppContext
-                var rosters = await Task.Run(() => ClassroomAppContext.ClassRoster.GetAllRosters());
-                rosterDataGrid.ItemsSource = rosters;
-                txtRosterCount.Text = $"{rosters.Count} lớp";
-                Log.Information("Loaded {Count} rosters", rosters.Count);
-            }
-            catch (Exception ex)
-            {
-                Log.Warning("LoadRosters error: {Err}", ex.Message);
-            }
+            PopulateClassFilter();
         }
 
         private void RefreshRosters_Click(object sender, RoutedEventArgs e) => LoadRosters();
@@ -983,7 +970,7 @@ namespace QASmartClass.Classroom.Views
 
         private void RosterGrid_DoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (rosterDataGrid.SelectedItem is Data.ClassRoster roster)
+            if (lstClasses.SelectedItem is Data.ClassRoster roster)
                 ShowRosterEditor(roster);
         }
 
@@ -2455,3 +2442,8 @@ namespace QASmartClass.Classroom.Views
         }
     }
 }
+
+
+
+
+
