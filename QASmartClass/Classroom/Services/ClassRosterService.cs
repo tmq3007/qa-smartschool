@@ -186,24 +186,20 @@ namespace QASmartClass.Classroom.Services
             try
             {
                 var activeRosterId = _activeRoster.Id;
-                var links = _db.ClassRosterStudents
-                    .Where(rs => rs.RosterId == activeRosterId)
-                    .ToList();
+                var query = from rs in _db.ClassRosterStudents
+                            join s in _db.Students on rs.StudentId equals s.Id
+                            where rs.RosterId == activeRosterId
+                            select new { Student = s, rs.SeatNumber };
 
-                var studentIds = links.Select(rs => rs.StudentId).ToList();
-                var students = _db.Students
-                    .Where(s => studentIds.Contains(s.Id))
-                    .ToList();
+                var results = query.ToList();
+                var students = new List<Student>();
 
-                // Nạp thông tin SeatNumber (Số máy/ghế ngồi) từ bảng liên kết
-                var linkMap = links.ToDictionary(l => l.StudentId);
-                foreach (var s in students)
+                foreach (var r in results)
                 {
-                    if (linkMap.TryGetValue(s.Id, out var link))
-                    {
-                        s.SeatNumber = link.SeatNumber;
-                    }
+                    r.Student.SeatNumber = r.SeatNumber;
+                    students.Add(r.Student);
                 }
+
 
                 // Sắp xếp theo chuẩn Việt Nam: Tên → Họ → Đệm
                 return VietnameseNameHelper.SortByVietnameseName(students, s => s.FullName);
