@@ -403,7 +403,7 @@ namespace QASmartClass.Classroom.Views
             var wnd = new Window
             {
                 Title = isNew ? "➕ Thêm học sinh mới" : $"✏️ Sửa: {existing!.FullName}",
-                Width = 460, Height = 480,
+                Width = 460, Height = 560,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = Window.GetWindow(this), ResizeMode = ResizeMode.NoResize,
                 Background = Brushes.White
@@ -417,6 +417,122 @@ namespace QASmartClass.Classroom.Views
                 FontSize = 16, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 14),
                 Foreground = new SolidColorBrush(Color.FromRgb(33, 33, 33))
             });
+
+            // Avatar Container
+            var avatarContainer = new StackPanel { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 16) };
+            
+            string currentAvatarPath = existing?.AvatarPath ?? "";
+            var avatarBorder = new Border
+            {
+                Width = 120, Height = 120, CornerRadius = new CornerRadius(60),
+                Background = new SolidColorBrush(Color.FromRgb(227, 242, 253)),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 8),
+                Cursor = Cursors.Hand,
+                ToolTip = "Click để xem ảnh lớn"
+            };
+            var avatarIcon = new TextBlock
+            {
+                Text = "\xE77B", FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                FontSize = 48, Foreground = new SolidColorBrush(Color.FromRgb(25, 118, 210)),
+                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center
+            };
+            var avatarEllipse = new System.Windows.Shapes.Ellipse { Width = 120, Height = 120 };
+            
+            Action updateAvatarPreview = () => {
+                if (System.IO.File.Exists(currentAvatarPath))
+                {
+                    try {
+                        var bi = new System.Windows.Media.Imaging.BitmapImage();
+                        bi.BeginInit();
+                        bi.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                        bi.DecodePixelWidth = 240;
+                        bi.UriSource = new Uri(currentAvatarPath);
+                        bi.EndInit();
+                        bi.Freeze();
+                        avatarEllipse.Fill = new ImageBrush(bi) { Stretch = Stretch.UniformToFill };
+                        avatarIcon.Visibility = Visibility.Collapsed;
+                        avatarEllipse.Visibility = Visibility.Visible;
+                    } catch {
+                        avatarIcon.Visibility = Visibility.Visible;
+                        avatarEllipse.Visibility = Visibility.Collapsed;
+                    }
+                } else {
+                    avatarIcon.Visibility = Visibility.Visible;
+                    avatarEllipse.Visibility = Visibility.Collapsed;
+                }
+            };
+            updateAvatarPreview();
+
+            var avatarGrid = new Grid();
+            avatarGrid.Children.Add(avatarIcon);
+            avatarGrid.Children.Add(avatarEllipse);
+            avatarBorder.Child = avatarGrid;
+
+            var btnChangeAvatar = new Button
+            {
+                Content = "Thay đổi ảnh",
+                Background = Brushes.Transparent,
+                Foreground = new SolidColorBrush(Color.FromRgb(25, 118, 210)),
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            btnChangeAvatar.Click += (s, ev) =>
+            {
+                var openFileDialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Chọn ảnh đại diện",
+                    Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif;*.bmp"
+                };
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    currentAvatarPath = openFileDialog.FileName;
+                    updateAvatarPreview();
+                }
+            };
+
+            avatarBorder.MouseLeftButtonDown += (s, ev) =>
+            {
+                if (System.IO.File.Exists(currentAvatarPath))
+                {
+                    var previewWindow = new Window
+                    {
+                        Title = "Xem trước ảnh đại diện",
+                        WindowStyle = WindowStyle.ToolWindow,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        Owner = Application.Current.MainWindow,
+                        Width = 500, Height = 500,
+                        Background = Brushes.Black
+                    };
+                    
+                    var img = new System.Windows.Controls.Image
+                    {
+                        Stretch = Stretch.Uniform,
+                        Margin = new Thickness(10)
+                    };
+                    
+                    var bi = new System.Windows.Media.Imaging.BitmapImage();
+                    bi.BeginInit();
+                    bi.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                    bi.UriSource = new Uri(currentAvatarPath);
+                    bi.EndInit();
+                    bi.Freeze();
+                    
+                    img.Source = bi;
+                    previewWindow.Content = img;
+                    
+                    previewWindow.PreviewKeyDown += (sender, keyArgs) => { if (keyArgs.Key == Key.Escape) previewWindow.Close(); };
+                    img.MouseLeftButtonDown += (sender, mouseArgs) => { if (mouseArgs.ClickCount == 2) previewWindow.Close(); };
+                    
+                    previewWindow.ShowDialog();
+                }
+            };
+
+            avatarContainer.Children.Add(avatarBorder);
+            avatarContainer.Children.Add(btnChangeAvatar);
+            sp.Children.Add(avatarContainer);
 
             // Lấy mã HS, số máy, IP lớn nhất hiện tại ngoài vòng lặp để tránh trùng lặp trùng mã
             int maxStudentNum = 0;
@@ -615,6 +731,20 @@ namespace QASmartClass.Classroom.Views
                         }
                     }
 
+                    if (!string.IsNullOrEmpty(currentAvatarPath) && System.IO.File.Exists(currentAvatarPath))
+                    {
+                        var avatarsDir = System.IO.Path.Combine(QASmartClass.Services.AppPaths.RootDir, "Avatars");
+                        System.IO.Directory.CreateDirectory(avatarsDir);
+                        if (!currentAvatarPath.StartsWith(avatarsDir))
+                        {
+                            string ext = System.IO.Path.GetExtension(currentAvatarPath);
+                            string newFileName = studentCode + "_" + DateTime.Now.Ticks + ext;
+                            string newPath = System.IO.Path.Combine(avatarsDir, newFileName);
+                            System.IO.File.Copy(currentAvatarPath, newPath, true);
+                            currentAvatarPath = newPath;
+                        }
+                    }
+
                     if (isNew)
                     {
                         var student = new Student
@@ -624,7 +754,8 @@ namespace QASmartClass.Classroom.Views
                             PCName = pcName,
                             IPAddress = ipText,
                             IsOnline = cmbStatus.SelectedIndex == 0,
-                            LastSeen = DateTime.Now
+                            LastSeen = DateTime.Now,
+                            AvatarPath = currentAvatarPath
                         };
                         ClassroomAppContext.Db.Students.Add(student);
                     }
@@ -635,6 +766,7 @@ namespace QASmartClass.Classroom.Views
                         existing.PCName = pcName;
                         existing.IPAddress = ipText;
                         existing.IsOnline = cmbStatus.SelectedIndex == 0;
+                        existing.AvatarPath = currentAvatarPath;
                     }
 
                     await Task.Run(() => ClassroomAppContext.Db.SaveChanges()); // Lưu DB bất đồng bộ hoàn toàn
@@ -2465,6 +2597,7 @@ namespace QASmartClass.Classroom.Views
         }
     }
 }
+
 
 
 

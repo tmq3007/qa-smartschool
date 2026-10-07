@@ -295,11 +295,10 @@
                     </DataGrid.CellStyle>
                     <DataGrid.Columns>
                         <!-- Avatar Column -->
-                        <DataGridTemplateColumn Header="Ảnh" Width="48">
+                        <DataGridTemplateColumn Header="Ảnh" Width="56">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Width="30" Height="30" CornerRadius="15" Background="#E3F2FD" HorizontalAlignment="Center"
-                                            Cursor="Hand" ToolTip="Double-click để đổi ảnh">
+                                    <Border Width="44" Height="44" CornerRadius="22" Background="#E3F2FD" HorizontalAlignment="Center">
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Style.Triggers>
@@ -329,7 +328,7 @@
                                                 </TextBlock.Style>
                                             </TextBlock>
                                             <!-- Actual Avatar Image with cached loader -->
-                                            <Ellipse Width="30" Height="30">
+                                            <Ellipse Width="44" Height="44">
                                                 <Ellipse.Fill>
                                                     <ImageBrush ImageSource="{Binding AvatarPath, Converter={StaticResource AvatarPathConverter}}" Stretch="UniformToFill"/>
                                                 </Ellipse.Fill>
@@ -578,6 +577,8 @@
         </Border>
     </Grid>
 </Page>
+
+
 
 
 
