@@ -2430,8 +2430,10 @@ namespace QASmartClass.Classroom.Views
                     var bi = new System.Windows.Media.Imaging.BitmapImage();
                     bi.BeginInit();
                     bi.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad; // Ngăn chặn khóa file
+                    bi.DecodePixelWidth = 64;
                     bi.UriSource = new Uri(path);
                     bi.EndInit();
+                    bi.Freeze();
                     return bi;
                 }
                 catch (Exception ex)
@@ -2463,6 +2465,7 @@ namespace QASmartClass.Classroom.Views
         }
     }
 }
+
 
 
 

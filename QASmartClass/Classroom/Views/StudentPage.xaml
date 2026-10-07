@@ -16,7 +16,7 @@
 
         <!-- LEFT PANEL (Master) -->
         <Border Grid.Column="0" Background="White" CornerRadius="12" Margin="0,0,16,0" BorderBrush="#E2E8F0" BorderThickness="1">
-            <Border.Effect><DropShadowEffect Color="#000000" Opacity="0.03" BlurRadius="6" ShadowDepth="1"/></Border.Effect>
+            <!-- shadow effect removed for perf -->
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -129,21 +129,21 @@
                 <!-- Stat Cards -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Border Background="White" CornerRadius="12" Padding="16,10" Margin="0,0,12,0" BorderBrush="#E2E8F0" BorderThickness="1">
-                        <Border.Effect><DropShadowEffect Color="#000000" Opacity="0.04" BlurRadius="8" ShadowDepth="2"/></Border.Effect>
+                        <!-- shadow removed -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="👥 Tổng số: " FontSize="14" Foreground="#64748B" VerticalAlignment="Center"/>
                             <TextBlock x:Name="txtTotalCount" Text="20" FontSize="20" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" Margin="6,0,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Background="White" CornerRadius="12" Padding="16,10" Margin="0,0,12,0" BorderBrush="#E2E8F0" BorderThickness="1">
-                        <Border.Effect><DropShadowEffect Color="#000000" Opacity="0.04" BlurRadius="8" ShadowDepth="2"/></Border.Effect>
+                        <!-- shadow removed -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="🟢 Online: " FontSize="14" Foreground="#64748B" VerticalAlignment="Center"/>
                             <TextBlock x:Name="txtOnlineCount" Text="18" FontSize="20" FontWeight="Bold" Foreground="#16A34A" VerticalAlignment="Center" Margin="6,0,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Background="White" CornerRadius="12" Padding="16,10" BorderBrush="#E2E8F0" BorderThickness="1">
-                        <Border.Effect><DropShadowEffect Color="#000000" Opacity="0.04" BlurRadius="8" ShadowDepth="2"/></Border.Effect>
+                        <!-- shadow removed -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="⚫ Offline: " FontSize="14" Foreground="#64748B" VerticalAlignment="Center"/>
                             <TextBlock x:Name="txtOfflineCount" Text="2" FontSize="20" FontWeight="Bold" Foreground="#94A3B8" VerticalAlignment="Center" Margin="6,0,0,0"/>
@@ -154,7 +154,7 @@
 
             <!-- Row 1: Unified Toolbar & Search -->
             <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="16,12" Margin="0,0,0,16" BorderBrush="#E2E8F0" BorderThickness="1">
-                <Border.Effect><DropShadowEffect Color="#000000" Opacity="0.03" BlurRadius="6" ShadowDepth="1"/></Border.Effect>
+                <!-- shadow removed -->
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -247,9 +247,6 @@
             <Grid Grid.Row="2">
                 <!-- LIST VIEW -->
                 <Border x:Name="borderListView" Background="White" CornerRadius="12" BorderBrush="#E0E0E0" BorderThickness="1" Visibility="Visible">
-                    <Border.Effect>
-                        <DropShadowEffect Color="#000000" Opacity="0.03" BlurRadius="8" ShadowDepth="1"/>
-                    </Border.Effect>
                 <DataGrid x:Name="studentDataGrid" VirtualizingPanel.IsVirtualizing="True" EnableRowVirtualization="True"
                           AutoGenerateColumns="False" IsReadOnly="True"
                           HeadersVisibility="Column" GridLinesVisibility="Horizontal"
@@ -581,5 +578,6 @@
         </Border>
     </Grid>
 </Page>
+
 
 
