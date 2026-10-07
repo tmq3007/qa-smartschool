@@ -1,4 +1,4 @@
-﻿<Page x:Class="QASmartClass.Classroom.Views.StudentPage"
+<Page x:Class="QASmartClass.Classroom.Views.StudentPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="clr-namespace:QASmartClass.Classroom.Views"
@@ -102,17 +102,16 @@
         </Border>
 
         <!-- RIGHT PANEL (Detail) -->
-        <Border Grid.Column="1" MaxWidth="1400" HorizontalAlignment="Left">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <Grid Margin="0,0,8,16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+        <Border Grid.Column="1">
+            <Grid Margin="0,0,8,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
             <!-- Row 0: Dashboard Header & Stats -->
             <Grid Grid.Row="0" Margin="0,0,0,16">
@@ -251,7 +250,7 @@
                     <Border.Effect>
                         <DropShadowEffect Color="#000000" Opacity="0.03" BlurRadius="8" ShadowDepth="1"/>
                     </Border.Effect>
-                <DataGrid x:Name="studentDataGrid"
+                <DataGrid x:Name="studentDataGrid" VirtualizingPanel.IsVirtualizing="True" EnableRowVirtualization="True"
                           AutoGenerateColumns="False" IsReadOnly="True"
                           HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                           BorderThickness="0" Background="White"
@@ -579,7 +578,6 @@
                 </StackPanel>
             </Border>
                         </Grid>
-            </ScrollViewer>
         </Border>
     </Grid>
 </Page>

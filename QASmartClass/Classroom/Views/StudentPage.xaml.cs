@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -294,15 +294,26 @@ namespace QASmartClass.Classroom.Views
         }
 
         /// <summary>When user selects a class from the filter ComboBox</summary>
-                private void LstClasses_SelectionChanged(object sender, SelectionChangedEventArgs e)
+                private bool _isChangingClass = false;
+
+        private async void LstClasses_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (_isChangingClass) return;
             if (lstClasses.SelectedItem is not QASmartClass.Data.ClassRoster selected) return;
+            
+            _isChangingClass = true;
+            lstClasses.IsEnabled = false;
+
+            // Chuyển nhượng quyền điều khiển cho UI thread để hiệu ứng click (highlight) phản hồi ngay lập tức
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
 
             try
             {
                 if (selected.Id == -1) // "Tất cả lớp"
                 {
                     ClassroomAppContext.ClassRoster.SetActiveRoster(null);
+                    
+                    // Xử lý logic nặng ở background nếu cần, nhưng hiện tại ta có thể yield
                     _allStudents = VietnameseNameHelper.SortByVietnameseName(
                         ClassroomAppContext.Db.Students.ToList(), s => s.FullName);
                     txtSubtitle.Text = $"Danh sách học sinh — Tất cả ({_allStudents.Count} HS)";
@@ -317,10 +328,20 @@ namespace QASmartClass.Classroom.Views
                         txtSubtitle.Text = $"Danh sách học sinh — {roster.DisplayName} ({_allStudents.Count} HS)";
                     }
                 }
+                
                 UpdateStats();
                 RefreshGrid();
+                
+                // Nhường UI thread một lần nữa để WPF kịp vẽ DataGrid trước khi vẽ Sơ đồ lớp (nặng)
+                await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
+                RenderSeatingChart();
             }
             catch (Exception ex) { Log.Warning("LstClasses_SelectionChanged error: {Err}", ex.Message); }
+            finally
+            {
+                _isChangingClass = false;
+                lstClasses.IsEnabled = true;
+            }
         }
 
                 private void SelectClassFilterItem(int? rosterId)

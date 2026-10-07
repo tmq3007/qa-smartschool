@@ -1451,6 +1451,10 @@ namespace QASmartClass.Classroom.Views
 
 				try
 				{
+					// HƯỚNG DẪN: Yield luồng UI để WPF có thời gian vẽ khung LoadingOverlay lên màn hình trước khi 
+					// các hàm khởi tạo Page (rất nặng) khóa luồng UI.
+					await Dispatcher.Yield(DispatcherPriority.Background);
+
 					page = formId switch
 
 					{

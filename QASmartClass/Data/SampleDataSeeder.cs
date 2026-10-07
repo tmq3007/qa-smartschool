@@ -52,10 +52,13 @@ namespace QASmartClass.Data
             {
                 ("10A1", "10", "Toán", "Nguyễn Văn Hùng", Gen10A1()),
                 ("10A2", "10", "Vật lý", "Trần Thị Mai", Gen10A2()),
+                ("10A3", "10", "Sinh học", "Phạm Thị Hương", Gen10A3()),
                 ("11A1", "11", "Hóa học", "Lê Hoàng Nam", Gen11A1()),
                 ("11A2", "11", "Ngữ văn", "Hoàng Đức Minh", Gen11A2()),
+                ("11A3", "11", "Lịch sử", "Đỗ Quang Trung", Gen11A3()),
                 ("12A1", "12", "Tiếng Anh", "Vũ Thị Lan", Gen12A1()),
                 ("12A2", "12", "Tin học", "Bùi Minh Đức", Gen12A2()),
+                ("12A3", "12", "Địa lý", "Ngô Thị Hạnh", Gen12A3()),
             };
 
             var random = new Random(2026); // Cố định seed để sinh dữ liệu ngẫu nhiên nhưng đồng nhất
@@ -392,6 +395,68 @@ namespace QASmartClass.Data
             new[]{"Châu Thị Thanh Tuyền","12A2-037","Tổ trưởng 4"},
             new[]{"Nguyễn Thị Phương Uyên","12A2-038","Lớp phó HT"},
             new[]{"Hà Quang Vinh","12A2-039","Tổ trưởng 3"},
+        };
+
+        private static string[][] Gen10A3() => new[]
+        {
+            new[]{"Nguyễn Đức Cường","10A3-001","Lớp trưởng"},
+            new[]{"Trần Hoàng Bách","10A3-002"},
+            new[]{"Lê Thị Kim Ngân","10A3-003","Lớp phó HT"},
+            new[]{"Vũ Minh Quân","10A3-004"},
+            new[]{"Phạm Đức Trung","10A3-005"},
+            new[]{"Bùi Thị Hà","10A3-006"},
+            new[]{"Đặng Minh Trí","10A3-007"},
+            new[]{"Hoàng Thu Thủy","10A3-008"},
+            new[]{"Ngô Tuấn Kiệt","10A3-009"},
+            new[]{"Đinh Hải Yến","10A3-010","Tổ trưởng 1"},
+            new[]{"Đỗ Thị Ánh","10A3-011"},
+            new[]{"Mai Văn Hùng","10A3-012"},
+            new[]{"Phan Ngọc Anh","10A3-013"},
+            new[]{"Lý Gia Bảo","10A3-014"},
+            new[]{"Trịnh Đức Tài","10A3-015"},
+            new[]{"Cao Thùy Linh","10A3-016"},
+            new[]{"Dương Hải Đăng","10A3-017"},
+            new[]{"Đào Minh Hiếu","10A3-018"},
+            new[]{"Khúc Thị Trang","10A3-019"},
+            new[]{"Đoàn Quốc Khang","10A3-020"},
+        };
+
+        private static string[][] Gen11A3() => new[]
+        {
+            new[]{"Đặng Xuân Hòa","11A3-001","Lớp trưởng"},
+            new[]{"Đỗ Cẩm Ly","11A3-002"},
+            new[]{"Phạm Thị Thanh Hương","11A3-003"},
+            new[]{"Trần Anh Tuấn","11A3-004"},
+            new[]{"Lê Bảo Nam","11A3-005"},
+            new[]{"Nguyễn Mai Phương","11A3-006"},
+            new[]{"Vũ Hải Đông","11A3-007"},
+            new[]{"Đinh Bảo Châu","11A3-008","Lớp phó"},
+            new[]{"Hoàng Trung Dũng","11A3-009"},
+            new[]{"Lý Gia Hân","11A3-010"},
+            new[]{"Bùi Phương Anh","11A3-011"},
+            new[]{"Ngô Minh Châu","11A3-012"},
+            new[]{"Trịnh Xuân Bách","11A3-013"},
+            new[]{"Mai Ngọc Ánh","11A3-014"},
+            new[]{"Phan Khắc Tiệp","11A3-015"},
+        };
+
+        private static string[][] Gen12A3() => new[]
+        {
+            new[]{"Lê Minh Quân","12A3-001","Lớp trưởng"},
+            new[]{"Trần Thu Thảo","12A3-002"},
+            new[]{"Nguyễn Văn Sang","12A3-003"},
+            new[]{"Phạm Gia Huy","12A3-004"},
+            new[]{"Vũ Thu Hà","12A3-005"},
+            new[]{"Đỗ Hữu Thắng","12A3-006"},
+            new[]{"Hoàng Cẩm Tú","12A3-007","Lớp phó"},
+            new[]{"Đinh Quang Huy","12A3-008"},
+            new[]{"Bùi Lan Anh","12A3-009"},
+            new[]{"Ngô Tuấn Anh","12A3-010"},
+            new[]{"Lý Thanh Trúc","12A3-011"},
+            new[]{"Mai Phương Lan","12A3-012"},
+            new[]{"Trịnh Minh Hoàng","12A3-013"},
+            new[]{"Phan Thị Mơ","12A3-014"},
+            new[]{"Đoàn Tuấn Hưng","12A3-015"},
         };
     }
 }

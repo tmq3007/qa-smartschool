@@ -32,7 +32,7 @@
                                     <!-- Hiển thị Emoji trích xuất bằng Converter -->
                                     <TextBlock x:Name="iconBlock" 
                                                Text="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource SidebarIconConverter}}"
-                                               FontSize="15" Width="24" TextAlignment="Center" VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}"/>
+                                               FontFamily="Segoe UI Emoji" FontSize="18" Width="24" TextAlignment="Center" VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}"/>
                                     
                                     <!-- Hiển thị Nhãn chữ trích xuất bằng Converter -->
                                     <TextBlock x:Name="textBlock" 

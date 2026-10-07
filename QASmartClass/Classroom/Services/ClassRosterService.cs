@@ -207,7 +207,7 @@ namespace QASmartClass.Classroom.Services
             catch (Exception ex)
             {
                 Log.Warning("GetActiveStudents error: {Err}", ex.Message);
-                return new List<Student>();
+                return new List<Student> { new Student { FullName = "ERROR: " + ex.Message, StudentCode = "ERR" } };
             }
         }
 
