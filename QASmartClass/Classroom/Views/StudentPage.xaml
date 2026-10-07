@@ -6,6 +6,7 @@
     <Page.Resources>
         <local:AvatarPathConverter x:Key="AvatarPathConverter"/>
         <local:SeatNumberConverter x:Key="SeatNumberConverter"/>
+        <local:DataGridRowIndexConverter x:Key="RowIndexConverter"/>
     </Page.Resources>
     
         <Grid Margin="16" HorizontalAlignment="Stretch">
@@ -294,6 +295,17 @@
                         </Style>
                     </DataGrid.CellStyle>
                     <DataGrid.Columns>
+                        <!-- STT Column -->
+                        <DataGridTextColumn Header="STT" Width="50" Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Converter={StaticResource RowIndexConverter}}" IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="#9E9E9E"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
                         <!-- Avatar Column -->
                         <DataGridTemplateColumn Header="Ảnh" Width="56">
                             <DataGridTemplateColumn.CellTemplate>
@@ -351,22 +363,58 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="Trạng thái" Width="74" SortMemberPath="IsOnline">
+                        <DataGridTemplateColumn Header="Trạng thái" Width="100" SortMemberPath="IsOnline">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Ellipse Width="10" Height="10" HorizontalAlignment="Center"
-                                             Fill="{Binding IsOnline, Converter={x:Null}}">
-                                        <Ellipse.Style>
-                                            <Style TargetType="Ellipse">
-                                                <Setter Property="Fill" Value="#9E9E9E"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsOnline}" Value="True">
-                                                        <Setter Property="Fill" Value="#4CAF50"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Ellipse.Style>
-                                    </Ellipse>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,0,0,0">
+                                        <Ellipse Width="8" Height="8" Margin="0,0,6,0" VerticalAlignment="Center">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Fill" Value="#9E9E9E"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsOnline}" Value="True">
+                                                            <Setter Property="Fill" Value="#4CAF50"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Graduated">
+                                                            <Setter Property="Fill" Value="#2196F3"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Transferred">
+                                                            <Setter Property="Fill" Value="#FF9800"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsAtRisk}" Value="True">
+                                                            <Setter Property="Fill" Value="#F44336"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+                                        <TextBlock VerticalAlignment="Center" FontSize="12">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="Ngoại tuyến"/>
+                                                    <Setter Property="Foreground" Value="#757575"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsOnline}" Value="True">
+                                                            <Setter Property="Text" Value="Trực tuyến"/>
+                                                            <Setter Property="Foreground" Value="#4CAF50"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Graduated">
+                                                            <Setter Property="Text" Value="Tốt nghiệp"/>
+                                                            <Setter Property="Foreground" Value="#2196F3"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Transferred">
+                                                            <Setter Property="Text" Value="Đã chuyển"/>
+                                                            <Setter Property="Foreground" Value="#FF9800"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsAtRisk}" Value="True">
+                                                            <Setter Property="Text" Value="Cảnh báo"/>
+                                                            <Setter Property="Foreground" Value="#F44336"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

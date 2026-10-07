@@ -2596,6 +2596,23 @@ namespace QASmartClass.Classroom.Views
             throw new NotImplementedException();
         }
     }
+
+    public class DataGridRowIndexConverter : System.Windows.Data.IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is DataGridRow row)
+            {
+                return row.GetIndex() + 1;
+            }
+            return "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
 
 

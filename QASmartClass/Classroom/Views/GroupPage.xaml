@@ -12,6 +12,9 @@
         <!-- ═══ Header ═══ -->
         <DockPanel Grid.Row="0" Margin="0,0,0,10">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Lớp:" FontSize="12" Foreground="#757575" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox x:Name="cmbClass" FontSize="12" Width="120" Margin="0,0,12,0" SelectionChanged="Class_SelectionChanged" DisplayMemberPath="DisplayName" />
+                
                 <TextBlock Text="Số nhóm:" FontSize="12" Foreground="#757575" VerticalAlignment="Center" Margin="0,0,6,0"/>
                 <ComboBox x:Name="cmbGroupCount" FontSize="12" SelectedIndex="1" Width="55" SelectionChanged="GroupCount_Changed">
                     <ComboBoxItem Content="2"/>

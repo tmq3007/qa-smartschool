@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -42,7 +42,51 @@ namespace QASmartClass.Classroom.Views
             InitializeComponent();
         }
 
+        private bool _isChangingClass = false;
+
         private async void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Load class list
+                var rosters = ClassroomAppContext.ClassRoster.GetAllRosters().ToList();
+                var allItem = new QASmartClass.Data.ClassRoster { Id = -1, ClassName = "Tất cả HS" };
+                rosters.Insert(0, allItem);
+
+                _isChangingClass = true;
+                cmbClass.ItemsSource = rosters;
+                var active = ClassroomAppContext.ClassRoster.ActiveRoster;
+                if (active != null)
+                {
+                    cmbClass.SelectedItem = rosters.FirstOrDefault(r => r.Id == active.Id);
+                }
+                else
+                {
+                    cmbClass.SelectedIndex = 0;
+                }
+                _isChangingClass = false;
+
+                await ReloadStudentsAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("Page_Loaded error: {Err}", ex.Message);
+            }
+        }
+
+        private async void Class_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isChangingClass) return;
+            if (cmbClass.SelectedItem is QASmartClass.Data.ClassRoster selected)
+            {
+                if (selected.Id == -1) ClassroomAppContext.ClassRoster.SetActiveRoster(null);
+                else ClassroomAppContext.ClassRoster.SetActiveRoster(selected);
+                
+                await ReloadStudentsAsync();
+            }
+        }
+
+        private async Task ReloadStudentsAsync()
         {
             try
             {
@@ -65,7 +109,7 @@ namespace QASmartClass.Classroom.Views
             }
             catch (Exception ex)
             {
-                Log.Warning("Page_Loaded error: {Err}", ex.Message);
+                Log.Warning("ReloadStudentsAsync error: {Err}", ex.Message);
             }
         }
 
