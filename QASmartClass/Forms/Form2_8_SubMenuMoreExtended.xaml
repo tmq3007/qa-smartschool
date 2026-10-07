@@ -198,7 +198,7 @@
                             <Button x:Name="btnSaveLecture" 
                                     Style="{StaticResource ExtendedMenuItemButton}"
                                     Click="btnSaveLecture_Click"
-                                    ToolTip="Lưu trữ nội dung bài giảng hiện tại (.qasc)">
+                                    ToolTip="Lưu nhanh bài giảng hiện tại (Ghi đè tệp cũ hoặc lưu mới lần đầu)">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -219,7 +219,7 @@
                             <Button x:Name="btnSaveLectureAs" 
                                     Style="{StaticResource ExtendedMenuItemButton}"
                                     Click="btnSaveLectureAs_Click"
-                                    ToolTip="Lưu bài giảng thành một tệp mới">
+                                    ToolTip="Lưu bài giảng thành một tệp bản sao mới (Save As)">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -229,7 +229,7 @@
                                           Data="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"
                                           Width="20" Height="20"
                                           Margin="0,0,8,0"/>
-                                    <TextBlock Grid.Column="1" Text="Lưu thành..." 
+                                    <TextBlock Grid.Column="1" Text="Lưu thành tệp mới..." 
                                                FontSize="12"
                                                FontWeight="SemiBold"
                                                Foreground="#2F3542"
@@ -282,6 +282,7 @@
                             <Button x:Name="btnShareLecture" 
                                     Style="{StaticResource ExtendedMenuItemButton}"
                                     Click="btnShareLecture_Click"
+                                    Visibility="Collapsed"
                                     ToolTip="Chia sẻ bài giảng qua QR Code, Cloud hoặc Email">
                                 <Grid>
                                     <Grid.ColumnDefinitions>

@@ -84,9 +84,12 @@ namespace QASmartTouch.Forms
                     sliderPenSize.Value = currentPenSize;
                 }
                 InitializeSizeIndicators();
-                UpdatePreview();
+                if (currentBrushType == "Laser" && (currentPenColor == Colors.Black || currentPenColor == Colors.White))
+                {
+                    currentPenColor = Color.FromRgb(255, 59, 48);
+                }
                 UpdateColorUI();
-                HighlightBrushType(btnBrushNormal);
+                UpdateBrushTypeUI();
                 ApplyFeatureVisibility();
             };
         }
@@ -171,7 +174,7 @@ namespace QASmartTouch.Forms
                 case "Laser":
                     rectStrokePreview.Height = currentPenSize * 2.2;
                     rectStrokePreview.Opacity = 0.95;
-                    rectStrokePreview.Fill = new SolidColorBrush(Color.FromRgb(255, 59, 48)); // Đỏ laser đặc trưng
+                    rectStrokePreview.Fill = new SolidColorBrush(currentPenColor == Colors.Black || currentPenColor == Colors.White ? Color.FromRgb(255, 59, 48) : currentPenColor);
                     break;
                 default:
                     rectStrokePreview.Height = currentPenSize * 2;
@@ -222,7 +225,16 @@ namespace QASmartTouch.Forms
             {
                 currentBrushType = button.Tag.ToString() ?? "Normal";
                 HighlightBrushType(button);
-                UpdatePreview();
+                if (currentBrushType == "Laser")
+                {
+                    // Tự động chuyển màu sang Đỏ laser đặc trưng khi chọn bút laser
+                    currentPenColor = Color.FromRgb(255, 59, 48);
+                    UpdateColorUI();
+                }
+                else
+                {
+                    UpdatePreview();
+                }
             }
         }
 
@@ -234,6 +246,11 @@ namespace QASmartTouch.Forms
             {
                 currentBrushType = button.Tag.ToString();
                 HighlightBrushType(button);
+                if (currentBrushType == "Laser")
+                {
+                    currentPenColor = Color.FromRgb(255, 59, 48);
+                    UpdateColorUI();
+                }
                 
                 // Mark event as handled to prevent bubbling
                 e.Handled = true;
@@ -349,8 +366,16 @@ namespace QASmartTouch.Forms
             set 
             { 
                 currentBrushType = value; 
+                if (currentBrushType == "Laser" && (currentPenColor == Colors.Black || currentPenColor == Colors.White))
+                {
+                    currentPenColor = Color.FromRgb(255, 59, 48);
+                }
                 // Update UI if already loaded
-                if (IsLoaded) UpdateBrushTypeUI();
+                if (IsLoaded)
+                {
+                    UpdateColorUI();
+                    UpdateBrushTypeUI();
+                }
             } 
         }
         

@@ -243,7 +243,9 @@ namespace QASmartTouch.Forms
             };
             actionPanel.Children.Add(btnDelete);
 
-            // === ADD TO CANVAS ===
+            // === ADD TO CANVAS (QC_4.2_MILESTONE_ZINDEX) ===
+            int mediaZ = AllocateMediaWidgetZIndex();
+            Panel.SetZIndex(container, mediaZ);
             MainInteractiveBoard.Children.Add(container);
             try { RegisterNewObjectWithSelectionManager(container); } catch { }
             try { RecordAddAction(container, "Thêm ảnh chụp màn hình"); } catch { }

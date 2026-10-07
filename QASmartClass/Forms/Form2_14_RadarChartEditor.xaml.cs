@@ -16,6 +16,7 @@ using IOPath = System.IO.Path;
 using IOFile = System.IO.File;
 using IODirectory = System.IO.Directory;
 using QASmartTouch.Helpers;
+using QASmartTouch.Shared;
 
 namespace QASmartTouch.Forms
 {
@@ -28,6 +29,8 @@ namespace QASmartTouch.Forms
         public bool IsConfirmed { get; private set; }
         public bool DisplayStatsMode { get; private set; } = false;
         public RadarChartConfiguration CurrentConfiguration { get; private set; }
+        public double? TargetLeft { get; set; }
+        public double? TargetTop { get; set; }
 
         // Configuration Properties (public for MainDashboard access)
         public string ChartTitle { get; private set; } = "So sánh kỹ năng lập trình viên";
@@ -546,6 +549,7 @@ namespace QASmartTouch.Forms
 
                 // STEP 3: Confirm and display chart
                 IsConfirmed = true;
+                DialogResult = true;
 
                 if (_mainDashboard != null)
                 {
@@ -570,6 +574,18 @@ namespace QASmartTouch.Forms
             // Đóng form mà không lưu
             IsConfirmed = false;
             this.Close();
+        }
+
+        private void BtnToggleKeyboard_Click(object sender, RoutedEventArgs e)
+        {
+            if (TouchKeyboardHelper.IsKeyboardVisible())
+            {
+                TouchKeyboardHelper.HideTouchKeyboard();
+            }
+            else
+            {
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            }
         }
 
         private void BtnSaveImage_Click(object sender, RoutedEventArgs e)
@@ -693,240 +709,54 @@ namespace QASmartTouch.Forms
 
             renderBitmap.Render(ChartBorder);
 
-            // Create Image control with 60% size for optimal display
-            var chartImage = new System.Windows.Controls.Image
+            InteractiveChartHelper.CreateAndAddChartToCanvas(new InteractiveChartHelper.ChartContainerOptions
             {
-                Source = renderBitmap,
-                Width = ChartBorder.ActualWidth * 0.9,
-                Height = ChartBorder.ActualHeight * 0.9,
-                Stretch = Stretch.Uniform
-            };
-
-            // Create container with action buttons
-            var chartContainer = CreateInteractiveChartContainer(chartImage, renderBitmap);
-
-            // Get main canvas
-            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
-            if (mainCanvas == null) return;
-
-            // Position in center with smart offset to avoid overlapping
-            double left = (mainCanvas.ActualWidth - chartImage.Width) / 2;
-            double top = (mainCanvas.ActualHeight - chartImage.Height - 50) / 2; // -50 for button panel
-            
-            // Smart positioning: offset if there are existing charts
-            int existingCharts = mainCanvas.Children.OfType<Grid>().Count();
-            if (existingCharts > 0)
-            {
-                // Offset by 30px for each existing chart to cascade effect
-                left += (existingCharts % 5) * 30;
-                top += (existingCharts % 5) * 30;
-            }
-            
-            Canvas.SetLeft(chartContainer, left);
-            Canvas.SetTop(chartContainer, top);
-
-            // Add to canvas
-            mainCanvas.Children.Add(chartContainer);
+                MainDashboard = _mainDashboard,
+                ChartTitle = string.IsNullOrWhiteSpace(TxtChartTitle.Text) ? "Biểu đồ Radar" : $"Biểu đồ Radar: {TxtChartTitle.Text}",
+                Icon = "🕸️",
+                Bitmap = renderBitmap,
+                InitialWidth = ChartBorder.ActualWidth * 0.9,
+                InitialHeight = ChartBorder.ActualHeight * 0.9,
+                TargetLeft = TargetLeft,
+                TargetTop = TargetTop,
+                Configuration = CurrentConfiguration,
+                OnEdit = (container) => EditChart(container),
+                OnCopy = (container, bitmap) => CopyChart(container, bitmap),
+                OnDelete = (container) => DeleteChart(container)
+            });
         }
 
-        private Grid CreateInteractiveChartContainer(System.Windows.Controls.Image chartImage, RenderTargetBitmap bitmap)
+        private void CopyChart(Grid originalContainer, RenderTargetBitmap bitmap)
         {
-            // Tạo container wrapper để chứa buttons bên ngoài chart
-            var outerContainer = new Grid();
+            double originalLeft = Canvas.GetLeft(originalContainer);
+            double originalTop = Canvas.GetTop(originalContainer);
+            if (double.IsNaN(originalLeft)) originalLeft = 0;
+            if (double.IsNaN(originalTop)) originalTop = 0;
 
-            // Define 2 rows: Row 0 for buttons (auto height), Row 1 for chart
-            outerContainer.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            outerContainer.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-
-            var container = new Grid
+            InteractiveChartHelper.CreateAndAddChartToCanvas(new InteractiveChartHelper.ChartContainerOptions
             {
-                Width = chartImage.Width,
-                Height = chartImage.Height
-            };
-            Grid.SetRow(container, 1); // Place chart in row 1
-
-            // Button panel (hidden by default, shown on hover) - moved outside chart area
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 5, 0, 5),
-                Background = new SolidColorBrush(Color.FromArgb(230, 255, 255, 255)),
-                Opacity = 0,
-                Height = 50
-            };
-            Grid.SetRow(buttonPanel, 0); // Place buttons in row 0 (above chart)
-
-            var btnZoomIn = CreateActionButton("➕", Colors.Purple);
-            btnZoomIn.Click += (s, e) => ZoomInChart(outerContainer, container, chartImage);
-
-            var btnZoomOut = CreateActionButton("➖", Colors.Orange);
-            btnZoomOut.Click += (s, e) => ZoomOutChart(outerContainer, container, chartImage);
-
-            var btnCopy = CreateActionButton("📋", Colors.Green);
-            btnCopy.Click += (s, e) => CopyChart(outerContainer, chartImage, bitmap);
-
-            var btnDelete = CreateActionButton("🗑️", Colors.Red);
-            btnDelete.Click += (s, e) => DeleteChart(outerContainer);
-
-            var btnEdit = CreateActionButton("✏️", Colors.Blue);
-            btnEdit.Click += (s, e) => EditChart(outerContainer);
-
-            buttonPanel.Children.Add(btnZoomIn);
-            buttonPanel.Children.Add(btnZoomOut);
-            buttonPanel.Children.Add(btnCopy);
-            buttonPanel.Children.Add(btnDelete);
-            buttonPanel.Children.Add(btnEdit);
-
-            var chartBorder = new Border
-            {
-                Background = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(200, 200, 200)),
-                BorderThickness = new Thickness(2),
-                CornerRadius = new CornerRadius(8),
-                Child = chartImage,
-                Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Gray,
-                    Direction = 315,
-                    ShadowDepth = 5,
-                    Opacity = 0.5
-                }
-            };
-
-            var resizeBorder = new Border
-            {
-                BorderBrush = new SolidColorBrush(Color.FromRgb(102, 126, 234)),
-                BorderThickness = new Thickness(3),
-                Visibility = Visibility.Collapsed
-            };
-
-            container.Children.Add(chartBorder);
-            container.Children.Add(resizeBorder);
-
-            // Add both button panel and chart container to outer container
-            outerContainer.Children.Add(buttonPanel);
-            outerContainer.Children.Add(container);
-
-            // Hover animations - moved to outerContainer
-            outerContainer.MouseEnter += (s, e) =>
-            {
-                var fadeIn = new DoubleAnimation(1, TimeSpan.FromMilliseconds(200));
-                buttonPanel.BeginAnimation(UIElement.OpacityProperty, fadeIn);
-            };
-
-            outerContainer.MouseLeave += (s, e) =>
-            {
-                var fadeOut = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
-                buttonPanel.BeginAnimation(UIElement.OpacityProperty, fadeOut);
-            };
-
-            // Enable dragging on outerContainer (the element added to canvas)
-            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
-            if (mainCanvas != null)
-            {
-                EnableChartDragging(outerContainer, mainCanvas);
-            }
-            
-            // Enable resizing on innerContainer
-            EnableChartResizing(container, chartImage, resizeBorder);
-
-            return outerContainer;
-        }
-
-        private Button CreateActionButton(string content, Color color)
-        {
-            var button = new Button
-            {
-                Content = content,
-                Width = 42,
-                Height = 42,
-                Margin = new Thickness(3, 0, 3, 0),
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                Cursor = System.Windows.Input.Cursors.Hand
-            };
-
-            var template = new ControlTemplate(typeof(Button));
-            var factory = new FrameworkElementFactory(typeof(Border));
-            factory.SetValue(Border.BackgroundProperty, new SolidColorBrush(color));
-            factory.SetValue(Border.CornerRadiusProperty, new CornerRadius(5));
-            factory.SetValue(Border.PaddingProperty, new Thickness(5));
-
-            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
-            contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-            contentPresenter.SetValue(TextElement.ForegroundProperty, Brushes.White);
-
-            factory.AppendChild(contentPresenter);
-            template.VisualTree = factory;
-            button.Template = template;
-
-            return button;
-        }
-
-        /// <summary>
-        /// Chức năng Phóng to: Tăng kích thước biểu đồ 20%
-        /// </summary>
-        private void ZoomInChart(Grid outerContainer, Grid innerContainer, System.Windows.Controls.Image chartImage)
-        {
-            double newWidth = chartImage.Width * 1.2;
-            double newHeight = chartImage.Height * 1.2;
-
-            chartImage.Width = newWidth;
-            chartImage.Height = newHeight;
-            innerContainer.Width = newWidth;
-            innerContainer.Height = newHeight;
-        }
-
-        /// <summary>
-        /// Chức năng Thu nhỏ: Giảm kích thước biểu đồ 20%
-        /// </summary>
-        private void ZoomOutChart(Grid outerContainer, Grid innerContainer, System.Windows.Controls.Image chartImage)
-        {
-            double newWidth = chartImage.Width * 0.8;
-            double newHeight = chartImage.Height * 0.8;
-
-            // Minimum size constraint
-            if (newWidth < 200 || newHeight < 150) return;
-
-            chartImage.Width = newWidth;
-            chartImage.Height = newHeight;
-            innerContainer.Width = newWidth;
-            innerContainer.Height = newHeight;
-        }
-
-        private void CopyChart(Grid outerContainer, System.Windows.Controls.Image originalImage, RenderTargetBitmap bitmap)
-        {
-            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
-            if (mainCanvas == null) return;
-
-            var newImage = new System.Windows.Controls.Image
-            {
-                Source = bitmap,
-                Width = originalImage.Width,
-                Height = originalImage.Height,
-                Stretch = Stretch.Uniform
-            };
-
-            var newContainer = CreateInteractiveChartContainer(newImage, bitmap);
-
-            double originalLeft = Canvas.GetLeft(outerContainer);
-            double originalTop = Canvas.GetTop(outerContainer);
-            
-            Canvas.SetLeft(newContainer, originalLeft + 20);
-            Canvas.SetTop(newContainer, originalTop + 20);
-
-            mainCanvas.Children.Add(newContainer);
+                MainDashboard = _mainDashboard!,
+                ChartTitle = string.IsNullOrWhiteSpace(TxtChartTitle.Text) ? "Biểu đồ Radar (Bản sao)" : $"Biểu đồ Radar: {TxtChartTitle.Text} (Bản sao)",
+                Icon = "🕸️",
+                Bitmap = bitmap,
+                InitialWidth = originalContainer.Width,
+                InitialHeight = originalContainer.Height - InteractiveChartHelper.HeaderBarHeight,
+                TargetLeft = originalLeft + 30,
+                TargetTop = originalTop + 30,
+                Configuration = CurrentConfiguration,
+                OnEdit = (container) => EditChart(container),
+                OnCopy = (container, bmp) => CopyChart(container, bmp),
+                OnDelete = (container) => DeleteChart(container)
+            });
         }
 
         private void DeleteChart(Grid outerContainer)
         {
-            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
+            var mainCanvas = _mainDashboard?.FindName("MainInteractiveBoard") as Canvas;
             if (mainCanvas != null)
             {
                 mainCanvas.Children.Remove(outerContainer);
+                _mainDashboard?.RecordChartRemove(outerContainer, "Biểu đồ Radar");
             }
         }
 
@@ -939,15 +769,25 @@ namespace QASmartTouch.Forms
                 return;
             }
 
-            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
-            if (mainCanvas != null)
-            {
-                mainCanvas.Children.Remove(outerContainer);
-            }
+            double originalLeft = Canvas.GetLeft(outerContainer);
+            double originalTop = Canvas.GetTop(outerContainer);
+            if (double.IsNaN(originalLeft)) originalLeft = 0;
+            if (double.IsNaN(originalTop)) originalTop = 0;
 
             var editor = new Form2_14_RadarChartEditor(_mainDashboard);
+            editor.TargetLeft = originalLeft;
+            editor.TargetTop = originalTop;
             editor.LoadConfiguration(CurrentConfiguration);
-            editor.ShowDialog();
+            bool? result = WindowHelper.ShowChildDialog(editor, _mainDashboard);
+            if (result == true)
+            {
+                var mainCanvas = _mainDashboard?.FindName("MainInteractiveBoard") as Canvas;
+                if (mainCanvas != null)
+                {
+                    mainCanvas.Children.Remove(outerContainer);
+                    _mainDashboard?.RecordChartRemove(outerContainer, "Biểu đồ Radar");
+                }
+            }
         }
 
         public void LoadConfiguration(RadarChartConfiguration config)
@@ -987,196 +827,7 @@ namespace QASmartTouch.Forms
             UpdateChart();
         }
 
-        private RenderTargetBitmap CaptureChartAsImage()
-        {
-            var renderBitmap = new RenderTargetBitmap(
-                (int)ChartCanvas.ActualWidth,
-                (int)ChartCanvas.ActualHeight,
-                96, 96,
-                PixelFormats.Pbgra32);
 
-            renderBitmap.Render(ChartCanvas);
-            return renderBitmap;
-        }
-
-        /// <summary>
-        /// Enable dragging for chart element on canvas
-        /// </summary>
-        private void EnableChartDragging(UIElement chartElement, Canvas mainCanvas)
-        {
-            // Use local variables for each chart element to avoid conflicts
-            bool isDragging = false;
-            Point dragStartPoint = new Point();
-            double originalLeft = 0;
-            double originalTop = 0;
-
-            chartElement.MouseLeftButtonDown += (s, e) =>
-            {
-                isDragging = true;
-                dragStartPoint = e.GetPosition(mainCanvas);
-                originalLeft = Canvas.GetLeft(chartElement);
-                originalTop = Canvas.GetTop(chartElement);
-                
-                if (double.IsNaN(originalLeft)) originalLeft = 0;
-                if (double.IsNaN(originalTop)) originalTop = 0;
-                
-                chartElement.CaptureMouse();
-                e.Handled = true;
-            };
-
-            chartElement.MouseMove += (s, e) =>
-            {
-                if (isDragging && chartElement.IsMouseCaptured)
-                {
-                    Point currentPoint = e.GetPosition(mainCanvas);
-                    double deltaX = currentPoint.X - dragStartPoint.X;
-                    double deltaY = currentPoint.Y - dragStartPoint.Y;
-
-                    double newLeft = originalLeft + deltaX;
-                    double newTop = originalTop + deltaY;
-
-                    // Get element size
-                    double elementWidth = (chartElement as FrameworkElement)?.ActualWidth ?? 0;
-                    double elementHeight = (chartElement as FrameworkElement)?.ActualHeight ?? 0;
-
-                    // Constrain to canvas bounds
-                    newLeft = Math.Max(0, Math.Min(newLeft, mainCanvas.ActualWidth - elementWidth));
-                    newTop = Math.Max(0, Math.Min(newTop, mainCanvas.ActualHeight - elementHeight));
-
-                    Canvas.SetLeft(chartElement, newLeft);
-                    Canvas.SetTop(chartElement, newTop);
-                }
-            };
-
-            chartElement.MouseLeftButtonUp += (s, e) =>
-            {
-                if (isDragging)
-                {
-                    isDragging = false;
-                    chartElement.ReleaseMouseCapture();
-                }
-            };
-        }
-
-        private void EnableChartResizing(Grid container, System.Windows.Controls.Image chartImage, Border resizeBorder)
-        {
-            bool isResizing = false;
-            Point resizeStartPoint = new Point();
-            double originalWidth = 0;
-            double originalHeight = 0;
-            string resizeDirection = "";
-
-            var handles = new List<Border>();
-            var positions = new[]
-            {
-                (HorizontalAlignment.Left, VerticalAlignment.Top, "NW"),
-                (HorizontalAlignment.Right, VerticalAlignment.Top, "NE"),
-                (HorizontalAlignment.Left, VerticalAlignment.Bottom, "SW"),
-                (HorizontalAlignment.Right, VerticalAlignment.Bottom, "SE"),
-                (HorizontalAlignment.Center, VerticalAlignment.Top, "N"),
-                (HorizontalAlignment.Center, VerticalAlignment.Bottom, "S"),
-                (HorizontalAlignment.Left, VerticalAlignment.Center, "W"),
-                (HorizontalAlignment.Right, VerticalAlignment.Center, "E")
-            };
-
-            foreach (var (hAlign, vAlign, direction) in positions)
-            {
-                var handle = new Border
-                {
-                    Width = 10,
-                    Height = 10,
-                    Background = new SolidColorBrush(Color.FromRgb(102, 126, 234)),
-                    HorizontalAlignment = hAlign,
-                    VerticalAlignment = vAlign,
-                    Cursor = GetCursorForDirection(direction),
-                    Visibility = Visibility.Collapsed,
-                    Margin = new Thickness(-5)
-                };
-
-                handle.MouseEnter += (s, e) => handle.Background = Brushes.DodgerBlue;
-                handle.MouseLeave += (s, e) => handle.Background = new SolidColorBrush(Color.FromRgb(102, 126, 234));
-
-                handle.MouseLeftButtonDown += (s, e) =>
-                {
-                    isResizing = true;
-                    resizeStartPoint = e.GetPosition(null);
-                    originalWidth = container.Width;
-                    originalHeight = container.Height;
-                    resizeDirection = direction;
-                    handle.CaptureMouse();
-                    e.Handled = true;
-                };
-
-                container.Children.Add(handle);
-                handles.Add(handle);
-            }
-
-            // Double-click to show/hide resize border and handles (not single click)
-            container.MouseLeftButtonDown += (s, e) =>
-            {
-                if (!isResizing && e.ClickCount == 2) // Double-click only
-                {
-                    bool isVisible = resizeBorder.Visibility == Visibility.Visible;
-                    resizeBorder.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
-                    foreach (var handle in handles)
-                        handle.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
-                    e.Handled = true; // Only handle double-click, allow single-click for drag
-                }
-            };
-
-            container.MouseMove += (s, e) =>
-            {
-                if (isResizing)
-                {
-                    Point currentPoint = e.GetPosition(null);
-                    double deltaX = currentPoint.X - resizeStartPoint.X;
-                    double deltaY = currentPoint.Y - resizeStartPoint.Y;
-
-                    double newWidth = originalWidth;
-                    double newHeight = originalHeight;
-
-                    if (resizeDirection.Contains("E")) newWidth = originalWidth + deltaX;
-                    if (resizeDirection.Contains("W")) newWidth = originalWidth - deltaX;
-                    if (resizeDirection.Contains("S")) newHeight = originalHeight + deltaY;
-                    if (resizeDirection.Contains("N")) newHeight = originalHeight - deltaY;
-
-                    newWidth = Math.Max(200, newWidth);
-                    newHeight = Math.Max(150, newHeight);
-
-                    container.Width = newWidth;
-                    container.Height = newHeight;
-                    chartImage.Width = newWidth;
-                    chartImage.Height = newHeight;
-
-                    if (resizeDirection.Contains("W"))
-                        Canvas.SetLeft(container, Canvas.GetLeft(container) - (newWidth - originalWidth));
-                    if (resizeDirection.Contains("N"))
-                        Canvas.SetTop(container, Canvas.GetTop(container) - (newHeight - originalHeight));
-                }
-            };
-
-            container.MouseLeftButtonUp += (s, e) =>
-            {
-                if (isResizing)
-                {
-                    isResizing = false;
-                    foreach (var handle in handles)
-                        handle.ReleaseMouseCapture();
-                }
-            };
-        }
-
-        private System.Windows.Input.Cursor GetCursorForDirection(string direction)
-        {
-            return direction switch
-            {
-                "NW" or "SE" => System.Windows.Input.Cursors.SizeNWSE,
-                "NE" or "SW" => System.Windows.Input.Cursors.SizeNESW,
-                "N" or "S" => System.Windows.Input.Cursors.SizeNS,
-                "W" or "E" => System.Windows.Input.Cursors.SizeWE,
-                _ => System.Windows.Input.Cursors.Arrow
-            };
-        }
 
         private void btnDisplayStats_Click(object sender, RoutedEventArgs e)
         {

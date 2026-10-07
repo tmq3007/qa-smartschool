@@ -9,6 +9,8 @@ using Microsoft.Win32;
 using System.Windows.Media.Imaging;
 using System.IO;
 using QASmartTouch.Helpers;
+using QASmartTouch.Shared;
+using System.Windows.Input;
 
 namespace QASmartTouch.Forms
 {
@@ -19,6 +21,9 @@ namespace QASmartTouch.Forms
         private Form2_MainDashboard? _mainDashboard;
 
         public bool IsConfirmed { get; private set; }
+        public ScatterChartConfiguration? CurrentConfiguration { get; private set; }
+        public double? TargetLeft { get; set; }
+        public double? TargetTop { get; set; }
 
         // Configuration Properties (public for MainDashboard access)
         public string ChartTitle { get; private set; } = "Mối quan hệ giữa Chiều cao và Cân nặng";
@@ -45,6 +50,9 @@ namespace QASmartTouch.Forms
             dataPoints = new List<ScatterDataPoint>();
             categories = new Dictionary<string, CategoryInfo>();
             InitializeDefaultData();
+            TxtChartTitle.TextChanged += (s, e) => { ChartTitle = TxtChartTitle.Text; if (IsLoaded) UpdateChart(); };
+            TxtXAxisLabel.TextChanged += (s, e) => { if (IsLoaded) UpdateChart(); };
+            TxtYAxisLabel.TextChanged += (s, e) => { if (IsLoaded) UpdateChart(); };
             Loaded += (s, e) => UpdateChart();
         }
 
@@ -698,10 +706,177 @@ namespace QASmartTouch.Forms
             UpdateChart();
         }
 
+        private void SaveCurrentConfiguration()
+        {
+            CurrentConfiguration = new ScatterChartConfiguration
+            {
+                Title = TxtChartTitle.Text,
+                XAxisLabel = TxtXAxisLabel.Text,
+                YAxisLabel = TxtYAxisLabel.Text,
+                DataPoints = dataPoints.Select(p => new ScatterDataPoint
+                {
+                    X = p.X,
+                    Y = p.Y,
+                    Label = p.Label,
+                    Category = p.Category,
+                    Size = p.Size
+                }).ToList(),
+                Categories = new Dictionary<string, CategoryInfo>(categories),
+                DefaultPointShape = DefaultPointShape,
+                DefaultPointSize = SliderPointSize.Value,
+                PointOpacity = SliderPointOpacity.Value,
+                ShowGrid = ChkShowGrid.IsChecked ?? true,
+                ShowAxes = ChkShowAxes.IsChecked ?? true,
+                ShowLabels = ChkShowLabels.IsChecked ?? false,
+                ShowTrendLine = ChkShowTrendLine.IsChecked ?? true,
+                ShowCorrelation = ChkShowCorrelation.IsChecked ?? true,
+                ShowLegend = ChkShowLegend.IsChecked ?? true
+            };
+        }
+
+        public void LoadConfiguration(ScatterChartConfiguration config)
+        {
+            if (config == null) return;
+            CurrentConfiguration = config;
+
+            TxtChartTitle.Text = config.Title;
+            ChartTitle = config.Title;
+            TxtXAxisLabel.Text = config.XAxisLabel;
+            TxtYAxisLabel.Text = config.YAxisLabel;
+
+            dataPoints = config.DataPoints.Select(p => new ScatterDataPoint
+            {
+                X = p.X,
+                Y = p.Y,
+                Label = p.Label,
+                Category = p.Category,
+                Size = p.Size
+            }).ToList();
+
+            categories = new Dictionary<string, CategoryInfo>(config.Categories);
+            SliderPointSize.Value = config.DefaultPointSize;
+            SliderPointOpacity.Value = config.PointOpacity;
+            ChkShowGrid.IsChecked = config.ShowGrid;
+            ChkShowAxes.IsChecked = config.ShowAxes;
+            ChkShowLabels.IsChecked = config.ShowLabels;
+            ChkShowTrendLine.IsChecked = config.ShowTrendLine;
+            ChkShowCorrelation.IsChecked = config.ShowCorrelation;
+            ChkShowLegend.IsChecked = config.ShowLegend;
+
+            RefreshStats();
+            UpdateChart();
+        }
+
         private void BtnConfirm_Click(object sender, RoutedEventArgs e)
         {
+            SaveCurrentConfiguration();
+            UpdateChart();
+            ChartCanvas.UpdateLayout();
+
             IsConfirmed = true;
+            DialogResult = true;
+            if (_mainDashboard != null)
+            {
+                AddInteractiveChartToCanvas();
+            }
             this.Close();
+        }
+
+        /// <summary>
+        /// Thêm biểu đồ phân tán tương tác lên canvas MainInteractiveBoard sử dụng InteractiveChartHelper
+        /// </summary>
+        private void AddInteractiveChartToCanvas()
+        {
+            if (_mainDashboard == null) return;
+
+            // Render ChartCanvas
+            double renderWidth = ChartCanvas.ActualWidth > 0 ? ChartCanvas.ActualWidth : 800;
+            double renderHeight = ChartCanvas.ActualHeight > 0 ? ChartCanvas.ActualHeight : 600;
+
+            var renderBitmap = new RenderTargetBitmap(
+                (int)renderWidth,
+                (int)renderHeight,
+                96, 96,
+                PixelFormats.Pbgra32);
+
+            renderBitmap.Render(ChartCanvas);
+
+            InteractiveChartHelper.CreateAndAddChartToCanvas(new InteractiveChartHelper.ChartContainerOptions
+            {
+                MainDashboard = _mainDashboard,
+                ChartTitle = string.IsNullOrWhiteSpace(TxtChartTitle.Text) ? "Biểu đồ phân tán" : $"Biểu đồ phân tán: {TxtChartTitle.Text}",
+                Icon = "📉",
+                Bitmap = renderBitmap,
+                InitialWidth = renderWidth * 0.8,
+                InitialHeight = renderHeight * 0.8,
+                TargetLeft = TargetLeft,
+                TargetTop = TargetTop,
+                Configuration = CurrentConfiguration,
+                OnEdit = (container) => EditChart(container),
+                OnCopy = (container, bitmap) => CopyChart(container, bitmap),
+                OnDelete = (container) => DeleteChart(container)
+            });
+        }
+
+        private void CopyChart(Grid originalContainer, RenderTargetBitmap bitmap)
+        {
+            double originalLeft = Canvas.GetLeft(originalContainer);
+            double originalTop = Canvas.GetTop(originalContainer);
+            if (double.IsNaN(originalLeft)) originalLeft = 0;
+            if (double.IsNaN(originalTop)) originalTop = 0;
+
+            InteractiveChartHelper.CreateAndAddChartToCanvas(new InteractiveChartHelper.ChartContainerOptions
+            {
+                MainDashboard = _mainDashboard!,
+                ChartTitle = string.IsNullOrWhiteSpace(TxtChartTitle.Text) ? "Biểu đồ phân tán (Bản sao)" : $"Biểu đồ phân tán: {TxtChartTitle.Text} (Bản sao)",
+                Icon = "📉",
+                Bitmap = bitmap,
+                InitialWidth = originalContainer.Width,
+                InitialHeight = originalContainer.Height - InteractiveChartHelper.HeaderBarHeight,
+                TargetLeft = originalLeft + 30,
+                TargetTop = originalTop + 30,
+                Configuration = CurrentConfiguration,
+                OnEdit = (container) => EditChart(container),
+                OnCopy = (container, bmp) => CopyChart(container, bmp),
+                OnDelete = (container) => DeleteChart(container)
+            });
+        }
+
+        private void DeleteChart(Grid container)
+        {
+            if (_mainDashboard == null) return;
+            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
+            if (mainCanvas != null)
+            {
+                mainCanvas.Children.Remove(container);
+                _mainDashboard.RecordChartRemove(container, "Biểu đồ phân tán");
+            }
+        }
+
+        private void EditChart(Grid container)
+        {
+            double originalLeft = Canvas.GetLeft(container);
+            double originalTop = Canvas.GetTop(container);
+            if (double.IsNaN(originalLeft)) originalLeft = 0;
+            if (double.IsNaN(originalTop)) originalTop = 0;
+
+            var editor = new Form2_13_ScatterChartEditor(_mainDashboard);
+            editor.TargetLeft = originalLeft;
+            editor.TargetTop = originalTop;
+            if (CurrentConfiguration != null)
+            {
+                editor.LoadConfiguration(CurrentConfiguration);
+            }
+            bool? result = WindowHelper.ShowChildDialog(editor, _mainDashboard);
+            if (result == true)
+            {
+                var mainCanvas = _mainDashboard?.FindName("MainInteractiveBoard") as Canvas;
+                if (mainCanvas != null)
+                {
+                    mainCanvas.Children.Remove(container);
+                    _mainDashboard?.RecordChartRemove(container, "Biểu đồ phân tán");
+                }
+            }
         }
 
         private void BtnSaveImage_Click(object sender, RoutedEventArgs e)
@@ -767,6 +942,18 @@ namespace QASmartTouch.Forms
         {
             this.Close();
         }
+
+        private void BtnToggleKeyboard_Click(object sender, RoutedEventArgs e)
+        {
+            if (TouchKeyboardHelper.IsKeyboardVisible())
+            {
+                TouchKeyboardHelper.HideTouchKeyboard();
+            }
+            else
+            {
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            }
+        }
     }
 
     public class ScatterDataPoint
@@ -782,5 +969,23 @@ namespace QASmartTouch.Forms
     {
         public Color Color { get; set; }
         public string Shape { get; set; } = "circle";
+    }
+
+    public class ScatterChartConfiguration
+    {
+        public string Title { get; set; } = "Mối quan hệ giữa Chiều cao và Cân nặng";
+        public string XAxisLabel { get; set; } = "Chiều cao (cm)";
+        public string YAxisLabel { get; set; } = "Cân nặng (kg)";
+        public List<ScatterDataPoint> DataPoints { get; set; } = new List<ScatterDataPoint>();
+        public Dictionary<string, CategoryInfo> Categories { get; set; } = new Dictionary<string, CategoryInfo>();
+        public string DefaultPointShape { get; set; } = "circle";
+        public double DefaultPointSize { get; set; } = 5;
+        public double PointOpacity { get; set; } = 0.7;
+        public bool ShowGrid { get; set; } = true;
+        public bool ShowAxes { get; set; } = true;
+        public bool ShowLabels { get; set; } = false;
+        public bool ShowTrendLine { get; set; } = true;
+        public bool ShowCorrelation { get; set; } = true;
+        public bool ShowLegend { get; set; } = true;
     }
 }

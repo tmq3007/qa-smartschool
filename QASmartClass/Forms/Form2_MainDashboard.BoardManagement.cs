@@ -44,6 +44,7 @@ namespace QASmartTouch.Forms
                 bool hasPattern = !string.IsNullOrWhiteSpace(pattern) && !pattern.Equals("none", StringComparison.OrdinalIgnoreCase);
 
                 // Store line spacing, opacity, color and pattern for pattern creation & board persistence
+                _currentBackgroundImagePath = null;
                 _currentBackgroundColor = color ?? "#3D6D64";
                 _currentBackgroundPattern = hasPattern ? pattern : null;
                 _currentLineSpacing = lineSpacing > 0 ? lineSpacing : 40;
@@ -52,11 +53,13 @@ namespace QASmartTouch.Forms
                 // Cập nhật ngay lập tức vào CurrentBoard của BoardManager nếu có
                 if (_boardManager?.CurrentBoard != null)
                 {
+                    _boardManager.CurrentBoard.BackgroundImagePath = null;
                     _boardManager.CurrentBoard.BackgroundColorHex = _currentBackgroundColor;
                     _boardManager.CurrentBoard.BackgroundPattern = _currentBackgroundPattern;
                     _boardManager.CurrentBoard.LineSpacing = _currentLineSpacing;
                     _boardManager.CurrentBoard.LineOpacity = _currentLineOpacity;
                 }
+                MarkAsDirty();
                 
                 // ✨ Remove old background rectangles if any
                 var oldBgRects = MainInteractiveBoard.Children.OfType<Rectangle>()
@@ -197,10 +200,29 @@ namespace QASmartTouch.Forms
         /// <summary>
         /// ✨ NEW: Apply custom background image to MainInteractiveBoard
         /// </summary>
-        public void ApplyCanvasBackgroundImage(System.Windows.Media.Imaging.BitmapImage? backgroundImage, string? pattern = null)
+        public void ApplyCanvasBackgroundImage(System.Windows.Media.Imaging.BitmapImage? backgroundImage, string? pattern = null, string? imagePath = null)
         {
             try
             {
+                // Tự động trích xuất imagePath từ bitmap nếu chưa được truyền
+                if (string.IsNullOrEmpty(imagePath) && backgroundImage?.UriSource != null)
+                {
+                    imagePath = backgroundImage.UriSource.IsFile ? backgroundImage.UriSource.LocalPath : backgroundImage.UriSource.OriginalString;
+                }
+
+                // Cập nhật state ảnh nền
+                _currentBackgroundImagePath = imagePath;
+                _currentBackgroundColor = null;
+                _currentBackgroundPattern = pattern;
+
+                if (_boardManager?.CurrentBoard != null)
+                {
+                    _boardManager.CurrentBoard.BackgroundImagePath = imagePath;
+                    _boardManager.CurrentBoard.BackgroundColorHex = null;
+                    _boardManager.CurrentBoard.BackgroundPattern = pattern;
+                }
+                MarkAsDirty();
+
                 // Remove old background rectangles
                 var oldBgRects = MainInteractiveBoard.Children.OfType<Rectangle>()
                     .Where(r => r.Tag?.ToString() == "BackgroundLayer")
@@ -884,6 +906,7 @@ namespace QASmartTouch.Forms
                         var currentBoard = _boardManager.CurrentBoard;
                         newBoard.BackgroundColor = currentBoard.BackgroundColor;
                         newBoard.BackgroundColorHex = currentBoard.BackgroundColorHex;
+                        newBoard.BackgroundImagePath = currentBoard.BackgroundImagePath;
                         newBoard.BackgroundPattern = currentBoard.BackgroundPattern;
                         newBoard.LineSpacing = currentBoard.LineSpacing;
                         newBoard.LineOpacity = currentBoard.LineOpacity;
@@ -1012,7 +1035,7 @@ namespace QASmartTouch.Forms
                         try
                         {
                             var bitmap = new BitmapImage(new Uri(e.NewBoard.BackgroundImagePath, UriKind.Absolute));
-                            ApplyCanvasBackgroundImage(bitmap, e.NewBoard.BackgroundPattern);
+                            ApplyCanvasBackgroundImage(bitmap, e.NewBoard.BackgroundPattern, e.NewBoard.BackgroundImagePath);
                         }
                         catch
                         {
@@ -1045,6 +1068,7 @@ namespace QASmartTouch.Forms
 
                 // 4. Đồng bộ lại toàn bộ đối tượng của trang mới vào SelectionManager
                 RefreshSelectableObjects();
+                UpdateInkingZIndexFromCanvas(); // QC_4.2_MILESTONE_ZINDEX: Đồng bộ tầng vẽ theo trang mới
 
                 // 5. Kích hoạt lại tương tác kéo thả cho các khối 3D trên trang mới
                 foreach (UIElement child in MainInteractiveBoard.Children)

@@ -13,23 +13,68 @@ namespace QASmartTouch.Forms
         public string? SelectedColor { get; private set; }
         public string? SelectedPattern { get; private set; }
         public System.Windows.Media.Imaging.BitmapImage? SelectedBackgroundImage { get; private set; }
+        public string? SelectedBackgroundImagePath { get; private set; }
         public int LineSpacing { get; private set; } = 40; // Default 40px (≈1.1cm)
         public int LineOpacity { get; private set; } = 10; // Default 10% (0-100)
 
         private Button? _lastSelectedColorButton;
         private Button? _lastSelectedPatternButton;
+        private Button? _lastSelectedImageButton;
 
-        public Form2_7_1_BackgroundSelector()
+        public Form2_7_1_BackgroundSelector() : this(null, null, null, 40, 10)
+        {
+        }
+
+        public Form2_7_1_BackgroundSelector(string? currentColor, string? currentPattern, string? currentImagePath = null, int lineSpacing = 40, int lineOpacity = 10)
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             
+            LineSpacing = lineSpacing > 0 ? lineSpacing : 40;
+            LineOpacity = lineOpacity > 0 ? lineOpacity : 10;
+
             // ✨ Sync sliders with default values
             LineOpacitySlider.Value = LineOpacity;
             LineSpacingSlider.Value = LineSpacing;
             
-            // ✨ Load saved defaults
-            LoadDefaults();
+            // ✨ Nếu trang hiện tại đang dùng ảnh nền thì phục hồi ảnh nền và highlight nút Tải ảnh lên
+            if (!string.IsNullOrEmpty(currentImagePath) && System.IO.File.Exists(currentImagePath))
+            {
+                try
+                {
+                    var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(currentImagePath, UriKind.Absolute);
+                    bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+                    bitmap.Freeze();
+
+                    SelectedBackgroundImage = bitmap;
+                    SelectedBackgroundImagePath = currentImagePath;
+                    SelectedColor = null;
+                    SelectedPattern = currentPattern;
+
+                    UpdatePreviewWithImage();
+                    if (btnLoadImage != null) HighlightButton(btnLoadImage, "image");
+                    UpdateSpacingControlVisibility();
+                    return;
+                }
+                catch
+                {
+                    // Fallback to color loading
+                }
+            }
+
+            if (!string.IsNullOrEmpty(currentColor))
+            {
+                SelectedColor = currentColor;
+                SelectedPattern = currentPattern;
+            }
+            else
+            {
+                // ✨ Load saved defaults
+                LoadDefaults();
+            }
             
             UpdatePreview();
             
@@ -71,6 +116,9 @@ namespace QASmartTouch.Forms
             }
             else
             {
+                // ✨ Khi user chọn lại màu sắc, RESET ảnh nền đã tải lên để tránh bị kẹt ảnh cũ
+                SelectedBackgroundImage = null;
+                SelectedBackgroundImagePath = null;
                 SelectedColor = tag;
                 HighlightButton(button, "color");
             }
@@ -127,7 +175,9 @@ namespace QASmartTouch.Forms
                     break;
             }
             
-            // Apply selection
+            // Apply selection and reset custom image
+            SelectedBackgroundImage = null;
+            SelectedBackgroundImagePath = null;
             SelectedColor = color;
             SelectedPattern = pattern;
             
@@ -313,33 +363,76 @@ namespace QASmartTouch.Forms
 
         private void HighlightButton(Button button, string type)
         {
+            if (type == "image")
+            {
+                // Khi chọn ảnh: dọn highlight nút màu
+                if (_lastSelectedColorButton != null)
+                {
+                    _lastSelectedColorButton.BorderThickness = new Thickness(1);
+                    _lastSelectedColorButton.BorderBrush = new SolidColorBrush(
+                        (Color)ColorConverter.ConvertFromString("#DFE4EA")
+                    );
+                    _lastSelectedColorButton = null;
+                }
+                if (_lastSelectedImageButton != null)
+                {
+                    _lastSelectedImageButton.BorderThickness = new Thickness(1);
+                    _lastSelectedImageButton.BorderBrush = new SolidColorBrush(
+                        (Color)ColorConverter.ConvertFromString("#DFE4EA")
+                    );
+                }
+
+                button.BorderThickness = new Thickness(3);
+                button.BorderBrush = new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString("#667EEA")
+                );
+                _lastSelectedImageButton = button;
+                return;
+            }
+
             // Remove previous highlight
-            if (type == "color" && _lastSelectedColorButton != null)
-            {
-                _lastSelectedColorButton.BorderThickness = new Thickness(1);
-                _lastSelectedColorButton.BorderBrush = new SolidColorBrush(
-                    (Color)ColorConverter.ConvertFromString("#DFE4EA")
-                );
-            }
-            else if (type == "pattern" && _lastSelectedPatternButton != null)
-            {
-                _lastSelectedPatternButton.BorderThickness = new Thickness(1);
-                _lastSelectedPatternButton.BorderBrush = new SolidColorBrush(
-                    (Color)ColorConverter.ConvertFromString("#DFE4EA")
-                );
-            }
-
-            // Add new highlight
-            button.BorderThickness = new Thickness(3);
-            button.BorderBrush = new SolidColorBrush(
-                (Color)ColorConverter.ConvertFromString("#667EEA")
-            );
-
-            // Save reference
             if (type == "color")
+            {
+                // Dọn highlight nút ảnh nếu có
+                if (_lastSelectedImageButton != null)
+                {
+                    _lastSelectedImageButton.BorderThickness = new Thickness(1);
+                    _lastSelectedImageButton.BorderBrush = new SolidColorBrush(
+                        (Color)ColorConverter.ConvertFromString("#DFE4EA")
+                    );
+                    _lastSelectedImageButton = null;
+                }
+
+                if (_lastSelectedColorButton != null)
+                {
+                    _lastSelectedColorButton.BorderThickness = new Thickness(1);
+                    _lastSelectedColorButton.BorderBrush = new SolidColorBrush(
+                        (Color)ColorConverter.ConvertFromString("#DFE4EA")
+                    );
+                }
+
+                button.BorderThickness = new Thickness(3);
+                button.BorderBrush = new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString("#667EEA")
+                );
                 _lastSelectedColorButton = button;
-            else
+            }
+            else if (type == "pattern")
+            {
+                if (_lastSelectedPatternButton != null)
+                {
+                    _lastSelectedPatternButton.BorderThickness = new Thickness(1);
+                    _lastSelectedPatternButton.BorderBrush = new SolidColorBrush(
+                        (Color)ColorConverter.ConvertFromString("#DFE4EA")
+                    );
+                }
+
+                button.BorderThickness = new Thickness(3);
+                button.BorderBrush = new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString("#667EEA")
+                );
                 _lastSelectedPatternButton = button;
+            }
         }
 
         private Brush? CreatePatternBrush(string pattern)
@@ -528,6 +621,7 @@ namespace QASmartTouch.Forms
                     bitmap.Freeze(); // For better performance
 
                     SelectedBackgroundImage = bitmap;
+                    SelectedBackgroundImagePath = openFileDialog.FileName;
                     
                     // Clear color and pattern selection when image is selected
                     SelectedColor = null;
@@ -535,6 +629,10 @@ namespace QASmartTouch.Forms
                     
                     // Update preview
                     UpdatePreviewWithImage();
+                    
+                    // Highlight nút Tải ảnh lên và dọn nút màu cũ
+                    HighlightButton(btnLoadImage ?? (Button)sender, "image");
+                    UpdateSpacingControlVisibility();
                     
                     System.Diagnostics.Debug.WriteLine($"📁 Loaded background image: {openFileDialog.FileName}");
                 }

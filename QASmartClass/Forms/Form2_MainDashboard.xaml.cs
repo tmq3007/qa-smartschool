@@ -88,6 +88,73 @@ namespace QASmartTouch.Forms
         private string _savedBrushType = "Normal";
         private int _savedPenSize = 5;
         private Color _savedPenColor = Colors.White;
+
+        #region QC_4.2_MILESTONE_ZINDEX: Quản lý tầng Z-Index học liệu & nét vẽ theo mốc phân tầng
+        private int _currentInkingZIndex = QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
+
+        /// <summary>
+        /// QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cho Hình ảnh mới và đồng thời nâng tầng vẽ chú thích tiếp theo.
+        /// Đảm bảo: Ảnh mới đè nét chữ cũ; nét vẽ chú thích sau đó đè lên ảnh;
+        /// Dải Z-Index được khống chế trong UserContent (100 - 999) để luôn nằm DƯỚI YouTube/Widgets (1000+).
+        /// </summary>
+        public int AllocateImageZIndex()
+        {
+            // 0. Đồng bộ với tầng Z-Index cao nhất của các phần tử hiện có trên bảng
+            UpdateInkingZIndexFromCanvas();
+
+            // 1. Z-Index cho ảnh mới = tầng vẽ hiện tại + 1 (đè lên nét chữ cũ)
+            int imageZ = _currentInkingZIndex + 1;
+
+            // 2. Tầng vẽ chú thích mới được nâng lên trên ảnh vừa chèn (chuẩn bị cho nét vẽ tiếp theo)
+            _currentInkingZIndex = imageZ + 1;
+
+            // 3. Giới hạn trần an toàn không vượt quá dải UserContentMax (999) để không vượt qua tầng Widget (1000+)
+            if (_currentInkingZIndex >= QASmartTouch.Helpers.ZIndexConstants.UserContentMax - 2)
+            {
+                _currentInkingZIndex = QASmartTouch.Helpers.ZIndexConstants.UserContentMax - 2;
+                imageZ = _currentInkingZIndex - 1;
+            }
+
+            return imageZ;
+        }
+
+        /// <summary>
+        /// Alias cho các thao tác chèn ảnh/media content thông thường
+        /// </summary>
+        public int AllocateMediaWidgetZIndex() => AllocateImageZIndex();
+
+        /// <summary>
+        /// Lấy tầng Z-Index hiện tại cho nét vẽ hoàn thành
+        /// </summary>
+        public int GetCurrentInkingZIndex() => _currentInkingZIndex;
+
+        /// <summary>
+        /// Reset tầng vẽ về mặc định (100) khi xóa bảng
+        /// </summary>
+        public void ResetInkingZIndex()
+        {
+            _currentInkingZIndex = QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
+        }
+
+        /// <summary>
+        /// Cập nhật lại tầng Z-Index từ các phần tử UserContent hiện có trên Canvas khi chuyển trang bảng
+        /// (Bỏ qua các widget như YouTube Z=1100 để không làm tăng tầng vẽ lên trên widget)
+        /// </summary>
+        public void UpdateInkingZIndexFromCanvas()
+        {
+            int maxZ = QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
+            foreach (UIElement child in MainInteractiveBoard.Children)
+            {
+                int z = Panel.GetZIndex(child);
+                if (z >= QASmartTouch.Helpers.ZIndexConstants.UserContentBase && 
+                    z <= QASmartTouch.Helpers.ZIndexConstants.UserContentMax)
+                {
+                    if (z > maxZ) maxZ = z;
+                }
+            }
+            _currentInkingZIndex = maxZ;
+        }
+        #endregion
         
         // Double-click detection for pen button
         private DateTime _lastPenClickTime = DateTime.MinValue;
@@ -119,6 +186,7 @@ namespace QASmartTouch.Forms
         private int _currentLineOpacity = 10; // Default 10% (0-100)
         private string? _currentBackgroundColor = "#3D6D64";
         private string? _currentBackgroundPattern = "grid";
+        private string? _currentBackgroundImagePath = null;
         private Form2_18_CompassTool_3D? _activeCompassTool3D;
         
         // Saved eraser settings (to restore when reopening eraser tool)
@@ -320,6 +388,7 @@ namespace QASmartTouch.Forms
             _touchHandler.OnTwoFingerPinchPan = ApplyTwoFingerPinchPan;
             _touchHandler.OnTwoFingerPinchPanEnded = OnTwoFingerPinchPanEnded;
             _touchHandler.IsMultiUserModeActive = () => _isMultiUserModeActive;
+            _touchHandler.GetCurrentInkingZIndex = GetCurrentInkingZIndex;
             System.Diagnostics.Debug.WriteLine("✅ Touch interaction initialized");
 
             // QC_4.2_TOUCH_TOOLBAR: Wire direct touch activation for all toolbar buttons
@@ -327,6 +396,8 @@ namespace QASmartTouch.Forms
 
             // QC_4.2_CANVAS_DRAG_DROP: Kích hoạt khả năng Kéo-Thả ảnh (UMind Style) trực tiếp vào bảng vẽ
             InitializeCanvasDragAndDrop();
+
+            InitializeCursorManagement();
 
             // Initialize Window Mode Controller
             _windowModeController = new WindowModeController(this);
@@ -535,8 +606,102 @@ namespace QASmartTouch.Forms
             public IntPtr lpData;
         }
 
+        private bool _isHandlingExit = false;
+        private bool _isClosingConfirmed = false;
+
+        /// <summary>
+        /// Xử lý xác nhận lưu bài giảng và thoát an toàn.
+        /// Sử dụng cho cả sự kiện đóng cửa sổ (OnClosing, Alt+F4, Taskbar "X") và nút Thoát trên toolbar.
+        /// Trả về true nếu người dùng đồng ý thoát (hoặc đã lưu thành công), false nếu người dùng hủy bỏ lệnh thoát.
+        /// </summary>
+        public bool ConfirmAndHandleExit()
+        {
+            if (_isClosingConfirmed) return true;
+            if (_isHandlingExit) return false;
+            _isHandlingExit = true;
+
+            try
+            {
+                // 1. Nếu có dữ liệu chưa lưu, hỏi giáo viên có muốn lưu trước khi thoát không
+                if (CheckHasUnsavedChanges())
+                {
+                    try { this.Activate(); } catch { }
+
+                    var saveResult = MessageBox.Show(
+                        this,
+                        "Bạn có dữ liệu bài giảng chưa lưu. Bạn có muốn lưu bài giảng trước khi thoát?",
+                        "Xác nhận lưu bài giảng",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Question);
+
+                    if (saveResult == MessageBoxResult.Cancel)
+                    {
+                        return false; // Hủy lệnh thoát
+                    }
+                    else if (saveResult == MessageBoxResult.Yes)
+                    {
+                        // Thực hiện lưu bài giảng thực tế (.qasc)
+                        bool saved = SaveCurrentLecture(showOpenFolderPrompt: false);
+                        if (!saved)
+                        {
+                            // Người dùng hủy lưu tệp tin hoặc có lỗi -> Không thoát để tránh mất dữ liệu
+                            return false;
+                        }
+                    }
+                    // Nếu chọn No -> Tiếp tục thoát mà không lưu
+                }
+                else if (AppSettings.ShouldShowExitConfirmation)
+                {
+                    try { this.Activate(); } catch { }
+
+                    // Nếu không có dữ liệu chưa lưu (bảng trắng hoặc đã lưu rồi), chỉ hỏi xác nhận thoát đơn giản
+                    var confirmResult = MessageBox.Show(
+                        this,
+                        "Bạn có chắc chắn muốn thoát phần mềm?",
+                        "Xác nhận thoát",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (confirmResult != MessageBoxResult.Yes)
+                    {
+                        return false;
+                    }
+                }
+
+                _isClosingConfirmed = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ ConfirmAndHandleExit error: {ex.Message}");
+                return true;
+            }
+            finally
+            {
+                _isHandlingExit = false;
+            }
+        }
+
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
+            // Kiểm tra và hỏi lưu bài giảng trước khi cho phép đóng cửa sổ
+            if (!_isClosingConfirmed)
+            {
+                if (!ConfirmAndHandleExit())
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+
+            // Đóng tất cả cửa sổ công cụ đo lường và menu con trước khi đóng Form2
+            try
+            {
+                CloseAllToolWindows();
+                CloseAllSubmenus();
+            }
+            catch { }
+
             try
             {
                 if (MainInteractiveBoard != null)
@@ -564,6 +729,10 @@ namespace QASmartTouch.Forms
             {
                 handled = true;
                 return new IntPtr(MA_ACTIVATE); // Kích hoạt cửa sổ VÀ KHÔNG ĐƯỢC NUỐT cú chạm/click!
+            }
+            else if (msg == WM_SETCURSOR)
+            {
+                HandleSetCursorMessage(hwnd, lParam, ref handled);
             }
             else if (msg == WM_COPYDATA)
             {
@@ -931,8 +1100,9 @@ namespace QASmartTouch.Forms
                 board.UndoStack = new System.Collections.Generic.Stack<UndoRedoAction>(_undoStack.Reverse());
                 board.RedoStack = new System.Collections.Generic.Stack<UndoRedoAction>(_redoStack.Reverse());
                 
-                // 2. Lưu thông tin nền bảng hiện tại
-                board.BackgroundColorHex = _currentBackgroundColor ?? "#3D6D64";
+                // 2. Lưu thông tin nền bảng hiện tại (ảnh nền hoặc màu sắc + hoa văn)
+                board.BackgroundImagePath = _currentBackgroundImagePath;
+                board.BackgroundColorHex = !string.IsNullOrEmpty(_currentBackgroundImagePath) ? null : (_currentBackgroundColor ?? "#3D6D64");
                 board.BackgroundPattern = _currentBackgroundPattern;
                 board.LineSpacing = _currentLineSpacing;
                 board.LineOpacity = _currentLineOpacity;
@@ -1393,6 +1563,36 @@ namespace QASmartTouch.Forms
                         System.Diagnostics.Debug.WriteLine($"📊 Registered StackPanel Container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
                     }
                 }
+                // ✅ QC_4.2_GRID_CHART_REGISTER: Register Grid Container (Interactive Chart Containers)
+                else if (child is Grid gridContainer)
+                {
+                    if (gridContainer == MainGrid || gridContainer.Width >= MainInteractiveBoard.ActualWidth || gridContainer.Height >= MainInteractiveBoard.ActualHeight)
+                        continue;
+
+                    double left = Canvas.GetLeft(gridContainer);
+                    double top = Canvas.GetTop(gridContainer);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = gridContainer.ActualWidth > 0 ? gridContainer.ActualWidth : gridContainer.Width;
+                    double height = gridContainer.ActualHeight > 0 ? gridContainer.ActualHeight : gridContainer.Height;
+
+                    if (width > 0 && height > 0 && width <= 1800 && height <= 1800)
+                    {
+                        var bounds = new Rect(left, top, width, height);
+                        var selectableObj = new SelectableObject
+                        {
+                            Element = gridContainer,
+                            Type = ObjectType.Other,
+                            Bounds = bounds,
+                            Position = new Point(left, top),
+                            Size = new Size(width, height),
+                            ZIndex = Panel.GetZIndex(gridContainer)
+                        };
+                        _selectionManager.AddObject(selectableObj);
+                        registeredCount++;
+                        System.Diagnostics.Debug.WriteLine($"📊 Registered Grid Container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
+                    }
+                }
                 // Register Container (Border, Grid, etc. containing 3D shapes)
                 else if (child is Border border)
                 {
@@ -1668,6 +1868,39 @@ namespace QASmartTouch.Forms
                 _selectionManager?.AddObject(selectableObj);
                 System.Diagnostics.Debug.WriteLine($"🎲 Auto-registered Canvas container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
             }
+            // ✅ QC_4.2_GRID_CHART_REGISTER: Register Grid Container (Interactive Chart Containers)
+            else if (element is Grid gridContainer)
+            {
+                double left = Canvas.GetLeft(gridContainer);
+                double top = Canvas.GetTop(gridContainer);
+                double width = gridContainer.ActualWidth > 0 ? gridContainer.ActualWidth : gridContainer.Width;
+                double height = gridContainer.ActualHeight > 0 ? gridContainer.ActualHeight : gridContainer.Height;
+                if (double.IsNaN(left)) left = 0;
+                if (double.IsNaN(top)) top = 0;
+                if (double.IsNaN(width) || width <= 0) width = 640;
+                if (double.IsNaN(height) || height <= 0) height = 450;
+
+                var bounds = new Rect(left, top, width, height);
+                var selectableObj = new SelectableObject
+                {
+                    Element = gridContainer,
+                    Type = ObjectType.Other,
+                    Bounds = bounds,
+                    Position = new Point(left, top),
+                    Size = new Size(width, height),
+                    ZIndex = Panel.GetZIndex(gridContainer)
+                };
+                _selectionManager?.AddObject(selectableObj);
+                System.Diagnostics.Debug.WriteLine($"📊 Auto-registered Grid container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
+            }
+        }
+
+        /// <summary>
+        /// Public API để các module ngoài đăng ký đối tượng mới vào SelectionManager
+        /// </summary>
+        public void RegisterObjectWithSelection(UIElement element)
+        {
+            RegisterNewObjectWithSelectionManager(element);
         }
 
         /// <summary>

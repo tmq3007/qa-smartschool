@@ -3,7 +3,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:QASmartTouch.Controls"
-        Title="QASmartTouch - Dashboard"
+        Title="QA SmartBoard"
         WindowState="Maximized"
         WindowStyle="None"
         Background="#F5F6FA">

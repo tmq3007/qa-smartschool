@@ -326,6 +326,7 @@ namespace QASmartTouch.Forms
 
                         RecordAction(batchUndo);
                         _selectionManager?.ClearRegistrations();
+                        ResetInkingZIndex(); // QC_4.2_MILESTONE_ZINDEX: Reset tầng vẽ về 100 khi xóa toàn bộ bảng
                     }
                     
                     HideWelcomeState();
@@ -469,6 +470,34 @@ namespace QASmartTouch.Forms
             // đảm bảo nét mới có thể chọn được ngay mà không cần chuyển mode.
             // (Trước đây RefreshSelectableObjects chỉ gọi khi bấm btn8_Select,
             //  nên nét vẽ thêm bằng thước/thước đo độ khi đang ở Selection mode sẽ bị bỏ sót)
+            RefreshSelectableObjects();
+        }
+
+        /// <summary>
+        /// Public method for chart editors to register added charts with the undo/redo system
+        /// </summary>
+        public void RecordChartAdd(UIElement chartContainer, string chartType)
+        {
+            if (chartContainer == null) return;
+
+            // ✅ Đảm bảo biểu đồ luôn có Z-Index cao hơn nét chữ cũ (thuộc tầng UserContent)
+            if (Panel.GetZIndex(chartContainer) <= 0)
+            {
+                int z = AllocateImageZIndex();
+                Panel.SetZIndex(chartContainer, z);
+            }
+
+            RecordAddAction(chartContainer, $"Insert {chartType}");
+            RefreshSelectableObjects();
+        }
+
+        /// <summary>
+        /// Public method for chart editors to register removed charts with the undo/redo system
+        /// </summary>
+        public void RecordChartRemove(UIElement chartContainer, string chartType)
+        {
+            if (chartContainer == null) return;
+            RecordRemoveAction(chartContainer, $"Remove {chartType}");
             RefreshSelectableObjects();
         }
 
@@ -2696,52 +2725,8 @@ namespace QASmartTouch.Forms
 
         private void btn13_Exit_Click(object sender, RoutedEventArgs e)
         {
-            // 1. Nếu có dữ liệu chưa lưu, hỏi giáo viên có muốn lưu trước khi thoát không
-            if (CheckHasUnsavedChanges())
-            {
-                var saveResult = MessageBox.Show(
-                    "Bạn có dữ liệu bài giảng chưa lưu. Bạn có muốn lưu bài giảng trước khi thoát?",
-                    "Xác nhận lưu bài giảng",
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Question);
-
-                if (saveResult == MessageBoxResult.Cancel)
-                {
-                    return; // Hủy lệnh thoát
-                }
-                else if (saveResult == MessageBoxResult.Yes)
-                {
-                    // Thực hiện lưu bài giảng thực tế (.qasc)
-                    bool saved = SaveCurrentLecture(showOpenFolderPrompt: false);
-                    if (!saved)
-                    {
-                        // Người dùng hủy lưu tệp tin hoặc lỗi -> Không thoát để tránh mất dữ liệu
-                        return;
-                    }
-                }
-                // Nếu chọn No -> Tiếp tục thoát mà không lưu
-            }
-            else if (AppSettings.ShouldShowExitConfirmation)
-            {
-                // Nếu không có dữ liệu chưa lưu (bảng trắng hoặc đã lưu rồi), chỉ hỏi xác nhận thoát đơn giản
-                var confirmResult = MessageBox.Show(
-                    "Bạn có chắc chắn muốn thoát phần mềm?",
-                    "Xác nhận thoát",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (confirmResult != MessageBoxResult.Yes)
-                {
-                    return;
-                }
-            }
-
-            // 2. Tiến hành điều hướng thoát về màn hình đăng nhập
-            // [SMARTTOUCH_ONLY] Thoát luôn phần mềm thay vì quay lại màn hình đăng nhập
-            // var loginForm = new Form1_MainLogin();
-            // loginForm.Show();
-            // this.Close();
-            Application.Current.Shutdown();
+            // Gọi this.Close() để kích hoạt quy trình xác nhận lưu và thoát chuẩn trong OnClosing
+            this.Close();
         }
 
         #endregion

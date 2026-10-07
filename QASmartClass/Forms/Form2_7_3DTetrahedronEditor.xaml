@@ -573,9 +573,9 @@
                                             <CheckBox x:Name="chkShowEdges" Content="Hiển thị cạnh" FontSize="11" 
                                                       IsChecked="True" Checked="DisplayOption_Changed" Unchecked="DisplayOption_Changed" Margin="0,2"/>
                                             <CheckBox x:Name="chkShowVertices" Content="Hiển thị đỉnh" FontSize="11" 
-                                                      IsChecked="True" Checked="DisplayOption_Changed" Unchecked="DisplayOption_Changed" Margin="0,2"/>
+                                                      IsChecked="False" Checked="DisplayOption_Changed" Unchecked="DisplayOption_Changed" Margin="0,2"/>
                                             <CheckBox x:Name="chkShowLabels" Content="Hiển thị nhãn đỉnh" FontSize="11" 
-                                                      IsChecked="True" Checked="DisplayOption_Changed" Unchecked="DisplayOption_Changed" Margin="0,2"/>
+                                                      IsChecked="False" Checked="DisplayOption_Changed" Unchecked="DisplayOption_Changed" Margin="0,2"/>
                                             <CheckBox x:Name="chkShowAxis" Content="Trục tọa độ X,Y,Z" FontSize="11" 
                                                       Checked="DisplayOption_Changed" Unchecked="DisplayOption_Changed" Margin="0,2"/>
                                             <CheckBox x:Name="chkShowFaceEdges" Content="Viền mặt" FontSize="11" 

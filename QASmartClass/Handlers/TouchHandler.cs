@@ -80,6 +80,11 @@ namespace QASmartTouch.Handlers
         /// </summary>
         public Func<Point, Color?>? GetColorForPosition { get; set; }
 
+        /// <summary>
+        /// QC_4.2_MILESTONE_ZINDEX: Delegate truy vấn tầng Z-Index hiện tại cho nét vẽ hoàn tất
+        /// </summary>
+        public Func<int>? GetCurrentInkingZIndex { get; set; }
+
         // Two-Finger Pinch-to-Zoom & Pan fields (Phase 3)
         private bool _isTwoFingerGestureActive = false;
         private bool _suppressDrawingUntilAllReleased = false;
@@ -978,12 +983,13 @@ namespace QASmartTouch.Handlers
                         }
                         else if (_currentBrushType == "Shape" || _currentBrushType == "Calligraphy")
                         {
+                            int inkingZ = GetCurrentInkingZIndex?.Invoke() ?? QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
                             Color color = stroke.Stroke is SolidColorBrush scb ? scb.Color : _currentPenColor;
                             var recognizedShape = QASmartTouch.Helpers.ShapeRecognizer.TryRecognizeShape(stroke, color, stroke.StrokeThickness);
                             if (recognizedShape != null)
                             {
                                 _canvas.Children.Remove(stroke);
-                                Panel.SetZIndex(recognizedShape, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
+                                Panel.SetZIndex(recognizedShape, inkingZ);
                                 _canvas.Children.Add(recognizedShape);
                                 _recordAddAction?.Invoke(recognizedShape, $"Touch recognized shape (ID: {touchId})");
                             }
@@ -994,22 +1000,23 @@ namespace QASmartTouch.Handlers
                                 {
                                     _canvas.Children.Remove(stroke);
                                     _canvas.Children.Add(smoothPath);
-                                    Panel.SetZIndex(smoothPath, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
+                                    Panel.SetZIndex(smoothPath, inkingZ);
                                     _recordAddAction?.Invoke(smoothPath, $"Touch draw (ID: {touchId})");
                                 }
                                 else
                                 {
-                                    Panel.SetZIndex(stroke, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
+                                    Panel.SetZIndex(stroke, inkingZ);
                                     _recordAddAction?.Invoke(stroke, $"Touch draw (ID: {touchId})");
                                 }
                             }
                         }
                         else
                         {
+                            int currentInkingZ = GetCurrentInkingZIndex?.Invoke() ?? QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
                             var smoothPath = _strokeService.ConvertToSmoothPath(stroke);
                             int zIndex = (_currentBrushType == "Highlighter" || _currentBrushType == "Marker" || _currentBrushType == "Mask" || _currentBrushType == "MaskPen")
-                                ? QASmartTouch.Helpers.ZIndexConstants.HighlighterLayer
-                                : QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
+                                ? (currentInkingZ > QASmartTouch.Helpers.ZIndexConstants.UserContentBase ? currentInkingZ : QASmartTouch.Helpers.ZIndexConstants.HighlighterLayer)
+                                : currentInkingZ;
 
                             if (smoothPath != null)
                             {
@@ -1113,7 +1120,7 @@ namespace QASmartTouch.Handlers
                     stroke.StrokeEndLineCap = PenLineCap.Round;
                     stroke.Opacity = 0.95;
                     stroke.StrokeThickness = Math.Max(_currentPenSize * 1.3, 4);
-                    if (_currentPenColor == Colors.Black)
+                    if (_currentPenColor == Colors.Black || _currentPenColor == Colors.White)
                     {
                         stroke.Stroke = new SolidColorBrush(Color.FromRgb(255, 59, 48));
                     }

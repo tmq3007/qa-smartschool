@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,11 +22,14 @@ namespace QASmartTouch.Forms
             try
             {
                 var version = Assembly.GetExecutingAssembly().GetName().Version;
-                tbVersion.Text = $"v{version?.Major ?? 3}.{version?.Minor ?? 0}.{version?.Build ?? 0}";
+                int major = version?.Major ?? 1;
+                int minor = version?.Minor ?? 0;
+                int build = version?.Build ?? 0;
+                tbVersion.Text = build > 0 ? $"v{major}.{minor}.{build}" : $"v{major}.{minor}";
             }
             catch
             {
-                tbVersion.Text = "v3.0.0";
+                tbVersion.Text = "v1.0";
             }
 
             Loaded += (s, e) =>

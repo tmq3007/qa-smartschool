@@ -14,6 +14,7 @@ using IOPath = System.IO.Path;
 using IOFile = System.IO.File;
 using IODirectory = System.IO.Directory;
 using QASmartTouch.Helpers;
+using QASmartTouch.Shared;
 
 namespace QASmartTouch.Forms
 {
@@ -29,6 +30,8 @@ namespace QASmartTouch.Forms
 
         // Configuration properties for saving/loading
         public BarChartConfiguration CurrentConfiguration { get; private set; }
+        public double? TargetLeft { get; set; }
+        public double? TargetTop { get; set; }
 
         public Form2_8_BarChartEditor(Form2_MainDashboard? mainDashboard = null)
         {
@@ -37,6 +40,8 @@ namespace QASmartTouch.Forms
             TouchScrollHelper.AttachToAllScrollViewers(this);
             _mainDashboard = mainDashboard;
             InitializeDefaultData();
+            txtChartTitle.TextChanged += (s, e) => { if (IsLoaded) UpdateChart(); };
+            txtYAxisLabel.TextChanged += (s, e) => { if (IsLoaded) UpdateChart(); };
             Loaded += (s, e) => UpdateChart();
         }
 
@@ -80,7 +85,7 @@ namespace QASmartTouch.Forms
                     FontSize = 13,
                     Margin = new Thickness(0, 0, 5, 0)
                 };
-                txtLabel.TextChanged += (s, e) => { entry.Label = txtLabel.Text; UpdateStats(); };
+                txtLabel.TextChanged += (s, e) => { entry.Label = txtLabel.Text; UpdateStats(); if (IsLoaded) UpdateChart(); };
                 Grid.SetColumn(txtLabel, 0);
 
                 var txtValue = new TextBox
@@ -98,6 +103,7 @@ namespace QASmartTouch.Forms
                     {
                         entry.Value = val;
                         UpdateStats();
+                        if (IsLoaded) UpdateChart();
                     }
                 };
                 Grid.SetColumn(txtValue, 1);
@@ -568,8 +574,13 @@ namespace QASmartTouch.Forms
             // BƯỚC 2: Lưu cấu hình hiện tại
             SaveCurrentConfiguration();
 
+            // Cập nhật và ép vẽ lại layout trước khi render bitmap
+            UpdateChart();
+            ChartCanvas.UpdateLayout();
+
             // BƯỚC 3: Chuyển sang chế độ trình chiếu
             IsConfirmed = true;
+            DialogResult = true;
 
             if (_mainDashboard != null)
             {
@@ -643,13 +654,12 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// BƯỚC 3: Thêm biểu đồ tương tác lên canvas với 3 nút chức năng
+        /// BƯỚC 3: Thêm biểu đồ tương tác lên canvas với Unified Container chuẩn kép
         /// </summary>
         private void AddInteractiveChartToCanvas()
         {
             if (_mainDashboard == null) return;
 
-            // Render ChartCanvas only (without border padding) for accurate content display
             var renderBitmap = new RenderTargetBitmap(
                 (int)ChartCanvas.ActualWidth,
                 (int)ChartCanvas.ActualHeight,
@@ -658,275 +668,57 @@ namespace QASmartTouch.Forms
 
             renderBitmap.Render(ChartCanvas);
 
-            // Create Image control with 80% size 
-            var chartImage = new System.Windows.Controls.Image
+            InteractiveChartHelper.CreateAndAddChartToCanvas(new InteractiveChartHelper.ChartContainerOptions
             {
-                Source = renderBitmap,
-                Width = ChartCanvas.ActualWidth * 0.8,
-                Height = ChartCanvas.ActualHeight * 0.8,
-                Stretch = Stretch.Uniform
-            };
-
-            // Create container with action buttons
-            var chartContainer = CreateInteractiveChartContainer(chartImage, renderBitmap);
-
-            // Get main canvas
-            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
-            if (mainCanvas == null) return;
-
-            // Position in center with smart offset to avoid overlapping
-            double left = (mainCanvas.ActualWidth - chartContainer.Width) / 2;
-            double top = (mainCanvas.ActualHeight - chartContainer.Height) / 2;
-            
-            // Smart positioning: offset if there are existing charts
-            int existingCharts = mainCanvas.Children.OfType<Grid>().Count();
-            if (existingCharts > 0)
-            {
-                // Offset by 30px for each existing chart to cascade effect
-                left += (existingCharts % 5) * 30;
-                top += (existingCharts % 5) * 30;
-            }
-            
-            Canvas.SetLeft(chartContainer, left);
-            Canvas.SetTop(chartContainer, top);
-
-            // Add to canvas
-            mainCanvas.Children.Add(chartContainer);
+                MainDashboard = _mainDashboard,
+                ChartTitle = string.IsNullOrWhiteSpace(txtChartTitle.Text) ? "Biểu đồ cột" : $"Biểu đồ cột: {txtChartTitle.Text}",
+                Icon = "📊",
+                Bitmap = renderBitmap,
+                InitialWidth = ChartCanvas.ActualWidth * 0.8,
+                InitialHeight = ChartCanvas.ActualHeight * 0.8,
+                TargetLeft = TargetLeft,
+                TargetTop = TargetTop,
+                Configuration = CurrentConfiguration,
+                OnEdit = (container) => EditChart(container),
+                OnCopy = (container, bitmap) => CopyChart(container, bitmap),
+                OnDelete = (container) => DeleteChart(container)
+            });
         }
 
-        /// <summary>
-        /// Tạo container chứa biểu đồ với 3 nút chức năng: Copy, Xóa, Chỉnh sửa
-        /// </summary>
-        private Grid CreateInteractiveChartContainer(System.Windows.Controls.Image chartImage, RenderTargetBitmap bitmap)
+        private void CopyChart(Grid originalContainer, RenderTargetBitmap bitmap)
         {
-            var container = new Grid
-            {
-                Width = chartImage.Width + 10,
-                Height = chartImage.Height + 50, // Extra space for buttons
-                Background = Brushes.Transparent
-            };
-
-            container.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Buttons
-            container.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Chart
-
-            // Button panel (initially hidden, show on hover)
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 5, 0, 5),
-                Background = new SolidColorBrush(Color.FromArgb(230, 255, 255, 255)),
-                Opacity = 0, // Hidden by default
-                Height = 50
-            };
-            Grid.SetRow(buttonPanel, 0);
-
-            // Nút Phóng to
-            var btnZoomIn = CreateActionButton("➕", Colors.Purple);
-            btnZoomIn.Click += (s, e) => ZoomInChart(container, chartImage);
-
-            // Nút Thu nhỏ
-            var btnZoomOut = CreateActionButton("➖", Colors.Orange);
-            btnZoomOut.Click += (s, e) => ZoomOutChart(container, chartImage);
-
-            // Nút Copy
-            var btnCopy = CreateActionButton("📋", Colors.Green);
-            btnCopy.Click += (s, e) => CopyChart(container, chartImage, bitmap);
-
-            // Nút Xóa
-            var btnDelete = CreateActionButton("🗑️", Colors.Red);
-            btnDelete.Click += (s, e) => DeleteChart(container);
-
-            // Nút Chỉnh sửa
-            var btnEdit = CreateActionButton("✏️", Colors.Blue);
-            btnEdit.Click += (s, e) => EditChart(container);
-
-            buttonPanel.Children.Add(btnZoomIn);
-            buttonPanel.Children.Add(btnZoomOut);
-            buttonPanel.Children.Add(btnCopy);
-            buttonPanel.Children.Add(btnDelete);
-            buttonPanel.Children.Add(btnEdit);
-
-            // Chart border with image
-            var chartBorder = new Border
-            {
-                Background = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(200, 200, 200)),
-                BorderThickness = new Thickness(2),
-                CornerRadius = new CornerRadius(8),
-                Child = chartImage,
-                Cursor = Cursors.Hand,
-                Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    Opacity = 0.2,
-                    ShadowDepth = 3,
-                    BlurRadius = 8
-                }
-            };
-            Grid.SetRow(chartBorder, 1);
-
-            // Resize border (hidden by default)
-            var resizeBorder = new Border
-            {
-                BorderBrush = new SolidColorBrush(Color.FromRgb(102, 126, 234)),
-                BorderThickness = new Thickness(3),
-                Visibility = Visibility.Collapsed
-            };
-            Grid.SetRow(resizeBorder, 1);
-
-            container.Children.Add(buttonPanel);
-            container.Children.Add(chartBorder);
-            container.Children.Add(resizeBorder);
-
-            // Show/Hide buttons on hover
-            container.MouseEnter += (s, e) =>
-            {
-                buttonPanel.Opacity = 1;
-            };
-
-            container.MouseLeave += (s, e) =>
-            {
-                buttonPanel.Opacity = 0;
-            };
-
-            // Enable dragging
-            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
-            if (mainCanvas != null)
-            {
-                EnableChartDragging(container, mainCanvas);
-                EnableChartResizing(container, chartImage, resizeBorder);
-            }
-
-            return container;
-        }
-
-        /// <summary>
-        /// Tạo nút hành động với style đồng nhất
-        /// </summary>
-        private Button CreateActionButton(string content, Color bgColor)
-        {
-            var button = new Button
-            {
-                Content = content,
-                Width = 42,
-                Height = 42,
-                Margin = new Thickness(3, 0, 3, 0),
-                Background = new SolidColorBrush(bgColor),
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                FontSize = 18,
-                FontWeight = FontWeights.SemiBold,
-                Cursor = Cursors.Hand,
-                Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    Opacity = 0.3,
-                    ShadowDepth = 2,
-                    BlurRadius = 5
-                }
-            };
-
-            // Rounded corners
-            var template = new ControlTemplate(typeof(Button));
-            var border = new FrameworkElementFactory(typeof(Border));
-            border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(5));
-            border.SetValue(Border.PaddingProperty, new Thickness(5));
-            
-            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
-            contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-            border.AppendChild(contentPresenter);
-            
-            template.VisualTree = border;
-            button.Template = template;
-
-            return button;
-        }
-
-        /// <summary>
-        /// Chức năng Phóng to: Tăng kích thước biểu đồ 20%
-        /// </summary>
-        private void ZoomInChart(Grid container, System.Windows.Controls.Image chartImage)
-        {
-            double newWidth = chartImage.Width * 1.2;
-            double newHeight = chartImage.Height * 1.2;
-
-            chartImage.Width = newWidth;
-            chartImage.Height = newHeight;
-            
-            // Update container size (includes button panel space)
-            container.Width = newWidth + 10;
-            container.Height = newHeight + 50;
-        }
-
-        /// <summary>
-        /// Chức năng Thu nhỏ: Giảm kích thước biểu đồ 20%
-        /// </summary>
-        private void ZoomOutChart(Grid container, System.Windows.Controls.Image chartImage)
-        {
-            double newWidth = chartImage.Width * 0.8;
-            double newHeight = chartImage.Height * 0.8;
-
-            // Minimum size constraint
-            if (newWidth < 200 || newHeight < 150) return;
-
-            chartImage.Width = newWidth;
-            chartImage.Height = newHeight;
-            
-            // Update container size (includes button panel space)
-            container.Width = newWidth + 10;
-            container.Height = newHeight + 50;
-        }
-
-        /// <summary>
-        /// Chức năng Copy: Tạo bản sao của biểu đồ
-        /// </summary>
-        private void CopyChart(Grid originalContainer, System.Windows.Controls.Image originalImage, RenderTargetBitmap bitmap)
-        {
-            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
-            if (mainCanvas == null) return;
-
-            // Create new image from same bitmap
-            var newImage = new System.Windows.Controls.Image
-            {
-                Source = bitmap,
-                Width = originalImage.Width,
-                Height = originalImage.Height,
-                Stretch = Stretch.Uniform
-            };
-
-            // Create new container
-            var newContainer = CreateInteractiveChartContainer(newImage, bitmap);
-
-            // Position slightly offset from original
             double originalLeft = Canvas.GetLeft(originalContainer);
             double originalTop = Canvas.GetTop(originalContainer);
-            
-            Canvas.SetLeft(newContainer, originalLeft + 20);
-            Canvas.SetTop(newContainer, originalTop + 20);
+            if (double.IsNaN(originalLeft)) originalLeft = 0;
+            if (double.IsNaN(originalTop)) originalTop = 0;
 
-            // Add to canvas
-            mainCanvas.Children.Add(newContainer);
+            InteractiveChartHelper.CreateAndAddChartToCanvas(new InteractiveChartHelper.ChartContainerOptions
+            {
+                MainDashboard = _mainDashboard!,
+                ChartTitle = string.IsNullOrWhiteSpace(txtChartTitle.Text) ? "Biểu đồ cột (Bản sao)" : $"Biểu đồ cột: {txtChartTitle.Text} (Bản sao)",
+                Icon = "📊",
+                Bitmap = bitmap,
+                InitialWidth = originalContainer.Width,
+                InitialHeight = (originalContainer.Children.OfType<Border>().FirstOrDefault(b => Grid.GetRow(b) == 1)?.Child as Image)?.Height ?? (ChartCanvas.ActualHeight * 0.8),
+                TargetLeft = originalLeft + 30,
+                TargetTop = originalTop + 30,
+                Configuration = CurrentConfiguration,
+                OnEdit = (container) => EditChart(container),
+                OnCopy = (container, bmp) => CopyChart(container, bmp),
+                OnDelete = (container) => DeleteChart(container)
+            });
         }
 
-        /// <summary>
-        /// Chức năng Xóa: Xóa biểu đồ khỏi canvas
-        /// </summary>
         private void DeleteChart(Grid container)
         {
-            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
+            var mainCanvas = _mainDashboard?.FindName("MainInteractiveBoard") as Canvas;
             if (mainCanvas != null)
             {
                 mainCanvas.Children.Remove(container);
+                _mainDashboard?.RecordChartRemove(container, "Biểu đồ cột");
             }
         }
 
-        /// <summary>
-        /// Chức năng Chỉnh sửa: Mở lại form với cấu hình đã lưu và xóa biểu đồ cũ
-        /// </summary>
         private void EditChart(Grid container)
         {
             if (CurrentConfiguration == null)
@@ -936,17 +728,25 @@ namespace QASmartTouch.Forms
                 return;
             }
 
-            // Xóa biểu đồ cũ khỏi canvas trước khi mở editor
-            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
-            if (mainCanvas != null)
-            {
-                mainCanvas.Children.Remove(container);
-            }
+            double originalLeft = Canvas.GetLeft(container);
+            double originalTop = Canvas.GetTop(container);
+            if (double.IsNaN(originalLeft)) originalLeft = 0;
+            if (double.IsNaN(originalTop)) originalTop = 0;
 
-            // Create new editor with saved configuration
             var editor = new Form2_8_BarChartEditor(_mainDashboard);
+            editor.TargetLeft = originalLeft;
+            editor.TargetTop = originalTop;
             editor.LoadConfiguration(CurrentConfiguration);
-            editor.ShowDialog();
+            bool? result = WindowHelper.ShowChildDialog(editor, _mainDashboard);
+            if (result == true)
+            {
+                var mainCanvas = _mainDashboard?.FindName("MainInteractiveBoard") as Canvas;
+                if (mainCanvas != null)
+                {
+                    mainCanvas.Children.Remove(container);
+                    _mainDashboard?.RecordChartRemove(container, "Biểu đồ cột");
+                }
+            }
         }
 
         /// <summary>
@@ -982,73 +782,7 @@ namespace QASmartTouch.Forms
 
         private void AddChartToCanvas()
         {
-            // Old method - kept for compatibility
             AddInteractiveChartToCanvas();
-        }
-
-        private void EnableChartDragging(UIElement chartElement, Canvas mainCanvas)
-        {
-            // Use local variables for each chart element to avoid conflicts
-            bool isDragging = false;
-            Point dragStartPoint = new Point();
-            double originalLeft = 0;
-            double originalTop = 0;
-
-            chartElement.MouseLeftButtonDown += (s, e) =>
-            {
-                isDragging = true;
-                dragStartPoint = e.GetPosition(mainCanvas);
-                originalLeft = Canvas.GetLeft(chartElement);
-                originalTop = Canvas.GetTop(chartElement);
-                
-                if (double.IsNaN(originalLeft)) originalLeft = 0;
-                if (double.IsNaN(originalTop)) originalTop = 0;
-                
-                chartElement.CaptureMouse();
-                e.Handled = true;
-            };
-
-            chartElement.MouseMove += (s, e) =>
-            {
-                if (isDragging && chartElement.IsMouseCaptured)
-                {
-                    Point currentPoint = e.GetPosition(mainCanvas);
-                    double deltaX = currentPoint.X - dragStartPoint.X;
-                    double deltaY = currentPoint.Y - dragStartPoint.Y;
-
-                    double newLeft = originalLeft + deltaX;
-                    double newTop = originalTop + deltaY;
-
-                    // Get element size
-                    double elementWidth = (chartElement as FrameworkElement)?.ActualWidth ?? 0;
-                    double elementHeight = (chartElement as FrameworkElement)?.ActualHeight ?? 0;
-
-                    // Constrain to canvas bounds
-                    newLeft = Math.Max(0, Math.Min(newLeft, mainCanvas.ActualWidth - elementWidth));
-                    newTop = Math.Max(0, Math.Min(newTop, mainCanvas.ActualHeight - elementHeight));
-
-                    Canvas.SetLeft(chartElement, newLeft);
-                    Canvas.SetTop(chartElement, newTop);
-                }
-            };
-
-            chartElement.MouseLeftButtonUp += (s, e) =>
-            {
-                if (isDragging)
-                {
-                    isDragging = false;
-                    chartElement.ReleaseMouseCapture();
-                }
-            };
-
-            chartElement.MouseLeave += (s, e) =>
-            {
-                if (isDragging)
-                {
-                    isDragging = false;
-                    chartElement.ReleaseMouseCapture();
-                }
-            };
         }
 
         private void SaveImage_Click(object sender, RoutedEventArgs e)
@@ -1104,6 +838,18 @@ namespace QASmartTouch.Forms
                 IOFile.WriteAllText(dialog.FileName, json);
                 MessageBox.Show($"Đã xuất dữ liệu thành công!\n{dialog.FileName}", 
                     "Xuất dữ liệu", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void BtnToggleKeyboard_Click(object sender, RoutedEventArgs e)
+        {
+            if (TouchKeyboardHelper.IsKeyboardVisible())
+            {
+                TouchKeyboardHelper.HideTouchKeyboard();
+            }
+            else
+            {
+                TouchKeyboardHelper.ShowTouchKeyboard();
             }
         }
 

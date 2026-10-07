@@ -29,8 +29,8 @@ namespace QASmartTouch.Forms
         // Tùy chọn vẽ nét đứt cho cạnh khuất (Phương án 2)
         public bool ShowHiddenEdges { get; private set; } = true;
 
-        // Tùy chọn hiển thị nhãn đỉnh
-        public bool ShowVertexLabels { get; private set; } = true;
+        // Tùy chọn hiển thị đỉnh và nhãn đỉnh
+        public bool ShowVertexLabels { get; private set; } = false;
 
         // Màu cho các mặt của Cube (mặc định: màu xanh lá đơn sắc cho tất cả các mặt)
         public Color FaceColor { get; private set; }
@@ -718,28 +718,28 @@ namespace QASmartTouch.Forms
                 CubeCanvas.Children.Add(line);
             }
 
-            // Vẽ các đỉnh và nhãn đỉnh
-            string[] vertexNames = { "A", "B", "C", "D", "A'", "B'", "C'", "D'" };
-            for (int i = 0; i < 8; i++)
+            // Vẽ các đỉnh và nhãn đỉnh (chỉ vẽ khi người dùng bật ShowVertexLabels)
+            if (ShowVertexLabels)
             {
-                var point = projected2D[i];
-
-                if (DrawMode == "Wireframe" || DrawMode == "Both")
+                string[] vertexNames = { "A", "B", "C", "D", "A'", "B'", "C'", "D'" };
+                for (int i = 0; i < 8; i++)
                 {
-                    Ellipse dot = new Ellipse
+                    var point = projected2D[i];
+
+                    if (DrawMode == "Wireframe" || DrawMode == "Both")
                     {
-                        Width = 6,
-                        Height = 6,
-                        Fill = new SolidColorBrush(EdgeColor)
-                    };
-                    Canvas.SetLeft(dot, point.X - 3);
-                    Canvas.SetTop(dot, point.Y - 3);
-                    CubeCanvas.Children.Add(dot);
-                }
+                        Ellipse dot = new Ellipse
+                        {
+                            Width = 6,
+                            Height = 6,
+                            Fill = new SolidColorBrush(EdgeColor)
+                        };
+                        Canvas.SetLeft(dot, point.X - 3);
+                        Canvas.SetTop(dot, point.Y - 3);
+                        CubeCanvas.Children.Add(dot);
+                    }
 
-                // Nhãn chữ tên đỉnh
-                if (ShowVertexLabels)
-                {
+                    // Nhãn chữ tên đỉnh
                     TextBlock label = new TextBlock
                     {
                         Text = vertexNames[i],

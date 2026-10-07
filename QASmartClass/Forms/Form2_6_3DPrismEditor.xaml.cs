@@ -38,7 +38,7 @@ namespace QASmartTouch.Forms
         public bool DisplayStatsMode { get; private set; } = false;
         
         public bool ShowHiddenEdges { get; private set; } = true;
-        public bool ShowVertexLabels { get; private set; } = true;
+        public bool ShowVertexLabels { get; private set; } = false;
 
         // Drag & Drop properties
         private double OffsetX = 0;

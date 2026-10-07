@@ -36,6 +36,7 @@ namespace QASmartTouch.WhiteboardCore.IO
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? BackgroundColorHex { get; set; } = "#3D6D64";
+        public string? BackgroundImagePath { get; set; }
         public string? BackgroundPattern { get; set; } = "grid";
         public int LineSpacing { get; set; } = 40;
         public int LineOpacity { get; set; } = 10;
@@ -104,6 +105,7 @@ namespace QASmartTouch.WhiteboardCore.IO
                             CanvasWidth = board.CanvasWidth > 0 ? board.CanvasWidth : 1920,
                             CanvasHeight = board.CanvasHeight > 0 ? board.CanvasHeight : 1080,
                             BackgroundColorHex = board.BackgroundColorHex ?? "#3D6D64",
+                            BackgroundImagePath = board.BackgroundImagePath,
                             BackgroundPattern = board.BackgroundPattern,
                             LineSpacing = board.LineSpacing > 0 ? board.LineSpacing : 40,
                             LineOpacity = board.LineOpacity > 0 ? board.LineOpacity : 10,
@@ -241,6 +243,7 @@ namespace QASmartTouch.WhiteboardCore.IO
                         CanvasWidth = item.CanvasWidth > 0 ? item.CanvasWidth : 1920,
                         CanvasHeight = item.CanvasHeight > 0 ? item.CanvasHeight : 1080,
                         BackgroundColorHex = item.BackgroundColorHex ?? "#3D6D64",
+                        BackgroundImagePath = item.BackgroundImagePath,
                         BackgroundPattern = item.BackgroundPattern,
                         LineSpacing = item.LineSpacing > 0 ? item.LineSpacing : 40,
                         LineOpacity = item.LineOpacity > 0 ? item.LineOpacity : 10,

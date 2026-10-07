@@ -17,6 +17,8 @@ namespace QASmartTouch.Helpers
         public const int UserContentBase = 100;
         // ✅ QC_4.2_TABLE_ZINDEX (T9): Bảng nằm TRÊN nét vẽ thường nhưng DƯỚI Widget
         public const int TableContainer = 500;
+        // ✅ QC_4.2_CHART_ZINDEX: Biểu đồ nằm trong dải UserContent
+        public const int ChartContainer = 500;
         public const int UserContentMax = 999;
         
         // Layer 1000-1999: Embedded Widgets (Browser, Spreadsheet, 3D Model)

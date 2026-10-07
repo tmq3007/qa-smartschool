@@ -32,7 +32,7 @@ namespace QASmartTouch.Forms
         public Brush FaceColor { get; private set; } = Brushes.Transparent;
         public double OpacityValue { get; private set; } = 0.7;
         public bool ShowHiddenEdges { get; private set; } = true;
-        public bool ShowVertexLabels { get; private set; } = true;
+        public bool ShowVertexLabels { get; private set; } = false;
         public bool IsConfirmed { get; private set; } = false;
         
         // Display Stats Mode flag (true if "Display Stats" button was clicked)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -13,9 +13,21 @@ namespace QASmartTouch.Controls
         private double _originalWidth;
         private double _originalHeight;
 
-        public string GraphUrl { get; set; } = "https://www.Graph.com/3d";
+        public string GraphUrl { get; set; } = "https://www.desmos.com/3d";
 
-        public event EventHandler? DeleteRequested;
+        public event EventHandler? DeleteRequested;
+
+        public bool ShowInternalTitleBar
+        {
+            get => InternalTitleBar?.Visibility == Visibility.Visible;
+            set
+            {
+                if (InternalTitleBar != null)
+                {
+                    InternalTitleBar.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
+        }
 
         public Graph3DControl()
         {
@@ -42,7 +54,8 @@ namespace QASmartTouch.Controls
 
         public Graph3DControl(string graphUrl) : this()
         {
-            GraphUrl = graphUrl;
+            GraphUrl = string.IsNullOrEmpty(graphUrl) ? "https://www.desmos.com/3d" : graphUrl;
+            UpdateGraphUrl(GraphUrl);
         }
 
         private async System.Threading.Tasks.Task InitializeWebView()

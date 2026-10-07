@@ -224,7 +224,10 @@ namespace QASmartTouch.Forms
             var mainWindow = GetMainDashboard();
             if (mainWindow != null)
             {
-                mainWindow.SaveCurrentLecture();
+                // QC_4.2_SAVE_UX: Nếu đã có đường dẫn tệp -> Lưu nhanh (Quick Save) và hiện badge, không popup phiền toái.
+                // Nếu chưa từng lưu -> Tự động mở SaveFileDialog để chọn nơi lưu lần đầu.
+                bool isAlreadySaved = !string.IsNullOrWhiteSpace(mainWindow.CurrentLectureFilePath);
+                mainWindow.SaveCurrentLecture(customFilePath: null, showOpenFolderPrompt: !isAlreadySaved);
                 mainWindow.Activate();
             }
             else
@@ -252,31 +255,36 @@ namespace QASmartTouch.Forms
                 System.IO.Directory.CreateDirectory(defaultDir);
             }
 
+            // Gợi ý tên tệp dựa trên bài giảng hiện tại nếu có
+            string defaultName = !string.IsNullOrWhiteSpace(mainWindow.CurrentLectureFilePath)
+                ? System.IO.Path.GetFileNameWithoutExtension(mainWindow.CurrentLectureFilePath) + "_Copy"
+                : $"BaiGiang_{DateTime.Now:yyyyMMdd_HHmm}";
+
             var saveDialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "Lưu bài giảng thành tệp mới",
+                Title = "Lưu bài giảng thành tệp bản sao mới (Save As)",
                 Filter = "Bài giảng QA SmartClass (*.qasc)|*.qasc",
                 DefaultExt = ".qasc",
                 InitialDirectory = defaultDir,
-                FileName = $"BaiGiang_{DateTime.Now:yyyyMMdd_HHmm}.qasc"
+                FileName = $"{defaultName}.qasc"
             };
 
             if (saveDialog.ShowDialog(mainWindow) == true)
             {
-                mainWindow.SaveCurrentLecture(saveDialog.FileName);
+                mainWindow.SaveCurrentLecture(saveDialog.FileName, showOpenFolderPrompt: true);
             }
             mainWindow.Activate();
         }
 
         private void btnShareLecture_Click(object sender, RoutedEventArgs e)
         {
-            // Show share options dialog or directly open export dialog
+            // Mở hộp thoại Chia sẻ bài giảng chuyên dụng (QR Code, Link, Email, Tệp USB)
             this.Close();
             var mainWindow = GetMainDashboard();
             if (mainWindow != null)
             {
-                var exportDialog = new Form2_20_ExportLectureDialog(mainWindow);
-                WindowHelper.ShowChildDialog(exportDialog);
+                var shareDialog = new Form2_21_ShareLectureDialog(mainWindow);
+                WindowHelper.ShowChildDialog(shareDialog);
                 mainWindow.Activate();
             }
         }

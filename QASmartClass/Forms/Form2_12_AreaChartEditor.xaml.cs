@@ -11,6 +11,8 @@ using System.Windows.Media.Imaging;
 using System.IO;
 using WpfPath = System.Windows.Shapes.Path;
 using QASmartTouch.Helpers;
+using QASmartTouch.Shared;
+using System.Windows.Input;
 
 namespace QASmartTouch.Forms
 {
@@ -20,6 +22,9 @@ namespace QASmartTouch.Forms
         private Form2_MainDashboard? _mainDashboard;
 
         public bool IsConfirmed { get; private set; }
+        public AreaChartConfiguration? CurrentConfiguration { get; private set; }
+        public double? TargetLeft { get; set; }
+        public double? TargetTop { get; set; }
 
         // Configuration Properties (public for MainDashboard access)
         public string ChartTitle { get; private set; } = "Doanh thu theo tháng năm 2024";
@@ -44,6 +49,8 @@ namespace QASmartTouch.Forms
             _mainDashboard = mainDashboard;
             chartSeries = new List<AreaChartSeries>();
             InitializeDefaultData();
+            TxtChartTitle.TextChanged += (s, e) => { ChartTitle = TxtChartTitle.Text; if (IsLoaded) UpdateChart(); };
+            TxtLabels.TextChanged += (s, e) => { if (IsLoaded) UpdateChart(); };
             Loaded += (s, e) => UpdateChart();
         }
 
@@ -131,6 +138,7 @@ namespace QASmartTouch.Forms
                 {
                     var idx = (int)((TextBox)s).Tag;
                     chartSeries[idx].Name = ((TextBox)s).Text;
+                    if (IsLoaded) UpdateChart();
                 };
                 Grid.SetColumn(nameBox, 1);
 
@@ -208,6 +216,7 @@ namespace QASmartTouch.Forms
                         .Select(v => double.TryParse(v, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double result) ? result : 0)
                         .ToList();
                     chartSeries[idx].Data = values;
+                    if (IsLoaded) UpdateChart();
                 };
                 stackPanel.Children.Add(dataBox);
 
@@ -666,11 +675,182 @@ namespace QASmartTouch.Forms
             UpdateChart();
         }
 
+        private void SaveCurrentConfiguration()
+        {
+            CurrentConfiguration = new AreaChartConfiguration
+            {
+                Title = TxtChartTitle.Text,
+                RawLabels = TxtLabels.Text,
+                Series = chartSeries.Select(s => new AreaChartSeriesData
+                {
+                    Name = s.Name,
+                    Color = s.Color,
+                    Opacity = s.Opacity,
+                    Data = new List<double>(s.Data)
+                }).ToList(),
+                LineStyleIndex = CmbLineStyle.SelectedIndex,
+                AreaTypeIndex = CmbAreaType.SelectedIndex,
+                LineWidth = SliderLineWidth.Value,
+                PointSize = SliderPointSize.Value,
+                ShowGrid = ChkShowGrid.IsChecked ?? true,
+                ShowAxes = ChkShowAxes.IsChecked ?? true,
+                ShowPoints = ChkShowPoints.IsChecked ?? true,
+                ShowValues = ChkShowValues.IsChecked ?? false,
+                ShowLegend = ChkShowLegend.IsChecked ?? true,
+                UseGradient = ChkUseGradient.IsChecked ?? true
+            };
+        }
+
+        public void LoadConfiguration(AreaChartConfiguration config)
+        {
+            if (config == null) return;
+            CurrentConfiguration = config;
+
+            TxtChartTitle.Text = config.Title;
+            ChartTitle = config.Title;
+            TxtLabels.Text = config.RawLabels;
+
+            chartSeries.Clear();
+            foreach (var s in config.Series)
+            {
+                chartSeries.Add(new AreaChartSeries
+                {
+                    Name = s.Name,
+                    Color = s.Color,
+                    Opacity = s.Opacity,
+                    Data = new List<double>(s.Data)
+                });
+            }
+
+            if (config.LineStyleIndex >= 0 && config.LineStyleIndex < CmbLineStyle.Items.Count)
+                CmbLineStyle.SelectedIndex = config.LineStyleIndex;
+            if (config.AreaTypeIndex >= 0 && config.AreaTypeIndex < CmbAreaType.Items.Count)
+                CmbAreaType.SelectedIndex = config.AreaTypeIndex;
+
+            SliderLineWidth.Value = config.LineWidth;
+            SliderPointSize.Value = config.PointSize;
+            ChkShowGrid.IsChecked = config.ShowGrid;
+            ChkShowAxes.IsChecked = config.ShowAxes;
+            ChkShowPoints.IsChecked = config.ShowPoints;
+            ChkShowValues.IsChecked = config.ShowValues;
+            ChkShowLegend.IsChecked = config.ShowLegend;
+            ChkUseGradient.IsChecked = config.UseGradient;
+
+            RefreshSeriesUI();
+            UpdateChart();
+        }
+
         private void BtnConfirm_Click(object sender, RoutedEventArgs e)
         {
+            SaveCurrentConfiguration();
+            UpdateChart();
+            ChartCanvas.UpdateLayout();
+
             IsConfirmed = true;
             DialogResult = true;
+            if (_mainDashboard != null)
+            {
+                AddInteractiveChartToCanvas();
+            }
             this.Close();
+        }
+
+        /// <summary>
+        /// Thêm biểu đồ vùng tương tác lên canvas MainInteractiveBoard
+        /// </summary>
+        private void AddInteractiveChartToCanvas()
+        {
+            if (_mainDashboard == null) return;
+
+            // Render ChartCanvas
+            double renderWidth = ChartCanvas.ActualWidth > 0 ? ChartCanvas.ActualWidth : 800;
+            double renderHeight = ChartCanvas.ActualHeight > 0 ? ChartCanvas.ActualHeight : 600;
+
+            var renderBitmap = new RenderTargetBitmap(
+                (int)renderWidth,
+                (int)renderHeight,
+                96, 96,
+                PixelFormats.Pbgra32);
+
+            renderBitmap.Render(ChartCanvas);
+
+            InteractiveChartHelper.CreateAndAddChartToCanvas(new InteractiveChartHelper.ChartContainerOptions
+            {
+                MainDashboard = _mainDashboard,
+                ChartTitle = string.IsNullOrWhiteSpace(TxtChartTitle.Text) ? "Biểu đồ vùng" : $"Biểu đồ vùng: {TxtChartTitle.Text}",
+                Icon = "🏔️",
+                Bitmap = renderBitmap,
+                InitialWidth = renderWidth * 0.8,
+                InitialHeight = renderHeight * 0.8,
+                TargetLeft = TargetLeft,
+                TargetTop = TargetTop,
+                Configuration = CurrentConfiguration,
+                OnEdit = (container) => EditChart(container),
+                OnCopy = (container, bitmap) => CopyChart(container, bitmap),
+                OnDelete = (container) => DeleteChart(container)
+            });
+        }
+
+        private void CopyChart(Grid originalContainer, RenderTargetBitmap bitmap)
+        {
+            if (_mainDashboard == null) return;
+            double originalLeft = Canvas.GetLeft(originalContainer);
+            double originalTop = Canvas.GetTop(originalContainer);
+            if (double.IsNaN(originalLeft)) originalLeft = 0;
+            if (double.IsNaN(originalTop)) originalTop = 0;
+
+            InteractiveChartHelper.CreateAndAddChartToCanvas(new InteractiveChartHelper.ChartContainerOptions
+            {
+                MainDashboard = _mainDashboard,
+                ChartTitle = string.IsNullOrWhiteSpace(TxtChartTitle.Text) ? "Biểu đồ vùng (Bản sao)" : $"Biểu đồ vùng: {TxtChartTitle.Text} (Bản sao)",
+                Icon = "🏔️",
+                Bitmap = bitmap,
+                InitialWidth = originalContainer.Width,
+                InitialHeight = (originalContainer.Children.OfType<Border>().FirstOrDefault(b => Grid.GetRow(b) == 1)?.Child as Image)?.Height ?? (ChartCanvas.ActualHeight * 0.8),
+                TargetLeft = originalLeft + 30,
+                TargetTop = originalTop + 30,
+                Configuration = CurrentConfiguration,
+                OnEdit = (container) => EditChart(container),
+                OnCopy = (container, bmp) => CopyChart(container, bmp),
+                OnDelete = (container) => DeleteChart(container)
+            });
+        }
+
+        private void DeleteChart(Grid container)
+        {
+            if (_mainDashboard == null) return;
+            var mainCanvas = _mainDashboard.FindName("MainInteractiveBoard") as Canvas;
+            if (mainCanvas != null)
+            {
+                mainCanvas.Children.Remove(container);
+                _mainDashboard.RecordChartRemove(container, "Biểu đồ vùng");
+            }
+        }
+
+        private void EditChart(Grid container)
+        {
+            double originalLeft = Canvas.GetLeft(container);
+            double originalTop = Canvas.GetTop(container);
+            if (double.IsNaN(originalLeft)) originalLeft = 0;
+            if (double.IsNaN(originalTop)) originalTop = 0;
+
+            var editor = new Form2_12_AreaChartEditor(_mainDashboard);
+            editor.TargetLeft = originalLeft;
+            editor.TargetTop = originalTop;
+            if (CurrentConfiguration != null)
+            {
+                editor.LoadConfiguration(CurrentConfiguration);
+            }
+            bool? result = WindowHelper.ShowChildDialog(editor, _mainDashboard);
+            if (result == true)
+            {
+                var mainCanvas = _mainDashboard?.FindName("MainInteractiveBoard") as Canvas;
+                if (mainCanvas != null)
+                {
+                    mainCanvas.Children.Remove(container);
+                    _mainDashboard?.RecordChartRemove(container, "Biểu đồ vùng");
+                }
+            }
         }
 
         private void BtnSaveImage_Click(object sender, RoutedEventArgs e)
@@ -741,6 +921,18 @@ namespace QASmartTouch.Forms
         {
             this.Close();
         }
+
+        private void BtnToggleKeyboard_Click(object sender, RoutedEventArgs e)
+        {
+            if (TouchKeyboardHelper.IsKeyboardVisible())
+            {
+                TouchKeyboardHelper.HideTouchKeyboard();
+            }
+            else
+            {
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            }
+        }
     }
 
     public class AreaChartSeries
@@ -749,5 +941,30 @@ namespace QASmartTouch.Forms
         public List<double> Data { get; set; } = new List<double>();
         public Color Color { get; set; }
         public double Opacity { get; set; } = 0.4;
+    }
+
+    public class AreaChartConfiguration
+    {
+        public string Title { get; set; } = "Doanh thu theo tháng năm 2024";
+        public string RawLabels { get; set; } = "T1, T2, T3, T4, T5, T6";
+        public List<AreaChartSeriesData> Series { get; set; } = new List<AreaChartSeriesData>();
+        public int LineStyleIndex { get; set; } = 0;
+        public int AreaTypeIndex { get; set; } = 0;
+        public double LineWidth { get; set; } = 2;
+        public double PointSize { get; set; } = 4;
+        public bool ShowGrid { get; set; } = true;
+        public bool ShowAxes { get; set; } = true;
+        public bool ShowPoints { get; set; } = true;
+        public bool ShowValues { get; set; } = false;
+        public bool ShowLegend { get; set; } = true;
+        public bool UseGradient { get; set; } = true;
+    }
+
+    public class AreaChartSeriesData
+    {
+        public string Name { get; set; } = "";
+        public Color Color { get; set; }
+        public double Opacity { get; set; } = 0.5;
+        public List<double> Data { get; set; } = new List<double>();
     }
 }

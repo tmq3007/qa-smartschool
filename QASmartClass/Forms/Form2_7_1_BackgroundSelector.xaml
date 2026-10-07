@@ -1034,17 +1034,14 @@
 
                         <!-- ✨ NEW: Load Background Image Button -->
 
-                        <Button Height="65" Margin="4"
-
+                        <Button x:Name="btnLoadImage"
+                               Height="65" Margin="4"
                                Background="White"
-
                                BorderBrush="#DFE4EA"
-
                                BorderThickness="1"
-
                                Cursor="Hand"
-
-                               Click="btnLoadBackgroundImage_Click">
+                               Click="btnLoadBackgroundImage_Click"
+                               Tag="CustomImage">
 
                             <StackPanel>
 

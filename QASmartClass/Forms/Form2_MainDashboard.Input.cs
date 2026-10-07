@@ -46,7 +46,7 @@ namespace QASmartTouch.Forms
                 {
                     if (fe.Tag is string tag)
                     {
-                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "InteractiveImage" || tag == "InteractiveLocalVideo" || tag == "LocalVideoContainer" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel" || tag == "ImageControlPanel" || tag == "VideoControlPanel")
+                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "InteractiveLocalVideo" || tag == "LocalVideoContainer" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel" || tag == "VideoControlPanel")
                         {
                             return true;
                         }
@@ -1421,7 +1421,7 @@ namespace QASmartTouch.Forms
                     if (recognizedShape != null)
                     {
                         MainInteractiveBoard.Children.Remove(_currentStroke);
-                        Panel.SetZIndex(recognizedShape, ZIndexConstants.UserContentBase);
+                        Panel.SetZIndex(recognizedShape, _currentInkingZIndex);
                         MainInteractiveBoard.Children.Add(recognizedShape);
                         RecordAddAction(recognizedShape, "Recognized Shape");
                         RegisterNewObjectWithSelectionManager(recognizedShape);
@@ -1429,7 +1429,7 @@ namespace QASmartTouch.Forms
                     else
                     {
                         // Fallback an toàn: Giữ nguyên nét vẽ tự do
-                        Panel.SetZIndex(_currentStroke, ZIndexConstants.UserContentBase);
+                        Panel.SetZIndex(_currentStroke, _currentInkingZIndex);
                         RecordAddAction(_currentStroke, "Draw stroke");
                         RegisterNewObjectWithSelectionManager(_currentStroke);
                     }
@@ -1437,8 +1437,8 @@ namespace QASmartTouch.Forms
                 else
                 {
                     int zIndex = (_currentBrushType == "Highlighter" || _currentBrushType == "Marker" || _currentBrushType == "Mask" || _currentBrushType == "MaskPen")
-                        ? ZIndexConstants.HighlighterLayer
-                        : ZIndexConstants.UserContentBase;
+                        ? (_currentInkingZIndex > ZIndexConstants.UserContentBase ? _currentInkingZIndex : ZIndexConstants.HighlighterLayer)
+                        : _currentInkingZIndex;
                     Panel.SetZIndex(_currentStroke, zIndex);
 
                     // Add completed stroke to undo stack
@@ -2148,26 +2148,26 @@ namespace QASmartTouch.Forms
                 cubeContainer.Children.Add(line);
             }
 
-            // Draw vertices - Chỉ vẽ khi ở chế độ Wireframe hoặc Both
-            if (editor.DrawMode == "Wireframe" || editor.DrawMode == "Both")
-            {
-                foreach (var point in projected2D)
-                {
-                    Ellipse dot = new Ellipse
-                    {
-                        Width = 6,
-                        Height = 6,
-                        Fill = new SolidColorBrush(editor.EdgeColor)
-                    };
-                    Canvas.SetLeft(dot, point.X - 3);
-                    Canvas.SetTop(dot, point.Y - 3);
-                    cubeContainer.Children.Add(dot);
-                }
-            }
-
-            // Vẽ nhãn đỉnh (A, B, C, D, A', B', C', D')
+            // Draw vertices and labels - Chỉ vẽ khi người dùng bật ShowVertexLabels
             if (editor.ShowVertexLabels)
             {
+                if (editor.DrawMode == "Wireframe" || editor.DrawMode == "Both")
+                {
+                    foreach (var point in projected2D)
+                    {
+                        Ellipse dot = new Ellipse
+                        {
+                            Width = 6,
+                            Height = 6,
+                            Fill = new SolidColorBrush(editor.EdgeColor)
+                        };
+                        Canvas.SetLeft(dot, point.X - 3);
+                        Canvas.SetTop(dot, point.Y - 3);
+                        cubeContainer.Children.Add(dot);
+                    }
+                }
+
+                // Vẽ nhãn đỉnh (A, B, C, D, A', B', C', D')
                 string[] vertexNames = { "A", "B", "C", "D", "A'", "B'", "C'", "D'" };
                 for (int i = 0; i < 8; i++)
                 {
@@ -2327,26 +2327,26 @@ namespace QASmartTouch.Forms
                 cubeContainer.Children.Add(line);
             }
 
-            // Draw vertices
-            if (editor.DrawMode == "Wireframe" || editor.DrawMode == "Both")
-            {
-                foreach (var point in projected2D)
-                {
-                    Ellipse dot = new Ellipse
-                    {
-                        Width = 6,
-                        Height = 6,
-                        Fill = new SolidColorBrush(editor.EdgeColor)
-                    };
-                    Canvas.SetLeft(dot, point.X - 3);
-                    Canvas.SetTop(dot, point.Y - 3);
-                    cubeContainer.Children.Add(dot);
-                }
-            }
-
-            // Vẽ nhãn đỉnh (A, B, C, D, A', B', C', D')
+            // Draw vertices and labels - Chỉ vẽ khi người dùng bật ShowVertexLabels
             if (editor.ShowVertexLabels)
             {
+                if (editor.DrawMode == "Wireframe" || editor.DrawMode == "Both")
+                {
+                    foreach (var point in projected2D)
+                    {
+                        Ellipse dot = new Ellipse
+                        {
+                            Width = 6,
+                            Height = 6,
+                            Fill = new SolidColorBrush(editor.EdgeColor)
+                        };
+                        Canvas.SetLeft(dot, point.X - 3);
+                        Canvas.SetTop(dot, point.Y - 3);
+                        cubeContainer.Children.Add(dot);
+                    }
+                }
+
+                // Vẽ nhãn đỉnh (A, B, C, D, A', B', C', D')
                 string[] vertexNames = { "A", "B", "C", "D", "A'", "B'", "C'", "D'" };
                 for (int i = 0; i < 8; i++)
                 {
@@ -5899,6 +5899,9 @@ namespace QASmartTouch.Forms
                 };
                 graphContainer.Children.Add(image);
                 
+                bool is3D = graphConfig is Graph3DConfiguration || 
+                            (graphConfig is GraphConfiguration gc && gc.GraphType == "3D");
+
                 // Create Top Drag Handle Bar
                 var dragHandleBar = new Border
                 {
@@ -5906,13 +5909,13 @@ namespace QASmartTouch.Forms
                     Background = new SolidColorBrush(Color.FromRgb(41, 128, 185)),
                     CornerRadius = new CornerRadius(6, 6, 0, 0),
                     Cursor = Cursors.SizeAll,
-                    ToolTip = "Nhấn giữ để di chuyển Đồ thị 2D"
+                    ToolTip = is3D ? "Nhấn giữ để di chuyển Đồ thị 3D" : "Nhấn giữ để di chuyển Đồ thị 2D"
                 };
 
                 var dragGrid = new Grid();
                 var titleText = new TextBlock
                 {
-                    Text = "📈 Đồ thị 2D - Kéo để di chuyển",
+                    Text = is3D ? "🎲 Đồ thị 3D - Kéo để di chuyển" : "📈 Đồ thị 2D - Kéo để di chuyển",
                     Foreground = Brushes.White,
                     FontSize = 12,
                     FontWeight = FontWeights.SemiBold,
@@ -6085,7 +6088,25 @@ namespace QASmartTouch.Forms
                     return;
                 }
                 
-                // Open editor with existing config
+                // If it's a 3D Graph Configuration from Form2_Graph3DEditor
+                if (config is Graph3DConfiguration config3D)
+                {
+                    var graph3DEditor = new Form2_Graph3DEditor(config3D);
+                    bool? result3D = WindowHelper.ShowChildDialog(graph3DEditor, this);
+                    if (result3D == true && graph3DEditor.ExportedGraphImage != null)
+                    {
+                        var image = graphContainer.Children.OfType<Image>().FirstOrDefault();
+                        if (image != null)
+                        {
+                            image.Source = graph3DEditor.ExportedGraphImage;
+                            graphContainer.Tag = graph3DEditor.ExportedConfig;
+                            System.Diagnostics.Debug.WriteLine("✅ 3D Graph updated");
+                        }
+                    }
+                    return;
+                }
+
+                // Open editor with existing config (Unified 2D / 3D)
                 var graphEditor = new Form2_GraphEditorUnified(config);
                 bool? result = graphEditor.ShowDialog();
                 
@@ -8490,7 +8511,7 @@ namespace QASmartTouch.Forms
                     stroke.StrokeEndLineCap = PenLineCap.Round;
                     stroke.Opacity = 0.95;
                     stroke.StrokeThickness = Math.Max(_currentPenSize * 1.3, 4);
-                    if (_currentPenColor == Colors.Black)
+                    if (_currentPenColor == Colors.Black || _currentPenColor == Colors.White)
                     {
                         stroke.Stroke = new SolidColorBrush(Color.FromRgb(255, 59, 48));
                     }
@@ -8779,7 +8800,9 @@ namespace QASmartTouch.Forms
                     Canvas.SetLeft(image, left);
                     Canvas.SetTop(image, top);
 
-                    // Add to canvas
+                    // Add to canvas (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
+                    int mediaZ = AllocateMediaWidgetZIndex();
+                    Panel.SetZIndex(image, mediaZ);
                     MainInteractiveBoard.Children.Add(image);
 
                     // Add to undo stack

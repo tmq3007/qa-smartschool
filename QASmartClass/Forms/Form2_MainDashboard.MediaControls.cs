@@ -126,7 +126,9 @@ namespace QASmartTouch.Forms
                 Canvas.SetLeft(border, borderLeft);
                 Canvas.SetTop(border, borderTop);
 
-                // Add border to canvas FIRST
+                // Add border to canvas FIRST (QC_4.2_MILESTONE_ZINDEX: Nổi lên trên nét vẽ cũ)
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(border, mediaZ);
                 MainInteractiveBoard.Children.Add(border);
 
                 // Now add drag handles SEPARATELY on canvas (outside border)
@@ -806,15 +808,21 @@ namespace QASmartTouch.Forms
 
 
 
-                // Tối ưu cảm ứng: Tắt press-and-hold delay và gestures của Windows trên thanh kéo
-
+                // Tối ưu cảm ứng: Tắt press-and-hold delay và gestures của Windows trên thanh kéo và thân ảnh
                 Stylus.SetIsPressAndHoldEnabled(headerBar, false);
-
                 Stylus.SetIsFlicksEnabled(headerBar, false);
-
                 Stylus.SetIsTapFeedbackEnabled(headerBar, false);
-
                 Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
+
+                Stylus.SetIsPressAndHoldEnabled(container, false);
+                Stylus.SetIsFlicksEnabled(container, false);
+                Stylus.SetIsTapFeedbackEnabled(container, false);
+                Stylus.SetIsTouchFeedbackEnabled(container, false);
+
+                Stylus.SetIsPressAndHoldEnabled(imageControl, false);
+                Stylus.SetIsFlicksEnabled(imageControl, false);
+                Stylus.SetIsTapFeedbackEnabled(imageControl, false);
+                Stylus.SetIsTouchFeedbackEnabled(imageControl, false);
 
 
 
@@ -1144,8 +1152,9 @@ namespace QASmartTouch.Forms
 
 
 
-                // 8. Đưa Container vào bảng và ghi nhận Undo
-
+                // 8. Đưa Container vào bảng và ghi nhận Undo (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(container, mediaZ);
                 MainInteractiveBoard.Children.Add(container);
 
                 RecordAddAction(container, $"Interactive Image: {sourceUrl}");
@@ -1789,7 +1798,8 @@ namespace QASmartTouch.Forms
                 Canvas.SetLeft(container, borderLeft);
                 Canvas.SetTop(container, borderTop);
 
-                // Thêm duy nhất 1 container vào bảng (Kiến trúc đơn lẻ, không còn 6 phần tử rời rạc)
+                // Thêm duy nhất 1 container vào bảng (QC_4.2_YOUTUBE_ZINDEX: YouTube mang ZIndex EmbeddedBrowser = 1100, luôn nổi trên toàn bộ nét chữ dù viết trước hay sau)
+                Panel.SetZIndex(container, QASmartTouch.Helpers.ZIndexConstants.EmbeddedBrowser);
                 MainInteractiveBoard.Children.Add(container);
 
                 // Ghi nhận Undo/Redo
@@ -2638,7 +2648,9 @@ namespace QASmartTouch.Forms
                 Canvas.SetLeft(border, borderLeft);
                 Canvas.SetTop(border, borderTop);
 
-                // Add border to canvas FIRST
+                // Add border to canvas FIRST (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(border, mediaZ);
                 MainInteractiveBoard.Children.Add(border);
 
                 // Now add drag handles SEPARATELY on canvas (outside border)
@@ -2766,7 +2778,8 @@ namespace QASmartTouch.Forms
                 var Graph3DControl = new QASmartTouch.Controls.Graph3DControl(graphUrl)
                 {
                     Width = 600,
-                    Height = 450
+                    Height = 450,
+                    ShowInternalTitleBar = false
                 };
 
                 // Create Top Drag Handle Bar for 3D Graph
@@ -2818,13 +2831,22 @@ namespace QASmartTouch.Forms
                 main3DContainer.Children.Add(dragHandleBar);
                 main3DContainer.Children.Add(Graph3DControl);
 
+                // Auto-sync container width when user resizes Graph3DControl
+                Graph3DControl.SizeChanged += (s, e) =>
+                {
+                    if (Graph3DControl.ActualWidth > 0)
+                    {
+                        main3DContainer.Width = Graph3DControl.ActualWidth;
+                    }
+                };
+
                 btnDelete.Click += (s, e) =>
                 {
                     MainInteractiveBoard.Children.Remove(main3DContainer);
                     RecordRemoveAction(main3DContainer, "Inserted Graph 3D Graph");
                 };
 
-                // Enable Drag-to-Move on dragHandleBar
+                // Enable Drag-to-Move on dragHandleBar (Mouse, Touch, Stylus)
                 bool isDragging = false;
                 Point dragStartPoint = new Point();
 
@@ -2844,8 +2866,11 @@ namespace QASmartTouch.Forms
                         double left = Canvas.GetLeft(main3DContainer) + (currentPoint.X - dragStartPoint.X);
                         double top = Canvas.GetTop(main3DContainer) + (currentPoint.Y - dragStartPoint.Y);
 
-                        left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - 600));
-                        top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - 484));
+                        double cWidth = main3DContainer.ActualWidth > 0 ? main3DContainer.ActualWidth : 600;
+                        double cHeight = main3DContainer.ActualHeight > 0 ? main3DContainer.ActualHeight : 484;
+
+                        left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - cWidth));
+                        top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - cHeight));
 
                         Canvas.SetLeft(main3DContainer, left);
                         Canvas.SetTop(main3DContainer, top);
@@ -2862,6 +2887,45 @@ namespace QASmartTouch.Forms
                     }
                 };
 
+                dragHandleBar.PreviewTouchDown += (s, e) =>
+                {
+                    isDragging = true;
+                    dragStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                    dragHandleBar.CaptureTouch(e.TouchDevice);
+                    e.Handled = true;
+                };
+
+                dragHandleBar.TouchMove += (s, e) =>
+                {
+                    if (isDragging)
+                    {
+                        Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                        double left = Canvas.GetLeft(main3DContainer) + (currentPoint.X - dragStartPoint.X);
+                        double top = Canvas.GetTop(main3DContainer) + (currentPoint.Y - dragStartPoint.Y);
+
+                        double cWidth = main3DContainer.ActualWidth > 0 ? main3DContainer.ActualWidth : 600;
+                        double cHeight = main3DContainer.ActualHeight > 0 ? main3DContainer.ActualHeight : 484;
+
+                        left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - cWidth));
+                        top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - cHeight));
+
+                        Canvas.SetLeft(main3DContainer, left);
+                        Canvas.SetTop(main3DContainer, top);
+                        dragStartPoint = currentPoint;
+                        e.Handled = true;
+                    }
+                };
+
+                dragHandleBar.TouchUp += (s, e) =>
+                {
+                    if (isDragging)
+                    {
+                        isDragging = false;
+                        dragHandleBar.ReleaseTouchCapture(e.TouchDevice);
+                        e.Handled = true;
+                    }
+                };
+
                 // Position at center of visible canvas area
                 double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - 300;
                 double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - 242;
@@ -2871,7 +2935,9 @@ namespace QASmartTouch.Forms
                 Canvas.SetLeft(main3DContainer, left);
                 Canvas.SetTop(main3DContainer, top);
 
-                // Add to canvas
+                // Add to canvas (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(main3DContainer, mediaZ);
                 MainInteractiveBoard.Children.Add(main3DContainer);
 
                 // Record undo action
@@ -3354,7 +3420,9 @@ namespace QASmartTouch.Forms
                 Canvas.SetLeft(border, Math.Max(0, centerX));
                 Canvas.SetTop(border, Math.Max(0, centerY));
 
-                // Add to canvas
+                // Add to canvas (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(border, mediaZ);
                 MainInteractiveBoard.Children.Add(border);
 
                 // Register with selection manager
@@ -3673,7 +3741,9 @@ namespace QASmartTouch.Forms
                 Canvas.SetLeft(container, borderLeft);
                 Canvas.SetTop(container, borderTop);
 
-                // Thêm vào bảng vẽ
+                // Thêm vào bảng vẽ (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(container, mediaZ);
                 MainInteractiveBoard.Children.Add(container);
 
                 // Bắt đầu phát video

@@ -634,8 +634,15 @@ namespace QASmartTouch.Forms
 
         private void btnBackgrounds_Click(object sender, RoutedEventArgs e)
         {
-            // Show background selection dialog
-            var bgSelector = new Form2_7_1_BackgroundSelector();
+            var currentBoard = _mainDashboard?.BoardManager?.CurrentBoard;
+            // Show background selection dialog with current board settings
+            var bgSelector = new Form2_7_1_BackgroundSelector(
+                currentBoard?.BackgroundColorHex,
+                currentBoard?.BackgroundPattern,
+                currentBoard?.BackgroundImagePath,
+                currentBoard?.LineSpacing ?? 40,
+                currentBoard?.LineOpacity ?? 10
+            );
             
             // Position dialog centered
             bgSelector.Owner = this;
@@ -649,10 +656,11 @@ namespace QASmartTouch.Forms
                 {
                     if (bgSelector.SelectedBackgroundImage != null)
                     {
-                        // Apply custom background image
+                        // Apply custom background image with file path
                         _mainDashboard.ApplyCanvasBackgroundImage(
                             bgSelector.SelectedBackgroundImage,
-                            bgSelector.SelectedPattern
+                            bgSelector.SelectedPattern,
+                            bgSelector.SelectedBackgroundImagePath
                         );
                     }
                     else
@@ -856,7 +864,7 @@ namespace QASmartTouch.Forms
                             if (!string.IsNullOrEmpty(currentBoard.BackgroundImagePath) && System.IO.File.Exists(currentBoard.BackgroundImagePath))
                             {
                                 var bitmap = new System.Windows.Media.Imaging.BitmapImage(new Uri(currentBoard.BackgroundImagePath, UriKind.Absolute));
-                                _mainDashboard.ApplyCanvasBackgroundImage(bitmap, currentBoard.BackgroundPattern);
+                                _mainDashboard.ApplyCanvasBackgroundImage(bitmap, currentBoard.BackgroundPattern, currentBoard.BackgroundImagePath);
                             }
                             else
                             {

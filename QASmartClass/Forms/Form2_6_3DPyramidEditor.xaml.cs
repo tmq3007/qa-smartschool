@@ -37,7 +37,7 @@ namespace QASmartTouch.Forms
         // Tùy chọn vẽ nét đứt cho cạnh khuất (Phương án 2)
         public bool ShowHiddenEdges { get; private set; } = true;
 
-        public bool ShowVertexLabels { get; private set; } = true;
+        public bool ShowVertexLabels { get; private set; } = false;
 
         // Drag & Drop properties
         private double OffsetX = 0;

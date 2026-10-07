@@ -453,8 +453,8 @@ namespace QASmartTouch
         {
             window.Closing += (s, e) =>
             {
-                // [LOI_VID_50] Cho phép đóng thật khi app đang shutdown
-                if (_isAppShuttingDown) return;
+                // [LOI_VID_50] Cho phép đóng thật khi app đang shutdown hoặc khi lệnh đóng đã bị hủy
+                if (_isAppShuttingDown || e.Cancel) return;
 
                 // Nếu không còn cửa sổ nào khác đang hiển thị ngoài cửa sổ này, thực hiện shutdown toàn bộ ứng dụng
                 bool hasOtherVisibleWindow = false;
@@ -462,7 +462,7 @@ namespace QASmartTouch
                 {
                     hasOtherVisibleWindow = System.Windows.Application.Current.Windows
                         .OfType<Window>()
-                        .Any(w => w != window && w.IsVisible);
+                        .Any(w => w != window && w.Owner != window && w.IsVisible);
                 }
                 catch { }
 

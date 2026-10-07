@@ -30,13 +30,14 @@ namespace QASmartTouch.Forms
         private int _colorIndex = 0;
 
         public BitmapImage? ExportedGraphImage { get; private set; }
+        public Graph3DConfiguration ExportedConfig => _config;
 
-        public Form2_Graph3DEditor()
+        public Form2_Graph3DEditor(Graph3DConfiguration? existingConfig = null)
         {
             InitializeComponent();
             QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
 
-            _config = new Graph3DConfiguration();
+            _config = existingConfig ?? new Graph3DConfiguration();
             
             // Apply graphics quality settings
             _config.Resolution = QASmartTouch.Services.AppSettings.GetRecommended3DResolution();
@@ -44,9 +45,17 @@ namespace QASmartTouch.Forms
 
             graphsList.DataContext = _config.Functions;
 
-            // Add default surface (Paraboloid)
-            AddNewSurface(Function3DType.Paraboloid, _colorPalette[_colorIndex]);
-            _colorIndex = (_colorIndex + 1) % _colorPalette.Count;
+            if (existingConfig == null || _config.Functions.Count == 0)
+            {
+                // Add default surface (Paraboloid)
+                AddNewSurface(Function3DType.Paraboloid, _colorPalette[_colorIndex]);
+                _colorIndex = (_colorIndex + 1) % _colorPalette.Count;
+            }
+            else
+            {
+                // Update 3D scene from existing configuration
+                Loaded += (s, e) => Update3DScene();
+            }
 
             // Subscribe to parameter changes
             _config.Functions.CollectionChanged += (s, e) => Update3DScene();

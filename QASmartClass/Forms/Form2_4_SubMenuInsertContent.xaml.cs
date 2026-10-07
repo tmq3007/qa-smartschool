@@ -679,8 +679,8 @@ namespace QASmartTouch.Forms
                 
                 if (result == true && graph3DEditor.ExportedGraphImage != null)
                 {
-                    // Insert 3D graph image to canvas (config not supported yet for old 3D editor)
-                    _mainDashboard?.InsertGraphToCanvas(graph3DEditor.ExportedGraphImage, null);
+                    // Insert 3D graph image to canvas with configuration
+                    _mainDashboard?.InsertGraphToCanvas(graph3DEditor.ExportedGraphImage, graph3DEditor.ExportedConfig);
                     System.Diagnostics.Debug.WriteLine("✅ 3D Graph inserted to canvas");
                 }
                 

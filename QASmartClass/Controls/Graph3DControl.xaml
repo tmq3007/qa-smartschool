@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="QASmartTouch.Controls.Graph3DControl"
+<UserControl x:Class="QASmartTouch.Controls.Graph3DControl"
 
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -56,7 +56,8 @@
 
                 <!-- Title Bar (Draggable) -->
 
-                <Border Grid.Row="0"
+                <Border x:Name="InternalTitleBar"
+                        Grid.Row="0"
 
                         Background="#2196F3"
 

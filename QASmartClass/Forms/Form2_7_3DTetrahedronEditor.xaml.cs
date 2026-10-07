@@ -81,8 +81,8 @@ namespace QASmartTouch.Forms
             EnableLighting = true;
             EnableBackfaceCulling = true;
             ShowEdges = true;
-            ShowVertices = true;
-            ShowLabels = true;
+            ShowVertices = false;
+            ShowLabels = false;
             ShowAxis = false;
             ShowFaceEdges = false;
             ShowNormals = false;
@@ -994,8 +994,8 @@ namespace QASmartTouch.Forms
             chkEnableLighting.IsChecked = true;
             chkBackfaceCulling.IsChecked = true;
             chkShowEdges.IsChecked = true;
-            chkShowVertices.IsChecked = true;
-            chkShowLabels.IsChecked = true;
+            chkShowVertices.IsChecked = false;
+            chkShowLabels.IsChecked = false;
             chkShowAxis.IsChecked = false;
             chkShowFaceEdges.IsChecked = false;
             chkShowNormals.IsChecked = false;

@@ -5,27 +5,56 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using QASmartTouch.Forms;
 
 namespace QASmartTouch.Helpers
 {
     /// <summary>
     /// QC_4.2_TOUCH_ACTIVATION: Helper tĩnh toàn diện đảm bảo mọi Window và Control nhận cú chạm đầu tiên
     /// trên màn hình tương tác (IFP) mà không bị OS nuốt (MA_ACTIVATEANDEAT) và không bị trễ do gesture.
-    /// 
-    /// Nguyên nhân gốc rễ:
-    /// 1. Khi một WPF Window chưa Active (không phải foreground), cú chạm đầu tiên trên 
-    ///    Touch Screen gửi WM_MOUSEACTIVATE (0x0021) tới cửa sổ đó. WPF mặc định trả về 
-    ///    MA_ACTIVATEANDEAT (2) = kích hoạt cửa sổ NHƯNG NUỐT (hủy bỏ) cú chạm đó.
-    /// 2. WPF ButtonBase chỉ lắng nghe sự kiện chuột, mặc định Stylus.IsPressAndHoldEnabled = true 
-    ///    và Focusable = true gây độ trễ và nuốt sự kiện chạm đầu tiên.
-    /// 
-    /// Giải pháp:
-    /// 1. Hook WndProc trả về MA_ACTIVATE (1) = kích hoạt cửa sổ VÀ GIỮ NGUYÊN cú chạm.
-    /// 2. Tự động gắn pipeline PreviewTouchDown/Up và PreviewStylusDown/Up cho toàn bộ ButtonBase,
-    ///    tắt IsPressAndHoldEnabled, tắt Focusable, phát sự kiện Click ngay ở mili-giây đầu tiên.
     /// </summary>
     public static class TouchActivationHelper
     {
+        static TouchActivationHelper()
+        {
+            try
+            {
+                // Tự động kích hoạt bàn phím ảo cho bất kỳ ô nhập liệu nào
+                // CHỈ KHI nó thuộc phạm vi Bảng viết tương tác (Form2_MainDashboard hoặc các Form2_*)
+                EventManager.RegisterClassHandler(
+                    typeof(TextBoxBase),
+                    UIElement.PreviewTouchDownEvent,
+                    new EventHandler<TouchEventArgs>((sender, e) =>
+                    {
+                        TryShowKeyboardForSmartTouch(sender);
+                    }));
+
+                EventManager.RegisterClassHandler(
+                    typeof(TextBoxBase),
+                    UIElement.PreviewStylusDownEvent,
+                    new StylusDownEventHandler((sender, e) =>
+                    {
+                        TryShowKeyboardForSmartTouch(sender);
+                    }));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ RegisterClassHandler TextBox error: {ex.Message}");
+            }
+        }
+
+        private static void TryShowKeyboardForSmartTouch(object? sender)
+        {
+            if (sender is DependencyObject d)
+            {
+                var win = Window.GetWindow(d);
+                if (win != null && (win is Form2_MainDashboard || win.GetType().Name.StartsWith("Form2_")))
+                {
+                    TouchKeyboardHelper.ShowTouchKeyboard();
+                }
+            }
+        }
+
         private const int WM_MOUSEACTIVATE = 0x0021;
         private const int MA_ACTIVATE = 1;
 
@@ -97,6 +126,12 @@ namespace QASmartTouch.Helpers
             if (window == null) return;
 
             Apply(window);
+
+            // Tự động thu gọn bàn phím ảo khi cửa sổ đóng lại
+            window.Closed += (s, e) =>
+            {
+                TouchKeyboardHelper.HideTouchKeyboard();
+            };
 
             if (window.IsLoaded)
             {
@@ -191,6 +226,10 @@ namespace QASmartTouch.Helpers
                 {
                     Stylus.SetIsPressAndHoldEnabled(canvas, false);
                 }
+                else if (child is TextBoxBase textBox)
+                {
+                    WireTextBox(textBox);
+                }
 
                 // Đệ quy tiếp vào các con
                 WireAllInteractiveControls(child, exclude);
@@ -261,6 +300,34 @@ namespace QASmartTouch.Helpers
             SetIsTouchWired(comboBox, true);
 
             Stylus.SetIsPressAndHoldEnabled(comboBox, false);
+        }
+
+        /// <summary>
+        /// Gắn cơ chế tự động mở Bàn phím ảo khi chạm vào TextBox / RichTextBox trên màn hình tương tác.
+        /// </summary>
+        public static void WireTextBox(TextBoxBase textBox)
+        {
+            if (textBox == null || GetIsTouchWired(textBox)) return;
+            SetIsTouchWired(textBox, true);
+
+            Stylus.SetIsPressAndHoldEnabled(textBox, false);
+
+            // Bật bàn phím ảo khi chạm ngón tay hoặc bút Stylus
+            textBox.PreviewTouchDown += (s, e) =>
+            {
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            };
+
+            textBox.PreviewStylusDown += (s, e) =>
+            {
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            };
+
+            // Dự phòng khi click chuột hoặc Tab focus vào
+            textBox.GotKeyboardFocus += (s, e) =>
+            {
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            };
         }
 
         /// <summary>

@@ -450,8 +450,8 @@
 
                                         <!-- Vertex Labels Option -->
                                         <CheckBox x:Name="chkShowVertexLabels" 
-                                                  Content="Hiển thị nhãn tâm hai đáy (O, O')" 
-                                                  IsChecked="True" 
+                                                  Content="Hiển thị đỉnh và nhãn (O, O')" 
+                                                  IsChecked="False" 
                                                   FontSize="12"
                                                   Foreground="#424242"
                                                   Margin="0,0,0,8"

@@ -315,6 +315,10 @@ namespace QASmartTouch.Services.Canvas
                     stroke.Opacity = 0.95;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
                     stroke.StrokeEndLineCap = PenLineCap.Round;
+                    if (stroke.Stroke is SolidColorBrush scb && (scb.Color == Colors.Black || scb.Color == Colors.White))
+                    {
+                        stroke.Stroke = new SolidColorBrush(Color.FromRgb(255, 59, 48));
+                    }
                     break;
             }
         }
