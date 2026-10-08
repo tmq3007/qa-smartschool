@@ -201,7 +201,8 @@ namespace QASmartTouch.Forms
                 }
 
                 // Success - Navigate to Main Dashboard
-                SetLoadingState(false);
+                // [QC_4.2_WHITE_FLASH_FIX] Giữ trạng thái loading trong khi khởi tạo Dashboard để giao diện liền mạch
+                SetLoadingState(true);
                 
                 // Only show license warning if expiring within 30 days
                 if (licenseInfo.ExpiresAt > DateTime.MinValue)
@@ -235,7 +236,53 @@ namespace QASmartTouch.Forms
                 // Open appropriate view based on mode
                 var app = (App)Application.Current;
                 app.ModeService.SwitchTo(_targetMode, force: true);
-                this.Close();
+
+                // [QC_4.2_WHITE_FLASH_FIX] Seamless Handover: Đợi Dashboard render xong frame đầu tiên rồi mới đóng cửa sổ đăng nhập
+                Window? targetWindow = _targetMode == QASmartClass.Shared.AppMode.SmartClass
+                    ? (Window?)app._classroomShell
+                    : (Window?)app._whiteboardShell;
+
+                if (targetWindow != null && !targetWindow.IsLoaded)
+                {
+                    bool isClosed = false;
+                    void SafeClose()
+                    {
+                        if (isClosed) return;
+                        isClosed = true;
+                        Dispatcher.InvokeAsync(() =>
+                        {
+                            try { this.Close(); } catch { }
+                        }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                    }
+
+                    void OnTargetRendered(object? s, EventArgs e)
+                    {
+                        targetWindow.ContentRendered -= OnTargetRendered;
+                        targetWindow.Loaded -= OnTargetRendered;
+                        SafeClose();
+                    }
+
+                    targetWindow.ContentRendered += OnTargetRendered;
+                    targetWindow.Loaded += OnTargetRendered;
+
+                    // Fallback timeout sau 1.5s nếu targetWindow không bắn event
+                    var fallbackTimer = new System.Windows.Threading.DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(1500)
+                    };
+                    fallbackTimer.Tick += (s, e) =>
+                    {
+                        fallbackTimer.Stop();
+                        targetWindow.ContentRendered -= OnTargetRendered;
+                        targetWindow.Loaded -= OnTargetRendered;
+                        SafeClose();
+                    };
+                    fallbackTimer.Start();
+                }
+                else
+                {
+                    this.Close();
+                }
             }
             catch (Exception ex)
             {

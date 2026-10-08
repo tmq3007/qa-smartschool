@@ -435,6 +435,16 @@ namespace QASmartTouch
         {
             try
             {
+                // [QC_4.2_WHITE_FLASH_FIX] Cửa sổ chưa Loaded (vừa tạo lần đầu) cần hiển thị ngay lập tức với Opacity = 1
+                // để tránh hiện tượng Windows DWM / WS_EX_LAYERED vẽ chổi nền trắng trước frame đầu tiên.
+                if (!window.IsLoaded)
+                {
+                    window.Opacity = 1.0;
+                    window.Show();
+                    window.Activate();
+                    return;
+                }
+
                 window.Opacity = 0;
                 window.Show();
                 window.Activate();
