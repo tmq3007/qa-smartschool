@@ -1,4 +1,4 @@
-﻿<Page x:Class="QASmartClass.Classroom.Views.LessonRunnerPage"
+<Page x:Class="QASmartClass.Classroom.Views.LessonRunnerPage"
 
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -1276,7 +1276,62 @@
 
                     </Border>
 
+                    <!-- 📖 Digital Period Logbook (Sổ đầu bài điện tử) -->
+                    <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,16"
+                            BorderBrush="#90CAF9" BorderThickness="1.5">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,12">
+                                <TextBlock Text="📖 Sổ Đầu Bài Điện Tử (Đánh giá &amp; Ghi nhận Tiết dạy)" FontSize="15" FontWeight="Bold" Foreground="#1565C0" VerticalAlignment="Center"/>
+                                <Border Background="#E3F2FD" CornerRadius="6" Padding="8,4" HorizontalAlignment="Right">
+                                    <TextBlock x:Name="txtLogbookPeriodInfo" Text="Tiết -- • Lớp --" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2"/>
+                                </Border>
+                            </DockPanel>
 
+                            <!-- Sĩ số & Hiện diện -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#F1F8E9" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Sĩ số lớp" FontSize="11" Foreground="#558B2F"/>
+                                        <TextBox x:Name="txtLogbookTotal" Text="40" FontSize="15" FontWeight="Bold" Foreground="#2E7D32" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="1" Background="#E8F5E9" CornerRadius="8" Padding="12,8" Margin="3,0,3,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Có mặt" FontSize="11" Foreground="#2E7D32"/>
+                                        <TextBox x:Name="txtLogbookPresent" Text="40" FontSize="15" FontWeight="Bold" Foreground="#1B5E20" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Column="2" Background="#FFEBEE" CornerRadius="8" Padding="12,8" Margin="6,0,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Vắng mặt" FontSize="11" Foreground="#C62828"/>
+                                        <TextBox x:Name="txtLogbookAbsent" Text="0" FontSize="15" FontWeight="Bold" Foreground="#B71C1C" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- Học sinh vắng (nếu có) -->
+                            <TextBlock Text="Học sinh vắng (họ tên / lý do):" FontSize="12" FontWeight="SemiBold" Foreground="#555" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtLogbookAbsentNotes" Height="32" Padding="8,4" FontSize="12" BorderBrush="#E0E0E0" Text="" Margin="0,0,0,12"/>
+
+                            <!-- Xếp loại tiết học -->
+                            <TextBlock Text="Xếp loại giờ dạy:" FontSize="12" FontWeight="SemiBold" Foreground="#555" Margin="0,0,0,6"/>
+                            <WrapPanel Margin="0,0,0,12">
+                                <RadioButton x:Name="rbRatingA" Content="Loại A (Tốt ⭐⭐⭐)" IsChecked="True" GroupName="PeriodRating" FontSize="13" FontWeight="SemiBold" Foreground="#2E7D32" Margin="0,0,16,0" Cursor="Hand"/>
+                                <RadioButton x:Name="rbRatingB" Content="Loại B (Khá ⭐⭐)" GroupName="PeriodRating" FontSize="13" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,16,0" Cursor="Hand"/>
+                                <RadioButton x:Name="rbRatingC" Content="Loại C (Trung bình ⭐)" GroupName="PeriodRating" FontSize="13" FontWeight="SemiBold" Foreground="#EF6C00" Margin="0,0,16,0" Cursor="Hand"/>
+                                <RadioButton x:Name="rbRatingD" Content="Loại D (Yếu / Chưa đạt)" GroupName="PeriodRating" FontSize="13" FontWeight="SemiBold" Foreground="#C62828" Margin="0,0,16,0" Cursor="Hand"/>
+                            </WrapPanel>
+
+                            <!-- Nhận xét của giáo viên -->
+                            <TextBlock Text="Nhận xét tiết học (Nề nếp, trật tự, tinh thần phát biểu):" FontSize="12" FontWeight="SemiBold" Foreground="#555" Margin="0,0,0,4"/>
+                            <TextBox x:Name="txtLogbookComment" AcceptsReturn="True" TextWrapping="Wrap" Height="54" Padding="8,6" FontSize="13" BorderBrush="#E0E0E0" Text="Lớp học tập nghiêm túc, sôi nổi phát biểu xây dựng bài." Margin="0,0,0,6"/>
+                        </StackPanel>
+                    </Border>
 
                     <!-- End lesson big button -->
 

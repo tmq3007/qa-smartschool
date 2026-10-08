@@ -118,6 +118,8 @@ namespace QASmartClass.Services
 
                     EnsureSubjectsTable(db);
 
+                    EnsurePeriodLogbooksTable(db);
+
                 }
 
                 return;
@@ -252,6 +254,8 @@ namespace QASmartClass.Services
 
                 EnsureSubjectsTable(db);
 
+                EnsurePeriodLogbooksTable(db);
+
                 SaveVersion(versionFile, targetVersion);
 
                 return;
@@ -309,6 +313,8 @@ namespace QASmartClass.Services
                     SeedMasterSettings(db);
 
                     EnsureSubjectsTable(db);
+
+                    EnsurePeriodLogbooksTable(db);
 
                     return;
 
@@ -4174,6 +4180,40 @@ namespace QASmartClass.Services
             catch (Exception ex)
             {
                 Log.Warning("[DbMigrator] EnsureSubjectsTable error: {Err}", ex.Message);
+            }
+        }
+
+        public static void EnsurePeriodLogbooksTable(Data.AppDbContext db)
+        {
+            try
+            {
+                if (!TableExists(db, "PeriodLogbooks"))
+                {
+                    RunSafeSql(db, @"
+                        CREATE TABLE IF NOT EXISTS ""PeriodLogbooks"" (
+                            ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_PeriodLogbooks"" PRIMARY KEY AUTOINCREMENT,
+                            ""ClassName"" TEXT NOT NULL DEFAULT '',
+                            ""LessonId"" INTEGER NULL,
+                            ""LessonTitle"" TEXT NOT NULL DEFAULT '',
+                            ""Subject"" TEXT NOT NULL DEFAULT '',
+                            ""Period"" INTEGER NOT NULL DEFAULT 1,
+                            ""Date"" TEXT NOT NULL,
+                            ""TotalStudents"" INTEGER NOT NULL DEFAULT 0,
+                            ""PresentCount"" INTEGER NOT NULL DEFAULT 0,
+                            ""AbsentCount"" INTEGER NOT NULL DEFAULT 0,
+                            ""AbsentNotes"" TEXT NOT NULL DEFAULT '',
+                            ""Rating"" TEXT NOT NULL DEFAULT 'A',
+                            ""TeacherComment"" TEXT NOT NULL DEFAULT '',
+                            ""HomeworkAssigned"" TEXT NOT NULL DEFAULT '',
+                            ""TeacherName"" TEXT NOT NULL DEFAULT '',
+                            ""CreatedAt"" TEXT NOT NULL
+                        );");
+                    Log.Information("[DbMigrator] Created table PeriodLogbooks");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[DbMigrator] EnsurePeriodLogbooksTable error: {Err}", ex.Message);
             }
         }
 

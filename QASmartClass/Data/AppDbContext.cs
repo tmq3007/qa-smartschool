@@ -208,6 +208,7 @@ namespace QASmartClass.Data
         public DbSet<LessonPlanDraft> LessonPlanDrafts { get; set; } = null!;
         public DbSet<LessonPlanVersion> LessonPlanVersions { get; set; } = null!;
         public DbSet<HomeroomDiary> HomeroomDiaries { get; set; } = null!;
+        public DbSet<PeriodLogbook> PeriodLogbooks { get; set; } = null!;
 
         // �f¢â�,�â�?s¬�f¢â�,�â�?s¬�f¢â�,�â�?s¬ Sprint 9: Gi�f�'�,¡o vi�f�'�,ªn n�f�'�,¢ng cao �f¢â�,�â�?s¬�f¢â�,�â�?s¬�f¢â�,�â�?s¬
 
@@ -1919,6 +1920,26 @@ namespace QASmartClass.Data
         public string Events { get; set; } = string.Empty;
         public string Reminders { get; set; } = string.Empty;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    }
+
+    public class PeriodLogbook
+    {
+        public int Id { get; set; }
+        public string ClassName { get; set; } = string.Empty;
+        public int? LessonId { get; set; }
+        public string LessonTitle { get; set; } = string.Empty;
+        public string Subject { get; set; } = string.Empty;
+        public int Period { get; set; } = 1;
+        public DateTime Date { get; set; } = DateTime.Today;
+        public int TotalStudents { get; set; } = 0;
+        public int PresentCount { get; set; } = 0;
+        public int AbsentCount { get; set; } = 0;
+        public string AbsentNotes { get; set; } = string.Empty;
+        public string Rating { get; set; } = "A"; // A (Tốt), B (Khá), C (Trung bình), D (Cần cố gắng)
+        public string TeacherComment { get; set; } = string.Empty;
+        public string HomeworkAssigned { get; set; } = string.Empty;
+        public string TeacherName { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 
     // �f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�, PHASE 10: THI �f�?z�,UA & GAMIFICATION �f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,

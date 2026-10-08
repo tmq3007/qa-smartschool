@@ -300,6 +300,38 @@
                                 </ControlTemplate>
                             </Button.Template>
                         </Button>
+
+                        <Button x:Name="btnQuickTeachNow" Content="🚀 Vào dạy tiết này" FontSize="12" FontWeight="Bold" Padding="14,6" Background="#16A34A"
+                                Foreground="White" BorderThickness="0" Cursor="Hand" Click="QuickTeachNow_Click" Margin="8,0,0,0" Visibility="Collapsed">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#15803D"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <Button x:Name="btnOpenPeriodLogbook" Content="📖 Sổ đầu bài điện tử" FontSize="12" FontWeight="SemiBold" Padding="12,6" Background="#0D9488"
+                                Foreground="White" BorderThickness="0" Cursor="Hand" Click="OpenPeriodLogbook_Click" Margin="8,0,0,0" ToolTip="Xem và tra cứu Sổ đầu bài điện tử các lớp">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#0F766E"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                     </StackPanel>
 
                     <TextBlock x:Name="txtClassInfo" Text="🏫 Lớp ..." FontSize="13" Foreground="#1976D2" FontWeight="SemiBold" Margin="0,0,0,2"/>

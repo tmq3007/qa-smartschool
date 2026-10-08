@@ -8,6 +8,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using QASmartClass.Classroom.Helpers;
 using QASmartClass.Classroom.Services;
 using Serilog;
@@ -18,6 +20,7 @@ namespace QASmartClass.Classroom.Views
     {
         private DateTime _weekStart;
         private List<TimetableSlot> _slots = new();
+        private TimetableSlot? _currentActiveSlot;
         private DispatcherTimer? _timer;
         private string _className = "";
         private string _schoolYear = "";
@@ -895,6 +898,63 @@ namespace QASmartClass.Classroom.Views
                     });
                 }
 
+                // Lesson badge if assigned
+                if (!string.IsNullOrEmpty(slot.LessonTitle) || (slot.LessonId.HasValue && slot.LessonId.Value > 0))
+                {
+                    string lessonDisplayName = !string.IsNullOrEmpty(slot.LessonTitle)
+                        ? slot.LessonTitle
+                        : $"Bài #{slot.LessonId}";
+                    var lessonBadge = new Border
+                    {
+                        Background = new SolidColorBrush(Color.FromArgb(40, accentColor.R, accentColor.G, accentColor.B)),
+                        BorderBrush = new SolidColorBrush(Color.FromArgb(90, accentColor.R, accentColor.G, accentColor.B)),
+                        BorderThickness = new Thickness(1),
+                        CornerRadius = new CornerRadius(6),
+                        Padding = new Thickness(6, 2, 6, 2),
+                        Margin = new Thickness(0, 4, 0, 0),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        ToolTip = $"Bài giảng: {lessonDisplayName}"
+                    };
+                    lessonBadge.Child = new TextBlock
+                    {
+                        Text = $"📖 {lessonDisplayName}",
+                        FontSize = 10,
+                        FontWeight = FontWeights.SemiBold,
+                        Foreground = new SolidColorBrush(accentColor),
+                        TextTrimming = TextTrimming.CharacterEllipsis,
+                        MaxWidth = 120
+                    };
+                    sp.Children.Add(lessonBadge);
+                }
+
+                // If isFocus (NOW), provide quick 🚀 Vào dạy button
+                if (isFocus)
+                {
+                    var btnStartTeach = new Border
+                    {
+                        Background = new LinearGradientBrush(Color.FromRgb(21, 101, 192), Color.FromRgb(25, 118, 210), 0),
+                        CornerRadius = new CornerRadius(10),
+                        Padding = new Thickness(10, 4, 10, 4),
+                        Margin = new Thickness(0, 5, 0, 0),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Cursor = Cursors.Hand,
+                        ToolTip = "Click để vào dạy bài học này ngay lập tức"
+                    };
+                    btnStartTeach.Child = new TextBlock
+                    {
+                        Text = "🚀 Vào dạy",
+                        FontSize = 10.5,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = Brushes.White
+                    };
+                    btnStartTeach.MouseLeftButtonDown += (s, e) =>
+                    {
+                        e.Handled = true;
+                        StartTeachingSlot(slot);
+                    };
+                    sp.Children.Add(btnStartTeach);
+                }
+
                 // Left accent bar — thicker
                 var grid = new Grid();
                 grid.Children.Add(new Border
@@ -935,6 +995,8 @@ namespace QASmartClass.Classroom.Views
 
             if (todayCol < 0)
             {
+                _currentActiveSlot = null;
+                if (btnQuickTeachNow != null) btnQuickTeachNow.Visibility = Visibility.Collapsed;
                 txtCurrentPeriod.Text = _isSimulating ? $"{simPrefix}Chọn giờ trong khoảng 07:00–17:40" : "";
                 txtCurrentPeriod.Foreground = new SolidColorBrush(Color.FromRgb(230, 126, 0));
                 txtCurrentPeriod.FontWeight = FontWeights.SemiBold;
@@ -946,6 +1008,7 @@ namespace QASmartClass.Classroom.Views
             if (currentPeriod >= 0)
             {
                 var slot = _slots.FirstOrDefault(s => s.DayOfWeek == todayCol && s.Period == currentPeriod);
+                _currentActiveSlot = slot;
                 string subj = slot?.Subject ?? "—";
                 string room = slot?.Room ?? "";
                 var (_, _, eh, em) = PeriodTimeRanges[currentPeriod];
@@ -956,9 +1019,20 @@ namespace QASmartClass.Classroom.Views
                 txtCurrentPeriod.Text = $"{simPrefix}🔴 Đang học: {PeriodLabels[currentPeriod]} — {subj} {(room != "" ? $"({room})" : "")}  •  Còn {minLeft} phút";
                 txtCurrentPeriod.Foreground = new SolidColorBrush(Color.FromRgb(46, 125, 50));
                 txtCurrentPeriod.FontWeight = FontWeights.Bold;
+
+                if (btnQuickTeachNow != null)
+                {
+                    btnQuickTeachNow.Visibility = Visibility.Visible;
+                    string lessonTip = slot != null && !string.IsNullOrEmpty(slot.LessonTitle)
+                        ? $" ({slot.LessonTitle})"
+                        : "";
+                    btnQuickTeachNow.ToolTip = $"Vào dạy ngay tiết này: {subj}{lessonTip}";
+                }
             }
             else if (nextPeriod >= 0)
             {
+                _currentActiveSlot = null;
+                if (btnQuickTeachNow != null) btnQuickTeachNow.Visibility = Visibility.Collapsed;
                 var slot = _slots.FirstOrDefault(s => s.DayOfWeek == todayCol && s.Period == nextPeriod);
                 string subj = slot?.Subject ?? "—";
                 var (sh, sm, _, _) = PeriodTimeRanges[nextPeriod];
@@ -972,6 +1046,8 @@ namespace QASmartClass.Classroom.Views
             }
             else
             {
+                _currentActiveSlot = null;
+                if (btnQuickTeachNow != null) btnQuickTeachNow.Visibility = Visibility.Collapsed;
                 txtCurrentPeriod.Text = $"{simPrefix}✅ Đã hết tiết học hôm nay";
                 txtCurrentPeriod.Foreground = new SolidColorBrush(Color.FromRgb(120, 120, 120));
                 txtCurrentPeriod.FontWeight = FontWeights.Normal;
@@ -1191,6 +1267,64 @@ namespace QASmartClass.Classroom.Views
             contentSp.Children.Add(roomLabel);
             contentSp.Children.Add(txtRoom);
 
+            // ── Lesson assignment section ──
+            var lessonLabelSp = new DockPanel { Margin = new Thickness(0, 10, 0, 6) };
+            var lessonLabel = new TextBlock
+            {
+                Text = "📖 Gán bài giảng số cho tiết này",
+                FontSize = 13,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(55, 55, 55)),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            DockPanel.SetDock(lessonLabel, Dock.Left);
+            lessonLabelSp.Children.Add(lessonLabel);
+
+            var cboLessons = new ComboBox
+            {
+                Height = 36,
+                FontSize = 13,
+                Padding = new Thickness(8, 6, 8, 6),
+                Background = new SolidColorBrush(Color.FromRgb(252, 253, 255)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(200, 210, 220)),
+                BorderThickness = new Thickness(1.5),
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+
+            cboLessons.Items.Add(new ComboBoxItem { Content = "— Chưa gán bài giảng —", Tag = (int?)null });
+
+            int? currentLessonId = existing?.LessonId;
+            try
+            {
+                var allLessons = ClassroomAppContext.Db.Lessons
+                    .OrderByDescending(l => l.UpdatedAt)
+                    .Take(50)
+                    .ToList();
+
+                foreach (var l in allLessons)
+                {
+                    var item = new ComboBoxItem
+                    {
+                        Content = $"[{l.Subject}] {l.Title} (Lớp {l.Grade} - {l.DurationMinutes}p)",
+                        Tag = (int?)l.Id
+                    };
+                    cboLessons.Items.Add(item);
+                    if (currentLessonId.HasValue && l.Id == currentLessonId.Value)
+                    {
+                        cboLessons.SelectedItem = item;
+                    }
+                }
+            }
+            catch { }
+
+            if (cboLessons.SelectedItem == null)
+            {
+                cboLessons.SelectedIndex = 0;
+            }
+
+            contentSp.Children.Add(lessonLabelSp);
+            contentSp.Children.Add(cboLessons);
+
             mainSp.Children.Add(contentSp);
 
             // ── Styled buttons ──
@@ -1229,6 +1363,19 @@ namespace QASmartClass.Classroom.Views
             // Remove existing
             _slots.RemoveAll(s => s.DayOfWeek == day && s.Period == period);
 
+            int? selectedLessonId = null;
+            string selectedLessonTitle = "";
+            if (cboLessons.SelectedItem is ComboBoxItem selItem && selItem.Tag is int lid && lid > 0)
+            {
+                selectedLessonId = lid;
+                try
+                {
+                    var lObj = ClassroomAppContext.Db.Lessons.Find(lid);
+                    if (lObj != null) selectedLessonTitle = lObj.Title;
+                }
+                catch { }
+            }
+
             if (!deleted && !string.IsNullOrWhiteSpace(txtSubject.Text))
             {
                 _slots.Add(new TimetableSlot
@@ -1237,7 +1384,9 @@ namespace QASmartClass.Classroom.Views
                     Period = period,
                     Subject = txtSubject.Text.Trim(),
                     Room = txtRoom.Text.Trim(),
-                    Teacher = _viewMode == "Class" ? "GV" : GetTeacherName()
+                    Teacher = _viewMode == "Class" ? "GV" : GetTeacherName(),
+                    LessonId = selectedLessonId,
+                    LessonTitle = selectedLessonTitle
                 });
             }
 
@@ -1309,6 +1458,231 @@ namespace QASmartClass.Classroom.Views
             RenderTimetable();
         }
 
+        private void OpenPeriodLogbook_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var db = ClassroomAppContext.Db;
+                var logbooks = db.PeriodLogbooks
+                    .OrderByDescending(p => p.Date)
+                    .ThenByDescending(p => p.Period)
+                    .Take(100)
+                    .ToList();
+
+                var win = new Window
+                {
+                    Title = "📖 SỔ ĐẦU BÀI ĐIỆN TỬ — QA SMARTSCHOOL",
+                    Width = 980,
+                    Height = 650,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Owner = Window.GetWindow(this),
+                    Background = new SolidColorBrush(Color.FromRgb(248, 250, 252))
+                };
+
+                var root = new Grid { Margin = new Thickness(24) };
+                root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+                root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+                // Header
+                var headerSp = new StackPanel { Margin = new Thickness(0, 0, 0, 16) };
+                headerSp.Children.Add(new TextBlock
+                {
+                    Text = "📖 SỔ ĐẦU BÀI ĐIỆN TỬ THEO TIẾT DẠY",
+                    FontSize = 20,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(15, 23, 42))
+                });
+                headerSp.Children.Add(new TextBlock
+                {
+                    Text = "Theo dõi nhật ký giảng dạy, sĩ số lớp, nhận xét sư phạm và xếp loại giờ dạy chuẩn Bộ GD&ĐT",
+                    FontSize = 13,
+                    Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                    Margin = new Thickness(0, 4, 0, 0)
+                });
+                Grid.SetRow(headerSp, 0);
+                root.Children.Add(headerSp);
+
+                // Stats cards
+                int totalLogs = logbooks.Count;
+                int countA = logbooks.Count(l => l.Rating == "A");
+                int countB = logbooks.Count(l => l.Rating == "B");
+                int countC = logbooks.Count(l => l.Rating == "C");
+
+                var statsGrid = new UniformGrid { Columns = 4, Margin = new Thickness(0, 0, 0, 16) };
+                statsGrid.Children.Add(CreateStatCard("Tổng số tiết ghi nhận", totalLogs.ToString(), "#EEF2FF", "#4338CA"));
+                statsGrid.Children.Add(CreateStatCard("Tiết dạy Xếp loại A (Tốt)", countA.ToString(), "#ECFDF5", "#047857"));
+                statsGrid.Children.Add(CreateStatCard("Tiết dạy Xếp loại B (Khá)", countB.ToString(), "#EFF6FF", "#1D4ED8"));
+                statsGrid.Children.Add(CreateStatCard("Tiết loại C / Cần chú ý", countC.ToString(), "#FFFBEB", "#B45309"));
+
+                Grid.SetRow(statsGrid, 1);
+                root.Children.Add(statsGrid);
+
+                // DataGrid Table
+                var listBorder = new Border
+                {
+                    Background = Brushes.White,
+                    CornerRadius = new CornerRadius(12),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+                    BorderThickness = new Thickness(1),
+                    Padding = new Thickness(8)
+                };
+
+                var dg = new DataGrid
+                {
+                    AutoGenerateColumns = false,
+                    IsReadOnly = true,
+                    CanUserAddRows = false,
+                    GridLinesVisibility = DataGridGridLinesVisibility.Horizontal,
+                    HorizontalGridLinesBrush = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+                    BorderThickness = new Thickness(0),
+                    Background = Brushes.White,
+                    RowHeight = 40,
+                    FontSize = 12.5,
+                    ItemsSource = logbooks
+                };
+
+                dg.Columns.Add(new DataGridTextColumn { Header = "Ngày", Binding = new Binding("Date") { StringFormat = "dd/MM/yyyy" }, Width = new DataGridLength(90) });
+                dg.Columns.Add(new DataGridTextColumn { Header = "Tiết", Binding = new Binding("Period") { StringFormat = "Tiết {0}" }, Width = new DataGridLength(65) });
+                dg.Columns.Add(new DataGridTextColumn { Header = "Lớp", Binding = new Binding("ClassName"), Width = new DataGridLength(75) });
+                dg.Columns.Add(new DataGridTextColumn { Header = "Môn học", Binding = new Binding("Subject"), Width = new DataGridLength(95) });
+                dg.Columns.Add(new DataGridTextColumn { Header = "Tên bài dạy / Bài giảng số", Binding = new Binding("LessonTitle"), Width = new DataGridLength(2, DataGridLengthUnitType.Star) });
+                dg.Columns.Add(new DataGridTextColumn { Header = "Sĩ số (Có/Tổng)", Binding = new Binding("PresentCount") { StringFormat = "{0}" }, Width = new DataGridLength(90) });
+                dg.Columns.Add(new DataGridTextColumn { Header = "Xếp loại", Binding = new Binding("Rating") { StringFormat = "Loại {0}" }, Width = new DataGridLength(75) });
+                dg.Columns.Add(new DataGridTextColumn { Header = "Nhận xét của GV", Binding = new Binding("TeacherComment"), Width = new DataGridLength(3, DataGridLengthUnitType.Star) });
+                dg.Columns.Add(new DataGridTextColumn { Header = "Bài tập về nhà", Binding = new Binding("HomeworkAssigned"), Width = new DataGridLength(2, DataGridLengthUnitType.Star) });
+
+                listBorder.Child = dg;
+                Grid.SetRow(listBorder, 2);
+                root.Children.Add(listBorder);
+
+                // Footer
+                var footerSp = new DockPanel { Margin = new Thickness(0, 16, 0, 0) };
+                var btnClose = new Button
+                {
+                    Content = "Đóng",
+                    Padding = new Thickness(24, 10, 24, 10),
+                    FontSize = 13,
+                    FontWeight = FontWeights.SemiBold,
+                    Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+                    Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)),
+                    BorderThickness = new Thickness(1),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                    Cursor = Cursors.Hand
+                };
+                btnClose.Click += (_, _) => win.Close();
+                DockPanel.SetDock(btnClose, Dock.Right);
+                footerSp.Children.Add(btnClose);
+
+                var txtHint = new TextBlock
+                {
+                    Text = "💡 Dữ liệu được ghi nhận tự động sau mỗi khi giáo viên kết thúc tiết học từ Trình giảng dạy.",
+                    FontSize = 12,
+                    Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                footerSp.Children.Add(txtHint);
+
+                Grid.SetRow(footerSp, 3);
+                root.Children.Add(footerSp);
+
+                win.Content = root;
+                win.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                ClassroomDialog.Error($"Không thể mở Sổ đầu bài điện tử: {ex.Message}", "Lỗi");
+                Log.Error(ex, "OpenPeriodLogbook error");
+            }
+        }
+
+        private static Border CreateStatCard(string title, string value, string bgHex, string fgHex)
+        {
+            var bg = (Color)ColorConverter.ConvertFromString(bgHex);
+            var fg = (Color)ColorConverter.ConvertFromString(fgHex);
+
+            var b = new Border
+            {
+                Background = new SolidColorBrush(bg),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(14, 10, 14, 10),
+                Margin = new Thickness(4)
+            };
+            var sp = new StackPanel();
+            sp.Children.Add(new TextBlock
+            {
+                Text = title,
+                FontSize = 11.5,
+                FontWeight = FontWeights.Medium,
+                Foreground = new SolidColorBrush(fg)
+            });
+            sp.Children.Add(new TextBlock
+            {
+                Text = value,
+                FontSize = 22,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(fg),
+                Margin = new Thickness(0, 4, 0, 0)
+            });
+            b.Child = sp;
+            return b;
+        }
+
+        private void QuickTeachNow_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentActiveSlot != null)
+            {
+                StartTeachingSlot(_currentActiveSlot);
+            }
+        }
+
+        private void StartTeachingSlot(TimetableSlot slot)
+        {
+            try
+            {
+                // 1. Activate class if needed
+                if (!string.IsNullOrEmpty(_className))
+                {
+                    var roster = ClassroomAppContext.Db.ClassRosters.FirstOrDefault(r => r.ClassName == _className);
+                    if (roster != null)
+                    {
+                        ClassroomAppContext.ClassRoster.SetActiveRoster(roster);
+                    }
+                }
+
+                int targetLessonId = slot.LessonId ?? 0;
+                
+                // If not assigned, try to find a lesson for this subject
+                if (targetLessonId == 0 && !string.IsNullOrEmpty(slot.Subject))
+                {
+                    var matchingLesson = ClassroomAppContext.Db.Lessons
+                        .Where(l => l.Subject == slot.Subject || slot.Subject.Contains(l.Subject))
+                        .OrderByDescending(l => l.UpdatedAt)
+                        .FirstOrDefault();
+                    if (matchingLesson != null)
+                    {
+                        targetLessonId = matchingLesson.Id;
+                    }
+                }
+
+                // 2. Open in ClassroomShell
+                var shell = Window.GetWindow(this) as ClassroomShell;
+                if (shell != null)
+                {
+                    shell.NavigateToRunner(targetLessonId);
+                }
+                else
+                {
+                    NavigationService?.Navigate(new LessonRunnerPage(targetLessonId));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "StartTeachingSlot failed");
+            }
+        }
+
         private static DateTime GetMonday(DateTime date)
         {
             int diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
@@ -1328,5 +1702,7 @@ namespace QASmartClass.Classroom.Views
         public string Room { get; set; } = string.Empty;
         public string Teacher { get; set; } = string.Empty;
         public string Note { get; set; } = string.Empty;
+        public int? LessonId { get; set; }
+        public string LessonTitle { get; set; } = string.Empty;
     }
 }

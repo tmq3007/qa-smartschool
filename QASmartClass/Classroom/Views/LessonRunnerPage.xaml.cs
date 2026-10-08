@@ -1185,6 +1185,30 @@ namespace QASmartClass.Classroom.Views
                     ClassroomAppContext.DispatchCommand($"CMD|LESSON_STAGE|{stage}");
             }
             catch { }
+
+            // ═══ Populate Period Logbook if Stage 6 ═══
+            if (stage == 6)
+            {
+                try
+                {
+                    var className = _lesson?.ClassName ?? ClassroomAppContext.ClassRoster.ActiveRoster?.ClassName;
+                    if (string.IsNullOrWhiteSpace(className)) className = "10A1";
+                    var subjectName = _lesson?.Subject ?? "Môn học";
+                    txtLogbookPeriodInfo.Text = $"Lớp: {className} • Môn: {subjectName} • {DateTime.Today:dd/MM/yyyy}";
+
+                    var db = ClassroomAppContext.Db;
+                    int total = db.Students.Count();
+                    if (total == 0) total = 40;
+                    int present = db.Students.Count(s => s.IsOnline);
+                    if (present == 0) present = total;
+                    int absent = Math.Max(0, total - present);
+
+                    txtLogbookTotal.Text = total.ToString();
+                    txtLogbookPresent.Text = present.ToString();
+                    txtLogbookAbsent.Text = absent.ToString();
+                }
+                catch { }
+            }
         }
 
         private void NextStage_Click(object sender, RoutedEventArgs e)
@@ -1687,6 +1711,47 @@ namespace QASmartClass.Classroom.Views
                 }
             }
             catch (Exception ex) { Log.Warning("EndLesson save error: {Err}", ex.Message); }
+
+            // ═══ Save to PeriodLogbook (Sổ đầu bài điện tử) ═══
+            try
+            {
+                var db = ClassroomAppContext.Db;
+                var rating = "A";
+                if (rbRatingB?.IsChecked == true) rating = "B";
+                else if (rbRatingC?.IsChecked == true) rating = "C";
+                else if (rbRatingD?.IsChecked == true) rating = "D";
+
+                int.TryParse(txtLogbookTotal?.Text, out int totalStudents);
+                int.TryParse(txtLogbookPresent?.Text, out int presentCount);
+                int.TryParse(txtLogbookAbsent?.Text, out int absentCount);
+
+                var logbookEntry = new QASmartClass.Data.PeriodLogbook
+                {
+                    ClassName = _lesson?.ClassName ?? ClassroomAppContext.ClassRoster.ActiveRoster?.ClassName ?? "10A1",
+                    LessonId = _lesson?.Id,
+                    LessonTitle = _lesson?.Title ?? "Bài học thực hành tương tác",
+                    Subject = _lesson?.Subject ?? "Chung",
+                    Period = 1,
+                    Date = DateTime.Today,
+                    TotalStudents = totalStudents > 0 ? totalStudents : 40,
+                    PresentCount = presentCount,
+                    AbsentCount = absentCount,
+                    AbsentNotes = txtLogbookAbsentNotes?.Text?.Trim() ?? string.Empty,
+                    Rating = rating,
+                    TeacherComment = txtLogbookComment?.Text?.Trim() ?? string.Empty,
+                    HomeworkAssigned = txtHomework?.Text?.Trim() ?? string.Empty,
+                    TeacherName = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault()?.FullName ?? "Giáo viên bộ môn",
+                    CreatedAt = DateTime.Now
+                };
+
+                db.PeriodLogbooks.Add(logbookEntry);
+                db.SaveChanges();
+                Log.Information("Saved PeriodLogbook entry #{Id} for class {Class}, Rating: {Rating}", logbookEntry.Id, logbookEntry.ClassName, logbookEntry.Rating);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("Failed to save PeriodLogbook: {Err}", ex.Message);
+            }
 
             // ═══ Clear shared state + Broadcast LESSON_END ═══
             try
