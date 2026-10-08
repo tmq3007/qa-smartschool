@@ -1,4 +1,4 @@
-﻿<Page x:Class="QASmartClass.Classroom.Views.TimetablePage"
+<Page x:Class="QASmartClass.Classroom.Views.TimetablePage"
 
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -263,17 +263,43 @@
                 <StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-
                         <TextBlock Text="📅 Thời Khóa Biểu" FontSize="20" FontWeight="Bold" Foreground="#212121" VerticalAlignment="Center" Margin="0,0,12,0"/>
-
-                        <ComboBox x:Name="cboTimetableMode" Width="180" FontSize="13" FontWeight="SemiBold" Padding="8,4" VerticalAlignment="Center" SelectionChanged="TimetableMode_Changed">
-
+                        <ComboBox x:Name="cboTimetableMode" Width="160" FontSize="13" FontWeight="SemiBold" Padding="8,4" VerticalAlignment="Center" SelectionChanged="TimetableMode_Changed" Margin="0,0,10,0">
                             <ComboBoxItem Content="🏫 Của Lớp học" Tag="Class" IsSelected="True"/>
-
                             <ComboBoxItem Content="👨‍🏫 Của Giáo viên" Tag="Teacher"/>
-
                         </ComboBox>
 
+                        <Button Content="➕ Thêm tiết học" FontSize="12" FontWeight="SemiBold" Padding="12,6" Background="#2563EB"
+                                Foreground="White" BorderThickness="0" Cursor="Hand" Click="AddSlot_Click" Margin="0,0,8,0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#1D4ED8"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <Button Content="📚 Danh mục Môn học" FontSize="12" FontWeight="SemiBold" Padding="12,6" Background="#7C3AED"
+                                Foreground="White" BorderThickness="0" Cursor="Hand" Click="ManageSubjects_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#6D28D9"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                     </StackPanel>
 
                     <TextBlock x:Name="txtClassInfo" Text="🏫 Lớp ..." FontSize="13" Foreground="#1976D2" FontWeight="SemiBold" Margin="0,0,0,2"/>

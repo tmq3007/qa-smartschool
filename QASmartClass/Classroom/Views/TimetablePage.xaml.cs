@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using QASmartClass.Classroom.Helpers;
+using QASmartClass.Classroom.Services;
 using Serilog;
 
 namespace QASmartClass.Classroom.Views
@@ -74,6 +75,9 @@ namespace QASmartClass.Classroom.Views
                     // → ClassroomAppContext
                     ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
                     ClassroomAppContext.ClassRoster.ActiveRosterChanged += OnActiveRosterChanged;
+
+                    SubjectCatalogService.Instance.SubjectsChanged -= OnSubjectsChanged;
+                    SubjectCatalogService.Instance.SubjectsChanged += OnSubjectsChanged;
                 }
                 catch { }
             };
@@ -84,6 +88,7 @@ namespace QASmartClass.Classroom.Views
                 {
                     // → ClassroomAppContext
                     ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
+                    SubjectCatalogService.Instance.SubjectsChanged -= OnSubjectsChanged;
                 }
                 catch { }
             };
@@ -92,6 +97,11 @@ namespace QASmartClass.Classroom.Views
         private void OnActiveRosterChanged(object? sender, Data.ClassRoster? e)
         {
             Dispatcher.Invoke(() => { LoadClassInfo(); LoadSlots(); RenderTimetable(); });
+        }
+
+        private void OnSubjectsChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(RenderTimetable);
         }
 
         private void LoadClassInfo()
@@ -834,7 +844,7 @@ namespace QASmartClass.Classroom.Views
 
             if (slot != null && !string.IsNullOrEmpty(slot.Subject))
             {
-                string color = SubjectColors.GetValueOrDefault(slot.Subject, "#546E7A");
+                string color = SubjectCatalogService.Instance.GetColorForSubject(slot.Subject);
                 var accentColor = (Color)ColorConverter.ConvertFromString(color);
 
                 border.Background = isFocus
@@ -980,7 +990,9 @@ namespace QASmartClass.Classroom.Views
             var dlg = new Window
             {
                 Title = "Chỉnh sửa thời khóa biểu",
-                Width = 460, Height = 420,
+                Width = 480,
+                SizeToContent = SizeToContent.Height,
+                MaxHeight = 650,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
                 ResizeMode = ResizeMode.NoResize,
                 Background = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
@@ -1042,13 +1054,33 @@ namespace QASmartClass.Classroom.Views
             // ── Content area ──
             var contentSp = new StackPanel { Margin = new Thickness(24, 16, 24, 8) };
 
-            // Subject label + input
-            contentSp.Children.Add(new TextBlock
+            // Subject label + Manage Subjects button in header line
+            var subjLabelSp = new DockPanel { Margin = new Thickness(0, 0, 0, 6) };
+            var subjLabel = new TextBlock
             {
                 Text = "📚 Tên môn học", FontSize = 13, FontWeight = FontWeights.SemiBold,
                 Foreground = new SolidColorBrush(Color.FromRgb(55, 55, 55)),
-                Margin = new Thickness(0, 0, 0, 6)
-            });
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            DockPanel.SetDock(subjLabel, Dock.Left);
+            subjLabelSp.Children.Add(subjLabel);
+
+            var btnManage = new TextBlock
+            {
+                Text = "⚙️ Quản lý danh mục môn",
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(25, 118, 210)),
+                Cursor = Cursors.Hand,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            btnManage.MouseEnter += (_, _) => btnManage.TextDecorations = TextDecorations.Underline;
+            btnManage.MouseLeave += (_, _) => btnManage.TextDecorations = null;
+            DockPanel.SetDock(btnManage, Dock.Right);
+            subjLabelSp.Children.Add(btnManage);
+            contentSp.Children.Add(subjLabelSp);
+
             var txtSubject = new TextBox
             {
                 Text = currentSubject, FontSize = 14, Padding = new Thickness(12, 10, 12, 10),
@@ -1060,49 +1092,13 @@ namespace QASmartClass.Classroom.Views
             txtSubject.LostFocus += (_, _) => txtSubject.BorderBrush = new SolidColorBrush(Color.FromRgb(200, 210, 220));
             contentSp.Children.Add(txtSubject);
 
-            // Quick subject chips
-            var chipPanel = new WrapPanel { Margin = new Thickness(0, 6, 0, 12) };
-            string[] quickSubjects = { "Toán", "Văn", "Anh", "Lý", "Hóa", "Sinh", "Sử", "Địa", "GDCD", "Tin", "TD", "CN" };
-            foreach (var subj in quickSubjects)
-            {
-                string color = SubjectColors.GetValueOrDefault(subj, "#546E7A");
-                var chip = new Border
-                {
-                    Background = new SolidColorBrush(Color.FromArgb(20,
-                        ((Color)ColorConverter.ConvertFromString(color)).R,
-                        ((Color)ColorConverter.ConvertFromString(color)).G,
-                        ((Color)ColorConverter.ConvertFromString(color)).B)),
-                    CornerRadius = new CornerRadius(12),
-                    Padding = new Thickness(10, 4, 10, 4),
-                    Margin = new Thickness(0, 0, 4, 4),
-                    Cursor = Cursors.Hand
-                };
-                chip.Child = new TextBlock
-                {
-                    Text = subj, FontSize = 11, FontWeight = FontWeights.SemiBold,
-                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color))
-                };
-                string subjName = subj;
-                chip.MouseLeftButtonDown += (_, _) => txtSubject.Text = subjName;
-                chip.MouseEnter += (_, _) => chip.Background = new SolidColorBrush(Color.FromArgb(45,
-                    ((Color)ColorConverter.ConvertFromString(color)).R,
-                    ((Color)ColorConverter.ConvertFromString(color)).G,
-                    ((Color)ColorConverter.ConvertFromString(color)).B));
-                chip.MouseLeave += (_, _) => chip.Background = new SolidColorBrush(Color.FromArgb(20,
-                    ((Color)ColorConverter.ConvertFromString(color)).R,
-                    ((Color)ColorConverter.ConvertFromString(color)).G,
-                    ((Color)ColorConverter.ConvertFromString(color)).B));
-                chipPanel.Children.Add(chip);
-            }
-            contentSp.Children.Add(chipPanel);
-
-            // Room label + input
-            contentSp.Children.Add(new TextBlock
+            // Room label + input (declared earlier for auto-fill binding)
+            var roomLabel = new TextBlock
             {
                 Text = "📍 Phòng học", FontSize = 13, FontWeight = FontWeights.SemiBold,
                 Foreground = new SolidColorBrush(Color.FromRgb(55, 55, 55)),
-                Margin = new Thickness(0, 0, 0, 6)
-            });
+                Margin = new Thickness(0, 8, 0, 6)
+            };
             var txtRoom = new TextBox
             {
                 Text = currentRoom, FontSize = 14, Padding = new Thickness(12, 10, 12, 10),
@@ -1112,6 +1108,87 @@ namespace QASmartClass.Classroom.Views
             };
             txtRoom.GotFocus += (_, _) => txtRoom.BorderBrush = new SolidColorBrush(Color.FromRgb(25, 118, 210));
             txtRoom.LostFocus += (_, _) => txtRoom.BorderBrush = new SolidColorBrush(Color.FromRgb(200, 210, 220));
+
+            // Quick subject chips inside a scrollable container
+            var chipPanel = new WrapPanel { Margin = new Thickness(0, 4, 0, 4) };
+            var chipScroll = new ScrollViewer
+            {
+                Content = chipPanel,
+                MaxHeight = 110,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Margin = new Thickness(0, 4, 0, 4)
+            };
+
+            void PopulateChips()
+            {
+                chipPanel.Children.Clear();
+                var allSubjects = SubjectCatalogService.Instance.GetAllSubjects();
+                foreach (var subj in allSubjects)
+                {
+                    string color = subj.ColorHex;
+                    if (string.IsNullOrWhiteSpace(color)) color = "#546E7A";
+                    Color c;
+                    try { c = (Color)ColorConverter.ConvertFromString(color); }
+                    catch { c = Color.FromRgb(84, 110, 122); }
+
+                    var chip = new Border
+                    {
+                        Background = new SolidColorBrush(Color.FromArgb(22, c.R, c.G, c.B)),
+                        BorderBrush = new SolidColorBrush(Color.FromArgb(60, c.R, c.G, c.B)),
+                        BorderThickness = new Thickness(1),
+                        CornerRadius = new CornerRadius(12),
+                        Padding = new Thickness(9, 4, 9, 4),
+                        Margin = new Thickness(0, 0, 5, 5),
+                        Cursor = Cursors.Hand,
+                        ToolTip = $"{subj.Name} ({subj.ShortName})" +
+                                  (!string.IsNullOrEmpty(subj.DefaultRoom) ? $"\nPhòng mặc định: {subj.DefaultRoom}" : "")
+                    };
+                    var chipSp = new StackPanel { Orientation = Orientation.Horizontal };
+                    if (!string.IsNullOrEmpty(subj.Icon))
+                    {
+                        chipSp.Children.Add(new TextBlock
+                        {
+                            Text = subj.Icon + " ",
+                            FontSize = 11,
+                            VerticalAlignment = VerticalAlignment.Center
+                        });
+                    }
+                    chipSp.Children.Add(new TextBlock
+                    {
+                        Text = subj.ShortName,
+                        FontSize = 11,
+                        FontWeight = FontWeights.SemiBold,
+                        Foreground = new SolidColorBrush(c),
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                    chip.Child = chipSp;
+
+                    var chosenSubj = subj;
+                    chip.MouseLeftButtonDown += (_, _) =>
+                    {
+                        txtSubject.Text = chosenSubj.ShortName;
+                        if (!string.IsNullOrWhiteSpace(chosenSubj.DefaultRoom) && string.IsNullOrWhiteSpace(txtRoom.Text))
+                        {
+                            txtRoom.Text = chosenSubj.DefaultRoom;
+                        }
+                    };
+                    chip.MouseEnter += (_, _) => chip.Background = new SolidColorBrush(Color.FromArgb(50, c.R, c.G, c.B));
+                    chip.MouseLeave += (_, _) => chip.Background = new SolidColorBrush(Color.FromArgb(22, c.R, c.G, c.B));
+                    chipPanel.Children.Add(chip);
+                }
+            }
+
+            PopulateChips();
+            contentSp.Children.Add(chipScroll);
+
+            btnManage.MouseLeftButtonDown += (_, _) =>
+            {
+                var manageDlg = new SubjectManagementDialog { Owner = dlg };
+                manageDlg.ShowDialog();
+                PopulateChips();
+            };
+
+            contentSp.Children.Add(roomLabel);
             contentSp.Children.Add(txtRoom);
 
             mainSp.Children.Add(contentSp);
@@ -1220,6 +1297,16 @@ namespace QASmartClass.Classroom.Views
         private void AddSlot_Click(object sender, RoutedEventArgs e)
         {
             EditSlot(0, 0, null); // Default: Monday period 1
+        }
+
+        private void ManageSubjects_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new SubjectManagementDialog
+            {
+                Owner = Window.GetWindow(this)
+            };
+            dlg.ShowDialog();
+            RenderTimetable();
         }
 
         private static DateTime GetMonday(DateTime date)

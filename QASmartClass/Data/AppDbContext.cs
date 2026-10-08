@@ -190,6 +190,7 @@ namespace QASmartClass.Data
         public DbSet<SchoolEvent> SchoolEvents { get; set; } = null!;
         public DbSet<DailyTask> DailyTasks { get; set; } = null!;
         public DbSet<TimetableEntry> TimetableEntries { get; set; } = null!;
+        public DbSet<Subject> Subjects { get; set; } = null!;
 
         // �f¢â�,�â�?s¬�f¢â�,�â�?s¬�f¢â�,�â�?s¬ Sprint 6: Task Management Hub �f¢â�,�â�?s¬�f¢â�,�â�?s¬�f¢â�,�â�?s¬
         public DbSet<TaskItem> TaskItems { get; set; } = null!;
@@ -1774,6 +1775,19 @@ namespace QASmartClass.Data
         public int DayOfWeek { get; set; } = 2; // 2=Monday, ..., 7=Saturday
         public int Period { get; set; } = 1;
         public string Room { get; set; } = string.Empty;
+    }
+
+    public class Subject
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string ShortName { get; set; } = string.Empty;
+        public string ColorHex { get; set; } = "#1976D2";
+        public string Icon { get; set; } = "📚";
+        public string DefaultRoom { get; set; } = string.Empty;
+        public int WeeklyPeriods { get; set; } = 2;
+        public bool IsSystem { get; set; } = false;
+        public int DisplayOrder { get; set; } = 0;
     }
 
     // �f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�, PHASE 6: TASK MANAGEMENT HUB �f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,�f¢â�,�¢�,

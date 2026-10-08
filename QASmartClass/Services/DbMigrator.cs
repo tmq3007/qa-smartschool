@@ -116,6 +116,8 @@ namespace QASmartClass.Services
 
                     SeedMasterSettings(db);
 
+                    EnsureSubjectsTable(db);
+
                 }
 
                 return;
@@ -248,6 +250,8 @@ namespace QASmartClass.Services
 
                 SeedMasterSettings(db);
 
+                EnsureSubjectsTable(db);
+
                 SaveVersion(versionFile, targetVersion);
 
                 return;
@@ -303,6 +307,8 @@ namespace QASmartClass.Services
                     Log.Information("[DbMigrator] Database is up-to-date (v{Ver})", targetVersion);
 
                     SeedMasterSettings(db);
+
+                    EnsureSubjectsTable(db);
 
                     return;
 
@@ -4140,6 +4146,76 @@ namespace QASmartClass.Services
 
             }
 
+        }
+
+        public static void EnsureSubjectsTable(Data.AppDbContext db)
+        {
+            try
+            {
+                if (!TableExists(db, "Subjects"))
+                {
+                    RunSafeSql(db, @"
+                        CREATE TABLE IF NOT EXISTS ""Subjects"" (
+                            ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_Subjects"" PRIMARY KEY AUTOINCREMENT,
+                            ""Name"" TEXT NOT NULL,
+                            ""ShortName"" TEXT NOT NULL,
+                            ""ColorHex"" TEXT NOT NULL,
+                            ""Icon"" TEXT NOT NULL,
+                            ""DefaultRoom"" TEXT NOT NULL,
+                            ""WeeklyPeriods"" INTEGER NOT NULL,
+                            ""IsSystem"" INTEGER NOT NULL,
+                            ""DisplayOrder"" INTEGER NOT NULL
+                        );");
+                    Log.Information("[DbMigrator] Created table Subjects");
+                }
+
+                SeedDefaultSubjects(db);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[DbMigrator] EnsureSubjectsTable error: {Err}", ex.Message);
+            }
+        }
+
+        private static void SeedDefaultSubjects(Data.AppDbContext db)
+        {
+            try
+            {
+                if (!db.Subjects.Any())
+                {
+                    var defaults = new[]
+                    {
+                        new Data.Subject { Name = "Toán học", ShortName = "Toán", ColorHex = "#1976D2", Icon = "📐", DefaultRoom = "P.Học", WeeklyPeriods = 4, IsSystem = true, DisplayOrder = 1 },
+                        new Data.Subject { Name = "Ngữ văn", ShortName = "Văn", ColorHex = "#7B1FA2", Icon = "📖", DefaultRoom = "P.Học", WeeklyPeriods = 4, IsSystem = true, DisplayOrder = 2 },
+                        new Data.Subject { Name = "Tiếng Anh", ShortName = "Anh", ColorHex = "#00838F", Icon = "🌐", DefaultRoom = "P.Ngoại ngữ", WeeklyPeriods = 3, IsSystem = true, DisplayOrder = 3 },
+                        new Data.Subject { Name = "Vật lý", ShortName = "Lý", ColorHex = "#E64A19", Icon = "⚡", DefaultRoom = "P.Thực hành Lý", WeeklyPeriods = 2, IsSystem = true, DisplayOrder = 4 },
+                        new Data.Subject { Name = "Hóa học", ShortName = "Hóa", ColorHex = "#2E7D32", Icon = "🧪", DefaultRoom = "P.Thực hành Hóa", WeeklyPeriods = 2, IsSystem = true, DisplayOrder = 5 },
+                        new Data.Subject { Name = "Sinh học", ShortName = "Sinh", ColorHex = "#AD1457", Icon = "🧬", DefaultRoom = "P.Thực hành Sinh", WeeklyPeriods = 2, IsSystem = true, DisplayOrder = 6 },
+                        new Data.Subject { Name = "Khoa học tự nhiên", ShortName = "KHTN", ColorHex = "#00897B", Icon = "🔬", DefaultRoom = "P.Thực hành KHTN", WeeklyPeriods = 4, IsSystem = true, DisplayOrder = 7 },
+                        new Data.Subject { Name = "Lịch sử", ShortName = "Sử", ColorHex = "#5D4037", Icon = "🏛️", DefaultRoom = "P.Học", WeeklyPeriods = 2, IsSystem = true, DisplayOrder = 8 },
+                        new Data.Subject { Name = "Địa lý", ShortName = "Địa", ColorHex = "#00695C", Icon = "🌍", DefaultRoom = "P.Học", WeeklyPeriods = 2, IsSystem = true, DisplayOrder = 9 },
+                        new Data.Subject { Name = "Lịch sử & Địa lý", ShortName = "Sử-Địa", ColorHex = "#4E342E", Icon = "🗺️", DefaultRoom = "P.Học", WeeklyPeriods = 3, IsSystem = true, DisplayOrder = 10 },
+                        new Data.Subject { Name = "GD Kinh tế & Pháp luật", ShortName = "GDKT&PL", ColorHex = "#F9A825", Icon = "⚖️", DefaultRoom = "P.Học", WeeklyPeriods = 1, IsSystem = true, DisplayOrder = 11 },
+                        new Data.Subject { Name = "Giáo dục công dân", ShortName = "GDCD", ColorHex = "#F57F17", Icon = "🤝", DefaultRoom = "P.Học", WeeklyPeriods = 1, IsSystem = true, DisplayOrder = 12 },
+                        new Data.Subject { Name = "Tin học", ShortName = "Tin", ColorHex = "#0277BD", Icon = "💻", DefaultRoom = "P.Tin học", WeeklyPeriods = 2, IsSystem = true, DisplayOrder = 13 },
+                        new Data.Subject { Name = "Công nghệ", ShortName = "CN", ColorHex = "#558B2F", Icon = "⚙️", DefaultRoom = "P.Công nghệ", WeeklyPeriods = 2, IsSystem = true, DisplayOrder = 14 },
+                        new Data.Subject { Name = "Giáo dục thể chất", ShortName = "GDTC", ColorHex = "#EF6C00", Icon = "⚽", DefaultRoom = "Sân thể dục", WeeklyPeriods = 2, IsSystem = true, DisplayOrder = 15 },
+                        new Data.Subject { Name = "Âm nhạc", ShortName = "Nhạc", ColorHex = "#8E24AA", Icon = "🎵", DefaultRoom = "P.Âm nhạc", WeeklyPeriods = 1, IsSystem = true, DisplayOrder = 16 },
+                        new Data.Subject { Name = "Mỹ thuật", ShortName = "MT", ColorHex = "#D81B60", Icon = "🎨", DefaultRoom = "P.Mỹ thuật", WeeklyPeriods = 1, IsSystem = true, DisplayOrder = 17 },
+                        new Data.Subject { Name = "HĐ Trải nghiệm & Hướng nghiệp", ShortName = "HĐTN", ColorHex = "#FB8C00", Icon = "🌟", DefaultRoom = "Hội trường", WeeklyPeriods = 2, IsSystem = true, DisplayOrder = 18 },
+                        new Data.Subject { Name = "STEM & Robotics", ShortName = "STEM", ColorHex = "#1565C0", Icon = "🤖", DefaultRoom = "P.STEM", WeeklyPeriods = 2, IsSystem = true, DisplayOrder = 19 },
+                        new Data.Subject { Name = "GD Quốc phòng & An ninh", ShortName = "GDQP", ColorHex = "#33691E", Icon = "🎖️", DefaultRoom = "Sân trường", WeeklyPeriods = 1, IsSystem = true, DisplayOrder = 20 }
+                    };
+
+                    db.Subjects.AddRange(defaults);
+                    db.SaveChanges();
+                    Log.Information("[DbMigrator] Seeded default 20 subjects");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[DbMigrator] SeedDefaultSubjects error: {Err}", ex.Message);
+            }
         }
 
 

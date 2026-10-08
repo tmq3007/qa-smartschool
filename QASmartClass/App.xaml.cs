@@ -175,6 +175,7 @@ namespace QASmartTouch
                         var tempDb = new AppDbContext();
                         QASmartClass.Services.AppServices.Initialize(tempDb);
                         QASmartTouch.Services.AppSettings.LoadFromDatabase(tempDb);
+                        QASmartClass.Classroom.Services.SubjectCatalogService.Instance.EnsureLoaded(tempDb);
                         QASmartClass.Helpers.OfflineSyncManager.Start();
 
                         // Chỉ invoke UI khi đã sẵn sàng
@@ -218,6 +219,7 @@ namespace QASmartTouch
                             Database = new AppDbContext();
                             QASmartClass.Services.AppServices.Initialize(Database);
                             QASmartTouch.Services.AppSettings.LoadFromDatabase(Database);
+                            QASmartClass.Classroom.Services.SubjectCatalogService.Instance.EnsureLoaded(Database);
                             QASmartClass.Helpers.OfflineSyncManager.Start();
 
                             InitializeModeAndRole(splash);
