@@ -3243,6 +3243,7 @@ namespace QASmartClass.Classroom.Views
 				SepHome.Visibility = Visibility.Collapsed;
 
 				SepAccess.Visibility = Visibility.Collapsed;
+				accessibilityPanel.Visibility = Visibility.Collapsed;
 
 
 
@@ -3270,6 +3271,8 @@ namespace QASmartClass.Classroom.Views
 
 						accessibilityPanel.Visibility = Visibility.Collapsed;
 
+						logoBorder.Visibility = Visibility.Collapsed;
+
 					}
 
 				};
@@ -3289,6 +3292,8 @@ namespace QASmartClass.Classroom.Views
 				txtTeacherSchool.BeginAnimation(UIElement.OpacityProperty, fadeOut);
 
 				accessibilityPanel.BeginAnimation(UIElement.OpacityProperty, fadeOut);
+
+				logoBorder.BeginAnimation(UIElement.OpacityProperty, fadeOut);
 
 			}
 
@@ -3338,6 +3343,8 @@ namespace QASmartClass.Classroom.Views
 
 				accessibilityPanel.Visibility = Visibility.Visible;
 
+				logoBorder.Visibility = Visibility.Visible;
+
 
 
 				logoTextPanel.Opacity = 0;
@@ -3353,6 +3360,8 @@ namespace QASmartClass.Classroom.Views
 				txtTeacherSchool.Opacity = 0;
 
 				accessibilityPanel.Opacity = 0;
+
+				logoBorder.Opacity = 0;
 
 
 
@@ -3379,6 +3388,8 @@ namespace QASmartClass.Classroom.Views
 				txtTeacherSchool.BeginAnimation(UIElement.OpacityProperty, fadeIn);
 
 				accessibilityPanel.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+
+				logoBorder.BeginAnimation(UIElement.OpacityProperty, fadeIn);
 
 
 

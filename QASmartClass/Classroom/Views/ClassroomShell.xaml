@@ -15,9 +15,9 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#B0BEC5"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="Padding" Value="10,0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -26,24 +26,28 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="bd" Background="{TemplateBinding Background}" ClipToBounds="True"
-                                CornerRadius="0,6,6,0" Margin="0,0.5,8,0.5" Padding="{TemplateBinding Padding}">
+                                CornerRadius="0,6,6,0" Margin="0,1,8,1" Height="38">
                             <Grid VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <!-- Hiển thị Emoji trích xuất bằng Converter -->
-                                    <TextBlock x:Name="iconBlock" 
-                                               Text="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource SidebarIconConverter}}"
-                                               FontFamily="Segoe UI Emoji" FontSize="18" Width="24" TextAlignment="Center" VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}"/>
-                                    
-                                    <!-- Hiển thị Nhãn chữ trích xuất bằng Converter -->
-                                    <TextBlock x:Name="textBlock" 
-                                               Text="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource SidebarTextConverter}}"
-                                               Margin="10,0,0,0" VerticalAlignment="Center" FontSize="12.5"
-                                               Foreground="{TemplateBinding Foreground}"/>
-                                </StackPanel>
-                                
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition x:Name="colIcon" Width="44"/>
+                                    <ColumnDefinition x:Name="colText" Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Hiển thị Emoji trích xuất bằng Converter: Luôn căn giữa tuyệt đối trong ô 44px -->
+                                <TextBlock x:Name="iconBlock" Grid.Column="0"
+                                           Text="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource SidebarIconConverter}}"
+                                           FontFamily="Segoe UI Emoji" FontSize="17" Width="24" TextAlignment="Center"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}"/>
+
+                                <!-- Hiển thị Nhãn chữ trích xuất bằng Converter -->
+                                <TextBlock x:Name="textBlock" Grid.Column="1"
+                                           Text="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource SidebarTextConverter}}"
+                                           Margin="4,0,8,0" VerticalAlignment="Center" FontSize="12.5"
+                                           Foreground="{TemplateBinding Foreground}" TextTrimming="CharacterEllipsis"/>
+
                                 <!-- Badge thông báo tin nhắn chưa đọc -->
-                                <Border x:Name="badgeBorder" Background="#EF5350" Width="18" Height="18" CornerRadius="9"
-                                        HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" Visibility="Collapsed">
+                                <Border x:Name="badgeBorder" Grid.ColumnSpan="2" Background="#EF5350" Width="18" Height="18" CornerRadius="9"
+                                        HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,8,0" Visibility="Collapsed">
                                     <TextBlock Text="{Binding Path=(local:ClassroomShell.BadgeCount), RelativeSource={RelativeSource TemplatedParent}}"
                                                Foreground="White" FontSize="9" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -61,11 +65,13 @@
                             <!-- Trigger xử lý tự động khi Sidebar thu nhỏ -->
                             <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
                                 <Setter TargetName="textBlock" Property="Visibility" Value="Collapsed"/>
-                                <Setter TargetName="bd" Property="Padding" Value="0"/>
-                                <Setter TargetName="iconBlock" Property="HorizontalAlignment" Value="Center"/>
-                                <Setter TargetName="iconBlock" Property="Width" Value="57"/>
-                                <Setter TargetName="badgeBorder" Property="HorizontalAlignment" Value="Center"/>
-                                <Setter TargetName="badgeBorder" Property="Margin" Value="14,-14,0,0"/> <!-- Badge đè lên góc icon -->
+                                <Setter TargetName="colText" Property="Width" Value="0"/>
+                                <Setter TargetName="bd" Property="CornerRadius" Value="8"/>
+                                <Setter TargetName="bd" Property="Width" Value="44"/>
+                                <Setter TargetName="bd" Property="Margin" Value="0,2,0,2"/>
+                                <Setter TargetName="bd" Property="HorizontalAlignment" Value="Center"/>
+                                <Setter TargetName="badgeBorder" Property="Margin" Value="0,2,2,0"/>
+                                <Setter Property="ToolTip" Value="{Binding Path=Content, RelativeSource={RelativeSource Self}, Converter={StaticResource SidebarTextConverter}}"/>
                             </DataTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -100,27 +106,92 @@
         <Border Grid.Column="0" Background="#0D1B2A" ClipToBounds="True">
             <DockPanel>
                 <!-- Logo -->
-                <Border DockPanel.Dock="Top" Padding="14,8,14,4">
-                    <DockPanel>
-                        <Border x:Name="logoBorder" DockPanel.Dock="Left" Width="34" Height="34" CornerRadius="8" Margin="0,0,10,0" Cursor="Hand" ToolTip="Nhấn giữ 3 giây để chẩn đoán hệ thống" PreviewMouseLeftButtonDown="Logo_MouseLeftButtonDown" PreviewMouseLeftButtonUp="Logo_MouseLeftButtonUp">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#1976D2" Offset="0"/>
-                                    <GradientStop Color="#42A5F5" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
-                            <TextBlock Text="&#xE7BE;" FontFamily="Segoe MDL2 Assets" FontSize="17"
-                                       Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <Button DockPanel.Dock="Right" x:Name="btnToggleSidebar" Content="&#xE700;" FontFamily="Segoe MDL2 Assets"
-                                Width="30" Height="30" Margin="4,0,0,0" Padding="0"
+                <Border DockPanel.Dock="Top" x:Name="sidebarHeaderBorder">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Padding" Value="14,8,10,4"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                    <Setter Property="Padding" Value="0,8,0,4"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Grid>
+                        <!-- Expanded Header View -->
+                        <Grid x:Name="headerExpandedGrid">
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="logoBorder" Grid.Column="0" Width="34" Height="34" CornerRadius="8" Margin="0,0,10,0" Cursor="Hand" ToolTip="Nhấn giữ 3 giây để chẩn đoán hệ thống" PreviewMouseLeftButtonDown="Logo_MouseLeftButtonDown" PreviewMouseLeftButtonUp="Logo_MouseLeftButtonUp">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#1976D2" Offset="0"/>
+                                        <GradientStop Color="#42A5F5" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="&#xE7BE;" FontFamily="Segoe MDL2 Assets" FontSize="17"
+                                           Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel x:Name="logoTextPanel" Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="QA SMART CLASS" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock Text="{DynamicResource Shell_Subtitle}" FontSize="10" Foreground="#607D8B" Margin="0,1,0,0"/>
+                            </StackPanel>
+                            <Button Grid.Column="2" x:Name="btnToggleSidebar" Content="&#xE700;" FontFamily="Segoe MDL2 Assets"
+                                    Width="32" Height="32" Padding="0" Margin="4,0,0,0"
+                                    Background="Transparent" Foreground="#90A4AE" BorderThickness="0"
+                                    Cursor="Hand" Click="ToggleSidebar_Click" ToolTip="Thu nhỏ Sidebar"
+                                    FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="bg" Background="Transparent" CornerRadius="4">
+                                            <TextBlock Text="&#xE700;" FontFamily="Segoe MDL2 Assets" FontSize="{TemplateBinding FontSize}"
+                                                       Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="bg" Property="Background" Value="#1E3A5F"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+
+                        <!-- Collapsed Header View: Nút Toggle mở rộng khi thu nhỏ, căn giữa tuyệt đối -->
+                        <Button x:Name="btnToggleSidebarCollapsed" Content="&#xE700;" FontFamily="Segoe MDL2 Assets"
+                                Width="44" Height="36" Padding="0"
                                 Background="Transparent" Foreground="#90A4AE" BorderThickness="0"
-                                Cursor="Hand" Click="ToggleSidebar_Click" ToolTip="Thu nhỏ/Mở rộng Sidebar"
-                                FontSize="12" VerticalAlignment="Center">
+                                Cursor="Hand" Click="ToggleSidebar_Click" ToolTip="Mở rộng Sidebar"
+                                FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border x:Name="bg" Background="Transparent" CornerRadius="4">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Border x:Name="bg" Background="Transparent" CornerRadius="8">
+                                        <TextBlock Text="&#xE700;" FontFamily="Segoe MDL2 Assets" FontSize="{TemplateBinding FontSize}"
+                                                   Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
@@ -131,32 +202,85 @@
                                 </ControlTemplate>
                             </Button.Template>
                         </Button>
-                        <StackPanel x:Name="logoTextPanel" VerticalAlignment="Center">
-                            <TextBlock Text="QA SMART CLASS" FontSize="14" FontWeight="Bold" Foreground="White"/>
-                            <TextBlock Text="{DynamicResource Shell_Subtitle}" FontSize="10" Foreground="#607D8B" Margin="0,1,0,0"/>
-                        </StackPanel>
-                    </DockPanel>
+                    </Grid>
                 </Border>
 
                 <!-- Session Info + Roster Selector -->
-                <Border x:Name="sessionInfoBorder" DockPanel.Dock="Top" Background="#1B2838" Margin="8,2" CornerRadius="8" Padding="10,8"
+                <Border x:Name="sessionInfoBorder" DockPanel.Dock="Top" Background="#1B2838" CornerRadius="8"
                         Cursor="Hand" MouseLeftButtonDown="RosterSelector_Click" ToolTip="Click để chọn lớp">
-                    <StackPanel>
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Left" Text="&#xE736;" FontFamily="Segoe MDL2 Assets" FontSize="13"
-                                       Foreground="#4FC3F7" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <TextBlock x:Name="sessionDropdownArrow" DockPanel.Dock="Right" Text="▼" Foreground="#546E7A" FontSize="9" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="txtClassName" Text="Chưa chọn lớp" Foreground="#4FC3F7" FontSize="12" FontWeight="SemiBold"/>
-                        </DockPanel>
-                        <StackPanel x:Name="sessionDetailsPanel" Orientation="Horizontal" Margin="0,4,0,0">
-                            <Ellipse Width="7" Height="7" Fill="#4CAF50" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="txtStudentCount" Text="Click để chọn lớp" Foreground="#A5D6A7" FontSize="11"/>
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Margin" Value="8,2"/>
+                            <Setter Property="Padding" Value="10,8"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                    <Setter Property="Margin" Value="0,3"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Width" Value="44"/>
+                                    <Setter Property="Height" Value="40"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="44"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Icon lớp học: Căn giữa tuyệt đối trong ô 44px -->
+                        <TextBlock x:Name="iconClass" Grid.Column="0" Text="&#xE736;" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                                   Foreground="#4FC3F7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        <!-- Chi tiết lớp học (ẩn khi thu nhỏ) -->
+                        <StackPanel x:Name="sessionDetailsPanel" Grid.Column="1" VerticalAlignment="Center" Margin="0,0,4,0">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock x:Name="txtClassName" Text="Chưa chọn lớp" Foreground="#4FC3F7" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                <Ellipse Width="6" Height="6" Fill="#4CAF50" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtStudentCount" Text="Click để chọn lớp" Foreground="#A5D6A7" FontSize="10"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
+
+                        <!-- Mũi tên Dropdown (ẩn khi thu nhỏ) -->
+                        <TextBlock x:Name="sessionDropdownArrow" Grid.Column="2" Text="▼" Foreground="#546E7A" FontSize="9" VerticalAlignment="Center" Margin="0,0,8,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
                 </Border>
 
                 <!-- Bottom: Teacher Info + Exit -->
-                <Border DockPanel.Dock="Bottom" Padding="10,8" Background="#0A1628">
+                <Border DockPanel.Dock="Bottom" Background="#0A1628">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Padding" Value="10,8"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                    <Setter Property="Padding" Value="0,8"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
                     <StackPanel>
                         <!-- ═══ ACCESSIBILITY PANEL ═══ -->
                         <Grid x:Name="accessibilityPanel" Margin="0,4,0,8">
@@ -238,10 +362,26 @@
                         <Border x:Name="SepAccess" Height="1" Background="#1E3A5F" Margin="0,2,0,8"/>
 
                         <!-- Teacher Profile Info -->
-                        <DockPanel Margin="0,0,0,6" Cursor="Hand" MouseLeftButtonDown="TeacherAvatar_Click" ToolTip="Click để đổi ảnh đại diện">
+                        <Grid Margin="0,0,0,6" Cursor="Hand" MouseLeftButtonDown="TeacherAvatar_Click" ToolTip="Click để đổi ảnh đại diện">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
                             <!-- Avatar circle with image or initials -->
-                            <Border x:Name="teacherAvatarBorder" DockPanel.Dock="Left" Width="40" Height="40" CornerRadius="20" Margin="0,0,10,0"
-                                    BorderBrush="#4CAF50" BorderThickness="2">
+                            <Border x:Name="teacherAvatarBorder" Grid.Column="0" Width="40" Height="40" CornerRadius="20"
+                                    BorderBrush="#4CAF50" BorderThickness="2" HorizontalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Margin" Value="0,0,10,0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                                <Setter Property="Margin" Value="0"/>
+                                                <Setter Property="Grid.ColumnSpan" Value="2"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                         <GradientStop Color="#2E7D32" Offset="0"/>
@@ -258,23 +398,53 @@
                                     </Image>
                                 </Grid>
                             </Border>
-                            <StackPanel VerticalAlignment="Center">
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
                                 <TextBlock x:Name="txtTeacherName" Text="GV. Nguyễn Văn A" Foreground="#E0E0E0" FontSize="12" FontWeight="SemiBold"/>
                                 <TextBlock x:Name="txtTeacherSchool" Text="Trường THPT QA  •  Toán học" Foreground="#546E7A" FontSize="10" Margin="0,1,0,0"/>
                             </StackPanel>
-                        </DockPanel>
+                        </Grid>
                         <Border Height="1" Background="#1E3A5F" Margin="0,2,0,6"/>
-                        <Button x:Name="btnExitApp" Padding="10,7" FontSize="12" Background="#1B1B2F" Foreground="#EF5350"
+                        <Button x:Name="btnExitApp" FontSize="12" Background="#1B1B2F" Foreground="#EF5350"
                                 BorderThickness="0" Cursor="Hand" Click="ExitApp_Click" ToolTip="Thoát chương trình">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Padding" Value="10,7"/>
+                                    <Setter Property="Height" Value="36"/>
+                                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Width" Value="44"/>
+                                            <Setter Property="Height" Value="38"/>
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8"
                                             Padding="{TemplateBinding Padding}" BorderBrush="#37474F" BorderThickness="1">
-                                        <DockPanel HorizontalAlignment="Center">
-                                            <TextBlock x:Name="iconExit" DockPanel.Dock="Left" Text="&#xE7E8;" FontFamily="Segoe MDL2 Assets" FontSize="13"
-                                                       Foreground="#EF5350" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                            <TextBlock x:Name="txtExitLabel" Text="{DynamicResource Shell_ExitApp}" FontSize="12" Foreground="#EF5350" VerticalAlignment="Center"/>
-                                        </DockPanel>
+                                        <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock x:Name="iconExit" Grid.Column="0" Text="&#xE7E8;" FontFamily="Segoe MDL2 Assets" FontSize="13"
+                                                       Foreground="#EF5350" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="txtExitLabel" Grid.Column="1" Text="{DynamicResource Shell_ExitApp}" FontSize="12" Foreground="#EF5350" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                        </Grid>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
@@ -294,11 +464,11 @@
                 </Border>
 
                 <!-- Navigation Menu -->
-                <ScrollViewer VerticalScrollBarVisibility="Auto" ClipToBounds="True">
+                <ScrollViewer VerticalScrollBarVisibility="Hidden" ClipToBounds="True">
                     <StackPanel x:Name="navPanel" Margin="0,4,0,8" ClipToBounds="True">
 
                         <!-- 🏠 BẢNG TỔNG QUAN (Độc lập trên cùng) -->
-                        <Button x:Name="btnHomeNav" Style="{StaticResource NavButtonActive}" Content="{DynamicResource Nav_Home}" Tag="F1" Click="NavButton_Click" Margin="0,0,8,4"/>
+                        <Button x:Name="btnHomeNav" Style="{StaticResource NavButtonActive}" Content="{DynamicResource Nav_Home}" Tag="F1" Click="NavButton_Click" Margin="0,0,0,4"/>
                         <Border x:Name="SepHome" Style="{StaticResource NavSep}"/>
 
                         <!-- ═══ I. SOẠN GIẢNG & LỊCH TRÌNH ═══ -->
@@ -418,11 +588,13 @@
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="16">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" FontSize="{TemplateBinding FontSize}"
+                                                   Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="bg" Property="Background" Value="#E0E0E0"/>
+                                            <Setter Property="Foreground" Value="#212121"/>
                                         </Trigger>
                                         <Trigger Property="IsPressed" Value="True">
                                             <Setter TargetName="bg" Property="Background" Value="#BDBDBD"/>
@@ -440,11 +612,13 @@
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="bg" Background="{TemplateBinding Background}" CornerRadius="16">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="{TemplateBinding FontSize}"
+                                                   Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="bg" Property="Background" Value="#E0E0E0"/>
+                                            <Setter Property="Foreground" Value="#212121"/>
                                         </Trigger>
                                         <Trigger Property="IsPressed" Value="True">
                                             <Setter TargetName="bg" Property="Background" Value="#BDBDBD"/>
