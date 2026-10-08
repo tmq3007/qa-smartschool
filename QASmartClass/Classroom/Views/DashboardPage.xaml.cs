@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace QASmartClass.Classroom.Views
 {
-    public partial class DashboardPage : Page, INavigatedPage, IDisposable
+    public partial class DashboardPage : Page, INavigatedPage
     {
         private bool _isDataLoaded = false;
         private bool _isLoading = false;
@@ -41,18 +41,6 @@ namespace QASmartClass.Classroom.Views
             await LoadDataAsync();
         }
 
-        private bool _isDisposed = false;
-        public void Dispose()
-        {
-            if (_isDisposed) return;
-            _isDisposed = true;
-
-            // Unsubscribe from Loaded event to prevent reference leaks
-            Loaded -= OnPageLoaded;
-
-            Log.Information("DashboardPage disposed successfully");
-        }
-
         private async Task LoadDataAsync()
         {
             if (_isLoading) return; // Guard chống gọi trùng lặp
@@ -79,7 +67,7 @@ namespace QASmartClass.Classroom.Views
                 txtTotalStudents.Text = totalStudents.ToString();
 
                 // 2. Điểm danh
-                var attendanceRecords = await db.AttendanceRecords.Where(r => r.RosterId == rosterId).ToListAsync();
+                var attendanceRecords = await db.AttendanceRecords.AsNoTracking().Where(r => r.RosterId == rosterId).ToListAsync();
                 int totalAttendances = attendanceRecords.Count;
                 int presentCount = attendanceRecords.Count(r => r.Status == "present" || r.Status == "late");
                 
@@ -96,7 +84,7 @@ namespace QASmartClass.Classroom.Views
                     .ToList();
 
                 // 4. Điểm trung bình và xếp hạng
-                var grades = await db.StudentGrades.Where(g => g.RosterId == rosterId).ToListAsync();
+                var grades = await db.StudentGrades.AsNoTracking().Where(g => g.RosterId == rosterId).ToListAsync();
                 
                 // Thu thập các ID học sinh cần lấy tên để tối ưu truy vấn thành 1 câu duy nhất (chống N+1)
                 var top5StudentIds = grades.GroupBy(g => g.StudentId)
@@ -110,7 +98,7 @@ namespace QASmartClass.Classroom.Views
                 var combinedStudentIds = top5StudentIds.Concat(absenceStudentIds).Distinct().ToList();
 
                 // Tải danh sách tên học sinh bất đồng bộ
-                var studentList = await db.Students.Where(s => combinedStudentIds.Contains(s.Id)).ToListAsync();
+                var studentList = await db.Students.AsNoTracking().Where(s => combinedStudentIds.Contains(s.Id)).ToListAsync();
                 var studentMap = studentList.ToDictionary(s => s.Id, s => s.FullName);
 
                 var warningList = absenceCounts.Select(x => new
@@ -265,7 +253,7 @@ namespace QASmartClass.Classroom.Views
                 if (step1 == 2)
                 {
                     int rosterId = activeRoster!.Id;
-                    bool hasAttendance = await db.AttendanceRecords.AnyAsync(r => r.RosterId == rosterId);
+                    bool hasAttendance = await db.AttendanceRecords.AsNoTracking().AnyAsync(r => r.RosterId == rosterId);
                     if (hasAttendance)
                     {
                         step2 = 2;
@@ -280,7 +268,7 @@ namespace QASmartClass.Classroom.Views
                 if (step2 == 2)
                 {
                     int rosterId = activeRoster!.Id;
-                    bool hasSurveys = await db.Surveys.AnyAsync(s => s.TargetClasses.Contains(activeRoster.DisplayName) || s.TargetClasses.Contains(activeRoster.Id.ToString()));
+                    bool hasSurveys = await db.Surveys.AsNoTracking().AnyAsync(s => s.TargetClasses.Contains(activeRoster.DisplayName) || s.TargetClasses.Contains(activeRoster.Id.ToString()));
                     if (hasSurveys)
                     {
                         step3 = 2;
@@ -307,7 +295,7 @@ namespace QASmartClass.Classroom.Views
                 // Step 5: Luyện tập
                 if (step4 == 2)
                 {
-                    bool hasQuiz = await db.Quizzes.AnyAsync() || await db.MathQuizHistories.AnyAsync() || await db.GrammarQuizHistories.AnyAsync();
+                    bool hasQuiz = await db.Quizzes.AsNoTracking().AnyAsync() || await db.MathQuizHistories.AsNoTracking().AnyAsync() || await db.GrammarQuizHistories.AsNoTracking().AnyAsync();
                     if (hasQuiz)
                     {
                         step5 = 2;
@@ -321,7 +309,7 @@ namespace QASmartClass.Classroom.Views
                 // Step 6: Giao bài tập
                 if (step5 == 2)
                 {
-                    bool hasHomework = await db.Homeworks.AnyAsync();
+                    bool hasHomework = await db.Homeworks.AsNoTracking().AnyAsync();
                     if (hasHomework)
                     {
                         step6 = 2;

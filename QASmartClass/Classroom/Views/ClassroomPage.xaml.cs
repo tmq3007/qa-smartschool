@@ -1,6 +1,8 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -11,12 +13,19 @@ using Serilog;
 
 namespace QASmartClass.Classroom.Views
 {
-    public partial class ClassroomPage : Page
+    public partial class ClassroomPage : Page, INavigatedPage
     {
         private readonly ClassroomSessionService _sessionService;
         private DispatcherTimer? _sessionTimer;
         private int _sessionSeconds = 0;
+        private int _lastLoadedRosterId = -999;
         public string RoomStatus { get; set; } = "Học tập";
+
+        public Task OnNavigatedToAsync()
+        {
+            UpdateClassroomUI();
+            return Task.CompletedTask;
+        }
 
         public ClassroomPage()
         {
@@ -40,8 +49,11 @@ namespace QASmartClass.Classroom.Views
                     UpdateClassroomUI();
                 }
 
-                // Kiểm tra kết nối mạng cục bộ để cảnh báo giáo viên
-                CheckNetworkConnectivity();
+                // Kiểm tra kết nối mạng cục bộ ở background không chặn UI
+                Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+                {
+                    CheckNetworkConnectivity();
+                }));
 
                 // Đăng ký sự kiện thay đổi Roster (Chọn lớp) - Hủy đăng ký trước để tránh memory leak
                 try
@@ -112,19 +124,30 @@ namespace QASmartClass.Classroom.Views
         }
 
         /// <summary>
-        /// Nạp danh sách lớp ban đầu làm nền hiển thị (tất cả học sinh ngoại tuyến)
+        /// Nạp danh sách lớp ban đầu làm nền hiển thị (tất cả học sinh ngoại tuyến, Batch Update O(1))
         /// </summary>
         private void LoadOfflineRoster()
         {
             try
             {
-                _sessionService.ConnectedStudents.Clear();
+                var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
+                int currentRosterId = activeRoster?.Id ?? -1;
+
+                // Nếu danh sách học sinh của lớp này đã được nạp sẵn và phiên chưa bắt đầu -> không nạp lại
+                if (_sessionService.ConnectedStudents.Any() && _lastLoadedRosterId == currentRosterId)
+                {
+                    UpdateClassroomUI();
+                    return;
+                }
+
+                _lastLoadedRosterId = currentRosterId;
                 var rosterStudents = RosterHelper.GetStudents();
                 var rosterName = RosterHelper.GetActiveRosterName();
 
+                var list = new List<QASmartClass.Classroom.Services.ConnectedStudent>();
                 foreach (var s in rosterStudents)
                 {
-                    _sessionService.ConnectedStudents.Add(new QASmartClass.Classroom.Services.ConnectedStudent
+                    list.Add(new QASmartClass.Classroom.Services.ConnectedStudent
                     {
                         Name = s.FullName,
                         StudentCode = string.IsNullOrWhiteSpace(s.StudentCode) ? $"ST-{s.Id:D3}" : s.StudentCode,
@@ -135,12 +158,15 @@ namespace QASmartClass.Classroom.Views
                     });
                 }
 
+                // Nạp toàn bộ danh sách một lần duy nhất với 1 sự kiện Reset
+                _sessionService.ConnectedStudents.ReplaceRange(list);
+
                 if (txtSessionName != null) txtSessionName.Text = $" {rosterName}";
                 if (txtSessionIP != null) txtSessionIP.Text = $"IP: {ClassroomAppContext.Network.ServerIP}";
                 if (txtSessionCode != null) txtSessionCode.Text = "Mã lớp: --";
                 
                 UpdateStudentCount();
-                Log.Information("ClassroomPage loaded {Count} offline roster students", _sessionService.ConnectedStudents.Count);
+                Log.Information("ClassroomPage loaded {Count} offline roster students (Batch O(1))", _sessionService.ConnectedStudents.Count);
             }
             catch (Exception ex)
             {

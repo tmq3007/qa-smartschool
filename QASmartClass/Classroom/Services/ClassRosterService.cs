@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using QASmartClass.Data;
 using Serilog;
 
@@ -10,11 +12,18 @@ namespace QASmartClass.Classroom.Services
     /// <summary>
     /// Service quản lý danh sách lớp học (Class Roster).
     /// Hỗ trợ phòng STEM dùng chung: import/export CSV, chuyển lớp nhanh.
+    /// Tích hợp L1 In-Memory Cache chuẩn công nghiệp giúp truy cập 0ms.
     /// </summary>
     public class ClassRosterService
     {
         private readonly AppDbContext _db;
         private ClassRoster? _activeRoster;
+
+        // In-Memory L1 Cache
+        private List<ClassRoster>? _cachedRosters = null;
+        private List<Student>? _cachedActiveStudents = null;
+        private int? _cachedTotalStudentsCount = null;
+        private readonly object _cacheLock = new();
 
         /// <summary>Event khi lớp đang active thay đổi</summary>
         public event EventHandler<ClassRoster?>? ActiveRosterChanged;
@@ -27,18 +36,67 @@ namespace QASmartClass.Classroom.Services
             _db = db;
         }
 
+        /// <summary>Xóa bộ đệm RAM khi có thay đổi dữ liệu</summary>
+        public void InvalidateCache()
+        {
+            lock (_cacheLock)
+            {
+                _cachedRosters = null;
+                _cachedActiveStudents = null;
+                _cachedTotalStudentsCount = null;
+            }
+        }
+
+        /// <summary>Lấy tổng số học sinh toàn trường (có đệm RAM 0ms)</summary>
+        public int GetTotalStudentsCount()
+        {
+            lock (_cacheLock)
+            {
+                if (_cachedTotalStudentsCount.HasValue)
+                    return _cachedTotalStudentsCount.Value;
+            }
+
+            try
+            {
+                int count = _db.Students.AsNoTracking().Count();
+                lock (_cacheLock)
+                {
+                    _cachedTotalStudentsCount = count;
+                }
+                return count;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
         // ═══════════════════════════════════════════════════════════
         //  CRUD ROSTER
         // ═══════════════════════════════════════════════════════════
 
-        /// <summary>Lấy tất cả roster (đang active)</summary>
+        /// <summary>Lấy tất cả roster (đang active, có đệm RAM 0ms)</summary>
         public List<ClassRoster> GetAllRosters(bool activeOnly = true)
         {
+            lock (_cacheLock)
+            {
+                if (_cachedRosters != null)
+                {
+                    return activeOnly
+                        ? _cachedRosters.Where(r => r.IsActive).ToList()
+                        : _cachedRosters.ToList();
+                }
+            }
+
             try
             {
-                var query = _db.ClassRosters.AsQueryable();
-                if (activeOnly) query = query.Where(r => r.IsActive);
-                return query.OrderByDescending(r => r.LastUsedAt).ToList();
+                var query = _db.ClassRosters.AsNoTracking().AsQueryable();
+                var list = query.OrderByDescending(r => r.LastUsedAt).ToList();
+                lock (_cacheLock)
+                {
+                    _cachedRosters = list;
+                }
+                return activeOnly ? list.Where(r => r.IsActive).ToList() : list;
             }
             catch (Exception ex)
             {
@@ -87,6 +145,7 @@ namespace QASmartClass.Classroom.Services
 
             _db.ClassRosters.Add(roster);
             _db.SaveChanges();
+            InvalidateCache();
             Log.Information("Created roster: {Name} ({Subject}, GV {Teacher})",
                 className, subject, teacherName);
             return roster;
@@ -110,6 +169,7 @@ namespace QASmartClass.Classroom.Services
                 existing.IsActive = roster.IsActive;
 
                 _db.SaveChanges();
+                InvalidateCache();
                 Log.Information("Updated roster #{Id}: {Name}", roster.Id, roster.ClassName);
                 return true;
             }
@@ -134,6 +194,7 @@ namespace QASmartClass.Classroom.Services
 
                 _db.ClassRosters.Remove(roster);
                 _db.SaveChanges();
+                InvalidateCache();
 
                 // Clear active nếu đang chọn roster này
                 if (_activeRoster?.Id == rosterId)
@@ -157,17 +218,32 @@ namespace QASmartClass.Classroom.Services
         /// <summary>Chọn lớp đang active</summary>
         public void SetActiveRoster(ClassRoster? roster)
         {
+            lock (_cacheLock)
+            {
+                _cachedActiveStudents = null;
+            }
             _activeRoster = roster;
 
             if (roster != null)
             {
-                // Update LastUsedAt
-                var dbRoster = _db.ClassRosters.Find(roster.Id);
-                if (dbRoster != null)
+                // Cập nhật LastUsedAt ngầm trên background task để không làm đơ UI thread
+                _ = Task.Run(() =>
                 {
-                    dbRoster.LastUsedAt = DateTime.Now;
-                    _db.SaveChanges();
-                }
+                    try
+                    {
+                        using var bgDb = new AppDbContext();
+                        var dbRoster = bgDb.ClassRosters.Find(roster.Id);
+                        if (dbRoster != null)
+                        {
+                            dbRoster.LastUsedAt = DateTime.Now;
+                            bgDb.SaveChanges();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warning("Background update LastUsedAt error: {Err}", ex.Message);
+                    }
+                });
                 Log.Information("Active roster → {Name} ({Subject})", roster.ClassName, roster.Subject);
             }
             else
@@ -178,16 +254,24 @@ namespace QASmartClass.Classroom.Services
             ActiveRosterChanged?.Invoke(this, roster);
         }
 
-        /// <summary>Lấy danh sách HS của roster đang active (sắp xếp theo tên VN)</summary>
+        /// <summary>Lấy danh sách HS của roster đang active (sắp xếp theo tên VN, có đệm RAM 0ms)</summary>
         public List<Student> GetActiveStudents()
         {
             if (_activeRoster == null) return new List<Student>();
 
+            lock (_cacheLock)
+            {
+                if (_cachedActiveStudents != null)
+                {
+                    return _cachedActiveStudents.ToList();
+                }
+            }
+
             try
             {
                 var activeRosterId = _activeRoster.Id;
-                var query = from rs in _db.ClassRosterStudents
-                            join s in _db.Students on rs.StudentId equals s.Id
+                var query = from rs in _db.ClassRosterStudents.AsNoTracking()
+                            join s in _db.Students.AsNoTracking() on rs.StudentId equals s.Id
                             where rs.RosterId == activeRosterId
                             select new { Student = s, rs.SeatNumber };
 
@@ -200,9 +284,13 @@ namespace QASmartClass.Classroom.Services
                     students.Add(r.Student);
                 }
 
-
                 // Sắp xếp theo chuẩn Việt Nam: Tên → Họ → Đệm
-                return VietnameseNameHelper.SortByVietnameseName(students, s => s.FullName);
+                var sorted = VietnameseNameHelper.SortByVietnameseName(students, s => s.FullName);
+                lock (_cacheLock)
+                {
+                    _cachedActiveStudents = sorted;
+                }
+                return sorted.ToList();
             }
             catch (Exception ex)
             {
@@ -253,6 +341,7 @@ namespace QASmartClass.Classroom.Services
                     roster.StudentCount = _db.ClassRosterStudents.Count(rs => rs.RosterId == rosterId) + 1;
 
                 _db.SaveChanges();
+                InvalidateCache();
                 return true;
             }
             catch (Exception ex)
@@ -280,6 +369,7 @@ namespace QASmartClass.Classroom.Services
                     roster.StudentCount = _db.ClassRosterStudents.Count(rs => rs.RosterId == rosterId) - 1;
 
                 _db.SaveChanges();
+                InvalidateCache();
                 return true;
             }
             catch (Exception ex)
@@ -484,6 +574,7 @@ namespace QASmartClass.Classroom.Services
 
                     _db.SaveChanges();
                     transaction.Commit();
+                    InvalidateCache();
                 }
 
                 Log.Information("Import CSV → Roster #{Id}: {Imported} imported, {Skipped} skipped",
@@ -575,6 +666,7 @@ namespace QASmartClass.Classroom.Services
 
                 newRoster.StudentCount = sourceLinks.Count;
                 _db.SaveChanges();
+                InvalidateCache();
 
                 Log.Information("Duplicated roster #{Source} → #{New}: {Name} ({Count} students)",
                     sourceRosterId, newRoster.Id, newClassName, sourceLinks.Count);

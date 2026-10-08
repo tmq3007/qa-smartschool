@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using QASmartClass.Data;
+using QASmartClass.Classroom.Helpers;
 using Serilog;
 
 namespace QASmartClass.Classroom.Services
@@ -36,7 +38,7 @@ namespace QASmartClass.Classroom.Services
 
         public string TeacherName { get; private set; } = string.Empty;
 
-        public ObservableCollection<ConnectedStudent> ConnectedStudents { get; } = new();
+        public BulkObservableCollection<ConnectedStudent> ConnectedStudents { get; } = new();
 
         public ClassroomSessionService(NetworkDiscoveryService networkService, AppDbContext db)
         {
@@ -65,12 +67,12 @@ namespace QASmartClass.Classroom.Services
             IsSessionActive = true;
             SessionStartTime = DateTime.Now;
 
-            // Nạp danh sách học sinh từ active roster dưới dạng offline trước
-            ConnectedStudents.Clear();
+            // Nạp danh sách học sinh từ active roster dưới dạng offline trước theo dạng Batch
             var rosterStudents = RosterHelper.GetStudents();
+            var list = new List<ConnectedStudent>();
             foreach (var s in rosterStudents)
             {
-                ConnectedStudents.Add(new ConnectedStudent
+                list.Add(new ConnectedStudent
                 {
                     Name = s.FullName,
                     StudentCode = string.IsNullOrWhiteSpace(s.StudentCode) ? $"ST-{s.Id:D3}" : s.StudentCode,
@@ -80,6 +82,7 @@ namespace QASmartClass.Classroom.Services
                     IsLocked = false
                 });
             }
+            ConnectedStudents.ReplaceRange(list);
             OnlineCount = 0;
 
             // Log event

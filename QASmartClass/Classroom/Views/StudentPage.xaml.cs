@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.EntityFrameworkCore;
 using QASmartClass.Data;
 using QASmartClass.Classroom.Services;
 using QASmartClass.Classroom.Helpers;
@@ -13,7 +15,7 @@ using Serilog;
 
 namespace QASmartClass.Classroom.Views
 {
-    public partial class StudentPage : Page
+    public partial class StudentPage : Page, INavigatedPage
     {
         private List<Student> _allStudents = new();
         private string _searchText = "";
@@ -83,13 +85,23 @@ namespace QASmartClass.Classroom.Views
             };
         }
 
+        public async Task OnNavigatedToAsync()
+        {
+            await LoadStudentsAsync();
+        }
+
         private async void LoadStudents()
+        {
+            await LoadStudentsAsync();
+        }
+
+        private async Task LoadStudentsAsync()
         {
             try
             {
                 // → ClassroomAppContext
                 var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
-                List<Student> students = null;
+                List<Student>? students = null;
 
                 if (activeRoster != null)
                 {
@@ -97,8 +109,8 @@ namespace QASmartClass.Classroom.Views
                 }
                 else
                 {
-                    students = VietnameseNameHelper.SortByVietnameseName(
-                        ClassroomAppContext.Db.Students.ToList(), s => s.FullName);
+                    var dbStudents = await ClassroomAppContext.Db.Students.AsNoTracking().ToListAsync();
+                    students = VietnameseNameHelper.SortByVietnameseName(dbStudents, s => s.FullName);
                 }
 
                 _allStudents = students ?? new List<Student>();
@@ -116,7 +128,13 @@ namespace QASmartClass.Classroom.Views
 
                 UpdateStats();
                 RefreshGrid();
-                RenderSeatingChart();
+
+                // Chỉ vẽ sơ đồ chỗ ngồi khi Tab Sơ đồ đang được hiển thị thực tế
+                if (borderSeatingChartView != null && borderSeatingChartView.Visibility == Visibility.Visible)
+                {
+                    RenderSeatingChart();
+                }
+
                 Log.Information("StudentPage loaded {Count} students", _allStudents.Count);
             }
             catch (Exception ex)
@@ -269,7 +287,7 @@ namespace QASmartClass.Classroom.Views
                     Id = -1, 
                     ClassName = "Tất cả học sinh", 
                     TeacherName = "Toàn trường", 
-                    StudentCount = ClassroomAppContext.Db.Students.Count() 
+                    StudentCount = ClassroomAppContext.ClassRoster.GetTotalStudentsCount() 
                 };
                 listItems.Add(allItem);
                 listItems.AddRange(rosters);
@@ -313,9 +331,8 @@ namespace QASmartClass.Classroom.Views
                 {
                     ClassroomAppContext.ClassRoster.SetActiveRoster(null);
                     
-                    // Xử lý logic nặng ở background nếu cần, nhưng hiện tại ta có thể yield
-                    _allStudents = VietnameseNameHelper.SortByVietnameseName(
-                        ClassroomAppContext.Db.Students.ToList(), s => s.FullName);
+                    var dbStudents = await ClassroomAppContext.Db.Students.AsNoTracking().ToListAsync();
+                    _allStudents = VietnameseNameHelper.SortByVietnameseName(dbStudents, s => s.FullName);
                     txtSubtitle.Text = $"Danh sách học sinh — Tất cả ({_allStudents.Count} HS)";
                 }
                 else
@@ -332,9 +349,12 @@ namespace QASmartClass.Classroom.Views
                 UpdateStats();
                 RefreshGrid();
                 
-                // Nhường UI thread một lần nữa để WPF kịp vẽ DataGrid trước khi vẽ Sơ đồ lớp (nặng)
-                await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
-                RenderSeatingChart();
+                // Chỉ vẽ sơ đồ lớp nếu Tab Sơ đồ đang hiển thị
+                if (borderSeatingChartView != null && borderSeatingChartView.Visibility == Visibility.Visible)
+                {
+                    await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
+                    RenderSeatingChart();
+                }
             }
             catch (Exception ex) { Log.Warning("LstClasses_SelectionChanged error: {Err}", ex.Message); }
             finally
@@ -2323,7 +2343,10 @@ namespace QASmartClass.Classroom.Views
 
         private void SeatingCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            RenderSeatingChart();
+            if (borderSeatingChartView != null && borderSeatingChartView.Visibility == Visibility.Visible)
+            {
+                RenderSeatingChart();
+            }
         }
 
         private async void BtnResetSeatingLayout_Click(object sender, RoutedEventArgs e)

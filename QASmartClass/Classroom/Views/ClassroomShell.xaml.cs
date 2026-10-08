@@ -183,6 +183,9 @@ namespace QASmartClass.Classroom.Views
 
 				await StartNetworkAsync();
 
+				// Tải trước các trang cốt lõi vào Cache khi CPU rảnh để lần mở đầu tiên đạt tốc độ tức thì
+				PrewarmCorePages();
+
 				// Subscribe VNC events (LOI_VID_46)
 				QASmartClass.Services.VncBroadcastService.Instance.StatusChanged += OnVncBroadcastStatusChanged;
 				QASmartClass.Services.VncBroadcastService.Instance.TimerTick += OnVncBroadcastTimerTick;
@@ -199,6 +202,15 @@ namespace QASmartClass.Classroom.Views
 			{
 				QASmartClass.Services.VncBroadcastService.Instance.StatusChanged -= OnVncBroadcastStatusChanged;
 				QASmartClass.Services.VncBroadcastService.Instance.TimerTick -= OnVncBroadcastTimerTick;
+
+				foreach (var cachedPage in _pageCache.Values)
+				{
+					if (cachedPage is IDisposable disp)
+					{
+						try { disp.Dispose(); } catch { }
+					}
+				}
+				_pageCache.Clear();
 			};
 
 		}
@@ -1201,38 +1213,18 @@ namespace QASmartClass.Classroom.Views
 
 
 
-			// Giải phóng tài nguyên Page cũ (chống Memory Leak)
-
-			if (contentFrame.Content is IDisposable disposable)
-
+			// Chỉ giải phóng tài nguyên nếu Page cũ không nằm trong Cache (để duy trì trạng thái và tốc độ nạp O(1))
+			if (contentFrame.Content is IDisposable disposable && !_pageCache.ContainsValue((Page)contentFrame.Content))
 			{
-
 				try
-
 				{
-
 					disposable.Dispose();
-
-						Log.Information("Successfully disposed previous page of type {Page}", contentFrame.Content.GetType().Name);
-
-					// Xóa page đã Dispose khỏi cache để tránh tái sử dụng trang zombie
-					var disposeKey = _pageCache.FirstOrDefault(kv => kv.Value == contentFrame.Content).Key;
-					if (disposeKey != null)
-					{
-						_pageCache.Remove(disposeKey);
-						Log.Information("Removed disposed page {Key} from cache", disposeKey);
-					}
-
+					Log.Information("Successfully disposed non-cached page of type {Page}", contentFrame.Content.GetType().Name);
 				}
-
 				catch (Exception ex)
-
 				{
-
 					Log.Warning("Error disposing page: {Err}", ex.Message);
-
 				}
-
 			}
 
 
@@ -1455,94 +1447,11 @@ namespace QASmartClass.Classroom.Views
 					// các hàm khởi tạo Page (rất nặng) khóa luồng UI.
 					await Dispatcher.Yield(DispatcherPriority.Background);
 
-					page = formId switch
-
-					{
-
-						"F1"  => new DashboardPage(),
-
-						"F2"  => new LessonListPage(),
-
-						"F3"  => new LessonEditorPage(),
-
-						"F4"  => new ClassroomPage(),
-
-						"F5"  => new MonitorPage(),
-
-						"F6"  => new QuizPage(),
-
-						"F7"  => new ReportPage(),
-
-						"F8"  => new SettingsPage(),
-
-						"F9"  => new LibraryPage(),
-
-						"F10" => new GroupPage(),
-
-						"F11" => new FileTransferPage(),
-
-						"F12" => new MonitorPage(),  // Remote merged into Monitor
-
-						"F13" => new MessagingPage(),
-
-						"F14" => new QuestionBankPage(),
-
-						"F15" => new StudentPage(showRosterFirst: true),
-
-						"F15S" => new StudentPage(showRosterFirst: false),
-
-						"F16" => new BroadcastPage(),
-
-						"F17" => new PolicyPage(),
-
-						"F18" => new SurveyPage(),
-
-						"F19" => new EventLogPage(),
-
-						"F20" => new CanvasPage(),
-
-						"F21" => new ChartPage(),
-
-						"F22" => new TimerPage(),
-
-						"F23" => new RandomPickerPage(),
-
-						"F24" => new SplitScreenPage(),
-
-						"F25" => new LessonHistoryPage(),
-
-						"F27" => new AttendancePage(),
-
-						"F26" => new TimetablePage(),
-
-						"F30" => new WebsitePushPage(),
-
-						"F28" => new HomeworkPage(),
-
-						"F29" => _aiAssistantPage ??= new AIAssistantPage(),
-
-						"F31" => new StemToolsPage(),
-
-						"F32" => new LearningTools.Views.LearningToolsHub(),
-
-						"F33" => new TeacherListPage(),
-
-						"F34" => new PracticalAppsPage(),
-
-						"F35" => new NetworkDiagnosticsPage(),
-
-						_ => null
-
-					};
-
-
+					page = CreatePageInstance(formId);
 
 					if (page != null)
-
 					{
-
 						_pageCache[formId] = page;
-
 					}
 				}
 				catch (Exception ex)
@@ -1565,56 +1474,34 @@ namespace QASmartClass.Classroom.Views
 
 			}
 
-
-
 			if (page != null)
-
 			{
-
-				// Thực thi tải lại dữ liệu bất đồng bộ đối với trang lấy từ Cache
-
-				if (page is INavigatedPage navigatedPage)
-
-				{
-
-					try
-
-					{
-
-						await navigatedPage.OnNavigatedToAsync();
-
-					}
-
-					catch (Exception ex)
-
-					{
-
-						Log.Error("Error on page OnNavigatedToAsync: {Err}", ex.Message);
-
-					}
-
-				}
-
-
-
+				// 1. Hiển thị trang tức thì (< 16ms / 60 FPS)
 				contentFrame.Content = page;
 
-				
-
-				// Chờ nạp trang hoàn tất để kích hoạt hiệu ứng Fade In & Slide In mượt mà
-
+				// 2. Chờ hiệu ứng chuyển cảnh mượt mà
 				await AnimatePageInAsync();
 
+				// 3. Nạp hoặc làm mới dữ liệu ngầm bất đồng bộ không chặn luồng giao diện
+				if (page is INavigatedPage navigatedPage)
+				{
+					_ = Dispatcher.InvokeAsync(async () =>
+					{
+						try
+						{
+							await navigatedPage.OnNavigatedToAsync();
+						}
+						catch (Exception ex)
+						{
+							Log.Error("Error on page OnNavigatedToAsync: {Err}", ex.Message);
+						}
+					}, DispatcherPriority.Background);
+				}
 			}
-
 			else
-
 			{
-
 				contentFrame.Content = CreatePlaceholder(formId, txtPageTitle.Text);
-
 				await AnimatePageInAsync();
-
 			}
 
 
@@ -1698,7 +1585,83 @@ namespace QASmartClass.Classroom.Views
 
 
 			await tcs.Task;
+		}
 
+		/// <summary>
+		/// Khởi tạo phiên bản Page tương ứng với formId
+		/// </summary>
+		private Page? CreatePageInstance(string formId)
+		{
+			return formId switch
+			{
+				"F1"  => new DashboardPage(),
+				"F2"  => new LessonListPage(),
+				"F3"  => new LessonEditorPage(),
+				"F4"  => new ClassroomPage(),
+				"F5"  => new MonitorPage(),
+				"F6"  => new QuizPage(),
+				"F7"  => new ReportPage(),
+				"F8"  => new SettingsPage(),
+				"F9"  => new LibraryPage(),
+				"F10" => new GroupPage(),
+				"F11" => new FileTransferPage(),
+				"F12" => new MonitorPage(),  // Remote merged into Monitor
+				"F13" => new MessagingPage(),
+				"F14" => new QuestionBankPage(),
+				"F15" => new StudentPage(showRosterFirst: true),
+				"F15S" => new StudentPage(showRosterFirst: false),
+				"F16" => new BroadcastPage(),
+				"F17" => new PolicyPage(),
+				"F18" => new SurveyPage(),
+				"F19" => new EventLogPage(),
+				"F20" => new CanvasPage(),
+				"F21" => new ChartPage(),
+				"F22" => new TimerPage(),
+				"F23" => new RandomPickerPage(),
+				"F24" => new SplitScreenPage(),
+				"F25" => new LessonHistoryPage(),
+				"F27" => new AttendancePage(),
+				"F26" => new TimetablePage(),
+				"F30" => new WebsitePushPage(),
+				"F28" => new HomeworkPage(),
+				"F29" => _aiAssistantPage ??= new AIAssistantPage(),
+				"F31" => new StemToolsPage(),
+				"F32" => new LearningTools.Views.LearningToolsHub(),
+				"F33" => new TeacherListPage(),
+				"F34" => new PracticalAppsPage(),
+				"F35" => new NetworkDiagnosticsPage(),
+				_ => null
+			};
+		}
+
+		/// <summary>
+		/// Tải trước các trang cốt lõi vào bộ nhớ đệm (Cache) trong thời gian CPU rảnh (ApplicationIdle)
+		/// </summary>
+		private void PrewarmCorePages()
+		{
+			Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+			{
+				string[] corePages = { "F15", "F2", "F26", "F4", "F5" };
+				foreach (var id in corePages)
+				{
+					if (!_pageCache.ContainsKey(id))
+					{
+						try
+						{
+							var p = CreatePageInstance(id);
+							if (p != null)
+							{
+								_pageCache[id] = p;
+								Log.Information("Pre-warmed core page {FormId} into cache", id);
+							}
+						}
+						catch (Exception ex)
+						{
+							Log.Warning("Pre-warm failed for page {FormId}: {Err}", id, ex.Message);
+						}
+					}
+				}
+			}));
 		}
 
 
