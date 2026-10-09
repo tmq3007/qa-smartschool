@@ -105,6 +105,25 @@ namespace QASmartClass.Classroom.Services
             }
         }
 
+        /// <summary>Lấy danh sách roster được phân công cho giáo viên phụ trách (có fallback an toàn)</summary>
+        public List<ClassRoster> GetRostersForTeacher(string? teacherName, bool activeOnly = true)
+        {
+            var all = GetAllRosters(activeOnly);
+            if (string.IsNullOrWhiteSpace(teacherName))
+                return all;
+
+            var trimmedName = teacherName.Trim();
+            var myRosters = all.Where(r => 
+                !string.IsNullOrWhiteSpace(r.TeacherName) && 
+                (string.Equals(r.TeacherName.Trim(), trimmedName, StringComparison.OrdinalIgnoreCase) ||
+                 r.TeacherName.Contains(trimmedName, StringComparison.OrdinalIgnoreCase) ||
+                 trimmedName.Contains(r.TeacherName.Trim(), StringComparison.OrdinalIgnoreCase))
+            ).ToList();
+
+            // Nếu giáo viên có lớp cụ thể thì trả về, nếu chưa được gán lớp thì fallback trả về toàn bộ
+            return myRosters.Any() ? myRosters : all;
+        }
+
         /// <summary>Lấy roster theo Id (include students)</summary>
         public ClassRoster? GetRosterById(int rosterId)
         {

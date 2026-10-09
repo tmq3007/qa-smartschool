@@ -176,6 +176,7 @@ namespace QASmartTouch
                         QASmartClass.Services.AppServices.Initialize(tempDb);
                         QASmartTouch.Services.AppSettings.LoadFromDatabase(tempDb);
                         QASmartClass.Classroom.Services.SubjectCatalogService.Instance.EnsureLoaded(tempDb);
+                        QASmartClass.Data.TimetableDataHelper.EnsureDistinctTimetables(tempDb);
                         QASmartClass.Helpers.OfflineSyncManager.Start();
 
                         // Chỉ invoke UI khi đã sẵn sàng
@@ -220,6 +221,7 @@ namespace QASmartTouch
                             QASmartClass.Services.AppServices.Initialize(Database);
                             QASmartTouch.Services.AppSettings.LoadFromDatabase(Database);
                             QASmartClass.Classroom.Services.SubjectCatalogService.Instance.EnsureLoaded(Database);
+                            QASmartClass.Data.TimetableDataHelper.EnsureDistinctTimetables(Database);
                             QASmartClass.Helpers.OfflineSyncManager.Start();
 
                             InitializeModeAndRole(splash);

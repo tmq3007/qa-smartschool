@@ -23,6 +23,7 @@ namespace QASmartClass.Classroom.Views
         private string _sortColumn = "FullName";
         private System.ComponentModel.ListSortDirection _sortDirection = System.ComponentModel.ListSortDirection.Ascending;
         private readonly bool _showRosterFirst;
+        private bool _filterMyClassesOnly = !QASmartClass.Staff.Services.StaffSession.CanAccessOverview();
 
         public StudentPage(bool showRosterFirst = false)
         {
@@ -109,8 +110,20 @@ namespace QASmartClass.Classroom.Views
                 }
                 else
                 {
-                    var dbStudents = await ClassroomAppContext.Db.Students.AsNoTracking().ToListAsync();
-                    students = VietnameseNameHelper.SortByVietnameseName(dbStudents, s => s.FullName);
+                    // Nếu giáo viên có lớp, ưu tiên tự động chọn lớp đầu tiên của giáo viên thay vì nạp toàn trường
+                    string currentTeacher = QASmartClass.Staff.Services.StaffSession.CurrentUser?.FullName ?? "";
+                    var myRosters = ClassroomAppContext.ClassRoster.GetRostersForTeacher(currentTeacher);
+                    if (myRosters.Any())
+                    {
+                        activeRoster = myRosters[0];
+                        ClassroomAppContext.ClassRoster.SetActiveRoster(activeRoster);
+                        students = ClassroomAppContext.ClassRoster.GetActiveStudents();
+                    }
+                    else
+                    {
+                        var dbStudents = await ClassroomAppContext.Db.Students.AsNoTracking().ToListAsync();
+                        students = VietnameseNameHelper.SortByVietnameseName(dbStudents, s => s.FullName);
+                    }
                 }
 
                 _allStudents = students ?? new List<Student>();
@@ -273,42 +286,105 @@ namespace QASmartClass.Classroom.Views
             }
         }
 
-        /// <summary>Populate class filter ComboBox with all rosters</summary>
-                private void PopulateClassFilter()
+        /// <summary>Populate class filter ComboBox with all rosters or teacher's rosters</summary>
+        private void PopulateClassFilter()
         {
             try
             {
-                var rosters = ClassroomAppContext.ClassRoster.GetAllRosters();
+                var allRosters = ClassroomAppContext.ClassRoster.GetAllRosters();
+                string currentTeacher = QASmartClass.Staff.Services.StaffSession.CurrentUser?.FullName ?? "";
+                var myRosters = ClassroomAppContext.ClassRoster.GetRostersForTeacher(currentTeacher);
+
+                if (btnScopeMyClasses != null && btnScopeAllClasses != null)
+                {
+                    btnScopeMyClasses.Content = $"Lớp của tôi ({myRosters.Count})";
+                    btnScopeAllClasses.Content = $"Tất cả lớp ({allRosters.Count})";
+                    UpdateScopeButtonsUI();
+                }
+
                 var listItems = new List<QASmartClass.Data.ClassRoster>();
                 
-                // Thêm mục "Tất cả lớp"
-                var allItem = new QASmartClass.Data.ClassRoster 
-                { 
-                    Id = -1, 
-                    ClassName = "Tất cả học sinh", 
-                    TeacherName = "Toàn trường", 
-                    StudentCount = ClassroomAppContext.ClassRoster.GetTotalStudentsCount() 
-                };
-                listItems.Add(allItem);
-                listItems.AddRange(rosters);
+                if (_filterMyClassesOnly)
+                {
+                    // Chế độ giáo viên: Chỉ hiển thị các lớp mình phụ trách
+                    listItems.AddRange(myRosters);
+                }
+                else
+                {
+                    // Chế độ toàn trường (Admin/BGH hoặc GV muốn xem toàn bộ để dạy thay)
+                    var allItem = new QASmartClass.Data.ClassRoster 
+                    { 
+                        Id = -1, 
+                        ClassName = "Tất cả học sinh", 
+                        TeacherName = "Toàn trường", 
+                        StudentCount = ClassroomAppContext.ClassRoster.GetTotalStudentsCount() 
+                    };
+                    listItems.Add(allItem);
+                    listItems.AddRange(allRosters);
+                }
                 
                 lstClasses.SelectionChanged -= LstClasses_SelectionChanged;
                 lstClasses.ItemsSource = listItems;
                 
                 var activeRoster = ClassroomAppContext.ClassRoster.ActiveRoster;
-                if (activeRoster != null)
+                if (activeRoster != null && listItems.Any(r => r.Id == activeRoster.Id))
                 {
-                    var selected = listItems.FirstOrDefault(r => r.Id == activeRoster.Id);
-                    lstClasses.SelectedItem = selected ?? allItem;
+                    lstClasses.SelectedItem = listItems.First(r => r.Id == activeRoster.Id);
                 }
-                else
+                else if (listItems.Count > 0)
                 {
-                    lstClasses.SelectedItem = allItem;
+                    var firstItem = listItems[0];
+                    lstClasses.SelectedItem = firstItem;
+                    if (firstItem.Id != -1)
+                    {
+                        ClassroomAppContext.ClassRoster.SetActiveRoster(firstItem);
+                    }
                 }
                 
                 lstClasses.SelectionChanged += LstClasses_SelectionChanged;
             }
             catch (Exception ex) { Log.Warning("PopulateClassFilter error: {Err}", ex.Message); }
+        }
+
+        private void ScopeMyClasses_Click(object sender, RoutedEventArgs e)
+        {
+            if (_filterMyClassesOnly) return;
+            _filterMyClassesOnly = true;
+            UpdateScopeButtonsUI();
+            PopulateClassFilter();
+        }
+
+        private void ScopeAllClasses_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_filterMyClassesOnly) return;
+            _filterMyClassesOnly = false;
+            UpdateScopeButtonsUI();
+            PopulateClassFilter();
+        }
+
+        private void UpdateScopeButtonsUI()
+        {
+            if (btnScopeMyClasses == null || btnScopeAllClasses == null) return;
+
+            var activeBg = new SolidColorBrush(Color.FromRgb(37, 99, 235));
+            var inactiveBg = Brushes.Transparent;
+            var activeFg = Brushes.White;
+            var inactiveFg = new SolidColorBrush(Color.FromRgb(100, 116, 139));
+
+            if (_filterMyClassesOnly)
+            {
+                btnScopeMyClasses.Background = activeBg;
+                btnScopeMyClasses.Foreground = activeFg;
+                btnScopeAllClasses.Background = inactiveBg;
+                btnScopeAllClasses.Foreground = inactiveFg;
+            }
+            else
+            {
+                btnScopeAllClasses.Background = activeBg;
+                btnScopeAllClasses.Foreground = activeFg;
+                btnScopeMyClasses.Background = inactiveBg;
+                btnScopeMyClasses.Foreground = inactiveFg;
+            }
         }
 
         /// <summary>When user selects a class from the filter ComboBox</summary>

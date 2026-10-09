@@ -26,19 +26,9 @@ namespace QASmartClass.Classroom.Views
         private string _schoolYear = "";
         private string _viewMode = "Class";
 
-        // Thời gian bắt đầu/kết thúc mỗi tiết (dùng cho focus)
-        private static readonly (int StartH, int StartM, int EndH, int EndM)[] PeriodTimeRanges = new[]
-        {
-            (7,0,7,45), (7,50,8,35), (8,40,9,25), (9,35,10,20), (10,25,11,10),
-            (13,30,14,15), (14,20,15,5), (15,10,15,55), (16,5,16,50), (16,55,17,40)
-        };
-
-        // Thời gian tiết học chuẩn
-        private static readonly string[] PeriodTimes = new[]
-        {
-            "07:00 – 07:45", "07:50 – 08:35", "08:40 – 09:25", "09:35 – 10:20", "10:25 – 11:10",
-            "13:30 – 14:15", "14:20 – 15:05", "15:10 – 15:55", "16:05 – 16:50", "16:55 – 17:40"
-        };
+        // Khung giờ học linh hoạt (theo mùa hoặc theo cài đặt của trường)
+        private (int StartH, int StartM, int EndH, int EndM)[] PeriodTimeRanges => Services.PeriodScheduleService.Instance.GetPeriodTimeRanges();
+        private string[] PeriodTimes => Services.PeriodScheduleService.Instance.GetPeriodTimes();
 
         private static readonly string[] PeriodLabels = new[]
         {
@@ -59,6 +49,7 @@ namespace QASmartClass.Classroom.Views
             ["Sử"] = "#5D4037", ["Địa"] = "#00695C", ["GDCD"] = "#F9A825",
             ["Tin"] = "#0277BD", ["TD"] = "#EF6C00", ["CN"] = "#558B2F",
             ["Nhạc"] = "#8E24AA", ["MT"] = "#D81B60", ["STEM"] = "#1565C0",
+            ["Chào cờ"] = "#D32F2F", ["SHDC"] = "#D32F2F", ["SHL"] = "#303F9F"
         };
 
         private bool _isSimulating = false;
@@ -70,6 +61,7 @@ namespace QASmartClass.Classroom.Views
             _weekStart = GetMonday(DateTime.Today);
             Loaded += (_, _) =>
             {
+                Services.PeriodScheduleService.Instance.EnsureLoaded(ClassroomAppContext.Db);
                 LoadClassInfo(); InitSimControls(); LoadSlots(); RenderTimetable(); StartTimer();
 
                 // Auto-refresh khi GV chuyển lớp — N7 FIX: Dùng named handler để Unsubscribe tránh memory leak
@@ -81,6 +73,9 @@ namespace QASmartClass.Classroom.Views
 
                     SubjectCatalogService.Instance.SubjectsChanged -= OnSubjectsChanged;
                     SubjectCatalogService.Instance.SubjectsChanged += OnSubjectsChanged;
+
+                    Services.PeriodScheduleService.Instance.ScheduleChanged -= OnScheduleChanged;
+                    Services.PeriodScheduleService.Instance.ScheduleChanged += OnScheduleChanged;
                 }
                 catch { }
             };
@@ -92,6 +87,7 @@ namespace QASmartClass.Classroom.Views
                     // → ClassroomAppContext
                     ClassroomAppContext.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
                     SubjectCatalogService.Instance.SubjectsChanged -= OnSubjectsChanged;
+                    Services.PeriodScheduleService.Instance.ScheduleChanged -= OnScheduleChanged;
                 }
                 catch { }
             };
@@ -105,6 +101,20 @@ namespace QASmartClass.Classroom.Views
         private void OnSubjectsChanged(object? sender, EventArgs e)
         {
             Dispatcher.Invoke(RenderTimetable);
+        }
+
+        private void OnScheduleChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(RenderTimetable);
+        }
+
+        private void ConfigurePeriodTimes_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new ConfigurePeriodTimesDialog
+            {
+                Owner = Window.GetWindow(this)
+            };
+            dlg.ShowDialog();
         }
 
         private void LoadClassInfo()
@@ -150,7 +160,10 @@ namespace QASmartClass.Classroom.Views
                 if (_viewMode == "Class")
                 {
                     string teacher = roster != null && !string.IsNullOrWhiteSpace(roster.TeacherName) ? $"  •  GV: {roster.TeacherName}" : "";
-                    txtClassInfo.Text = $"🏫 Lớp {_className}{subject}  •  Năm học {_schoolYear}  •  {semester}{teacher}";
+                    string displayClass = string.IsNullOrWhiteSpace(_className) 
+                        ? "Chưa chọn lớp" 
+                        : (_className.StartsWith("Lớp", StringComparison.OrdinalIgnoreCase) ? _className : $"Lớp {_className}");
+                    txtClassInfo.Text = $"🏫 {displayClass}{subject}  •  Năm học {_schoolYear}  •  {semester}{teacher}";
                 }
                 else
                 {
@@ -332,6 +345,15 @@ namespace QASmartClass.Classroom.Views
 
                 if (logs != null && !string.IsNullOrEmpty(logs.Details))
                 {
+                    // Tự động nhận biết và thay thế mẫu dữ liệu cũ bị trùng lặp do Random(42)
+                    if (_viewMode == "Class" && logs.Details.Contains("\"Subject\":\"Địa\"") && logs.Details.Contains("\"Room\":\"P.10A\""))
+                    {
+                        _slots = Data.TimetableDataHelper.GetDistinctTimetable(_className);
+                        SaveSlots();
+                        Log.Information("Replaced old duplicate timetable with distinct timetable for {Class}", _className);
+                        return;
+                    }
+
                     _slots = System.Text.Json.JsonSerializer.Deserialize<List<TimetableSlot>>(logs.Details)
                              ?? new List<TimetableSlot>();
                     Log.Information("Loaded edited timetable from EventLog for key {Key}: {Count} slots", timetableKey, _slots.Count);
@@ -432,29 +454,11 @@ namespace QASmartClass.Classroom.Views
 
         private List<TimetableSlot> GenerateSampleTimetable()
         {
-            var list = new List<TimetableSlot>();
-            var subjects = new[] { "Toán", "Văn", "Anh", "Lý", "Hóa", "Sinh", "Sử", "Địa", "GDCD", "Tin", "TD" };
-            var rooms = new[] { "P.10A", "P.CS1", "P.Tin", "Sân TD" };
-            var rng = new Random(42);
-
-            for (int day = 0; day < 6; day++)
+            if (_viewMode == "Class" && !string.IsNullOrEmpty(_className))
             {
-                int periods = day < 5 ? 5 : 3; // T2-T6: 5 tiết, T7: 3 tiết
-                for (int p = 0; p < periods; p++)
-                {
-                    string subj = subjects[rng.Next(subjects.Length)];
-                    list.Add(new TimetableSlot
-                    {
-                        DayOfWeek = day, // 0=T2, 5=T7
-                        Period = p,
-                        Subject = subj,
-                        Room = rooms[rng.Next(rooms.Length)],
-                        Teacher = "GV",
-                        Note = ""
-                    });
-                }
+                return Data.TimetableDataHelper.GetDistinctTimetable(_className);
             }
-            return list;
+            return Data.TimetableDataHelper.GetDistinctTimetable("10A1");
         }
 
         // ═══════════════════════════════════════════════════════════

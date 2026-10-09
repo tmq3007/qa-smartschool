@@ -1,0 +1,255 @@
+<Window x:Class="QASmartClass.Classroom.Views.ConfigurePeriodTimesDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Cài đặt Khung Giờ Học"
+        Width="820" Height="680"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True"
+        Background="Transparent" ResizeMode="NoResize">
+
+    <Border Background="White" CornerRadius="16" BorderBrush="#CBD5E1" BorderThickness="1.5">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="25" ShadowDepth="4" Opacity="0.18" Color="#0F172A"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="*"/>    <!-- Content -->
+                <RowDefinition Height="Auto"/> <!-- Footer -->
+            </Grid.RowDefinitions>
+
+            <!-- ═══ HEADER ═══ -->
+            <Border Grid.Row="0" Background="#1E293B" CornerRadius="16,16,0,0" Padding="24,16" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <DockPanel LastChildFill="True">
+                    <Button Content="✕" DockPanel.Dock="Right" Width="36" Height="36" FontSize="16" FontWeight="Bold"
+                            Background="#334155" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnClose_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="18">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bd" Property="Background" Value="#EF4444"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="#2563EB" Width="38" Height="38" CornerRadius="10" Margin="0,0,12,0">
+                            <TextBlock Text="⏰" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Text="Cài đặt Khung Giờ Học &amp; Tiết Học" FontSize="17" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Tùy chỉnh giờ bắt đầu buổi học theo mùa (Mùa hè / Mùa đông) hoặc theo đặc thù trường" FontSize="12" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- ═══ CONTENT ═══ -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="24,16,24,10">
+                <StackPanel>
+                    <!-- 1. CHỌN MẪU KHUNG GIỜ THEO MÙA -->
+                    <TextBlock Text="1. CHỌN NHANH THEO MÙA / QUY CHUẨN TRƯỜNG" FontSize="13" FontWeight="Bold" Foreground="#475569" Margin="0,0,0,10"/>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Card Mùa Hè -->
+                        <Border x:Name="cardSummer" Grid.Column="0" Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="2" CornerRadius="12" Padding="14,12" Margin="0,0,8,0" Cursor="Hand" MouseLeftButtonDown="SelectPresetSummer_Click">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="☀️" FontSize="18" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Giờ Mùa Hè" FontSize="14" FontWeight="Bold" Foreground="#B45309"/>
+                                </StackPanel>
+                                <TextBlock Text="Sáng: 07:00 – 11:10" FontSize="12" FontWeight="SemiBold" Foreground="#78350F" Margin="0,6,0,2"/>
+                                <TextBlock Text="Chiều: 13:30 – 17:40" FontSize="12" FontWeight="SemiBold" Foreground="#78350F"/>
+                                <TextBlock Text="Vào học sớm tránh nắng nóng" FontSize="11" Foreground="#92400E" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Card Mùa Đông -->
+                        <Border x:Name="cardWinter" Grid.Column="1" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="12" Padding="14,12" Margin="4,0,4,0" Cursor="Hand" MouseLeftButtonDown="SelectPresetWinter_Click">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="❄️" FontSize="18" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Giờ Mùa Đông" FontSize="14" FontWeight="Bold" Foreground="#0369A1"/>
+                                </StackPanel>
+                                <TextBlock Text="Sáng: 07:30 – 11:40" FontSize="12" FontWeight="SemiBold" Foreground="#0C4A6E" Margin="0,6,0,2"/>
+                                <TextBlock Text="Chiều: 13:15 – 17:25" FontSize="12" FontWeight="SemiBold" Foreground="#0C4A6E"/>
+                                <TextBlock Text="Lùi 30p buổi sáng, chiều vào sớm" FontSize="11" Foreground="#0284C7" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Card Chuẩn 07:15 -->
+                        <Border x:Name="cardStandard" Grid.Column="2" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="12" Padding="14,12" Margin="8,0,0,0" Cursor="Hand" MouseLeftButtonDown="SelectPresetStandard_Click">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="🏫" FontSize="18" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Chuẩn 07:15" FontSize="14" FontWeight="Bold" Foreground="#15803D"/>
+                                </StackPanel>
+                                <TextBlock Text="Sáng: 07:15 – 11:25" FontSize="12" FontWeight="SemiBold" Foreground="#14532D" Margin="0,6,0,2"/>
+                                <TextBlock Text="Chiều: 13:30 – 17:40" FontSize="12" FontWeight="SemiBold" Foreground="#14532D"/>
+                                <TextBlock Text="Khung giờ phổ thông chuẩn" FontSize="11" Foreground="#16A34A" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- 2. TÍNH NHANH THEO GIỜ BẮT ĐẦU BUỔI HỌC -->
+                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="16,12" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="2. HOẶC TÙY CHỈNH GIỜ BẮT ĐẦU BUỔI HỌC" FontSize="13" FontWeight="Bold" Foreground="#334155" Margin="0,0,0,10"/>
+
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="Giờ bắt đầu Sáng:" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#475569"/>
+                                <ComboBox x:Name="cboMorningStart" Grid.Column="1" Height="34" FontSize="13" VerticalContentAlignment="Center">
+                                    <ComboBoxItem Content="06:45"/>
+                                    <ComboBoxItem Content="07:00" IsSelected="True"/>
+                                    <ComboBoxItem Content="07:15"/>
+                                    <ComboBoxItem Content="07:30"/>
+                                    <ComboBoxItem Content="07:45"/>
+                                    <ComboBoxItem Content="08:00"/>
+                                </ComboBox>
+
+                                <TextBlock Grid.Column="3" Text="Giờ bắt đầu Chiều:" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#475569"/>
+                                <ComboBox x:Name="cboAfternoonStart" Grid.Column="4" Height="34" FontSize="13" VerticalContentAlignment="Center">
+                                    <ComboBoxItem Content="13:00"/>
+                                    <ComboBoxItem Content="13:15"/>
+                                    <ComboBoxItem Content="13:30" IsSelected="True"/>
+                                    <ComboBoxItem Content="13:45"/>
+                                    <ComboBoxItem Content="14:00"/>
+                                </ComboBox>
+
+                                <Button Grid.Column="6" Content="⚡ Tự động tính 10 tiết" FontSize="12" FontWeight="Bold" Padding="14,8"
+                                        Background="#2563EB" Foreground="White" BorderThickness="0" Cursor="Hand" Click="Recalculate_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bd" Property="Background" Value="#1D4ED8"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- 3. DANH SÁCH CHI TIẾT 10 TIẾT HỌC -->
+                    <TextBlock Text="3. CHI TIẾT THỜI GIAN TỪNG TIẾT (Có thể chỉnh sửa trực tiếp):" FontSize="13" FontWeight="Bold" Foreground="#475569" Margin="0,0,0,8"/>
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Cột Ca Sáng: Tiết 1 - 5 -->
+                        <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="🌅 CA SÁNG (Tiết 1 – Tiết 5)" FontSize="12" FontWeight="Bold" Foreground="#0284C7" Margin="0,0,0,8"/>
+                                <ItemsControl x:Name="icMorningPeriods">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,3">
+                                                <TextBlock Text="{Binding Period, StringFormat='Tiết {0}:'}" Width="55" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" Foreground="#334155"/>
+                                                <TextBox Text="{Binding Start, UpdateSourceTrigger=PropertyChanged}" Width="75" Height="28" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="4,0" FontSize="12"/>
+                                                <TextBlock Text="→" VerticalAlignment="Center" Foreground="#94A3B8" Margin="2,0"/>
+                                                <TextBox Text="{Binding End, UpdateSourceTrigger=PropertyChanged}" Width="75" Height="28" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="4,0" FontSize="12"/>
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Cột Ca Chiều: Tiết 6 - 10 -->
+                        <Border Grid.Column="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="🌇 CA CHIỀU (Tiết 6 – Tiết 10)" FontSize="12" FontWeight="Bold" Foreground="#EA580C" Margin="0,0,0,8"/>
+                                <ItemsControl x:Name="icAfternoonPeriods">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,3">
+                                                <TextBlock Text="{Binding Period, StringFormat='Tiết {0}:'}" Width="55" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" Foreground="#334155"/>
+                                                <TextBox Text="{Binding Start, UpdateSourceTrigger=PropertyChanged}" Width="75" Height="28" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="4,0" FontSize="12"/>
+                                                <TextBlock Text="→" VerticalAlignment="Center" Foreground="#94A3B8" Margin="2,0"/>
+                                                <TextBox Text="{Binding End, UpdateSourceTrigger=PropertyChanged}" Width="75" Height="28" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="4,0" FontSize="12"/>
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ═══ FOOTER ═══ -->
+            <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0" CornerRadius="0,0,16,16" Padding="24,14">
+                <DockPanel LastChildFill="False">
+                    <TextBlock Text="💡 Khi lưu, thời gian các tiết trên lưới TKB sẽ cập nhật tức thì cho toàn bộ các lớp."
+                               VerticalAlignment="Center" FontSize="12" Foreground="#64748B"/>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                        <Button Content="Hủy bỏ" FontSize="13" FontWeight="SemiBold" Padding="18,8" Background="#E2E8F0" Foreground="#475569"
+                                BorderThickness="0" Cursor="Hand" Click="BtnClose_Click" Margin="0,0,10,0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#CBD5E1"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <Button Content="💾 Lưu &amp; Áp dụng ngay" FontSize="13" FontWeight="Bold" Padding="22,8" Background="#16A34A" Foreground="White"
+                                BorderThickness="0" Cursor="Hand" Click="BtnSave_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#15803D"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

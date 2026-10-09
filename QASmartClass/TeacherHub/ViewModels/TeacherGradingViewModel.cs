@@ -129,6 +129,26 @@ namespace QASmartClass.TeacherHub.ViewModels
                     rosters = await db.ClassRosters.Where(r => r.IsActive).ToListAsync();
                 }
 
+                // Phân quyền hiển thị: Giáo viên chỉ xem lớp mình phụ trách (Admin/BGH xem toàn trường)
+                var currentTeacher = QASmartClass.Staff.Services.StaffSession.CurrentUser?.FullName ?? "";
+                bool isManagement = QASmartClass.Staff.Services.StaffSession.CanAccessOverview();
+
+                if (!isManagement && !string.IsNullOrWhiteSpace(currentTeacher))
+                {
+                    var trimmed = currentTeacher.Trim();
+                    var myRosters = rosters.Where(r => 
+                        !string.IsNullOrWhiteSpace(r.TeacherName) &&
+                        (string.Equals(r.TeacherName.Trim(), trimmed, StringComparison.OrdinalIgnoreCase) ||
+                         r.TeacherName.Contains(trimmed, StringComparison.OrdinalIgnoreCase) ||
+                         trimmed.Contains(r.TeacherName.Trim(), StringComparison.OrdinalIgnoreCase))
+                    ).ToList();
+
+                    if (myRosters.Any())
+                    {
+                        rosters = myRosters;
+                    }
+                }
+
                 _allClasses = rosters;
                 ApplyClassFilter();
             }

@@ -25,10 +25,42 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" CornerRadius="12,12,0,0" Padding="16,12">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="📋" FontSize="18" Margin="0,0,8,0"/>
-                        <TextBlock Text="Danh sách lớp học" FontSize="16" FontWeight="Bold" Foreground="#1E293B"/>
+                <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" CornerRadius="12,12,0,0" Padding="14,12">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                            <TextBlock Text="📋" FontSize="18" Margin="0,0,8,0"/>
+                            <TextBlock Text="Danh sách lớp học" FontSize="16" FontWeight="Bold" Foreground="#1E293B"/>
+                        </StackPanel>
+                        
+                        <!-- Toggle: Lớp của tôi vs Tất cả lớp -->
+                        <Border Background="#E2E8F0" CornerRadius="8" Padding="2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button x:Name="btnScopeMyClasses" Grid.Column="0" Content="Lớp của tôi" FontSize="12" FontWeight="SemiBold"
+                                        Padding="0,6" BorderThickness="0" Background="#2563EB" Foreground="White" Cursor="Hand" Click="ScopeMyClasses_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                <Button x:Name="btnScopeAllClasses" Grid.Column="1" Content="Tất cả lớp" FontSize="12" FontWeight="SemiBold"
+                                        Padding="0,6" BorderThickness="0" Background="Transparent" Foreground="#64748B" Cursor="Hand" Click="ScopeAllClasses_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </Border>
                 
