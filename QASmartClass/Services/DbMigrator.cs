@@ -316,6 +316,8 @@ namespace QASmartClass.Services
 
                     EnsurePeriodLogbooksTable(db);
 
+                    SeedDefaultRolePermissions(db);
+
                     return;
 
                 }
@@ -898,17 +900,19 @@ namespace QASmartClass.Services
 
                                 ["Bep"] = new[] { "Canteen", "kitchen", "food_safety" },
 
-                                ["Ketoan"] = new[] { "Canteen", "assets", "tuition", "payroll", "youth_fee", "youth_planbudget" },
+                                ["Ketoan"] = new[] { "Canteen", "assets", "tuition", "payroll", "reports", "youth_fee", "youth_planbudget" },
 
-                                ["ThuQuy"] = new[] { "Canteen", "assets", "tuition", "payroll", "youth_fee", "youth_planbudget" },
+                                ["ThuQuy"] = new[] { "Canteen", "tuition", "payroll", "youth_fee", "youth_planbudget" },
 
                                 ["Counselor"] = new[] { "counseling" },
 
-                                ["Librarian"] = new[] { "library", "reports" },
+                                ["Librarian"] = new[] { "library", "document_manager", "reports" },
+
+                                ["GV"] = new[] { "department_mgmt", "award_mgmt" },
 
                                 ["HieuPho"] = new[] { 
 
-                                    "push_notification", "staff_performance", "moet", "reports", "document_manager", 
+                                    "Overview", "push_notification", "staff_performance", "moet", "reports", "document_manager", 
 
                                     "leave_request", "mobile_app", "app_analytics", "tuition", "assets", "counseling", 
 
@@ -3978,71 +3982,83 @@ namespace QASmartClass.Services
 
             {
 
-                if (!db.RolePermissions.Any())
+                var hpPermissions = new[] { 
+                    "leave_request", "Incidents", "event_calendar", "department_mgmt", "award_mgmt", 
+                    "staff_performance", "task_management", "eoffice_routing", "counseling", "health", 
+                    "epidemic", "food_safety", "medical_inventory", "emergency", "Gate", "Canteen", 
+                    "security", "janitor", "kitchen", "document_manager", "library", "mobile_app", 
+                    "app_analytics", "hr_profile", "hr_leave", "hr_attendance", "hr_contract",
+                    "youth_dashboard", "youth_members", "youth_recruitment", "youth_attendance", 
+                    "youth_activities", "youth_eventreg", "youth_emulation", "youth_award", 
+                    "youth_voting", "youth_document", "youth_planbudget", "youth_fee"
+                };
+
+                // Hiệu trưởng có 100% tất cả các quyền của Hiệu phó, cộng thêm các quyền chiến lược vĩ mô
+                var htPermissions = hpPermissions.Concat(new[] { 
+                    "Overview", "moet", "reports", "payroll", "tuition", "assets", "push_notification", "data_exporter" 
+                }).Distinct().ToArray();
+
+                var defaultPermissions = new System.Collections.Generic.Dictionary<string, string[]>
+                {
+                    ["BaoVe"] = new[] { "Gate", "security", "emergency" },
+                    ["YTe"] = new[] { "counseling", "health", "epidemic", "food_safety", "medical_inventory", "emergency" },
+                    ["LaoCong"] = new[] { "janitor" },
+                    ["Bep"] = new[] { "Canteen", "kitchen", "food_safety" },
+                    ["Ketoan"] = new[] { "Canteen", "assets", "tuition", "payroll", "reports", "youth_fee", "youth_planbudget" },
+                    ["ThuQuy"] = new[] { "Canteen", "tuition", "payroll", "youth_fee", "youth_planbudget" },
+                    ["Counselor"] = new[] { "counseling" },
+                    ["Librarian"] = new[] { "library", "document_manager", "reports" },
+                    ["GV"] = new[] { "event_calendar", "department_mgmt", "award_mgmt", "leave_request", "Incidents", "counseling" },
+                    ["HieuPho"] = hpPermissions,
+                    ["HieuTruong"] = htPermissions
+                };
+
+                bool changed = false;
+                foreach (var kvp in defaultPermissions)
+                {
+                    var role = kvp.Key;
+                    foreach (var tag in kvp.Value)
+                    {
+                        bool exists = db.RolePermissions.Any(rp => rp.Role == role && rp.PermissionTag == tag);
+                        if (!exists)
+                        {
+                            db.RolePermissions.Add(new Data.RolePermission
+                            {
+                                Role = role,
+                                PermissionTag = tag
+                            });
+                            changed = true;
+                        }
+                    }
+                }
+
+                // Loại bỏ khỏi HieuPho các quyền chuyên biệt của Hiệu trưởng/Admin
+                var forbiddenForHp = new[] { "moet", "payroll", "system_settings", "role_manager", "backup_restore", "system_audit" };
+                var invalidHpPerms = db.RolePermissions.Where(rp => rp.Role == "HieuPho" && forbiddenForHp.Contains(rp.PermissionTag)).ToList();
+                if (invalidHpPerms.Any())
+                {
+                    db.RolePermissions.RemoveRange(invalidHpPerms);
+                    changed = true;
+                }
+
+                // Loại bỏ triệt để các quyền quản trị/vĩ mô nếu từng lỡ gán cho GV
+                var forbiddenForGv = new[] { "Overview", "moet", "reports", "app_analytics", "system_settings", "role_manager", "backup_restore", "system_audit", "payroll", "tuition", "assets", "Gate", "security", "janitor", "kitchen", "medical_inventory", "push_notification" };
+                var invalidGvPerms = db.RolePermissions.Where(rp => rp.Role == "GV" && forbiddenForGv.Contains(rp.PermissionTag)).ToList();
+                if (invalidGvPerms.Any())
+                {
+                    db.RolePermissions.RemoveRange(invalidGvPerms);
+                    changed = true;
+                }
+
+
+
+                if (changed)
 
                 {
 
-                    var defaultPermissions = new System.Collections.Generic.Dictionary<string, string[]>
-
-                    {
-
-                        ["BaoVe"] = new[] { "Gate", "security", "emergency" },
-
-                        ["YTe"] = new[] { "counseling", "health", "epidemic", "food_safety", "medical_inventory", "emergency" },
-
-                        ["LaoCong"] = new[] { "janitor" },
-
-                        ["Bep"] = new[] { "Canteen", "kitchen", "food_safety" },
-
-                        ["Ketoan"] = new[] { "Canteen", "assets", "tuition", "payroll", "youth_fee", "youth_planbudget" },
-
-                        ["ThuQuy"] = new[] { "Canteen", "assets", "tuition", "payroll", "youth_fee", "youth_planbudget" },
-
-                        ["Counselor"] = new[] { "counseling" },
-
-                        ["HieuPho"] = new[] { 
-
-                            "push_notification", "staff_performance", "moet", "reports", "document_manager", 
-
-                            "leave_request", "mobile_app", "app_analytics", "tuition", "assets", "counseling", 
-
-                            "health", "epidemic", "food_safety", "medical_inventory", "emergency", "Gate", 
-
-                            "Canteen", "security", "janitor", "kitchen", "department_mgmt", "award_mgmt"
-
-                        }
-
-                    };
-
-
-
-                    foreach (var kvp in defaultPermissions)
-
-                    {
-
-                        var role = kvp.Key;
-
-                        foreach (var tag in kvp.Value)
-
-                        {
-
-                            db.RolePermissions.Add(new Data.RolePermission
-
-                            {
-
-                                Role = role,
-
-                                PermissionTag = tag
-
-                            });
-
-                        }
-
-                    }
-
                     db.SaveChanges();
 
-                    Log.Information("[DbMigrator] Seeded default role permissions");
+                    Log.Information("[DbMigrator] Synchronized default role permissions");
 
                 }
 

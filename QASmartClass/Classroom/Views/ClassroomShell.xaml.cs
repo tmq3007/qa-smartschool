@@ -151,35 +151,34 @@ namespace QASmartClass.Classroom.Views
 
 				}
 
-				else if (!string.IsNullOrEmpty(_lastPageBeforeSwitch) && _lastPageBeforeSwitch != _currentPage)
-
+				else
 				{
+					// Phục hồi trạng thái khi hiện lại và áp dụng phân quyền
+					RefreshSessionAndPermissions();
 
-					// Phục hồi trạng thái khi hiện lại
-
-					Log.Information("ClassroomShell shown. Restoring state: {Page}", _lastPageBeforeSwitch);
-
-					NavigateTo(_lastPageBeforeSwitch, addToStack: false);
-
-					_lastPageBeforeSwitch = null;
-
+					if (!string.IsNullOrEmpty(_lastPageBeforeSwitch) && _lastPageBeforeSwitch != _currentPage)
+					{
+						string targetPage = (_lastPageBeforeSwitch == "F1" && !CanAccessDashboard()) ? GetDefaultLandingPage() : _lastPageBeforeSwitch;
+						Log.Information("ClassroomShell shown. Restoring state: {Page}", targetPage);
+						NavigateTo(targetPage, addToStack: false);
+						_lastPageBeforeSwitch = null;
+					}
+					else if (_currentPage == "F1" && !CanAccessDashboard())
+					{
+						NavigateTo(GetDefaultLandingPage(), addToStack: false);
+					}
 				}
-
 			};
 
-
-
-			// Load teacher profile + trang chủ mặc định
-
+			// Load teacher profile + phân quyền + trang chủ mặc định theo vai trò
 			Loaded += async (s, e) =>
-
 			{
-
 				InitializeNavButtonsMap();
-
 				LoadTeacherProfile();
+				ApplyRolePermissions();
 
-				NavigateTo("F1");
+				string landingPage = GetDefaultLandingPage();
+				NavigateTo(landingPage);
 
 				await StartNetworkAsync();
 
@@ -1152,11 +1151,20 @@ namespace QASmartClass.Classroom.Views
 		/// </summary>
 
 		public async Task NavigateToAsync(string formId, bool addToStack = true)
-
 		{
+			// Nếu người dùng không có quyền truy cập Bảng tổng quan (F1), chuyển hướng về trang giảng dạy mặc định
+			if (formId == "F1" && !CanAccessDashboard())
+			{
+				formId = GetDefaultLandingPage();
+			}
+
+			// Nếu không phải BGH/Admin mà cố truy cập các chức năng duyệt, chuyển hướng về trang giảng dạy mặc định
+			if (formId.StartsWith("F_") && !QASmartClass.Staff.Services.StaffSession.CanApprove())
+			{
+				formId = GetDefaultLandingPage();
+			}
 
 			// Tránh vòng lặp hoặc lưu trùng lặp trang hiện tại
-
 			if (formId == _currentPage) return;
 
 
@@ -1270,8 +1278,7 @@ namespace QASmartClass.Classroom.Views
 				btnGoBack.Visibility = _navigationStack.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
 			if (btnGoHome != null)
-
-				btnGoHome.Visibility = _currentPage == "F1" ? Visibility.Collapsed : Visibility.Visible;
+				btnGoHome.Visibility = _currentPage == GetDefaultLandingPage() ? Visibility.Collapsed : Visibility.Visible;
 
 
 
@@ -1366,9 +1373,15 @@ namespace QASmartClass.Classroom.Views
 				"F34" => "🌍 Ứng dụng thực tế",
 
 				"F35" => "🔧 Chẩn đoán Mạng LAN",
-
+				"F_ApproveLeave" => "📝 Duyệt Đơn Nghỉ Phép",
+				"F_ApproveIncidents" => "⚠️ Xử Lý Sự Cố & Việc Tốt",
+				"F_ApproveLessons" => "📚 Hàng Đợi Duyệt Giáo Án",
+				"F_DeptReview" => "📋 Kiểm Định Đề Thi & Câu Hỏi",
+				"F_ApproveDocs" => "📂 Văn Thư & Quản Lý Công Văn",
+				"F_ApproveAwards" => "🎖️ Hồ Sơ Khen Thưởng Thi Đua",
+				"F_MoetReport" => "📄 Báo Cáo Thống Kê MOET",
+				"F_Payroll" => "💰 Quản Lý Lương & Tài Chính",
 				_	 => formId
-
 			};
 
 
@@ -1630,6 +1643,14 @@ namespace QASmartClass.Classroom.Views
 				"F33" => new TeacherListPage(),
 				"F34" => new PracticalAppsPage(),
 				"F35" => new NetworkDiagnosticsPage(),
+				"F_ApproveLeave" => new HRModule.Views.LeaveRequestView(),
+				"F_ApproveIncidents" => new UserControlHostPage(new Staff.Views.IncidentManagementView()),
+				"F_ApproveLessons" => new UserControlHostPage(new Leadership.Views.ApprovalQueueView()),
+				"F_DeptReview" => new UserControlHostPage(new TeacherHub.Views.DeptHeadReviewView()),
+				"F_ApproveDocs" => new UserControlHostPage(new Staff.Views.DocumentManagerView()),
+				"F_ApproveAwards" => new Leadership.Views.AwardManagementView(),
+				"F_MoetReport" => new UserControlHostPage(new Staff.Views.MoetReportView()),
+				"F_Payroll" => new UserControlHostPage(new Staff.Views.PayrollView()),
 				_ => null
 			};
 		}
@@ -1989,14 +2010,11 @@ namespace QASmartClass.Classroom.Views
 
 
 		private void GoHome_Click(object sender, RoutedEventArgs e)
-
 		{
-
-			Log.Information("Navigate HOME to F1");
-
+			string homePage = GetDefaultLandingPage();
+			Log.Information("Navigate HOME to {HomePage}", homePage);
 			_navigationStack.Clear();
-
-			NavigateTo("F1", addToStack: false);
+			NavigateTo(homePage, addToStack: false);
 
 			
 
@@ -2531,67 +2549,133 @@ namespace QASmartClass.Classroom.Views
 
 
 
-		/// <summary>Load teacher profile from DB and display avatar</summary>
-
-		private void LoadTeacherProfile()
-
+		/// <summary>Kiểm tra quyền truy cập Bảng tổng quan (F1) và Quản trị hệ thống (Sec6)</summary>
+		public bool CanAccessDashboard()
 		{
-
-			try
-
-			{
-
-				// app → ClassroomAppContext (refactored)
-
-				var profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault();
-
-				if (profile == null)
-
-				{
-
-					profile = new Data.TeacherProfile
-
-					{
-
-						FullName = "Nguyễn Văn A",
-
-						Subject = "Toán học",
-
-						School = "Trường THPT QA",
-
-						Title = "GV"
-
-					};
-
-					ClassroomAppContext.Db.TeacherProfiles.Add(profile);
-
-					ClassroomAppContext.Db.SaveChanges();
-
-				}
-
-
-
-				txtTeacherName.Text = $"{profile.Title}. {profile.FullName}";
-
-				txtTeacherSchool.Text = $"{profile.School}  •  {profile.Subject}";
-
-				txtTeacherInitials.Text = GetInitials(profile.FullName);
-
-
-
-				// Load avatar image if exists
-
-				if (!string.IsNullOrEmpty(profile.AvatarPath) && File.Exists(profile.AvatarPath))
-
-					SetAvatarImage(profile.AvatarPath);
-
-			}
-
-			catch (Exception ex) { Log.Warning("Load teacher profile error: {Err}", ex.Message); }
-
+			var role = QASmartClass.Staff.Services.StaffSession.Role;
+			return role is "Admin" or "HieuTruong" or "HieuPho";
 		}
 
+		/// <summary>Trang chủ mặc định theo quyền của người dùng (Admin: F1, GV: F26 Thời khóa biểu/Lịch trình)</summary>
+		public string GetDefaultLandingPage()
+		{
+			return CanAccessDashboard() ? "F1" : "F26";
+		}
 
+		/// <summary>Áp dụng phân quyền hiển thị Sidebar theo vai trò</summary>
+		public void ApplyRolePermissions()
+		{
+			bool canAccessOverview = CanAccessDashboard();
+
+			// 1. Ẩn/Hiện Bảng tổng quan (F1)
+			if (btnHomeNav != null)
+			{
+				btnHomeNav.Visibility = canAccessOverview ? Visibility.Visible : Visibility.Collapsed;
+			}
+			if (SepHome != null)
+			{
+				SepHome.Visibility = canAccessOverview ? Visibility.Visible : Visibility.Collapsed;
+			}
+
+			// 2. Ẩn/Hiện Danh sách giáo viên (F33)
+			if (btnTeachersNav != null)
+			{
+				btnTeachersNav.Visibility = canAccessOverview ? Visibility.Visible : Visibility.Collapsed;
+			}
+
+			// 3. Ẩn/Hiện VI. Quản trị hệ thống (Sec6: F8 Cài đặt, F17 Bảo mật & Quyền, F19 Nhật ký Sự kiện)
+			var sec6Visibility = canAccessOverview ? Visibility.Visible : Visibility.Collapsed;
+			if (BorderSec6 != null) BorderSec6.Visibility = sec6Visibility;
+			if (panelSec6 != null) panelSec6.Visibility = sec6Visibility;
+			if (SepSec6 != null) SepSec6.Visibility = sec6Visibility;
+
+			// 4. Ẩn/Hiện VII. Phê duyệt & Ban Giám Hiệu (Sec7: Chỉ hiện cho BGH/Admin, GV ẩn 100%)
+			bool canApprove = QASmartClass.Staff.Services.StaffSession.CanApprove();
+			bool isHieuTruong = QASmartClass.Staff.Services.StaffSession.CanManagePayroll(); // Admin, HieuTruong
+			var sec7Visibility = canApprove ? Visibility.Visible : Visibility.Collapsed;
+			if (BorderSec7 != null) BorderSec7.Visibility = sec7Visibility;
+			if (panelSec7 != null) panelSec7.Visibility = sec7Visibility;
+			if (SepSec7 != null) SepSec7.Visibility = sec7Visibility;
+
+			// Các mục riêng của Hiệu trưởng trong Sec7 (MOET, Lương)
+			if (btnNavMoet != null) btnNavMoet.Visibility = isHieuTruong ? Visibility.Visible : Visibility.Collapsed;
+			if (btnNavPayroll != null) btnNavPayroll.Visibility = isHieuTruong ? Visibility.Visible : Visibility.Collapsed;
+		}
+
+		/// <summary>Cập nhật lại Session và phân quyền khi chuyển đổi người dùng/cửa sổ</summary>
+		public void RefreshSessionAndPermissions()
+		{
+			Dispatcher.Invoke(() =>
+			{
+				LoadTeacherProfile();
+				ApplyRolePermissions();
+				if (_currentPage == "F1" && !CanAccessDashboard())
+				{
+					NavigateTo(GetDefaultLandingPage(), addToStack: false);
+				}
+			});
+		}
+
+		/// <summary>Load teacher profile from DB and display avatar</summary>
+		private void LoadTeacherProfile()
+		{
+			try
+			{
+				var currentTeacher = QASmartClass.Staff.Services.StaffSession.CurrentUser;
+				Data.TeacherProfile? profile = null;
+
+				if (currentTeacher != null)
+				{
+					profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault(t => t.TeacherCode == currentTeacher.TeacherCode);
+					if (profile == null)
+					{
+						profile = currentTeacher;
+					}
+				}
+				else
+				{
+					string lastCode = QASmartTouch.Services.AppSettings.LastTestUserTeacher;
+					if (!string.IsNullOrEmpty(lastCode))
+					{
+						profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault(t => t.TeacherCode == lastCode);
+					}
+					if (profile == null)
+					{
+						profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault();
+					}
+					if (profile != null)
+					{
+						QASmartClass.Staff.Services.StaffSession.Login(profile);
+					}
+				}
+
+				if (profile == null)
+				{
+					profile = new Data.TeacherProfile
+					{
+						TeacherCode = "GV001",
+						FullName = "Nguyễn Văn A",
+						Subject = "Toán học",
+						School = "Trường THPT QA",
+						Title = "GV",
+						Role = "GV"
+					};
+					ClassroomAppContext.Db.TeacherProfiles.Add(profile);
+					ClassroomAppContext.Db.SaveChanges();
+					QASmartClass.Staff.Services.StaffSession.Login(profile);
+				}
+
+				string titleStr = !string.IsNullOrEmpty(profile.Title) ? profile.Title : (profile.Role == "Admin" ? "Admin" : "GV");
+				txtTeacherName.Text = $"{titleStr}. {profile.FullName}";
+				txtTeacherSchool.Text = $"{profile.School}  •  {profile.Subject}";
+				txtTeacherInitials.Text = GetInitials(profile.FullName);
+
+				// Load avatar image if exists
+				if (!string.IsNullOrEmpty(profile.AvatarPath) && File.Exists(profile.AvatarPath))
+					SetAvatarImage(profile.AvatarPath);
+			}
+			catch (Exception ex) { Log.Warning("Load teacher profile error: {Err}", ex.Message); }
+		}
 
 		/// <summary>Click on teacher avatar to change photo</summary>
 

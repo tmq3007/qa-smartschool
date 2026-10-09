@@ -222,12 +222,8 @@ namespace QASmartTouch.Forms
             cardParent.IsHitTestVisible = false;
             txtParentLabel.Text = "Đăng nhập Phụ huynh";
 
-            // Thiết lập trạng thái Card Staff (Chưa xuất bản -> Làm mờ và khóa)
-            cardStaff.Visibility = Visibility.Visible;
-            cardStaff.Opacity = 0.4;
-            cardStaff.IsEnabled = false;
-            cardStaff.IsHitTestVisible = false;
-            txtStaffLabel.Text = "Đăng nhập Nhân viên";
+            // Thiết lập trạng thái Card Staff (Cán bộ / Ban Giám hiệu)
+            ConfigureCardState(cardStaff, btnStaffLabel, txtStaffLabel, "Đăng nhập Cán bộ / BGH", hasStaff, inactiveMode);
 
             // Tính toán động số lượng cột của UniformGrid để hiển thị trên một hàng ngang (tránh tràn dọc)
             int visibleCardsCount = 0;
@@ -431,7 +427,6 @@ namespace QASmartTouch.Forms
 
         private void CardStaff_Click(object sender, MouseButtonEventArgs e)
         {
-            if (DateTime.Today.Year > 2000) return; // Chức năng chưa xuất bản
             var licenseService = QASmartTouch.Services.License.LicenseService.Instance;
             bool isTest = string.Equals(AppSettings.RunningMode, "Test", StringComparison.OrdinalIgnoreCase);
             bool hasStaff = isTest || licenseService.HasFeature("staff_portal") || licenseService.CurrentLicense?.LicenseType == "enterprise" || licenseService.IsInFreeTrial;

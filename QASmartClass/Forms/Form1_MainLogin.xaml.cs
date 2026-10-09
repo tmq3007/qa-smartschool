@@ -193,12 +193,46 @@ namespace QASmartTouch.Forms
                     SettingsManager.Instance.UpdateUserInfo(userInfo);
                 }
 
-                // Save last selected test user if in test mode
+                // Save last selected test user if in test mode & sync StaffSession
+                QASmartClass.Data.TeacherProfile? loggedTeacher = null;
                 if (AppSettings.RunningMode == "Test" && cboTestAccounts.SelectedItem is QASmartClass.Data.TeacherProfile selectedTeacher)
                 {
+                    loggedTeacher = selectedTeacher;
                     AppSettings.LastTestUserTeacher = selectedTeacher.TeacherCode;
                     AppSettings.Save();
                 }
+                else
+                {
+                    try
+                    {
+                        var db = QASmartClass.Services.AppServices.Database;
+                        if (db != null)
+                        {
+                            loggedTeacher = db.TeacherProfiles.FirstOrDefault(t => t.TeacherCode == userId || t.Email == userId);
+                        }
+                    }
+                    catch { }
+                }
+
+                if (loggedTeacher == null)
+                {
+                    string inferredRole = "GV";
+                    if (userId.Equals("ADMIN", StringComparison.OrdinalIgnoreCase)) inferredRole = "Admin";
+                    else if (userId.StartsWith("HT", StringComparison.OrdinalIgnoreCase)) inferredRole = "HieuTruong";
+                    else if (userId.StartsWith("HP", StringComparison.OrdinalIgnoreCase)) inferredRole = "HieuPho";
+
+                    loggedTeacher = new QASmartClass.Data.TeacherProfile
+                    {
+                        TeacherCode = userId,
+                        FullName = userId == "GiaoVien01" ? "Giáo Viên Demo" : (userId.Equals("ADMIN", StringComparison.OrdinalIgnoreCase) ? "Quản trị hệ thống" : $"Giáo viên {userId}"),
+                        Role = inferredRole,
+                        Title = inferredRole == "Admin" ? "Admin" : "GV",
+                        Subject = "Toán học",
+                        School = "Trường THPT QA"
+                    };
+                }
+
+                QASmartClass.Staff.Services.StaffSession.Login(loggedTeacher);
 
                 // Success - Navigate to Main Dashboard
                 // [QC_4.2_WHITE_FLASH_FIX] Giữ trạng thái loading trong khi khởi tạo Dashboard để giao diện liền mạch
@@ -451,6 +485,9 @@ namespace QASmartTouch.Forms
             {
                 teachers = new System.Collections.Generic.List<QASmartClass.Data.TeacherProfile>
                 {
+                    new QASmartClass.Data.TeacherProfile { TeacherCode = "HT001", FullName = "Nguyễn Văn Hùng (Hiệu Trưởng)", Role = "HieuTruong" },
+                    new QASmartClass.Data.TeacherProfile { TeacherCode = "HP001", FullName = "Trần Thị Mai (Hiệu Phó)", Role = "HieuPho" },
+                    new QASmartClass.Data.TeacherProfile { TeacherCode = "GV001", FullName = "Lê Văn Dũng (Giáo Viên)", Role = "GV" },
                     new QASmartClass.Data.TeacherProfile { TeacherCode = "GiaoVien01", FullName = "Giáo Viên Demo", Role = "GV" },
                     new QASmartClass.Data.TeacherProfile { TeacherCode = "ADMIN", FullName = "Quản trị hệ thống", Role = "Admin" }
                 };

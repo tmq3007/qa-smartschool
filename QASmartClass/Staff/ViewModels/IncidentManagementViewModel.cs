@@ -340,8 +340,8 @@ namespace QASmartClass.Staff.ViewModels
 
             string currentActorCode = QASmartClass.Staff.Services.StaffSession.CurrentUser?.TeacherCode ?? "StaffUser";
             string currentActorName = QASmartClass.Staff.Services.StaffSession.CurrentUser?.FullName ?? "StaffUser";
-            bool isAdmin = QASmartClass.Staff.Services.StaffSession.CurrentUser?.Role == "Admin";
-            if (display.Actor != currentActorCode && display.Actor != currentActorName && !isAdmin)
+            bool canManageAll = QASmartClass.Staff.Services.StaffSession.CanResolveIncidents();
+            if (display.Actor != currentActorCode && display.Actor != currentActorName && !canManageAll)
             {
                 bool isTestHost = System.Diagnostics.Process.GetCurrentProcess().ProcessName.Contains("testhost");
                 await AppServices.UIService.ShowInfoAsync("Bạn chỉ có thể sửa các sự cố do chính mình ghi nhận.", "Quyền truy cập");
@@ -389,8 +389,8 @@ namespace QASmartClass.Staff.ViewModels
                 {
                     string currentActorCode = QASmartClass.Staff.Services.StaffSession.CurrentUser?.TeacherCode ?? "StaffUser";
                     string currentActorName = QASmartClass.Staff.Services.StaffSession.CurrentUser?.FullName ?? "StaffUser";
-                    bool isAdmin = QASmartClass.Staff.Services.StaffSession.CurrentUser?.Role == "Admin";
-                    if (existing.Actor != currentActorCode && existing.Actor != currentActorName && !isAdmin)
+                    bool canManageAll = QASmartClass.Staff.Services.StaffSession.CanResolveIncidents();
+                    if (existing.Actor != currentActorCode && existing.Actor != currentActorName && !canManageAll)
                     {
                         await AppServices.UIService.ShowInfoAsync("Bạn chỉ có thể xóa các sự cố do chính mình ghi nhận.", "Quyền truy cập");
                         return;
@@ -745,8 +745,8 @@ namespace QASmartClass.Staff.ViewModels
 
             string currentActorCode = QASmartClass.Staff.Services.StaffSession.CurrentUser?.TeacherCode ?? "StaffUser";
             string currentActorName = QASmartClass.Staff.Services.StaffSession.CurrentUser?.FullName ?? "StaffUser";
-            bool isAdmin = QASmartClass.Staff.Services.StaffSession.CurrentUser?.Role == "Admin";
-            if (display.Actor != currentActorCode && display.Actor != currentActorName && !isAdmin)
+            bool canManageAll = QASmartClass.Staff.Services.StaffSession.CanResolveIncidents();
+            if (display.Actor != currentActorCode && display.Actor != currentActorName && !canManageAll)
             {
                 bool isTestHost = System.Diagnostics.Process.GetCurrentProcess().ProcessName.Contains("testhost");
                 await AppServices.UIService.ShowInfoAsync("Bạn chỉ có thể sửa việc tốt do chính mình ghi nhận.", "Quyền truy cập");
@@ -796,8 +796,8 @@ namespace QASmartClass.Staff.ViewModels
                 {
                     string currentActorCode = QASmartClass.Staff.Services.StaffSession.CurrentUser?.TeacherCode ?? "StaffUser";
                     string currentActorName = QASmartClass.Staff.Services.StaffSession.CurrentUser?.FullName ?? "StaffUser";
-                    bool isAdmin = QASmartClass.Staff.Services.StaffSession.CurrentUser?.Role == "Admin";
-                    if (existing.Actor != currentActorCode && existing.Actor != currentActorName && !isAdmin)
+                    bool canManageAll = QASmartClass.Staff.Services.StaffSession.CanResolveIncidents();
+                    if (existing.Actor != currentActorCode && existing.Actor != currentActorName && !canManageAll)
                     {
                         await AppServices.UIService.ShowInfoAsync("Bạn chỉ có thể xóa việc tốt do chính mình ghi nhận.", "Quyền truy cập");
                         return;

@@ -14,12 +14,38 @@ namespace QASmartClass.Staff.Services
         public static bool IsLoggedIn => CurrentUser != null;
         public static string DisplayName => CurrentUser?.FullName ?? "Khách";
 
-        public static void Login(TeacherProfile user) => CurrentUser = user;
-        public static void Logout() => CurrentUser = null;
+        public static void Login(TeacherProfile user)
+        {
+            CurrentUser = user;
+            if (user != null && !string.IsNullOrEmpty(user.TeacherCode))
+            {
+                try
+                {
+                    QASmartClass.Services.UserSessionService.Instance.SetSession(user.TeacherCode);
+                }
+                catch { }
+            }
+        }
+
+        public static void Logout()
+        {
+            CurrentUser = null;
+            try
+            {
+                QASmartClass.Services.UserSessionService.Instance.ClearSession();
+            }
+            catch { }
+        }
 
         public static bool CanApprove() => Role is "Admin" or "HieuTruong" or "HieuPho";
+        public static bool CanApproveLeaveRequests() => Role is "Admin" or "HieuTruong" or "HieuPho";
+        public static bool CanResolveIncidents() => Role is "Admin" or "HieuTruong" or "HieuPho";
+        public static bool CanReviewLessonPlans() => Role is "Admin" or "HieuTruong" or "HieuPho";
+        public static bool CanReviewSkkn() => Role is "Admin" or "HieuTruong" or "HieuPho";
         public static bool CanManagePayroll() => Role is "Admin" or "HieuTruong";
-        public static bool CanSendPush() => Role is "Admin" or "HieuTruong" or "HieuPho";
+        public static bool CanApproveOfficialDocuments() => Role is "Admin" or "HieuTruong";
+        public static bool CanSendPush() => Role is "Admin" or "HieuTruong";
+        public static bool CanAccessOverview() => Role is "Admin" or "HieuTruong";
         public static bool CanAccessSettings() => Role == "Admin";
         public static bool CanManageBulletin() => Role is "Admin" or "HieuTruong" or "HieuPho";
         public static bool CanCreateBulletin() => Role is "Admin" or "HieuTruong" or "HieuPho" or "GV" or "DV";

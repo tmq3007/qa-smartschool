@@ -86,7 +86,6 @@ namespace QASmartClass.Staff.Views
         private void ApplyRolePermissions()
         {
             var role = QASmartClass.Staff.Services.StaffSession.Role;
-            bool isAdminOrHT = role == "Admin" || role == "HieuTruong";
             
             var user = QASmartClass.Staff.Services.StaffSession.CurrentUser;
             // Fix RBAC: lookup YouthMember position from DB instead of comparing TeacherProfile.Role
@@ -115,27 +114,63 @@ namespace QASmartClass.Staff.Views
                 Serilog.Log.Error(ex, "Failed to load role permissions from database");
             }
 
-            // Common features for all staff
-            var commonFeatures = new[] { "Overview", "event_calendar", "Incidents", "task_management", "eoffice_routing", "hr_profile", "hr_contract", "hr_leave", "hr_attendance" };
+            // Common features for all staff (chỉ giữ các tiện ích cá nhân mà mọi nhân viên đều cần)
+            var commonFeatures = new[] { "event_calendar", "Incidents", "task_management", "eoffice_routing", "hr_profile", "hr_contract", "hr_leave", "hr_attendance" };
 
             if (navMenu == null) return;
 
-            ApplyPermissionsToControl(navMenu, role, isAdminOrHT, allowedTags, isYouthUnion, commonFeatures);
+            ApplyPermissionsToControl(navMenu, role, allowedTags, isYouthUnion, commonFeatures);
+
+            // Điều hướng đến trang đích mặc định phù hợp với Role
+            NavigateToDefaultLandingPage();
         }
 
-        private bool ApplyPermissionsToControl(object parent, string role, bool isAdminOrHT, System.Collections.Generic.List<string> allowedTags, bool isYouthUnion, string[] commonFeatures)
+        private bool ApplyPermissionsToControl(object parent, string role, System.Collections.Generic.List<string> allowedTags, bool isYouthUnion, string[] commonFeatures)
         {
             if (parent == null) return false;
 
             if (parent is Button btn && btn.Tag is string feature)
             {
-                bool hasAccess = isAdminOrHT;
-                if (!hasAccess && Array.IndexOf(commonFeatures, feature) >= 0)
+                bool hasAccess = false;
+                if (role == "Admin")
+                {
+                    // Admin có toàn quyền 100% tất cả chức năng
                     hasAccess = true;
-                if (!hasAccess && allowedTags.Contains(feature))
-                    hasAccess = true;
-                if (!hasAccess && isYouthUnion && feature.StartsWith("youth_"))
-                    hasAccess = true;
+                }
+                else if (role == "HieuTruong")
+                {
+                    // Hiệu trưởng: Quyền tối cao bao trùm toàn bộ quyền của Hiệu phó, 
+                    // cộng thêm các quyền chiến lược vĩ mô (Overview, moet, reports, payroll, tuition, assets, push_notification).
+                    // Chỉ các chức năng cấu hình bảo mật kỹ thuật CSDL dành riêng cho Admin IT.
+                    bool isTechnicalAdminOnly = feature is "role_manager" or "backup_restore" or "system_settings" or "system_audit";
+                    hasAccess = !isTechnicalAdminOnly;
+                }
+                else if (role == "HieuPho")
+                {
+                    // Hiệu phó: Toàn quyền Chuyên môn dạy học, duyệt đơn nghỉ phép, sự cố, tổ chuyên môn...
+                    // Ẩn Bảng lương (payroll), Báo cáo MOET (moet) và các chức năng kỹ thuật Admin IT.
+                    bool isHpForbidden = feature is "payroll" or "moet" or "system_settings" or "role_manager" or "backup_restore" or "system_audit";
+                    hasAccess = !isHpForbidden && (Array.IndexOf(commonFeatures, feature) >= 0 || allowedTags.Contains(feature) || (isYouthUnion && feature.StartsWith("youth_")));
+                }
+                else
+                {
+                    // Chặn triệt để các báo cáo vĩ mô và tính năng kỹ thuật đối với Giáo viên và các role tác nghiệp
+                    bool isMacroAdminOnly = feature is "Overview" or "moet" or "app_analytics" or "system_settings" or "role_manager" or "backup_restore" or "system_audit" or "data_exporter" or "reports" or "payroll" or "tuition" or "assets";
+
+                    if (role == "GV" && isMacroAdminOnly)
+                    {
+                        hasAccess = false;
+                    }
+                    else
+                    {
+                        if (Array.IndexOf(commonFeatures, feature) >= 0)
+                            hasAccess = true;
+                        if (allowedTags.Contains(feature))
+                            hasAccess = true;
+                        if (isYouthUnion && feature.StartsWith("youth_"))
+                            hasAccess = true;
+                    }
+                }
 
                 btn.Visibility = hasAccess ? Visibility.Visible : Visibility.Collapsed;
                 return hasAccess;
@@ -147,7 +182,7 @@ namespace QASmartClass.Staff.Views
             {
                 foreach (var child in panel.Children)
                 {
-                    if (ApplyPermissionsToControl(child, role, isAdminOrHT, allowedTags, isYouthUnion, commonFeatures))
+                    if (ApplyPermissionsToControl(child, role, allowedTags, isYouthUnion, commonFeatures))
                     {
                         anyChildVisible = true;
                     }
@@ -155,16 +190,16 @@ namespace QASmartClass.Staff.Views
             }
             else if (parent is Border border)
             {
-                anyChildVisible = ApplyPermissionsToControl(border.Child, role, isAdminOrHT, allowedTags, isYouthUnion, commonFeatures);
+                anyChildVisible = ApplyPermissionsToControl(border.Child, role, allowedTags, isYouthUnion, commonFeatures);
             }
             else if (parent is Expander expander)
             {
-                anyChildVisible = ApplyPermissionsToControl(expander.Content, role, isAdminOrHT, allowedTags, isYouthUnion, commonFeatures);
+                anyChildVisible = ApplyPermissionsToControl(expander.Content, role, allowedTags, isYouthUnion, commonFeatures);
                 expander.Visibility = anyChildVisible ? Visibility.Visible : Visibility.Collapsed;
             }
             else if (parent is ContentControl cc)
             {
-                anyChildVisible = ApplyPermissionsToControl(cc.Content, role, isAdminOrHT, allowedTags, isYouthUnion, commonFeatures);
+                anyChildVisible = ApplyPermissionsToControl(cc.Content, role, allowedTags, isYouthUnion, commonFeatures);
             }
 
             return anyChildVisible;
@@ -318,7 +353,8 @@ namespace QASmartClass.Staff.Views
                     FeatureFrame.Content = view;
                     AnimateContentIn(view);
 
-                    if (btnBackToOverview != null) btnBackToOverview.Visibility = Visibility.Visible;
+                    bool canSeeOverview = btnOverview != null && btnOverview.Visibility == Visibility.Visible;
+                    if (btnBackToOverview != null) btnBackToOverview.Visibility = canSeeOverview ? Visibility.Visible : Visibility.Collapsed;
                 }
             }
         }
@@ -416,19 +452,92 @@ namespace QASmartClass.Staff.Views
             }
         }
 
-        // ═══ BACK TO OVERVIEW ═══
+        // ═══ BACK TO OVERVIEW / DEFAULT LANDING ═══
         private void BtnBackToOverview_Click(object sender, RoutedEventArgs e)
         {
-            FeatureFrame.Content = null;
-            FeatureFrame.Visibility = Visibility.Hidden;
-            if (btnBackToOverview != null) btnBackToOverview.Visibility = Visibility.Collapsed;
-            if (txtPageTitle != null) txtPageTitle.Text = "📊 Tổng quan";
-
-            // Reset active nav to Overview
-            if (btnOverview != null)
+            Button? btnOver = FindButtonByTag(navMenu, "Overview");
+            if (btnOver != null && btnOver.Visibility == Visibility.Visible)
             {
-                SetActiveNav(btnOverview, "📊 Tổng quan");
+                FeatureFrame.Content = null;
+                FeatureFrame.Visibility = Visibility.Hidden;
+                if (btnBackToOverview != null) btnBackToOverview.Visibility = Visibility.Collapsed;
+                if (txtPageTitle != null) txtPageTitle.Text = "📊 Tổng quan";
+
+                // Reset active nav to Overview
+                SetActiveNav(btnOver, "📊 Tổng quan");
             }
+            else
+            {
+                NavigateToDefaultLandingPage();
+            }
+        }
+
+        private string GetDefaultFeatureForRole(string role)
+        {
+            return role switch
+            {
+                "Admin" or "HieuTruong" => "Overview",
+                "HieuPho" => "leave_request",
+                "GV" => "event_calendar",
+                "BaoVe" => "Gate",
+                "YTe" => "health",
+                "LaoCong" => "janitor",
+                "Bep" => "kitchen",
+                "Ketoan" or "ThuQuy" => "tuition",
+                "Counselor" => "counseling",
+                "Librarian" => "library",
+                _ => "event_calendar"
+            };
+        }
+
+        private void NavigateToDefaultLandingPage()
+        {
+            var role = QASmartClass.Staff.Services.StaffSession.Role;
+            string defaultFeature = GetDefaultFeatureForRole(role);
+
+            Button? btn = FindButtonByTag(navMenu, defaultFeature);
+            if (btn != null && btn.Visibility == Visibility.Visible)
+            {
+                NavigateToFeature(defaultFeature);
+            }
+            else
+            {
+                Button? firstVisible = FindFirstVisibleNavButton(navMenu);
+                if (firstVisible != null && firstVisible.Tag is string tag)
+                {
+                    NavigateToFeature(tag);
+                }
+            }
+        }
+
+        private Button? FindFirstVisibleNavButton(object parent)
+        {
+            if (parent == null) return null;
+            if (parent is Button btn && btn.Visibility == Visibility.Visible && btn.Tag != null)
+            {
+                return btn;
+            }
+            if (parent is Panel panel)
+            {
+                foreach (var child in panel.Children)
+                {
+                    var found = FindFirstVisibleNavButton(child);
+                    if (found != null) return found;
+                }
+            }
+            else if (parent is Border border)
+            {
+                return FindFirstVisibleNavButton(border.Child);
+            }
+            else if (parent is Expander expander && expander.Visibility == Visibility.Visible)
+            {
+                return FindFirstVisibleNavButton(expander.Content);
+            }
+            else if (parent is ContentControl cc)
+            {
+                return FindFirstVisibleNavButton(cc.Content);
+            }
+            return null;
         }
 
         private void CheckDatabaseSizeAlert()

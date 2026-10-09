@@ -152,7 +152,7 @@ namespace QASmartClass.Staff.Views
                 using (var db = new AppDbContext())
                 {
                     staffList = db.TeacherProfiles
-                        .Where(t => t.Role != "GV" && t.Role != "Admin")
+                        .Where(t => t.Role != "Admin")
                         .ToList();
                 }
             }
@@ -166,9 +166,10 @@ namespace QASmartClass.Staff.Views
             {
                 staffList = new System.Collections.Generic.List<TeacherProfile>
                 {
-                    new TeacherProfile { TeacherCode = "HT001", FullName = "Nguyễn Văn Hùng", Role = "HieuTruong" },
-                    new TeacherProfile { TeacherCode = "HP001", FullName = "Trần Thị Mai", Role = "HieuPho" },
-                    new TeacherProfile { TeacherCode = "BV001", FullName = "Trần Văn Bảo", Role = "BaoVe" }
+                    new TeacherProfile { TeacherCode = "HT001", FullName = "Nguyễn Văn Hùng (Hiệu Trưởng)", Role = "HieuTruong" },
+                    new TeacherProfile { TeacherCode = "HP001", FullName = "Trần Thị Mai (Hiệu Phó)", Role = "HieuPho" },
+                    new TeacherProfile { TeacherCode = "GV001", FullName = "Lê Văn Dũng (Giáo Viên)", Role = "GV" },
+                    new TeacherProfile { TeacherCode = "BV001", FullName = "Trần Văn Bảo (Bảo Vệ)", Role = "BaoVe" }
                 };
             }
 

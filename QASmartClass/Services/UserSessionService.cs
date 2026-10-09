@@ -78,6 +78,7 @@ namespace QASmartClass.Services
         /// <summary>Kiem tra user la nhan vien tu van tam ly</summary>
         public bool IsCounselor =>
             Role == StatusConstants.TeacherRole.Counselor ||
+            Role == StatusConstants.TeacherRole.HieuPho ||
             Role == StatusConstants.TeacherRole.HieuTruong ||
             Role == StatusConstants.TeacherRole.Admin;
 

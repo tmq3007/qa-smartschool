@@ -321,8 +321,8 @@
                     </Border>
  
                     <!-- Card 4: Cán bộ Nhân viên (Staff) -->
-                    <Border x:Name="cardStaff" Style="{StaticResource LoginCard}" Visibility="Collapsed"
-                            IsEnabled="False"
+                    <Border x:Name="cardStaff" Style="{StaticResource LoginCard}" Visibility="Visible"
+                            IsEnabled="True"
                             MouseLeftButtonDown="CardStaff_Click"
                             MouseEnter="CardStaff_MouseEnter" MouseLeave="CardStaff_MouseLeave"
                             GotFocus="CardStaff_GotFocus" LostFocus="CardStaff_LostFocus"

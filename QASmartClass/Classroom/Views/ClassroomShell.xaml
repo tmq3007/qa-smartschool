@@ -497,7 +497,7 @@
                             <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Roster}"      Tag="F15" Click="NavButton_Click"/>
                             <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Groups}"      Tag="F10" Click="NavButton_Click"/>
                             <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Attendance}"  Tag="F27" Click="NavButton_Click"/>
-                            <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Teachers}"    Tag="F33" Click="NavButton_Click"/>
+                            <Button x:Name="btnTeachersNav" Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Teachers}"    Tag="F33" Click="NavButton_Click"/>
                         </StackPanel>
 
                         <!-- ═══ III. TƯƠNG TÁC LỚP HỌC ═══ -->
@@ -561,6 +561,25 @@
                             <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Settings}"      Tag="F8"  Click="NavButton_Click"/>
                             <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Policy}"       Tag="F17" Click="NavButton_Click"/>
                             <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_EventLog}"     Tag="F19" Click="NavButton_Click"/>
+                        </StackPanel>
+
+                        <!-- ═══ VII. PHÊ DUYỆT & BAN GIÁM HIỆU ═══ -->
+                        <Border x:Name="SepSec7" Style="{StaticResource NavSep}"/>
+                        <Border x:Name="BorderSec7" Margin="6,1,6,1" Padding="8,3" CornerRadius="6" Background="#2A1810" Tag="Sec7" Cursor="Hand" MouseLeftButtonDown="ToggleSection_Click">
+                            <DockPanel>
+                                <TextBlock x:Name="txtToggleSec7" Text="-" DockPanel.Dock="Right" FontSize="11" FontWeight="Bold" Foreground="#FB923C"/>
+                                <TextBlock Text="VII. PHÊ DUYỆT &amp; BAN GIÁM HIỆU" FontSize="11" FontWeight="Bold" Foreground="#FB923C"/>
+                            </DockPanel>
+                        </Border>
+                        <StackPanel x:Name="panelSec7" Visibility="Visible">
+                            <Button Style="{StaticResource NavButton}" Content="📝 Duyệt đơn nghỉ phép" Tag="F_ApproveLeave" Click="NavButton_Click"/>
+                            <Button Style="{StaticResource NavButton}" Content="⚠️ Duyệt sự cố &amp; Việc tốt" Tag="F_ApproveIncidents" Click="NavButton_Click"/>
+                            <Button Style="{StaticResource NavButton}" Content="📚 Hàng đợi duyệt giáo án" Tag="F_ApproveLessons" Click="NavButton_Click"/>
+                            <Button Style="{StaticResource NavButton}" Content="📋 Kiểm định đề thi" Tag="F_DeptReview" Click="NavButton_Click"/>
+                            <Button Style="{StaticResource NavButton}" Content="📂 Văn thư &amp; Công văn" Tag="F_ApproveDocs" Click="NavButton_Click"/>
+                            <Button Style="{StaticResource NavButton}" Content="🎖️ Khen thưởng thi đua" Tag="F_ApproveAwards" Click="NavButton_Click"/>
+                            <Button x:Name="btnNavMoet" Style="{StaticResource NavButton}" Content="📄 Báo cáo MOET (HT)" Tag="F_MoetReport" Click="NavButton_Click"/>
+                            <Button x:Name="btnNavPayroll" Style="{StaticResource NavButton}" Content="💰 Lương &amp; Tài chính (HT)" Tag="F_Payroll" Click="NavButton_Click"/>
                         </StackPanel>
 
                     </StackPanel>

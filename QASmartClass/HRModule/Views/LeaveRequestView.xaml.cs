@@ -1,4 +1,4 @@
-﻿using QASmartClass.Data;
+using QASmartClass.Data;
 using QASmartClass.Staff.Services;
 using Serilog;
 using System;
@@ -23,6 +23,9 @@ namespace QASmartClass.HRModule.Views
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             _db = new AppDbContext();
+            bool canApprove = StaffSession.CanApproveLeaveRequests();
+            if (BtnApprove != null) BtnApprove.Visibility = canApprove ? Visibility.Visible : Visibility.Collapsed;
+            if (BtnReject != null) BtnReject.Visibility = canApprove ? Visibility.Visible : Visibility.Collapsed;
             LoadData();
         }
 
