@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,6 +11,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using Microsoft.EntityFrameworkCore;
 using QASmartClass.Classroom.Helpers;
 using QASmartClass.Classroom.Services;
 using Serilog;
@@ -59,10 +61,10 @@ namespace QASmartClass.Classroom.Views
         {
             InitializeComponent();
             _weekStart = GetMonday(DateTime.Today);
-            Loaded += (_, _) =>
+            Loaded += async (_, _) =>
             {
                 Services.PeriodScheduleService.Instance.EnsureLoaded(ClassroomAppContext.Db);
-                LoadClassInfo(); InitSimControls(); LoadSlots(); RenderTimetable(); StartTimer();
+                LoadClassInfo(); InitSimControls(); await LoadSlotsAsync(); RenderTimetable(); StartTimer();
 
                 // Auto-refresh khi GV chuyển lớp — N7 FIX: Dùng named handler để Unsubscribe tránh memory leak
                 try
@@ -93,9 +95,9 @@ namespace QASmartClass.Classroom.Views
             };
         }
 
-        private void OnActiveRosterChanged(object? sender, Data.ClassRoster? e)
+        private async void OnActiveRosterChanged(object? sender, Data.ClassRoster? e)
         {
-            Dispatcher.Invoke(() => { LoadClassInfo(); LoadSlots(); RenderTimetable(); });
+            await Dispatcher.InvokeAsync(async () => { LoadClassInfo(); await LoadSlotsAsync(); RenderTimetable(); });
         }
 
         private void OnSubjectsChanged(object? sender, EventArgs e)
@@ -167,22 +169,21 @@ namespace QASmartClass.Classroom.Views
                 }
                 else
                 {
-                    var profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault();
-                    string teacherName = profile?.FullName ?? (roster?.TeacherName ?? "Giáo viên");
+                    string teacherName = GetTeacherName();
                     txtClassInfo.Text = $"👨‍🏫 Giáo viên: {teacherName}  •  Năm học {_schoolYear}  •  {semester}";
                 }
             }
             catch { }
         }
 
-        private void TimetableMode_Changed(object sender, SelectionChangedEventArgs e)
+        private async void TimetableMode_Changed(object sender, SelectionChangedEventArgs e)
         {
             if (txtClassInfo == null || timetableGrid == null) return; // Not fully initialized yet
             if (cboTimetableMode?.SelectedItem is ComboBoxItem item)
             {
                 _viewMode = item.Tag?.ToString() ?? "Class";
                 UpdateClassInfoText();
-                LoadSlots();
+                await LoadSlotsAsync();
                 RenderTimetable();
             }
         }
@@ -310,8 +311,11 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                // → ClassroomAppContext
-                var profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault();
+                var currentTeacher = QASmartClass.Staff.Services.StaffSession.CurrentUser;
+                if (currentTeacher != null && !string.IsNullOrWhiteSpace(currentTeacher.FullName))
+                    return currentTeacher.FullName;
+
+                var profile = ClassroomAppContext.Db.TeacherProfiles.AsNoTracking().FirstOrDefault();
                 return profile?.FullName ?? (ClassroomAppContext.ClassRoster.ActiveRoster?.TeacherName ?? "Giáo viên");
             }
             catch
@@ -320,7 +324,13 @@ namespace QASmartClass.Classroom.Views
             }
         }
 
-        private void LoadSlots()
+        private async void LoadSlots()
+        {
+            await LoadSlotsAsync();
+            RenderTimetable();
+        }
+
+        private async Task LoadSlotsAsync()
         {
             try
             {
@@ -338,10 +348,11 @@ namespace QASmartClass.Classroom.Views
                 }
 
                 // 1) Try loading from EventLogs first (edited timetable)
-                var logs = ClassroomAppContext.Db.EventLogs
+                var logs = await ClassroomAppContext.Db.EventLogs
+                    .AsNoTracking()
                     .Where(e => e.EventType == timetableKey)
                     .OrderByDescending(e => e.Timestamp)
-                    .FirstOrDefault();
+                    .FirstOrDefaultAsync();
 
                 if (logs != null && !string.IsNullOrEmpty(logs.Details))
                 {
@@ -361,7 +372,7 @@ namespace QASmartClass.Classroom.Views
                 }
 
                 // 2) Fallback to Lessons table
-                var query = ClassroomAppContext.Db.Lessons.Where(l => l.Period > 0 && !string.IsNullOrEmpty(l.DayOfWeek));
+                var query = ClassroomAppContext.Db.Lessons.AsNoTracking().Where(l => l.Period > 0 && !string.IsNullOrEmpty(l.DayOfWeek));
 
                 if (_viewMode == "Class")
                 {
@@ -376,7 +387,7 @@ namespace QASmartClass.Classroom.Views
                     }
                 }
 
-                var dbLessons = query.ToList();
+                var dbLessons = await query.ToListAsync();
 
                 if (dbLessons.Any())
                 {

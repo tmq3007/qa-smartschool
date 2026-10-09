@@ -2626,11 +2626,7 @@ namespace QASmartClass.Classroom.Views
 
 				if (currentTeacher != null)
 				{
-					profile = ClassroomAppContext.Db.TeacherProfiles.FirstOrDefault(t => t.TeacherCode == currentTeacher.TeacherCode);
-					if (profile == null)
-					{
-						profile = currentTeacher;
-					}
+					profile = currentTeacher;
 				}
 				else
 				{

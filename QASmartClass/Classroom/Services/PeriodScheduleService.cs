@@ -31,6 +31,7 @@ namespace QASmartClass.Classroom.Services
         private (int StartH, int StartM, int EndH, int EndM)[] _timeRanges = Array.Empty<(int, int, int, int)>();
         private string[] _periodTimes = Array.Empty<string>();
         private string _activePreset = "Summer";
+        private bool _isLoaded = false;
 
         public string ActivePreset => _activePreset;
 
@@ -39,8 +40,12 @@ namespace QASmartClass.Classroom.Services
             ApplyConfig(GetPresetSummer(), "Summer");
         }
 
+        public void InvalidateCache() => _isLoaded = false;
+
         public void EnsureLoaded(AppDbContext db)
         {
+            if (_isLoaded) return;
+
             try
             {
                 var setting = db.SystemSettings.FirstOrDefault(s => s.Id == SettingKey);
@@ -52,6 +57,7 @@ namespace QASmartClass.Classroom.Services
                     if (loaded != null && loaded.Count == 10)
                     {
                         ApplyConfig(loaded, season);
+                        _isLoaded = true;
                         Log.Information("[PeriodScheduleService] Loaded period schedule from DB ({Season}, 10 periods)", season);
                         return;
                     }
@@ -69,11 +75,13 @@ namespace QASmartClass.Classroom.Services
                     ApplyConfig(GetPresetSummer(), "Summer");
                     SaveSchedule(db, GetPresetSummer(), "Summer");
                 }
+                _isLoaded = true;
             }
             catch (Exception ex)
             {
                 Log.Warning("[PeriodScheduleService] EnsureLoaded error: {Err}", ex.Message);
                 ApplyConfig(GetPresetSummer(), "Summer");
+                _isLoaded = true;
             }
         }
 
@@ -133,6 +141,7 @@ namespace QASmartClass.Classroom.Services
                 }
 
                 db.SaveChanges();
+                _isLoaded = true;
                 Log.Information("[PeriodScheduleService] Saved period schedule to DB ({Preset})", presetName);
 
                 ScheduleChanged?.Invoke(this, EventArgs.Empty);

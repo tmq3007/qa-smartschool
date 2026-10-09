@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.EntityFrameworkCore;
 using QASmartClass.Data;
 using QASmartClass.Classroom.Helpers;
 using Serilog;
@@ -25,9 +27,9 @@ namespace QASmartClass.Classroom.Views
         public LessonListPage()
         {
             InitializeComponent();
-            Loaded += (_, _) =>
+            Loaded += async (_, _) =>
             {
-                LoadLessons();
+                await LoadLessonsAsync();
 
                 // Auto-refresh khi GV chuyển lớp — N7 FIX: Dùng named handler để Unsubscribe tránh memory leak
                 try
@@ -59,7 +61,12 @@ namespace QASmartClass.Classroom.Views
         //  LOAD & FILTER
         // ═════════════════════════════════════════════════════
 
-        private void LoadLessons()
+        private async void LoadLessons()
+        {
+            await LoadLessonsAsync();
+        }
+
+        private async Task LoadLessonsAsync()
         {
             try
             {
@@ -68,18 +75,26 @@ namespace QASmartClass.Classroom.Views
                 var roster = ClassroomAppContext.ClassRoster.ActiveRoster;
                 _activeClassName = roster?.ClassName ?? "";
 
-                // Lấy tên GV đăng nhập từ TeacherProfile
+                // Lấy tên GV đăng nhập từ StaffSession hoặc TeacherProfile
                 if (string.IsNullOrEmpty(_loggedInTeacher))
                 {
-                    try
+                    var currentTeacher = QASmartClass.Staff.Services.StaffSession.CurrentUser;
+                    if (currentTeacher != null && !string.IsNullOrWhiteSpace(currentTeacher.FullName))
                     {
-                        var profile = db.TeacherProfiles.FirstOrDefault();
-                        _loggedInTeacher = profile?.FullName ?? "";
+                        _loggedInTeacher = currentTeacher.FullName;
                     }
-                    catch { }
+                    else
+                    {
+                        try
+                        {
+                            var profile = await db.TeacherProfiles.AsNoTracking().FirstOrDefaultAsync();
+                            _loggedInTeacher = profile?.FullName ?? "";
+                        }
+                        catch { }
+                    }
                 }
 
-                IQueryable<Lesson> query = db.Lessons;
+                IQueryable<Lesson> query = db.Lessons.AsNoTracking();
 
                 // Filter theo lớp active
                 if (!string.IsNullOrEmpty(_activeClassName))
@@ -89,7 +104,7 @@ namespace QASmartClass.Classroom.Views
                 if (_teacherScope == "mine" && !string.IsNullOrEmpty(_loggedInTeacher))
                     query = query.Where(l => l.TeacherName == _loggedInTeacher);
 
-                _allLessons = query.OrderByDescending(l => l.UpdatedAt).ToList();
+                _allLessons = await query.OrderByDescending(l => l.UpdatedAt).ToListAsync();
 
                 UpdateSummary();
                 ApplyFilter();

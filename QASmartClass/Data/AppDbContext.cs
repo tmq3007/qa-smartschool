@@ -16,9 +16,12 @@ namespace QASmartClass.Data
 
         public class SqliteWalInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.DbConnectionInterceptor
         {
+            private static string? _cachedJournalMode = null;
+
+            public static void InvalidateWalCache() => _cachedJournalMode = null;
+
             public override void ConnectionOpened(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionEndEventData eventData)
             {
-                // First, establish busy timeout immediately so any queries we make can wait if needed!
                 try
                 {
                     using (var cmd = connection.CreateCommand())
@@ -29,50 +32,30 @@ namespace QASmartClass.Data
                 }
                 catch { }
 
-                string journalMode = "WAL";
-                try
+                if (_cachedJournalMode == null)
                 {
-                    using (var command = connection.CreateCommand())
+                    try
                     {
-                        command.CommandText = "SELECT Value FROM SystemSettings WHERE Id = 'IT_Database_WALMode';";
-                        var val = command.ExecuteScalar();
-                        if (val != null && val.ToString() == "Disabled")
+                        using (var command = connection.CreateCommand())
                         {
-                            journalMode = "DELETE";
+                            command.CommandText = "SELECT Value FROM SystemSettings WHERE Id = 'IT_Database_WALMode';";
+                            var val = command.ExecuteScalar();
+                            _cachedJournalMode = (val != null && val.ToString() == "Disabled") ? "DELETE" : "WAL";
                         }
                     }
-                }
-                catch
-                {
-                    journalMode = "WAL"; // Fallback on missing tables during migration
+                    catch
+                    {
+                        _cachedJournalMode = "WAL"; // Fallback on missing tables during migration
+                    }
                 }
 
                 try
                 {
                     using (var command = connection.CreateCommand())
                     {
-                        command.CommandText = $"PRAGMA journal_mode={journalMode}; PRAGMA synchronous = NORMAL;";
+                        command.CommandText = $"PRAGMA journal_mode={_cachedJournalMode}; PRAGMA synchronous = NORMAL;";
                         command.ExecuteNonQuery();
                     }
-                }
-                catch { }
-
-                                try
-                {
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE RemedialPlans ADD COLUMN Status TEXT DEFAULT 'Approved';";
-                        command.ExecuteNonQuery();
-                    }
-                try
-                {
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Skkns ADD COLUMN TeacherCode TEXT DEFAULT '';";
-                        command.ExecuteNonQuery();
-                    }
-                }
-                catch { }
                 }
                 catch { }
 
@@ -81,7 +64,6 @@ namespace QASmartClass.Data
 
             public override async System.Threading.Tasks.Task ConnectionOpenedAsync(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionEndEventData eventData, System.Threading.CancellationToken cancellationToken = default)
             {
-                // First, establish busy timeout immediately so any queries we make can wait if needed!
                 try
                 {
                     using (var cmd = connection.CreateCommand())
@@ -92,50 +74,30 @@ namespace QASmartClass.Data
                 }
                 catch { }
 
-                string journalMode = "WAL";
-                try
+                if (_cachedJournalMode == null)
                 {
-                    using (var command = connection.CreateCommand())
+                    try
                     {
-                        command.CommandText = "SELECT Value FROM SystemSettings WHERE Id = 'IT_Database_WALMode';";
-                        var val = await command.ExecuteScalarAsync(cancellationToken);
-                        if (val != null && val.ToString() == "Disabled")
+                        using (var command = connection.CreateCommand())
                         {
-                            journalMode = "DELETE";
+                            command.CommandText = "SELECT Value FROM SystemSettings WHERE Id = 'IT_Database_WALMode';";
+                            var val = await command.ExecuteScalarAsync(cancellationToken);
+                            _cachedJournalMode = (val != null && val.ToString() == "Disabled") ? "DELETE" : "WAL";
                         }
                     }
-                }
-                catch
-                {
-                    journalMode = "WAL"; // Fallback on missing tables during migration
+                    catch
+                    {
+                        _cachedJournalMode = "WAL"; // Fallback on missing tables during migration
+                    }
                 }
 
                 try
                 {
                     using (var command = connection.CreateCommand())
                     {
-                        command.CommandText = $"PRAGMA journal_mode={journalMode}; PRAGMA synchronous = NORMAL;";
+                        command.CommandText = $"PRAGMA journal_mode={_cachedJournalMode}; PRAGMA synchronous = NORMAL;";
                         await command.ExecuteNonQueryAsync(cancellationToken);
                     }
-                }
-                catch { }
-
-                                try
-                {
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE RemedialPlans ADD COLUMN Status TEXT DEFAULT 'Approved';";
-                        await command.ExecuteNonQueryAsync(cancellationToken);
-                    }
-                try
-                {
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "ALTER TABLE Skkns ADD COLUMN TeacherCode TEXT DEFAULT '';";
-                        await command.ExecuteNonQueryAsync(cancellationToken);
-                    }
-                }
-                catch { }
                 }
                 catch { }
 
@@ -472,7 +434,7 @@ namespace QASmartClass.Data
             var keyBytes = DbEncryptionKeyManager.GetOrInitializeKey();
             var hexKey = Convert.ToHexString(keyBytes);
 
-            options.UseSqlite($"Data Source={dbPath};Password={hexKey};Foreign Keys=True;Default Timeout=5;Pooling=False")
+            options.UseSqlite($"Data Source={dbPath};Password={hexKey};Foreign Keys=True;Default Timeout=5;Pooling=True")
                    .AddInterceptors(new SqliteWalInterceptor());
         }
 

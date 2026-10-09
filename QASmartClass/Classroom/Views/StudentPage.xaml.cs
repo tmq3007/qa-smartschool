@@ -24,6 +24,8 @@ namespace QASmartClass.Classroom.Views
         private System.ComponentModel.ListSortDirection _sortDirection = System.ComponentModel.ListSortDirection.Ascending;
         private readonly bool _showRosterFirst;
         private bool _filterMyClassesOnly = !QASmartClass.Staff.Services.StaffSession.CanAccessOverview();
+        private bool _isDataLoaded = false;
+        private bool _isLoading = false;
 
         public StudentPage(bool showRosterFirst = false)
         {
@@ -32,24 +34,22 @@ namespace QASmartClass.Classroom.Views
             Loaded += (_, _) =>
             {
                 // → ClassroomAppContext
-                if (ClassroomAppContext.Network != null || true)
+                if (ClassroomAppContext.Network != null)
                 {
                     ClassroomAppContext.Network.MessageReceived += NetworkService_MessageReceived;
                     ClassroomAppContext.Network.StudentConnected += NetworkService_StudentConnected;
                     ClassroomAppContext.Network.StudentDisconnected += NetworkService_StudentDisconnected;
                 }
                 PopulateClassFilter();
-                LoadStudents();
-                // Auto-expand roster panel when navigating from "Danh sách lớp" menu
-                if (_showRosterFirst)
+                if (!_isDataLoaded && !_isLoading)
                 {
-                    LoadRosters();
+                    LoadStudents();
                 }
             };
             Unloaded += (_, _) =>
             {
                 // → ClassroomAppContext
-                if (ClassroomAppContext.Network != null || true)
+                if (ClassroomAppContext.Network != null)
                 {
                     ClassroomAppContext.Network.MessageReceived -= NetworkService_MessageReceived;
                     ClassroomAppContext.Network.StudentConnected -= NetworkService_StudentConnected;
@@ -67,7 +67,7 @@ namespace QASmartClass.Classroom.Views
                 }
                 else if (e.Key == Key.F5)
                 {
-                    LoadStudents();
+                    LoadStudents(force: true);
                     e.Handled = true;
                 }
             };
@@ -91,13 +91,17 @@ namespace QASmartClass.Classroom.Views
             await LoadStudentsAsync();
         }
 
-        private async void LoadStudents()
+        private async void LoadStudents(bool force = false)
         {
-            await LoadStudentsAsync();
+            await LoadStudentsAsync(force);
         }
 
-        private async Task LoadStudentsAsync()
+        private async Task LoadStudentsAsync(bool force = false)
         {
+            if (_isLoading) return;
+            if (_isDataLoaded && !force) return;
+            _isLoading = true;
+
             try
             {
                 // → ClassroomAppContext
@@ -148,6 +152,7 @@ namespace QASmartClass.Classroom.Views
                     RenderSeatingChart();
                 }
 
+                _isDataLoaded = true;
                 Log.Information("StudentPage loaded {Count} students", _allStudents.Count);
             }
             catch (Exception ex)
@@ -156,6 +161,11 @@ namespace QASmartClass.Classroom.Views
                 _allStudents = GenerateDemoStudents();
                 UpdateStats();
                 RefreshGrid();
+                _isDataLoaded = true;
+            }
+            finally
+            {
+                _isLoading = false;
             }
         }
 
@@ -1179,7 +1189,7 @@ namespace QASmartClass.Classroom.Views
 
         private void RefreshList_Click(object sender, RoutedEventArgs e)
         {
-            LoadStudents();
+            LoadStudents(force: true);
             Log.Information("StudentPage refreshed");
         }
 
@@ -2461,19 +2471,19 @@ namespace QASmartClass.Classroom.Views
             {
                 Dispatcher.Invoke(() =>
                 {
-                    LoadStudents();
+                    LoadStudents(force: true);
                 });
             }
         }
 
         private void NetworkService_StudentConnected(object? sender, StudentConnectedEventArgs e)
         {
-            Dispatcher.Invoke(() => { LoadStudents(); });
+            Dispatcher.Invoke(() => { LoadStudents(force: true); });
         }
 
         private void NetworkService_StudentDisconnected(object? sender, string e)
         {
-            Dispatcher.Invoke(() => { LoadStudents(); });
+            Dispatcher.Invoke(() => { LoadStudents(force: true); });
         }
         private void BtnAssetView_Click(object sender, RoutedEventArgs e)
         {

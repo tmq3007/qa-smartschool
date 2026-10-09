@@ -120,6 +120,8 @@ namespace QASmartClass.Services
 
                     EnsurePeriodLogbooksTable(db);
 
+                    EnsureIncrementalColumns(db);
+
                 }
 
                 return;
@@ -256,6 +258,8 @@ namespace QASmartClass.Services
 
                 EnsurePeriodLogbooksTable(db);
 
+                EnsureIncrementalColumns(db);
+
                 SaveVersion(versionFile, targetVersion);
 
                 return;
@@ -315,6 +319,8 @@ namespace QASmartClass.Services
                     EnsureSubjectsTable(db);
 
                     EnsurePeriodLogbooksTable(db);
+
+                    EnsureIncrementalColumns(db);
 
                     SeedDefaultRolePermissions(db);
 
@@ -4231,6 +4237,29 @@ namespace QASmartClass.Services
             {
                 Log.Warning("[DbMigrator] EnsurePeriodLogbooksTable error: {Err}", ex.Message);
             }
+        }
+
+        public static void EnsureIncrementalColumns(Data.AppDbContext db)
+        {
+            try
+            {
+                if (TableExists(db, "RemedialPlans") && !ColumnExists(db, "RemedialPlans", "Status"))
+                {
+                    RunSafeSql(db, "ALTER TABLE RemedialPlans ADD COLUMN Status TEXT DEFAULT 'Approved';");
+                    Log.Information("[DbMigrator] Added column Status to RemedialPlans");
+                }
+            }
+            catch { }
+
+            try
+            {
+                if (TableExists(db, "Skkns") && !ColumnExists(db, "Skkns", "TeacherCode"))
+                {
+                    RunSafeSql(db, "ALTER TABLE Skkns ADD COLUMN TeacherCode TEXT DEFAULT '';");
+                    Log.Information("[DbMigrator] Added column TeacherCode to Skkns");
+                }
+            }
+            catch { }
         }
 
         private static void SeedDefaultSubjects(Data.AppDbContext db)
