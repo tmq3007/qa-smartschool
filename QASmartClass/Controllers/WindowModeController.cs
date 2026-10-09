@@ -27,6 +27,8 @@ namespace QASmartTouch.Controllers
         // ✅ FIX: Lưu giá trị màu và độ dày bút đã chọn để khôi phục khi mở lại popup
         private System.Windows.Media.Color _savedPenColor = System.Windows.Media.Colors.Red;
         private double _savedPenThickness = 3;
+        private string _savedBrushType = "Normal";
+        private DateTime _lastColorPickerClosedTime = DateTime.MinValue;
         private readonly System.Collections.Generic.List<Forms.QuickDockTabWindow> _dockTabs = new();
 
         public bool IsWindowModeActive => _isWindowModeActive;
@@ -76,6 +78,10 @@ namespace QASmartTouch.Controllers
                 
                 // Create and show toolbar
                 _toolbar = new Forms.FloatingToolbarWindow();
+                if (_overlay != null)
+                {
+                    _toolbar.Owner = _overlay;
+                }
                 
                 // Subscribe to events
                 _toolbar.BackToMainApp += OnBackToMainApp;
@@ -257,6 +263,10 @@ namespace QASmartTouch.Controllers
             foreach (var pos in positions)
             {
                 var tab = new Forms.QuickDockTabWindow(pos);
+                if (_overlay != null)
+                {
+                    tab.Owner = _overlay;
+                }
                 tab.DockTabClicked += OnDockTabClicked;
                 
                 // Nếu toolbar đang ở vị trí này, ẩn icon button đó đi (vì toolbar đã tràn ra tại cạnh đó)
@@ -333,7 +343,14 @@ namespace QASmartTouch.Controllers
         /// </summary>
         private void DeactivateAllModes()
         {
-            // 1. T\u1eaft Erase-by-Click n\u1ebfu \u0111ang b\u1eadt
+            // Đóng color picker nếu đang mở
+            if (_colorPicker != null)
+            {
+                _colorPicker.Close();
+                _colorPicker = null;
+            }
+
+            // 1. Tắt Erase-by-Click nếu đang bật
             if (_isEraseByClickActive)
             {
                 _isEraseByClickActive = false;
@@ -403,24 +420,42 @@ namespace QASmartTouch.Controllers
 
             if (_overlay == null) return;
 
-            // Tắt tất cả chế độ hiện tại
+            // Nếu ĐÃ ở chế độ Pen:
+            if (_isPenMode)
+            {
+                // Nếu vừa mới đóng ColorPicker (ví dụ do click Deactivated từ nút toolbar), tránh mở lại ngay
+                if ((DateTime.UtcNow - _lastColorPickerClosedTime).TotalMilliseconds < 250)
+                {
+                    return;
+                }
+
+                // Nhấn nút Pen lần 2 khi đã ở Pen mode -> Bật/Tắt bảng chọn màu & độ nét (Chuẩn i-Pro 5)
+                if (_colorPicker != null && _colorPicker.IsVisible)
+                {
+                    _colorPicker.Close();
+                    _colorPicker = null;
+                }
+                else
+                {
+                    ShowColorPicker();
+                }
+                return;
+            }
+
+            // Nếu CHƯA ở chế độ Pen (chuyển từ Mouse mode, Erase mode hoặc vừa mở DESKTOP):
+            // Tắt tất cả chế độ khác
             DeactivateAllModes();
 
-            // Lần đầu bật Pen -> không chụp ảnh màn hình nữa, để màn hình trong suốt (live)
-            // (Đoạn chụp ảnh nền đã được loại bỏ theo yêu cầu của người dùng để vẽ trực tiếp)
-
-            // Bật Pen mode
+            // Bật Pen mode ngay lập tức với màu và kích thước hiện tại
             _isPenMode = true;
             _overlay.SetPenMode(true);
             _overlay.SetTool(Forms.AnnotationTool.Pen);
-            _overlay.Focus();
-            _overlay.Activate();
+            _overlay.SetBrushType(_savedBrushType);
 
-            // Highlight nút Pen
+            // Highlight nút Pen trên thanh công cụ
             _toolbar?.SetActiveToolButton("pen");
 
-            // Hiển color picker
-            ShowColorPicker();
+            // Option A (Chuẩn i-Pro 5): KHÔNG tự động hiện ColorPicker ở lần bấm đầu tiên -> Người dùng viết được ngay lập tức!
         }
 
         private void OnShapesSelected(object? sender, EventArgs e)
@@ -442,7 +477,7 @@ namespace QASmartTouch.Controllers
             System.Diagnostics.Debug.WriteLine("🗑️ Clear all requested");
 
             var result = MessageBox.Show(
-                "Bạn có chắc muốn xóa tất cả vẽ?\n\nHành động này không thể hoàn tác.",
+                "Bạn có chắc muốn xóa tất cả?",
                 "Xóa tất cả", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
@@ -1006,12 +1041,17 @@ namespace QASmartTouch.Controllers
                 }
 
                 // Create new color picker
-                _colorPicker = new Forms.ColorPickerPopup(_savedPenColor, _savedPenThickness);
+                _colorPicker = new Forms.ColorPickerPopup(_savedPenColor, _savedPenThickness, _savedBrushType);
                 _colorPicker.WindowStartupLocation = WindowStartupLocation.Manual; // Bắt buộc để nhận Left/Top
+                if (_toolbar != null)
+                {
+                    _colorPicker.Owner = _toolbar;
+                }
                 
                 // Subscribe to events
                 _colorPicker.ColorChanged += OnColorChanged;
                 _colorPicker.ThicknessChanged += OnThicknessChanged;
+                _colorPicker.BrushTypeChanged += OnBrushTypeChanged;
                 _colorPicker.Closed += OnColorPickerClosed;
                 
                 // Tính toán tọa độ vật lý cho ColorPicker
@@ -1121,12 +1161,11 @@ namespace QASmartTouch.Controllers
         private void OnColorPickerClosed(object? sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("🎨 Color picker confirmed - closed");
+            _lastColorPickerClosedTime = DateTime.UtcNow;
+            _colorPicker = null;
             
             if (_overlay != null && _isPenMode)
             {
-                // Cấp lại Focus cho overlay để nhận nét vẽ ngay lập tức
-                _overlay.Focus();
-                _overlay.Activate();
                 System.Diagnostics.Debug.WriteLine("✅ Ready to draw on desktop screenshot");
             }
         }
@@ -1180,6 +1219,22 @@ namespace QASmartTouch.Controllers
             _savedPenThickness = e.Thickness;
             _overlay?.SetThickness(e.Thickness);
             System.Diagnostics.Debug.WriteLine($"📏 Thickness changed to: {e.Thickness}px");
+        }
+
+        private void OnBrushTypeChanged(object? sender, string brushType)
+        {
+            _savedBrushType = brushType;
+            _overlay?.SetBrushType(brushType);
+            System.Diagnostics.Debug.WriteLine($"🖌️ Brush type changed to: {brushType}");
+            
+            if (brushType == "Shape")
+            {
+                _overlay?.ShowToast("📐 Đã bật Bút nhận diện hình", "#5C6BC0");
+            }
+            else
+            {
+                _overlay?.ShowToast("✏️ Đã bật Bút vẽ thường", "#5C6BC0");
+            }
         }
 
         #endregion

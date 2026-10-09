@@ -730,10 +730,6 @@ namespace QASmartTouch.Forms
                 handled = true;
                 return new IntPtr(MA_ACTIVATE); // Kích hoạt cửa sổ VÀ KHÔNG ĐƯỢC NUỐT cú chạm/click!
             }
-            else if (msg == WM_SETCURSOR)
-            {
-                HandleSetCursorMessage(hwnd, lParam, ref handled);
-            }
             else if (msg == WM_COPYDATA)
             {
                 try

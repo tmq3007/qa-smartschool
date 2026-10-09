@@ -35,6 +35,7 @@ namespace QASmartTouch.Forms
         // Drawing properties
         private Color _currentColor = Colors.Red;
         private double _currentThickness = 3;
+        private string _brushType = "Normal";
         private AnnotationTool _currentTool = AnnotationTool.Pen;
         
         // Event for toolbar repositioning
@@ -244,6 +245,14 @@ namespace QASmartTouch.Forms
             System.Diagnostics.Debug.WriteLine($"📏 Thickness changed to: {thickness}");
         }
 
+        public void SetBrushType(string brushType)
+        {
+            _brushType = string.IsNullOrEmpty(brushType) ? "Normal" : brushType;
+            System.Diagnostics.Debug.WriteLine($"🖌️ AnnotationOverlay brush type set to: {_brushType}");
+        }
+
+        public string BrushType => _brushType;
+
         public bool HasBackground
         {
             get
@@ -416,6 +425,25 @@ namespace QASmartTouch.Forms
                     _currentStroke.Points.Add(new Point(pt.X + 0.01, pt.Y));
                 }
 
+                // QC_4.2_SHAPE_RECOGNITION: Nhận diện nét vẽ hình học khi bật Bút nhận diện hình
+                if (_brushType == "Shape" && _currentStroke.Points.Count >= 5)
+                {
+                    var recognizedShape = QASmartTouch.Helpers.ShapeRecognizer.TryRecognizeShape(_currentStroke, _currentColor, _currentThickness);
+                    if (recognizedShape != null)
+                    {
+                        DrawingCanvas.Children.Remove(_currentStroke);
+                        _strokes.Remove(_currentStroke);
+
+                        DrawingCanvas.Children.Add(recognizedShape);
+                        _undoRedoManager?.RecordAddAction(recognizedShape, "Nhận diện hình học");
+
+                        System.Diagnostics.Debug.WriteLine($"📐 Shape recognized and converted successfully on DESKTOP");
+                        _currentStroke = null;
+                        _isDrawing = false;
+                        return;
+                    }
+                }
+
                 System.Diagnostics.Debug.WriteLine($"✅ Completed stroke with {_currentStroke.Points.Count} points");
                 
                 // Record action for undo/redo
@@ -548,6 +576,17 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void EraseStrokeAtPoint(Point clickPoint)
         {
+            // 1. Kiểm tra xóa trực tiếp nếu click trúng một Shape trên canvas (Rectangle, Ellipse, Line, Polygon...)
+            HitTestResult hitResult = VisualTreeHelper.HitTest(DrawingCanvas, clickPoint);
+            if (hitResult?.VisualHit is Shape hitShape && DrawingCanvas.Children.Contains(hitShape))
+            {
+                _undoRedoManager?.RecordRemoveAction(hitShape, DrawingCanvas, "Xóa hình (click)");
+                DrawingCanvas.Children.Remove(hitShape);
+                if (hitShape is Polyline poly) _strokes.Remove(poly);
+                ShowToast("❌ Đã xóa 1 hình", "#D32F2F");
+                return;
+            }
+
             if (_strokes.Count == 0)
             {
                 ShowToast("🗨️ Không có nét vẽ nào!", "#E65100");
