@@ -563,4 +563,31 @@
         </Setter>
     </Style>
 
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!--  MODERN SLIM SCROLLBAR (Windows 11 / macOS Overlay Style)        -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <Style TargetType="{x:Type ScrollBar}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Opacity" Value="0.35"/>
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="Width" Value="6"/>
+                <Setter Property="MinWidth" Value="6"/>
+                <Setter Property="MaxWidth" Value="6"/>
+            </Trigger>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Height" Value="6"/>
+                <Setter Property="MinHeight" Value="6"/>
+                <Setter Property="MaxHeight" Value="6"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="0.95"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Hỗ trợ vuốt chạm cảm ứng PanningMode mượt mà trên toàn hệ thống -->
+    <Style TargetType="{x:Type ScrollViewer}">
+        <Setter Property="PanningMode" Value="Both"/>
+    </Style>
 </ResourceDictionary>
