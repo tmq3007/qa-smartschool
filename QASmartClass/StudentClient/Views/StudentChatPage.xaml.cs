@@ -1525,7 +1525,9 @@ namespace QASmartClass.StudentClient.Views
                 "#009688", "#FF5722", "#795548", "#607D8B" };
             int hash = code.GetHashCode();
             var color = colors[Math.Abs(hash) % colors.Length];
-            return new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+            if (brush.CanFreeze) brush.Freeze();
+            return brush;
         }
 
         // ═══════════════════════════════════════════════════
@@ -1857,7 +1859,21 @@ namespace QASmartClass.StudentClient.Views
         public string Code { get; set; } = "";
         public string DisplayName { get; set; } = "";
         public string AvatarText { get; set; } = "?";
-        public Brush AvatarBg { get; set; } = Brushes.Gray;
+
+        private Brush _avatarBg = Brushes.Gray;
+        public Brush AvatarBg
+        {
+            get => _avatarBg;
+            set
+            {
+                if (value is Freezable f && f.CanFreeze && !f.IsFrozen)
+                {
+                    f.Freeze();
+                }
+                _avatarBg = value;
+            }
+        }
+
         public string Subtitle { get; set; } = "";
         public bool IsGroup { get; set; }
 

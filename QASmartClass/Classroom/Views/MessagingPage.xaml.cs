@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -45,6 +45,26 @@ namespace QASmartClass.Classroom.Views
             "#C62828", "#00838F", "#AD1457", "#4527A0",
             "#2E7D32", "#E65100", "#1565C0", "#00695C"
         };
+
+        public static Brush CreateFrozenBrush(Color color)
+        {
+            var brush = new SolidColorBrush(color);
+            if (brush.CanFreeze) brush.Freeze();
+            return brush;
+        }
+
+        public static Brush CreateFrozenBrush(string hexColor)
+        {
+            try
+            {
+                var color = (Color)ColorConverter.ConvertFromString(hexColor);
+                return CreateFrozenBrush(color);
+            }
+            catch
+            {
+                return Brushes.Gray;
+            }
+        }
 
         private static readonly string[] GroupEmojis = { "📘", "📗", "📙", "📕", "🔬", "🎵", "⚽", "🖥️", "📐", "🌍" };
 
@@ -229,7 +249,7 @@ namespace QASmartClass.Classroom.Views
                         Code = "ALL",
                         DisplayName = "👥 Cả lớp",
                         AvatarText = "🏫",
-                        AvatarBg = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1976D2")),
+                        AvatarBg = CreateFrozenBrush("#1976D2"),
                         IsGroup = true,
                         LastMessage = "Nhắn tin chung với toàn bộ lớp",
                         UnreadCount = unreadAll
@@ -266,7 +286,7 @@ namespace QASmartClass.Classroom.Views
                             Code = $"GROUP_{grp.Id}",
                             DisplayName = $"{grp.Emoji} {grp.Name}",
                             AvatarText = grp.Emoji,
-                            AvatarBg = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)),
+                            AvatarBg = CreateFrozenBrush(color),
                             IsGroup = true,
                             LastMessage = $"💬 {grp.MemberCodes.Count} thành viên",
                             UnreadCount = unreadGrp
@@ -309,7 +329,7 @@ namespace QASmartClass.Classroom.Views
                                 Code = sgCode,
                                 DisplayName = $"{sg.Emoji} {sg.Name}",
                                 AvatarText = sg.Emoji,
-                                AvatarBg = new SolidColorBrush(sg.HeaderColor),
+                                AvatarBg = CreateFrozenBrush(sg.HeaderColor),
                                 IsGroup = true,
                                 LastMessage = $"📚 Nhóm học tập · {sg.Members.Count} HS",
                                 UnreadCount = unreadSg
@@ -402,7 +422,7 @@ namespace QASmartClass.Classroom.Views
                             ClassName = s.ClassName,
                             SchoolName = s.SchoolName,
                             AvatarText = initials,
-                            AvatarBg = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)),
+                            AvatarBg = CreateFrozenBrush(color),
                             IsOnline = s.IsOnline,
                             IsGroup = false,
                             LastMessage = lastMsg?.Details?.Replace("Tin nhắn: ", "") ?? "",
@@ -429,7 +449,7 @@ namespace QASmartClass.Classroom.Views
                                         Code = client.Code,
                                         DisplayName = client.Name,
                                         AvatarText = GetInitials(client.Name),
-                                        AvatarBg = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)),
+                                        AvatarBg = CreateFrozenBrush(color),
                                         IsOnline = true,
                                         IsGroup = false,
                                         LastMessage = "",
@@ -2526,7 +2546,7 @@ namespace QASmartClass.Classroom.Views
             if (string.IsNullOrEmpty(code)) return Brushes.Gray;
             int hash = Math.Abs(code.GetHashCode());
             var color = AvatarColors[hash % AvatarColors.Length];
-            return new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+            return CreateFrozenBrush(color);
         }
 
         private void TabMembers_Click(object sender, MouseButtonEventArgs e)
@@ -3029,7 +3049,21 @@ namespace QASmartClass.Classroom.Views
         public string StudentCode { get; set; } = string.Empty;
         public string Channel     { get; set; } = "ALL";
         public string AvatarText  { get; set; } = "?";
-        public Brush AvatarBg     { get; set; } = Brushes.Gray;
+
+        private Brush _avatarBg = Brushes.Gray;
+        public Brush AvatarBg
+        {
+            get => _avatarBg;
+            set
+            {
+                if (value is Freezable f && f.CanFreeze && !f.IsFrozen)
+                {
+                    f.Freeze();
+                }
+                _avatarBg = value;
+            }
+        }
+
         public string TimeStr     => Time.ToString("HH:mm");
         public string StudentCodeDisplay => string.IsNullOrEmpty(StudentCode) ? "" : $"@{StudentCode}";
     }
@@ -3044,7 +3078,21 @@ namespace QASmartClass.Classroom.Views
         public string ClassName     { get; set; } = string.Empty;
         public string SchoolName    { get; set; } = string.Empty;
         public string AvatarText    { get; set; } = "?";
-        public Brush AvatarBg       { get; set; } = Brushes.Gray;
+
+        private Brush _avatarBg = Brushes.Gray;
+        public Brush AvatarBg
+        {
+            get => _avatarBg;
+            set
+            {
+                if (value is Freezable f && f.CanFreeze && !f.IsFrozen)
+                {
+                    f.Freeze();
+                }
+                _avatarBg = value;
+            }
+        }
+
         public bool IsGroup         { get; set; }
         
         private string _feedbackEmoji = "";
