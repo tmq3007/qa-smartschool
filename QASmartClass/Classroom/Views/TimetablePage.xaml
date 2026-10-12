@@ -8,7 +8,7 @@
 
 
 
-    <Grid Margin="24,16">
+    <Grid Margin="20,12">
 
         <Grid.RowDefinitions>
 
@@ -21,7 +21,7 @@
 
 
         <!-- ═══ HEADER ═══ -->
-        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="20,14" Margin="0,0,0,12"
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="16,10" Margin="0,0,0,8"
                 BorderBrush="#E0E0E0" BorderThickness="1">
             <Grid>
                 <Grid.RowDefinitions>
@@ -266,7 +266,7 @@
 
                 BorderBrush="#E0E0E0" BorderThickness="1" ClipToBounds="True">
 
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <ScrollViewer x:Name="timetableScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="0,0,0,76" SizeChanged="TimetableScrollViewer_SizeChanged">
 
                 <Grid x:Name="timetableGrid" Margin="0"/>
 

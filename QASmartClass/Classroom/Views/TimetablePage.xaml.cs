@@ -676,18 +676,18 @@ namespace QASmartClass.Classroom.Views
             // Update subtitle with current period info
             UpdateFocusInfo(currentPeriod, nextPeriod, todayCol);
 
-            // Columns: Period label + 6 days
-            timetableGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(140) }); // Period col — wider
+            // Columns: Period label (optimized 110px) + 6 days (Star)
+            timetableGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(110) });
             for (int d = 0; d < 6; d++)
                 timetableGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            // Rows: Header + Break label + 10 periods
-            timetableGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(64) }); // Day header — taller
+            // Rows: Header (46px) + Break label (26px) + 10 periods (responsive dynamic height, default 68px)
+            timetableGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(46) }); // Day header
             for (int p = 0; p < 10; p++)
             {
                 if (p == 5) // Break between morning/afternoon
-                    timetableGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(36) });
-                timetableGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(90) }); // — taller rows
+                    timetableGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(26) });
+                timetableGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(68) });
             }
 
             // ── Day headers ──
@@ -708,15 +708,15 @@ namespace QASmartClass.Classroom.Views
                 sp.Children.Add(new TextBlock
                 {
                     Text = DayNames[d],
-                    FontSize = 15, FontWeight = FontWeights.Bold,
+                    FontSize = 14, FontWeight = FontWeights.Bold,
                     Foreground = isToday ? Brushes.White : new SolidColorBrush(Color.FromRgb(33, 33, 33)),
                     HorizontalAlignment = HorizontalAlignment.Center
                 });
                 sp.Children.Add(new TextBlock
                 {
                     Text = dayDate.ToString("dd/MM"),
-                    FontSize = 12, Foreground = isToday ? new SolidColorBrush(Color.FromRgb(200, 230, 255)) : new SolidColorBrush(Color.FromRgb(120, 120, 120)),
-                    HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 2, 0, 0)
+                    FontSize = 11, Foreground = isToday ? new SolidColorBrush(Color.FromRgb(200, 230, 255)) : new SolidColorBrush(Color.FromRgb(120, 120, 120)),
+                    HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 1, 0, 0)
                 });
                 header.Child = sp;
                 Grid.SetColumn(header, d + 1);
@@ -740,7 +740,7 @@ namespace QASmartClass.Classroom.Views
                     breakBorder.Child = new TextBlock
                     {
                         Text = "☕ NGHỈ TRƯA",
-                        FontSize = 12, FontWeight = FontWeights.SemiBold,
+                        FontSize = 11, FontWeight = FontWeights.SemiBold,
                         Foreground = new SolidColorBrush(Color.FromRgb(230, 126, 0)),
                         HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center
                     };
@@ -775,7 +775,7 @@ namespace QASmartClass.Classroom.Views
                     var badge = new Border
                     {
                         Background = Brushes.White, CornerRadius = new CornerRadius(8),
-                        Padding = new Thickness(6, 2, 6, 2), Margin = new Thickness(0, 0, 0, 4),
+                        Padding = new Thickness(6, 2, 6, 2), Margin = new Thickness(0, 0, 0, 3),
                         HorizontalAlignment = HorizontalAlignment.Center
                     };
                     badge.Child = new TextBlock
@@ -791,7 +791,7 @@ namespace QASmartClass.Classroom.Views
                     {
                         Background = new SolidColorBrush(Color.FromRgb(255, 224, 130)),
                         CornerRadius = new CornerRadius(8),
-                        Padding = new Thickness(6, 2, 6, 2), Margin = new Thickness(0, 0, 0, 4),
+                        Padding = new Thickness(6, 2, 6, 2), Margin = new Thickness(0, 0, 0, 3),
                         HorizontalAlignment = HorizontalAlignment.Center
                     };
                     badge.Child = new TextBlock
@@ -804,15 +804,15 @@ namespace QASmartClass.Classroom.Views
 
                 periodSp.Children.Add(new TextBlock
                 {
-                    Text = PeriodLabels[p], FontSize = 14, FontWeight = FontWeights.Bold,
+                    Text = PeriodLabels[p], FontSize = 13.5, FontWeight = FontWeights.Bold,
                     Foreground = isCurrentPeriod ? Brushes.White : new SolidColorBrush(Color.FromRgb(33, 33, 33)),
                     HorizontalAlignment = HorizontalAlignment.Center
                 });
                 periodSp.Children.Add(new TextBlock
                 {
-                    Text = PeriodTimes[p], FontSize = 10,
+                    Text = PeriodTimes[p], FontSize = 9.5,
                     Foreground = isCurrentPeriod ? new SolidColorBrush(Color.FromRgb(200, 255, 200)) : new SolidColorBrush(Color.FromRgb(140, 140, 140)),
-                    HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 3, 0, 0)
+                    HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 2, 0, 0)
                 });
                 periodCell.Child = periodSp;
                 Grid.SetColumn(periodCell, 0);
@@ -832,6 +832,50 @@ namespace QASmartClass.Classroom.Views
 
                 gridRow++;
             }
+
+            // Tự động tính toán chiều cao hàng thích ứng màn hình (Responsive)
+            UpdateRowHeights();
+        }
+
+        private void TimetableScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (e.HeightChanged)
+            {
+                UpdateRowHeights();
+            }
+        }
+
+        /// <summary>
+        /// Tự động tính toán chiều cao hàng cho 10 tiết học vừa vặn với kích thước màn hình
+        /// - Màn hình lớn (1080p, 2K, 4K màn tương tác): Tự giãn đều lấp đầy không gian, không bị thanh dock che
+        /// - Màn hình nhỏ (Laptop 768p): Giữ chiều cao tối thiểu 65px để không bị ép chữ, cuộn mượt mà
+        /// </summary>
+        private void UpdateRowHeights()
+        {
+            if (timetableScrollViewer == null || timetableGrid == null || timetableGrid.RowDefinitions.Count < 12)
+                return;
+
+            double availH = timetableScrollViewer.ActualHeight;
+            if (availH <= 120) return;
+
+            // Padding đáy chống đè thanh dock FloatingModeBar (76px) + Header ngày (46px) + Nghỉ trưa (26px) + viền (4px)
+            double reservedH = 76 + 46 + 26 + 4;
+            double contentH = availH - reservedH;
+
+            // Chiều cao mỗi hàng tiết học: tối thiểu 66px, dãn đều khi màn hình cao
+            double periodH = Math.Max(66.0, Math.Floor(contentH / 10.0));
+
+            timetableGrid.RowDefinitions[0].Height = new GridLength(46);
+            timetableGrid.RowDefinitions[6].Height = new GridLength(26);
+
+            for (int r = 1; r <= 5; r++)
+            {
+                timetableGrid.RowDefinitions[r].Height = new GridLength(periodH);
+            }
+            for (int r = 7; r <= 11; r++)
+            {
+                timetableGrid.RowDefinitions[r].Height = new GridLength(periodH);
+            }
         }
 
         private Border BuildCell(TimetableSlot? slot, int day, int period, bool isFocus = false)
@@ -839,12 +883,13 @@ namespace QASmartClass.Classroom.Views
             var border = new Border
             {
                 BorderBrush = isFocus
-                    ? new SolidColorBrush(Color.FromRgb(46, 125, 50))
+                    ? new SolidColorBrush(Color.FromRgb(34, 197, 94)) // #22C55E Xanh lá tươi hiện đại
                     : new SolidColorBrush(Color.FromRgb(234, 234, 234)),
-                BorderThickness = isFocus ? new Thickness(2.5) : new Thickness(0, 0, 1, 1),
+                BorderThickness = isFocus ? new Thickness(2) : new Thickness(0, 0, 1, 1),
                 Margin = new Thickness(2),
                 CornerRadius = new CornerRadius(8),
                 Cursor = Cursors.Hand,
+                ClipToBounds = true,
                 ToolTip = slot != null ? $"{slot.Subject} — {slot.Room}\nClick để chỉnh sửa" : "Click để thêm môn"
             };
 
@@ -853,10 +898,10 @@ namespace QASmartClass.Classroom.Views
             {
                 border.Effect = new System.Windows.Media.Effects.DropShadowEffect
                 {
-                    Color = Color.FromRgb(76, 175, 80),
-                    BlurRadius = 12,
+                    Color = Color.FromRgb(34, 197, 94),
+                    BlurRadius = 10,
                     ShadowDepth = 0,
-                    Opacity = 0.5
+                    Opacity = 0.45
                 };
             }
 
@@ -866,50 +911,85 @@ namespace QASmartClass.Classroom.Views
                 var accentColor = (Color)ColorConverter.ConvertFromString(color);
 
                 border.Background = isFocus
-                    ? new SolidColorBrush(Color.FromArgb(50, accentColor.R, accentColor.G, accentColor.B))
-                    : new SolidColorBrush(Color.FromArgb(30, accentColor.R, accentColor.G, accentColor.B));
+                    ? new SolidColorBrush(Color.FromArgb(45, accentColor.R, accentColor.G, accentColor.B))
+                    : new SolidColorBrush(Color.FromArgb(28, accentColor.R, accentColor.G, accentColor.B));
 
-                var sp = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(14, 6, 8, 6) };
+                var grid = new Grid();
 
-                // "NOW" indicator for focus cell
+                // Left accent bar
+                grid.Children.Add(new Border
+                {
+                    Width = isFocus ? 4 : 3,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Background = new SolidColorBrush(accentColor),
+                    CornerRadius = new CornerRadius(2),
+                    Margin = new Thickness(0, 4, 0, 4)
+                });
+
+                // Top-right "ĐANG HỌC" badge for focus cell — Định vị độc lập góc trên, không bao giờ bị cắt hay che
                 if (isFocus)
                 {
                     var nowBadge = new Border
                     {
-                        Background = new SolidColorBrush(Color.FromRgb(46, 125, 50)),
-                        CornerRadius = new CornerRadius(8),
-                        Padding = new Thickness(8, 2, 8, 2),
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        Margin = new Thickness(0, 0, 0, 4)
+                        Background = new SolidColorBrush(Color.FromRgb(220, 252, 231)), // #DCFCE7 xanh lá pastel
+                        BorderBrush = new SolidColorBrush(Color.FromRgb(74, 222, 128)), // #4ADE80
+                        BorderThickness = new Thickness(1),
+                        CornerRadius = new CornerRadius(4),
+                        Padding = new Thickness(5, 1, 5, 1),
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Margin = new Thickness(0, 3, 4, 0)
                     };
-                    nowBadge.Child = new TextBlock
+                    var badgeSp = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+                    badgeSp.Children.Add(new TextBlock
                     {
-                        Text = "🔴 ĐANG HỌC",
-                        FontSize = 9, FontWeight = FontWeights.Bold,
-                        Foreground = Brushes.White
-                    };
-                    sp.Children.Add(nowBadge);
+                        Text = "●",
+                        FontSize = 7,
+                        Foreground = new SolidColorBrush(Color.FromRgb(22, 163, 74)),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(0, 0, 3, 0)
+                    });
+                    badgeSp.Children.Add(new TextBlock
+                    {
+                        Text = "ĐANG HỌC",
+                        FontSize = 8,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush(Color.FromRgb(21, 128, 61)),
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                    nowBadge.Child = badgeSp;
+                    grid.Children.Add(nowBadge);
                 }
 
-                // Subject name — LARGER
+                // Central content StackPanel
+                var sp = new StackPanel
+                {
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(10, 2, 8, 2)
+                };
+
+                // Subject name
                 sp.Children.Add(new TextBlock
                 {
                     Text = slot.Subject,
-                    FontSize = isFocus ? 18 : 16,
+                    FontSize = isFocus ? 16 : 15,
                     FontWeight = FontWeights.Bold,
                     Foreground = new SolidColorBrush(accentColor),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     TextTrimming = TextTrimming.CharacterEllipsis
                 });
 
-                // Room — bigger
+                // Room
                 if (!string.IsNullOrEmpty(slot.Room))
                 {
                     sp.Children.Add(new TextBlock
                     {
                         Text = $"📍 {slot.Room}",
-                        FontSize = 11, Foreground = new SolidColorBrush(Color.FromRgb(120, 120, 120)),
-                        HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 0)
+                        FontSize = 10,
+                        Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 1, 0, 0),
+                        TextTrimming = TextTrimming.CharacterEllipsis
                     });
                 }
 
@@ -921,36 +1001,36 @@ namespace QASmartClass.Classroom.Views
                         : $"Bài #{slot.LessonId}";
                     var lessonBadge = new Border
                     {
-                        Background = new SolidColorBrush(Color.FromArgb(40, accentColor.R, accentColor.G, accentColor.B)),
-                        BorderBrush = new SolidColorBrush(Color.FromArgb(90, accentColor.R, accentColor.G, accentColor.B)),
+                        Background = new SolidColorBrush(Color.FromArgb(35, accentColor.R, accentColor.G, accentColor.B)),
+                        BorderBrush = new SolidColorBrush(Color.FromArgb(80, accentColor.R, accentColor.G, accentColor.B)),
                         BorderThickness = new Thickness(1),
-                        CornerRadius = new CornerRadius(6),
-                        Padding = new Thickness(6, 2, 6, 2),
-                        Margin = new Thickness(0, 4, 0, 0),
+                        CornerRadius = new CornerRadius(4),
+                        Padding = new Thickness(5, 1, 5, 1),
+                        Margin = new Thickness(0, 2, 0, 0),
                         HorizontalAlignment = HorizontalAlignment.Center,
                         ToolTip = $"Bài giảng: {lessonDisplayName}"
                     };
                     lessonBadge.Child = new TextBlock
                     {
                         Text = $"📖 {lessonDisplayName}",
-                        FontSize = 10,
+                        FontSize = 9.5,
                         FontWeight = FontWeights.SemiBold,
                         Foreground = new SolidColorBrush(accentColor),
                         TextTrimming = TextTrimming.CharacterEllipsis,
-                        MaxWidth = 120
+                        MaxWidth = 110
                     };
                     sp.Children.Add(lessonBadge);
                 }
 
-                // If isFocus (NOW), provide quick 🚀 Vào dạy button
+                // Quick 🚀 Vào dạy button if isFocus
                 if (isFocus)
                 {
                     var btnStartTeach = new Border
                     {
-                        Background = new LinearGradientBrush(Color.FromRgb(21, 101, 192), Color.FromRgb(25, 118, 210), 0),
-                        CornerRadius = new CornerRadius(10),
-                        Padding = new Thickness(10, 4, 10, 4),
-                        Margin = new Thickness(0, 5, 0, 0),
+                        Background = new LinearGradientBrush(Color.FromRgb(22, 163, 74), Color.FromRgb(21, 128, 61), 45),
+                        CornerRadius = new CornerRadius(6),
+                        Padding = new Thickness(8, 2, 8, 2),
+                        Margin = new Thickness(0, 3, 0, 0),
                         HorizontalAlignment = HorizontalAlignment.Center,
                         Cursor = Cursors.Hand,
                         ToolTip = "Click để vào dạy bài học này ngay lập tức"
@@ -958,7 +1038,7 @@ namespace QASmartClass.Classroom.Views
                     btnStartTeach.Child = new TextBlock
                     {
                         Text = "🚀 Vào dạy",
-                        FontSize = 10.5,
+                        FontSize = 10,
                         FontWeight = FontWeights.Bold,
                         Foreground = Brushes.White
                     };
@@ -970,23 +1050,14 @@ namespace QASmartClass.Classroom.Views
                     sp.Children.Add(btnStartTeach);
                 }
 
-                // Left accent bar — thicker
-                var grid = new Grid();
-                grid.Children.Add(new Border
-                {
-                    Width = isFocus ? 5 : 4, HorizontalAlignment = HorizontalAlignment.Left,
-                    Background = new SolidColorBrush(accentColor),
-                    CornerRadius = new CornerRadius(2),
-                    Margin = new Thickness(0, 4, 0, 4)
-                });
                 grid.Children.Add(sp);
                 border.Child = grid;
 
                 // Hover
                 var bgNormal = isFocus
-                    ? new SolidColorBrush(Color.FromArgb(50, accentColor.R, accentColor.G, accentColor.B))
-                    : new SolidColorBrush(Color.FromArgb(30, accentColor.R, accentColor.G, accentColor.B));
-                var bgHover = new SolidColorBrush(Color.FromArgb(65, accentColor.R, accentColor.G, accentColor.B));
+                    ? new SolidColorBrush(Color.FromArgb(45, accentColor.R, accentColor.G, accentColor.B))
+                    : new SolidColorBrush(Color.FromArgb(28, accentColor.R, accentColor.G, accentColor.B));
+                var bgHover = new SolidColorBrush(Color.FromArgb(60, accentColor.R, accentColor.G, accentColor.B));
                 border.MouseEnter += (_, _) => border.Background = bgHover;
                 border.MouseLeave += (_, _) => border.Background = bgNormal;
             }
