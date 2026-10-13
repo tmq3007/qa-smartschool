@@ -1866,7 +1866,7 @@ namespace QASmartTouch.Forms
 
         private void Open3DCubeEditor()
         {
-            var cubeEditor = new Form2_6_3DCubeEditor();
+            var cubeEditor = new Form2_6_3DCubeEditor(_currentPenColor);
             
             if (WindowHelper.ShowChildDialog(cubeEditor, this) == true && cubeEditor.IsConfirmed)
             {
@@ -1884,7 +1884,7 @@ namespace QASmartTouch.Forms
 
         private void Open3DSphereEditor()
         {
-            var sphereEditor = new Form2_6_3DSphereEditor();
+            var sphereEditor = new Form2_6_3DSphereEditor(_currentPenColor);
             
             if (WindowHelper.ShowChildDialog(sphereEditor, this) == true && sphereEditor.IsConfirmed)
             {
@@ -1902,7 +1902,7 @@ namespace QASmartTouch.Forms
 
         private void Open3DCylinderEditor()
         {
-            var cylinderEditor = new Form2_6_3DCylinderEditor();
+            var cylinderEditor = new Form2_6_3DCylinderEditor(_currentPenColor);
             
             if (WindowHelper.ShowChildDialog(cylinderEditor, this) == true && cylinderEditor.IsConfirmed)
             {
@@ -1923,7 +1923,7 @@ namespace QASmartTouch.Forms
         {
             System.Diagnostics.Debug.WriteLine("🔍 DASHBOARD: Open3DConeEditor được gọi!");
             
-            var coneEditor = new Form2_6_3DConeEditor();
+            var coneEditor = new Form2_6_3DConeEditor(_currentPenColor);
             
             System.Diagnostics.Debug.WriteLine("🔍 DASHBOARD: Đang mở ConeEditor dialog...");
             var dialogResult = WindowHelper.ShowChildDialog(coneEditor, this);
@@ -1955,7 +1955,7 @@ namespace QASmartTouch.Forms
 
         private void Open3DPyramidEditor()
         {
-            var pyramidEditor = new Form2_6_3DPyramidEditor();
+            var pyramidEditor = new Form2_6_3DPyramidEditor(_currentPenColor);
             
             if (WindowHelper.ShowChildDialog(pyramidEditor, this) == true && pyramidEditor.IsConfirmed)
             {
@@ -1973,7 +1973,7 @@ namespace QASmartTouch.Forms
 
         private void Open3DPrismEditor()
         {
-            var prismEditor = new Form2_6_3DPrismEditor();
+            var prismEditor = new Form2_6_3DPrismEditor(_currentPenColor);
             
             if (WindowHelper.ShowChildDialog(prismEditor, this) == true && prismEditor.IsConfirmed)
             {
@@ -1987,7 +1987,7 @@ namespace QASmartTouch.Forms
         /// </summary>
         public void Open3DPrismEditorWithStats()
         {
-            var prismEditor = new Form2_6_3DPrismEditor();
+            var prismEditor = new Form2_6_3DPrismEditor(_currentPenColor);
             
             if (WindowHelper.ShowChildDialog(prismEditor, this) == true && prismEditor.IsConfirmed)
             {
@@ -8511,10 +8511,6 @@ namespace QASmartTouch.Forms
                     stroke.StrokeEndLineCap = PenLineCap.Round;
                     stroke.Opacity = 0.95;
                     stroke.StrokeThickness = Math.Max(_currentPenSize * 1.3, 4);
-                    if (_currentPenColor == Colors.Black || _currentPenColor == Colors.White)
-                    {
-                        stroke.Stroke = new SolidColorBrush(Color.FromRgb(255, 59, 48));
-                    }
                     break;
 
                 case "Transparent":

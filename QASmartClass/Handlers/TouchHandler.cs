@@ -1120,10 +1120,6 @@ namespace QASmartTouch.Handlers
                     stroke.StrokeEndLineCap = PenLineCap.Round;
                     stroke.Opacity = 0.95;
                     stroke.StrokeThickness = Math.Max(_currentPenSize * 1.3, 4);
-                    if (_currentPenColor == Colors.Black || _currentPenColor == Colors.White)
-                    {
-                        stroke.Stroke = new SolidColorBrush(Color.FromRgb(255, 59, 48));
-                    }
                     break;
 
                 default:

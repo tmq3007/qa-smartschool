@@ -40,7 +40,7 @@ namespace QASmartTouch.Forms
         private bool _isDragging = false;
         private int? _activeTouchId = null;
 
-        public Form2_6_3DSphereEditor()
+        public Form2_6_3DSphereEditor(Color? initialEdgeColor = null)
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
@@ -54,12 +54,31 @@ namespace QASmartTouch.Forms
             LatitudeSegments = 16;
             LongitudeSegments = 16;
             DrawMode = "Wireframe";
-            EdgeColor = Colors.Black;
+            EdgeColor = initialEdgeColor ?? Colors.White; // QC_4.2: Đồng bộ màu nét vẽ với bút viết (mặc định Trắng)
             FaceColor = Colors.Transparent;
             IsConfirmed = false;
 
             // Initial draw
-            Loaded += (s, e) => DrawSphere();
+            Loaded += (s, e) =>
+            {
+                if (EdgeColorComboBox != null)
+                {
+                    if (EdgeColor == Colors.White) EdgeColorComboBox.SelectedIndex = 1;
+                    else if (EdgeColor == Colors.Black) EdgeColorComboBox.SelectedIndex = 0;
+                    else if (EdgeColor.R > 200 && EdgeColor.G < 100 && EdgeColor.B < 100) EdgeColorComboBox.SelectedIndex = 2; // Đỏ
+                    else if (EdgeColor.R < 100 && EdgeColor.G > 180 && EdgeColor.B < 100) EdgeColorComboBox.SelectedIndex = 3; // Xanh lá
+                    else if (EdgeColor.R < 100 && EdgeColor.G < 180 && EdgeColor.B > 180) EdgeColorComboBox.SelectedIndex = 4; // Xanh dương
+                    else if (EdgeColor.R > 200 && EdgeColor.G > 200 && EdgeColor.B < 100) EdgeColorComboBox.SelectedIndex = 5; // Vàng
+                    else if (EdgeColor.R > 120 && EdgeColor.G < 100 && EdgeColor.B > 150) EdgeColorComboBox.SelectedIndex = 6; // Tím
+                    else if (EdgeColor.R > 200 && EdgeColor.G > 120 && EdgeColor.B < 50) EdgeColorComboBox.SelectedIndex = 7; // Cam
+                    else
+                    {
+                        if (EdgeColorPreview != null)
+                            EdgeColorPreview.Background = new SolidColorBrush(EdgeColor);
+                    }
+                }
+                DrawSphere();
+            };
             SizeChanged += (s, e) => { if (IsLoaded) DrawSphere(); };
         }
 

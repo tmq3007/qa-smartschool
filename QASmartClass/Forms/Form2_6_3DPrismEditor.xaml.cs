@@ -26,7 +26,7 @@ namespace QASmartTouch.Forms
         public double RotationZ { get; private set; } = 0;
         public double EdgeThickness { get; private set; } = 1.5;
         public string DrawingMode { get; private set; } = "Wireframe";
-        public Color EdgeColor { get; private set; } = Colors.Black;
+        public Color EdgeColor { get; private set; } = Colors.White;
         public Color FaceColor { get; private set; } = Colors.Transparent;
         public double Opacity { get; private set; } = 0.7;
         public bool IsAutoRotate { get; private set; } = false;
@@ -49,13 +49,30 @@ namespace QASmartTouch.Forms
         // Auto-rotate timer
         private DispatcherTimer? autoRotateTimer;
 
-        public Form2_6_3DPrismEditor()
+        public Form2_6_3DPrismEditor(Color? initialEdgeColor = null)
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
+            EdgeColor = initialEdgeColor ?? Colors.White;
             InitializePrism();
             this.Loaded += (s, e) =>
             {
+                if (cmbEdgeColor != null)
+                {
+                    if (EdgeColor == Colors.White) cmbEdgeColor.SelectedIndex = 1;
+                    else if (EdgeColor == Colors.Black) cmbEdgeColor.SelectedIndex = 0;
+                    else if (EdgeColor.R > 200 && EdgeColor.G < 100 && EdgeColor.B < 100) cmbEdgeColor.SelectedIndex = 2; // Đỏ
+                    else if (EdgeColor.R < 100 && EdgeColor.G > 180 && EdgeColor.B < 100) cmbEdgeColor.SelectedIndex = 3; // Xanh lá
+                    else if (EdgeColor.R < 100 && EdgeColor.G < 180 && EdgeColor.B > 180) cmbEdgeColor.SelectedIndex = 4; // Xanh dương
+                    else if (EdgeColor.R > 200 && EdgeColor.G > 200 && EdgeColor.B < 100) cmbEdgeColor.SelectedIndex = 5; // Vàng
+                    else if (EdgeColor.R > 120 && EdgeColor.G < 100 && EdgeColor.B > 150) cmbEdgeColor.SelectedIndex = 6; // Tím
+                    else if (EdgeColor.R > 200 && EdgeColor.G > 120 && EdgeColor.B < 50) cmbEdgeColor.SelectedIndex = 7; // Cam
+                    else
+                    {
+                        if (EdgeColorPreview != null)
+                            EdgeColorPreview.Background = new SolidColorBrush(EdgeColor);
+                    }
+                }
                 EnableDragDrop();
                 DrawPrism();
             };
@@ -803,7 +820,7 @@ namespace QASmartTouch.Forms
             sliderRotationY.Value = 30;
             sliderRotationZ.Value = 0;
             rbWireframe.IsChecked = true;
-            cmbEdgeColor.SelectedIndex = 0; // Black
+            cmbEdgeColor.SelectedIndex = 1; // White
             cmbFaceColor.SelectedIndex = 0; // Transparent
             sliderOpacity.Value = 70;
             chkAutoRotate.IsChecked = false;

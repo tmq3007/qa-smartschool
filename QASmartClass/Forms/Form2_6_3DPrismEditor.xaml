@@ -543,7 +543,7 @@
                                                       Grid.Column="0"
                                                       Height="34" 
                                                       FontSize="12"
-                                                      SelectedIndex="0"
+                                                      SelectedIndex="1"
                                                       SelectionChanged="OnEdgeColorChanged">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
@@ -568,7 +568,7 @@
 
                                             <Border Grid.Column="1" 
                                                     x:Name="EdgeColorPreview"
-                                                    Background="Black" 
+                                                    Background="White" 
                                                     CornerRadius="4" 
                                                     Margin="8,0,0,0"
                                                     BorderBrush="#CCCCCC"

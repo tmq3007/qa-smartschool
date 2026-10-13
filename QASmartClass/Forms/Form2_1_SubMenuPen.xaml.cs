@@ -125,8 +125,8 @@ namespace QASmartTouch.Forms
             {
                 var ellipse = new Ellipse
                 {
-                    Width = Math.Min(i * 1.5, 18), // Scale size from 1.5px to 18px max
-                    Height = Math.Min(i * 1.5, 18),
+                    Width = Math.Min(2 + i * 0.5, 10), // Scale size from 2.5px to 10px max
+                    Height = Math.Min(2 + i * 0.5, 10),
                     Fill = i <= currentPenSize ? new SolidColorBrush(Color.FromRgb(46, 134, 222)) : new SolidColorBrush(Color.FromRgb(220, 221, 225)),
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,

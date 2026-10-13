@@ -44,7 +44,7 @@ namespace QASmartTouch.Forms
         private Point _lastInteractionPoint;
         private int? _activeTouchId = null;
 
-        public Form2_6_3DCubeEditor()
+        public Form2_6_3DCubeEditor(Color? initialEdgeColor = null)
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
@@ -56,12 +56,31 @@ namespace QASmartTouch.Forms
             RotationZ = 0;      // Không xoay trục Z
             CubeSize = 150;
             DrawMode = "Wireframe"; // Mặc định là Khung dây
-            EdgeColor = Colors.Black;
+            EdgeColor = initialEdgeColor ?? Colors.White; // QC_4.2: Đồng bộ màu nét vẽ với bút viết (mặc định Trắng)
             FaceColor = Colors.Transparent; // Mặc định không màu
             IsConfirmed = false;
 
-            // Vẽ lần đầu
-            Loaded += (s, e) => DrawCube();
+            // Đồng bộ UI và vẽ lần đầu
+            Loaded += (s, e) =>
+            {
+                if (EdgeColorComboBox != null)
+                {
+                    if (EdgeColor == Colors.White) EdgeColorComboBox.SelectedIndex = 1;
+                    else if (EdgeColor == Colors.Black) EdgeColorComboBox.SelectedIndex = 0;
+                    else if (EdgeColor.R > 200 && EdgeColor.G < 100 && EdgeColor.B < 100) EdgeColorComboBox.SelectedIndex = 2; // Đỏ
+                    else if (EdgeColor.R < 100 && EdgeColor.G > 180 && EdgeColor.B < 100) EdgeColorComboBox.SelectedIndex = 3; // Xanh lá
+                    else if (EdgeColor.R < 100 && EdgeColor.G < 180 && EdgeColor.B > 180) EdgeColorComboBox.SelectedIndex = 4; // Xanh dương
+                    else if (EdgeColor.R > 200 && EdgeColor.G > 200 && EdgeColor.B < 100) EdgeColorComboBox.SelectedIndex = 5; // Vàng
+                    else if (EdgeColor.R > 120 && EdgeColor.G < 100 && EdgeColor.B > 150) EdgeColorComboBox.SelectedIndex = 6; // Tím
+                    else if (EdgeColor.R > 200 && EdgeColor.G > 120 && EdgeColor.B < 50) EdgeColorComboBox.SelectedIndex = 7; // Cam
+                    else
+                    {
+                        if (EdgeColorPreview != null)
+                            EdgeColorPreview.Background = new SolidColorBrush(EdgeColor);
+                    }
+                }
+                DrawCube();
+            };
         }
 
         #region Event Handlers

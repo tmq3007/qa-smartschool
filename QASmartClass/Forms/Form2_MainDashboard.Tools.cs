@@ -1108,78 +1108,7 @@ namespace QASmartTouch.Forms
 
         // Note: btn6_5_LineChart and btn6_6_PieChart removed from toolbar
         // Line Chart and Pie Chart now accessible via SubMenu Draw Shapes > Charts category
-
-        private void btn7_Zoom_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            
-            // Toggle: If clicking same button, close submenu
-            if (_activeSubMenu != null && _activeSubMenuButton == button)
-            {
-                CloseActiveSubMenu();
-                return;
-            }
-            
-            CloseAllSubmenus();
-
-            // IMPORTANT: Disable all drawing tools when zoom is selected
-            // User must re-click pen/eraser/shape button to draw again
-            _drawingEnabled = false;
-            if (_eraserEnabled)
-                DisableEraserMode();
-            _eraserEnabled = false;
-            _shapeDrawingEnabled = false;
-            _textToolEnabled = false;
-            _selectionToolEnabled = false;
-            _zoomAreaSelectionEnabled = false;
-            _isPanning = false;
-            
-            SelectTool((Button)sender);
-            
-            // Open NEW SubMenu Zoom with BLACK background and 7 buttons
-            var zoomMenu = new Form2_7_SubMenuZoom();
-            zoomMenu.Owner = this;
-            _activeSubMenu = zoomMenu;
-            _activeSubMenuButton = button;
-            
-            // Position menu above toolbar, centered horizontally
-            var windowPosition = this.PointToScreen(new Point(0, 0));
-            var windowWidth = this.ActualWidth;
-            var windowHeight = this.ActualHeight;
-            var toolbarHeight = 80; // Toolbar height from XAML
-            
-            zoomMenu.Left = windowPosition.X + (windowWidth - zoomMenu.Width) / 2; // Centered
-            zoomMenu.Top = windowPosition.Y + windowHeight - toolbarHeight - zoomMenu.Height - 10; // 10px above toolbar
-            
-            // Handle window closed event
-            zoomMenu.Closed += (s, args) =>
-            {
-                // Apply zoom based on selected mode
-                // ✅ Check UserSelected flag instead of DialogResult
-                if (zoomMenu.UserSelected)
-                {
-                    ApplyZoom(zoomMenu.ZoomMode, zoomMenu.ZoomLevel);
-                }
-                
-                // Cleanup safely
-                if (ReferenceEquals(_activeSubMenu, zoomMenu))
-                {
-                    _activeSubMenu = null;
-                    _activeSubMenuButton = null;
-                    
-                    // Reset button appearance
-                    if (button != null)
-                    {
-                        button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-                        UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
-                    }
-                    _selectedTool = null;
-                }
-            };
-            
-            zoomMenu.Show();
-            try { zoomMenu.Activate(); } catch { }
-        }
+        // Note: btn7_Zoom removed from toolbar as zoom functionality is handled by floating HUD widget and gestures
 
         /// <summary>
         /// Apply zoom to canvas based on mode

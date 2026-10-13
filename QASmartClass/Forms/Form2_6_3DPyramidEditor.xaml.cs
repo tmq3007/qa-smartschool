@@ -28,7 +28,7 @@ namespace QASmartTouch.Forms
         public string BaseType { get; private set; } = "Square";
         public double EdgeThickness { get; private set; } = 1.5;
         public string DrawingMode { get; private set; } = "Wireframe";
-        public Brush EdgeColor { get; private set; } = Brushes.Black;
+        public Brush EdgeColor { get; private set; } = Brushes.White;
         public Brush FaceColor { get; private set; } = Brushes.Transparent;
         public double OpacityValue { get; private set; } = 0.7;
         public bool IsConfirmed { get; private set; } = false;
@@ -49,13 +49,34 @@ namespace QASmartTouch.Forms
         private DispatcherTimer autoRotateTimer;
         private bool isAutoRotating = false;
 
-        public Form2_6_3DPyramidEditor()
+        public Form2_6_3DPyramidEditor(Color? initialEdgeColor = null)
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
             InitializeAutoRotateTimer();
+            if (initialEdgeColor.HasValue)
+            {
+                EdgeColor = new SolidColorBrush(initialEdgeColor.Value);
+            }
             this.Loaded += (s, e) =>
             {
+                if (cmbEdgeColor != null)
+                {
+                    Color targetColor = initialEdgeColor ?? Colors.White;
+                    if (targetColor == Colors.White) cmbEdgeColor.SelectedIndex = 1;
+                    else if (targetColor == Colors.Black) cmbEdgeColor.SelectedIndex = 0;
+                    else if (targetColor.R > 200 && targetColor.G < 100 && targetColor.B < 100) cmbEdgeColor.SelectedIndex = 2; // Red
+                    else if (targetColor.R < 100 && targetColor.G > 180 && targetColor.B < 100) cmbEdgeColor.SelectedIndex = 3; // Green
+                    else if (targetColor.R < 100 && targetColor.G < 180 && targetColor.B > 180) cmbEdgeColor.SelectedIndex = 4; // Blue
+                    else if (targetColor.R > 200 && targetColor.G > 200 && targetColor.B < 100) cmbEdgeColor.SelectedIndex = 5; // Yellow
+                    else if (targetColor.R > 120 && targetColor.G < 100 && targetColor.B > 150) cmbEdgeColor.SelectedIndex = 6; // Purple
+                    else if (targetColor.R > 200 && targetColor.G > 120 && targetColor.B < 50) cmbEdgeColor.SelectedIndex = 7; // Cam
+                    else
+                    {
+                        if (EdgeColorPreview != null)
+                            EdgeColorPreview.Background = EdgeColor;
+                    }
+                }
                 EnableDragDrop();
                 DrawPyramid();
             };

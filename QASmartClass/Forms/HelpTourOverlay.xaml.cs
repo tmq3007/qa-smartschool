@@ -87,11 +87,11 @@ namespace QASmartTouch.Forms
                 },
                 new()
                 {
-                    Title = "🔍 Phóng to / Thu nhỏ",
-                    Description = "Phóng to để xem chi tiết hoặc thu nhỏ để nhìn tổng quan.\n• Cuộn chuột để zoom nhanh\n• Pinch-to-Zoom trên màn hình cảm ứng",
+                    Title = "🔍 Thu phóng & Điều hướng (HUD)",
+                    Description = "Thu phóng và điều hướng bảng vẽ nhanh:\n• Nút − / + / 100% trên thanh điều hướng nổi\n• Cuộn chuột (Ctrl + Wheel) hoặc Pinch-to-Zoom 2 ngón tay",
                     Category = "Điều hướng",
-                    ElementName = "btn7_Zoom",
-                    Shortcut = "Ctrl+Mouse Wheel"
+                    ElementName = "btnHudZoomReset",
+                    Shortcut = "Ctrl+Wheel / Pinch"
                 },
                 new()
                 {
