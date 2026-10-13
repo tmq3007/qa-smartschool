@@ -72,7 +72,19 @@ namespace QASmartClass.Shared
                 new KeyGesture(Key.D3, ModifierKeys.Control)));
 
             UpdateUI(_modeService.CurrentMode);
-            Log.Information("FloatingModeBar initialized at bottom - Smooth Native Drag enabled");
+
+            if (_modeService.CurrentMode == AppMode.SmartScreen)
+            {
+                CollapseBar();
+                PositionAtTopRight();
+            }
+            else
+            {
+                ExpandBar();
+                PositionAtBottom();
+            }
+
+            Log.Information("FloatingModeBar initialized (Mode: {Mode}) - Smooth Native Drag enabled", _modeService.CurrentMode);
             
             // Tự động ẩn thanh công cụ xuống dưới các ứng dụng khác khi ứng dụng mất tiêu điểm
             Application.Current.Activated += (s, e) => { this.Topmost = true; };
@@ -81,6 +93,7 @@ namespace QASmartClass.Shared
 
         /// <summary>
         /// Đặt vị trí thanh công cụ ở phía dưới màn hình (căn giữa)
+        /// Thường áp dụng cho chế độ SMART CLASS và DESKTOP
         /// </summary>
         public void PositionAtBottom()
         {
@@ -88,17 +101,58 @@ namespace QASmartClass.Shared
             {
                 var workArea = SystemParameters.WorkArea;
                 var screenW = SystemParameters.PrimaryScreenWidth;
-                var targetWidth = this.ActualWidth > 0 ? this.ActualWidth : 660;
-                var targetHeight = this.ActualHeight > 0 ? this.ActualHeight : 50;
+                UpdateLayout();
+                var targetWidth = (pnlExpanded.Visibility == Visibility.Visible)
+                    ? Math.Max(this.ActualWidth, 672)
+                    : (this.ActualWidth > 0 ? this.ActualWidth : 200);
+                var targetHeight = (pnlExpanded.Visibility == Visibility.Visible)
+                    ? Math.Max(this.ActualHeight, 62)
+                    : (this.ActualHeight > 0 ? this.ActualHeight : 56);
 
                 Left = (screenW - targetWidth) / 2;
                 Top = Math.Max(20, workArea.Bottom - targetHeight - 12);
+
+                if (txtExpandArrow != null)
+                {
+                    txtExpandArrow.Text = "▲";
+                }
 
                 EnsureWithinScreenBounds();
             }
             catch (Exception ex)
             {
                 Log.Warning("PositionAtBottom error: {Err}", ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Đặt vị trí thanh công cụ ở phía trên bên phải màn hình (vùng Header của Bảng vẽ)
+        /// Tránh che khuất thanh công cụ vẽ (panelTools) ở đáy bảng trong chế độ SMART TOUCH
+        /// </summary>
+        public void PositionAtTopRight()
+        {
+            try
+            {
+                var workArea = SystemParameters.WorkArea;
+                var screenW = SystemParameters.PrimaryScreenWidth;
+                UpdateLayout();
+                var targetWidth = (pnlExpanded.Visibility == Visibility.Visible)
+                    ? Math.Max(this.ActualWidth, 672)
+                    : (this.ActualWidth > 0 ? this.ActualWidth : 200);
+
+                Left = screenW - targetWidth - 20;
+                Top = Math.Max(4, workArea.Top + 3);
+
+                if (txtExpandArrow != null)
+                {
+                    txtExpandArrow.Text = "▼";
+                }
+
+                EnsureWithinScreenBounds();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("PositionAtTopRight error: {Err}", ex.Message);
             }
         }
 
@@ -148,8 +202,12 @@ namespace QASmartClass.Shared
                 var virtualWidth = SystemParameters.VirtualScreenWidth;
                 var virtualHeight = SystemParameters.VirtualScreenHeight;
 
-                var currentWidth = this.ActualWidth > 0 ? this.ActualWidth : 660;
-                var currentHeight = this.ActualHeight > 0 ? this.ActualHeight : 50;
+                var currentWidth = (pnlExpanded.Visibility == Visibility.Visible)
+                    ? Math.Max(this.ActualWidth, 672)
+                    : (this.ActualWidth > 0 ? this.ActualWidth : 200);
+                var currentHeight = (pnlExpanded.Visibility == Visibility.Visible)
+                    ? Math.Max(this.ActualHeight, 62)
+                    : (this.ActualHeight > 0 ? this.ActualHeight : 56);
 
                 if (this.Left < virtualLeft)
                     this.Left = virtualLeft;
@@ -167,20 +225,53 @@ namespace QASmartClass.Shared
 
         #region Collapse / Expand Handlers
 
-        private void OnCollapseClick(object sender, MouseButtonEventArgs e)
+        public void CollapseBar()
         {
             pnlExpanded.Visibility = Visibility.Collapsed;
             pnlCollapsed.Visibility = Visibility.Visible;
+            UpdateLayout();
+            if (_modeService?.CurrentMode == AppMode.SmartScreen)
+            {
+                PositionAtTopRight();
+            }
+            else
+            {
+                EnsureWithinScreenBounds();
+            }
+        }
+
+        public void ExpandBar()
+        {
+            pnlCollapsed.Visibility = Visibility.Collapsed;
+            pnlExpanded.Visibility = Visibility.Visible;
+            UpdateLayout();
             EnsureWithinScreenBounds();
+        }
+
+        private void OnCollapseClick(object sender, MouseButtonEventArgs e)
+        {
+            CollapseBar();
             Log.Debug("FloatingModeBar collapsed");
+        }
+
+        private void btnCollapseBar_PreviewTouchDown(object? sender, TouchEventArgs e)
+        {
+            CollapseBar();
+            e.Handled = true;
+            Log.Debug("FloatingModeBar collapsed via touch");
         }
 
         private void btnExpandModeBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            pnlCollapsed.Visibility = Visibility.Collapsed;
-            pnlExpanded.Visibility = Visibility.Visible;
-            EnsureWithinScreenBounds();
+            ExpandBar();
             Log.Debug("FloatingModeBar expanded instantly");
+        }
+
+        private void btnExpandModeBar_PreviewTouchDown(object? sender, TouchEventArgs e)
+        {
+            ExpandBar();
+            e.Handled = true;
+            Log.Debug("FloatingModeBar expanded instantly via touch");
         }
 
         #endregion
@@ -568,9 +659,18 @@ namespace QASmartClass.Shared
             Dispatcher.Invoke(() =>
             {
                 UpdateUI(e.NewMode);
-                // Khi chuyển sang DESKTOP, tự động đưa thanh xuống dưới đáy màn hình
-                if (e.NewMode == AppMode.Desktop)
+
+                if (e.NewMode == AppMode.SmartScreen)
                 {
+                    // [Smart Touch UX] Tự động thu gọn thành Mini-Pill và đưa lên góc trên bên phải (khu vực Header)
+                    // để hoàn toàn giải phóng không gian cho thanh công cụ vẽ (panelTools) ở đáy bảng
+                    CollapseBar();
+                    PositionAtTopRight();
+                }
+                else
+                {
+                    // Khi chuyển sang SMART CLASS hoặc DESKTOP: mở rộng và đưa xuống đáy màn hình
+                    ExpandBar();
                     PositionAtBottom();
                 }
             });

@@ -75,7 +75,9 @@
                     <!-- Collapse Button -->
                     <Border x:Name="btnCollapseBar" Width="32" Height="32" CornerRadius="8" Background="#C5CAE9" Cursor="Hand"
                             Margin="2,0,2,0"
-                            MouseLeftButtonDown="OnCollapseClick" ToolTip="Thu gọn thanh điều khiển">
+                            MouseLeftButtonDown="OnCollapseClick"
+                            PreviewTouchDown="btnCollapseBar_PreviewTouchDown"
+                            ToolTip="Thu gọn thanh điều khiển">
                         <TextBlock Text="▼" FontSize="11" FontWeight="Bold" Foreground="#37474F" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Border>
 
@@ -164,6 +166,7 @@
                         CornerRadius="12"
                         Cursor="Hand"
                         MouseLeftButtonDown="btnExpandModeBar_MouseLeftButtonDown"
+                        PreviewTouchDown="btnExpandModeBar_PreviewTouchDown"
                         ToolTip="Nhấn để mở rộng thanh điều khiển">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <!-- Badge chế độ hiện tại -->
@@ -171,9 +174,9 @@
                             <TextBlock x:Name="txtMiniModeName" Text="🔲 DESKTOP" FontSize="11" FontWeight="Bold" Foreground="White"
                                        VerticalAlignment="Center"/>
                         </Border>
-                        <!-- Icon mở rộng ▲ -->
+                        <!-- Icon mở rộng ▲ / ▼ -->
                         <Border Width="26" Height="26" CornerRadius="13" Background="#5C6BC0" VerticalAlignment="Center">
-                            <TextBlock Text="▲" FontSize="10" FontWeight="Bold" Foreground="White" 
+                            <TextBlock x:Name="txtExpandArrow" Text="▲" FontSize="10" FontWeight="Bold" Foreground="White" 
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </StackPanel>
