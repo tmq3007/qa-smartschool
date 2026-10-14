@@ -787,8 +787,16 @@ namespace QASmartTouch.Forms
                 // 1. Lưu lại trạng thái bài giảng hiện tại của giáo viên
                 _boardManager?.SaveCurrentBoardState();
 
-                // 2. Kế thừa màu nền hiện tại của bảng chính
-                Brush currentBg = MainInteractiveBoard.Background?.Clone() ?? new SolidColorBrush(Color.FromRgb(0x3D, 0x6D, 0x64));
+                // 2. Xác định màu nền chuẩn cho chế độ thi đua (Màu bảng xanh học đường tiêu chuẩn, tương phản cao)
+                string sessionBgHex = "#3D6D64";
+                if (!string.IsNullOrEmpty(_currentBackgroundColor) && !_currentBackgroundColor.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase))
+                {
+                    sessionBgHex = _currentBackgroundColor;
+                }
+                Color bgColor;
+                try { bgColor = (Color)ColorConverter.ConvertFromString(sessionBgHex); }
+                catch { bgColor = Color.FromRgb(0x3D, 0x6D, 0x64); }
+                Brush currentBg = new SolidColorBrush(bgColor);
 
                 // 3. Đăng ký sự kiện hoàn thành từ overlay (chỉ đăng ký 1 lần)
                 multiUserOverlay.SessionCompleted -= MultiUserOverlay_SessionCompleted;
@@ -901,17 +909,41 @@ namespace QASmartTouch.Forms
                         newBoard.CanvasHeight = targetH;
                         newBoard.LastModifiedAt = DateTime.Now;
 
-                        // FIX BUG 3: Copy background settings từ trang hiện tại
-                        // để trang multi-user mới không bị nhận default (Colors.White + grid)
-                        var currentBoard = _boardManager.CurrentBoard;
-                        newBoard.BackgroundColor = currentBoard.BackgroundColor;
-                        newBoard.BackgroundColorHex = currentBoard.BackgroundColorHex;
-                        newBoard.BackgroundImagePath = currentBoard.BackgroundImagePath;
-                        newBoard.BackgroundPattern = currentBoard.BackgroundPattern;
-                        newBoard.LineSpacing = currentBoard.LineSpacing;
-                        newBoard.LineOpacity = currentBoard.LineOpacity;
+                        // ✅ CHUẨN HÓA NỀN BÀI LÀM:
+                        // Đồng nhất 100% với màu nền lúc 2 học sinh làm bài trong Sandbox (#3D6D64)
+                        // Tuyệt đối KHÔNG sao chép ảnh nền (BackgroundImagePath) hay hoa văn của bài trước!
+                        string sessionBgHex = "#3D6D64";
+                        if (!string.IsNullOrEmpty(_currentBackgroundColor) && !_currentBackgroundColor.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase))
+                        {
+                            sessionBgHex = _currentBackgroundColor;
+                        }
+                        Color sessionBgColor;
+                        try { sessionBgColor = (Color)ColorConverter.ConvertFromString(sessionBgHex); }
+                        catch { sessionBgColor = Color.FromRgb(0x3D, 0x6D, 0x64); }
+
+                        newBoard.BackgroundColor = sessionBgColor;
+                        newBoard.BackgroundColorHex = sessionBgHex;
+                        newBoard.BackgroundImagePath = null; // Sạch sẽ, không dính ảnh SGK/tài liệu bài cũ
+                        newBoard.BackgroundPattern = "none";  // Phẳng, không kẻ ô rối nét viết của học sinh
+                        newBoard.LineSpacing = 40;
+                        newBoard.LineOpacity = 10;
 
                         ShowSmartStatusBadge($"💾 Đã lưu bài làm thành Trang {_boardManager.Boards.Count}: {newBoard.Name}");
+
+                        // ✅ Tự động chuyển ngay sang trang mới vừa lưu để thầy cô nhận xét, chấm điểm bài làm
+                        int newBoardIndex = _boardManager.Boards.Count - 1;
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            try
+                            {
+                                _boardManager.SwitchBoard(newBoardIndex);
+                                UpdatePageNavigationUI();
+                            }
+                            catch (Exception switchEx)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"❌ Error auto-switching to multi-user board: {switchEx.Message}");
+                            }
+                        }), System.Windows.Threading.DispatcherPriority.Loaded);
                     }
                 }
                 else
@@ -1081,6 +1113,9 @@ namespace QASmartTouch.Forms
 
                 // 6. Hiển thị thông báo trạng thái
                 ShowSmartStatusBadge($"📋 Đang hiển thị: {e.NewBoard?.Name ?? "Bảng mới"}");
+
+                // 7. Đồng bộ thanh điều hướng trang HUD
+                UpdatePageNavigationUI();
             }
             catch (Exception ex)
             {
@@ -1092,7 +1127,375 @@ namespace QASmartTouch.Forms
         {
             MarkAsDirty();
             UpdateButtonStates();
+            UpdatePageNavigationUI();
             ShowSmartStatusBadge($"🗑️ Đã xóa: {e.Board.Name}");
+        }
+
+        #endregion
+
+        #region Page Navigation HUD Handlers (Chuẩn sư phạm IFP - 1 Chạm)
+
+        private bool _isSwitchingBoard = false;
+
+        /// <summary>
+        /// Đồng bộ trạng thái hiển thị của thanh điều hướng trang (Page Navigation HUD)
+        /// </summary>
+        public void UpdatePageNavigationUI()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(UpdatePageNavigationUI);
+                return;
+            }
+
+            if (_boardManager == null || hudPageNavigation == null) return;
+
+            int currentIndex = _boardManager.CurrentBoardIndex;
+            int totalBoards = _boardManager.BoardCount;
+
+            // Cập nhật text hiển thị chỉ số trang
+            if (txtHudBoardIndicator != null)
+            {
+                txtHudBoardIndicator.Text = $"Trang {currentIndex + 1} / {totalBoards}";
+            }
+
+            // Nút Trang trước (disable nếu là trang đầu tiên)
+            if (btnHudPrevBoard != null)
+            {
+                btnHudPrevBoard.IsEnabled = (currentIndex > 0);
+            }
+
+            // Nút Trang sau (disable nếu là trang cuối cùng)
+            if (btnHudNextBoard != null)
+            {
+                btnHudNextBoard.IsEnabled = (currentIndex < totalBoards - 1);
+            }
+
+            // Nút Thêm trang mới (disable nếu đã đạt MAX_BOARDS)
+            if (btnHudAddBoard != null)
+            {
+                btnHudAddBoard.IsEnabled = !_boardManager.IsMaxBoardsReached;
+            }
+
+            // Tự động đồng bộ Popover Quản lý trang nếu đang mở
+            if (popoverPageOrganizer != null && popoverPageOrganizer.Visibility == Visibility.Visible)
+            {
+                RenderPageOrganizerCards();
+            }
+        }
+
+        private void btnHudPrevBoard_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isSwitchingBoard || _boardManager == null) return;
+            if (_boardManager.CurrentBoardIndex <= 0) return;
+
+            _isSwitchingBoard = true;
+            try
+            {
+                _boardManager.SwitchBoard(_boardManager.CurrentBoardIndex - 1);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error switching to prev board: {ex.Message}");
+            }
+            finally
+            {
+                _isSwitchingBoard = false;
+            }
+
+            UpdatePageNavigationUI();
+        }
+
+        private void btnHudNextBoard_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isSwitchingBoard || _boardManager == null) return;
+            if (_boardManager.CurrentBoardIndex >= _boardManager.BoardCount - 1) return;
+
+            _isSwitchingBoard = true;
+            try
+            {
+                _boardManager.SwitchBoard(_boardManager.CurrentBoardIndex + 1);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error switching to next board: {ex.Message}");
+            }
+            finally
+            {
+                _isSwitchingBoard = false;
+            }
+
+            UpdatePageNavigationUI();
+        }
+
+        private void btnHudAddBoard_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isSwitchingBoard || _boardManager == null) return;
+
+            if (_boardManager.IsMaxBoardsReached)
+            {
+                ShowSmartStatusBadge($"⚠️ Đã đạt số trang tối đa ({QASmartTouch.Managers.BoardManager.MAX_BOARDS} bảng)");
+                return;
+            }
+
+            _isSwitchingBoard = true;
+            try
+            {
+                var newBoard = _boardManager.CreateBoard();
+                if (newBoard != null)
+                {
+                    _boardManager.SwitchBoard(_boardManager.BoardCount - 1);
+                    MarkAsDirty();
+                    ShowSmartStatusBadge($"✨ Đã tạo {newBoard.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error creating new board: {ex.Message}");
+            }
+            finally
+            {
+                _isSwitchingBoard = false;
+            }
+
+            UpdatePageNavigationUI();
+        }
+
+        private void btnHudBoardIndicator_Click(object sender, RoutedEventArgs e)
+        {
+            if (popoverPageOrganizer == null) return;
+
+            if (popoverPageOrganizer.Visibility == Visibility.Visible)
+            {
+                popoverPageOrganizer.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                RenderPageOrganizerCards();
+                popoverPageOrganizer.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void btnOrganizerClose_Click(object sender, RoutedEventArgs e)
+        {
+            if (popoverPageOrganizer != null)
+            {
+                popoverPageOrganizer.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Tạo danh sách các Card trang trực quan trong In-Canvas Popover Quản lý trang
+        /// </summary>
+        private void RenderPageOrganizerCards()
+        {
+            if (panelOrganizerBoardCards == null || _boardManager == null) return;
+
+            panelOrganizerBoardCards.Children.Clear();
+            int currentIndex = _boardManager.CurrentBoardIndex;
+            int totalBoards = _boardManager.BoardCount;
+
+            if (txtOrganizerTotalBoards != null)
+            {
+                txtOrganizerTotalBoards.Text = $" ({currentIndex + 1}/{totalBoards})";
+            }
+
+            if (btnOrganizerDelete != null)
+            {
+                btnOrganizerDelete.IsEnabled = (totalBoards > 1);
+            }
+
+            if (btnOrganizerDuplicate != null)
+            {
+                btnOrganizerDuplicate.IsEnabled = !_boardManager.IsMaxBoardsReached;
+            }
+
+            for (int i = 0; i < totalBoards; i++)
+            {
+                int boardIndex = i;
+                bool isCurrent = (i == currentIndex);
+                var board = (i < _boardManager.Boards.Count) ? _boardManager.Boards[i] : null;
+
+                var cardBorder = new Border
+                {
+                    Width = 68,
+                    Height = 56,
+                    Margin = new Thickness(0, 0, 8, 0),
+                    CornerRadius = new CornerRadius(8),
+                    BorderThickness = new Thickness(isCurrent ? 2 : 1),
+                    BorderBrush = isCurrent ? new SolidColorBrush(Color.FromRgb(0x2E, 0x86, 0xDE)) : new SolidColorBrush(Color.FromRgb(0xE1, 0xE8, 0xED)),
+                    Background = isCurrent ? new SolidColorBrush(Color.FromRgb(0xEE, 0xF2, 0xFF)) : new SolidColorBrush(Color.FromRgb(0xF8, 0xF9, 0xFA)),
+                    Cursor = Cursors.Hand,
+                    ClipToBounds = true,
+                    Tag = boardIndex
+                };
+
+                var cardGrid = new Grid();
+
+                // Thumbnail preview hoặc chữ số trang to
+                if (board?.ThumbnailImage != null)
+                {
+                    var img = new Image
+                    {
+                        Source = board.ThumbnailImage,
+                        Stretch = Stretch.UniformToFill,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    cardGrid.Children.Add(img);
+                }
+                else
+                {
+                    var placeholderText = new TextBlock
+                    {
+                        Text = $"{boardIndex + 1}",
+                        FontSize = 18,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = isCurrent ? new SolidColorBrush(Color.FromRgb(0x2E, 0x86, 0xDE)) : new SolidColorBrush(Color.FromRgb(0xA4, 0xB0, 0xBE)),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(0, 0, 0, 10)
+                    };
+                    cardGrid.Children.Add(placeholderText);
+                }
+
+                // Nhãn số trang ở góc dưới (Badge)
+                var badgeBorder = new Border
+                {
+                    Background = isCurrent ? new SolidColorBrush(Color.FromRgb(0x2E, 0x86, 0xDE)) : new SolidColorBrush(Color.FromArgb(180, 47, 53, 66)),
+                    CornerRadius = new CornerRadius(0, 0, 6, 6),
+                    Height = 16,
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                };
+                var badgeText = new TextBlock
+                {
+                    Text = $"Trang {boardIndex + 1}",
+                    FontSize = 9,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = Brushes.White,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                badgeBorder.Child = badgeText;
+                cardGrid.Children.Add(badgeBorder);
+
+                // Nút xóa nhanh nếu tổng số trang > 1
+                if (totalBoards > 1)
+                {
+                    var deleteBtn = new Button
+                    {
+                        Width = 16,
+                        Height = 16,
+                        Background = new SolidColorBrush(Color.FromRgb(0xEE, 0x5A, 0x6F)),
+                        BorderThickness = new Thickness(0),
+                        Cursor = Cursors.Hand,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Margin = new Thickness(0, 2, 2, 0),
+                        ToolTip = $"Xóa Trang {boardIndex + 1}",
+                        Tag = boardIndex,
+                        Focusable = false,
+                        Visibility = isCurrent ? Visibility.Visible : Visibility.Collapsed
+                    };
+                    TouchActivationHelper.WireButton(deleteBtn);
+
+                    var deleteTemplate = new ControlTemplate(typeof(Button));
+                    var delBorder = new FrameworkElementFactory(typeof(Border));
+                    delBorder.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+                    delBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(8));
+                    var delIcon = new FrameworkElementFactory(typeof(Path));
+                    delIcon.SetValue(Path.FillProperty, Brushes.White);
+                    delIcon.SetValue(Path.DataProperty, Geometry.Parse("M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"));
+                    delIcon.SetValue(Path.WidthProperty, 8.0);
+                    delIcon.SetValue(Path.HeightProperty, 8.0);
+                    delIcon.SetValue(Path.StretchProperty, Stretch.Uniform);
+                    delIcon.SetValue(Path.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                    delIcon.SetValue(Path.VerticalAlignmentProperty, VerticalAlignment.Center);
+                    delBorder.AppendChild(delIcon);
+                    deleteTemplate.VisualTree = delBorder;
+                    deleteBtn.Template = deleteTemplate;
+
+                    deleteBtn.Click += (s, e) =>
+                    {
+                        e.Handled = true;
+                        int idx = (int)((Button)s).Tag;
+                        DeleteBoardByIndex(idx);
+                    };
+
+                    cardBorder.MouseEnter += (s, e) => deleteBtn.Visibility = Visibility.Visible;
+                    cardBorder.MouseLeave += (s, e) => { if (!isCurrent) deleteBtn.Visibility = Visibility.Collapsed; };
+
+                    cardGrid.Children.Add(deleteBtn);
+                }
+
+                cardBorder.Child = cardGrid;
+
+                // Click chọn trang
+                cardBorder.MouseLeftButtonUp += (s, e) =>
+                {
+                    int targetIndex = (int)((Border)s).Tag;
+                    if (targetIndex != _boardManager.CurrentBoardIndex)
+                    {
+                        _boardManager.SwitchBoard(targetIndex);
+                        UpdatePageNavigationUI();
+                        RenderPageOrganizerCards();
+                    }
+                };
+
+                panelOrganizerBoardCards.Children.Add(cardBorder);
+            }
+        }
+
+        private void DeleteBoardByIndex(int index)
+        {
+            if (_boardManager == null || _boardManager.BoardCount <= 1) return;
+
+            var result = MessageBox.Show(this, 
+                $"Bạn có chắc chắn muốn xóa Trang {index + 1}?\nNội dung trên trang này sẽ không thể khôi phục.", 
+                "Xác nhận xóa trang", 
+                MessageBoxButton.YesNo, 
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                _boardManager.DeleteBoard(index);
+                MarkAsDirty();
+                ShowSmartStatusBadge($"🗑️ Đã xóa Trang {index + 1}");
+                UpdatePageNavigationUI();
+                RenderPageOrganizerCards();
+            }
+        }
+
+        private void btnOrganizerDuplicate_Click(object sender, RoutedEventArgs e)
+        {
+            if (_boardManager == null) return;
+            if (_boardManager.IsMaxBoardsReached)
+            {
+                ShowSmartStatusBadge($"⚠️ Đã đạt số trang tối đa ({QASmartTouch.Managers.BoardManager.MAX_BOARDS} bảng)");
+                return;
+            }
+
+            var duplicated = _boardManager.DuplicateCurrentBoard();
+            if (duplicated != null)
+            {
+                _boardManager.SwitchBoard(_boardManager.BoardCount - 1);
+                MarkAsDirty();
+                ShowSmartStatusBadge($"✨ Đã nhân bản Trang {_boardManager.CurrentBoardIndex + 1}");
+                UpdatePageNavigationUI();
+                RenderPageOrganizerCards();
+            }
+        }
+
+        private void btnOrganizerDelete_Click(object sender, RoutedEventArgs e)
+        {
+            if (_boardManager == null || _boardManager.BoardCount <= 1)
+            {
+                ShowSmartStatusBadge("⚠️ Không thể xóa trang duy nhất");
+                return;
+            }
+
+            DeleteBoardByIndex(_boardManager.CurrentBoardIndex);
         }
 
         #endregion
@@ -1277,6 +1680,7 @@ namespace QASmartTouch.Forms
                     _isDirty = false;
                     RecentFilesService.Instance.AddFile(filePath, manifest.Title);
                     UpdateButtonStates();
+                    UpdatePageNavigationUI();
                     ShowSmartStatusBadge($"📂 Đã mở bài giảng: {System.IO.Path.GetFileName(filePath)}");
                     return true;
                 }

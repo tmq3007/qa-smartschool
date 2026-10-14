@@ -373,6 +373,7 @@
 
                             <Button x:Name="btnQuickVote" 
                                     Style="{StaticResource ExtendedMenuItemButton}"
+                                    Visibility="Collapsed"
                                     Click="btnQuickVote_Click"
                                     ToolTip="Tạo nhanh phiên bình chọn ý kiến trong lớp học">
                                 <Grid>

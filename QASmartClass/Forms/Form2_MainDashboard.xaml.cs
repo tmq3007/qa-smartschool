@@ -957,6 +957,33 @@ namespace QASmartTouch.Forms
                 return;
             }
 
+            // ✅ Shortcut PageUp: Lùi về trang trước
+            if (e.Key == Key.PageUp && (Keyboard.Modifiers == ModifierKeys.None || Keyboard.Modifiers == ModifierKeys.Control))
+            {
+                btnHudPrevBoard_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ PageUp: Switched to previous board");
+                return;
+            }
+
+            // ✅ Shortcut PageDown: Tiến tới trang sau
+            if (e.Key == Key.PageDown && (Keyboard.Modifiers == ModifierKeys.None || Keyboard.Modifiers == ModifierKeys.Control))
+            {
+                btnHudNextBoard_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ PageDown: Switched to next board");
+                return;
+            }
+
+            // ✅ Shortcut Ctrl + N: Thêm trang mới
+            if (e.Key == Key.N && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                btnHudAddBoard_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+N: Added new board");
+                return;
+            }
+
             // ✅ Spacebar Pan: Giữ Space để kéo bảng (như Photoshop/Figma/Miro)
             if (e.Key == Key.Space && !e.IsRepeat && !_isSpacebarDown)
             {
@@ -1046,10 +1073,10 @@ namespace QASmartTouch.Forms
                     }
                     else
                     {
-                        txtHudZoomPercent.Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)); // Trắng xám dịu khi 100%
+                        txtHudZoomPercent.Foreground = new SolidColorBrush(Color.FromRgb(0x2F, 0x35, 0x42)); // #2F3542 đen mềm sư phạm
                         if (hudZoomIndicator != null)
                         {
-                            hudZoomIndicator.BorderBrush = new SolidColorBrush(Color.FromRgb(0x40, 0x40, 0x40));
+                            hudZoomIndicator.BorderBrush = new SolidColorBrush(Color.FromRgb(0xE1, 0xE8, 0xED)); // #E1E8ED viền xám sáng nhẹ
                         }
                     }
                 }
@@ -1118,9 +1145,12 @@ namespace QASmartTouch.Forms
 
             // ✅ GIAI ĐOẠN 2: Lắng nghe sự kiện chuyển bảng, tạo bảng và xóa bảng
             _boardManager.BoardSwitched += OnBoardSwitched;
-            _boardManager.BoardCreated += (s, e) => MarkAsDirty();
+            _boardManager.BoardCreated += (s, e) => { MarkAsDirty(); UpdatePageNavigationUI(); };
             _boardManager.BoardDeleted += OnBoardDeleted;
             
+            // Đồng bộ ban đầu cho cụm Page Navigation HUD
+            UpdatePageNavigationUI();
+
             System.Diagnostics.Debug.WriteLine($"✅ BoardManager initialized with {_boardManager.BoardCount} board(s)");
         }
         
@@ -2341,6 +2371,11 @@ namespace QASmartTouch.Forms
         private void CloseAllSubmenus()
         {
             CloseActiveSubMenu();
+
+            if (popoverPageOrganizer != null)
+            {
+                popoverPageOrganizer.Visibility = Visibility.Collapsed;
+            }
 
             // Quét dọn an toàn mọi cửa sổ SubMenu con có thể bị trôi nổi/mồ côi
             try

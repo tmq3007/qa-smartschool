@@ -846,50 +846,363 @@
 
         </Border>
 
-        <!-- ZOOM INDICATOR HUD (Góc dưới bên phải) -->
-        <Border x:Name="hudZoomIndicator"
-                HorizontalAlignment="Right"
+        <!-- POPOVER QUẢN LÝ TRANG (Góc dưới bên trái - Gắn với Page Hub) -->
+        <Border x:Name="popoverPageOrganizer"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
-                Margin="0,0,24,6"
-                Background="#EE1E1E1E"
-                BorderBrush="#404040"
+                Margin="24,0,0,54"
+                Background="White"
+                BorderBrush="#E1E8ED"
                 BorderThickness="1"
-                CornerRadius="18"
+                CornerRadius="15"
+                Padding="12,10"
+                Visibility="Collapsed">
+            <Border.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Focusable" Value="False"/>
+                    <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
+                </Style>
+            </Border.Resources>
+            <Border.Effect>
+                <DropShadowEffect Color="#CCCCCC" Direction="90" ShadowDepth="3" BlurRadius="15" Opacity="0.3"/>
+            </Border.Effect>
+            <StackPanel Width="360">
+                <!-- Header -->
+                <Grid Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Viewbox Width="16" Height="16" Margin="0,0,6,0">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="#2E86DE" Data="M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3M7,7H17V5H19V19H5V5H7V7M12,17L17,12L15.59,10.59L12,14.17L9.91,12.09L8.5,13.5L12,17Z"/>
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Danh sách trang" FontSize="13" FontWeight="Bold" Foreground="#2F3542" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtOrganizerTotalBoards" Text=" (1/1)" FontSize="12" FontWeight="SemiBold" Foreground="#57606F" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Button x:Name="btnOrganizerClose"
+                            Width="24" Height="24"
+                            HorizontalAlignment="Right"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Click="btnOrganizerClose_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="6">
+                                    <Viewbox Width="10" Height="10">
+                                        <Canvas Width="24" Height="24">
+                                            <Path x:Name="icon" Fill="#747D8C" Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bdr" Property="Background" Value="#FEE2E2"/>
+                                        <Setter TargetName="icon" Property="Fill" Value="#EE5A6F"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+
+                <!-- Horizontal Scroll Cards of Boards -->
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" 
+                              VerticalScrollBarVisibility="Disabled"
+                              PanningMode="HorizontalOnly"
+                              Height="72"
+                              Margin="0,0,0,10">
+                    <StackPanel x:Name="panelOrganizerBoardCards" Orientation="Horizontal"/>
+                </ScrollViewer>
+
+                <!-- Divider -->
+                <Border Height="1" Background="#E1E8ED" Margin="0,0,0,8"/>
+
+                <!-- Footer Quick Actions (Chỉ còn Nhân bản & Xóa trang - KHÔNG CÓ ĐỔI NỀN) -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Nút Nhân bản -->
+                    <Button x:Name="btnOrganizerDuplicate"
+                            Grid.Column="0"
+                            Height="34"
+                            Margin="0,0,4,0"
+                            Background="#F8F9FA"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Click="btnOrganizerDuplicate_Click"
+                            ToolTip="Nhân bản trang hiện tại kèm toàn bộ nội dung">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="8" Padding="6,0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Viewbox Width="14" Height="14" Margin="0,0,6,0">
+                                            <Canvas Width="24" Height="24">
+                                                <Path x:Name="icon" Fill="#9C27B0" Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
+                                            </Canvas>
+                                        </Viewbox>
+                                        <TextBlock x:Name="txt" Text="Nhân bản trang" FontSize="11" FontWeight="SemiBold" Foreground="#2F3542" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bdr" Property="Background" Value="#F3E5F5"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Nút Xóa trang này -->
+                    <Button x:Name="btnOrganizerDelete"
+                            Grid.Column="1"
+                            Height="34"
+                            Margin="4,0,0,0"
+                            Background="#F8F9FA"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Click="btnOrganizerDelete_Click"
+                            ToolTip="Xóa trang hiện tại">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="8" Padding="6,0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Viewbox Width="14" Height="14" Margin="0,0,6,0">
+                                            <Canvas Width="24" Height="24">
+                                                <Path x:Name="icon" Fill="#EE5A6F" Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                                            </Canvas>
+                                        </Viewbox>
+                                        <TextBlock x:Name="txt" Text="Xóa trang này" FontSize="11" FontWeight="SemiBold" Foreground="#EE5A6F" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bdr" Property="Background" Value="#FEE2E2"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value="0.4"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- PAGE NAVIGATION HUD (Góc dưới bên trái - Chuẩn sư phạm IFP) -->
+        <Border x:Name="hudPageNavigation"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="24,0,0,10"
+                Background="White"
+                BorderBrush="#E1E8ED"
+                BorderThickness="1"
+                CornerRadius="15"
                 Padding="6,4">
             <Border.Resources>
                 <Style TargetType="Button">
                     <Setter Property="Focusable" Value="False"/>
+                    <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
                 </Style>
             </Border.Resources>
             <Border.Effect>
-                <DropShadowEffect Color="Black" Direction="270" ShadowDepth="2" BlurRadius="10" Opacity="0.45"/>
+                <DropShadowEffect Color="#CCCCCC" Direction="90" ShadowDepth="2" BlurRadius="10" Opacity="0.25"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Nút Trang trước (◀) -->
+                <Button x:Name="btnHudPrevBoard"
+                        Width="32" Height="32"
+                        Background="#F1F2F6"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="2,0"
+                        Click="btnHudPrevBoard_Click"
+                        ToolTip="Trang trước (PageUp)">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="10">
+                                <Viewbox Width="14" Height="14">
+                                    <Canvas Width="24" Height="24">
+                                        <Path x:Name="iconPath" Fill="#2F3542" Data="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bdr" Property="Background" Value="#E3F2FD"/>
+                                    <Setter TargetName="iconPath" Property="Fill" Value="#2E86DE"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.3"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- Nhãn hiển thị số trang (Trang 1 / 1) -->
+                <Button x:Name="btnHudBoardIndicator"
+                        Background="#F8F9FA"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="4,0"
+                        Padding="10,2"
+                        Height="32"
+                        Click="btnHudBoardIndicator_Click"
+                        ToolTip="Trang hiện tại. Nhấn để mở Quản lý trang">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bdr" Property="Background" Value="#E3F2FD"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <TextBlock x:Name="txtHudBoardIndicator" 
+                               Text="Trang 1 / 1" 
+                               FontSize="12" 
+                               FontWeight="SemiBold" 
+                               Foreground="#2F3542" 
+                               VerticalAlignment="Center"/>
+                </Button>
+
+                <!-- Nút Trang sau (▶) -->
+                <Button x:Name="btnHudNextBoard"
+                        Width="32" Height="32"
+                        Background="#F1F2F6"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="2,0"
+                        Click="btnHudNextBoard_Click"
+                        ToolTip="Trang sau (PageDown)">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="10">
+                                <Viewbox Width="14" Height="14">
+                                    <Canvas Width="24" Height="24">
+                                        <Path x:Name="iconPath" Fill="#2F3542" Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bdr" Property="Background" Value="#E3F2FD"/>
+                                    <Setter TargetName="iconPath" Property="Fill" Value="#2E86DE"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.3"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- Vạch phân cách -->
+                <Border Width="1" Height="18" Background="#E1E8ED" Margin="4,0"/>
+
+                <!-- Nút Thêm trang mới (➕) -->
+                <Button x:Name="btnHudAddBoard"
+                        Width="32" Height="32"
+                        Background="#E3F2FD"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="2,0"
+                        Click="btnHudAddBoard_Click"
+                        ToolTip="Thêm bảng mới (Ctrl+N)">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="10">
+                                <Viewbox Width="16" Height="16">
+                                    <Canvas Width="24" Height="24">
+                                        <Path x:Name="iconPath" Fill="#2E86DE" Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bdr" Property="Background" Value="#BBDEFB"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.3"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- ZOOM INDICATOR HUD (Góc dưới bên phải - Đồng bộ chuẩn Sư Phạm Trắng Thanh Lịch) -->
+        <Border x:Name="hudZoomIndicator"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="0,0,24,10"
+                Background="White"
+                BorderBrush="#E1E8ED"
+                BorderThickness="1"
+                CornerRadius="15"
+                Padding="6,4">
+            <Border.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Focusable" Value="False"/>
+                    <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
+                </Style>
+            </Border.Resources>
+            <Border.Effect>
+                <DropShadowEffect Color="#CCCCCC" Direction="90" ShadowDepth="2" BlurRadius="10" Opacity="0.25"/>
             </Border.Effect>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Zoom Out (-) -->
                 <Button x:Name="btnHudZoomOut" 
-                        Width="28" Height="28" 
-                        Background="Transparent" 
+                        Width="32" Height="32" 
+                        Background="#F1F2F6" 
                         BorderThickness="0" 
                         Cursor="Hand"
                         Click="btnHudZoomOut_Click"
                         ToolTip="Thu nhỏ (Ctrl + Lăn chuột lùi)">
-                    <TextBlock Text="−" FontSize="18" FontWeight="Bold" Foreground="#CCCCCC" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="8">
+                                <TextBlock x:Name="txt" Text="−" FontSize="18" FontWeight="Bold" Foreground="#2F3542" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bdr" Property="Background" Value="#E3F2FD"/>
+                                    <Setter TargetName="txt" Property="Foreground" Value="#2E86DE"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
                 </Button>
 
                 <!-- Zoom Percent Badge (Click to reset 100%) -->
                 <Button x:Name="btnHudZoomReset" 
-                        Background="#2A2A2A" 
+                        Background="#F8F9FA" 
                         BorderThickness="0" 
                         Cursor="Hand"
                         Margin="4,0"
-                        Padding="8,2"
+                        Padding="10,2"
+                        Height="32"
                         Click="btnHudZoomReset_Click"
                         ToolTip="Mức phóng to hiện tại. Nhấn để về 100% (Ctrl+0)">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                            <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bdr" Property="Background" Value="#E3F2FD"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Button.Template>
                     <TextBlock x:Name="txtHudZoomPercent" Text="100%" FontSize="12" FontWeight="Bold" Foreground="#2E86DE" VerticalAlignment="Center"/>
@@ -897,57 +1210,88 @@
 
                 <!-- Zoom In (+) -->
                 <Button x:Name="btnHudZoomIn" 
-                        Width="28" Height="28" 
-                        Background="Transparent" 
+                        Width="32" Height="32" 
+                        Background="#F1F2F6" 
                         BorderThickness="0" 
                         Cursor="Hand"
                         Click="btnHudZoomIn_Click"
                         ToolTip="Phóng to (Ctrl + Lăn chuột tới)">
-                    <TextBlock Text="+" FontSize="18" FontWeight="Bold" Foreground="#CCCCCC" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="8">
+                                <TextBlock x:Name="txt" Text="+" FontSize="18" FontWeight="Bold" Foreground="#2F3542" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bdr" Property="Background" Value="#E3F2FD"/>
+                                    <Setter TargetName="txt" Property="Foreground" Value="#2E86DE"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
                 </Button>
 
                 <!-- Fit to Screen (⛶) -->
                 <Button x:Name="btnHudZoomFit" 
-                        Width="28" Height="28" 
-                        Background="Transparent" 
+                        Width="32" Height="32" 
+                        Background="#F1F2F6" 
                         BorderThickness="0" 
                         Cursor="Hand"
-                        Margin="2,0,0,0"
+                        Margin="3,0,0,0"
                         Click="btnHudZoomFit_Click"
                         ToolTip="Vừa khung hình 100%">
-                    <Viewbox Width="14" Height="14">
-                        <Canvas Width="24" Height="24">
-                            <Path Fill="#AAAAAA" Data="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z"/>
-                        </Canvas>
-                    </Viewbox>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="8">
+                                <Viewbox Width="14" Height="14">
+                                    <Canvas Width="24" Height="24">
+                                        <Path x:Name="icon" Fill="#2F3542" Data="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z"/>
+                                    </Canvas>
+                                </Viewbox>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bdr" Property="Background" Value="#E3F2FD"/>
+                                    <Setter TargetName="icon" Property="Fill" Value="#2E86DE"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
                 </Button>
 
                 <!-- Separator -->
-                <Border Width="1" Height="16" Background="#444444" Margin="5,0"/>
+                <Border Width="1" Height="18" Background="#E1E8ED" Margin="5,0"/>
 
                 <!-- Touch Mode: Multi-touch (🖐) vs Single-touch Gesture (✌) -->
                 <Button x:Name="btnHudTouchMode" 
-                        Height="28" 
-                        Background="Transparent" 
+                        Height="32" 
+                        Background="#F8F9FA" 
                         BorderThickness="0" 
                         Cursor="Hand"
                         Margin="2,0,0,0"
-                        Padding="6,2"
+                        Padding="8,2"
                         Click="btnHudTouchMode_Click"
                         ToolTip="Chế độ cảm ứng: Đa chạm (Mặc định: nhiều ngón cùng viết vẽ). Nhấn để bật Cử chỉ 2 ngón (Pinch/Pan)">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border x:Name="PART_TouchModeBorder" Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                            <Border x:Name="PART_TouchModeBorder" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Viewbox Width="13" Height="13" Margin="0,0,3,0">
+                                    <Viewbox Width="14" Height="14" Margin="0,0,4,0">
                                         <Canvas Width="24" Height="24">
-                                            <Path x:Name="iconHudTouchMode" Fill="#AAAAAA" 
+                                            <Path x:Name="iconHudTouchMode" Fill="#2F3542" 
                                                   Data="M21,11A1,1 0 0,0 20,10A1,1 0 0,0 19,11V15.5L18.06,14.56C17.67,14.17 17.04,14.17 16.65,14.56L15.71,15.5L18.82,21.68C19.18,22.4 19.92,22.86 20.73,22.86H21.5A2.5,2.5 0 0,0 24,20.36V14A1,1 0 0,0 23,13A1,1 0 0,0 22,14V12A1,1 0 0,0 21,11M13,2A1,1 0 0,0 12,3V10.5L11.06,9.56C10.67,9.17 10.04,9.17 9.65,9.56L8.71,10.5L11.82,16.68C12.18,17.4 12.92,17.86 13.73,17.86H14.5A2.5,2.5 0 0,0 17,15.36V9A1,1 0 0,0 16,8A1,1 0 0,0 15,9V4A1,1 0 0,0 14,3A1,1 0 0,0 13,2M5,6A1,1 0 0,0 4,7V14.5L3.06,13.56C2.67,13.17 2.04,13.17 1.65,13.56L0.71,14.5L3.82,20.68C4.18,21.4 4.92,21.86 5.73,21.86H6.5A2.5,2.5 0 0,0 9,19.36V13A1,1 0 0,0 8,12A1,1 0 0,0 7,13V8A1,1 0 0,0 6,7A1,1 0 0,0 5,6Z"/>
                                         </Canvas>
                                     </Viewbox>
-                                    <TextBlock x:Name="txtHudTouchMode" Text="Đa chạm" FontSize="11" FontWeight="SemiBold" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="txtHudTouchMode" Text="Đa chạm" FontSize="11" FontWeight="SemiBold" Foreground="#2F3542" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="PART_TouchModeBorder" Property="Background" Value="#E3F2FD"/>
+                                    <Setter TargetName="iconHudTouchMode" Property="Fill" Value="#2E86DE"/>
+                                    <Setter TargetName="txtHudTouchMode" Property="Foreground" Value="#2E86DE"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Button.Template>
                 </Button>

@@ -1766,5 +1766,382 @@ namespace QASmartTouch.Forms
         }
         
         #endregion
+
+        #region 3D Shape Direct Drag & Drop (Textbook Standards)
+
+        /// <summary>
+        /// Kiểm tra tên hình có phải là hình 3D cần vẽ kéo thả trực tiếp hay không
+        /// </summary>
+        private bool Is3DShape(string? shapeName)
+        {
+            if (string.IsNullOrEmpty(shapeName)) return false;
+            return shapeName is "Cube" or "Sphere" or "Pyramid" or "Tetrahedron" or "Cylinder" or "Cone" or "Prism";
+        }
+
+        /// <summary>
+        /// Cập nhật khung dây xem trước (Wireframe Preview) thời gian thực 60fps khi kéo chuột/cảm ứng
+        /// </summary>
+        private void Update3DShapePreview(Path path, Point startPoint, Point currentPoint)
+        {
+            double left = Math.Min(startPoint.X, currentPoint.X);
+            double top = Math.Min(startPoint.Y, currentPoint.Y);
+            double width = Math.Max(5, Math.Abs(currentPoint.X - startPoint.X));
+            double height = Math.Max(5, Math.Abs(currentPoint.Y - startPoint.Y));
+
+            GeometryGroup group = new GeometryGroup();
+
+            switch (_currentShape)
+            {
+                case "Cube":
+                    BuildCubeWireframe(group, left, top, width, height);
+                    break;
+                case "Pyramid":
+                    BuildPyramidWireframe(group, left, top, width, height);
+                    break;
+                case "Tetrahedron":
+                    BuildTetrahedronWireframe(group, left, top, width, height);
+                    break;
+                case "Cylinder":
+                    BuildCylinderWireframe(group, left, top, width, height);
+                    break;
+                case "Cone":
+                    BuildConeWireframe(group, left, top, width, height);
+                    break;
+                case "Prism":
+                    BuildPrismWireframe(group, left, top, width, height);
+                    break;
+                case "Sphere":
+                    BuildSphereWireframe(group, left, top, width, height);
+                    break;
+            }
+
+            path.Data = group;
+        }
+
+        /// <summary>
+        /// </summary>
+        private void Finalize3DShapeDrawing(Path previewPath, string shapeName)
+        {
+            var bounds = previewPath.Data?.Bounds ?? Rect.Empty;
+            MainInteractiveBoard.Children.Remove(previewPath);
+
+            if (bounds.Width < 15 || bounds.Height < 15)
+            {
+                System.Diagnostics.Debug.WriteLine($"🧹 Discarded micro 3D shape ({bounds.Width:F0}x{bounds.Height:F0})");
+                return;
+            }
+
+            Canvas shapeContainer = Create3DShapeContainer(shapeName, bounds.Width, bounds.Height, _currentPenColor, Math.Max(1.5, _currentPenSize));
+            Canvas.SetLeft(shapeContainer, bounds.Left);
+            Canvas.SetTop(shapeContainer, bounds.Top);
+
+            MainInteractiveBoard.Children.Add(shapeContainer);
+
+            // Ghi nhận Undo/Redo
+            RecordAddAction(shapeContainer, $"Draw {shapeName}");
+
+            // Đăng ký tương tác với SelectionManager
+            Enable3DShapeDragging(shapeContainer);
+        }
+
+        /// <summary>
+        /// </summary>
+        private Canvas Create3DShapeContainer(string shapeName, double width, double height, Color strokeColor, double thickness)
+        {
+            Canvas container = new Canvas
+            {
+                Width = width,
+                Height = height,
+                Background = Brushes.Transparent // Cho phép bấm chọn/di chuyển dễ dàng trên màn hình tương tác
+            };
+
+            GeometryGroup visibleGeo = new GeometryGroup();
+            GeometryGroup hiddenGeo = new GeometryGroup();
+
+            switch (shapeName)
+            {
+                case "Cube":
+                    BuildCubeGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
+                    break;
+                case "Pyramid":
+                    BuildPyramidGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
+                    break;
+                case "Tetrahedron":
+                    BuildTetrahedronGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
+                    break;
+                case "Cylinder":
+                    BuildCylinderGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
+                    break;
+                case "Cone":
+                    BuildConeGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
+                    break;
+                case "Prism":
+                    BuildPrismGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
+                    break;
+                case "Sphere":
+                    BuildSphereGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
+                    break;
+            }
+
+            // Lớp cạnh khuất (Nét đứt SGK)
+            if (hiddenGeo.Children.Count > 0)
+            {
+                Path hiddenPath = new Path
+                {
+                    Stroke = new SolidColorBrush(strokeColor),
+                    StrokeThickness = thickness,
+                    StrokeDashArray = new DoubleCollection { 4, 3 },
+                    Data = hiddenGeo
+                };
+                container.Children.Add(hiddenPath);
+            }
+
+            // Lớp cạnh nhìn thấy (Nét liền)
+            if (visibleGeo.Children.Count > 0)
+            {
+                Path visiblePath = new Path
+                {
+                    Stroke = new SolidColorBrush(strokeColor),
+                    StrokeThickness = thickness,
+                    Data = visibleGeo
+                };
+                container.Children.Add(visiblePath);
+            }
+
+            container.Tag = "3DShape";
+            return container;
+        }
+
+        #region 3D Geometric Formulas (Textbook-Standard Projections)
+
+        private void BuildCubeGeometry(GeometryGroup visible, GeometryGroup hidden, double x, double y, double w, double h)
+        {
+            double dx = w * 0.25;
+            double dy = h * 0.25;
+
+            Point a = new Point(x, y + dy);
+            Point b = new Point(x + w - dx, y + dy);
+            Point c = new Point(x + w - dx, y + h);
+            Point d = new Point(x, y + h);
+
+            Point aPrime = new Point(x + dx, y);
+            Point bPrime = new Point(x + w, y);
+            Point cPrime = new Point(x + w, y + h - dy);
+            Point dPrime = new Point(x + dx, y + h - dy);
+
+            // Nét liền: Mặt trước và các cạnh thấy
+            visible.Children.Add(new LineGeometry(a, b));
+            visible.Children.Add(new LineGeometry(b, c));
+            visible.Children.Add(new LineGeometry(c, d));
+            visible.Children.Add(new LineGeometry(d, a));
+
+            visible.Children.Add(new LineGeometry(a, aPrime));
+            visible.Children.Add(new LineGeometry(b, bPrime));
+            visible.Children.Add(new LineGeometry(c, cPrime));
+
+            visible.Children.Add(new LineGeometry(aPrime, bPrime));
+            visible.Children.Add(new LineGeometry(bPrime, cPrime));
+
+            // Nét đứt: Cạnh khuất đi qua đỉnh sau dPrime
+            hidden.Children.Add(new LineGeometry(dPrime, aPrime));
+            hidden.Children.Add(new LineGeometry(dPrime, cPrime));
+            hidden.Children.Add(new LineGeometry(dPrime, d));
+        }
+
+        private void BuildCubeWireframe(GeometryGroup wireframe, double x, double y, double w, double h)
+        {
+            BuildCubeGeometry(wireframe, wireframe, x, y, w, h);
+        }
+
+        private void BuildPyramidGeometry(GeometryGroup visible, GeometryGroup hidden, double x, double y, double w, double h)
+        {
+            Point s = new Point(x + w * 0.50, y);
+            Point leftPt = new Point(x, y + h * 0.75);
+            Point frontPt = new Point(x + w * 0.60, y + h);
+            Point rightPt = new Point(x + w, y + h * 0.75);
+            Point backPt = new Point(x + w * 0.40, y + h * 0.50);
+
+            // Nét liền: Các mặt nhìn thấy ở phía trước
+            visible.Children.Add(new LineGeometry(s, leftPt));
+            visible.Children.Add(new LineGeometry(s, rightPt));
+            visible.Children.Add(new LineGeometry(s, frontPt));
+            visible.Children.Add(new LineGeometry(leftPt, frontPt));
+            visible.Children.Add(new LineGeometry(frontPt, rightPt));
+
+            // Nét đứt SGK: 3 cạnh nối với đỉnh khuất phía sau bên trái (backPt)
+            hidden.Children.Add(new LineGeometry(s, backPt));
+            hidden.Children.Add(new LineGeometry(leftPt, backPt));
+            hidden.Children.Add(new LineGeometry(backPt, rightPt));
+        }
+
+        private void BuildPyramidWireframe(GeometryGroup wireframe, double x, double y, double w, double h)
+        {
+            BuildPyramidGeometry(wireframe, wireframe, x, y, w, h);
+        }
+
+        private void BuildTetrahedronGeometry(GeometryGroup visible, GeometryGroup hidden, double x, double y, double w, double h)
+        {
+            Point s = new Point(x + w * 0.4, y);
+            Point a = new Point(x, y + h * 0.85);
+            Point b = new Point(x + w * 0.55, y + h);
+            Point c = new Point(x + w, y + h * 0.8);
+
+            // Nét liền
+            visible.Children.Add(new LineGeometry(a, b));
+            visible.Children.Add(new LineGeometry(b, c));
+            visible.Children.Add(new LineGeometry(s, a));
+            visible.Children.Add(new LineGeometry(s, b));
+            visible.Children.Add(new LineGeometry(s, c));
+
+            // Nét đứt (cạnh đáy phía sau)
+            hidden.Children.Add(new LineGeometry(a, c));
+        }
+
+        private void BuildTetrahedronWireframe(GeometryGroup wireframe, double x, double y, double w, double h)
+        {
+            BuildTetrahedronGeometry(wireframe, wireframe, x, y, w, h);
+        }
+
+        private void BuildCylinderGeometry(GeometryGroup visible, GeometryGroup hidden, double x, double y, double w, double h)
+        {
+            double rx = w / 2.0;
+            double ry = Math.Min(h * 0.15, w * 0.25);
+
+            // Đáy trên: Elip nét liền trọn vẹn
+            visible.Children.Add(new EllipseGeometry(new Point(x + rx, y + ry), rx, ry));
+
+            // Hai đường sinh biên nét liền
+            visible.Children.Add(new LineGeometry(new Point(x, y + ry), new Point(x, y + h - ry)));
+            visible.Children.Add(new LineGeometry(new Point(x + w, y + ry), new Point(x + w, y + h - ry)));
+
+            // Đáy dưới: Cung trước nét liền
+            PathGeometry frontArc = new PathGeometry();
+            PathFigure frontFig = new PathFigure { StartPoint = new Point(x, y + h - ry), IsClosed = false };
+            frontFig.Segments.Add(new ArcSegment(new Point(x + w, y + h - ry), new Size(rx, ry), 0, false, SweepDirection.Counterclockwise, true));
+            frontArc.Figures.Add(frontFig);
+            visible.Children.Add(frontArc);
+
+            // Đáy dưới: Cung sau nét đứt
+            PathGeometry backArc = new PathGeometry();
+            PathFigure backFig = new PathFigure { StartPoint = new Point(x + w, y + h - ry), IsClosed = false };
+            backFig.Segments.Add(new ArcSegment(new Point(x, y + h - ry), new Size(rx, ry), 0, false, SweepDirection.Counterclockwise, true));
+            backArc.Figures.Add(backFig);
+            hidden.Children.Add(backArc);
+        }
+
+        private void BuildCylinderWireframe(GeometryGroup wireframe, double x, double y, double w, double h)
+        {
+            double rx = w / 2.0;
+            double ry = Math.Min(h * 0.15, w * 0.25);
+            wireframe.Children.Add(new EllipseGeometry(new Point(x + rx, y + ry), rx, ry));
+            wireframe.Children.Add(new EllipseGeometry(new Point(x + rx, y + h - ry), rx, ry));
+            wireframe.Children.Add(new LineGeometry(new Point(x, y + ry), new Point(x, y + h - ry)));
+            wireframe.Children.Add(new LineGeometry(new Point(x + w, y + ry), new Point(x + w, y + h - ry)));
+        }
+
+        private void BuildConeGeometry(GeometryGroup visible, GeometryGroup hidden, double x, double y, double w, double h)
+        {
+            double rx = w / 2.0;
+            double ry = Math.Min(h * 0.15, w * 0.25);
+            Point s = new Point(x + rx, y);
+
+            // Hai đường sinh biên
+            visible.Children.Add(new LineGeometry(s, new Point(x, y + h - ry)));
+            visible.Children.Add(new LineGeometry(s, new Point(x + w, y + h - ry)));
+
+            // Cung trước đáy nét liền
+            PathGeometry frontArc = new PathGeometry();
+            PathFigure frontFig = new PathFigure { StartPoint = new Point(x, y + h - ry), IsClosed = false };
+            frontFig.Segments.Add(new ArcSegment(new Point(x + w, y + h - ry), new Size(rx, ry), 0, false, SweepDirection.Counterclockwise, true));
+            frontArc.Figures.Add(frontFig);
+            visible.Children.Add(frontArc);
+
+            // Cung sau đáy nét đứt
+            PathGeometry backArc = new PathGeometry();
+            PathFigure backFig = new PathFigure { StartPoint = new Point(x + w, y + h - ry), IsClosed = false };
+            backFig.Segments.Add(new ArcSegment(new Point(x, y + h - ry), new Size(rx, ry), 0, false, SweepDirection.Counterclockwise, true));
+            backArc.Figures.Add(backFig);
+            hidden.Children.Add(backArc);
+        }
+
+        private void BuildConeWireframe(GeometryGroup wireframe, double x, double y, double w, double h)
+        {
+            double rx = w / 2.0;
+            double ry = Math.Min(h * 0.15, w * 0.25);
+            Point s = new Point(x + rx, y);
+            wireframe.Children.Add(new LineGeometry(s, new Point(x, y + h - ry)));
+            wireframe.Children.Add(new LineGeometry(s, new Point(x + w, y + h - ry)));
+            wireframe.Children.Add(new EllipseGeometry(new Point(x + rx, y + h - ry), rx, ry));
+        }
+
+        private void BuildPrismGeometry(GeometryGroup visible, GeometryGroup hidden, double x, double y, double w, double h)
+        {
+            Point a1 = new Point(x + w * 0.2, y + h * 0.2);
+            Point b1 = new Point(x + w * 0.85, y + h * 0.2);
+            Point c1 = new Point(x + w * 0.45, y);
+
+            Point a2 = new Point(x + w * 0.2, y + h);
+            Point b2 = new Point(x + w * 0.85, y + h);
+            Point c2 = new Point(x + w * 0.45, y + h * 0.8);
+
+            // Đáy trên nét liền
+            visible.Children.Add(new LineGeometry(a1, b1));
+            visible.Children.Add(new LineGeometry(b1, c1));
+            visible.Children.Add(new LineGeometry(c1, a1));
+
+            // Các cạnh đứng nhìn thấy
+            visible.Children.Add(new LineGeometry(a1, a2));
+            visible.Children.Add(new LineGeometry(b1, b2));
+
+            // Đáy dưới cạnh nhìn thấy
+            visible.Children.Add(new LineGeometry(a2, b2));
+
+            // Nét đứt (cạnh đứng khuất và 2 cạnh đáy dưới khuất)
+            hidden.Children.Add(new LineGeometry(c1, c2));
+            hidden.Children.Add(new LineGeometry(a2, c2));
+            hidden.Children.Add(new LineGeometry(b2, c2));
+        }
+
+        private void BuildPrismWireframe(GeometryGroup wireframe, double x, double y, double w, double h)
+        {
+            BuildPrismGeometry(wireframe, wireframe, x, y, w, h);
+        }
+
+        private void BuildSphereGeometry(GeometryGroup visible, GeometryGroup hidden, double x, double y, double w, double h)
+        {
+            double rx = w / 2.0;
+            double ry = h / 2.0;
+            Point center = new Point(x + rx, y + ry);
+
+            // Đường tròn bao ngoài nét liền
+            visible.Children.Add(new EllipseGeometry(center, rx, ry));
+
+            // Đường xích đạo: cung trước nét liền, cung sau nét đứt
+            double eqRy = ry * 0.35;
+            PathGeometry eqFront = new PathGeometry();
+            PathFigure eqFFig = new PathFigure { StartPoint = new Point(x, y + ry), IsClosed = false };
+            eqFFig.Segments.Add(new ArcSegment(new Point(x + w, y + ry), new Size(rx, eqRy), 0, false, SweepDirection.Counterclockwise, true));
+            eqFront.Figures.Add(eqFFig);
+            visible.Children.Add(eqFront);
+
+            PathGeometry eqBack = new PathGeometry();
+            PathFigure eqBFig = new PathFigure { StartPoint = new Point(x + w, y + ry), IsClosed = false };
+            eqBFig.Segments.Add(new ArcSegment(new Point(x, y + ry), new Size(rx, eqRy), 0, false, SweepDirection.Counterclockwise, true));
+            eqBack.Figures.Add(eqBFig);
+            hidden.Children.Add(eqBack);
+        }
+
+        private void BuildSphereWireframe(GeometryGroup wireframe, double x, double y, double w, double h)
+        {
+            double rx = w / 2.0;
+            double ry = h / 2.0;
+            Point center = new Point(x + rx, y + ry);
+            wireframe.Children.Add(new EllipseGeometry(center, rx, ry));
+            wireframe.Children.Add(new EllipseGeometry(center, rx, ry * 0.35));
+        }
+
+        #endregion
+
+        #endregion
     }
 }

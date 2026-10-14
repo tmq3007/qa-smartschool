@@ -1289,13 +1289,13 @@ namespace QASmartTouch.Forms
                 if (border != null) border.Background = Brushes.Transparent;
                 if (icon != null)
                 {
-                    icon.Fill = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA));
+                    icon.Fill = new SolidColorBrush(Color.FromRgb(0x2F, 0x35, 0x42));
                     icon.Data = Geometry.Parse("M21,11A1,1 0 0,0 20,10A1,1 0 0,0 19,11V15.5L18.06,14.56C17.67,14.17 17.04,14.17 16.65,14.56L15.71,15.5L18.82,21.68C19.18,22.4 19.92,22.86 20.73,22.86H21.5A2.5,2.5 0 0,0 24,20.36V14A1,1 0 0,0 23,13A1,1 0 0,0 22,14V12A1,1 0 0,0 21,11M13,2A1,1 0 0,0 12,3V10.5L11.06,9.56C10.67,9.17 10.04,9.17 9.65,9.56L8.71,10.5L11.82,16.68C12.18,17.4 12.92,17.86 13.73,17.86H14.5A2.5,2.5 0 0,0 17,15.36V9A1,1 0 0,0 16,8A1,1 0 0,0 15,9V4A1,1 0 0,0 14,3A1,1 0 0,0 13,2M5,6A1,1 0 0,0 4,7V14.5L3.06,13.56C2.67,13.17 2.04,13.17 1.65,13.56L0.71,14.5L3.82,20.68C4.18,21.4 4.92,21.86 5.73,21.86H6.5A2.5,2.5 0 0,0 9,19.36V13A1,1 0 0,0 8,12A1,1 0 0,0 7,13V8A1,1 0 0,0 6,7A1,1 0 0,0 5,6Z");
                 }
                 if (text != null)
                 {
                     text.Text = "Đa chạm";
-                    text.Foreground = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA));
+                    text.Foreground = new SolidColorBrush(Color.FromRgb(0x2F, 0x35, 0x42));
                 }
                 btnHudTouchMode.ToolTip = "Chế độ Đa chạm (Mặc định: nhiều ngón cùng viết vẽ đồng thời). Nhấn để bật Đơn điểm & Cử chỉ 2 ngón (Pinch/Pan)";
             }

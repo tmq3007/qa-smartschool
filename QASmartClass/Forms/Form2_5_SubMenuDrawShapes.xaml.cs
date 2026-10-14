@@ -133,7 +133,7 @@ namespace QASmartTouch.Forms
                     "Square",          // Hình vuông
                     "Rectangle",       // Hình chữ nhật
                 },
-                "3D" => new[] { "Cube", "Sphere", "Pyramid", "Cylinder", "Cone", "Prism" },
+                "3D" => new[] { "Cube", "Sphere", "Pyramid", "Tetrahedron", "Cylinder", "Cone", "Prism" },
                 _ => new[] { "Rectangle", "Circle", "Triangle" }
             };
             
@@ -278,6 +278,7 @@ namespace QASmartTouch.Forms
                 "Cylinder" => "cylinder",
                 "Cone" => "cone",
                 "Prism" => "prism",
+                "Tetrahedron" => "tetrahedron",
                 
                 // Callouts - map to callout group for now
                 "RectangularCallout" or "RoundedRectangularCallout" or "OvalCallout" => "speech_bubble",
@@ -406,7 +407,7 @@ namespace QASmartTouch.Forms
                     
                     // 3D Shapes
                     "Cube" => CreateCube(),
-                    "Sphere" => new Ellipse { Width = 35, Height = 35, Fill = Brushes.LightSteelBlue, Stroke = Brushes.SteelBlue, StrokeThickness = 2 },
+                    "Sphere" => CreateSphere(),
                     "Pyramid" => CreatePyramid(),
                     "Cylinder" => CreateCylinder(),
                     "Cone" => CreateCone(),
@@ -415,17 +416,23 @@ namespace QASmartTouch.Forms
                     "Tetrahedron" => CreateTetrahedron(),
                     _ => new Rectangle { Width = 30, Height = 30, Fill = Brushes.LightGray, Stroke = Brushes.Gray, StrokeThickness = 1 }
                 };
-            }            if (shapePreview != null)
+            }
+
+            if (shapePreview != null)
             {
                 if (shapePreview is Shape shape)
                 {
-                    Canvas.SetLeft(shape, (50 - (shape.Width == 0 ? 40 : shape.Width)) / 2);
-                    Canvas.SetTop(shape, (50 - (shape.Height == 0 ? 30 : shape.Height)) / 2);
+                    double w = double.IsNaN(shape.Width) || shape.Width == 0 ? 40 : shape.Width;
+                    double h = double.IsNaN(shape.Height) || shape.Height == 0 ? 30 : shape.Height;
+                    Canvas.SetLeft(shape, Math.Max(0, (50 - w) / 2));
+                    Canvas.SetTop(shape, Math.Max(0, (50 - h) / 2));
                 }
-                else if (shapePreview is Canvas scatterCanvas)
+                else if (shapePreview is FrameworkElement fe)
                 {
-                    Canvas.SetLeft(scatterCanvas, 5);
-                    Canvas.SetTop(scatterCanvas, 5);
+                    double w = double.IsNaN(fe.Width) || fe.Width == 0 ? 40 : fe.Width;
+                    double h = double.IsNaN(fe.Height) || fe.Height == 0 ? 40 : fe.Height;
+                    Canvas.SetLeft(fe, Math.Max(0, (50 - w) / 2));
+                    Canvas.SetTop(fe, Math.Max(0, (50 - h) / 2));
                 }
                 canvas.Children.Add(shapePreview);
             }
@@ -436,7 +443,8 @@ namespace QASmartTouch.Forms
             {
                 Text = GetVietnameseName(shapeName),
                 FontSize = 10,
-                Foreground = Brushes.DarkGray,
+                FontWeight = FontWeights.Medium,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2C3E50")),
                 TextAlignment = TextAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center
             });
@@ -567,81 +575,370 @@ namespace QASmartTouch.Forms
             };
         }
 
-        private Polygon CreateCube()
+        #region 3D Shape Icon Styles (Pedagogical Standards)
+        private static Brush GetFrozenBrush(string colorHex)
         {
-            return new Polygon
+            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
+            brush.Freeze();
+            return brush;
+        }
+
+        private static readonly Brush Stroke3D = GetFrozenBrush("#1E5180");
+        private static readonly Brush Dash3D = GetFrozenBrush("#2980B9");
+        private static readonly Brush FillTop3D = GetFrozenBrush("#E8F4F8");
+        private static readonly Brush FillLeft3D = GetFrozenBrush("#D4E6F1");
+        private static readonly Brush FillRight3D = GetFrozenBrush("#A9CCE3");
+
+        private UIElement CreateCube()
+        {
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            // Top face
+            cv.Children.Add(new Polygon
             {
-                Points = new PointCollection 
-                { 
-                    new Point(8, 15), new Point(22, 15), new Point(22, 29), new Point(8, 29),
-                    new Point(8, 15), new Point(14, 9), new Point(28, 9), new Point(28, 23),
-                    new Point(22, 29), new Point(28, 23), new Point(28, 9), new Point(22, 15)
-                },
-                Fill = Brushes.LightBlue,
-                Stroke = Brushes.Navy,
+                Points = new PointCollection { new Point(21, 5), new Point(35, 13), new Point(21, 21), new Point(7, 13) },
+                Fill = FillTop3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Left-front face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { new Point(7, 13), new Point(21, 21), new Point(21, 37), new Point(7, 29) },
+                Fill = FillLeft3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Right-front face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { new Point(21, 21), new Point(35, 13), new Point(35, 29), new Point(21, 37) },
+                Fill = FillRight3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            return cv;
+        }
+
+        private UIElement CreateSphere()
+        {
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            var sphereBrush = new RadialGradientBrush
+            {
+                Center = new Point(0.35, 0.35),
+                GradientOrigin = new Point(0.35, 0.35),
+                RadiusX = 0.65,
+                RadiusY = 0.65
+            };
+            sphereBrush.GradientStops.Add(new GradientStop(Colors.White, 0.0));
+            sphereBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#D4E6F1"), 0.55));
+            sphereBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#85C1E9"), 1.0));
+            sphereBrush.Freeze();
+
+            var outerCircle = new Ellipse
+            {
+                Width = 34,
+                Height = 34,
+                Fill = sphereBrush,
+                Stroke = Stroke3D,
                 StrokeThickness = 1.5
             };
+            Canvas.SetLeft(outerCircle, 4);
+            Canvas.SetTop(outerCircle, 4);
+            cv.Children.Add(outerCircle);
+
+            // Equator rear arc (dashed)
+            PathGeometry backArc = new PathGeometry();
+            PathFigure backFig = new PathFigure { StartPoint = new Point(38, 21), IsClosed = false };
+            backFig.Segments.Add(new ArcSegment(new Point(4, 21), new Size(17, 5.5), 0, false, SweepDirection.Counterclockwise, true));
+            backArc.Figures.Add(backFig);
+            cv.Children.Add(new Path
+            {
+                Data = backArc,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            // Equator front arc (solid)
+            PathGeometry frontArc = new PathGeometry();
+            PathFigure frontFig = new PathFigure { StartPoint = new Point(4, 21), IsClosed = false };
+            frontFig.Segments.Add(new ArcSegment(new Point(38, 21), new Size(17, 5.5), 0, false, SweepDirection.Counterclockwise, true));
+            frontArc.Figures.Add(frontFig);
+            cv.Children.Add(new Path
+            {
+                Data = frontArc,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5
+            });
+
+            return cv;
         }
 
-        private Polygon CreatePyramid()
+        private UIElement CreatePyramid()
         {
-            return new Polygon
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            Point s = new Point(21, 5);
+            Point leftPt = new Point(5, 30);
+            Point frontPt = new Point(26, 39);
+            Point rightPt = new Point(37, 29);
+            Point backPt = new Point(16, 20); // Đỉnh khuất phía sau bên trái
+
+            // Left-front face
+            cv.Children.Add(new Polygon
             {
-                Points = new PointCollection { new Point(20, 5), new Point(5, 28), new Point(15, 35), new Point(35, 20) },
-                Fill = Brushes.SandyBrown,
-                Stroke = Brushes.Sienna,
-                StrokeThickness = 2
-            };
+                Points = new PointCollection { s, leftPt, frontPt },
+                Fill = FillLeft3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Right-front face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { s, frontPt, rightPt },
+                Fill = FillRight3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Hidden rear-left dashed lines
+            var dashGroup = new GeometryGroup();
+            dashGroup.Children.Add(new LineGeometry(s, backPt));
+            dashGroup.Children.Add(new LineGeometry(leftPt, backPt));
+            dashGroup.Children.Add(new LineGeometry(backPt, rightPt));
+
+            cv.Children.Add(new Path
+            {
+                Data = dashGroup,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            return cv;
         }
 
-        private Path CreateCylinder()
+        private UIElement CreateTetrahedron()
         {
-            return new Path
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            Point s = new Point(19, 5);
+            Point a = new Point(6, 33);
+            Point b = new Point(25, 39);
+            Point c = new Point(37, 29);
+
+            // Left face
+            cv.Children.Add(new Polygon
             {
-                Data = Geometry.Parse("M5,10 Q5,5 20,5 Q35,5 35,10 L35,30 Q35,35 20,35 Q5,35 5,30 Z M5,10 Q5,15 20,15 Q35,15 35,10"),
-                Fill = Brushes.LightCyan,
-                Stroke = Brushes.DarkCyan,
+                Points = new PointCollection { s, a, b },
+                Fill = FillLeft3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Right face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { s, b, c },
+                Fill = FillRight3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Hidden rear base edge (dashed)
+            cv.Children.Add(new Line
+            {
+                X1 = a.X, Y1 = a.Y,
+                X2 = c.X, Y2 = c.Y,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            return cv;
+        }
+
+        private UIElement CreateCylinder()
+        {
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            // Body fill
+            PathGeometry bodyGeo = new PathGeometry();
+            PathFigure bodyFig = new PathFigure { StartPoint = new Point(6, 11), IsClosed = true };
+            bodyFig.Segments.Add(new LineSegment(new Point(6, 31), true));
+            bodyFig.Segments.Add(new ArcSegment(new Point(36, 31), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            bodyFig.Segments.Add(new LineSegment(new Point(36, 11), true));
+            bodyFig.Segments.Add(new ArcSegment(new Point(6, 11), new Size(15, 4.5), 0, false, SweepDirection.Clockwise, true));
+            bodyGeo.Figures.Add(bodyFig);
+
+            cv.Children.Add(new Path
+            {
+                Data = bodyGeo,
+                Fill = FillLeft3D
+            });
+
+            // Bottom rear arc (dashed)
+            PathGeometry backArc = new PathGeometry();
+            PathFigure backFig = new PathFigure { StartPoint = new Point(36, 31), IsClosed = false };
+            backFig.Segments.Add(new ArcSegment(new Point(6, 31), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            backArc.Figures.Add(backFig);
+            cv.Children.Add(new Path
+            {
+                Data = backArc,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            // Side lines and bottom front arc (solid)
+            PathGeometry frontGeo = new PathGeometry();
+            PathFigure leftFig = new PathFigure { StartPoint = new Point(6, 11), IsClosed = false };
+            leftFig.Segments.Add(new LineSegment(new Point(6, 31), true));
+            frontGeo.Figures.Add(leftFig);
+
+            PathFigure rightFig = new PathFigure { StartPoint = new Point(36, 11), IsClosed = false };
+            rightFig.Segments.Add(new LineSegment(new Point(36, 31), true));
+            frontGeo.Figures.Add(rightFig);
+
+            PathFigure frontArc = new PathFigure { StartPoint = new Point(6, 31), IsClosed = false };
+            frontArc.Segments.Add(new ArcSegment(new Point(36, 31), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            frontGeo.Figures.Add(frontArc);
+
+            cv.Children.Add(new Path
+            {
+                Data = frontGeo,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Top face ellipse
+            var topEllipse = new Ellipse
+            {
+                Width = 30,
+                Height = 9,
+                Fill = FillTop3D,
+                Stroke = Stroke3D,
                 StrokeThickness = 1.5
             };
+            Canvas.SetLeft(topEllipse, 6);
+            Canvas.SetTop(topEllipse, 6.5);
+            cv.Children.Add(topEllipse);
+
+            return cv;
         }
 
-        private Polygon CreateCone()
+        private UIElement CreateCone()
         {
-            return new Polygon
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            // Body fill
+            PathGeometry bodyGeo = new PathGeometry();
+            PathFigure bodyFig = new PathFigure { StartPoint = new Point(21, 5), IsClosed = true };
+            bodyFig.Segments.Add(new LineSegment(new Point(6, 32), true));
+            bodyFig.Segments.Add(new ArcSegment(new Point(36, 32), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            bodyFig.Segments.Add(new LineSegment(new Point(21, 5), true));
+            bodyGeo.Figures.Add(bodyFig);
+
+            cv.Children.Add(new Path
             {
-                Points = new PointCollection { new Point(20, 5), new Point(5, 35), new Point(35, 35) },
-                Fill = Brushes.Coral,
-                Stroke = Brushes.OrangeRed,
-                StrokeThickness = 2
-            };
+                Data = bodyGeo,
+                Fill = FillLeft3D
+            });
+
+            // Bottom rear arc (dashed)
+            PathGeometry backArc = new PathGeometry();
+            PathFigure backFig = new PathFigure { StartPoint = new Point(36, 32), IsClosed = false };
+            backFig.Segments.Add(new ArcSegment(new Point(6, 32), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            backArc.Figures.Add(backFig);
+            cv.Children.Add(new Path
+            {
+                Data = backArc,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            // Outer silhouette & bottom front arc (solid)
+            PathGeometry frontGeo = new PathGeometry();
+            PathFigure frontFig = new PathFigure { StartPoint = new Point(21, 5), IsClosed = false };
+            frontFig.Segments.Add(new LineSegment(new Point(6, 32), true));
+            frontFig.Segments.Add(new ArcSegment(new Point(36, 32), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            frontFig.Segments.Add(new LineSegment(new Point(21, 5), true));
+            frontGeo.Figures.Add(frontFig);
+
+            cv.Children.Add(new Path
+            {
+                Data = frontGeo,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            return cv;
         }
 
-        private Polygon CreatePrism()
+        private UIElement CreatePrism()
         {
-            return new Polygon
-            {
-                Points = new PointCollection 
-                { 
-                    new Point(15, 8), new Point(8, 32), new Point(25, 32),
-                    new Point(25, 32), new Point(32, 8), new Point(15, 8),
-                    new Point(32, 8), new Point(25, 32)
-                },
-                Fill = Brushes.LightGreen,
-                Stroke = Brushes.DarkGreen,
-                StrokeThickness = 1.5
-            };
-        }
+            var cv = new Canvas { Width = 42, Height = 42 };
 
-        private Polygon CreateTetrahedron()
-        {
-            return new Polygon
+            Point a1 = new Point(8, 12);
+            Point b1 = new Point(34, 12);
+            Point c1 = new Point(21, 5);
+
+            Point a2 = new Point(8, 36);
+            Point b2 = new Point(34, 36);
+            Point c2 = new Point(21, 29);
+
+            // Hidden rear dashed lines
+            var dashGroup = new GeometryGroup();
+            dashGroup.Children.Add(new LineGeometry(c1, c2));
+            dashGroup.Children.Add(new LineGeometry(a2, c2));
+            dashGroup.Children.Add(new LineGeometry(b2, c2));
+            cv.Children.Add(new Path
             {
-                Points = new PointCollection { new Point(20, 8), new Point(8, 32), new Point(32, 25) },
-                Fill = Brushes.Thistle,
-                Stroke = Brushes.Purple,
-                StrokeThickness = 2
-            };
+                Data = dashGroup,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            // Front rectangular face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { a1, b1, b2, a2 },
+                Fill = FillLeft3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Top triangular face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { a1, b1, c1 },
+                Fill = FillTop3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            return cv;
         }
+        #endregion
 
         private Path CreateBarChart()
         {

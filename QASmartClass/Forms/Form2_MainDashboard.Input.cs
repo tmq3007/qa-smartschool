@@ -467,11 +467,18 @@ namespace QASmartTouch.Forms
             }
             else
             {
-                // Add completed shape to undo stack
-                RecordAddAction(_previewShape, $"Draw {_currentShape}");
-                
-                // BUGFIX: Register new shape with SelectionManager
-                RegisterNewObjectWithSelectionManager(_previewShape);
+                if (Is3DShape(_currentShape) && _previewShape is System.Windows.Shapes.Path path3D)
+                {
+                    Finalize3DShapeDrawing(path3D, _currentShape);
+                }
+                else
+                {
+                    // Add completed shape to undo stack
+                    RecordAddAction(_previewShape, $"Draw {_currentShape}");
+                    
+                    // BUGFIX: Register new shape with SelectionManager
+                    RegisterNewObjectWithSelectionManager(_previewShape);
+                }
             }
             
             _isDrawing = false;
@@ -1806,38 +1813,6 @@ namespace QASmartTouch.Forms
             // Dọn dẹp trạng thái vẽ dở dang
             _isDrawing = false;
             _currentStroke = null;
-
-            // Special handling for 3D shapes - Open 3D Editor popup
-            if (shapeName == "Cube")
-            {
-                Open3DCubeEditor();
-                return;
-            }
-            else if (shapeName == "Sphere")
-            {
-                Open3DSphereEditor();
-                return;
-            }
-            else if (shapeName == "Cylinder")
-            {
-                Open3DCylinderEditor();
-                return;
-            }
-            else if (shapeName == "Cone")
-            {
-                Open3DConeEditor();
-                return;
-            }
-            else if (shapeName == "Pyramid")
-            {
-                Open3DPyramidEditor();
-                return;
-            }
-            else if (shapeName == "Prism")
-            {
-                Open3DPrismEditorWithStats();
-                return;
-            }
 
             // Store shape settings
             _currentShape = shapeName;
@@ -7343,7 +7318,15 @@ namespace QASmartTouch.Forms
                 case "DoubleArrowLine":
                 case "ElbowConnector":
                 case "CurvedConnector":
-                    // Use Path for complex line shapes
+                // 3D Shapes preview using Path
+                case "Cube":
+                case "Sphere":
+                case "Cylinder":
+                case "Cone":
+                case "Pyramid":
+                case "Prism":
+                case "Tetrahedron":
+                    // Use Path for complex line shapes & 3D wireframe preview
                     shape = new System.Windows.Shapes.Path
                     {
                         Stroke = new SolidColorBrush(_currentPenColor),
@@ -7543,15 +7526,7 @@ namespace QASmartTouch.Forms
                 // Old shapes
                 case "Arrow":
                 case "Polygon":
-                // 3D Shapes
-                case "Cube":
-                case "Sphere":
-                case "Pyramid":
-                case "Cylinder":
-                case "Cone":
-                case "Prism":
                 case "Torus":
-                case "Tetrahedron":
                 // Charts
                 case "BarChart":
                 case "PieChart":
@@ -7559,7 +7534,7 @@ namespace QASmartTouch.Forms
                 case "AreaChart":
                 case "ScatterChart":
                 case "RadarChart":
-                    // Use Polygon for complex shapes, 3D shapes, and charts
+                    // Use Polygon for complex shapes and charts
                     shape = new Polygon
                     {
                         Stroke = new SolidColorBrush(_currentPenColor),
@@ -7627,6 +7602,11 @@ namespace QASmartTouch.Forms
                 {
                     // Update equation shape with GeometryGroup
                     UpdatePathEquationShape(path, startPoint, currentPoint);
+                }
+                else if (Is3DShape(_currentShape))
+                {
+                    // Update 3D wireframe preview in real-time
+                    Update3DShapePreview(path, startPoint, currentPoint);
                 }
                 else
                 {

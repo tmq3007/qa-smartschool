@@ -630,17 +630,17 @@
                 "AdvancedSolids": {
                     "id": "advanced_solids",
                     "name": "Khối nâng cao",
-                    "enabled": false,
+                    "enabled": true,
                     "children": {
                         "Pyramid": {
                             "id": "pyramid",
                             "name": "Hình chóp",
-                            "enabled": false
+                            "enabled": true
                         },
                         "Prism": {
                             "id": "prism",
                             "name": "Lăng trụ",
-                            "enabled": false
+                            "enabled": true
                         },
                         "Torus": {
                             "id": "torus",
@@ -650,7 +650,7 @@
                         "Tetrahedron": {
                             "id": "tetrahedron",
                             "name": "Tứ diện đều",
-                            "enabled": false
+                            "enabled": true
                         }
                     }
                 }
