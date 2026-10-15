@@ -388,6 +388,7 @@ namespace QASmartTouch.Forms
             this.Loaded += (s, e) => {
                 UpdateScrollBarVisibility();
                 CheckLicenseWarnings();
+                InitializeRadialToolbar(); // QC_4.2 SMART TOUCH Radial Dial + Corner Dock
             };
             
             // Show welcome state on startup (no tool selected)
@@ -846,6 +847,8 @@ namespace QASmartTouch.Forms
                         }
                     }
                 }
+
+                smartDockPill?.UpdateZoomDisplay(_currentZoomLevel);
             }
             catch (Exception ex)
             {

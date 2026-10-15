@@ -98,6 +98,33 @@ namespace QASmartTouch.Forms
                 ?? (Application.Current.MainWindow as Form2_MainDashboard);
         }
 
+        /// <summary>
+        /// QC_4.2 Dock SMART TOUCH: chạy đúng handler Click hiện có theo khoá công cụ của Dock (Mở rộng).
+        /// Tôn trọng cờ tính năng (nút bị ẩn theo phiên bản → không chạy). Trả về false nếu không chạy.
+        /// </summary>
+        public bool InvokeTool(string key)
+        {
+            ApplyFeatureVisibility();
+            var args = new RoutedEventArgs();
+            switch (key)
+            {
+                case "open": btnOpenLecture_Click(this, args); return true;
+                case "save": btnSaveLecture_Click(this, args); return true;
+                case "export": btnExportBoard_Click(this, args); return true;
+                case "share": btnShareLecture_Click(this, args); return true;
+                case "camera-ai":
+                    if (btnCameraAI != null && btnCameraAI.Visibility != Visibility.Visible) return false;
+                    btnCameraAI_Click(this, args); return true;
+                case "timer": btnTimer_Click(this, args); return true;
+                case "calculator": btnCalculator_Click(this, args); return true;
+                case "vote": btnQuickVote_Click(this, args); return true;
+                case "about": btnAbout_Click(this, args); return true;
+                case "help": btnHelp_Click(this, args); return true;
+                case "license": btnVersionManager_Click(this, args); return true;
+                default: return false;
+            }
+        }
+
         private void btnOpenLecture_Click(object sender, RoutedEventArgs e)
         {
             this.Close();

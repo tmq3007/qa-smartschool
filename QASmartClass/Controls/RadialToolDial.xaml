@@ -1,0 +1,170 @@
+<UserControl x:Class="QASmartTouch.Controls.RadialToolDial"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="False"
+             SnapsToDevicePixels="True">
+    <!--
+        QC_4.2 Radial Tool Dial + Orbital Arc Menu (SMART TOUCH)
+        Thiết kế gốc: Stitch "QA SmartClass - Smart Touch Radial Dial Toolbar".
+        - Vòng 6 múi: Bút viết, Tẩy, Chọn vùng, Hình học, Hoàn tác, Làm lại.
+        - 4 trạng thái Orbital (cung viền quanh vòng): Bút / Tẩy / Chọn vùng & AI / Hình học.
+        - Lõi giữa: kéo để di chuyển, chạm để thu gọn / mở rộng.
+        Bảng màu đồng bộ Form2: trắng #FFFFFF, viền #E1E8ED, nút #F1F2F6, chữ #2F3542, nhấn #2E86DE.
+    -->
+    <UserControl.RenderTransform>
+        <TranslateTransform x:Name="dragTransform"/>
+    </UserControl.RenderTransform>
+
+    <Canvas x:Name="rootCanvas" Width="670" Height="500">
+
+        <!-- Lớp Orbital (cung viền) — nội dung dựng trong code-behind theo trạng thái -->
+        <Canvas x:Name="orbitalLayer" Width="670" Height="500" RenderTransformOrigin="0.448,0.5">
+            <Canvas.RenderTransform>
+                <ScaleTransform x:Name="orbitalScale" ScaleX="1" ScaleY="1"/>
+            </Canvas.RenderTransform>
+        </Canvas>
+
+        <!-- Vòng công cụ -->
+        <Grid x:Name="dialHost" Canvas.Left="150" Canvas.Top="100" Width="300" Height="300">
+
+            <Grid x:Name="ringLayer" RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
+                    <ScaleTransform x:Name="ringScale" ScaleX="1" ScaleY="1"/>
+                </Grid.RenderTransform>
+
+                <Ellipse Width="300" Height="300"
+                         Fill="#FFFFFF"
+                         Stroke="#E1E8ED"
+                         StrokeThickness="1">
+                    <Ellipse.Effect>
+                        <DropShadowEffect Color="#1E2A3A" Direction="270" ShadowDepth="4"
+                                          BlurRadius="22" Opacity="0.22"/>
+                    </Ellipse.Effect>
+                </Ellipse>
+
+                <Canvas x:Name="wedgeCanvas" Width="300" Height="300"/>
+            </Grid>
+
+            <!-- Lõi trung tâm: kéo thả + thu gọn -->
+            <Border x:Name="coreButton"
+                    Width="76" Height="76"
+                    CornerRadius="38"
+                    Background="#FFFFFF"
+                    BorderBrush="#E1E8ED"
+                    BorderThickness="2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Cursor="SizeAll"
+                    ToolTip="Kéo để di chuyển • Chạm để thu gọn / mở rộng">
+                <Border.Effect>
+                    <DropShadowEffect Color="#1E2A3A" Direction="270" ShadowDepth="2"
+                                      BlurRadius="12" Opacity="0.18"/>
+                </Border.Effect>
+                <Grid IsHitTestVisible="False">
+                    <Ellipse x:Name="coreInner" Width="54" Height="54" Fill="#F1F2F6"/>
+                    <Viewbox Width="24" Height="24">
+                        <Canvas Width="24" Height="24">
+                            <!-- drag_indicator (6 chấm) -->
+                            <Path x:Name="coreIcon"
+                                  Fill="#2F3542"
+                                  Data="M9,3A2,2 0 0,1 11,5A2,2 0 0,1 9,7A2,2 0 0,1 7,5A2,2 0 0,1 9,3M15,3A2,2 0 0,1 17,5A2,2 0 0,1 15,7A2,2 0 0,1 13,5A2,2 0 0,1 15,3M9,10A2,2 0 0,1 11,12A2,2 0 0,1 9,14A2,2 0 0,1 7,12A2,2 0 0,1 9,10M15,10A2,2 0 0,1 17,12A2,2 0 0,1 15,14A2,2 0 0,1 13,12A2,2 0 0,1 15,10M9,17A2,2 0 0,1 11,19A2,2 0 0,1 9,21A2,2 0 0,1 7,19A2,2 0 0,1 9,17M15,17A2,2 0 0,1 17,19A2,2 0 0,1 15,21A2,2 0 0,1 13,19A2,2 0 0,1 15,17Z"/>
+                        </Canvas>
+                    </Viewbox>
+                </Grid>
+            </Border>
+
+            <!-- Nút Tùy biến 6 múi tròn (tune) ở góc dưới-phải tâm dial -->
+            <Button x:Name="btnTuneWedges"
+                    Width="28" Height="28"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="48,48,0,0"
+                    Cursor="Hand"
+                    Focusable="False"
+                    ToolTip="Tùy biến 6 múi tròn Radial Menu">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="PART_Border"
+                                Background="#2E86DE"
+                                BorderBrush="#FFFFFF"
+                                BorderThickness="2"
+                                CornerRadius="14">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#1E2A3A" Direction="270" ShadowDepth="1" BlurRadius="6" Opacity="0.25"/>
+                            </Border.Effect>
+                            <Viewbox Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Canvas Width="24" Height="24">
+                                    <Path x:Name="PART_Icon" Fill="#FFFFFF"
+                                          Data="M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z"/>
+                                </Canvas>
+                            </Viewbox>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="PART_Border" Property="Background" Value="#2577C7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </Grid>
+
+        <!-- Thanh chuyển nhanh trạng thái Orbital (ẩn theo yêu cầu — giữ code để bật lại khi cần) -->
+        <Border x:Name="switcherBar"
+                Visibility="Collapsed"
+                Canvas.Top="6"
+                Background="#FFFFFF"
+                BorderBrush="#E1E8ED"
+                BorderThickness="1"
+                CornerRadius="22"
+                Padding="4">
+            <Border.Effect>
+                <DropShadowEffect Color="#1E2A3A" Direction="270" ShadowDepth="2"
+                                  BlurRadius="14" Opacity="0.16"/>
+            </Border.Effect>
+            <StackPanel x:Name="switcherHost" Orientation="Horizontal"/>
+        </Border>
+
+        <!-- Gợi ý thao tác theo trạng thái -->
+        <Border x:Name="hintPill"
+                Canvas.Top="420"
+                Background="#FFFFFF"
+                BorderBrush="#E1E8ED"
+                BorderThickness="1"
+                CornerRadius="13"
+                Padding="12,5"
+                MaxWidth="420"
+                IsHitTestVisible="False">
+            <Border.Effect>
+                <DropShadowEffect Color="#1E2A3A" Direction="270" ShadowDepth="1"
+                                  BlurRadius="8" Opacity="0.15"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal">
+                <Ellipse x:Name="hintDot" Width="6" Height="6" Fill="#2E86DE"
+                         VerticalAlignment="Center" Margin="0,0,7,0"/>
+                <TextBlock x:Name="hintText"
+                           Text="Kéo để di chuyển • Chạm thu gọn"
+                           FontFamily="{DynamicResource InterFont}"
+                           FontSize="11.5"
+                           FontWeight="Medium"
+                           TextWrapping="Wrap"
+                           Foreground="#2F3542"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Popover bảng 16 màu (dựng trong code-behind) -->
+        <Border x:Name="palettePopover"
+                Visibility="Collapsed"
+                Width="236"
+                Background="#FFFFFF"
+                BorderBrush="#E1E8ED"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="14">
+            <Border.Effect>
+                <DropShadowEffect Color="#1E2A3A" Direction="270" ShadowDepth="6"
+                                  BlurRadius="28" Opacity="0.28"/>
+            </Border.Effect>
+        </Border>
+    </Canvas>
+</UserControl>

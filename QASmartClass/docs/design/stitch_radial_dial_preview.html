@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+
+<html class="h-full w-full" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SMART TOUCH Whiteboard (QA SmartClass)</title>
+<!-- Fonts -->
+<link href="https://fonts.preconnect.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Caveat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            brand: "#6C7EAA",
+            "brand-dark": "#495b85",
+            "surface-container-low": "#f2f4f6",
+            surface: "#f8f9fb",
+            background: "#f8f9fb",
+            "surface-container": "#edeef0",
+            "surface-container-high": "#e7e8ea",
+            "surface-container-lowest": "#ffffff",
+            primary: "#495b85",
+            "primary-container": "#62749f",
+            "on-primary": "#ffffff",
+            secondary: "#366758",
+            "secondary-container": "#b6ebd8",
+            "on-secondary-container": "#3a6c5d",
+            outline: "#75777f",
+            "outline-variant": "#c5c6cf",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#44464e",
+            error: "#ba1a1a",
+            "error-container": "#ffdad6"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            handwriting: ["Caveat", "cursive"]
+          }
+        }
+      }
+    }
+</script>
+<style>
+    /* Whiteboard Matrix Background */
+    .whiteboard-dots {
+      background-color: #F8F9FB;
+      background-image: radial-gradient(#CBD5E1 1.25px, transparent 1.25px);
+      background-size: 26px 26px;
+    }
+    
+    /* Modern Light Glassmorphism */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 10px 32px -4px rgba(108, 126, 170, 0.12), 0 2px 6px rgba(108, 126, 170, 0.04);
+    }
+    
+    .glass-panel-deep {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(26px) saturate(190%);
+      -webkit-backdrop-filter: blur(26px) saturate(190%);
+      border: 1.5px solid rgba(255, 255, 255, 0.98);
+      box-shadow: 0 20px 48px -8px rgba(108, 126, 170, 0.18), 0 4px 12px rgba(108, 126, 170, 0.06);
+    }
+
+    /* Pie Dial Sectors Interaction */
+    .sector-path {
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sector-path:hover {
+      filter: brightness(0.96);
+    }
+    .sector-path:active {
+      transform-origin: 130px 130px;
+      transform: scale(0.98);
+    }
+
+    /* Orbital arcs transition */
+    .orbital-layer {
+      transition: opacity 0.28s ease-out, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .orbital-layer.hidden-state {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.95) translateZ(0);
+      position: absolute;
+    }
+    .orbital-layer.active-state {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateZ(0);
+      position: absolute;
+    }
+
+    /* Touch highlight suppression & scrollbar */
+    ::-webkit-scrollbar { display: none; }
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+</style>
+</head>
+<body class="h-screen w-screen overflow-hidden whiteboard-dots font-sans text-on-surface relative select-none">
+<!-- ============================================================== -->
+<!-- 1. CENTRAL WORKING CANVAS (NO TOP HEADER - Completely Clean)  -->
+<!-- ============================================================== -->
+<main class="w-full h-full relative pointer-events-none">
+<!-- Sticky Note in Upper Left -->
+<div class="pointer-events-auto absolute top-6 left-7 w-72 p-4 rounded-2xl bg-[#FFFDF5]/95 backdrop-blur-md border border-[#FDE68A] shadow-lg transform -rotate-1 hover:rotate-0 transition-transform">
+<div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[#FEF08A]">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B] inline-block"></span>
+<span class="text-xs font-bold text-[#78350F]">Tiết 3: Khảo sát hàm số</span>
+</div>
+<span class="text-[11px] text-[#92400E] font-medium bg-white/80 px-2 py-0.5 rounded-full">09:30 AM</span>
+</div>
+<p class="font-handwriting text-xl text-[#1E2533] leading-snug">
+      • Dạng hàm bậc hai: <span class="font-bold text-[#B45309]">y = ax² + bx + c</span><br/>
+      • Tính đạo hàm f'(x) = 0 tìm cực trị.<br/>
+      • Yêu cầu học sinh vẽ bảng biến thiên vào tập!
+    </p>
+<div class="mt-2 flex items-center justify-between text-[11px] text-[#A16207]">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">edit_note</span> Thầy Nguyễn Bảo</span>
+<span class="font-semibold px-2 py-0.5 rounded bg-[#FEF3C7] border border-[#FDE68A]">Quan trọng ★</span>
+</div>
+</div>
+<!-- Realistic SVG Drawing Layer -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<filter height="120%" id="chalk-glow" width="120%" x="-10%" y="-10%">
+<fedropshadow dx="0" dy="2" flood-color="#6C7EAA" flood-opacity="0.18" stddeviation="2"></fedropshadow>
+</filter>
+<marker id="arrowhead" markerheight="7" markerwidth="9" orient="auto" refx="8" refy="3.5">
+<polygon fill="#6C7EAA" points="0 0, 9 3.5, 0 7"></polygon>
+</marker>
+</defs>
+<!-- Triangle ABC with Altitude -->
+<g filter="url(#chalk-glow)" transform="translate(110, 200)">
+<path d="M 60 215 A 35 35 0 0 0 88 185" fill="none" stroke="#366758" stroke-linecap="round" stroke-width="2.5"></path>
+<path d="M 50 230 A 55 55 0 0 0 100 175" fill="none" opacity="0.45" stroke="#B5EAD7" stroke-linecap="round" stroke-width="8"></path>
+<text class="font-handwriting font-bold" fill="#366758" font-size="20" x="75" y="210">α = 60°</text>
+<polygon fill="rgba(182, 235, 216, 0.12)" points="40,240 280,240 180,60" stroke="#6C7EAA" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></polygon>
+<line stroke="#75777f" stroke-dasharray="5 5" stroke-width="2" x1="180" x2="180" y1="60" y2="240"></line>
+<rect fill="none" height="12" stroke="#75777f" stroke-width="1.5" width="12" x="180" y="228"></rect>
+<text class="font-handwriting font-bold" fill="#545b73" font-size="20" x="186" y="160">h = 4√3</text>
+<text class="font-handwriting font-bold" fill="#191c1e" font-size="26" x="175" y="45">A (đỉnh)</text>
+<text class="font-handwriting font-bold" fill="#191c1e" font-size="26" x="18" y="260">B</text>
+<text class="font-handwriting font-bold" fill="#191c1e" font-size="26" x="290" y="260">C</text>
+<text class="font-handwriting font-bold" fill="#6C7EAA" font-size="20" x="145" y="268">đáy a = 8 cm</text>
+</g>
+<!-- Parabola formula & Coordinates -->
+<g transform="translate(430, 60)">
+<rect fill="#FFDAC1" height="24" opacity="0.65" rx="5" transform="rotate(-1 -10 20)" width="260" x="-10" y="20"></rect>
+<rect fill="#B5EAD7" height="26" opacity="0.55" rx="5" transform="rotate(0.5 -10 70)" width="290" x="-10" y="70"></rect>
+<text class="font-handwriting font-bold" fill="#191c1e" font-size="34" letter-spacing="1" x="0" y="40">
+        (P): y = x² + 2x - 3
+      </text>
+<text class="font-handwriting font-bold" fill="#6C7EAA" font-size="30" letter-spacing="1" x="0" y="94">
+        f'(x) = 2x + 2 = 0 ⟹ x = -1
+      </text>
+<rect fill="white" height="36" rx="10" stroke="#c5c6cf" stroke-width="1.5" width="210" x="0" y="118"></rect>
+<text class="font-sans font-semibold" fill="#366758" font-size="14" x="12" y="141">
+        Đỉnh Parabol: I(-1; -4)
+      </text>
+</g>
+<!-- Parabola Plot -->
+<g filter="url(#chalk-glow)" transform="translate(620, 240)">
+<line marker-end="url(#arrowhead)" stroke="#75777f" stroke-width="2" x1="0" x2="260" y1="110" y2="110"></line>
+<line marker-end="url(#arrowhead)" stroke="#75777f" stroke-width="2" x1="110" x2="110" y1="220" y2="10"></line>
+<text class="font-handwriting font-bold" fill="#44464e" font-size="18" x="264" y="115">x</text>
+<text class="font-handwriting font-bold" fill="#44464e" font-size="18" x="114" y="15">y</text>
+<text class="font-handwriting font-bold" fill="#75777f" font-size="16" x="96" y="126">O</text>
+<path d="M 40 30 Q 95 185 150 30" fill="none" stroke="#6C7EAA" stroke-linecap="round" stroke-width="3.5"></path>
+<circle cx="95" cy="162" fill="#ba1a1a" r="4.5"></circle>
+<text class="font-handwriting font-bold" fill="#ba1a1a" font-size="16" x="105" y="170">I(-1; -4)</text>
+<line stroke="#FFB7B2" stroke-dasharray="4 4" stroke-width="1.8" x1="95" x2="95" y1="200" y2="40"></line>
+</g>
+</svg>
+</main>
+<!-- ============================================================== -->
+<!-- 2. CỤM 1: FLOATING PIE DIAL & ORBITAL ARC MENU                 -->
+<!-- ============================================================== -->
+<div class="fixed top-[45px] right-[40px] w-[680px] h-[660px] pointer-events-none z-30 select-none flex flex-col items-center justify-start">
+<!-- QUICK STATE SWITCHER BAR (Thanh chuyển nhanh trạng thái Orbitals) -->
+<div class="glass-panel-deep px-3 py-1.5 rounded-full shadow-lg border border-white/90 pointer-events-auto flex items-center gap-1.5 mb-5">
+<button class="h-8 px-3 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-md bg-brand text-white shadow-brand/30" id="tab-btn-pen" onclick="switchOrbitalState('pen')">
+<span class="material-symbols-outlined text-[16px]">draw</span>
+<span>1. Bút viết</span>
+</button>
+<button class="h-8 px-3 rounded-full text-xs font-semibold text-on-surface hover:bg-white transition-all flex items-center gap-1.5" id="tab-btn-eraser" onclick="switchOrbitalState('eraser')">
+<span class="material-symbols-outlined text-[16px]">ink_eraser</span>
+<span>2. Tẩy</span>
+</button>
+<button class="h-8 px-3 rounded-full text-xs font-semibold text-on-surface hover:bg-white transition-all flex items-center gap-1.5" id="tab-btn-select" onclick="switchOrbitalState('select')">
+<span class="material-symbols-outlined text-[16px]">select_all</span>
+<span>3. Chọn vùng &amp; AI</span>
+</button>
+<button class="h-8 px-3 rounded-full text-xs font-semibold text-on-surface hover:bg-white transition-all flex items-center gap-1.5" id="tab-btn-shapes" onclick="switchOrbitalState('shapes')">
+<span class="material-symbols-outlined text-[16px]">category</span>
+<span>4. Hình học</span>
+</button>
+</div>
+<!-- CORE DIAL + ORBITAL WRAPPER -->
+<div class="relative w-[600px] h-[450px] flex items-center justify-center pointer-events-none">
+<!-- CENTRAL 6-SECTOR PIE DIAL (R=130px -> Diameter 260px) -->
+<div class="relative w-[260px] h-[260px] rounded-full glass-panel-deep shadow-2xl p-0 border-2 border-white pointer-events-auto flex items-center justify-center z-20">
+<svg class="absolute inset-0 w-full h-full rounded-full pointer-events-auto" viewbox="0 0 260 260">
+<defs>
+<filter height="130%" id="pie-shadow" width="130%" x="-15%" y="-15%">
+<fedropshadow dx="0" dy="4" flood-color="#495b85" flood-opacity="0.12" stddeviation="6"></fedropshadow>
+</filter>
+</defs>
+<!-- Múi 1: Bút viết (Top-Left: 270° to 330°) -->
+<path class="sector-path" d="M 130 130 L 17.43 65 A 130 130 0 0 1 130 0 Z" fill="#6C7EAA" id="wedge-pen" onclick="switchOrbitalState('pen')" opacity="0.92" stroke="rgba(255,255,255,0.95)" stroke-width="2.5"></path>
+<!-- Múi 2: Tẩy (Top-Right: 330° to 30°) -->
+<path class="sector-path" d="M 130 130 L 130 0 A 130 130 0 0 1 242.57 65 Z" fill="#F8FAFC" id="wedge-eraser" onclick="switchOrbitalState('eraser')" opacity="1" stroke="rgba(255,255,255,0.95)" stroke-width="2.5"></path>
+<!-- Múi 3: Chọn vùng (Right-Bottom: 30° to 90°) -->
+<path class="sector-path" d="M 130 130 L 242.57 65 A 130 130 0 0 1 242.57 195 Z" fill="#F8FAFC" id="wedge-select" onclick="switchOrbitalState('select')" opacity="1" stroke="rgba(255,255,255,0.95)" stroke-width="2.5"></path>
+<!-- Múi 4: Hình học (Bottom: 90° to 150°) -->
+<path class="sector-path" d="M 130 130 L 242.57 195 A 130 130 0 0 1 130 260 Z" fill="#F8FAFC" id="wedge-shapes" onclick="switchOrbitalState('shapes')" opacity="1" stroke="rgba(255,255,255,0.95)" stroke-width="2.5"></path>
+<!-- Múi 5: Hoàn tác (Left-Bottom: 150° to 210°) -->
+<path class="sector-path" d="M 130 130 L 130 260 A 130 130 0 0 1 17.43 195 Z" fill="#F8FAFC" id="wedge-undo" stroke="rgba(255,255,255,0.95)" stroke-width="2.5"></path>
+<!-- Múi 6: Làm lại (Left-Top: 210° to 270°) -->
+<path class="sector-path" d="M 130 130 L 17.43 195 A 130 130 0 0 1 17.43 65 Z" fill="#F8FAFC" id="wedge-redo" stroke="rgba(255,255,255,0.95)" stroke-width="2.5"></path>
+</svg>
+<!-- Sector Overlay Buttons -->
+<!-- Múi 1: Bút viết -->
+<button class="absolute top-[32px] left-[34px] w-20 flex flex-col items-center justify-center text-white pointer-events-auto transition-transform active:scale-95" id="wedge-btn-pen" onclick="switchOrbitalState('pen')" title="Bút viết">
+<span class="material-symbols-outlined text-[24px]">draw</span>
+<span class="text-[11px] font-bold mt-0.5 leading-tight tracking-tight">Bút viết</span>
+</button>
+<!-- Múi 2: Tẩy -->
+<button class="absolute top-[32px] right-[34px] w-20 flex flex-col items-center justify-center text-on-surface pointer-events-auto transition-transform active:scale-95" id="wedge-btn-eraser" onclick="switchOrbitalState('eraser')" title="Tẩy">
+<span class="material-symbols-outlined text-[24px]">ink_eraser</span>
+<span class="text-[11px] font-bold mt-0.5 leading-tight tracking-tight">Tẩy</span>
+</button>
+<!-- Múi 3: Chọn vùng -->
+<button class="absolute top-[96px] right-[4px] w-20 flex flex-col items-center justify-center text-on-surface pointer-events-auto transition-transform active:scale-95" id="wedge-btn-select" onclick="switchOrbitalState('select')" title="Chọn vùng">
+<span class="material-symbols-outlined text-[24px]">select_all</span>
+<span class="text-[11px] font-bold mt-0.5 leading-tight tracking-tight">Chọn vùng</span>
+</button>
+<!-- Múi 4: Hình học -->
+<button class="absolute bottom-[32px] right-[34px] w-20 flex flex-col items-center justify-center text-on-surface pointer-events-auto transition-transform active:scale-95" id="wedge-btn-shapes" onclick="switchOrbitalState('shapes')" title="Hình học">
+<span class="material-symbols-outlined text-[24px]">category</span>
+<span class="text-[11px] font-bold mt-0.5 leading-tight tracking-tight">Hình học</span>
+</button>
+<!-- Múi 5: Hoàn tác -->
+<button class="absolute bottom-[32px] left-[34px] w-20 flex flex-col items-center justify-center text-on-surface hover:text-brand pointer-events-auto transition-transform active:scale-95" id="wedge-btn-undo" title="Hoàn tác">
+<span class="material-symbols-outlined text-[24px]">undo</span>
+<span class="text-[11px] font-bold mt-0.5 leading-tight tracking-tight">Hoàn tác</span>
+</button>
+<!-- Múi 6: Làm lại -->
+<button class="absolute top-[96px] left-[4px] w-20 flex flex-col items-center justify-center text-on-surface hover:text-brand pointer-events-auto transition-transform active:scale-95" id="wedge-btn-redo" title="Làm lại">
+<span class="material-symbols-outlined text-[24px]">redo</span>
+<span class="text-[11px] font-bold mt-0.5 leading-tight tracking-tight">Làm lại</span>
+</button>
+<!-- Center Hub Grip (60px) with 6-dot move icon -->
+<div class="relative z-30 w-16 h-16 rounded-full bg-white shadow-xl border-2 border-brand/40 flex items-center justify-center cursor-move active:scale-95 transition-transform" title="Kéo để di chuyển • Chạm thu gọn">
+<span class="material-symbols-outlined text-[26px] text-brand">drag_indicator</span>
+</div>
+</div>
+<!-- HINT PILL BELOW DIAL -->
+<div class="absolute -bottom-8 pointer-events-auto bg-white/95 backdrop-blur-md text-on-surface font-semibold text-[11px] px-3.5 py-1 rounded-full shadow-md border border-white flex items-center gap-1.5" id="dial-tip-pill">
+<span class="w-1.5 h-1.5 rounded-full" style="background-color: #6C7EAA"></span>
+<span>Kéo để di chuyển • Chạm thu gọn</span>
+</div>
+<!-- 4 ORBITAL ARC STATES -->
+<!-- STATE 1: BÚT VIẾT -->
+<div class="orbital-layer inset-0 w-full h-full pointer-events-none active-state" id="orbital-state-pen">
+<!-- LEFT ARC: Curved Slider for Stroke Thickness (2px - 16px) -->
+<div class="absolute left-[30px] top-[75px] w-32 h-[300px] pointer-events-auto flex flex-col items-center justify-between py-1">
+<div class="glass-card px-3 py-1 rounded-full flex items-center gap-1.5 shadow-md border border-white">
+<span class="w-3 h-3 rounded-full bg-brand"></span>
+<span class="text-xs font-bold text-brand">6 px</span>
+</div>
+<div class="relative w-20 h-44 flex items-center justify-center">
+<svg class="w-full h-full" viewbox="0 0 80 180">
+<path d="M 65 15 A 155 155 0 0 0 65 165" fill="none" stroke="#E2E8F0" stroke-linecap="round" stroke-width="8"></path>
+<path d="M 65 15 A 155 155 0 0 0 54 85" fill="none" stroke="#6C7EAA" stroke-linecap="round" stroke-width="8"></path>
+<circle cx="65" cy="20" fill="#94A3B8" r="2.5"></circle>
+<circle cx="58" cy="50" fill="#94A3B8" r="3.5"></circle>
+<circle cx="54" cy="85" fill="#6C7EAA" r="5"></circle>
+<circle cx="56" cy="120" fill="#94A3B8" r="6"></circle>
+<circle cx="62" cy="150" fill="#94A3B8" r="7.5"></circle>
+<circle cx="68" cy="165" fill="#94A3B8" r="9"></circle>
+<circle cx="54" cy="85" fill="white" filter="url(#pie-shadow)" r="13" stroke="#6C7EAA" stroke-width="3"></circle>
+<circle cx="54" cy="85" fill="#6C7EAA" r="4.5"></circle>
+</svg>
+</div>
+<div class="glass-card px-3 py-1.5 rounded-xl flex flex-col items-center gap-1 border border-white shadow-sm">
+<span class="text-[10px] text-on-surface-variant font-medium">Nét vẽ mượt</span>
+<div class="w-16 h-1.5 bg-brand rounded-full"></div>
+</div>
+</div>
+<!-- RIGHT ARC - INNER RING: 6 Pen Types -->
+<div class="absolute right-[110px] top-[50px] h-[350px] w-36 pointer-events-auto flex flex-col justify-between items-start py-1">
+<button class="h-9 px-3 rounded-full bg-brand text-white text-xs font-bold shadow-md shadow-brand/30 border border-white flex items-center gap-1.5 active:scale-95 transition-all translate-x-1">
+<span class="material-symbols-outlined text-[17px]">brush</span>
+<span>Bút thường</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-1.5 active:scale-95 transition-all translate-x-4">
+<span class="material-symbols-outlined text-[17px] text-tertiary">history_edu</span>
+<span>Bút học</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-1.5 active:scale-95 transition-all translate-x-5">
+<span class="material-symbols-outlined text-[17px] text-secondary">auto_fix_high</span>
+<span>Bút AI</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-1.5 active:scale-95 transition-all translate-x-5">
+<span class="material-symbols-outlined text-[17px] text-outline">stylus_note</span>
+<span>Bút đơn giản</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-1.5 active:scale-95 transition-all translate-x-4">
+<span class="material-symbols-outlined text-[17px] text-amber-500">format_paint</span>
+<span>Marker</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-1.5 active:scale-95 transition-all translate-x-1">
+<span class="material-symbols-outlined text-[17px] text-rose-500">theater_comedy</span>
+<span>Mask Pen</span>
+</button>
+</div>
+<!-- RIGHT ARC - OUTER RING: Pastel Colors + Palette Popover -->
+<div class="absolute right-[20px] top-[40px] h-[370px] w-14 pointer-events-auto flex flex-col items-center justify-between py-1">
+<button class="w-8 h-8 rounded-full p-0.5 ring-2 ring-brand ring-offset-2 ring-offset-white shadow-md active:scale-110 transition-transform bg-[#6C7EAA]" title="#6C7EAA (Đang chọn)"></button>
+<button class="w-7 h-7 rounded-full shadow-sm active:scale-110 transition-transform bg-[#FFB7B2] border border-white translate-x-1.5" title="Pastel Hồng"></button>
+<button class="w-7 h-7 rounded-full shadow-sm active:scale-110 transition-transform bg-[#FFDAC1] border border-white translate-x-2.5" title="Pastel Cam Vàng"></button>
+<button class="w-7 h-7 rounded-full shadow-sm active:scale-110 transition-transform bg-[#E2F0CB] border border-white translate-x-3" title="Pastel Cốm"></button>
+<button class="w-7 h-7 rounded-full shadow-sm active:scale-110 transition-transform bg-[#B5EAD7] border border-white translate-x-2.5" title="Pastel Ngọc Bích"></button>
+<button class="w-7 h-7 rounded-full shadow-sm active:scale-110 transition-transform bg-[#C7CEEA] border border-white translate-x-1.5" title="Pastel Lam"></button>
+<button class="w-7 h-7 rounded-full shadow-sm active:scale-110 transition-transform bg-[#CFE2F3] border border-white" title="Pastel Băng"></button>
+<button class="w-9 h-9 rounded-full glass-panel-deep flex items-center justify-center text-brand shadow-md hover:bg-white active:scale-110 transition-transform border border-white -translate-x-1" onclick="toggleColorPopover()" title="Bảng 16 màu mở rộng">
+<span class="material-symbols-outlined text-[19px]">palette</span>
+</button>
+</div>
+<!-- 16-Pastel Color Grid Popover -->
+<div class="hidden absolute right-[-170px] top-[140px] w-56 glass-panel-deep p-3.5 rounded-2xl shadow-2xl border border-white pointer-events-auto z-40 transition-all" id="palette-popover">
+<div class="flex items-center justify-between pb-1.5 mb-2 border-b border-surface-container-high">
+<span class="text-xs font-bold text-on-surface">Màu Pastel (16 màu)</span>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="toggleColorPopover()">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<div class="grid grid-cols-4 gap-1.5 mb-2.5">
+<div class="w-8 h-8 rounded-lg bg-[#6C7EAA] ring-2 ring-brand ring-offset-1 flex items-center justify-center cursor-pointer shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-white">check</span>
+</div>
+<div class="w-8 h-8 rounded-lg bg-[#FFB7B2] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#FFDAC1] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#E2F0CB] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#B5EAD7] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#C7CEEA] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#CFE2F3] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#D0F4DE] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#A9DEF9] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#E4C1F9] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#FEE1E8] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#FFE5D9] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#334155] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#64748B] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#94A3B8] cursor-pointer hover:scale-105 transition-transform border border-white"></div>
+<div class="w-8 h-8 rounded-lg bg-[#F8FAFC] cursor-pointer hover:scale-105 transition-transform border border-slate-300"></div>
+</div>
+<div class="flex items-center gap-1.5 mb-2.5">
+<span class="text-[11px] font-semibold text-on-surface-variant">HEX:</span>
+<input class="h-7 w-full px-2 text-xs font-mono font-bold bg-white rounded-lg border border-outline-variant/60 focus:outline-none focus:border-brand" type="text" value="#6C7EAA"/>
+</div>
+<div class="flex items-center justify-between gap-1 text-[11px]">
+<button class="px-2.5 py-1 rounded-lg bg-surface-container hover:bg-white text-on-surface font-semibold shadow-sm">Đặt lại</button>
+<button class="px-3 py-1 rounded-lg bg-brand text-white font-bold shadow-md shadow-brand/25" onclick="toggleColorPopover()">Áp dụng</button>
+<button class="px-2.5 py-1 rounded-lg hover:bg-white text-on-surface-variant font-medium" onclick="toggleColorPopover()">Đóng</button>
+</div>
+</div>
+</div>
+<!-- STATE 2: TẨY -->
+<div class="orbital-layer inset-0 w-full h-full pointer-events-none hidden-state" id="orbital-state-eraser">
+<!-- LEFT ARC: Eraser Size Slider (24px) + Dashed Diameter Preview -->
+<div class="absolute left-[20px] top-[70px] w-36 h-[310px] pointer-events-auto flex flex-col items-center justify-between py-1">
+<div class="glass-card px-3 py-1 rounded-full flex items-center gap-1.5 shadow-md border border-white">
+<span class="w-2.5 h-2.5 rounded-full bg-[#EF6C57]"></span>
+<span class="text-xs font-bold text-[#EF6C57]">Cỡ tẩy: 24 px</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative w-16 h-40 flex items-center justify-center">
+<svg class="w-full h-full" viewbox="0 0 64 160">
+<path d="M 52 15 A 140 140 0 0 0 52 145" fill="none" stroke="#E2E8F0" stroke-linecap="round" stroke-width="8"></path>
+<path d="M 52 15 A 140 140 0 0 0 42 75" fill="none" stroke="#EF6C57" stroke-linecap="round" stroke-width="8"></path>
+<circle cx="42" cy="75" fill="white" filter="url(#pie-shadow)" r="12" stroke="#EF6C57" stroke-width="3"></circle>
+<circle cx="42" cy="75" fill="#EF6C57" r="4"></circle>
+</svg>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-14 h-14 rounded-full border-2 border-dashed border-[#EF6C57] bg-[#EF6C57]/10 flex items-center justify-center animate-pulse">
+<span class="material-symbols-outlined text-[20px] text-[#EF6C57]">close</span>
+</div>
+<span class="text-[10px] text-on-surface-variant font-bold">Vùng xóa</span>
+</div>
+</div>
+<div class="glass-card px-3 py-1 rounded-full text-[11px] text-on-surface-variant font-medium border border-white">
+          Kéo để tăng cỡ (24-40px)
+        </div>
+</div>
+<!-- RIGHT ARC: 3 Large Curved Eraser Function Pills -->
+<div class="absolute right-[40px] top-[75px] h-[300px] w-52 pointer-events-auto flex flex-col justify-around items-start">
+<button class="h-12 px-4 rounded-2xl glass-panel-deep hover:bg-white text-on-surface text-xs font-bold shadow-md flex items-center gap-3 border border-white active:scale-95 transition-all translate-x-2">
+<div class="w-8 h-8 rounded-xl bg-orange-100 text-[#EF6C57] flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[20px]">gesture</span>
+</div>
+<div class="text-left">
+<div>Xóa từng nét</div>
+<span class="text-[10px] text-on-surface-variant font-normal">Stroke Eraser</span>
+</div>
+</button>
+<button class="h-12 px-4 rounded-2xl glass-panel-deep hover:bg-white text-on-surface text-xs font-bold shadow-md flex items-center gap-3 border border-white active:scale-95 transition-all translate-x-5">
+<div class="w-8 h-8 rounded-xl bg-orange-100 text-[#EF6C57] flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[20px]">lens_blur</span>
+</div>
+<div class="text-left">
+<div>Xóa theo điểm</div>
+<span class="text-[10px] text-on-surface-variant font-normal">Point Eraser</span>
+</div>
+</button>
+<button class="h-12 px-4 rounded-2xl bg-[#FEE2E2]/95 hover:bg-[#FEE2E2] text-[#DC2626] text-xs font-bold shadow-md flex items-center gap-3 border border-red-200 active:scale-95 transition-all translate-x-2">
+<div class="w-8 h-8 rounded-xl bg-white text-[#DC2626] flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[20px]">delete_sweep</span>
+</div>
+<div class="text-left">
+<div>Xóa toàn bộ</div>
+<span class="text-[10px] text-[#DC2626]/80 font-normal">Clear All Canvas</span>
+</div>
+</button>
+</div>
+</div>
+<!-- STATE 3: CHỌN VÙNG & AI -->
+<div class="orbital-layer hidden-state inset-0 w-full h-full pointer-events-none" id="orbital-state-select">
+<!-- LEFT ARC: Selection Tools -->
+<div class="absolute left-[25px] top-[90px] h-[260px] w-40 pointer-events-auto flex flex-col justify-between items-center">
+<button class="h-11 px-4 rounded-2xl bg-[#4F46E5] text-white text-xs font-bold shadow-md flex items-center gap-2 border border-white active:scale-95 transition-all -translate-x-1">
+<span class="material-symbols-outlined text-[19px]">crop_free</span>
+<span>Chữ nhật</span>
+</button>
+<button class="h-11 px-4 rounded-2xl glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 active:scale-95 transition-all -translate-x-3">
+<span class="material-symbols-outlined text-[19px] text-[#4F46E5]">gesture</span>
+<span>Tự do (Lasso)</span>
+</button>
+<button class="h-11 px-4 rounded-2xl glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 active:scale-95 transition-all -translate-x-1">
+<span class="material-symbols-outlined text-[19px] text-amber-500">magic_button</span>
+<span>Đũa phép</span>
+</button>
+</div>
+<!-- RIGHT ARC: AI Intelligent Actions -->
+<div class="absolute right-[20px] top-[50px] h-[340px] w-56 pointer-events-auto flex flex-col justify-between items-start">
+<button class="h-10 px-4 rounded-2xl glass-panel-deep hover:bg-white text-on-surface text-xs font-bold shadow-sm flex items-center gap-2 border border-white active:scale-95 transition-all translate-x-1">
+<span class="material-symbols-outlined text-[18px] text-[#4F46E5]">text_fields</span>
+<span>OCR chữ viết tay</span>
+</button>
+<button class="h-10 px-4 rounded-2xl glass-panel-deep hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 border border-white active:scale-95 transition-all translate-x-4">
+<span class="material-symbols-outlined text-[18px] text-blue-500">translate</span>
+<span>Dịch văn bản (Bing)</span>
+</button>
+<button class="h-10 px-4 rounded-2xl glass-panel-deep hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 border border-white active:scale-95 transition-all translate-x-6">
+<span class="material-symbols-outlined text-[18px] text-purple-500">volume_up</span>
+<span>Đọc to văn bản</span>
+</button>
+<button class="h-10 px-4 rounded-2xl glass-panel-deep hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 border border-white active:scale-95 transition-all translate-x-4">
+<span class="material-symbols-outlined text-[18px] text-amber-600">travel_explore</span>
+<span>Tìm kiếm Google</span>
+</button>
+<button class="h-10 px-4 rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#312E81] text-white text-xs font-bold shadow-lg flex items-center gap-2 border border-white active:scale-95 transition-all translate-x-1">
+<span class="material-symbols-outlined text-[18px] text-amber-300">smart_toy</span>
+<span>Hỏi AI về nội dung</span>
+</button>
+</div>
+</div>
+<!-- STATE 4: HÌNH HỌC -->
+<div class="orbital-layer hidden-state inset-0 w-full h-full pointer-events-none" id="orbital-state-shapes">
+<!-- LEFT ARC: 2D vs 3D Mode Toggle Pill -->
+<div class="absolute left-[35px] top-[140px] w-28 pointer-events-auto flex flex-col items-center gap-2">
+<div class="glass-panel-deep p-1.5 rounded-2xl shadow-lg border border-white flex flex-col gap-1.5 w-full">
+<button class="h-10 rounded-xl bg-[#7C3AED] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5" id="shape-tab-2d" onclick="toggleShapeDimension('2d')">
+<span class="material-symbols-outlined text-[18px]">shapes</span>
+<span>2D</span>
+</button>
+<button class="h-10 rounded-xl hover:bg-white text-on-surface font-semibold text-xs transition-all flex items-center justify-center gap-1.5" id="shape-tab-3d" onclick="toggleShapeDimension('3d')">
+<span class="material-symbols-outlined text-[18px] text-tertiary">view_in_ar</span>
+<span>3D</span>
+</button>
+</div>
+<span class="text-[10px] font-bold text-[#7C3AED] bg-white/95 px-2.5 py-0.5 rounded-full shadow-sm">Chế độ hình</span>
+</div>
+<!-- RIGHT ARC: Shape Selection (2D Set) -->
+<div class="absolute right-[10px] top-[30px] h-[390px] w-52 pointer-events-auto flex flex-col justify-between items-start py-1" id="shapes-2d-set">
+<button class="h-9 px-3 rounded-full bg-[#7C3AED] text-white text-xs font-bold shadow-md shadow-brand/25 flex items-center gap-2 border border-white active:scale-95 transition-all translate-x-3 hover:translate-x-4">
+<span class="material-symbols-outlined text-[17px]">horizontal_rule</span>
+<span>Đường thẳng</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 active:scale-95 transition-all translate-x-6 hover:translate-x-7">
+<span class="material-symbols-outlined text-[17px] text-[#7C3AED]">trending_flat</span>
+<span>Mũi tên</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 active:scale-95 transition-all translate-x-8 hover:translate-x-9">
+<span class="material-symbols-outlined text-[17px] text-outline">more_horiz</span>
+<span>Nét đứt</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 active:scale-95 transition-all translate-x-9 hover:translate-x-10">
+<span class="material-symbols-outlined text-[17px] text-[#7C3AED]">radio_button_unchecked</span>
+<span>Hình tròn</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 active:scale-95 transition-all translate-x-8 hover:translate-x-9">
+<span class="material-symbols-outlined text-[17px] text-[#7C3AED]">change_history</span>
+<span>Tam giác</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 active:scale-95 transition-all translate-x-6 hover:translate-x-7">
+<span class="material-symbols-outlined text-[17px] text-[#7C3AED]">crop_square</span>
+<span>Hình vuông</span>
+</button>
+<button class="h-9 px-3 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center gap-2 active:scale-95 transition-all translate-x-3 hover:translate-x-4">
+<span class="material-symbols-outlined text-[17px] text-[#7C3AED]">rectangle</span>
+<span>Hình chữ nhật</span>
+</button>
+</div>
+<!-- RIGHT ARC: Shape Selection (3D Set) -->
+<div class="hidden absolute right-[10px] top-[40px] h-[370px] w-52 pointer-events-auto flex flex-col justify-between items-start py-1" id="shapes-3d-set">
+<button class="h-9 px-3.5 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center justify-between w-44 active:scale-95 transition-all translate-x-3 hover:translate-x-4">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[17px] text-[#7C3AED]">deployed_code</span>Lập phương</span>
+<span class="text-[9px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">lock</span>PRO</span>
+</button>
+<button class="h-9 px-3.5 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center justify-between w-44 active:scale-95 transition-all translate-x-6 hover:translate-x-7">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[17px] text-[#7C3AED]">globe</span>Hình cầu</span>
+<span class="text-[9px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">lock</span>PRO</span>
+</button>
+<button class="h-9 px-3.5 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center justify-between w-44 active:scale-95 transition-all translate-x-8 hover:translate-x-9">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[17px] text-[#7C3AED]">radar</span>Hình chóp</span>
+<span class="text-[9px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">lock</span>PRO</span>
+</button>
+<button class="h-9 px-3.5 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center justify-between w-44 active:scale-95 transition-all translate-x-8 hover:translate-x-9">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[17px] text-[#7C3AED]">database</span>Hình trụ</span>
+<span class="text-[9px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">lock</span>PRO</span>
+</button>
+<button class="h-9 px-3.5 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center justify-between w-44 active:scale-95 transition-all translate-x-6 hover:translate-x-7">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[17px] text-[#7C3AED]">e999</span>Hình nón</span>
+<span class="text-[9px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">lock</span>PRO</span>
+</button>
+<button class="h-9 px-3.5 rounded-full glass-card hover:bg-white text-on-surface text-xs font-semibold shadow-sm flex items-center justify-between w-44 active:scale-95 transition-all translate-x-3 hover:translate-x-4">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[17px] text-[#7C3AED]">view_in_ar</span>Lăng trụ</span>
+<span class="text-[9px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">lock</span>PRO</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- ============================================================== -->
+<!-- 3. CỤM 2: BOTTOM-LEFT EXPANDABLE DOCK                          -->
+<!-- ============================================================== -->
+<div class="fixed bottom-4 left-5 z-40 flex items-end gap-3 pointer-events-auto" id="bottom-dock-container">
+<!-- Corner Launcher Button (60px) -->
+<div class="relative group">
+<button class="w-14 h-14 rounded-2xl bg-brand hover:bg-brand-dark text-white shadow-xl shadow-brand/35 flex items-center justify-center border-2 border-white active:scale-95 transition-all" onclick="toggleDockExpand()" title="Menu SmartClass">
+<span class="material-symbols-outlined text-[28px]">apps</span>
+</button>
+<div class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white animate-pulse" title="Hệ thống sẵn sàng"></div>
+</div>
+<!-- TẦNG 1: CỘT MENU DỌC (5 mục) -->
+<div class="flex flex-col gap-1.5 glass-panel-deep p-2 rounded-2xl shadow-xl border border-white min-w-[175px]" id="dock-vertical-nav">
+<!-- 1. ➕ Chèn nội dung -->
+<button class="h-10 px-3.5 rounded-xl bg-brand text-white font-bold text-xs flex items-center gap-2.5 shadow-md active:scale-95 transition-all text-left relative" id="dock-nav-insert" onclick="setDockState('insert')">
+<span class="material-symbols-outlined text-[20px]">add_box</span>
+<span>Chèn nội dung</span>
+<span class="w-1.5 h-1.5 rounded-full bg-white ml-auto"></span>
+</button>
+<!-- 2. 🪟 Desktop -->
+<button class="h-10 px-3.5 rounded-xl hover:bg-white text-on-surface font-bold text-xs flex items-center gap-2.5 active:scale-95 transition-all text-left" id="dock-nav-desktop" onclick="handleDesktopMode()">
+<span class="material-symbols-outlined text-[20px] text-brand">desktop_windows</span>
+<span class="tracking-wider">DESKTOP</span>
+</button>
+<!-- 3. 📖 Smart Class -->
+<button class="h-10 px-3.5 rounded-xl hover:bg-white text-on-surface font-bold text-xs flex items-center gap-2.5 active:scale-95 transition-all text-left" id="dock-nav-smartclass" onclick="handleSmartClassMode()">
+<span class="material-symbols-outlined text-[20px] text-emerald-600">school</span>
+<span class="tracking-wider">SMART CLASS</span>
+</button>
+<!-- 4. ⋮ Mở rộng -->
+<button class="h-10 px-3.5 rounded-xl hover:bg-white text-on-surface font-semibold text-xs flex items-center gap-2.5 active:scale-95 transition-all text-left relative" id="dock-nav-expand" onclick="setDockState('expand')">
+<span class="material-symbols-outlined text-[20px] text-outline">more_horiz</span>
+<span>Mở rộng</span>
+<span class="w-1.5 h-1.5 rounded-full bg-brand ml-auto hidden indicator-dot"></span>
+</button>
+<div class="h-px bg-outline-variant/40 my-0.5"></div>
+<!-- 5. ❌ Thoát -->
+<button class="h-10 px-3.5 rounded-xl bg-[#FEE2E2]/80 hover:bg-[#FEE2E2] text-[#DC2626] font-bold text-xs flex items-center gap-2.5 border border-red-200 active:scale-95 transition-all text-left" id="dock-nav-exit" onclick="openExitModal()">
+<span class="material-symbols-outlined text-[20px]">power_settings_new</span>
+<span>Thoát</span>
+</button>
+</div>
+<!-- TẦNG 2: HỆ THỐNG XỔ NGANG (Horizontal Flyout) -->
+<div class="flex flex-col gap-2 max-w-[calc(100vw-520px)]" id="dock-flyout-wrapper">
+<!-- STATE A: CHÈN NỘI DUNG (Mặc định hiển thị) -->
+<div class="flex flex-col gap-2 transition-all duration-200" id="panel-insert-content">
+<!-- Hàng tab danh mục 6 nhóm -->
+<div class="glass-panel-deep px-3 py-1.5 rounded-2xl shadow-lg flex items-center gap-1.5 border border-white overflow-x-auto">
+<button class="h-9 px-3.5 rounded-xl bg-brand text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-brand/25 active:scale-95 transition-all whitespace-nowrap" id="insert-tab-1" onclick="setInsertSubTab(1)">
+<span class="material-symbols-outlined text-[18px]">architecture</span>
+<span>4.1 Công cụ vẽ</span>
+</button>
+<button class="h-9 px-3 rounded-xl hover:bg-white text-on-surface-variant text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all whitespace-nowrap" id="insert-tab-2" onclick="setInsertSubTab(2)">
+<span class="material-symbols-outlined text-[18px]">text_fields</span>
+<span>4.2 Nội dung cơ bản</span>
+</button>
+<button class="h-9 px-3 rounded-xl hover:bg-white text-on-surface-variant text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all whitespace-nowrap" id="insert-tab-3" onclick="setInsertSubTab(3)">
+<span class="material-symbols-outlined text-[18px]">ssid_chart</span>
+<span>4.3 Biểu đồ &amp; Đồ thị</span>
+</button>
+<button class="h-9 px-3 rounded-xl hover:bg-white text-on-surface-variant text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all whitespace-nowrap" id="insert-tab-4" onclick="setInsertSubTab(4)">
+<span class="material-symbols-outlined text-[18px]">science</span>
+<span>4.4 Môn học</span>
+</button>
+<button class="h-9 px-3 rounded-xl hover:bg-white text-on-surface-variant text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all whitespace-nowrap" id="insert-tab-5" onclick="setInsertSubTab(5)">
+<span class="material-symbols-outlined text-[18px]">memory</span>
+<span>4.5 Công nghệ</span>
+</button>
+<button class="h-9 px-3 rounded-xl hover:bg-white text-on-surface-variant text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all whitespace-nowrap" id="insert-tab-6" onclick="setInsertSubTab(6)">
+<span class="material-symbols-outlined text-[18px] text-emerald-600">psychology</span>
+<span>4.6 AI &amp; Trợ lý</span>
+</button>
+</div>
+<!-- Hàng công cụ bên dưới tương ứng từng tab -->
+<div class="glass-card px-3 py-2 rounded-2xl shadow-md border border-white overflow-x-auto">
+<!-- Sub-Group 4.1: Công cụ vẽ -->
+<div class="flex items-center gap-2.5 whitespace-nowrap" id="subgroup-1">
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">straighten</span>
+</div>
+<span class="text-xs font-semibold">Thước kẻ</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">circle</span>
+</div>
+<span class="text-xs font-semibold">Compa</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">change_history</span>
+</div>
+<span class="text-xs font-semibold">Eke</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">av_timer</span>
+</div>
+<span class="text-xs font-semibold">Thước đo độ</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">keyboard</span>
+</div>
+<span class="text-xs font-semibold">Bàn phím ảo</span>
+</button>
+</div>
+<!-- Sub-Group 4.2: Nội dung cơ bản -->
+<div class="hidden flex items-center gap-2.5 whitespace-nowrap" id="subgroup-2">
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">format_quote</span>
+</div>
+<span class="text-xs font-semibold">Hộp văn bản mẫu</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">table_chart</span>
+</div>
+<span class="text-xs font-semibold">Chèn Bảng dữ liệu</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">image</span>
+</div>
+<span class="text-xs font-semibold">Hình ảnh từ máy</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">photo_camera</span>
+</div>
+<span class="text-xs font-semibold">Chụp Camera</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">video_file</span>
+</div>
+<span class="text-xs font-semibold">Video (MP4/AVI)</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">collections</span>
+</div>
+<span class="text-xs font-semibold">Thư viện ảnh</span>
+</button>
+</div>
+<!-- Sub-Group 4.3: Biểu đồ & Đồ thị -->
+<div class="hidden flex items-center gap-2.5 whitespace-nowrap" id="subgroup-3">
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">bar_chart</span>
+</div>
+<span class="text-xs font-semibold">Biểu đồ Cột</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">show_chart</span>
+</div>
+<span class="text-xs font-semibold">Biểu đồ Đường</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">pie_chart</span>
+</div>
+<span class="text-xs font-semibold">Biểu đồ Tròn</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">bubble_chart</span>
+</div>
+<span class="text-xs font-semibold">Radar / Phân tán</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-brand/15 text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">function</span>
+</div>
+<span class="text-xs font-semibold">Đồ thị 2D y=f(x)</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-brand/15 text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">view_in_ar</span>
+</div>
+<span class="text-xs font-semibold">Đồ thị 3D z=f(x,y)</span>
+</button>
+</div>
+<!-- Sub-Group 4.4: Môn học chuyên biệt -->
+<div class="hidden flex items-center gap-2.5 whitespace-nowrap" id="subgroup-4">
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">science</span>
+</div>
+<span class="text-xs font-semibold">Bảng tuần hoàn 118</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+</div>
+<span class="text-xs font-semibold">Sách giáo khoa điện tử</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">category</span>
+</div>
+<span class="text-xs font-semibold">Hình học không gian</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</div>
+<span class="text-xs font-semibold">Mạch điện tương tác</span>
+</button>
+</div>
+<!-- Sub-Group 4.5: Công nghệ & Tương tác -->
+<div class="hidden flex items-center gap-2.5 whitespace-nowrap" id="subgroup-5">
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-purple-100 text-[#7C3AED] flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">deployed_code</span>
+</div>
+<span class="text-xs font-semibold">Mô hình 3D OBJ/STL</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-secondary/15 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">motion_photos_on</span>
+</div>
+<span class="text-xs font-semibold">Mô phỏng PhET Lab</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-surface-container text-brand flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">map</span>
+</div>
+<span class="text-xs font-semibold">Google Maps</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-red-100 text-[#DC2626] flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">smart_display</span>
+</div>
+<span class="text-xs font-semibold">YouTube Video</span>
+</button>
+</div>
+<!-- Sub-Group 4.6: Trợ lý ảo & AI -->
+<div class="hidden flex items-center gap-2.5 whitespace-nowrap" id="subgroup-6">
+<button class="h-11 px-3.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#312E81] text-white border border-white flex items-center gap-2 shadow-md active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-white/20 text-amber-300 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">quiz</span>
+</div>
+<span class="text-xs font-bold">Tạo trắc nghiệm AI</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-indigo-100 text-[#4F46E5] flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+</div>
+<span class="text-xs font-semibold">Trợ lý AI Sparkles</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+</div>
+<span class="text-xs font-semibold">ChatGPT Giáo dục</span>
+</button>
+<button class="h-11 px-3 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-500 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">translate</span>
+</div>
+<span class="text-xs font-semibold">Trình dịch Bing</span>
+</button>
+</div>
+</div>
+</div>
+<!-- STATE B: MỞ RỘNG (Tab Mở rộng 3 phân khu) -->
+<div class="hidden flex flex-col gap-2 transition-all duration-200" id="panel-expand-tools">
+<div class="glass-panel-deep p-3 rounded-2xl shadow-xl border border-white flex gap-4 max-w-[820px] overflow-x-auto">
+<!-- Phân khu 1: Hệ thống & Tệp tin -->
+<div class="flex flex-col gap-1.5 pr-4 border-r border-outline-variant/40 min-w-[240px]">
+<span class="text-[11px] font-bold text-brand uppercase tracking-wider flex items-center gap-1.5 mb-1">
+<span class="material-symbols-outlined text-[15px]">folder</span>
+            Hệ thống &amp; Tệp tin
+          </span>
+<div class="grid grid-cols-2 gap-1.5">
+<button class="h-9 px-2.5 rounded-xl hover:bg-white text-on-surface border border-transparent hover:border-white text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all text-left">
+<span class="material-symbols-outlined text-[16px] text-brand">folder_open</span>
+<span>Mở .qasc</span>
+</button>
+<button class="h-9 px-2.5 rounded-xl hover:bg-white text-on-surface border border-transparent hover:border-white text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all text-left">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">save</span>
+<span>Lưu bài</span>
+</button>
+<button class="h-9 px-2.5 rounded-xl hover:bg-white text-on-surface border border-transparent hover:border-white text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all text-left">
+<span class="material-symbols-outlined text-[16px] text-[#DC2626]">picture_as_pdf</span>
+<span>Xuất PDF/Ảnh</span>
+</button>
+<button class="h-9 px-2.5 rounded-xl bg-brand/10 hover:bg-brand text-brand hover:text-white text-xs font-bold flex items-center gap-1.5 active:scale-95 transition-all text-left">
+<span class="material-symbols-outlined text-[16px]">qr_code_2</span>
+<span>Chia sẻ QR</span>
+</button>
+</div>
+</div>
+<!-- Phân khu 2: Tiện ích & Tương tác -->
+<div class="flex flex-col gap-1.5 pr-4 border-r border-outline-variant/40 min-w-[240px]">
+<span class="text-[11px] font-bold text-secondary uppercase tracking-wider flex items-center gap-1.5 mb-1">
+<span class="material-symbols-outlined text-[15px]">extension</span>
+            Tiện ích
+          </span>
+<div class="grid grid-cols-2 gap-1.5">
+<button class="h-9 px-2.5 rounded-xl hover:bg-white text-on-surface border border-transparent hover:border-white text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all text-left">
+<span class="material-symbols-outlined text-[16px] text-brand">videocam</span>
+<span>Camera AI</span>
+</button>
+<button class="h-9 px-2.5 rounded-xl hover:bg-white text-on-surface border border-transparent hover:border-white text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all text-left">
+<span class="material-symbols-outlined text-[16px] text-blue-500">hourglass_top</span>
+<span>Đếm giờ</span>
+</button>
+<button class="h-9 px-2.5 rounded-xl hover:bg-white text-on-surface border border-transparent hover:border-white text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all text-left">
+<span class="material-symbols-outlined text-[16px] text-brand">calculate</span>
+<span>Máy tính</span>
+</button>
+<button class="h-9 px-2.5 rounded-xl hover:bg-white text-on-surface border border-transparent hover:border-white text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all text-left">
+<span class="material-symbols-outlined text-[16px] text-amber-500">poll</span>
+<span>Bình chọn</span>
+</button>
+</div>
+</div>
+<!-- Phân khu 3: Trợ giúp & Cập nhật -->
+<div class="flex flex-col justify-between py-0.5 min-w-[130px]">
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">info</span>
+            Thông tin
+          </span>
+<div class="flex flex-col gap-1">
+<button class="h-8 px-2 rounded-lg hover:bg-white text-on-surface text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all text-left">
+<span class="material-symbols-outlined text-[16px] text-brand">help</span>
+<span>Trợ giúp</span>
+</button>
+<button class="h-8 px-2 rounded-lg hover:bg-white text-on-surface text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all text-left">
+<span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
+<span>Bản quyền</span>
+</button>
+</div>
+<div class="pt-2 border-t border-outline-variant/40 flex flex-col gap-0.5">
+<div class="text-[10px] text-on-surface-variant font-medium flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>v2.4 Pro</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ============================================================== -->
+<!-- 4. CỤM 3: BOTTOM-RIGHT BOARD & PAGE CONTROLLER                 -->
+<!-- ============================================================== -->
+<div class="fixed bottom-4 right-5 z-40 flex flex-col items-end gap-2 pointer-events-auto">
+<!-- Board Tools Popover Tray: Xổ nhẹ lên phía trên thanh góc phải -->
+<div class="hidden glass-panel-deep px-3 py-2 rounded-2xl shadow-xl border border-white flex items-center gap-2 overflow-x-auto whitespace-nowrap animate-scale-in" id="board-tools-tray">
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Thêm mới bảng">
+<span class="material-symbols-outlined text-[18px] text-brand">post_add</span>
+<span class="text-xs font-semibold">Thêm mới</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Nhân bản bảng">
+<span class="material-symbols-outlined text-[18px] text-tertiary">content_copy</span>
+<span class="text-xs font-semibold">Nhân bản</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Đổi nền">
+<span class="material-symbols-outlined text-[18px] text-brand">wallpaper</span>
+<span class="text-xs font-semibold">Đổi nền</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Chụp vùng">
+<span class="material-symbols-outlined text-[18px] text-blue-500">screenshot_region</span>
+<span class="text-xs font-semibold">Chụp vùng</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Di chuyển / Kéo bảng">
+<span class="material-symbols-outlined text-[18px] text-secondary">pan_tool</span>
+<span class="text-xs font-semibold">Kéo bảng</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Mở rộng bảng">
+<span class="material-symbols-outlined text-[18px] text-brand">aspect_ratio</span>
+<span class="text-xs font-semibold">Mở rộng</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Kính lúp">
+<span class="material-symbols-outlined text-[18px] text-amber-600">zoom_in</span>
+<span class="text-xs font-semibold">Kính lúp</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Đèn soi">
+<span class="material-symbols-outlined text-[18px] text-amber-500">highlight</span>
+<span class="text-xs font-semibold">Đèn soi</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Hẹn giờ">
+<span class="material-symbols-outlined text-[18px] text-brand">timer</span>
+<span class="text-xs font-semibold">Hẹn giờ</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Chỉ bảng Laser">
+<span class="material-symbols-outlined text-[18px] text-rose-500">point_scan</span>
+<span class="text-xs font-semibold">Chỉ bảng</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Đa người dùng">
+<span class="material-symbols-outlined text-[18px] text-emerald-600">group</span>
+<span class="text-xs font-semibold">Chia bảng</span>
+</button>
+<button class="h-10 px-2.5 rounded-xl bg-white/90 hover:bg-white text-on-surface border border-outline-variant/30 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all" title="Màn che">
+<span class="material-symbols-outlined text-[18px] text-[#334155]">curtains_closed</span>
+<span class="text-xs font-semibold">Màn che</span>
+</button>
+</div>
+<!-- Quick Page Bar ngang gọn gàng -->
+<div class="glass-panel-deep px-3 py-1.5 rounded-2xl shadow-xl flex items-center gap-2 border border-white">
+<!-- Nút [< Trước] -->
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-white active:scale-95 transition-all" title="Bảng trước">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<!-- Dải số trang Bảng 1, Bảng 2, Bảng 3... -->
+<div class="flex items-center gap-1">
+<!-- Bảng 1 (Active có badge 12 đối tượng) -->
+<button class="h-9 px-3 rounded-xl bg-brand text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-brand/25 active:scale-95 transition-all">
+<span>Bảng 1</span>
+<span class="text-[10px] bg-white/25 px-1.5 py-0.2 rounded-full font-medium">12 đối tượng</span>
+</button>
+<button class="h-9 px-2.5 rounded-xl hover:bg-white text-on-surface-variant font-medium text-xs border border-transparent hover:border-white active:scale-95 transition-all">
+        Bảng 2
+      </button>
+<button class="h-9 px-2.5 rounded-xl hover:bg-white text-on-surface-variant font-medium text-xs border border-transparent hover:border-white active:scale-95 transition-all">
+        Bảng 3
+      </button>
+</div>
+<!-- Nút [Sau >] -->
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-white active:scale-95 transition-all" title="Bảng kế tiếp">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+<!-- Nút [+ Thêm bảng mới] -->
+<button class="w-8 h-8 rounded-xl bg-white/90 hover:bg-brand hover:text-white text-brand-dark flex items-center justify-center shadow-sm border border-white active:scale-95 transition-all" title="Thêm bảng mới">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+<div class="h-5 w-px bg-outline-variant/60 mx-1"></div>
+<!-- Nút [📋 Công cụ bảng] (bật/tắt Tray) -->
+<button class="h-9 px-3 rounded-xl bg-surface-container-high/60 hover:bg-white text-brand-dark text-xs font-bold flex items-center gap-1.5 border border-white active:scale-95 transition-all" id="btn-toggle-board-tools" onclick="toggleBoardToolsTray()">
+<span class="material-symbols-outlined text-[18px] text-brand">dashboard_customize</span>
+<span>Công cụ bảng</span>
+</button>
+</div>
+</div>
+<!-- ============================================================== -->
+<!-- 5. HỘP THOẠI XÁC NHẬN THOÁT                                   -->
+<!-- ============================================================== -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-sm pointer-events-auto transition-all" id="exit-confirm-modal">
+<div class="glass-panel-deep p-6 rounded-2xl shadow-2xl border-2 border-white w-[460px] max-w-[90vw] flex flex-col gap-4 animate-scale-in">
+<div class="flex items-start gap-3.5">
+<div class="w-12 h-12 rounded-2xl bg-red-100 text-[#DC2626] flex items-center justify-center shadow-sm flex-shrink-0">
+<span class="material-symbols-outlined text-[28px]">warning</span>
+</div>
+<div>
+<h3 class="text-base font-bold text-on-surface">Xác nhận thoát ứng dụng</h3>
+<p class="text-xs text-on-surface-variant mt-1.5 leading-relaxed">
+          Còn dữ liệu chưa lưu, bạn có muốn lưu bài giảng (<span class="font-semibold text-brand font-mono">.qasc</span>) trước khi thoát về màn hình đăng nhập không?
+        </p>
+</div>
+</div>
+<!-- 3 Nút hành động -->
+<div class="flex items-center justify-end gap-2.5 pt-3 border-t border-surface-container-high mt-1 text-xs font-bold">
+<button class="h-10 px-4 rounded-xl hover:bg-white text-on-surface-variant border border-outline-variant/50 active:scale-95 transition-all flex items-center gap-1.5" onclick="closeExitModal()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+<span>Hủy (Ở lại)</span>
+</button>
+<button class="h-10 px-4 rounded-xl bg-white hover:bg-red-50 text-[#DC2626] border border-red-300 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm" onclick="confirmExitWithoutSave()">
+<span class="material-symbols-outlined text-[18px]">exit_to_app</span>
+<span>Không (Thoát luôn)</span>
+</button>
+<button class="h-10 px-4 rounded-xl bg-brand hover:bg-brand-dark text-white active:scale-95 transition-all flex items-center gap-1.5 shadow-md shadow-brand/25" onclick="confirmExitWithSave()">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>Có (Lưu .qasc)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ============================================================== -->
+<!-- 6. JAVASCRIPT CONTROLLERS                                     -->
+<!-- ============================================================== -->
+<script>
+  // 1. Orbital States Manager
+  const states = ['pen', 'eraser', 'select', 'shapes'];
+
+  const stateThemeConfig = {
+    pen: {
+      color: "#6C7EAA",
+      tip: "Kéo để di chuyển • Chạm thu gọn",
+      btnClass: "bg-brand text-white shadow-brand/30",
+      wedgeId: "wedge-pen",
+      btnId: "wedge-btn-pen"
+    },
+    eraser: {
+      color: "#EF6C57",
+      tip: "Ctrl+Z: Hoàn tác · Phím E: Bật tẩy",
+      btnClass: "bg-[#EF6C57] text-white shadow-orange-500/30",
+      wedgeId: "wedge-eraser",
+      btnId: "wedge-btn-eraser"
+    },
+    select: {
+      color: "#4F46E5",
+      tip: "Khoanh vùng nét vẽ để dịch, nhận dạng OCR hoặc hỏi AI Sparkles",
+      btnClass: "bg-[#4F46E5] text-white shadow-indigo-500/30",
+      wedgeId: "wedge-select",
+      btnId: "wedge-btn-select"
+    },
+    shapes: {
+      color: "#7C3AED",
+      tip: "Kéo thả hình học 2D/3D thông minh với tự động bắt dính điểm",
+      btnClass: "bg-[#7C3AED] text-white shadow-purple-500/30",
+      wedgeId: "wedge-shapes",
+      btnId: "wedge-btn-shapes"
+    }
+  };
+
+  function switchOrbitalState(targetState) {
+    states.forEach(state => {
+      const topBarBtn = document.getElementById(`tab-btn-${state}`);
+      const orbitalLayer = document.getElementById(`orbital-state-${state}`);
+      const wedgePath = document.getElementById(stateThemeConfig[state].wedgeId);
+      const wedgeBtn = document.getElementById(stateThemeConfig[state].btnId);
+
+      if (state === targetState) {
+        if (topBarBtn) topBarBtn.className = `h-8 px-3 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-md ${stateThemeConfig[state].btnClass}`;
+        
+        if (orbitalLayer) {
+          orbitalLayer.classList.remove('hidden-state');
+          orbitalLayer.classList.add('active-state');
+        }
+
+        if (wedgePath) {
+          wedgePath.setAttribute('fill', stateThemeConfig[state].color);
+          wedgePath.setAttribute('opacity', '0.92');
+        }
+        if (wedgeBtn) {
+          wedgeBtn.className = "absolute " + getWedgeBtnPosClass(state) + " w-20 flex flex-col items-center justify-center text-white pointer-events-auto transition-transform active:scale-95";
+        }
+      } else {
+        if (topBarBtn) topBarBtn.className = "h-8 px-3 rounded-full text-xs font-semibold text-on-surface hover:bg-white transition-all flex items-center gap-1.5";
+        
+        if (orbitalLayer) {
+          orbitalLayer.classList.remove('active-state');
+          orbitalLayer.classList.add('hidden-state');
+        }
+
+        if (wedgePath) {
+          wedgePath.setAttribute('fill', '#F8FAFC');
+          wedgePath.setAttribute('opacity', '1');
+        }
+        if (wedgeBtn) {
+          wedgeBtn.className = "absolute " + getWedgeBtnPosClass(state) + " w-20 flex flex-col items-center justify-center text-on-surface pointer-events-auto transition-transform active:scale-95";
+        }
+      }
+    });
+
+    const tipPill = document.getElementById('dial-tip-pill');
+    if (tipPill) {
+      tipPill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full" style="background-color: ${stateThemeConfig[targetState].color}"></span><span>${stateThemeConfig[targetState].tip}</span>`;
+    }
+
+    if (targetState !== 'pen') {
+      const popover = document.getElementById('palette-popover');
+      if (popover) popover.classList.add('hidden');
+    }
+  }
+
+  function getWedgeBtnPosClass(state) {
+    switch(state) {
+      case 'pen': return "top-[32px] left-[34px]";
+      case 'eraser': return "top-[32px] right-[34px]";
+      case 'select': return "top-[96px] right-[4px]";
+      case 'shapes': return "bottom-[32px] right-[34px]";
+      default: return "";
+    }
+  }
+
+  function toggleColorPopover() {
+    const popover = document.getElementById('palette-popover');
+    if (popover) popover.classList.toggle('hidden');
+  }
+
+  function toggleShapeDimension(dim) {
+    const btn2D = document.getElementById('shape-tab-2d');
+    const btn3D = document.getElementById('shape-tab-3d');
+    const set2D = document.getElementById('shapes-2d-set');
+    const set3D = document.getElementById('shapes-3d-set');
+
+    if (dim === '2d') {
+      btn2D.className = "h-10 rounded-xl bg-[#7C3AED] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5";
+      btn3D.className = "h-10 rounded-xl hover:bg-white text-on-surface font-semibold text-xs transition-all flex items-center justify-center gap-1.5";
+      set2D.classList.remove('hidden');
+      set3D.classList.add('hidden');
+    } else {
+      btn3D.className = "h-10 rounded-xl bg-[#7C3AED] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5";
+      btn2D.className = "h-10 rounded-xl hover:bg-white text-on-surface font-semibold text-xs transition-all flex items-center justify-center gap-1.5";
+      set3D.classList.remove('hidden');
+      set2D.classList.add('hidden');
+    }
+  }
+
+  // 2. Dock States Manager
+  let currentDockState = 'insert';
+
+  function setDockState(state) {
+    currentDockState = state;
+    const insertPanel = document.getElementById('panel-insert-content');
+    const expandPanel = document.getElementById('panel-expand-tools');
+
+    const navInsert = document.getElementById('dock-nav-insert');
+    const navExpand = document.getElementById('dock-nav-expand');
+
+    const baseInactive = 'h-10 px-3.5 rounded-xl hover:bg-white text-on-surface font-semibold text-xs flex items-center gap-2.5 active:scale-95 transition-all text-left relative';
+    const baseActive = 'h-10 px-3.5 rounded-xl bg-brand text-white font-bold text-xs flex items-center gap-2.5 shadow-md active:scale-95 transition-all text-left relative';
+
+    navInsert.className = baseInactive;
+    navExpand.className = baseInactive;
+
+    insertPanel.classList.add('hidden');
+    expandPanel.classList.add('hidden');
+
+    if (state === 'insert') {
+      navInsert.className = baseActive;
+      insertPanel.classList.remove('hidden');
+    } else if (state === 'expand') {
+      navExpand.className = baseActive;
+      expandPanel.classList.remove('hidden');
+    }
+  }
+
+  function setInsertSubTab(index) {
+    for (let i = 1; i <= 6; i++) {
+      const tabBtn = document.getElementById(`insert-tab-${i}`);
+      const subGroup = document.getElementById(`subgroup-${i}`);
+      if (i === index) {
+        tabBtn.className = 'h-9 px-3.5 rounded-xl bg-brand text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-brand/25 active:scale-95 transition-all whitespace-nowrap';
+        if (subGroup) subGroup.classList.remove('hidden');
+      } else {
+        tabBtn.className = 'h-9 px-3 rounded-xl hover:bg-white text-on-surface-variant text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all whitespace-nowrap';
+        if (subGroup) subGroup.classList.add('hidden');
+      }
+    }
+  }
+
+  function toggleDockExpand() {
+    const flyout = document.getElementById('dock-flyout-wrapper');
+    if (flyout) flyout.classList.toggle('hidden');
+  }
+
+  // 3. Board Tools Popover Tray Toggle
+  function toggleBoardToolsTray() {
+    const tray = document.getElementById('board-tools-tray');
+    const btn = document.getElementById('btn-toggle-board-tools');
+    if (tray) {
+      const isHidden = tray.classList.toggle('hidden');
+      if (!isHidden) {
+        btn.classList.add('bg-brand', 'text-white');
+        btn.classList.remove('bg-surface-container-high/60', 'text-brand-dark');
+      } else {
+        btn.classList.remove('bg-brand', 'text-white');
+        btn.classList.add('bg-surface-container-high/60', 'text-brand-dark');
+      }
+    }
+  }
+
+  // 4. Modal Exit Handlers
+  function openExitModal() {
+    const modal = document.getElementById('exit-confirm-modal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function closeExitModal() {
+    const modal = document.getElementById('exit-confirm-modal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function confirmExitWithSave() {
+    alert('Đã lưu bài giảng (.qasc) thành công! Đang quay về màn hình đăng nhập...');
+    closeExitModal();
+  }
+
+  function confirmExitWithoutSave() {
+    alert('Đã thoát về màn hình đăng nhập!');
+    closeExitModal();
+  }
+
+  function handleDesktopMode() {
+    alert('Chuyển sang chế độ vẽ & ghi chú trực tiếp trên Desktop Windows');
+  }
+
+  function handleSmartClassMode() {
+    alert('Đang kết nối đồng bộ tương tác với hệ thống SmartClass');
+  }
+</script>
+</body></html>

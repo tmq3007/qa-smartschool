@@ -283,56 +283,7 @@ namespace QASmartTouch.Forms
                 // Check if user selected "Clear All" mode - execute immediately
                 if (_savedEraserMode == "ClearAll")
                 {
-                    // [BUG_CLEARALL_DESTROYS_UI] Reset selection state trước khi clear
-                    _selectionBox?.Detach();
-                    _selectionManager?.DeselectAll();
-                    _objectSelectionMode = false;
-
-                    // Clear all content except background layers AND system UI controls
-                    var elementsToRemove = new System.Collections.Generic.List<UIElement>();
-                    foreach (UIElement element in MainInteractiveBoard.Children)
-                    {
-                        // Keep background layers (grid, pattern, background canvas)
-                        if (SelectionManager.IsBackgroundElement(element, Rect.Empty, MainInteractiveBoard.ActualWidth, MainInteractiveBoard.ActualHeight))
-                            continue;
-                        
-                        // [BUG_CLEARALL_DESTROYS_UI] Keep system UI controls & overlays via IsSystemElement (QC_4.2_STATE_GUARD)
-                        if (IsSystemElement(element))
-                            continue;
-
-                        elementsToRemove.Add(element);
-                    }
-                    
-                    if (elementsToRemove.Count > 0)
-                    {
-                        var batchUndo = new UndoRedoAction
-                        {
-                            Type = ActionType.Batch,
-                            Description = $"Clear All ({elementsToRemove.Count} elements)"
-                        };
-
-                        // Remove all non-background elements and record for Undo
-                        foreach (var element in elementsToRemove)
-                        {
-                            // ✅ Stop and cleanup any active media/WebView2 (YouTube, etc.) immediately to terminate sound
-                            CleanupWebView2Media(element);
-
-                            MainInteractiveBoard.Children.Remove(element);
-                            batchUndo.BatchActions.Add(new UndoRedoAction
-                            {
-                                Type = ActionType.Remove,
-                                Element = element,
-                                Parent = MainInteractiveBoard,
-                                Description = $"Clear All sub-item {element.GetType().Name}"
-                            });
-                        }
-
-                        RecordAction(batchUndo);
-                        _selectionManager?.ClearRegistrations();
-                    }
-                    
-                    // Show welcome state again since board is empty
-                    ShowWelcomeState();
+                    ExecuteEraserClearAll();
                 }
                 else
                 {
@@ -358,6 +309,64 @@ namespace QASmartTouch.Forms
             
             eraserMenu.Show();
             try { eraserMenu.Activate(); } catch { }
+        }
+
+        /// <summary>
+        /// Xóa toàn bộ nội dung bảng (giữ nền + System UI), ghi Undo dạng Batch.
+        /// Tách nguyên văn từ SubMenu Tẩy để dùng chung cho Orbital "Xóa toàn bộ" của Radial Dial.
+        /// </summary>
+        private void ExecuteEraserClearAll()
+        {
+            // [BUG_CLEARALL_DESTROYS_UI] Reset selection state trước khi clear
+            _selectionBox?.Detach();
+            _selectionManager?.DeselectAll();
+            _objectSelectionMode = false;
+
+            // Clear all content except background layers AND system UI controls
+            var elementsToRemove = new System.Collections.Generic.List<UIElement>();
+            foreach (UIElement element in MainInteractiveBoard.Children)
+            {
+                // Keep background layers (grid, pattern, background canvas)
+                if (SelectionManager.IsBackgroundElement(element, Rect.Empty, MainInteractiveBoard.ActualWidth, MainInteractiveBoard.ActualHeight))
+                    continue;
+
+                // [BUG_CLEARALL_DESTROYS_UI] Keep system UI controls & overlays via IsSystemElement (QC_4.2_STATE_GUARD)
+                if (IsSystemElement(element))
+                    continue;
+
+                elementsToRemove.Add(element);
+            }
+
+            if (elementsToRemove.Count > 0)
+            {
+                var batchUndo = new UndoRedoAction
+                {
+                    Type = ActionType.Batch,
+                    Description = $"Clear All ({elementsToRemove.Count} elements)"
+                };
+
+                // Remove all non-background elements and record for Undo
+                foreach (var element in elementsToRemove)
+                {
+                    // ✅ Stop and cleanup any active media/WebView2 (YouTube, etc.) immediately to terminate sound
+                    CleanupWebView2Media(element);
+
+                    MainInteractiveBoard.Children.Remove(element);
+                    batchUndo.BatchActions.Add(new UndoRedoAction
+                    {
+                        Type = ActionType.Remove,
+                        Element = element,
+                        Parent = MainInteractiveBoard,
+                        Description = $"Clear All sub-item {element.GetType().Name}"
+                    });
+                }
+
+                RecordAction(batchUndo);
+                _selectionManager?.ClearRegistrations();
+            }
+
+            // Show welcome state again since board is empty
+            ShowWelcomeState();
         }
 
         private void btn3_Undo_Click(object sender, RoutedEventArgs e)
@@ -1027,38 +1036,7 @@ namespace QASmartTouch.Forms
                 // Run action asynchronously after insertMenu finishes closing completely
                 this.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    if (insertMenu.SelectedInsertType == "Text")
-                    {
-                        EnableTextTool();
-                    }
-                    else if (insertMenu.SelectedInsertType == "Image" || insertMenu.SelectedInsertType == "ImageLibrary")
-                    {
-                        ImportImage();
-                    }
-                    else if (insertMenu.SelectedInsertType == "Video")
-                    {
-                        ImportVideo();
-                    }
-                    else if (insertMenu.SelectedInsertType == "Camera")
-                    {
-                        ImportImage(); // Falls back to image file import or camera dialog
-                    }
-                    else if (insertMenu.SelectedInsertType == "Ruler")
-                    {
-                        OpenRulerTool();
-                    }
-                    else if (insertMenu.SelectedInsertType == "Compass")
-                    {
-                        OpenCompassTool();
-                    }
-                    else if (insertMenu.SelectedInsertType == "Triangle")
-                    {
-                        OpenSetSquareTool();
-                    }
-                    else if (insertMenu.SelectedInsertType == "Protractor")
-                    {
-                        OpenProtractorTool();
-                    }
+                    ApplyInsertMenuSelection(insertMenu.SelectedInsertType);
                 }), System.Windows.Threading.DispatcherPriority.Input);
                 
                 // Cleanup safely
@@ -1079,6 +1057,46 @@ namespace QASmartTouch.Forms
             
             insertMenu.Show();
             insertMenu.Activate(); // QC_4.2_TOUCH_ACTIVATION: Đảm bảo cửa sổ Active ngay để tránh WM_MOUSEACTIVATE nuốt cú chạm đầu tiên
+        }
+
+        /// <summary>
+        /// Thực thi lựa chọn trả về từ SubMenu Chèn nội dung (SelectedInsertType).
+        /// Tách nguyên văn từ btn6_Inserts_Click để Dock SMART TOUCH dùng chung.
+        /// </summary>
+        private void ApplyInsertMenuSelection(string selectedInsertType)
+        {
+            if (selectedInsertType == "Text")
+            {
+                EnableTextTool();
+            }
+            else if (selectedInsertType == "Image" || selectedInsertType == "ImageLibrary")
+            {
+                ImportImage();
+            }
+            else if (selectedInsertType == "Video")
+            {
+                ImportVideo();
+            }
+            else if (selectedInsertType == "Camera")
+            {
+                ImportImage(); // Falls back to image file import or camera dialog
+            }
+            else if (selectedInsertType == "Ruler")
+            {
+                OpenRulerTool();
+            }
+            else if (selectedInsertType == "Compass")
+            {
+                OpenCompassTool();
+            }
+            else if (selectedInsertType == "Triangle")
+            {
+                OpenSetSquareTool();
+            }
+            else if (selectedInsertType == "Protractor")
+            {
+                OpenProtractorTool();
+            }
         }
 
         // Note: btn6_5_LineChart and btn6_6_PieChart removed from toolbar
@@ -1345,6 +1363,8 @@ namespace QASmartTouch.Forms
                 }
                 btnHudTouchMode.ToolTip = "Chế độ Đa chạm (Mặc định: nhiều ngón cùng viết vẽ đồng thời). Nhấn để bật Đơn điểm & Cử chỉ 2 ngón (Pinch/Pan)";
             }
+
+            smartDockPill?.UpdateTouchModeDisplay(isSingleFinger);
         }
 
         #endregion

@@ -61,6 +61,18 @@ namespace QASmartTouch.Services
         /// </summary>
         public static bool HasCompletedFirstRun { get; set; } = false;
 
+        /// <summary>
+        /// QC_4.2 Feature flag: dùng toolbar SMART TOUCH dạng Radial Dial + Corner Dock.
+        /// false = quay về thanh công cụ ngang cũ (panelTools).
+        /// </summary>
+        public static bool UseRadialToolbar { get; set; } = true;
+
+        /// <summary>
+        /// Cấu hình 6 múi tròn của Radial Dial (chuỗi 6 khoá phân tách bởi dấu phẩy).
+        /// Múi 1 mặc định là "pen" (Bút viết). Các múi 2-6 có thể tùy biến theo nhu cầu giáo viên.
+        /// </summary>
+        public static string CustomRadialWedges { get; set; } = "pen,eraser,select,shapes,undo,redo";
+
         // ═══════════════════════════════════════════════════════════
         //  MASTER LOGIN & TEST SETTINGS
         // ═══════════════════════════════════════════════════════════
@@ -151,6 +163,7 @@ namespace QASmartTouch.Services
                         FocusFontScale = data.FocusFontScale;
                         FocusDimOpacity = data.FocusDimOpacity;
                         HasCompletedFirstRun = data.HasCompletedFirstRun;
+                        UseRadialToolbar = data.UseRadialToolbar;
                         RunningMode = data.RunningMode ?? "Release";
                         ActiveUserRole = data.ActiveUserRole ?? "All";
                         ShowInactivePackagesMode = data.ShowInactivePackagesMode ?? "Hidden";
@@ -184,6 +197,7 @@ namespace QASmartTouch.Services
                     FocusFontScale = FocusFontScale,
                     FocusDimOpacity = FocusDimOpacity,
                     HasCompletedFirstRun = HasCompletedFirstRun,
+                    UseRadialToolbar = UseRadialToolbar,
                     RunningMode = RunningMode,
                     ActiveUserRole = ActiveUserRole,
                     ShowInactivePackagesMode = ShowInactivePackagesMode,
@@ -258,6 +272,7 @@ namespace QASmartTouch.Services
         public double FocusFontScale { get; set; } = 1.45;
         public double FocusDimOpacity { get; set; } = 0.05;
         public bool HasCompletedFirstRun { get; set; } = false;
+        public bool UseRadialToolbar { get; set; } = true;
         public string RunningMode { get; set; } = "Release";
         public string ActiveUserRole { get; set; } = "All";
         public string ShowInactivePackagesMode { get; set; } = "Hidden";

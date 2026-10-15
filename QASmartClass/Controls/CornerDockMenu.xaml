@@ -1,0 +1,278 @@
+<UserControl x:Class="QASmartTouch.Controls.CornerDockMenu"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="False"
+             SnapsToDevicePixels="True">
+    <!--
+        QC_4.2 Corner Dock Menu (SMART TOUCH) — theo thiết kế Stitch "Bottom-Left Dock".
+        Tầng 0: nút góc (launcher).
+        Tầng 1: thẻ dọc xổ lên (Chèn nội dung, DESKTOP, SMART CLASS, Mở rộng, Thoát).
+        Tầng 2: bảng xổ ngang bên phải tầng 1 (Chèn nội dung: hàng tab + hàng công cụ; Mở rộng: 3 cột).
+        Giữ nguyên nhãn thương hiệu tiếng Anh: DESKTOP, SMART CLASS.
+    -->
+    <UserControl.Resources>
+        <!-- Template chung: viền bo 12, nội dung căn giữa theo chiều dọc -->
+        <ControlTemplate x:Key="DockButtonTemplate" TargetType="Button">
+            <Border x:Name="PART_Border"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="12"
+                    Padding="{TemplateBinding Padding}">
+                <ContentPresenter VerticalAlignment="Center"
+                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+            </Border>
+        </ControlTemplate>
+
+        <Style x:Key="DockButtonBase" TargetType="Button">
+            <Setter Property="Template" Value="{StaticResource DockButtonTemplate}"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="FontFamily" Value="{DynamicResource InterFont}"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+        </Style>
+
+        <!-- Tầng 1: mục điều hướng dọc -->
+        <Style x:Key="DockNavStyle" TargetType="Button" BasedOn="{StaticResource DockButtonBase}">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#2F3542"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Style.Triggers>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="Tag" Value="{x:Null}"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="#E3F2FD"/>
+                </MultiTrigger>
+                <Trigger Property="Tag" Value="active">
+                    <Setter Property="Background" Value="#2E86DE"/>
+                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#2E86DE" Direction="270" ShadowDepth="2" BlurRadius="10" Opacity="0.35"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="Tag" Value="danger">
+                    <Setter Property="Background" Value="#FDECEE"/>
+                    <Setter Property="Foreground" Value="#DC2626"/>
+                    <Setter Property="BorderBrush" Value="#FBC9CF"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="Tag" Value="danger"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="#FBD5DA"/>
+                </MultiTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Tầng 2: tab danh mục (Chèn nội dung) -->
+        <Style x:Key="DockTabStyle" TargetType="Button" BasedOn="{StaticResource DockButtonBase}">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="2,2"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#747D8C"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Style.Triggers>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="Tag" Value="{x:Null}"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="#F1F2F6"/>
+                    <Setter Property="Foreground" Value="#2F3542"/>
+                </MultiTrigger>
+                <Trigger Property="Tag" Value="active">
+                    <Setter Property="Background" Value="#2E86DE"/>
+                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#2E86DE" Direction="270" ShadowDepth="2" BlurRadius="10" Opacity="0.3"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Tầng 2: nút công cụ (ô icon + nhãn) -->
+        <Style x:Key="DockToolStyle" TargetType="Button" BasedOn="{StaticResource DockButtonBase}">
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Padding" Value="8,0,14,0"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#E1E8ED"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#2F3542"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#1E2A3A" Direction="270" ShadowDepth="1" BlurRadius="4" Opacity="0.08"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E3F2FD"/>
+                    <Setter Property="BorderBrush" Value="#B9DAF7"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Tầng 2 (Mở rộng): nút lưới 2 cột -->
+        <Style x:Key="DockGridStyle" TargetType="Button" BasedOn="{StaticResource DockButtonBase}">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Background" Value="#F1F2F6"/>
+            <Setter Property="Foreground" Value="#2F3542"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Style.Triggers>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="Tag" Value="{x:Null}"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="#E3F2FD"/>
+                </MultiTrigger>
+                <Trigger Property="Tag" Value="tint">
+                    <Setter Property="Background" Value="#E3F2FD"/>
+                    <Setter Property="Foreground" Value="#2E86DE"/>
+                    <Setter Property="BorderBrush" Value="#B9DAF7"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="Tag" Value="tint"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="#D0E7FB"/>
+                </MultiTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DockCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#E1E8ED"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#1E2A3A" Direction="270" ShadowDepth="3" BlurRadius="18" Opacity="0.18"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Bottom">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Cột trái: Tầng 1 + nút góc -->
+        <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Bottom">
+
+            <!-- Tầng 1: thẻ dọc (xổ lên) -->
+            <Border x:Name="panelMenu"
+                    Style="{StaticResource DockCardStyle}"
+                    Padding="8"
+                    Width="212"
+                    Margin="0,0,0,12"
+                    HorizontalAlignment="Left"
+                    Visibility="Collapsed"
+                    RenderTransformOrigin="0,1">
+                <Border.RenderTransform>
+                    <ScaleTransform x:Name="panelScale" ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
+                <StackPanel x:Name="itemsHost" Orientation="Vertical"/>
+            </Border>
+
+            <!-- Nút góc (launcher) -->
+            <Button x:Name="btnCorner"
+                    Width="60" Height="60"
+                    HorizontalAlignment="Left"
+                    Focusable="False"
+                    Cursor="Hand"
+                    ToolTip="Chức năng khác">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="PART_Border"
+                                Background="#2E86DE"
+                                CornerRadius="18">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#1E2A3A" Direction="270" ShadowDepth="3"
+                                                  BlurRadius="14" Opacity="0.28"/>
+                            </Border.Effect>
+                            <Viewbox Width="26" Height="26">
+                                <Canvas Width="24" Height="24">
+                                    <Path x:Name="PART_Icon" Fill="#FFFFFF"
+                                          Data="M4,4H8V8H4V4M10,4H14V8H10V4M16,4H20V8H16V4M4,10H8V14H4V10M10,10H14V14H10V10M16,10H20V14H16V10M4,16H8V20H4V16M10,16H14V20H10V16M16,16H20V20H16V16Z"/>
+                                </Canvas>
+                            </Viewbox>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="PART_Border" Property="Background" Value="#2577C7"/>
+                            </Trigger>
+                            <Trigger Property="Tag" Value="open">
+                                <Setter TargetName="PART_Border" Property="Background" Value="#1F6FBF"/>
+                                <Setter TargetName="PART_Icon" Property="Data"
+                                        Value="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+
+        <!-- Cột phải: Tầng 2 (xổ ngang), căn đáy theo đáy thẻ Tầng 1 -->
+        <Grid x:Name="flyoutHost"
+              Grid.Column="1"
+              VerticalAlignment="Bottom"
+              HorizontalAlignment="Left"
+              Margin="12,0,0,72"
+              Visibility="Collapsed"
+              RenderTransformOrigin="0,1">
+            <Grid.RenderTransform>
+                <TranslateTransform x:Name="flyoutShift" X="0"/>
+            </Grid.RenderTransform>
+
+            <!-- STATE A: Chèn nội dung -->
+            <StackPanel x:Name="panelInsert" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                <Border Style="{StaticResource DockCardStyle}" Padding="6" HorizontalAlignment="Left">
+                    <WrapPanel x:Name="insertTabsHost" Orientation="Horizontal"/>
+                </Border>
+                <Border Style="{StaticResource DockCardStyle}" Padding="6" Margin="0,8,0,0" HorizontalAlignment="Left">
+                    <WrapPanel x:Name="insertToolsHost" Orientation="Horizontal"/>
+                </Border>
+            </StackPanel>
+
+            <!-- STATE B: Mở rộng -->
+            <Border x:Name="panelExpand"
+                    Style="{StaticResource DockCardStyle}"
+                    Padding="14,12"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Left"
+                    Visibility="Collapsed">
+                <WrapPanel x:Name="expandSectionsHost" Orientation="Horizontal"/>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

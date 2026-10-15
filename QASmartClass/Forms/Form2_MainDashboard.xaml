@@ -209,7 +209,8 @@
 
         <Grid Grid.Row="1" Margin="0,0,0,10">
 
-            <Border Background="White" 
+            <Border x:Name="borderLegacyToolbar"
+                    Background="White" 
 
                     BorderBrush="#E1E8ED" 
 
@@ -1013,6 +1014,38 @@
                 </Button>
             </StackPanel>
         </Border>
+
+        <!-- QC_4.2 SMART TOUCH: Radial Tool Dial (công cụ thường dùng) — feature flag AppSettings.UseRadialToolbar -->
+        <controls:RadialToolDial x:Name="radialDial"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,24,0"
+                                 Visibility="Collapsed"/>
+
+        <!-- QC_4.2 SMART TOUCH: Floating Bottom Center Dock Pill — feature flag AppSettings.UseRadialToolbar -->
+        <controls:SmartDockPill x:Name="smartDockPill"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,0,16"
+                                Visibility="Collapsed"
+                                Panel.ZIndex="2500"/>
+
+        <!-- QC_4.2 SMART TOUCH: Corner Dock Menu (giữ nguyên để chuyển đổi nếu cần) -->
+        <controls:CornerDockMenu x:Name="cornerDock"
+                                 HorizontalAlignment="Left"
+                                 VerticalAlignment="Bottom"
+                                 Margin="16,0,0,6"
+                                 Visibility="Collapsed"/>
+
+        <!-- QC_4.2 SMART TOUCH: Modal Tùy biến Vòng tròn Radial 6 Múi -->
+        <controls:RadialCustomizerModal x:Name="radialCustomizerModal"
+                                        Visibility="Collapsed"
+                                        Panel.ZIndex="3500"/>
+
+        <!-- QC_4.2 SMART TOUCH: Modal Xác nhận Thoát Ứng dụng -->
+        <controls:ExitConfirmModal x:Name="exitConfirmModal"
+                                   Visibility="Collapsed"
+                                   Panel.ZIndex="3600"/>
 
         <!-- Multi-User Dedicated Dual Board Overlay (Umind style) -->
         <controls:MultiUserBoardOverlay x:Name="multiUserOverlay"

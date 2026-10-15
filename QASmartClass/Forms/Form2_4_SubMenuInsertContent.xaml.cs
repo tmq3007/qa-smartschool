@@ -141,6 +141,54 @@ namespace QASmartTouch.Forms
                 MessageBoxImage.Information);
         }
 
+        /// <summary>
+        /// QC_4.2 Dock SMART TOUCH: chạy đúng handler Click hiện có theo khoá công cụ của Dock.
+        /// Trả về false nếu khoá không hợp lệ. Không thay đổi bất kỳ logic chèn nào.
+        /// </summary>
+        public bool InvokeTool(string key)
+        {
+            var args = new RoutedEventArgs();
+            switch (key)
+            {
+                // 4.1 Công cụ vẽ
+                case "ruler": btnInsertRuler_Click(this, args); return true;
+                case "compass": btnInsertCompass_Click(this, args); return true;
+                case "triangle": btnInsertTriangle_Click(this, args); return true;
+                case "protractor": btnInsertProtractor_Click(this, args); return true;
+                case "keyboard": btnInsertKeyboard_Click(this, args); return true;
+                // 4.2 Nội dung cơ bản
+                case "textbox": btnInsertTextBox_Click(this, args); return true;
+                case "table": btnInsertTable_Click(this, args); return true;
+                case "image": btnInsertImageFile_Click(this, args); return true;
+                case "camera": btnInsertImageCamera_Click(this, args); return true;
+                case "video": btnInsertVideo_Click(this, args); return true;
+                case "imagelib": btnInsertImageLibrary_Click(this, args); return true;
+                // 4.3 Biểu đồ & Đồ thị
+                case "chart-bar": btnChartBar_Click(this, args); return true;
+                case "chart-line": btnChartLine_Click(this, args); return true;
+                case "chart-pie": btnChartPie_Click(this, args); return true;
+                case "chart-scatter": btnChartScatter_Click(this, args); return true;
+                case "graph-2d": btnMathGraph_Click(this, args); return true;
+                case "graph-3d": btnMath3DGraph_Click(this, args); return true;
+                // 4.4 Môn học
+                case "periodic": btnChemPeriodicTable_Click(this, args); return true;
+                case "book": btnInsertBook_Click(this, args); return true;
+                case "geometry": btnMathGeometry_Click(this, args); return true;
+                case "circuit": btnPhysicsCircuit_Click(this, args); return true;
+                // 4.5 Công nghệ
+                case "model-3d": btnInsert3DModel_Click(this, args); return true;
+                case "phet": btnPhETBrowseAll_Click(this, args); return true;
+                case "maps": btnGoogleMapsCustom_Click(this, args); return true;
+                case "youtube": btnOpenYouTube_Click(this, args); return true;
+                // 4.6 AI & Trợ lý
+                case "ai-quiz": btnAIGenerate_Click(this, args); return true;
+                case "ai-chat": btnAIChatbot_Click(this, args); return true;
+                case "chatgpt": btnChatGPT_Click(this, args); return true;
+                case "bing": btnBingTranslator_Click(this, args); return true;
+                default: return false;
+            }
+        }
+
         // TAB 1: DRAWING TOOLS
         private void btnInsertRuler_Click(object sender, RoutedEventArgs e)
         {
