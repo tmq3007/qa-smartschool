@@ -106,6 +106,14 @@ namespace QASmartTouch.Forms
             penMenu.Left = windowPosition.X + (windowWidth - penMenu.Width) / 2; // Centered
             penMenu.Top = windowPosition.Y + windowHeight - toolbarHeight - penMenu.Height - 10; // 10px above toolbar
             
+            penMenu.SettingsChanged += (s, args) =>
+            {
+                _savedBrushType = penMenu.BrushType;
+                _savedPenSize = penMenu.PenSize;
+                _savedPenColor = penMenu.PenColor;
+                EnableDrawingMode(_savedBrushType, _savedPenSize, _savedPenColor);
+            };
+
             // Handle window closed event
             penMenu.Closed += (s, args) =>
             {

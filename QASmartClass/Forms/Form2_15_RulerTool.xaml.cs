@@ -98,17 +98,27 @@ namespace QASmartTouch.Forms
         
         private void LoadBrushSettings()
         {
-            // ✨ Nạp cấu hình bút vẽ từ settings/preferences
-            // TODO: Tích hợp với hệ thống Settings của bạn
-            // Hiện tại dùng giá trị mặc định:
-            _strokeColor = Color.FromRgb(34, 34, 34); // #222222
-            _strokeThickness = 2.0;
+            // ✨ QC_4.2_STEM_TOOL_PEN_SYNC: Kế thừa trực tiếp cấu hình bút hiện tại từ MainDashboard
+            if (_mainDashboard != null)
+            {
+                _strokeColor = _mainDashboard.CurrentPenColor;
+                _strokeThickness = Math.Max(2.0, _mainDashboard.CurrentPenSize);
+            }
+            else
+            {
+                _strokeColor = Color.FromRgb(34, 34, 34); // #222222
+                _strokeThickness = 2.0;
+            }
             _strokeCap = PenLineCap.Round;
-            
-            // Trong tương lai có thể load từ:
-            // _strokeColor = Properties.Settings.Default.StrokeColor;
-            // _strokeThickness = Properties.Settings.Default.StrokeThickness;
-            // _strokeCap = Properties.Settings.Default.StrokeCap;
+        }
+
+        /// <summary>
+        /// Cập nhật màu và độ dày nét vẽ đồng bộ theo bút của MainDashboard
+        /// </summary>
+        public void UpdatePenSettings(Color color, double thickness)
+        {
+            _strokeColor = color;
+            _strokeThickness = Math.Max(2.0, thickness);
         }
         
         private void GenerateRulerMarks()

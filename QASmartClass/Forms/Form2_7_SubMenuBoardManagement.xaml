@@ -1,7 +1,7 @@
 <Window x:Class="QASmartTouch.Forms.Form2_7_SubMenuBoardManagement"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="7. Công cụ bảng" 
+        Title="Công cụ bảng" 
         Width="450" Height="255"
         WindowStyle="None"
         AllowsTransparency="True"

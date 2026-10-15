@@ -362,6 +362,21 @@ namespace QASmartTouch.Forms
         public void SetMainDashboard(Form2_MainDashboard mainDashboard)
         {
             _mainDashboard = mainDashboard;
+            if (_mainDashboard != null)
+            {
+                // ✨ QC_4.2_STEM_TOOL_PEN_SYNC: Kế thừa trực tiếp cấu hình bút hiện tại từ MainDashboard
+                _strokeColor = _mainDashboard.CurrentPenColor;
+                _strokeThickness = Math.Max(2.0, _mainDashboard.CurrentPenSize);
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật màu và độ dày nét vẽ đồng bộ theo bút của MainDashboard
+        /// </summary>
+        public void UpdatePenSettings(Color color, double thickness)
+        {
+            _strokeColor = color;
+            _strokeThickness = Math.Max(2.0, thickness);
         }
 
         public bool IsWaitingForClick()

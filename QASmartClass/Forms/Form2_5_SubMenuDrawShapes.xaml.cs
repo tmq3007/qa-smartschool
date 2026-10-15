@@ -294,17 +294,22 @@ namespace QASmartTouch.Forms
 
         private Button CreateShapeButton(string shapeName, string category)
         {
+            var shapeStyle = TryFindResource("ShapeItemButtonStyle") as Style;
             var button = new Button
             {
-                Width = 80,
-                Height = 80,
-                Margin = new Thickness(5),
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5F6FA")),
-                BorderThickness = new Thickness(1),
-                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA")),
-                Cursor = System.Windows.Input.Cursors.Hand,
+                Style = shapeStyle,
                 Tag = shapeName
             };
+            if (shapeStyle == null)
+            {
+                button.Width = 92;
+                button.Height = 92;
+                button.Margin = new Thickness(4);
+                button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8F9FA"));
+                button.BorderThickness = new Thickness(1);
+                button.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA"));
+                button.Cursor = System.Windows.Input.Cursors.Hand;
+            }
 
             // Create visual preview of shape
             var canvas = new Canvas
@@ -442,11 +447,12 @@ namespace QASmartTouch.Forms
             stackPanel.Children.Add(new TextBlock
             {
                 Text = GetVietnameseName(shapeName),
-                FontSize = 10,
-                FontWeight = FontWeights.Medium,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2C3E50")),
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2F3542")),
                 TextAlignment = TextAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 3, 0, 0)
             });
 
             button.Content = stackPanel;

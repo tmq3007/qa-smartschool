@@ -340,6 +340,19 @@ namespace QASmartTouch.Forms
             _isDashed = chkDashed.IsChecked == true;
         }
 
+        /// <summary>
+        /// Cập nhật màu và độ dày nét vẽ đồng bộ theo bút của MainDashboard
+        /// </summary>
+        public void UpdatePenSettings(Color color, double thickness)
+        {
+            _drawColor = color;
+            _drawThickness = Math.Max(2.0, thickness);
+            if (txtThickness != null)
+            {
+                txtThickness.Text = $"{_drawThickness:F0} px";
+            }
+        }
+
         #endregion
     }
 

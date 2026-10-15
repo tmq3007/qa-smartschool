@@ -1213,6 +1213,19 @@ namespace QASmartTouch.Forms
         public void SetMainDashboard(Form2_MainDashboard mainDashboard)
         {
             _mainDashboard = mainDashboard;
+            if (_mainDashboard != null)
+            {
+                _strokeColor = _mainDashboard.CurrentPenColor;
+                _strokeThickness = Math.Max(2.0, _mainDashboard.CurrentPenSize);
+            }
+        }
+
+        /// <summary>
+        /// </summary>
+        public void UpdatePenSettings(Color color, double thickness)
+        {
+            _strokeColor = color;
+            _strokeThickness = Math.Max(2.0, thickness);
         }
 
         #endregion

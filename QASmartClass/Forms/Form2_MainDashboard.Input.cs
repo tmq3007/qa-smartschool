@@ -1633,6 +1633,11 @@ namespace QASmartTouch.Forms
                 _touchHandler.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Drawing);
             }
 
+            // ✨ QC_4.2_STEM_TOOL_PEN_SYNC: Kế thừa trực tiếp màu bút và độ dày nét cho các dụng cụ hình học
+            _activeRulerTool?.UpdatePenSettings(_currentPenColor, _currentPenSize);
+            _activeSetSquareTool?.UpdatePenSettings(_currentPenColor, _currentPenSize);
+            _activeCompassTool?.UpdatePenSettings(_currentPenColor, _currentPenSize);
+            _activeCircleDrawingTool?.UpdatePenSettings(_currentPenColor, _currentPenSize);
         }
 
         private void EnableEraserMode(int eraserSize, string eraserMode)

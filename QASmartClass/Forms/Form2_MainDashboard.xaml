@@ -647,54 +647,7 @@
 
 
 
-                <!-- Tool 9.5: Screen Curtain (Màn che bảng) -->
 
-                <Button x:Name="btn9_5_ScreenCurtain" 
-
-                       Width="50" Height="50" 
-
-                       Margin="3"
-
-                       Background="#F1F2F6"
-
-                       BorderThickness="0"
-
-                       Cursor="Hand"
-
-                       Click="btn9_5_ScreenCurtain_Click"
-
-                       ToolTip="Màn che bảng"
-                       Visibility="Collapsed">
-
-                    <Button.Template>
-
-                        <ControlTemplate TargetType="Button">
-
-                            <Border x:Name="PART_Border" Background="{TemplateBinding Background}" 
-
-                                    CornerRadius="10">
-
-                                <Viewbox Width="25" Height="25">
-
-                                    <Canvas Width="24" Height="24">
-
-                                        <!-- Screen with curtain icon -->
-
-                                        <Path Fill="#2F3542" 
-
-                                              Data="M4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H4A2,2 0 0,1 2,16V4A2,2 0 0,1 4,2M4,6V16H20V6H4M12,8A2,2 0 0,1 14,10A2,2 0 0,1 12,12A2,2 0 0,1 10,10A2,2 0 0,1 12,8M7,22V20H17V22H7Z"/>
-
-                                    </Canvas>
-
-                                </Viewbox>
-
-                            </Border>
-
-                        </ControlTemplate>
-
-                    </Button.Template>
-
-                </Button>
 
 
 

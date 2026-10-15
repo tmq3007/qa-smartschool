@@ -42,6 +42,20 @@ namespace QASmartTouch.Forms
 
         public bool IsApplied { get; private set; } = false;
 
+        private bool _isInitializing = true;
+
+        /// <summary>
+        /// </summary>
+        public event EventHandler? SettingsChanged;
+
+        private void NotifySettingsChanged()
+        {
+            if (!_isInitializing && IsLoaded)
+            {
+                SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         public Form2_1_SubMenuPen()
         {
             InitializeComponent();
@@ -111,6 +125,7 @@ namespace QASmartTouch.Forms
                 UpdateColorUI();
                 UpdateBrushTypeUI();
                 ApplyFeatureVisibility();
+                _isInitializing = false;
             };
         }
 
@@ -268,6 +283,9 @@ namespace QASmartTouch.Forms
             UpdateSizeIndicators(currentPenSize);
             UpdateColorUI();
             UpdatePreview();
+
+            // ✅ QC_4.2_SMART_TOUCH_SUBMENU_SYNC: Bắn sự kiện cập nhật cấu hình bút ngay lập tức
+            NotifySettingsChanged();
         }
 
         private void btnBrushType_Click(object sender, RoutedEventArgs e)
@@ -307,6 +325,9 @@ namespace QASmartTouch.Forms
             }
             UpdateSizeIndicators(currentPenSize);
             UpdatePreview();
+
+            // ✅ QC_4.2_SMART_TOUCH_SUBMENU_SYNC: Bắn sự kiện cập nhật cấu hình bút ngay lập tức
+            NotifySettingsChanged();
         }
 
         private void btnColor_Click(object sender, RoutedEventArgs e)
@@ -328,6 +349,9 @@ namespace QASmartTouch.Forms
                 ((Border)txtCustomColorHex.Parent).Background = new SolidColorBrush(currentPenColor);
                 
                 UpdateColorUI();
+
+                // ✅ QC_4.2_SMART_TOUCH_SUBMENU_SYNC: Bắn sự kiện cập nhật cấu hình bút ngay lập tức
+                NotifySettingsChanged();
             }
         }
 
@@ -358,6 +382,9 @@ namespace QASmartTouch.Forms
                     }
                     
                     UpdateColorUI();
+
+                    // ✅ QC_4.2_SMART_TOUCH_SUBMENU_SYNC: Bắn sự kiện cập nhật cấu hình bút ngay lập tức
+                    NotifySettingsChanged();
                 }
             }
             catch (Exception ex)
@@ -384,6 +411,9 @@ namespace QASmartTouch.Forms
             UpdateSizeIndicators(currentPenSize);
             UpdateColorUI();
             UpdatePreview();
+
+            // ✅ QC_4.2_SMART_TOUCH_SUBMENU_SYNC: Bắn sự kiện cập nhật cấu hình bút ngay lập tức
+            NotifySettingsChanged();
         }
 
         private void btnApply_Click(object sender, RoutedEventArgs e)

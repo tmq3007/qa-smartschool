@@ -439,44 +439,7 @@ namespace QASmartTouch.Forms
 
         #endregion
 
-        #region Screen Curtain (Màn che bảng)
 
-        private Form2_18_ScreenCurtain _screenCurtain;
-
-        /// <summary>
-        /// Toggle Screen Curtain (Màn che bảng)
-        /// </summary>
-        private void btn9_5_ScreenCurtain_Click(object sender, RoutedEventArgs e)
-        {
-            if (_screenCurtain == null || !_screenCurtain.IsVisible)
-            {
-                // ✅ PHASE 2: Deactivate tools and close submenus before showing curtain
-                DeactivateAllTools();
-                CloseAllSubmenus();
-                
-                // Show curtain
-                _screenCurtain = new Form2_18_ScreenCurtain();
-                _screenCurtain.Closed += (s, args) =>
-                {
-                    _screenCurtain = null;
-                    // Reset button appearance
-                    btn9_5_ScreenCurtain.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-                };
-                _screenCurtain.Show();
-                
-                // Highlight button when active
-                btn9_5_ScreenCurtain.Background = new SolidColorBrush(Color.FromRgb(103, 126, 234)); // #667EEA
-            }
-            else
-            {
-                // Close curtain
-                _screenCurtain.Close();
-                _screenCurtain = null;
-                btn9_5_ScreenCurtain.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-            }
-        }
-
-        #endregion
 
         #region Pan Mode (Drag to Scroll)
 

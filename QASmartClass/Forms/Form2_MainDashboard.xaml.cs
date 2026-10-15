@@ -84,6 +84,10 @@ namespace QASmartTouch.Forms
         public bool IsEraserEnabled => _eraserEnabled;
         public bool IsShapeDrawingEnabled => _shapeDrawingEnabled;
         
+        public Color CurrentPenColor => _currentPenColor;
+        public int CurrentPenSize => _currentPenSize;
+        public string CurrentBrushType => _currentBrushType;
+        
         // Saved pen settings (to restore when reopening pen tool)
         private string _savedBrushType = "Normal";
         private int _savedPenSize = 5;
@@ -178,6 +182,14 @@ namespace QASmartTouch.Forms
         
         // Compass Tool
         private Form2_18_CompassTool? _activeCompassTool;
+        
+        // Circle Drawing Tool (Compass 2D Canvas)
+        private Form2_19_CircleDrawingTool? _activeCircleDrawingTool;
+        public Form2_19_CircleDrawingTool? ActiveCircleDrawingTool
+        {
+            get => _activeCircleDrawingTool;
+            set => _activeCircleDrawingTool = value;
+        }
         
         // Compass Tool 3D
         

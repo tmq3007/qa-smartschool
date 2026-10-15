@@ -157,6 +157,17 @@ namespace QASmartTouch.Forms
                 var circleTool = new Form2_19_CircleDrawingTool();
                 circleTool.Owner = this.Owner ?? _mainDashboard; // Set owner để tránh rò rỉ cửa sổ con
                 circleTool.SetMainDashboard(_mainDashboard);
+                if (_mainDashboard != null)
+                {
+                    _mainDashboard.ActiveCircleDrawingTool = circleTool;
+                    circleTool.Closed += (s, e) =>
+                    {
+                        if (_mainDashboard != null && ReferenceEquals(_mainDashboard.ActiveCircleDrawingTool, circleTool))
+                        {
+                            _mainDashboard.ActiveCircleDrawingTool = null;
+                        }
+                    };
+                }
                 circleTool.Show(); // Show (not ShowDialog) để không block
                 this.Close(); // Đóng menu
                 try { this.Owner?.Activate(); } catch { }

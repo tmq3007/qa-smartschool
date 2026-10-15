@@ -430,8 +430,8 @@ namespace QASmartTouch.Forms
                 // Camera Configuration - Advanced feature
                 btnCameraConfig?.SetVisibilityByFeature("camera_config");
                 
-                // Quick Survey - Utility feature
-                btnQuickSurvey?.SetVisibilityByFeature("quick_survey");
+                // Quick Survey - Utility feature (Disabled for standalone whiteboard)
+                // btnQuickSurvey?.SetVisibilityByFeature("quick_survey");
                 
                 // =====================================================
                 // ENABLED FEATURES (always visible in v1.0)
