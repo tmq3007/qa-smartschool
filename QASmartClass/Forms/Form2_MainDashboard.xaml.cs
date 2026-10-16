@@ -2254,6 +2254,9 @@ namespace QASmartTouch.Forms
             _isLassoMode = false;
             _isMagicWandMode = false;
             
+            // ── WhiteboardCore FSM: Đồng bộ trạng thái DeactivateAll ──
+            _whiteboardManager?.ToolManager.DeactivateAll();
+            
             System.Diagnostics.Debug.WriteLine($"   All tool modes disabled");
             
             // Detach selection box & hide context toolbar & touch keyboard (QC_4.2_KEYBOARD)
@@ -2873,11 +2876,37 @@ namespace QASmartTouch.Forms
         {
             System.Diagnostics.Debug.WriteLine($"🔄 WhiteboardCore ToolChanged: {e.PreviousMode} → {e.NewMode}");
 
-            // Giai đoạn 3.1: Log event — chưa thay thế logic cũ.
-            // Khi migration hoàn tất, block này sẽ:
-            // - Đồng bộ cursor (Pen, None, Cross...)
-            // - Gọi _touchHandler.SetToolMode(...)
-            // - Gọi _selectionManager.DeselectAll() nếu cần
+            // ── FSM Synchronization (Strangler Fig Pattern) ──
+            if (e.NewMode != QASmartClass.WhiteboardCore.Enums.ToolMode.Select)
+            {
+                _selectionManager?.DeselectAll();
+                _selectionManager?.ClearClipboard();
+            }
+
+            if (e.NewMode != QASmartClass.WhiteboardCore.Enums.ToolMode.Eraser && _eraserEnabled)
+            {
+                HideEraserCursorPreview();
+            }
+
+            switch (e.NewMode)
+            {
+                case QASmartClass.WhiteboardCore.Enums.ToolMode.Pen:
+                    _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Drawing);
+                    break;
+                case QASmartClass.WhiteboardCore.Enums.ToolMode.Eraser:
+                    _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Eraser);
+                    break;
+                case QASmartClass.WhiteboardCore.Enums.ToolMode.Select:
+                    _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Selection);
+                    break;
+                case QASmartClass.WhiteboardCore.Enums.ToolMode.Pointer:
+                    _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Pointer);
+                    break;
+                case QASmartClass.WhiteboardCore.Enums.ToolMode.None:
+                default:
+                    _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.None);
+                    break;
+            }
         }
 
         #endregion

@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Effects;
 using QASmartTouch.Forms;
+using QASmartTouch.Shared;
 
 namespace QASmartTouch.Helpers
 {
@@ -25,10 +26,11 @@ namespace QASmartTouch.Helpers
     {
         public class ChartContainerOptions
         {
-            public Form2_MainDashboard MainDashboard { get; set; } = null!;
+            public Form2_MainDashboard? MainDashboard { get; set; }
             public string ChartTitle { get; set; } = "Biểu đồ";
             public string Icon { get; set; } = "📊";
-            public RenderTargetBitmap Bitmap { get; set; } = null!;
+            public RenderTargetBitmap? Bitmap { get; set; }
+            public ImageSource? ImageSource { get; set; }
             public double InitialWidth { get; set; } = 640;
             public double InitialHeight { get; set; } = 420;
             public double? TargetLeft { get; set; }
@@ -42,17 +44,10 @@ namespace QASmartTouch.Helpers
         public const double HeaderBarHeight = 38.0;
 
         /// <summary>
-        /// Tạo và gắn container biểu đồ tương tác lên Canvas MainInteractiveBoard
+        /// Xây dựng đối tượng Grid container biểu đồ tương tác độc lập (dùng cho cả thêm mới và phục hồi bài giảng)
         /// </summary>
-        public static Grid CreateAndAddChartToCanvas(ChartContainerOptions options)
+        public static Grid BuildChartContainer(ChartContainerOptions options, Canvas? mainCanvas = null)
         {
-            if (options.MainDashboard == null)
-                throw new ArgumentNullException(nameof(options.MainDashboard));
-
-            var mainCanvas = options.MainDashboard.FindName("MainInteractiveBoard") as Canvas;
-            if (mainCanvas == null)
-                throw new InvalidOperationException("Không tìm thấy MainInteractiveBoard trên dashboard.");
-
             // 1. Root Container (Grid 2 dòng: Dòng 0 Header Drag Bar, Dòng 1 Chart Body)
             var rootContainer = new Grid
             {
@@ -67,7 +62,7 @@ namespace QASmartTouch.Helpers
             // 2. Image hiển thị biểu đồ
             var chartImage = new Image
             {
-                Source = options.Bitmap,
+                Source = options.ImageSource ?? options.Bitmap,
                 Width = options.InitialWidth,
                 Height = options.InitialHeight,
                 Stretch = Stretch.Uniform
@@ -98,6 +93,26 @@ namespace QASmartTouch.Helpers
             rootContainer.Children.Add(headerDragBar);
             rootContainer.Children.Add(contentBorder);
 
+            // Đăng ký bộ lọc chạm 1 lần nhận ngay (Zero 2nd tap)
+            TouchActivationHelper.WireAllInteractiveControls(headerDragBar);
+
+            return rootContainer;
+        }
+
+        /// <summary>
+        /// Tạo và gắn container biểu đồ tương tác lên Canvas MainInteractiveBoard
+        /// </summary>
+        public static Grid CreateAndAddChartToCanvas(ChartContainerOptions options)
+        {
+            if (options.MainDashboard == null)
+                throw new ArgumentNullException(nameof(options.MainDashboard));
+
+            var mainCanvas = options.MainDashboard.FindName("MainInteractiveBoard") as Canvas;
+            if (mainCanvas == null)
+                throw new InvalidOperationException("Không tìm thấy MainInteractiveBoard trên dashboard.");
+
+            var rootContainer = BuildChartContainer(options, mainCanvas);
+
             // 5. Tính toán tọa độ đặt trên Canvas
             double left = options.TargetLeft ?? Math.Max(20, (mainCanvas.ActualWidth - options.InitialWidth) / 2);
             double top = options.TargetTop ?? Math.Max(20, (mainCanvas.ActualHeight - (options.InitialHeight + HeaderBarHeight)) / 2);
@@ -124,9 +139,6 @@ namespace QASmartTouch.Helpers
             options.MainDashboard.RecordChartAdd(rootContainer, options.ChartTitle);
             options.MainDashboard.RegisterObjectWithSelection(rootContainer);
 
-            // 8. Đăng ký với SelectionManager (nếu có)
-            TouchActivationHelper.WireAllInteractiveControls(headerDragBar);
-
             return rootContainer;
         }
 
@@ -137,7 +149,7 @@ namespace QASmartTouch.Helpers
             Grid rootContainer, 
             Image chartImage, 
             ChartContainerOptions options, 
-            Canvas mainCanvas)
+            Canvas? mainCanvas)
         {
             var headerBar = new Border
             {
@@ -211,9 +223,9 @@ namespace QASmartTouch.Helpers
             var btnCopy = CreateHeaderButton("📋", "Sao chép biểu đồ", Color.FromRgb(0, 184, 148));
             btnCopy.Click += (s, e) =>
             {
-                if (options.OnCopy != null)
+                if (options.OnCopy != null && options.Bitmap is RenderTargetBitmap rtb)
                 {
-                    options.OnCopy(rootContainer, options.Bitmap);
+                    options.OnCopy(rootContainer, rtb);
                 }
                 else
                 {
@@ -225,7 +237,14 @@ namespace QASmartTouch.Helpers
             var btnEdit = CreateHeaderButton("✏️", "Chỉnh sửa số liệu & cấu hình", Color.FromRgb(9, 132, 227));
             btnEdit.Click += (s, e) =>
             {
-                options.OnEdit?.Invoke(rootContainer);
+                if (options.OnEdit != null)
+                {
+                    options.OnEdit(rootContainer);
+                }
+                else
+                {
+                    DefaultEditChart(rootContainer, options);
+                }
             };
 
             // Nút Xóa ❌
@@ -303,12 +322,14 @@ namespace QASmartTouch.Helpers
         /// <summary>
         /// Kích hoạt cơ chế kéo di chuyển (Drag) CHỈ trên Header Bar (Chuẩn kép Mouse + Touch + Stylus)
         /// </summary>
-        private static void EnableHeaderDrag(Border headerBar, Grid rootContainer, Canvas mainCanvas)
+        private static void EnableHeaderDrag(Border headerBar, Grid rootContainer, Canvas? mainCanvas)
         {
             bool isDragging = false;
             Point dragStartPoint = new Point();
             double originalLeft = 0;
             double originalTop = 0;
+
+            Canvas? GetCanvas() => mainCanvas ?? rootContainer.Parent as Canvas ?? FindVisualParent<Canvas>(rootContainer);
 
             // Kiểm tra xem cú nhấn có phải trúng nút bấm không (nếu trúng nút bấm thì không drag)
             bool IsHitOnButton(object originalSource)
@@ -324,9 +345,11 @@ namespace QASmartTouch.Helpers
             headerBar.MouseLeftButtonDown += (s, e) =>
             {
                 if (IsHitOnButton(e.OriginalSource)) return;
+                var canvas = GetCanvas();
+                if (canvas == null) return;
 
                 isDragging = true;
-                dragStartPoint = e.GetPosition(mainCanvas);
+                dragStartPoint = e.GetPosition(canvas);
                 originalLeft = Canvas.GetLeft(rootContainer);
                 originalTop = Canvas.GetTop(rootContainer);
                 if (double.IsNaN(originalLeft)) originalLeft = 0;
@@ -340,7 +363,10 @@ namespace QASmartTouch.Helpers
             {
                 if (isDragging && headerBar.IsMouseCaptured)
                 {
-                    Point currentPoint = e.GetPosition(mainCanvas);
+                    var canvas = GetCanvas();
+                    if (canvas == null) return;
+
+                    Point currentPoint = e.GetPosition(canvas);
                     double deltaX = currentPoint.X - dragStartPoint.X;
                     double deltaY = currentPoint.Y - dragStartPoint.Y;
 
@@ -348,8 +374,8 @@ namespace QASmartTouch.Helpers
                     double newTop = originalTop + deltaY;
 
                     // Giới hạn trong Canvas
-                    newLeft = Math.Max(0, Math.Min(newLeft, mainCanvas.ActualWidth - rootContainer.ActualWidth));
-                    newTop = Math.Max(0, Math.Min(newTop, mainCanvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
+                    newLeft = Math.Max(0, Math.Min(newLeft, canvas.ActualWidth - rootContainer.ActualWidth));
+                    newTop = Math.Max(0, Math.Min(newTop, canvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
 
                     Canvas.SetLeft(rootContainer, newLeft);
                     Canvas.SetTop(rootContainer, newTop);
@@ -376,9 +402,11 @@ namespace QASmartTouch.Helpers
             headerBar.PreviewTouchDown += (s, e) =>
             {
                 if (IsHitOnButton(e.OriginalSource)) return;
+                var canvas = GetCanvas();
+                if (canvas == null) return;
 
                 isDragging = true;
-                dragStartPoint = e.GetTouchPoint(mainCanvas).Position;
+                dragStartPoint = e.GetTouchPoint(canvas).Position;
                 originalLeft = Canvas.GetLeft(rootContainer);
                 originalTop = Canvas.GetTop(rootContainer);
                 if (double.IsNaN(originalLeft)) originalLeft = 0;
@@ -392,15 +420,18 @@ namespace QASmartTouch.Helpers
             {
                 if (isDragging)
                 {
-                    Point currentPoint = e.GetTouchPoint(mainCanvas).Position;
+                    var canvas = GetCanvas();
+                    if (canvas == null) return;
+
+                    Point currentPoint = e.GetTouchPoint(canvas).Position;
                     double deltaX = currentPoint.X - dragStartPoint.X;
                     double deltaY = currentPoint.Y - dragStartPoint.Y;
 
                     double newLeft = originalLeft + deltaX;
                     double newTop = originalTop + deltaY;
 
-                    newLeft = Math.Max(0, Math.Min(newLeft, mainCanvas.ActualWidth - rootContainer.ActualWidth));
-                    newTop = Math.Max(0, Math.Min(newTop, mainCanvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
+                    newLeft = Math.Max(0, Math.Min(newLeft, canvas.ActualWidth - rootContainer.ActualWidth));
+                    newTop = Math.Max(0, Math.Min(newTop, canvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
 
                     Canvas.SetLeft(rootContainer, newLeft);
                     Canvas.SetTop(rootContainer, newTop);
@@ -422,9 +453,11 @@ namespace QASmartTouch.Helpers
             headerBar.PreviewStylusDown += (s, e) =>
             {
                 if (IsHitOnButton(e.OriginalSource)) return;
+                var canvas = GetCanvas();
+                if (canvas == null) return;
 
                 isDragging = true;
-                dragStartPoint = e.GetPosition(mainCanvas);
+                dragStartPoint = e.GetPosition(canvas);
                 originalLeft = Canvas.GetLeft(rootContainer);
                 originalTop = Canvas.GetTop(rootContainer);
                 if (double.IsNaN(originalLeft)) originalLeft = 0;
@@ -438,15 +471,18 @@ namespace QASmartTouch.Helpers
             {
                 if (isDragging)
                 {
-                    Point currentPoint = e.GetPosition(mainCanvas);
+                    var canvas = GetCanvas();
+                    if (canvas == null) return;
+
+                    Point currentPoint = e.GetPosition(canvas);
                     double deltaX = currentPoint.X - dragStartPoint.X;
                     double deltaY = currentPoint.Y - dragStartPoint.Y;
 
                     double newLeft = originalLeft + deltaX;
                     double newTop = originalTop + deltaY;
 
-                    newLeft = Math.Max(0, Math.Min(newLeft, mainCanvas.ActualWidth - rootContainer.ActualWidth));
-                    newTop = Math.Max(0, Math.Min(newTop, mainCanvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
+                    newLeft = Math.Max(0, Math.Min(newLeft, canvas.ActualWidth - rootContainer.ActualWidth));
+                    newTop = Math.Max(0, Math.Min(newTop, canvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
 
                     Canvas.SetLeft(rootContainer, newLeft);
                     Canvas.SetTop(rootContainer, newTop);
@@ -468,8 +504,12 @@ namespace QASmartTouch.Helpers
         /// <summary>
         /// Phóng to biểu đồ 15%
         /// </summary>
-        private static void ZoomIn(Grid rootContainer, Image chartImage, Canvas mainCanvas)
+        private static void ZoomIn(Grid rootContainer, Image chartImage, Canvas? mainCanvas)
         {
+            var canvas = mainCanvas ?? rootContainer.Parent as Canvas ?? FindVisualParent<Canvas>(rootContainer);
+            double canvasW = canvas?.ActualWidth ?? 1920;
+            double canvasH = canvas?.ActualHeight ?? 1080;
+
             double scale = 1.15;
             double currentW = rootContainer.Width > 0 ? rootContainer.Width : chartImage.Width;
             double currentH = chartImage.Height > 0 ? chartImage.Height : 300;
@@ -477,7 +517,7 @@ namespace QASmartTouch.Helpers
             double newW = currentW * scale;
             double newH = currentH * scale;
 
-            if (newW <= mainCanvas.ActualWidth - 40 && newH <= mainCanvas.ActualHeight - 100)
+            if (newW <= canvasW - 40 && newH <= canvasH - 100)
             {
                 rootContainer.Width = newW;
                 chartImage.Width = newW;
@@ -510,11 +550,104 @@ namespace QASmartTouch.Helpers
         /// </summary>
         private static void DefaultDeleteChart(Grid rootContainer, ChartContainerOptions options)
         {
-            var mainCanvas = options.MainDashboard.FindName("MainInteractiveBoard") as Canvas;
-            if (mainCanvas != null)
+            if (options.MainDashboard != null)
             {
-                mainCanvas.Children.Remove(rootContainer);
-                options.MainDashboard.RecordChartRemove(rootContainer, options.ChartTitle);
+                var mainCanvas = options.MainDashboard.FindName("MainInteractiveBoard") as Canvas;
+                if (mainCanvas != null)
+                {
+                    mainCanvas.Children.Remove(rootContainer);
+                    options.MainDashboard.RecordChartRemove(rootContainer, options.ChartTitle);
+                    return;
+                }
+            }
+            if (rootContainer.Parent is Panel parentPanel)
+            {
+                parentPanel.Children.Remove(rootContainer);
+            }
+        }
+
+        /// <summary>
+        /// Chỉnh sửa biểu đồ mặc định (khi mở lại bài giảng từ file đã lưu)
+        /// </summary>
+        private static void DefaultEditChart(Grid rootContainer, ChartContainerOptions options)
+        {
+            var config = options.Configuration ?? rootContainer.Tag;
+            if (config == null) return;
+
+            var dashboard = options.MainDashboard 
+                ?? Application.Current.Windows.OfType<Form2_MainDashboard>().FirstOrDefault();
+
+            double originalLeft = Canvas.GetLeft(rootContainer);
+            double originalTop = Canvas.GetTop(rootContainer);
+            if (double.IsNaN(originalLeft)) originalLeft = 0;
+            if (double.IsNaN(originalTop)) originalTop = 0;
+
+            bool? result = false;
+
+            if (config is BarChartConfiguration barConfig)
+            {
+                var editor = new Form2_8_BarChartEditor(dashboard)
+                {
+                    TargetLeft = originalLeft,
+                    TargetTop = originalTop
+                };
+                editor.LoadConfiguration(barConfig);
+                result = WindowHelper.ShowChildDialog(editor, dashboard);
+            }
+            else if (config is LineChartConfiguration lineConfig)
+            {
+                var editor = new Form2_9_LineChartEditor(dashboard)
+                {
+                    TargetLeft = originalLeft,
+                    TargetTop = originalTop
+                };
+                editor.LoadConfiguration(lineConfig);
+                result = WindowHelper.ShowChildDialog(editor, dashboard);
+            }
+            else if (config is PieChartConfiguration pieConfig)
+            {
+                var editor = new Form2_10_PieChartEditor(dashboard)
+                {
+                    TargetLeft = originalLeft,
+                    TargetTop = originalTop
+                };
+                editor.LoadConfiguration(pieConfig);
+                result = WindowHelper.ShowChildDialog(editor, dashboard);
+            }
+            else if (config is AreaChartConfiguration areaConfig)
+            {
+                var editor = new Form2_12_AreaChartEditor(dashboard)
+                {
+                    TargetLeft = originalLeft,
+                    TargetTop = originalTop
+                };
+                editor.LoadConfiguration(areaConfig);
+                result = WindowHelper.ShowChildDialog(editor, dashboard);
+            }
+            else if (config is ScatterChartConfiguration scatterConfig)
+            {
+                var editor = new Form2_13_ScatterChartEditor(dashboard)
+                {
+                    TargetLeft = originalLeft,
+                    TargetTop = originalTop
+                };
+                editor.LoadConfiguration(scatterConfig);
+                result = WindowHelper.ShowChildDialog(editor, dashboard);
+            }
+            else if (config is RadarChartConfiguration radarConfig)
+            {
+                var editor = new Form2_14_RadarChartEditor(dashboard)
+                {
+                    TargetLeft = originalLeft,
+                    TargetTop = originalTop
+                };
+                editor.LoadConfiguration(radarConfig);
+                result = WindowHelper.ShowChildDialog(editor, dashboard);
+            }
+
+            if (result == true)
+            {
+                DefaultDeleteChart(rootContainer, options);
             }
         }
 
@@ -528,31 +661,118 @@ namespace QASmartTouch.Helpers
             if (double.IsNaN(currentLeft)) currentLeft = 0;
             if (double.IsNaN(currentTop)) currentTop = 0;
 
+            var chartImg = GetChartImage(rootContainer);
+
             var copyOptions = new ChartContainerOptions
             {
                 MainDashboard = options.MainDashboard,
                 ChartTitle = $"{options.ChartTitle} (Bản sao)",
                 Icon = options.Icon,
                 Bitmap = options.Bitmap,
-                InitialWidth = rootContainer.Width,
-                InitialHeight = (rootContainer.Children.OfType<Border>().FirstOrDefault(b => Grid.GetRow(b) == 1)?.Child as Image)?.Height ?? options.InitialHeight,
+                ImageSource = options.ImageSource ?? chartImg?.Source,
+                InitialWidth = rootContainer.Width > 0 ? rootContainer.Width : 640,
+                InitialHeight = chartImg?.Height > 0 ? chartImg.Height : options.InitialHeight,
                 TargetLeft = currentLeft + 30,
                 TargetTop = currentTop + 30,
-                Configuration = options.Configuration,
+                Configuration = options.Configuration ?? rootContainer.Tag,
                 OnEdit = options.OnEdit,
                 OnCopy = options.OnCopy,
                 OnDelete = options.OnDelete
             };
 
-            CreateAndAddChartToCanvas(copyOptions);
+            if (options.MainDashboard != null)
+            {
+                CreateAndAddChartToCanvas(copyOptions);
+            }
+            else if (rootContainer.Parent is Canvas parentCanvas)
+            {
+                var newChart = BuildChartContainer(copyOptions, parentCanvas);
+                Canvas.SetLeft(newChart, Math.Max(0, copyOptions.TargetLeft ?? 0));
+                Canvas.SetTop(newChart, Math.Max(0, copyOptions.TargetTop ?? 0));
+                parentCanvas.Children.Add(newChart);
+            }
         }
 
-        private static T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        /// <summary>
+        /// Kiểm tra xem một UIElement có phải là Container của biểu đồ tương tác hay không
+        /// </summary>
+        public static bool IsChartContainer(FrameworkElement? element)
+        {
+            if (element is not Grid grid) return false;
+            if (grid.RowDefinitions.Count != 2) return false;
+            if (grid.Children.Count < 2) return false;
+
+            // Kiểm tra cấu trúc: child 0 là Border header (chiều cao xấp xỉ HeaderBarHeight), child 1 là Border chứa Image
+            if (grid.Children[0] is Border headerBorder && Math.Abs(headerBorder.Height - HeaderBarHeight) < 2.0)
+            {
+                if (grid.Children[1] is Border contentBorder && contentBorder.Child is Image)
+                    return true;
+            }
+
+            // Kiểm tra cấu hình Tag
+            if (grid.Tag != null)
+            {
+                var typeName = grid.Tag.GetType().Name;
+                if (typeName.EndsWith("ChartConfiguration"))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Lấy đối tượng Image chứa hình ảnh biểu đồ từ bên trong Grid container
+        /// </summary>
+        public static Image? GetChartImage(FrameworkElement? container)
+        {
+            if (container is not Grid grid) return null;
+            if (grid.Children.Count >= 2 && grid.Children[1] is Border contentBorder && contentBorder.Child is Image img)
+            {
+                return img;
+            }
+            return FindVisualChild<Image>(grid);
+        }
+
+        /// <summary>
+        /// Lấy Icon và Title của biểu đồ từ thanh Header Drag Bar
+        /// </summary>
+        public static (string icon, string title) GetChartHeaderInfo(FrameworkElement? container)
+        {
+            string icon = "📊";
+            string title = "Biểu đồ";
+            if (container is not Grid grid || grid.Children.Count == 0) return (icon, title);
+
+            if (grid.Children[0] is Border headerBorder && headerBorder.Child is Grid barGrid && barGrid.Children.Count > 0)
+            {
+                if (barGrid.Children[0] is StackPanel titlePanel && titlePanel.Children.Count >= 2)
+                {
+                    if (titlePanel.Children[0] is TextBlock tbIcon) icon = tbIcon.Text;
+                    if (titlePanel.Children[1] is TextBlock tbTitle) title = tbTitle.Text;
+                }
+            }
+            return (icon, title);
+        }
+
+        public static T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
         {
             DependencyObject? parentObject = VisualTreeHelper.GetParent(child);
             if (parentObject == null) return null;
             if (parentObject is T parent) return parent;
             return FindVisualParent<T>(parentObject);
+        }
+
+        public static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null) return null;
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild) return typedChild;
+                var nested = FindVisualChild<T>(child);
+                if (nested != null) return nested;
+            }
+            return null;
         }
     }
 }

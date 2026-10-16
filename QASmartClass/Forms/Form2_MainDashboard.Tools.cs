@@ -1772,6 +1772,11 @@ namespace QASmartTouch.Forms
             SelectTool(btn8_Select);                // Highlight button trên toolbar (cố định tham chiếu)
             HideWelcomeState();
             _objectSelectionMode = true;
+
+            // ── WhiteboardCore FSM: Chuyển sang Select Mode ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
+            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartClass.WhiteboardCore.Enums.SelectionMode.Rectangle);
+
             MainInteractiveBoard.Cursor = Cursors.Hand;
             _selectionManager?.DeselectAll();        // Reset selection cũ
             RefreshSelectableObjects();              // Scan canvas, đăng ký objects với bounds chính xác
@@ -1797,6 +1802,11 @@ namespace QASmartTouch.Forms
             SelectTool(btn8_Select);                // Highlight button trên toolbar
             HideWelcomeState();                     // Ẩn welcome state
             _objectSelectionMode = true;
+
+            // ── WhiteboardCore FSM: Chuyển sang Select Mode (Rectangle) ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
+            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartClass.WhiteboardCore.Enums.SelectionMode.Rectangle);
+
             MainInteractiveBoard.Cursor = Cursors.Hand;
             _selectionManager?.DeselectAll();        // Reset selection cũ
             RefreshSelectableObjects();              // Scan canvas, đăng ký objects với bounds chính xác
@@ -1823,6 +1833,11 @@ namespace QASmartTouch.Forms
             HideWelcomeState();
             _objectSelectionMode = true;
             _isLassoMode = true;
+
+            // ── WhiteboardCore FSM: Chuyển sang Select Mode (Lasso) ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
+            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartClass.WhiteboardCore.Enums.SelectionMode.Lasso);
+
             SelectTool(btn8_Select);
             MainInteractiveBoard.Cursor = Cursors.Cross;
             _selectionManager?.DeselectAll();        // Reset selection cũ
@@ -1853,6 +1868,11 @@ namespace QASmartTouch.Forms
             HideWelcomeState();
             _objectSelectionMode = true;
             _isMagicWandMode = true;
+
+            // ── WhiteboardCore FSM: Chuyển sang Select Mode (MagicWand) ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
+            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartClass.WhiteboardCore.Enums.SelectionMode.MagicWand);
+
             SelectTool(btn8_Select);
             MainInteractiveBoard.Cursor = Cursors.Hand;
             _selectionManager?.DeselectAll();

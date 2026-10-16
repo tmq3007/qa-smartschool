@@ -468,6 +468,9 @@ namespace QASmartTouch.Forms
 
             _isPanModeActive = true;
 
+            // ── WhiteboardCore FSM: Chuyển sang Pan Mode ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Pan);
+
             // Change cursor to hand
             MainScrollViewer.Cursor = Cursors.Hand;
             MainInteractiveBoard.Cursor = Cursors.Hand;
@@ -486,6 +489,12 @@ namespace QASmartTouch.Forms
         private void DisablePanMode()
         {
             _isPanModeActive = false;
+
+            // ── WhiteboardCore FSM: Khôi phục chế độ Bút hoặc Idle ──
+            if (_whiteboardManager?.ToolManager.CurrentMode == QASmartClass.WhiteboardCore.Enums.ToolMode.Pan)
+            {
+                _whiteboardManager?.ToolManager.SwitchTo(_drawingEnabled ? QASmartClass.WhiteboardCore.Enums.ToolMode.Pen : QASmartClass.WhiteboardCore.Enums.ToolMode.None);
+            }
 
             // Release capture if held
             if (MainScrollViewer.IsMouseCaptured)
@@ -540,6 +549,9 @@ namespace QASmartTouch.Forms
             _objectSelectionMode = false;
             _isPointerModeActive = true;
 
+            // ── WhiteboardCore FSM: Chuyển sang Pointer Mode ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Pointer);
+
             _selectionManager?.DeselectAll();
 
             MainInteractiveBoard.Cursor = Cursors.None;
@@ -562,6 +574,12 @@ namespace QASmartTouch.Forms
         public void DisablePointerMode()
         {
             _isPointerModeActive = false;
+
+            // ── WhiteboardCore FSM: Khôi phục chế độ Bút hoặc Idle ──
+            if (_whiteboardManager?.ToolManager.CurrentMode == QASmartClass.WhiteboardCore.Enums.ToolMode.Pointer)
+            {
+                _whiteboardManager?.ToolManager.SwitchTo(_drawingEnabled ? QASmartClass.WhiteboardCore.Enums.ToolMode.Pen : QASmartClass.WhiteboardCore.Enums.ToolMode.None);
+            }
             RemovePointerGraphic();
             HideSmartStatusBadge();
 
@@ -747,6 +765,9 @@ namespace QASmartTouch.Forms
                 _student2 = student2;
                 _isMultiUserModeActive = true;
 
+                // ── WhiteboardCore FSM: Chuyển sang MultiUser Mode ──
+                _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.MultiUser);
+
                 // 1. Lưu lại trạng thái bài giảng hiện tại của giáo viên
                 _boardManager?.SaveCurrentBoardState();
 
@@ -923,6 +944,12 @@ namespace QASmartTouch.Forms
                 // Ẩn Sandbox Overlay và trả về trang bài giảng hiện tại
                 multiUserOverlay.Visibility = Visibility.Collapsed;
                 _isMultiUserModeActive = false;
+
+                // ── WhiteboardCore FSM: Khôi phục chế độ Bút hoặc Idle ──
+                if (_whiteboardManager?.ToolManager.CurrentMode == QASmartClass.WhiteboardCore.Enums.ToolMode.MultiUser)
+                {
+                    _whiteboardManager?.ToolManager.SwitchTo(_drawingEnabled ? QASmartClass.WhiteboardCore.Enums.ToolMode.Pen : QASmartClass.WhiteboardCore.Enums.ToolMode.None);
+                }
             }
         }
 

@@ -118,6 +118,14 @@ namespace QASmartTouch.Forms
                 return;
             }
 
+            // ── WhiteboardCore FSM Guard: Nếu FSM đang ở một công cụ cụ thể (khác None và khác Pen) thì TUYỆT ĐỐI không auto-pen ──
+            if (_whiteboardManager?.ToolManager != null && 
+                _whiteboardManager.ToolManager.CurrentMode != QASmartClass.WhiteboardCore.Enums.ToolMode.None && 
+                _whiteboardManager.ToolManager.CurrentMode != QASmartClass.WhiteboardCore.Enums.ToolMode.Pen)
+            {
+                return;
+            }
+
             // ✅ AUD-01 FIX: Bổ sung !_selectionToolEnabled, !_isMultiUserModeActive
             // LÝ DO: _selectionToolEnabled (Legacy Selection Tool) và _isMultiUserModeActive (Multi-User Split)
             //   là 2 tool-mode flags KHÔNG được guard bảo vệ → Auto-Pen ghi đè khi user chạm Canvas.
@@ -1607,6 +1615,10 @@ namespace QASmartTouch.Forms
             _currentPenSize = penSize;
             _currentPenColor = penColor;
             _drawingEnabled = true;
+
+            // ── WhiteboardCore FSM: Chuyển sang Pen Mode ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Pen);
+            _whiteboardManager?.ToolManager.PenTool.Configure(brushType, penSize, penColor);
             
             // Disable eraser with proper cleanup
             if (_eraserEnabled)
@@ -1661,6 +1673,9 @@ namespace QASmartTouch.Forms
             _eraserSize = eraserSize;
             _eraserMode = eraserMode;
             _eraserEnabled = true;
+
+            // ── WhiteboardCore FSM: Chuyển sang Eraser Mode ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Eraser);
             _drawingEnabled = false; // Disable drawing
             _shapeDrawingEnabled = false; // Disable shape drawing
             _textToolEnabled = false; // Disable text tool
@@ -1822,6 +1837,9 @@ namespace QASmartTouch.Forms
             // Store shape settings
             _currentShape = shapeName;
             _shapeDrawingEnabled = true;
+
+            // ── WhiteboardCore FSM: Chuyển sang Shape Mode ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Shape);
             _drawingEnabled = false; // Disable pen drawing
             
             // Disable eraser with proper cleanup
