@@ -321,15 +321,7 @@ namespace QASmartClass.Classroom.Views
                 }
                 else
                 {
-                    // Chế độ toàn trường (Admin/BGH hoặc GV muốn xem toàn bộ để dạy thay)
-                    var allItem = new QASmartClass.Data.ClassRoster 
-                    { 
-                        Id = -1, 
-                        ClassName = "Tất cả học sinh", 
-                        TeacherName = "Toàn trường", 
-                        StudentCount = ClassroomAppContext.ClassRoster.GetTotalStudentsCount() 
-                    };
-                    listItems.Add(allItem);
+                    // Chế độ toàn trường: Hiển thị danh sách các lớp để chọn
                     listItems.AddRange(allRosters);
                 }
                 
@@ -345,10 +337,7 @@ namespace QASmartClass.Classroom.Views
                 {
                     var firstItem = listItems[0];
                     lstClasses.SelectedItem = firstItem;
-                    if (firstItem.Id != -1)
-                    {
-                        ClassroomAppContext.ClassRoster.SetActiveRoster(firstItem);
-                    }
+                    ClassroomAppContext.ClassRoster.SetActiveRoster(firstItem);
                 }
                 
                 lstClasses.SelectionChanged += LstClasses_SelectionChanged;

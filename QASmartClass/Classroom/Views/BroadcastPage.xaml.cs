@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -2219,39 +2219,11 @@ namespace QASmartClass.Classroom.Views
                 if (groups != null && groups.Count > 0)
                 {
                     // CurrentGroups mode: Members l\u00E0 danh s\u00E1ch t\u00EAn HS
-                    var memberNames = new System.Collections.Generic.HashSet<string>();
-                    foreach (var cb in selectedGroupChecks)
-                    {
-                        if (cb.Tag is int idx && idx < groups.Count)
-                        {
-                            foreach (var name in groups[idx].Members)
-                                memberNames.Add(name);
-                        }
-                    }
-                    // Map t\u00EAn HS -> StudentCode t\u1EEB DB (lọc theo ActiveRoster ClassName nếu trùng tên học sinh)
-                    var activeClassName = ClassroomAppContext.ClassRoster.ActiveRoster?.ClassName;
-                    var students = ClassroomAppContext.Db?.Students?.ToList();
-                    if (students != null)
-                    {
-                        foreach (var s in students)
-                        {
-                            if (memberNames.Contains(s.FullName) && !string.IsNullOrEmpty(s.StudentCode))
-                            {
-                                var duplicateCount = students.Count(x => x.FullName == s.FullName);
-                                if (duplicateCount > 1)
-                                {
-                                    if (!string.IsNullOrEmpty(activeClassName) && s.ClassName == activeClassName)
-                                    {
-                                        codes.Add(s.StudentCode);
-                                    }
-                                }
-                                else
-                                {
-                                    codes.Add(s.StudentCode);
-                                }
-                            }
-                        }
-                    }
+                    var groupIndexes = selectedGroupChecks
+                        .Where(c => c.Tag is int)
+                        .Select(c => (int)c.Tag!);
+                    codes.AddRange(QASmartClass.Classroom.Services.StudentSelectionService.ResolveGroupCodes(groupIndexes));
+                    // Ánh xạ tên HS → StudentCode (xử lý trùng tên theo lớp đang hoạt động) do StudentSelectionService đảm nhiệm.
                 }
                 else
                 {

@@ -22,12 +22,13 @@
     <sys:String x:Key="Nav_Teachers">2.4 👨‍🏫 Danh sách giáo viên</sys:String>
 
     <sys:String x:Key="Nav_Section3">III. TƯƠNG TÁC LỚP HỌC</sys:String>
+    <sys:String x:Key="Nav_ClassControlHub">3.1 🖥️ Điều khiển lớp</sys:String>
     <sys:String x:Key="Nav_Classroom">3.1 🖥️ Điều khiển phiên dạy</sys:String>
     <sys:String x:Key="Nav_Monitor">3.2 👁️ Giám sát màn hình HS</sys:String>
     <sys:String x:Key="Nav_Broadcast">3.3 📺 Trình chiếu &amp; Phát sóng</sys:String>
     <sys:String x:Key="Nav_FileTransfer">3.4 📁 Trao đổi tài liệu</sys:String>
     <sys:String x:Key="Nav_WebPush">3.5 🌐 Điều hướng website</sys:String>
-    <sys:String x:Key="Nav_Messaging">3.6 💬 Tin nhắn &amp; Hộp thư</sys:String>
+    <sys:String x:Key="Nav_Messaging">3.2 💬 Tin nhắn &amp; Hộp thư</sys:String>
 
     <sys:String x:Key="Nav_Section4">IV. ĐÁNH GIÁ &amp; THỐNG KÊ</sys:String>
     <sys:String x:Key="Nav_Survey">4.1 🗳️ Khảo sát &amp; Thăm dò</sys:String>

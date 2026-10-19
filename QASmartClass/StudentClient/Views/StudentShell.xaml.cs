@@ -17997,12 +17997,7 @@ namespace QASmartClass.StudentClient.Views
 		// === VNC_BROADCAST: Logic phía Học sinh khởi chạy và giám sát vnctool-client.exe ===
 		private string GetVncDirectory()
 		{
-			string localDir = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "vnctool");
-			if (System.IO.Directory.Exists(localDir) && System.IO.File.Exists(System.IO.Path.Combine(localDir, "vnctool-client.exe")))
-			{
-				return localDir;
-			}
-			return @"D:\JOB\vnctool";
+			return QASmartClass.Services.VncBroadcastService.ResolveVncDir("vnctool-client.exe");
 		}
 
 		private void ShowVncBroadcast(string ip, int port, string sessionCode, bool isForce)

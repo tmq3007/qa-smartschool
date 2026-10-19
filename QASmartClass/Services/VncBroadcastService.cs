@@ -16,6 +16,31 @@ namespace QASmartClass.Services
     {
         public static VncBroadcastService Instance { get; } = new();
 
+        /// <summary>
+        /// Tìm thư mục chứa tệp thực thi VNC (dùng chung cho GV, HS và luật tường lửa).
+        /// Thứ tự: vnc → vnctool (cạnh ứng dụng) → D:\JOB\vnctool (tương thích cũ).
+        /// Nếu không tìm thấy, trả về thư mục mặc định cạnh ứng dụng.
+        /// </summary>
+        public static string ResolveVncDir(string exeName)
+        {
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string[] candidates =
+            {
+                Path.Combine(baseDir, "vnc"),
+                Path.Combine(baseDir, "vnctool"),
+                @"D:\JOB\vnctool"
+            };
+            foreach (var dir in candidates)
+            {
+                try
+                {
+                    if (File.Exists(Path.Combine(dir, exeName))) return dir;
+                }
+                catch { }
+            }
+            return candidates[0];
+        }
+
         private Process? _vncProcess;
         private DispatcherTimer? _elapsedTimer;
         private DispatcherTimer? _heartbeatTimer;
@@ -113,7 +138,7 @@ namespace QASmartClass.Services
                 WriteServerIni(VncPort, VncSessionCode);
 
                 string localIp = GetLocalIPAddress();
-                string vncDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vnc");
+                string vncDir = ResolveVncDir("vnctool-server.exe");
                 string exePath = Path.Combine(vncDir, "vnctool-server.exe");
 
                 if (!File.Exists(exePath))
@@ -185,7 +210,7 @@ namespace QASmartClass.Services
                 _vncProcess = null;
             }
 
-            KillExistingVncProcesses();
+            // Chỉ dừng tiến trình do chính ứng dụng này tạo (đã xử lý ở trên); không giết tiến trình VNC khác trên máy.
 
             // Send stop network command
             try
@@ -278,7 +303,7 @@ namespace QASmartClass.Services
                     _vncProcess = null;
                 }
 
-                string vncDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vnc");
+                string vncDir = ResolveVncDir("vnctool-server.exe");
                 string exePath = Path.Combine(vncDir, "vnctool-server.exe");
 
                 var startInfo = new ProcessStartInfo
@@ -333,7 +358,7 @@ namespace QASmartClass.Services
         {
             try
             {
-                string vncDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vnc");
+                string vncDir = ResolveVncDir("vnctool-server.exe");
                 if (!Directory.Exists(vncDir))
                 {
                     Directory.CreateDirectory(vncDir);
@@ -398,6 +423,15 @@ zlib_compression_level={zlibLevel}
 
         private string GetLocalIPAddress()
         {
+            // Ưu tiên danh sách IP đang hoạt động (giống UdpScreenBroadcastService) để thống nhất card mạng.
+            System.Collections.Generic.List<string> activeIps = new();
+            try
+            {
+                activeIps = QASmartClass.Classroom.Services.NetworkDiscoveryService.GetActiveLocalIPv4Addresses()
+                    .Where(ip => !string.IsNullOrEmpty(ip) && ip != "127.0.0.1").ToList();
+            }
+            catch { }
+
             try
             {
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
@@ -405,11 +439,19 @@ zlib_compression_level={zlibLevel}
                     socket.Connect("8.8.8.8", 65530);
                     if (socket.LocalEndPoint is IPEndPoint endPoint)
                     {
-                        return endPoint.Address.ToString();
+                        string routed = endPoint.Address.ToString();
+                        // Chỉ tin IP theo route nếu nó nằm trong danh sách card đang hoạt động (hoặc danh sách rỗng).
+                        if (activeIps.Count == 0 || activeIps.Contains(routed))
+                        {
+                            return routed;
+                        }
                     }
                 }
             }
             catch { }
+
+            // LAN không có internet / nhiều card: dùng card hoạt động đầu tiên giống bộ phát UDP.
+            if (activeIps.Count > 0) return activeIps[0];
 
             try
             {

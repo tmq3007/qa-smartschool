@@ -1,7 +1,11 @@
 <Page x:Class="QASmartClass.Classroom.Views.MonitorPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Title="Giám sát Học sinh" Background="#0B0F19"
+      Title="Giám sát &amp; Quản lý Lớp học"
+      Background="#F0F2F5"
+      FontFamily="Segoe UI, Inter"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch"
       Unloaded="Page_Unloaded">
 
     <Page.Resources>
@@ -18,9 +22,11 @@
         <Geometry x:Key="GeomPeople">M16,13C14.3,13 11,13.9 11,15.6V17H21V15.6C21,13.9 17.7,13 16,13M16,11A3,3 0 1,0 16,5A3,3 0 0,0 16,11M9,13C7.3,13 4,13.9 4,15.6V17H10V15.6C10,14.5 10.4,13.6 11,13M9,11A3,3 0 1,0 9,5A3,3 0 0,0 9,11Z</Geometry>
         <Geometry x:Key="GeomWarning">M12,2L1,21H23L12,2M12,6L19.5,19H4.5L12,6M12,10V14H13V10H12M12,16V17H13V16H12Z</Geometry>
         <Geometry x:Key="GeomInfo">M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M13,17H11V11H13V17M13,9H11V7H13V9Z</Geometry>
+        <Geometry x:Key="GeomComputer">M21,2H3C1.9,2 1,2.9 1,4v12c0,1.1 0.9,2 2,2h7v2H8v2h8v-2h-2v-2h7c1.1,0 2-0.9 2-2V4C23,2.9 22.1,2 21,2z M21,14H3V4h18V14z</Geometry>
+        <Geometry x:Key="GeomShield">M12,1L3,5v6c0,5.55,3.84,10.74,9,12c5.16-1.26,9-6.45,9-12V5L12,1z</Geometry>
 
-        <!-- Dark rounded button template -->
-        <ControlTemplate x:Key="DarkBtn" TargetType="Button">
+        <!-- Rounded button template -->
+        <ControlTemplate x:Key="LightBtn" TargetType="Button">
             <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8"
                     Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}">
@@ -28,7 +34,7 @@
             </Border>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="b" Property="Opacity" Value="0.88"/>
+                    <Setter TargetName="b" Property="Opacity" Value="0.9"/>
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
                     <Setter TargetName="b" Property="Opacity" Value="0.75"/>
@@ -36,11 +42,11 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
-        <!-- ComboBox Dark Styling -->
+        <!-- ComboBox Light Styling -->
         <Style TargetType="ComboBox">
-            <Setter Property="Background" Value="#1E293B"/>
-            <Setter Property="Foreground" Value="#F8FAFC"/>
-            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
@@ -48,154 +54,285 @@
         </Style>
     </Page.Resources>
 
-    <Grid Margin="16,12">
+    <!-- [RULE] QC_4.2_LAYOUT_GRID: rootGrid Stretch, No MaxWidth -->
+    <Grid x:Name="rootGrid" Margin="16,12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>      <!-- Monitor grid + sidebar -->
-            <RowDefinition Height="Auto"/>   <!-- Status bar -->
+            <RowDefinition Height="Auto"/>   <!-- Row 0: Session Bar + View Switcher -->
+            <RowDefinition Height="*"/>      <!-- Row 1: Main Content (Monitor grid / List view + sidebar) -->
+            <RowDefinition Height="Auto"/>   <!-- Row 2: Status bar -->
         </Grid.RowDefinitions>
 
-        <!-- ═══ MAIN CONTENT: Grid + Sidebar ═══ -->
-        <Grid Grid.Row="0">
+        <!-- ═══ 0. SESSION BAR & VIEW MODE SWITCHER (Gộp Phiên Dạy F4 + Giám sát F5) ═══ -->
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="14,10" Margin="0,0,0,10" BorderBrush="#E2E8F0" BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect Color="#0F172A" Opacity="0.04" BlurRadius="8" ShadowDepth="1"/>
+            </Border.Effect>
+            <DockPanel LastChildFill="True">
+                <!-- Right: Session Action + View Switcher -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- View Mode Switcher -->
+                    <Border Background="#F1F5F9" CornerRadius="8" Padding="3" Margin="0,0,12,0" BorderBrush="#E2E8F0" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="btnViewGrid" Content="🖥️ Lưới màn hình" Padding="12,6" FontSize="12" FontWeight="SemiBold"
+                                    Background="White" Foreground="#2563EB" BorderThickness="0" Cursor="Hand" Click="ViewMode_Grid_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                            <Button x:Name="btnViewList" Content="📋 Danh sách học sinh" Padding="12,6" FontSize="12" FontWeight="SemiBold"
+                                    Background="Transparent" Foreground="#64748B" BorderThickness="0" Cursor="Hand" Click="ViewMode_List_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Start / End Session Toggle -->
+                    <Button x:Name="btnStartSession" Content="Bắt đầu lớp" FontSize="13" FontWeight="Bold" Padding="18,8"
+                            Background="#10B981" Foreground="White" BorderThickness="0" Cursor="Hand" Click="StartSession_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Opacity" Value="0.9"/></Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+
+                <!-- Left: Session details pills -->
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Border Background="#EFF6FF" BorderBrush="#DBEAFE" BorderThickness="1" CornerRadius="8" Padding="8,4" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🏫 Lớp:" FontSize="13" FontWeight="Bold" Foreground="#1E40AF" Margin="4,0,6,0" VerticalAlignment="Center"/>
+                            <ComboBox x:Name="cmbSessionClass" Width="140" Height="28" FontSize="12.5" FontWeight="Bold"
+                                      Foreground="#1D4ED8" Background="Transparent" BorderThickness="0"
+                                      VerticalContentAlignment="Center" Cursor="Hand" SelectionChanged="CmbSessionClass_SelectionChanged"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#FAF5FF" BorderBrush="#F3E8FF" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,0,8,0">
+                        <TextBlock x:Name="txtSessionCode" Text="Mã lớp: --" FontSize="12" FontWeight="SemiBold" Foreground="#7E22CE"/>
+                    </Border>
+                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="10,6">
+                        <TextBlock x:Name="txtSessionIP" Text="IP: --" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
+                    </Border>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ═══ MAIN CONTENT: Grid/List + Sidebar ═══ -->
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="220"/>
             </Grid.ColumnDefinitions>
 
-            <ListBox x:Name="monitorGrid" Grid.Column="0" Margin="0,0,12,0"
-                     Background="Transparent" BorderThickness="0"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     VirtualizingStackPanel.IsVirtualizing="True"
-                     VirtualizingStackPanel.VirtualizationMode="Recycling"
-                     ScrollViewer.CanContentScroll="True"
-                     HorizontalContentAlignment="Stretch">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListBoxItem">
-                                    <ContentPresenter />
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0"/>
-                    </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <ItemsControl ItemsSource="{Binding Students}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="{Binding Path=DataContext.ColumnsCount, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Rows="1" IsItemsHost="True"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Margin="4" CornerRadius="8" Cursor="Hand"
-                                            MouseLeftButtonDown="Thumbnail_Click" ClipToBounds="True"
-                                            MaxHeight="160">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Background" Value="#131B2E"/>
-                                                <Setter Property="BorderBrush" Value="#334155"/>
-                                                <Setter Property="BorderThickness" Value="1.5"/>
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="BorderBrush" Value="#38BDF8"/>
-                                                        <Setter Property="Background" Value="#1A243B"/>
-                                                    </Trigger>
-                                                    <DataTrigger Binding="{Binding HasAlert}" Value="True">
-                                                        <Setter Property="BorderBrush" Value="#EF4444"/>
-                                                        <Setter Property="BorderThickness" Value="2"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                        <Setter Property="BorderBrush" Value="#3B82F6"/>
-                                                        <Setter Property="BorderThickness" Value="2"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <Grid>
-                                            <!-- Thumbnail area (single row, overlay layout) -->
-                                            <Border MinHeight="105" ClipToBounds="True" Background="#070A12">
-                                                <Grid>
-                                                    <!-- Screenshot image (real capture) -->
-                                                    <Image Source="{Binding ScreenshotSource}"
-                                                           Stretch="Uniform"
-                                                           RenderOptions.BitmapScalingMode="HighQuality"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-                                                    
-                                                    <!-- Placeholder if no screenshot (Khung vi tính Standby sắc nét) -->
-                                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
-                                                                Visibility="{Binding PlaceholderVisibility}">
-                                                        <Border Width="46" Height="32" CornerRadius="5" BorderBrush="#334155" BorderThickness="1.5"
-                                                                Background="#0F172A" HorizontalAlignment="Center">
-                                                            <Path Data="{StaticResource GeomScreen}" Fill="#64748B" Width="20" Height="20"
-                                                                  Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <!-- 1. LEFT CONTENT AREA (Switcher between Grid & List) -->
+            <Grid Grid.Column="0" Margin="0,0,12,0">
+                <!-- 1.1 Live Thumbnail Grid (Modern Light Pedagogical Card Theme) -->
+                <ListBox x:Name="monitorGrid" Visibility="Visible"
+                         Background="Transparent" BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         VirtualizingStackPanel.IsVirtualizing="True"
+                         VirtualizingStackPanel.VirtualizationMode="Recycling"
+                         ScrollViewer.CanContentScroll="True"
+                         HorizontalContentAlignment="Stretch">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <ItemsControl ItemsSource="{Binding Students}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="{Binding Path=DataContext.ColumnsCount, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Rows="1" IsItemsHost="True"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <!-- Modern Soft Pedagogical Student Card -->
+                                        <Border Margin="5" CornerRadius="10" Cursor="Hand"
+                                                MouseLeftButtonDown="Thumbnail_Click" ClipToBounds="True"
+                                                MinHeight="150">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="#0F172A" Opacity="0.05" BlurRadius="8" ShadowDepth="1"/>
+                                            </Border.Effect>
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="White"/>
+                                                    <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                                    <Setter Property="BorderThickness" Value="1"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="BorderBrush" Value="#3B82F6"/>
+                                                            <Setter Property="Background" Value="#F8FAFC"/>
+                                                        </Trigger>
+                                                        <DataTrigger Binding="{Binding HasAlert}" Value="True">
+                                                            <Setter Property="BorderBrush" Value="#EF4444"/>
+                                                            <Setter Property="BorderThickness" Value="2"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                            <Setter Property="BorderBrush" Value="#2563EB"/>
+                                                            <Setter Property="BorderThickness" Value="2"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/> <!-- Row 0: Header -->
+                                                    <RowDefinition Height="*"/>    <!-- Row 1: Screen / Workstation Area -->
+                                                </Grid.RowDefinitions>
+
+                                                <!-- Top Header: Student Name + Status Badge -->
+                                                <Border Grid.Row="0" Background="#FFFFFF" Padding="8,6" BorderBrush="#F1F5F9" BorderThickness="0,0,0,1">
+                                                    <DockPanel LastChildFill="True">
+                                                        <!-- Status Pill (Right) -->
+                                                        <Border DockPanel.Dock="Right" CornerRadius="8" Padding="6,2" Background="{Binding StatusPillBackground}" VerticalAlignment="Center">
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <Ellipse Width="6" Height="6" Fill="{Binding StatusDotColor}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                                <TextBlock Text="{Binding DisplayPCName}" FontSize="10.5" FontWeight="SemiBold" Foreground="{Binding StatusTextColor}" VerticalAlignment="Center"/>
+                                                            </StackPanel>
                                                         </Border>
-                                                        <TextBlock Text="Chờ tín hiệu..." FontSize="11" FontWeight="SemiBold"
-                                                                   Foreground="#64748B" HorizontalAlignment="Center" Margin="0,5,0,0"/>
-                                                    </StackPanel>
 
-                                                    <!-- ═══ TOP OVERLAY: PC + Name + off-task badge ═══ -->
-                                                    <Border VerticalAlignment="Top" Padding="7,4"
-                                                            Background="#E60A0E17" BorderBrush="#1E293B" BorderThickness="0,0,0,1">
-                                                        <DockPanel>
-                                                            <!-- Off-task badge (right, red) -->
-                                                            <Border DockPanel.Dock="Right" CornerRadius="3" Padding="5,1"
-                                                                    Background="#EF4444" Margin="5,0,0,0"
-                                                                    Visibility="{Binding OffTaskVisibility}">
-                                                                <TextBlock Text="Ngoài bài" FontSize="10.5"
-                                                                           Foreground="White" FontWeight="Bold"/>
+                                                        <!-- Student Name (Left) -->
+                                                        <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="Bold" Foreground="#1E293B"
+                                                                   TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                    </DockPanel>
+                                                </Border>
+
+                                                <!-- Screen / Workstation Area -->
+                                                <Border Grid.Row="1" MinHeight="102" Background="#F8FAFC" ClipToBounds="True" Margin="6" CornerRadius="6" BorderBrush="#E2E8F0" BorderThickness="1">
+                                                    <Grid>
+                                                        <!-- Real Screenshot (When Active) -->
+                                                        <Image Source="{Binding ScreenshotSource}"
+                                                               Stretch="Uniform"
+                                                               RenderOptions.BitmapScalingMode="HighQuality"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+
+                                                        <!-- Pedagogical Workstation Placeholder (When Idle/Offline) -->
+                                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                    Visibility="{Binding PlaceholderVisibility}">
+                                                            <!-- Pastel Avatar Circle with Initials -->
+                                                            <Border Width="38" Height="38" CornerRadius="19"
+                                                                    Background="{Binding AvatarBackground}"
+                                                                    HorizontalAlignment="Center" Margin="0,0,0,3">
+                                                                <TextBlock Text="{Binding StudentInitials}"
+                                                                           Foreground="{Binding AvatarForeground}"
+                                                                           FontSize="13.5" FontWeight="Bold"
+                                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Border>
-                                                            <!-- VNC Focus Badge -->
-                                                            <Border DockPanel.Dock="Right" CornerRadius="3" Padding="5,1"
-                                                                    Background="{Binding BroadcastFocusColor}" Margin="5,0,0,0"
-                                                                    Visibility="{Binding BroadcastFocusVisibility}">
-                                                                <TextBlock Text="{Binding BroadcastFocusLabel}" FontSize="10.5"
-                                                                           Foreground="White" FontWeight="Bold"/>
-                                                            </Border>
-                                                            <!-- Online status dot with ring -->
-                                                            <Grid DockPanel.Dock="Right" Margin="5,0,2,0" VerticalAlignment="Center">
-                                                                <Ellipse Width="9" Height="9" Fill="{Binding StatusDotColor}"/>
-                                                                <Ellipse Width="9" Height="9" Stroke="#0A0E17" StrokeThickness="1"/>
-                                                            </Grid>
-                                                            <!-- PC: Name -->
-                                                            <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center"
-                                                                       FontSize="12.5" TextTrimming="CharacterEllipsis">
-                                                                <Run Text="{Binding DisplayPCName, Mode=OneWay}" Foreground="#38BDF8" FontWeight="Bold"/>
-                                                                <Run Text=" : " Foreground="#64748B" FontWeight="SemiBold"/>
-                                                                <Run Text="{Binding Name}" Foreground="#FFFFFF" FontWeight="Bold"/>
-                                                            </TextBlock>
-                                                        </DockPanel>
-                                                    </Border>
+                                                            <TextBlock Text="{Binding StatusText}" FontSize="10.5" FontWeight="SemiBold"
+                                                                       Foreground="#64748B" HorizontalAlignment="Center"/>
+                                                        </StackPanel>
 
-                                                    <!-- Selection checkbox (bottom-left, visible in select mode) -->
-                                                    <CheckBox IsChecked="{Binding IsSelected}" 
-                                                              HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                                                              Margin="8,0,0,8"
-                                                              Visibility="{Binding SelectModeVisibility}"
-                                                              Click="StudentCheckbox_Click"/>
+                                                        <!-- Off-task Alert Overlay (Top-Right) -->
+                                                        <Border VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4"
+                                                                CornerRadius="4" Padding="5,2" Background="#EF4444"
+                                                                Visibility="{Binding OffTaskVisibility}">
+                                                            <TextBlock Text="Ngoài bài" FontSize="9.5" Foreground="White" FontWeight="Bold"/>
+                                                        </Border>
 
-                                                    <!-- Activity color bar (bottom) -->
-                                                    <Rectangle Height="3" VerticalAlignment="Bottom"
-                                                               Fill="{Binding ActivityColor}"/>
-                                                </Grid>
+                                                        <!-- VNC Focus Badge (Top-Right) -->
+                                                        <Border VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4"
+                                                                CornerRadius="4" Padding="5,2" Background="{Binding BroadcastFocusColor}"
+                                                                Visibility="{Binding BroadcastFocusVisibility}">
+                                                            <TextBlock Text="{Binding BroadcastFocusLabel}" FontSize="9.5" Foreground="White" FontWeight="Bold"/>
+                                                        </Border>
+
+                                                        <!-- Selection Checkbox (Bottom-Left) -->
+                                                        <CheckBox IsChecked="{Binding IsSelected}" 
+                                                                  HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                                                  Margin="6"
+                                                                  Visibility="{Binding SelectModeVisibility}"
+                                                                  Click="StudentCheckbox_Click"/>
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- 1.2 Detail Student Card View (Gộp từ ClassroomPage.studentGrid) -->
+                <ScrollViewer x:Name="scrollStudentList" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="studentGrid">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Margin="4" HorizontalAlignment="Stretch"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="160" Height="140" Margin="6" CornerRadius="10" BorderBrush="#E2E8F0" BorderThickness="1" Background="White" Cursor="Hand" MouseLeftButtonDown="Thumbnail_Click">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#0F172A" Opacity="0.04" BlurRadius="8" ShadowDepth="2"/>
+                                    </Border.Effect>
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="BorderBrush" Value="#2563EB"/>
+                                                    <Setter Property="Background" Value="#F8FAFC"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Grid>
+                                        <StackPanel Margin="10,8" VerticalAlignment="Center">
+                                            <Border Height="80" CornerRadius="8" Background="{Binding AvatarBackground}" Margin="0,0,0,8">
+                                                <TextBlock Text="{Binding StudentInitials}"
+                                                           Foreground="{Binding AvatarForeground}"
+                                                           FontSize="22" FontWeight="Bold"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="8" Height="8" Fill="{Binding StatusDotColor}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                <TextBlock Text="{Binding Name}" FontSize="12.5" FontWeight="Bold" Foreground="#1E293B" TextTrimming="CharacterEllipsis" Width="120"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding DisplayPCName}" FontSize="11" Foreground="#64748B" Margin="14,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
 
-            <!-- ═══ RIGHT SIDEBAR (Dark Slate) ═══ -->
-            <Border Grid.Column="1" Background="#111827" CornerRadius="12"
-                    BorderBrush="#334155" BorderThickness="1" Padding="14,16">
+            <!-- ═══ RIGHT SIDEBAR (Light Pedagogical Card) ═══ -->
+            <Border Grid.Column="1" Background="White" CornerRadius="12"
+                    BorderBrush="#E2E8F0" BorderThickness="1" Padding="14,16">
+                <Border.Effect>
+                    <DropShadowEffect Color="#0F172A" Opacity="0.04" BlurRadius="8" ShadowDepth="1"/>
+                </Border.Effect>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>  <!-- Toast notification -->
@@ -222,11 +359,13 @@
 
                     <!-- ── ACTION BUTTONS ── -->
                     <StackPanel Grid.Row="1">
+                        <TextBlock Text="ĐIỀU KHIỂN NHANH" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="2,0,0,8"/>
+
                         <!-- 1. Khóa tất cả -->
-                        <Button Background="#DC2626" Foreground="White" Padding="0,11"
+                        <Button Background="#EF4444" Foreground="White" Padding="0,10"
                                 FontSize="13" FontWeight="Bold" Cursor="Hand"
                                 Margin="0,0,0,6" BorderThickness="0"
-                                Template="{StaticResource DarkBtn}" Click="LockAll_Click">
+                                Template="{StaticResource LightBtn}" Click="LockAll_Click">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource GeomLock}" Fill="White" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Khóa tất cả" VerticalAlignment="Center"/>
@@ -234,60 +373,71 @@
                         </Button>
 
                         <!-- 2. Mở khóa tất cả -->
-                        <Button Background="#16A34A" Foreground="White" Padding="0,11"
+                        <Button Background="#10B981" Foreground="White" Padding="0,10"
                                 FontSize="13" FontWeight="Bold" Cursor="Hand"
-                                Margin="0,0,0,10" BorderThickness="0"
-                                Template="{StaticResource DarkBtn}" Click="UnlockAll_Click">
+                                Margin="0,0,0,8" BorderThickness="0"
+                                Template="{StaticResource LightBtn}" Click="UnlockAll_Click">
                             <StackPanel Orientation="Horizontal">
                                 <Path Data="{StaticResource GeomUnlock}" Fill="White" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Mở khóa tất cả" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
+                        <!-- 3. Phát màn hình GV -->
+                        <Button Background="#2563EB" Foreground="White" Padding="0,10"
+                                FontSize="13" FontWeight="Bold" Cursor="Hand"
+                                Margin="0,0,0,8" BorderThickness="0"
+                                Template="{StaticResource LightBtn}" Click="BroadcastScreen_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource GeomScreen}" Fill="White" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Phát màn hình GV" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
                         <!-- ── CHỌN TỪNG HS ── -->
-                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,8"
+                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,6"
                                 Cursor="Hand" MouseLeftButtonDown="ToggleSelectMode_Click">
                             <DockPanel>
                                 <Border x:Name="toggleSelectMode" DockPanel.Dock="Right"
-                                        Width="42" Height="22" CornerRadius="11" Background="#64748B">
-                                    <Ellipse x:Name="toggleSelectDot" Width="18" Height="18" Fill="White"
+                                        Width="38" Height="20" CornerRadius="10" Background="#CBD5E1">
+                                    <Ellipse x:Name="toggleSelectDot" Width="16" Height="16" Fill="White"
                                              HorizontalAlignment="Left" Margin="2,0,0,0"/>
                                 </Border>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Path Data="{StaticResource GeomCheck}" Fill="#38BDF8" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Chọn từng HS" FontSize="13" Foreground="#F8FAFC"
+                                    <Path Data="{StaticResource GeomCheck}" Fill="#2563EB" Width="13" Height="13" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Chọn từng HS" FontSize="12.5" Foreground="#1E293B"
                                                FontWeight="SemiBold"/>
                                 </StackPanel>
                             </DockPanel>
                         </Border>
 
                         <!-- Actions for selected students (visible only in select mode) -->
-                        <StackPanel x:Name="pnlSelectedActions" Visibility="Collapsed" Margin="0,2,0,8">
+                        <StackPanel x:Name="pnlSelectedActions" Visibility="Collapsed" Margin="0,2,0,6">
                             <DockPanel Margin="0,0,0,6">
                                 <TextBlock x:Name="txtSelectedCount" Text="0 đã chọn"
-                                           FontSize="12" Foreground="#F59E0B" FontWeight="Bold" VerticalAlignment="Center"/>
+                                           FontSize="11.5" Foreground="#D97706" FontWeight="Bold" VerticalAlignment="Center"/>
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Content="Tất cả" FontSize="11" Padding="8,3" Cursor="Hand"
-                                            Background="#1E293B" Foreground="#22C55E" BorderBrush="#334155"
-                                            BorderThickness="1" Template="{StaticResource DarkBtn}"
+                                            Background="#F1F5F9" Foreground="#10B981" BorderBrush="#CBD5E1"
+                                            BorderThickness="1" Template="{StaticResource LightBtn}"
                                             Click="SelectAll_Click" Margin="0,0,4,0"/>
                                     <Button Content="Bỏ chọn" FontSize="11" Padding="8,3" Cursor="Hand"
-                                            Background="#1E293B" Foreground="#94A3B8" BorderBrush="#334155"
-                                            BorderThickness="1" Template="{StaticResource DarkBtn}"
+                                            Background="#F1F5F9" Foreground="#64748B" BorderBrush="#CBD5E1"
+                                            BorderThickness="1" Template="{StaticResource LightBtn}"
                                             Click="DeselectAll_Click"/>
                                 </StackPanel>
                             </DockPanel>
-                            <Button Background="#DC2626" Foreground="White" Padding="0,9"
+                            <Button Background="#EF4444" Foreground="White" Padding="0,8"
                                     FontSize="12" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,0,4" BorderThickness="0"
-                                    Template="{StaticResource DarkBtn}" Click="LockSelected_Click">
+                                    Template="{StaticResource LightBtn}" Click="LockSelected_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <Path Data="{StaticResource GeomLock}" Fill="White" Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
                                     <TextBlock Text="Khóa đã chọn" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
-                            <Button Background="#16A34A" Foreground="White" Padding="0,9"
+                            <Button Background="#10B981" Foreground="White" Padding="0,8"
                                     FontSize="12" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,0,4" BorderThickness="0"
-                                    Template="{StaticResource DarkBtn}" Click="UnlockSelected_Click">
+                                    Template="{StaticResource LightBtn}" Click="UnlockSelected_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <Path Data="{StaticResource GeomUnlock}" Fill="White" Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
                                     <TextBlock Text="Mở khóa đã chọn" VerticalAlignment="Center"/>
@@ -295,95 +445,86 @@
                             </Button>
                         </StackPanel>
 
-                        <!-- 3. Phát màn hình GV -->
-                        <Button Background="#2563EB" Foreground="White" Padding="0,11"
-                                FontSize="13" FontWeight="Bold" Cursor="Hand"
-                                Margin="0,0,0,8" BorderThickness="0"
-                                Template="{StaticResource DarkBtn}" Click="BroadcastScreen_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource GeomScreen}" Fill="White" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Phát màn hình GV" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-
                         <!-- 4. Chặn ứng dụng (Toggle) -->
-                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,8"
+                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12,8" Margin="0,0,0,8"
                                 Cursor="Hand" MouseLeftButtonDown="ToggleBlockApps_Click">
                             <DockPanel>
                                 <Border x:Name="toggleBlockApp" DockPanel.Dock="Right"
-                                        Width="42" Height="22" CornerRadius="11" Background="#22C55E">
-                                    <Ellipse x:Name="toggleDot" Width="18" Height="18" Fill="White"
+                                        Width="38" Height="20" CornerRadius="10" Background="#10B981">
+                                    <Ellipse x:Name="toggleDot" Width="16" Height="16" Fill="White"
                                              HorizontalAlignment="Right" Margin="0,0,2,0"/>
                                 </Border>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Path Data="{StaticResource GeomBlock}" Fill="#F59E0B" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Chặn ứng dụng" FontSize="13" Foreground="#F8FAFC"
+                                    <Path Data="{StaticResource GeomBlock}" Fill="#D97706" Width="13" Height="13" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Chặn ứng dụng" FontSize="12.5" Foreground="#1E293B"
                                                FontWeight="SemiBold"/>
                                 </StackPanel>
                             </DockPanel>
                         </Border>
 
+                        <TextBlock Text="TIỆN ÍCH LỚP HỌC" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="2,4,0,6"/>
+
                         <!-- 5. Gửi file -->
-                        <Button Background="#1E293B" Foreground="#F1F5F9" Padding="0,10"
-                                FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,0,6"
-                                BorderBrush="#334155" BorderThickness="1"
-                                Template="{StaticResource DarkBtn}" Click="SendFile_Click">
+                        <Button Background="#F8FAFC" Foreground="#334155" Padding="0,9"
+                                FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,0,5"
+                                BorderBrush="#E2E8F0" BorderThickness="1"
+                                Template="{StaticResource LightBtn}" Click="SendFile_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource GeomFile}" Fill="#94A3B8" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <Path Data="{StaticResource GeomFile}" Fill="#64748B" Width="13" Height="13" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Gửi file" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
                         <!-- 6. Gửi tin nhắn -->
-                        <Button Background="#1E293B" Foreground="#F1F5F9" Padding="0,10"
-                                FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,0,6"
-                                BorderBrush="#334155" BorderThickness="1"
-                                Template="{StaticResource DarkBtn}" Click="SendMessage_Click">
+                        <Button Background="#F8FAFC" Foreground="#334155" Padding="0,9"
+                                FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,0,5"
+                                BorderBrush="#E2E8F0" BorderThickness="1"
+                                Template="{StaticResource LightBtn}" Click="SendMessage_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource GeomChat}" Fill="#94A3B8" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <Path Data="{StaticResource GeomChat}" Fill="#64748B" Width="13" Height="13" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Gửi tin nhắn" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
                         <!-- 7. Chẩn đoán mạng LAN -->
-                        <Button Background="#1E293B" Foreground="#F1F5F9" Padding="0,10"
-                                FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,0,6"
-                                BorderBrush="#334155" BorderThickness="1"
-                                Template="{StaticResource DarkBtn}" Click="NetworkDiag_Click">
+                        <Button Background="#F8FAFC" Foreground="#334155" Padding="0,9"
+                                FontSize="12.5" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,0,5"
+                                BorderBrush="#E2E8F0" BorderThickness="1"
+                                Template="{StaticResource LightBtn}" Click="NetworkDiag_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource GeomInfo}" Fill="#94A3B8" Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <Path Data="{StaticResource GeomInfo}" Fill="#64748B" Width="13" Height="13" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Chẩn đoán mạng LAN" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
 
                     <!-- Separator -->
-                    <Border Grid.Row="2" Height="1" Background="#334155" Margin="0,10,0,12"/>
+                    <Border Grid.Row="2" Height="1" Background="#E2E8F0" Margin="0,8,0,10"/>
 
                     <!-- ── ACTIVITY LOG ── -->
                     <StackPanel Grid.Row="3">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Path Data="{StaticResource GeomInfo}" Fill="#38BDF8" Width="13" Height="13" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <Path Data="{StaticResource GeomInfo}" Fill="#2563EB" Width="13" Height="13" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
                             <TextBlock Text="NHẬT KÝ HOẠT ĐỘNG" FontSize="11" FontWeight="Bold"
-                                       Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                       Foreground="#64748B" VerticalAlignment="Center"/>
                         </StackPanel>
                         <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
                             <ItemsControl x:Name="activityLog">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Margin="0,0,0,5" CornerRadius="6" Padding="8,6"
-                                                Background="#0B0F19" BorderBrush="#1E293B" BorderThickness="1">
+                                                Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1">
                                             <StackPanel>
                                                 <DockPanel>
                                                     <TextBlock Text="{Binding Time}" DockPanel.Dock="Right"
                                                                FontSize="10.5" Foreground="#94A3B8" VerticalAlignment="Center"/>
                                                     <TextBlock Text="{Binding Title}" FontSize="12"
                                                                FontWeight="Bold"
-                                                               Foreground="{Binding LogFg}"
+                                                               Foreground="#1E293B"
                                                                TextTrimming="CharacterEllipsis"/>
                                                 </DockPanel>
                                                 <TextBlock Text="{Binding Detail}" FontSize="11"
-                                                           Foreground="#CBD5E1" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                                           Foreground="#475569" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
@@ -395,28 +536,31 @@
             </Border>
         </Grid>
 
-        <!-- ═══ BOTTOM STATUS BAR ═══ -->
-        <Border Grid.Row="1" Background="#111827" BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="16,8" Margin="0,8,0,0">
+        <!-- ═══ BOTTOM STATUS BAR (Light Pedagogical Card) ═══ -->
+        <Border Grid.Row="2" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="16,8" Margin="0,8,0,0">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Opacity="0.03" BlurRadius="6" ShadowDepth="1"/>
+            </Border.Effect>
             <DockPanel>
                 <!-- Right: grid size selector -->
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Display mode: connected only vs all class -->
-                    <ComboBox x:Name="cmbDisplayMode" Width="120" Height="36" Padding="10,4" FontSize="12" Foreground="White"
-                              Background="#1E293B" BorderBrush="#334155" VerticalContentAlignment="Center"
+                    <ComboBox x:Name="cmbDisplayMode" Width="120" Height="36" Padding="10,4" FontSize="12" Foreground="#1E293B"
+                              Background="#F8FAFC" BorderBrush="#CBD5E1" VerticalContentAlignment="Center"
                               SelectionChanged="DisplayMode_Changed" SelectedIndex="1">
                         <ComboBoxItem Content="Máy kết nối"/>
                         <ComboBoxItem Content="Cả lớp"/>
                     </ComboBox>
-                    <ComboBox x:Name="cmbFilter" Width="105" Height="36" Padding="10,4" FontSize="12" Margin="6,0,0,0" Foreground="White"
-                              Background="#1E293B" BorderBrush="#334155" VerticalContentAlignment="Center"
+                    <ComboBox x:Name="cmbFilter" Width="105" Height="36" Padding="10,4" FontSize="12" Margin="6,0,0,0" Foreground="#1E293B"
+                              Background="#F8FAFC" BorderBrush="#CBD5E1" VerticalContentAlignment="Center"
                               SelectionChanged="Filter_Changed" SelectedIndex="0">
                         <ComboBoxItem Content="Tất cả"/>
                         <ComboBoxItem Content="Online"/>
                         <ComboBoxItem Content="Offline"/>
                         <ComboBoxItem Content="Cảnh báo"/>
                     </ComboBox>
-                    <ComboBox x:Name="cmbGrid" Width="65" Height="36" Padding="10,4" FontSize="12" Margin="6,0,0,0" Foreground="White"
-                              Background="#1E293B" BorderBrush="#334155" VerticalContentAlignment="Center"
+                    <ComboBox x:Name="cmbGrid" Width="65" Height="36" Padding="10,4" FontSize="12" Margin="6,0,0,0" Foreground="#1E293B"
+                              Background="#F8FAFC" BorderBrush="#CBD5E1" VerticalContentAlignment="Center"
                               SelectionChanged="GridSize_Changed" SelectedIndex="2">
                         <ComboBoxItem Content="3×3"/>
                         <ComboBoxItem Content="4×4"/>
@@ -424,36 +568,36 @@
                         <ComboBoxItem Content="6×6"/>
                     </ComboBox>
                     <Border CornerRadius="6" Height="36" Padding="12,4" Margin="6,0,0,0" Cursor="Hand"
-                            Background="#1E293B" BorderBrush="#334155" BorderThickness="1"
+                            Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1"
                             MouseLeftButtonDown="ToggleAutoRefresh_Click" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Path Data="{StaticResource GeomRefresh}" Fill="#22C55E" Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <Path Data="{StaticResource GeomRefresh}" Fill="#16A34A" Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="txtRefreshStatus" Text="Tự động: 5s"
-                                       FontSize="12" Foreground="#22C55E" FontWeight="Bold" VerticalAlignment="Center"/>
+                                       FontSize="12" Foreground="#16A34A" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
 
                 <!-- Left: status info -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="9" Height="9" Fill="#22C55E" Margin="0,0,8,0"/>
+                    <Ellipse Width="9" Height="9" Fill="#16A34A" Margin="0,0,8,0"/>
                     <TextBlock x:Name="txtMonitorCount" Text="0/0 trực tuyến"
-                               FontSize="13" Foreground="#22C55E" FontWeight="Bold"/>
-                    <TextBlock Text="  |  " FontSize="13" Foreground="#475569"/>
+                               FontSize="13" Foreground="#16A34A" FontWeight="Bold"/>
+                    <TextBlock Text="  |  " FontSize="13" Foreground="#CBD5E1"/>
                     <TextBlock x:Name="txtAlertCount" Text="0 cảnh báo"
-                               FontSize="13" Foreground="#F59E0B" FontWeight="Bold"/>
-                    <TextBlock Text="  |  " FontSize="13" Foreground="#475569"/>
-                    <TextBlock Text="CPU trung bình: " FontSize="13" Foreground="#94A3B8" FontWeight="SemiBold"/>
+                               FontSize="13" Foreground="#D97706" FontWeight="Bold"/>
+                    <TextBlock Text="  |  " FontSize="13" Foreground="#CBD5E1"/>
+                    <TextBlock Text="CPU trung bình: " FontSize="13" Foreground="#64748B" FontWeight="SemiBold"/>
                     <TextBlock x:Name="txtCpuAvg" Text="—%" FontSize="13"
-                               Foreground="#F8FAFC" FontWeight="Bold" Margin="0,0,6,0"/>
-                    <TextBlock Text="  |  " FontSize="13" Foreground="#475569"/>
+                               Foreground="#1E293B" FontWeight="Bold" Margin="0,0,6,0"/>
+                    <TextBlock Text="  |  " FontSize="13" Foreground="#CBD5E1"/>
                     <Border CornerRadius="6" Height="36" Padding="12,4" Margin="6,0,0,0" Cursor="Hand"
-                            Background="#1E293B" BorderBrush="#334155" BorderThickness="1"
+                            Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1"
                             MouseLeftButtonDown="TogglePrivacyMode_Click" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Path x:Name="pathPrivacy" Data="{StaticResource GeomUnlock}" Fill="#94A3B8" Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <Path x:Name="pathPrivacy" Data="{StaticResource GeomUnlock}" Fill="#64748B" Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="txtPrivacyStatus" Text="Riêng tư: TẮT"
-                                       FontSize="12" Foreground="#E2E8F0" FontWeight="Bold" VerticalAlignment="Center"/>
+                                       FontSize="12" Foreground="#334155" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>

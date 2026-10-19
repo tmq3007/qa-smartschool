@@ -46,7 +46,16 @@ namespace QASmartClass.Services
         public bool IsScreenBroadcastActive
         {
             get { lock (_lock) return _isScreenBroadcastActive; }
-            set { lock (_lock) _isScreenBroadcastActive = value; }
+            set
+            {
+                bool changed;
+                lock (_lock)
+                {
+                    changed = _isScreenBroadcastActive != value;
+                    _isScreenBroadcastActive = value;
+                }
+                if (changed) StateChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
         public int ScreenBroadcastIntervalSec { get; set; } = 1;
         public bool IsForceWatchActive { get; set; }
@@ -106,6 +115,7 @@ namespace QASmartClass.Services
                 TargetSelectedStudents.Clear();
             }
             Log.Information("[BroadcastState] Reset");
+            StateChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void NotifyChanged() => StateChanged?.Invoke(this, EventArgs.Empty);

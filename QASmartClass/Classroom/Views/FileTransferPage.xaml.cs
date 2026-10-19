@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1201,13 +1201,10 @@ namespace QASmartClass.Classroom.Views
                     {
                         if (groups != null && groups.Count > 0 && cb.Tag is int index)
                         {
-                            var g = groups.FirstOrDefault(x => x.Index == index);
-                            if (g != null && g.Members != null)
+                            // Members là TÊN học sinh → quy đổi sang StudentCode (trước đây dùng nhầm tên làm mã).
+                            foreach (var code in StudentSelectionService.ResolveGroupCodes(new[] { index }))
                             {
-                                foreach (var code in g.Members)
-                                {
-                                    if (!codes.Contains(code)) codes.Add(code);
-                                }
+                                if (!codes.Contains(code)) codes.Add(code);
                             }
                         }
                         else if (cb.Tag is string className)

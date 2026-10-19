@@ -509,11 +509,7 @@
                             </DockPanel>
                         </Border>
                         <StackPanel x:Name="panelSec3" Visibility="Visible">
-                            <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Classroom}"    Tag="F4"  Click="NavButton_Click"/>
-                            <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Monitor}"      Tag="F5"  Click="NavButton_Click"/>
-                            <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Broadcast}"    Tag="F16" Click="NavButton_Click"/>
-                            <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_FileTransfer}" Tag="F11" Click="NavButton_Click"/>
-                            <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_WebPush}"      Tag="F30" Click="NavButton_Click"/>
+                            <Button Style="{StaticResource NavButton}" Content="{DynamicResource Nav_ClassControlHub}" Tag="FHUB" Click="NavButton_Click"/>
                             <Button x:Name="btnMessaging" Style="{StaticResource NavButton}" Content="{DynamicResource Nav_Messaging}" Tag="F13" Click="NavButton_Click"/>
                         </StackPanel>
 

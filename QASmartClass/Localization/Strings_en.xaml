@@ -22,12 +22,13 @@
     <sys:String x:Key="Nav_Teachers">2.4 👨‍🏫 Teachers Directory</sys:String>
 
     <sys:String x:Key="Nav_Section3">III. CLASS INTERACTION</sys:String>
+    <sys:String x:Key="Nav_ClassControlHub">3.1 🖥️ Class Control</sys:String>
     <sys:String x:Key="Nav_Classroom">3.1 🖥️ Session Control</sys:String>
     <sys:String x:Key="Nav_Monitor">3.2 👁️ Student Screen Monitor</sys:String>
     <sys:String x:Key="Nav_Broadcast">3.3 📺 Cast &amp; Broadcast</sys:String>
     <sys:String x:Key="Nav_FileTransfer">3.4 📁 Document Exchange</sys:String>
     <sys:String x:Key="Nav_WebPush">3.5 🌐 Website Navigation</sys:String>
-    <sys:String x:Key="Nav_Messaging">3.6 💬 Messages &amp; Inbox</sys:String>
+    <sys:String x:Key="Nav_Messaging">3.2 💬 Messages &amp; Inbox</sys:String>
 
     <sys:String x:Key="Nav_Section4">IV. EVALUATION &amp; STATISTICS</sys:String>
     <sys:String x:Key="Nav_Survey">4.1 🗳️ Survey &amp; Polls</sys:String>

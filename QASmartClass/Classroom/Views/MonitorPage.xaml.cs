@@ -1,34 +1,20 @@
-﻿using System;
-
+using System;
 using System.Collections.Generic;
-
 using System.Collections.ObjectModel;
-
 using System.ComponentModel;
-
 using System.Linq;
-
 using System.Runtime.CompilerServices;
-
 using System.Windows;
-
 using System.Windows.Controls;
-
 using System.Windows.Controls.Primitives;
-
 using System.Windows.Input;
-
 using System.Windows.Media;
-
 using System.Windows.Media.Imaging;
-
 using System.Windows.Threading;
-
 using Serilog;
 
-
-
 using QASmartClass.Classroom.Helpers;
+using QASmartClass.Classroom.Services;
 
 namespace QASmartClass.Classroom.Views
 
@@ -214,6 +200,8 @@ namespace QASmartClass.Classroom.Views
 
                 LoadStudentsFromDB();
 
+                InitializeSessionIntegration();
+
                 StartAutoRefresh();
 
                 SubscribeNetworkEvents();
@@ -264,7 +252,11 @@ namespace QASmartClass.Classroom.Views
 
         {
 
-            Dispatcher.Invoke(() => LoadStudentsFromDB());
+            Dispatcher.Invoke(() =>
+            {
+                LoadStudentsFromDB();
+                UpdateSessionUI();
+            });
 
         }
 
@@ -3334,9 +3326,13 @@ namespace QASmartClass.Classroom.Views
 
             int online = _allStudents.Count(s => s.IsOnline);
 
-            SendCommand("CMD|SCREEN_BROADCAST_START");
+            // Lệnh "CMD|SCREEN_BROADCAST_START" thiếu tham số nên máy HS bỏ qua (cần >= 3 phần) → trước đây nút này không có tác dụng.
+            // Chuyển sang màn Chiếu màn hình (F16) để chọn nguồn và bắt đầu chiếu thật sự.
+            bool alreadyLive = QASmartClass.Classroom.Services.ScreenShareController.Instance.IsLive;
+            if (Window.GetWindow(this) is ClassroomShell shell)
+                shell.NavigateTo("F16");
 
-            AddLog("Phát màn hình", $"Đang chia sẻ màn hình giáo viên tới {online} học sinh", "#2D3038", "#42A5F5");
+            AddLog("Phát màn hình", alreadyLive ? "Đang chiếu — mở màn Chiếu màn hình để quản lý" : $"Mở màn Chiếu màn hình ({online} học sinh trực tuyến)", "#2D3038", "#42A5F5");
 
             Log.Information("Broadcast teacher screen to {Count} students", online);
 
@@ -3619,6 +3615,165 @@ namespace QASmartClass.Classroom.Views
 
             ShowToast("Cảnh báo tập trung", $"Chỉ có {watching}/{total} học sinh đang theo dõi trình chiếu màn hình!");
         }
+
+        #region Session Integration & View Switcher (Gộp F4 Phiên dạy)
+
+        private void InitializeSessionIntegration()
+        {
+            try
+            {
+                var rosterService = ClassroomAppContext.ClassRoster;
+                if (rosterService != null)
+                {
+                    var rosters = rosterService.GetAllRosters();
+                    if (rosterService.ActiveRoster == null && rosters.Any())
+                    {
+                        rosterService.SetActiveRoster(rosters.First());
+                    }
+
+                    cmbSessionClass.SelectionChanged -= CmbSessionClass_SelectionChanged;
+                    cmbSessionClass.ItemsSource = rosters;
+                    cmbSessionClass.DisplayMemberPath = "ClassName";
+                    cmbSessionClass.SelectedValuePath = "Id";
+
+                    var active = rosterService.ActiveRoster;
+                    if (active != null)
+                    {
+                        cmbSessionClass.SelectedItem = rosters.FirstOrDefault(r => r.Id == active.Id) ?? active;
+                    }
+                    cmbSessionClass.SelectionChanged += CmbSessionClass_SelectionChanged;
+                }
+
+                UpdateSessionUI();
+                studentGrid.ItemsSource = _allStudents;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("Error initializing session integration in MonitorPage: {Err}", ex.Message);
+            }
+        }
+
+        private void CmbSessionClass_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (cmbSessionClass.SelectedItem is Data.ClassRoster selectedRoster)
+                {
+                    ClassroomAppContext.ClassRoster?.SetActiveRoster(selectedRoster);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("Error changing class in MonitorPage: {Err}", ex.Message);
+            }
+        }
+
+        public void UpdateSessionUI()
+        {
+            try
+            {
+                var roster = ClassroomAppContext.ClassRoster?.ActiveRoster;
+                if (roster != null && cmbSessionClass.SelectedItem != roster)
+                {
+                    cmbSessionClass.SelectionChanged -= CmbSessionClass_SelectionChanged;
+                    if (cmbSessionClass.ItemsSource is IEnumerable<Data.ClassRoster> rosters)
+                    {
+                        cmbSessionClass.SelectedItem = rosters.FirstOrDefault(r => r.Id == roster.Id) ?? roster;
+                    }
+                    cmbSessionClass.SelectionChanged += CmbSessionClass_SelectionChanged;
+                }
+
+                txtSessionCode.Text = $"Mã lớp: {ClassroomAppContext.Session?.ClassCode ?? "--"}";
+                txtSessionIP.Text = $"IP: {ClassroomAppContext.Network?.ServerIP ?? "--"}";
+
+                bool isActive = ClassroomAppContext.Session.IsSessionActive;
+                if (isActive)
+                {
+                    btnStartSession.Content = "Kết thúc lớp";
+                    btnStartSession.Background = new SolidColorBrush(Color.FromRgb(220, 38, 38)); // #DC2626
+                }
+                else
+                {
+                    btnStartSession.Content = "Bắt đầu lớp";
+                    btnStartSession.Background = new SolidColorBrush(Color.FromRgb(22, 163, 74)); // #16A34A
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("Error updating session UI in MonitorPage: {Err}", ex.Message);
+            }
+        }
+
+        private async void StartSession_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                btnStartSession.IsEnabled = false;
+                var sessionService = ClassroomAppContext.Session;
+
+                if (!sessionService.IsSessionActive)
+                {
+                    var rosterName = RosterHelper.GetActiveRosterName();
+                    string teacherName = ClassroomAppContext.Role.DisplayName;
+                    if (string.IsNullOrEmpty(teacherName)) teacherName = "Teacher";
+
+                    await sessionService.StartSessionAsync(rosterName, teacherName);
+
+                    if (Window.GetWindow(this) is ClassroomShell shell)
+                        shell.UpdateSessionInfo(rosterName, _allStudents.Count(s => s.IsOnline));
+
+                    AddLog("Bắt đầu lớp", $"Phiên học lớp {rosterName} đã bắt đầu thành công", "#EFF6FF", "#1D4ED8");
+                    ClassroomDialog.Info($"✅ Lớp học đã bắt đầu!\n\n👥 {_allStudents.Count} HS trong danh sách.", "Bắt đầu lớp học");
+                }
+                else
+                {
+                    var result = MessageBox.Show("Bạn có chắc chắn muốn kết thúc lớp học này không?", "Kết thúc lớp học", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        await sessionService.EndSessionAsync();
+
+                        if (Window.GetWindow(this) is ClassroomShell shell)
+                            shell.UpdateSessionInfo("Chưa chọn lớp", 0);
+
+                        AddLog("Kết thúc lớp", "Đã kết thúc phiên học", "#FEF2F2", "#DC2626");
+                        ClassroomDialog.Info("⏹️ Lớp học đã kết thúc.", "Kết thúc lớp học");
+                    }
+                }
+
+                UpdateSessionUI();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Lỗi chuyển đổi trạng thái phiên học");
+                ClassroomDialog.Error($"Không thể thực hiện yêu cầu: {ex.Message}", "Lỗi hệ thống");
+            }
+            finally
+            {
+                btnStartSession.IsEnabled = true;
+            }
+        }
+
+        private void ViewMode_Grid_Click(object sender, RoutedEventArgs e)
+        {
+            monitorGrid.Visibility = Visibility.Visible;
+            scrollStudentList.Visibility = Visibility.Collapsed;
+            btnViewGrid.Background = Brushes.White;
+            btnViewGrid.Foreground = new SolidColorBrush(Color.FromRgb(25, 118, 210));
+            btnViewList.Background = Brushes.Transparent;
+            btnViewList.Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139));
+        }
+
+        private void ViewMode_List_Click(object sender, RoutedEventArgs e)
+        {
+            monitorGrid.Visibility = Visibility.Collapsed;
+            scrollStudentList.Visibility = Visibility.Visible;
+            btnViewList.Background = Brushes.White;
+            btnViewList.Foreground = new SolidColorBrush(Color.FromRgb(25, 118, 210));
+            btnViewGrid.Background = Brushes.Transparent;
+            btnViewGrid.Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139));
+        }
+
+        #endregion
     }
 
 
@@ -3690,13 +3845,19 @@ namespace QASmartClass.Classroom.Views
 
 
         public bool IsOnline
-
         {
-
             get => _isOnline;
-
-            set { _isOnline = value; OnPropertyChanged(); OnPropertyChanged(nameof(StatusDotColor)); OnPropertyChanged(nameof(ActivityColor)); OnPropertyChanged(nameof(FocusLabel)); }
-
+            set
+            {
+                _isOnline = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(StatusDotColor));
+                OnPropertyChanged(nameof(StatusPillBackground));
+                OnPropertyChanged(nameof(StatusTextColor));
+                OnPropertyChanged(nameof(StatusText));
+                OnPropertyChanged(nameof(ActivityColor));
+                OnPropertyChanged(nameof(FocusLabel));
+            }
         }
 
 
@@ -3789,21 +3950,49 @@ namespace QASmartClass.Classroom.Views
 
 
 
-        // Computed properties for dark theme
-
+        // Computed properties for pedagogical theme
         public string DisplayPCName => MonitorPage.IsPrivacyModeActive ? MonitorPage.ObfuscatePCName(PCName) : PCName;
-
         public string DisplayIP     => MonitorPage.IsPrivacyModeActive ? "***.***.***.***" : IPAddress;
-
         public string FocusLabel     => IsOnline ? $"{FocusPct}%" : "Ngoại tuyến";
+        public string StatusDotColor => IsOnline ? "#10B981" : "#94A3B8";
+        public string StatusPillBackground => IsOnline ? "#ECFDF5" : "#F1F5F9";
+        public string StatusTextColor => IsOnline ? "#059669" : "#64748B";
+        public string StatusText => IsOnline ? "Trực tuyến" : "Ngoại tuyến";
 
-        public string StatusDotColor => IsOnline ? "#4CAF50" : "#F44336";
+        public string StudentInitials
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Name)) return "HS";
+                var parts = Name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 1) return parts[0].Length >= 2 ? parts[0].Substring(0, 2).ToUpper() : parts[0].ToUpper();
+                return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+            }
+        }
 
-        public string ActivityColor  => IsOnline
+        public string AvatarBackground
+        {
+            get
+            {
+                string[] colors = { "#EEF2FF", "#FEF3C7", "#E0F2FE", "#FCE7F3", "#F0FDF4", "#F3E8FF" };
+                int hash = Math.Abs((Name ?? "HS").GetHashCode());
+                return colors[hash % colors.Length];
+            }
+        }
 
-            ? (FocusPct >= 75 ? "#4CAF50" : FocusPct >= 50 ? "#FF9800" : "#F44336")
+        public string AvatarForeground
+        {
+            get
+            {
+                string[] colors = { "#4F46E5", "#D97706", "#0284C7", "#DB2777", "#16A34A", "#9333EA" };
+                int hash = Math.Abs((Name ?? "HS").GetHashCode());
+                return colors[hash % colors.Length];
+            }
+        }
 
-            : "#454A56";
+        public string ActivityColor => IsOnline
+            ? (FocusPct >= 75 ? "#10B981" : FocusPct >= 50 ? "#F59E0B" : "#EF4444")
+            : "#94A3B8";
 
 
 

@@ -30,6 +30,7 @@ namespace QASmartClass.Services
         // Assembly state on receiver
         private readonly ConcurrentDictionary<int, FrameAssembly> _activeAssemblies = new();
         private int _lastAssembledFrameIndex = -1;
+        private long _lastAssembledTimestamp = 0; // Ticks (UTC) của frame hoàn chỉnh gần nhất
 
         public event Action<byte[]>? FrameReceived;
 
@@ -232,6 +233,7 @@ namespace QASmartClass.Services
 
                 _activeAssemblies.Clear();
                 _lastAssembledFrameIndex = -1;
+                _lastAssembledTimestamp = 0;
                 Log.Information("[UdpBroadcast] Receiver FULLY stopped — socket closed, multicast left");
             }
             catch (Exception ex)
@@ -257,6 +259,18 @@ namespace QASmartClass.Services
                     short totalSlices = BitConverter.ToInt16(data, 6);
                     long timestamp = BitConverter.ToInt64(data, 8);
 
+                    // GV khởi động lại phát → frameIdx về 1 nhưng timestamp mới hơn rõ rệt.
+                    // Đồng bộ lại thay vì bỏ qua mọi frame (tránh HS đứng hình).
+                    if (frameIdx <= _lastAssembledFrameIndex &&
+                        _lastAssembledTimestamp > 0 &&
+                        timestamp - _lastAssembledTimestamp > TimeSpan.FromSeconds(2).Ticks)
+                    {
+                        Log.Information("[UdpBroadcast] Phát hiện GV phát lại (frame {Idx} <= {Last}). Reset bộ ghép frame.", frameIdx, _lastAssembledFrameIndex);
+                        _activeAssemblies.Clear();
+                        _lastAssembledFrameIndex = -1;
+                        _lastAssembledTimestamp = 0;
+                    }
+
                     // Skip older frame slices
                     if (frameIdx <= _lastAssembledFrameIndex) continue;
 
@@ -276,6 +290,7 @@ namespace QASmartClass.Services
                         if (frameIdx > _lastAssembledFrameIndex)
                         {
                             _lastAssembledFrameIndex = frameIdx;
+                            _lastAssembledTimestamp = assembly.Timestamp;
                             FrameReceived?.Invoke(reassembled);
 
                             // Record telemetry metrics
@@ -363,13 +378,9 @@ namespace QASmartClass.Services
             {
                 try
                 {
-                    string vncDir = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "vnctool");
-                    if (!System.IO.Directory.Exists(vncDir) || !System.IO.File.Exists(System.IO.Path.Combine(vncDir, "vnctool-server.exe")))
-                    {
-                        vncDir = @"D:\JOB\vnctool";
-                    }
+                    string vncDir = VncBroadcastService.ResolveVncDir("vnctool-server.exe");
                     string vncServerPath = System.IO.Path.Combine(vncDir, "vnctool-server.exe");
-                    string vncClientPath = System.IO.Path.Combine(vncDir, "vnctool-client.exe");
+                    string vncClientPath = System.IO.Path.Combine(VncBroadcastService.ResolveVncDir("vnctool-client.exe"), "vnctool-client.exe");
 
                     RunNetshCommand("advfirewall firewall delete rule name=\"QA SmartClass - VNC Server\"");
                     RunNetshCommand($"advfirewall firewall add rule name=\"QA SmartClass - VNC Server\" dir=in action=allow program=\"{vncServerPath}\" enable=yes profile=any protocol=TCP localport=5900-6000 description=\"Allow VNC Server\"");

@@ -1,0 +1,225 @@
+<Page x:Class="QASmartClass.Classroom.Views.ClassControlHub"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Điều Khiển Lớp Học"
+      Background="#F0F2F5"
+      FontFamily="Segoe UI, Inter"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch"
+      Loaded="Page_Loaded"
+      Unloaded="Page_Unloaded">
+
+    <Page.Resources>
+        <!-- Segmented Tab Button Style (Light Theme matching other pages) -->
+        <Style x:Key="HubTabButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,11"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0,0,0,3"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4,4,0,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#1E293B"/>
+                                <Setter TargetName="border" Property="Background" Value="#F8FAFC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="HubTabButtonActive" TargetType="Button" BasedOn="{StaticResource HubTabButton}">
+            <Setter Property="Foreground" Value="#1976D2"/>
+            <Setter Property="BorderBrush" Value="#1976D2"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+        </Style>
+
+        <!-- Quick Action Primary Button Style -->
+        <Style x:Key="QuickActionButtonPrimary" TargetType="Button">
+            <Setter Property="Background" Value="#1976D2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="b" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Quick Action Neutral Button Style -->
+        <Style x:Key="QuickActionButtonNeutral" TargetType="Button">
+            <Setter Property="Background" Value="#F1F5F9"/>
+            <Setter Property="Foreground" Value="#334155"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Margin" Value="3,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#E2E8F0"/>
+                                <Setter Property="Foreground" Value="#0F172A"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#CBD5E1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <!-- [RULE] QC_4.2_LAYOUT_GRID: rootGrid Stretch, No MaxWidth -->
+    <Grid x:Name="rootGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Top Control Bar -->
+            <RowDefinition Height="Auto"/> <!-- Tabs Header -->
+            <RowDefinition Height="*"/>    <!-- Sub-page Container -->
+        </Grid.RowDefinitions>
+
+        <!-- ═══ 1. TOP CONTROL BAR (Overview + Status + Quick Actions) ═══ -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="18,12">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Opacity="0.03" BlurRadius="10" ShadowDepth="2"/>
+            </Border.Effect>
+            <DockPanel LastChildFill="True">
+                <!-- Left: Title & Live Indicators -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left">
+                    <TextBlock Text="🖥️ ĐIỀU KHIỂN LỚP HỌC" FontSize="16" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" Margin="0,0,14,0"/>
+
+                    <!-- Live Share Status Pill -->
+                    <Border x:Name="pillLiveStatus" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse x:Name="dotLiveStatus" Width="8" Height="8" Fill="#94A3B8" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="txtLiveStatus" Text="Chưa phát màn hình" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Student Count Pill -->
+                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,8,0">
+                        <TextBlock x:Name="txtStudentCount" Text="👥 0 Học sinh" FontSize="11.5" FontWeight="SemiBold" Foreground="#1D4ED8"/>
+                    </Border>
+
+                    <!-- Silence Pill -->
+                    <Border x:Name="pillSilence" Visibility="Collapsed" Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,8,0">
+                        <TextBlock Text="🔇 Đang im lặng" FontSize="11.5" FontWeight="Bold" Foreground="#B91C1C"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Right: Quick Actions -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" DockPanel.Dock="Right">
+                    <!-- Quick Broadcast -->
+                    <Button x:Name="btnQuickBroadcast" Style="{StaticResource QuickActionButtonPrimary}" Background="#1976D2" Click="QuickBroadcast_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📺" FontSize="13" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="txtQuickBroadcast" Text="Phát màn hình"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Quick Lock All -->
+                    <Button x:Name="btnQuickLock" Style="{StaticResource QuickActionButtonPrimary}" Background="#DC2626" Click="QuickLock_Click" ToolTip="Khóa màn hình và chuột bàn phím tất cả máy học sinh">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔒" FontSize="13" Margin="0,0,5,0"/>
+                            <TextBlock Text="Khóa tất cả"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Quick Unlock All -->
+                    <Button x:Name="btnQuickUnlock" Style="{StaticResource QuickActionButtonPrimary}" Background="#16A34A" Click="QuickUnlock_Click" ToolTip="Mở khóa tất cả máy học sinh">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔓" FontSize="13" Margin="0,0,5,0"/>
+                            <TextBlock Text="Mở khóa"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Quick Mute/Silence -->
+                    <Button x:Name="btnQuickMute" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickMute_Click" ToolTip="Bật / Tắt âm thanh hoặc yêu cầu trật tự">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="iconQuickMute" Text="🔇" FontSize="13" Margin="0,0,5,0"/>
+                            <TextBlock x:Name="txtQuickMute" Text="Im lặng"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Quick Send File -->
+                    <Button x:Name="btnQuickFile" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickFile_Click" ToolTip="Chuyển nhanh sang phân hệ gửi tài liệu">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📁" FontSize="13" Margin="0,0,5,0"/>
+                            <TextBlock Text="Gửi file"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Quick Push Web -->
+                    <Button x:Name="btnQuickWeb" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickWeb_Click" ToolTip="Chuyển nhanh sang phân hệ điều hướng website">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌐" FontSize="13" Margin="0,0,5,0"/>
+                            <TextBlock Text="Mở Web"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ═══ 2. TABS NAVIGATION HEADER ═══ -->
+        <Border Grid.Row="1" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="14,0,14,0">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="tabBtnMonitor" Style="{StaticResource HubTabButtonActive}" Content="🖥️ Giám sát &amp; Quản lý lớp" Tag="Monitor" Click="TabButton_Click"/>
+                <Button x:Name="tabBtnBroadcast" Style="{StaticResource HubTabButton}" Content="📺 Trình chiếu &amp; Phát sóng" Tag="Broadcast" Click="TabButton_Click"/>
+                <Button x:Name="tabBtnFiles" Style="{StaticResource HubTabButton}" Content="📁 Trao đổi tài liệu" Tag="Files" Click="TabButton_Click"/>
+                <Button x:Name="tabBtnWeb" Style="{StaticResource HubTabButton}" Content="🌐 Điều hướng website" Tag="Web" Click="TabButton_Click"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ═══ 3. SUB-PAGES CONTAINER ═══ -->
+        <Grid Grid.Row="2" x:Name="PagesContainer" Background="#F0F2F5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Frame x:Name="frameMonitor" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Visible"/>
+            <Frame x:Name="frameBroadcast" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+            <Frame x:Name="frameFiles" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+            <Frame x:Name="frameWeb" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+        </Grid>
+    </Grid>
+</Page>

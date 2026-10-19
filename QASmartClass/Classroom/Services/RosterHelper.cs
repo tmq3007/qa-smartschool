@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using QASmartClass.Data;
@@ -35,8 +35,17 @@ namespace QASmartClass.Classroom.Services
                     }
                 }
 
-                // Fallback: tất cả HS
-                return app.Database.Students.ToList();
+                // Tự động gán lớp đầu tiên thay vì trả về toàn trường 292 học sinh
+                var firstRoster = app.ClassRoster.GetAllRosters().FirstOrDefault();
+                if (firstRoster != null)
+                {
+                    app.ClassRoster.SetActiveRoster(firstRoster);
+                    var students = app.ClassRoster.GetActiveStudents();
+                    if (students.Any()) return students;
+                }
+
+                // Fallback tối đa 35 HS nếu chưa có lớp nào được tạo
+                return app.Database.Students.Take(35).ToList();
             }
             catch
             {
@@ -56,9 +65,19 @@ namespace QASmartClass.Classroom.Services
             try
             {
                 var app = (QASmartTouch.App)Application.Current;
-                return app.ClassRoster.ActiveRoster?.DisplayName ?? "Tất cả HS";
+                var active = app.ClassRoster.ActiveRoster;
+                if (active != null) return active.ClassName;
+
+                // Tự động gán lớp đầu tiên thay vì "Tất cả HS"
+                var firstRoster = app.ClassRoster.GetAllRosters().FirstOrDefault();
+                if (firstRoster != null)
+                {
+                    app.ClassRoster.SetActiveRoster(firstRoster);
+                    return firstRoster.ClassName;
+                }
+                return "Chưa chọn lớp";
             }
-            catch { return "Tất cả HS"; }
+            catch { return "Chưa chọn lớp"; }
         }
     }
 }

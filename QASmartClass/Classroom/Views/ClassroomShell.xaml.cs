@@ -177,6 +177,31 @@ namespace QASmartClass.Classroom.Views
 				LoadTeacherProfile();
 				ApplyRolePermissions();
 
+				// Tự động chọn lớp học thực tế ngay khi vào ứng dụng, loại bỏ 'Tất cả HS'
+				var rosterService = ClassroomAppContext.ClassRoster;
+				if (rosterService != null)
+				{
+					if (rosterService.ActiveRoster == null)
+					{
+						var defaultRoster = rosterService.GetAllRosters().FirstOrDefault();
+						if (defaultRoster != null)
+						{
+							rosterService.SetActiveRoster(defaultRoster);
+						}
+					}
+
+					rosterService.ActiveRosterChanged += (senderRoster, newRoster) =>
+					{
+						Dispatcher.Invoke(() =>
+						{
+							if (newRoster != null)
+							{
+								UpdateActiveRosterUI(newRoster);
+							}
+						});
+					};
+				}
+
 				string landingPage = GetDefaultLandingPage();
 				NavigateTo(landingPage);
 
@@ -1042,6 +1067,8 @@ namespace QASmartClass.Classroom.Views
 
 				"LessonEditorPage" => "F3",
 
+				"ClassControlHub" => "FHUB",
+
 				"ClassroomPage" => "F4",
 
 				"MonitorPage" => "F5",
@@ -1159,13 +1186,23 @@ namespace QASmartClass.Classroom.Views
 			}
 
 			// Nếu không phải BGH/Admin mà cố truy cập các chức năng duyệt, chuyển hướng về trang giảng dạy mặc định
-			if (formId.StartsWith("F_") && !QASmartClass.Staff.Services.StaffSession.CanApprove())
+			if (formId != "FHUB" && formId != "F_HUB" && (formId.StartsWith("F_Approve") || formId.StartsWith("F_Dept") || formId.StartsWith("F_Moet") || formId.StartsWith("F_Payroll")) && !QASmartClass.Staff.Services.StaffSession.CanApprove())
 			{
 				formId = GetDefaultLandingPage();
 			}
 
 			// Tránh vòng lặp hoặc lưu trùng lặp trang hiện tại
 			if (formId == _currentPage) return;
+
+			// Hỗ trợ chuyển tab nhanh trong Hub điều khiển lớp nếu Hub đang hiển thị
+			if (contentFrame.Content is ClassControlHub hub && (formId == "FHUB" || formId == "F_HUB" || formId == "F4" || formId == "F5" || formId == "F16" || formId == "F11" || formId == "F30" || formId == "F12"))
+			{
+				hub.SelectTabByFormId(formId);
+				_currentPage = formId;
+				UpdateActiveButtonStyles(formId);
+				txtPageTitle.Text = "🖥️ Điều khiển lớp";
+				return;
+			}
 
 
 
@@ -1308,9 +1345,13 @@ namespace QASmartClass.Classroom.Views
 
 				"F3"  => "✏️ Soạn bài giảng",
 
-				"F4"  => "🖥️ Phiên dạy",
+				"FHUB"  => "🖥️ Điều khiển lớp",
 
-				"F5"  => "👁️ Giám sát MH học sinh",
+				"F_HUB" => "🖥️ Điều khiển lớp",
+
+				"F4"  => "🖥️ Điều khiển lớp",
+
+				"F5"  => "🖥️ Điều khiển lớp",
 
 				"F6"  => "🏆 Kiểm tra / Quiz",
 
@@ -1322,9 +1363,9 @@ namespace QASmartClass.Classroom.Views
 
 				"F10" => "👥 Quản lý Nhóm",
 
-				"F11" => "📁 Phát / Thu bài",
+				"F11" => "🖥️ Điều khiển lớp",
 
-				"F12" => "👁️ Giám sát MH học sinh",  // F12 merged into F5
+				"F12" => "🖥️ Điều khiển lớp",  // F12 merged into F5/Hub
 
 				"F13" => "💬 Tin nhắn & Thông báo",
 
@@ -1334,7 +1375,7 @@ namespace QASmartClass.Classroom.Views
 
 				"F15S" => "👨\u200d🎓 Quản lý Học sinh",
 
-				"F16" => "📺 Chiếu Màn hình",
+				"F16" => "🖥️ Điều khiển lớp",
 
 				"F17" => "🛡️ Bảo mật & Quyền",
 
@@ -1362,7 +1403,7 @@ namespace QASmartClass.Classroom.Views
 
 				"F29" => "🤖 AI Trợ giảng",
 
-				"F30" => "🌐 Mở website trên máy HS",
+				"F30" => "🖥️ Điều khiển lớp",
 
 				"F31" => "📐 Công cụ STEM",
 
@@ -1607,23 +1648,25 @@ namespace QASmartClass.Classroom.Views
 		{
 			return formId switch
 			{
+				"FHUB"  => new ClassControlHub(),
+				"F_HUB" => new ClassControlHub(),
 				"F1"  => new DashboardPage(),
 				"F2"  => new LessonListPage(),
 				"F3"  => new LessonEditorPage(),
-				"F4"  => new ClassroomPage(),
-				"F5"  => new MonitorPage(),
+				"F4"  => new ClassControlHub("Classroom"),
+				"F5"  => new ClassControlHub("Monitor"),
 				"F6"  => new QuizPage(),
 				"F7"  => new ReportPage(),
 				"F8"  => new SettingsPage(),
 				"F9"  => new LibraryPage(),
 				"F10" => new GroupPage(),
-				"F11" => new FileTransferPage(),
-				"F12" => new MonitorPage(),  // Remote merged into Monitor
+				"F11" => new ClassControlHub("Files"),
+				"F12" => new ClassControlHub("Monitor"),  // Remote merged into Monitor
 				"F13" => new MessagingPage(),
 				"F14" => new QuestionBankPage(),
 				"F15" => new StudentPage(showRosterFirst: true),
 				"F15S" => new StudentPage(showRosterFirst: false),
-				"F16" => new BroadcastPage(),
+				"F16" => new ClassControlHub("Broadcast"),
 				"F17" => new PolicyPage(),
 				"F18" => new SurveyPage(),
 				"F19" => new EventLogPage(),
@@ -1635,7 +1678,7 @@ namespace QASmartClass.Classroom.Views
 				"F25" => new LessonHistoryPage(),
 				"F27" => new AttendancePage(),
 				"F26" => new TimetablePage(),
-				"F30" => new WebsitePushPage(),
+				"F30" => new ClassControlHub("Web"),
 				"F28" => new HomeworkPage(),
 				"F29" => _aiAssistantPage ??= new AIAssistantPage(),
 				"F31" => new StemToolsPage(),
@@ -1662,7 +1705,7 @@ namespace QASmartClass.Classroom.Views
 		{
 			Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
 			{
-				string[] corePages = { "F15", "F2", "F26", "F4", "F5" };
+				string[] corePages = { "F15", "F2", "F26", "FHUB" };
 				foreach (var id in corePages)
 				{
 					if (!_pageCache.ContainsKey(id))
@@ -1719,7 +1762,7 @@ namespace QASmartClass.Classroom.Views
 
 			if (activeFormId == "F15S") activeFormId = "F15";
 
-			else if (activeFormId == "F12") activeFormId = "F5";
+			else if (activeFormId == "F12" || activeFormId == "F4" || activeFormId == "F5" || activeFormId == "F16" || activeFormId == "F11" || activeFormId == "F30" || activeFormId == "F_HUB" || activeFormId == "FHUB") activeFormId = "FHUB";
 
 
 
@@ -1933,6 +1976,8 @@ namespace QASmartClass.Classroom.Views
 
 				"Dashboard"  => "F1",  "Lesson"	 => "F2",  "Editor"	=> "F3",
 
+				"Control"    => "FHUB", "ClassControlHub" => "FHUB",
+
 				"Classroom"  => "F4",  "Monitor"	=> "F5",  "Quiz"	  => "F6",
 
 				"Report"	 => "F7",  "Settings"   => "F8",  "Library"   => "F9",
@@ -2109,17 +2154,14 @@ namespace QASmartClass.Classroom.Views
 		/// </summary>
 
 		public void UpdateSessionInfo(string className, int studentCount)
-
 		{
-
-			txtClassName.Text = className;
-
+			var active = ClassroomAppContext.ClassRoster?.ActiveRoster;
+			string rawName = active?.ClassName ?? className;
+			string prefix = (!string.IsNullOrWhiteSpace(rawName) && !rawName.StartsWith("Lớp", StringComparison.OrdinalIgnoreCase)) ? "Lớp " : "";
+			txtClassName.Text = $"{prefix}{rawName}";
 			_connectedStudentCount = studentCount;
-
 			txtStudentCount.Text = $"{studentCount} HS online";
-
 			UpdateOnlineStudentCountUI();
-
 		}
 
 
@@ -2311,15 +2353,11 @@ namespace QASmartClass.Classroom.Views
 		/// <summary>Cập nhật UI sidebar khi chọn lớp mới</summary>
 
 		public void UpdateActiveRosterUI(Data.ClassRoster roster)
-
 		{
-
-			txtClassName.Text = roster.DisplayName;
-
-			txtStudentCount.Text = $"{roster.StudentCount} HS  |  {roster.SchoolYear} {roster.Semester}";
-
+			string prefix = roster.ClassName.StartsWith("Lớp", StringComparison.OrdinalIgnoreCase) ? "" : "Lớp ";
+			txtClassName.Text = $"{prefix}{roster.ClassName}";
+			txtStudentCount.Text = $"{_connectedStudentCount} HS online";
 			Log.Information("Active roster UI → {Name}", roster.ClassName);
-
 		}
 
 
@@ -3533,6 +3571,10 @@ namespace QASmartClass.Classroom.Views
 				"F27" => "Nav_Attendance",
 
 				"F10" => "Nav_Groups",
+
+				"FHUB" => "Nav_ClassControlHub",
+
+				"F_HUB" => "Nav_ClassControlHub",
 
 				"F4" => "Nav_Classroom",
 
