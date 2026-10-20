@@ -22,7 +22,7 @@ namespace QASmartClass.StudentClient.Services
     /// </summary>
     public partial class StudentNetworkClient : ObservableObject, IDisposable
     {
-        public const int DISCOVERY_PORT = 29878;
+        public const int DISCOVERY_PORT = 29876;
         public const int TCP_PORT       = 29877;
         public const int FILE_PORT      = 29879;
         private const int HEARTBEAT_INTERVAL_MS = 10_000;
