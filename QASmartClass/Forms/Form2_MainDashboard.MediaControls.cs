@@ -1100,6 +1100,15 @@ namespace QASmartTouch.Forms
 
                 mainGrid.Children.Add(imageControl);
 
+                // ✨ CONTAINER-OWNED INKING: Lớp mực vẽ chuyên dụng nổi trên ảnh, tự động di chuyển theo ảnh
+                var imageInkPresenter = new InkPresenter
+                {
+                    IsHitTestVisible = false,
+                    Tag = "ImageInkPresenter"
+                };
+                Grid.SetRow(imageInkPresenter, 1);
+                mainGrid.Children.Add(imageInkPresenter);
+
 
 
                 container.Child = mainGrid;
@@ -3402,10 +3411,20 @@ namespace QASmartTouch.Forms
                     Stretch = Stretch.Uniform
                 };
 
+                // ✨ CONTAINER-OWNED INKING: Lớp mực vẽ chuyên dụng nổi trên ảnh
+                var imageGrid = new Grid();
+                imageGrid.Children.Add(imageControl);
+                var imgInkPresenter = new InkPresenter
+                {
+                    IsHitTestVisible = false,
+                    Tag = "ImageInkPresenter"
+                };
+                imageGrid.Children.Add(imgInkPresenter);
+
                 // Wrap in Border for styling
                 var border = new Border
                 {
-                    Child = imageControl,
+                    Child = imageGrid,
                     BorderBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243)), // #2196F3
                     BorderThickness = new Thickness(2),
                     CornerRadius = new CornerRadius(4),

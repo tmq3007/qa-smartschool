@@ -137,6 +137,13 @@
 
                         MouseEnter="MainInteractiveBoard_MouseEnter"
                         MouseWheel="MainInteractiveBoard_MouseWheel">
+
+                    <!-- ✨ GIAI ĐOẠN 3: LỚP MỰC VẼ TĂNG TỐC PHẦN CỨNG NATIVE DIRECTX (MILCORE) -->
+                    <InkPresenter x:Name="MainInkPresenter"
+                                  Width="1920"
+                                  Height="1080"
+                                  Panel.ZIndex="100"
+                                  IsHitTestVisible="False" />
                 </Canvas>
 
             </ScrollViewer>

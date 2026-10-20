@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Ink;
 using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Models
@@ -22,6 +23,11 @@ namespace QASmartTouch.Models
         /// UI Element tương ứng trên canvas
         /// </summary>
         public UIElement? Element { get; set; }
+
+        /// <summary>
+        /// Nét vẽ tự do Native Inking tương ứng (nếu đối tượng là Stroke)
+        /// </summary>
+        public Stroke? Stroke { get; set; }
 
         /// <summary>
         /// Vùng bao quanh đối tượng (bounding box)
@@ -149,6 +155,10 @@ namespace QASmartTouch.Models
         /// </summary>
         public virtual bool HitTest(Point point)
         {
+            if (Stroke != null)
+            {
+                return Stroke.HitTest(point, 10);
+            }
             return Bounds.Contains(point);
         }
 
@@ -158,6 +168,14 @@ namespace QASmartTouch.Models
         /// </summary>
         public virtual void UpdateBounds()
         {
+            if (Stroke != null)
+            {
+                var sb = Stroke.GetBounds();
+                Bounds = sb;
+                Position = new Point(sb.X, sb.Y);
+                Size = new Size(sb.Width, sb.Height);
+                return;
+            }
             // ✅ FIX CẢM ỨNG: Cập nhật bounds cho Virtual Group Container từ các thành viên GroupMembers
             if (IsGroup && GroupMembers != null && GroupMembers.Count > 0)
             {

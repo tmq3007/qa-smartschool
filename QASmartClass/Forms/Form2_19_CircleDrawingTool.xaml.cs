@@ -883,6 +883,7 @@ namespace QASmartTouch.Forms
                 // Position the container
                 Canvas.SetLeft(container, _circleCenter.X - radiusPx);
                 Canvas.SetTop(container, _circleCenter.Y - radiusPx);
+                Panel.SetZIndex(container, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
 
                 _mainDashboard.MainInteractiveBoard.Children.Add(container);
 

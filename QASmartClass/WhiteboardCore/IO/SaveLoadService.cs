@@ -46,6 +46,7 @@ namespace QASmartTouch.WhiteboardCore.IO
         public double CanvasWidth { get; set; } = 1920;
         public double CanvasHeight { get; set; } = 1080;
         public string? SceneGraphFile { get; set; }
+        public string? InkFile { get; set; }
         public string XamlFile { get; set; } = string.Empty;
         public string? ThumbnailFile { get; set; }
     }
@@ -146,6 +147,16 @@ namespace QASmartTouch.WhiteboardCore.IO
                                 WriteIndented = false
                             });
                             writer.Write(jsonContent);
+                        }
+
+                        // 1b. Lưu nét vẽ Native Ink (ISF - Ink Serialized Format) nếu có
+                        if (board.Strokes != null && board.Strokes.Count > 0)
+                        {
+                            string inkEntryPath = $"strokes/board_{boardIndex}.isf";
+                            boardItem.InkFile = inkEntryPath;
+                            var inkEntry = archive.CreateEntry(inkEntryPath, CompressionLevel.Optimal);
+                            using var inkStream = inkEntry.Open();
+                            board.Strokes.Save(inkStream);
                         }
 
                         // 2. Ghi XAML fallback (cho các phiên bản cũ hoặc kiểm tra tương thích)
@@ -372,6 +383,25 @@ namespace QASmartTouch.WhiteboardCore.IO
                         }
                     }
 
+                    // C. NẠP NÉT VẼ NATIVE INK (ISF) NẾU CÓ
+                    if (!string.IsNullOrEmpty(item.InkFile))
+                    {
+                        var inkEntry = archive.GetEntry(item.InkFile);
+                        if (inkEntry != null)
+                        {
+                            try
+                            {
+                                using var inkStream = inkEntry.Open();
+                                board.Strokes = new System.Windows.Ink.StrokeCollection(inkStream);
+                                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ✒️ Đã nạp nét vẽ Native Ink ({board.Strokes.Count} strokes)");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ⚠️ Lỗi nạp nét vẽ Native Ink trang {item.Name}: {ex.Message}");
+                            }
+                        }
+                    }
+
                     loadedBoards.Add(board);
                     boardIdx++;
                 }
@@ -405,7 +435,7 @@ namespace QASmartTouch.WhiteboardCore.IO
                 int imgIndex = 0;
                 foreach (var element in board.CanvasElements)
                 {
-                    if (element == null) continue;
+                    if (element == null || element is InkPresenter) continue;
 
                     try
                     {

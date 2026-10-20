@@ -1834,6 +1834,7 @@ namespace QASmartTouch.Forms
             Canvas shapeContainer = Create3DShapeContainer(shapeName, bounds.Width, bounds.Height, _currentPenColor, Math.Max(1.5, _currentPenSize));
             Canvas.SetLeft(shapeContainer, bounds.Left);
             Canvas.SetTop(shapeContainer, bounds.Top);
+            Panel.SetZIndex(shapeContainer, _currentInkingZIndex);
 
             MainInteractiveBoard.Children.Add(shapeContainer);
 

@@ -72,14 +72,28 @@ namespace QASmartTouch.Helpers
             var headerDragBar = CreateHeaderDragBar(rootContainer, chartImage, options, mainCanvas);
             Grid.SetRow(headerDragBar, 0);
 
-            // 4. Content Border chứa ảnh
+            // 4. Content Border chứa ảnh và InkPresenter phủ lên trên (QC_4.2_CONTAINER_OWNED_INKING)
+            var chartBodyGrid = new Grid
+            {
+                ClipToBounds = true
+            };
+            chartBodyGrid.Children.Add(chartImage);
+
+            var chartInkPresenter = new InkPresenter
+            {
+                IsHitTestVisible = false,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
+            };
+            chartBodyGrid.Children.Add(chartInkPresenter);
+
             var contentBorder = new Border
             {
                 Background = Brushes.White,
                 BorderBrush = new SolidColorBrush(Color.FromRgb(200, 214, 229)),
                 BorderThickness = new Thickness(1.5, 0, 1.5, 1.5),
                 CornerRadius = new CornerRadius(0, 0, 8, 8),
-                Child = chartImage,
+                Child = chartBodyGrid,
                 Effect = new DropShadowEffect
                 {
                     Color = Colors.Black,
@@ -519,9 +533,16 @@ namespace QASmartTouch.Helpers
 
             if (newW <= canvasW - 40 && newH <= canvasH - 100)
             {
+                double sx = newW / currentW;
+                double sy = newH / currentH;
                 rootContainer.Width = newW;
                 chartImage.Width = newW;
                 chartImage.Height = newH;
+                var inkPresenter = GetChartInkPresenter(rootContainer);
+                if (inkPresenter != null && inkPresenter.Strokes.Count > 0)
+                {
+                    inkPresenter.Strokes.Transform(new Matrix(sx, 0, 0, sy, 0, 0), false);
+                }
             }
         }
 
@@ -539,9 +560,16 @@ namespace QASmartTouch.Helpers
 
             if (newW >= 240 && newH >= 150)
             {
+                double sx = newW / currentW;
+                double sy = newH / currentH;
                 rootContainer.Width = newW;
                 chartImage.Width = newW;
                 chartImage.Height = newH;
+                var inkPresenter = GetChartInkPresenter(rootContainer);
+                if (inkPresenter != null && inkPresenter.Strokes.Count > 0)
+                {
+                    inkPresenter.Strokes.Transform(new Matrix(sx, 0, 0, sy, 0, 0), false);
+                }
             }
         }
 
@@ -680,16 +708,30 @@ namespace QASmartTouch.Helpers
                 OnDelete = options.OnDelete
             };
 
+            Grid? newChart = null;
             if (options.MainDashboard != null)
             {
-                CreateAndAddChartToCanvas(copyOptions);
+                newChart = CreateAndAddChartToCanvas(copyOptions);
             }
             else if (rootContainer.Parent is Canvas parentCanvas)
             {
-                var newChart = BuildChartContainer(copyOptions, parentCanvas);
+                newChart = BuildChartContainer(copyOptions, parentCanvas);
                 Canvas.SetLeft(newChart, Math.Max(0, copyOptions.TargetLeft ?? 0));
                 Canvas.SetTop(newChart, Math.Max(0, copyOptions.TargetTop ?? 0));
                 parentCanvas.Children.Add(newChart);
+            }
+
+            if (newChart != null)
+            {
+                var srcInk = GetChartInkPresenter(rootContainer);
+                var dstInk = GetChartInkPresenter(newChart);
+                if (srcInk != null && dstInk != null && srcInk.Strokes.Count > 0)
+                {
+                    foreach (var s in srcInk.Strokes)
+                    {
+                        dstInk.Strokes.Add(s.Clone());
+                    }
+                }
             }
         }
 
@@ -702,11 +744,16 @@ namespace QASmartTouch.Helpers
             if (grid.RowDefinitions.Count != 2) return false;
             if (grid.Children.Count < 2) return false;
 
-            // Kiểm tra cấu trúc: child 0 là Border header (chiều cao xấp xỉ HeaderBarHeight), child 1 là Border chứa Image
+            // Kiểm tra cấu trúc: child 0 là Border header (chiều cao xấp xỉ HeaderBarHeight), child 1 là Border chứa Image hoặc Grid
             if (grid.Children[0] is Border headerBorder && Math.Abs(headerBorder.Height - HeaderBarHeight) < 2.0)
             {
-                if (grid.Children[1] is Border contentBorder && contentBorder.Child is Image)
-                    return true;
+                if (grid.Children[1] is Border contentBorder)
+                {
+                    if (contentBorder.Child is Image)
+                        return true;
+                    if (contentBorder.Child is Grid bodyGrid && bodyGrid.Children.OfType<Image>().Any())
+                        return true;
+                }
             }
 
             // Kiểm tra cấu hình Tag
@@ -726,11 +773,25 @@ namespace QASmartTouch.Helpers
         public static Image? GetChartImage(FrameworkElement? container)
         {
             if (container is not Grid grid) return null;
-            if (grid.Children.Count >= 2 && grid.Children[1] is Border contentBorder && contentBorder.Child is Image img)
+            if (grid.Children.Count >= 2 && grid.Children[1] is Border contentBorder)
             {
-                return img;
+                if (contentBorder.Child is Image img) return img;
+                if (contentBorder.Child is Grid bodyGrid) return bodyGrid.Children.OfType<Image>().FirstOrDefault();
             }
             return FindVisualChild<Image>(grid);
+        }
+
+        /// <summary>
+        /// Lấy đối tượng InkPresenter chứa nét vẽ chú thích trên thân biểu đồ (QC_4.2_CONTAINER_OWNED_INKING)
+        /// </summary>
+        public static InkPresenter? GetChartInkPresenter(FrameworkElement? container)
+        {
+            if (container is not Grid grid) return null;
+            if (grid.Children.Count >= 2 && grid.Children[1] is Border contentBorder && contentBorder.Child is Grid bodyGrid)
+            {
+                return bodyGrid.Children.OfType<InkPresenter>().FirstOrDefault();
+            }
+            return FindVisualChild<InkPresenter>(grid);
         }
 
         /// <summary>

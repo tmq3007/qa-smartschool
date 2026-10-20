@@ -19,11 +19,17 @@ namespace QASmartTouch.Services
         private DateTime _recordingStartTime;
         private RecordingFormat _recordingFormat = RecordingFormat.GIF; // Legacy
 
+        private static ScreenRecorderService? _instance;
+        public static ScreenRecorderService Instance => _instance ??= new ScreenRecorderService();
+
         public bool IsRecording => _isRecording;
+        public bool IsPaused => _isPaused;
         public TimeSpan RecordingDuration => _isRecording ? DateTime.Now - _recordingStartTime : TimeSpan.Zero;
         public RecordingFormat CurrentFormat => _recordingFormat;
         
         public event Action<string?, string?>? SaveCompleted;
+
+        private bool _isPaused;
 
         public ScreenRecorderService()
         {
@@ -32,142 +38,162 @@ namespace QASmartTouch.Services
             Directory.CreateDirectory(_defaultSavePath);
         }
 
+        public void PauseRecording()
+        {
+            if (_isRecording && !_isPaused)
+            {
+                try
+                {
+                    _recorder?.Pause();
+                    _isPaused = true;
+                    System.Diagnostics.Debug.WriteLine("⏸️ Recording Paused");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Pause recorder error: {ex.Message}");
+                }
+            }
+        }
+
+        public void ResumeRecording()
+        {
+            if (_isRecording && _isPaused)
+            {
+                try
+                {
+                    _recorder?.Resume();
+                    _isPaused = false;
+                    System.Diagnostics.Debug.WriteLine("▶️ Recording Resumed");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Resume recorder error: {ex.Message}");
+                }
+            }
+        }
+
+        private CaptureAudioSource? _micSource;
+        private bool _isMicrophoneMuted = false;
+        public bool IsMicrophoneMuted => _isMicrophoneMuted;
+
+        public void ToggleMicrophoneMute()
+        {
+            if (_micSource != null)
+            {
+                _isMicrophoneMuted = !_isMicrophoneMuted;
+                _micSource.Volume = _isMicrophoneMuted ? 0.0f : 1.0f;
+                System.Diagnostics.Debug.WriteLine($"🎤 Microphone Mute toggled: {_isMicrophoneMuted}");
+            }
+        }
+
         public void StartRecording(string? customPath = null)
         {
-            StartRecording(true, true, customPath);
+            StartRecording(true, true, null, customPath);
         }
 
         public void StartRecording(bool enableMicrophone, string? customPath = null)
         {
-            StartRecording(enableMicrophone, true, customPath);
+            StartRecording(enableMicrophone, true, null, customPath);
         }
 
-        public void StartRecording(bool enableMicrophone, bool enableSystemAudio, string? customPath = null)
+        public void StartRecording(bool enableMicrophone, bool enableSystemAudio, string? specifiedMicId = null, string? customPath = null)
         {
             if (_isRecording) return;
+            _isPaused = false;
+            _isMicrophoneMuted = false;
+            _micSource = null;
 
-            var fileName = $"Record_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
-            _currentRecordingPath = customPath ?? Path.Combine(_defaultSavePath, fileName);
-            Directory.CreateDirectory(Path.GetDirectoryName(_currentRecordingPath)!);
+            if (string.IsNullOrWhiteSpace(customPath))
+            {
+                var fileName = $"Record_{DateTime.Now:yyyyMMdd_HHmmss}.mp4";
+                _currentRecordingPath = Path.Combine(_defaultSavePath, fileName);
+            }
+            else
+            {
+                _currentRecordingPath = customPath;
+            }
+
+            var dir = Path.GetDirectoryName(_currentRecordingPath);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
 
             var audioOptions = new AudioOptions
             {
                 IsAudioEnabled = enableMicrophone || enableSystemAudio,
                 Bitrate = AudioBitrate.bitrate_128kbps,
-                Channels = AudioChannels.Stereo
+                Channels = AudioChannels.Stereo,
+                AudioSources = new List<AudioSourceBase>()
             };
 
-            // Helper set dynamic / base property an toàn qua Reflection
-            void SetDynamicProp(object target, string name, object? val)
+            // 1. Cấu hình Microphone (Thu âm giọng nói giáo viên giảng bài)
+            if (enableMicrophone)
             {
-                var t = target.GetType();
-                var p = t.GetProperty(name);
-                while (p == null && t.BaseType != null)
+                try
                 {
-                    t = t.BaseType;
-                    p = t.GetProperty(name);
-                }
-                p?.SetValue(target, val);
-            }
-
-            // Tìm và cấu hình chính xác thiết bị phát (Loa/Tai nghe) và Microphone qua Reflection
-            // (tránh lỗi CS0103/CS0117 trong trình biên dịch tạm _wpftmp của WPF)
-            try
-            {
-                var recType = typeof(Recorder);
-                var getAudioDevicesMethod = recType.GetMethod("GetSystemAudioDevices");
-
-                if (enableMicrophone && getAudioDevicesMethod != null)
-                {
-                    // 1 = AudioDeviceSource.InputDevices
-                    var inputDevices = getAudioDevicesMethod.Invoke(null, new object[] { 1 }) as System.Collections.IEnumerable;
-                    if (inputDevices != null)
+                    string? selectedMicId = specifiedMicId;
+                    if (string.IsNullOrEmpty(selectedMicId))
                     {
-                        string? bestInputId = null;
-                        foreach (var item in inputDevices)
+                        var captureDevices = Recorder.GetSystemAudioCaptureDevices();
+                        if (captureDevices != null && captureDevices.Count > 0)
                         {
-                            var fName = item.GetType().GetProperty("FriendlyName")?.GetValue(item)?.ToString() ?? "";
-                            var dName = item.GetType().GetProperty("DeviceName")?.GetValue(item)?.ToString() ?? "";
+                            var targetMic = captureDevices.FirstOrDefault(d => d.IsDefaultDevice && !d.FriendlyName.Contains("tranScreen", StringComparison.OrdinalIgnoreCase))
+                                         ?? captureDevices.FirstOrDefault(d => !d.FriendlyName.Contains("tranScreen", StringComparison.OrdinalIgnoreCase))
+                                         ?? captureDevices.FirstOrDefault(d => d.IsDefaultDevice)
+                                         ?? captureDevices[0];
 
-                            if (!string.IsNullOrEmpty(dName) && !fName.Contains("tranScreen", StringComparison.OrdinalIgnoreCase))
-                            {
-                                if (fName.Contains("Realtek", StringComparison.OrdinalIgnoreCase) ||
-                                    fName.Contains("Microphone", StringComparison.OrdinalIgnoreCase) ||
-                                    fName.Contains("Mic", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    bestInputId = dName;
-                                    break;
-                                }
-                                if (bestInputId == null)
-                                {
-                                    bestInputId = dName;
-                                }
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(bestInputId))
-                        {
-                            SetDynamicProp(audioOptions, "AudioInputDevice", bestInputId);
-                            System.Diagnostics.Debug.WriteLine($"🎤 Selected Audio Input ID: {bestInputId}");
+                            selectedMicId = targetMic?.DeviceName;
+                            System.Diagnostics.Debug.WriteLine($"🎤 Đã chọn Microphone: {targetMic?.FriendlyName} ({selectedMicId})");
                         }
                     }
-                }
 
-                if (enableSystemAudio && getAudioDevicesMethod != null)
+                    _micSource = !string.IsNullOrEmpty(selectedMicId)
+                        ? new CaptureAudioSource(selectedMicId)
+                        : (CaptureAudioSource.Default ?? new CaptureAudioSource());
+
+                    _micSource.Volume = 1.0f;
+                    _micSource.IsAudioCaptureEnabled = true;
+                    _micSource.ForceMono = true; // Chuẩn hóa mono cho giọng nói vào 2 kênh stereo
+                    audioOptions.AudioSources.Add(_micSource);
+                }
+                catch (Exception ex)
                 {
-                    // 0 = AudioDeviceSource.OutputDevices
-                    var outputDevices = getAudioDevicesMethod.Invoke(null, new object[] { 0 }) as System.Collections.IEnumerable;
-                    if (outputDevices != null)
-                    {
-                        string? bestOutputId = null;
-                        foreach (var item in outputDevices)
-                        {
-                            var fName = item.GetType().GetProperty("FriendlyName")?.GetValue(item)?.ToString() ?? "";
-                            var dName = item.GetType().GetProperty("DeviceName")?.GetValue(item)?.ToString() ?? "";
-
-                            if (!string.IsNullOrEmpty(dName) && 
-                                !fName.Contains("Display", StringComparison.OrdinalIgnoreCase) && 
-                                !fName.Contains("tranScreen", StringComparison.OrdinalIgnoreCase))
-                            {
-                                if (fName.Contains("Realtek", StringComparison.OrdinalIgnoreCase) ||
-                                    fName.Contains("Speaker", StringComparison.OrdinalIgnoreCase) ||
-                                    fName.Contains("Loa", StringComparison.OrdinalIgnoreCase) ||
-                                    fName.Contains("Headphone", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    bestOutputId = dName;
-                                    break;
-                                }
-                                if (bestOutputId == null)
-                                {
-                                    bestOutputId = dName;
-                                }
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(bestOutputId))
-                        {
-                            SetDynamicProp(audioOptions, "AudioOutputDevice", bestOutputId);
-                            System.Diagnostics.Debug.WriteLine($"🔊 Selected Audio Output ID: {bestOutputId}");
-                        }
-                    }
+                    System.Diagnostics.Debug.WriteLine($"Microphone config warning: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Audio device selection error: {ex.Message}");
-            }
 
-            try
+            // 2. Cấu hình Loa / Âm thanh hệ thống (Thu âm video bài giảng, youtube, clip minh họa trên máy/màn hình)
+            if (enableSystemAudio)
             {
-                SetDynamicProp(audioOptions, "IsInputDeviceEnabled", (bool?)enableMicrophone);
-                SetDynamicProp(audioOptions, "IsOutputDeviceEnabled", (bool?)enableSystemAudio);
-                SetDynamicProp(audioOptions, "ForceInputDeviceMono", (bool?)true);
-                SetDynamicProp(audioOptions, "InputVolume", (float?)1.0f);
-                SetDynamicProp(audioOptions, "OutputVolume", (float?)1.0f);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Audio options set warning: {ex.Message}");
+                try
+                {
+                    var loopbackDevices = Recorder.GetSystemAudioLoopbackDevices();
+                    string? selectedSpeakerId = null;
+                    if (loopbackDevices != null && loopbackDevices.Count > 0)
+                    {
+                        // Ưu tiên thiết bị phát âm thanh mặc định của Windows
+                        var targetSpeaker = loopbackDevices.FirstOrDefault(d => d.IsDefaultDevice && !d.FriendlyName.Contains("tranScreen", StringComparison.OrdinalIgnoreCase))
+                                         ?? loopbackDevices.FirstOrDefault(d => d.IsDefaultDevice)
+                                         ?? loopbackDevices.FirstOrDefault(d => !d.FriendlyName.Contains("tranScreen", StringComparison.OrdinalIgnoreCase))
+                                         ?? loopbackDevices[0];
+
+                        selectedSpeakerId = targetSpeaker?.DeviceName;
+                        System.Diagnostics.Debug.WriteLine($"🔊 Đã chọn Âm thanh hệ thống (Loa): {targetSpeaker?.FriendlyName} ({selectedSpeakerId})");
+                    }
+
+                    var speakerSource = !string.IsNullOrEmpty(selectedSpeakerId)
+                        ? new LoopbackAudioSource(selectedSpeakerId)
+                        : (LoopbackAudioSource.Default ?? new LoopbackAudioSource());
+
+                    speakerSource.Volume = 1.0f;
+                    speakerSource.IsAudioCaptureEnabled = true;
+                    audioOptions.AudioSources.Add(speakerSource);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Speaker config warning: {ex.Message}");
+                }
             }
 
             var options = new RecorderOptions

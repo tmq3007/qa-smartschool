@@ -22,6 +22,7 @@ using QASmartTouch.Controllers;
 using QASmartTouch.Shared;
 using QASmartClass.Properties;
 using System.Windows.Documents; // For TextRange
+using System.Windows.Ink;
 using QASmartClass.WhiteboardCore.Managers;
 using QASmartClass.WhiteboardCore.Enums;
 
@@ -47,6 +48,8 @@ namespace QASmartTouch.Forms
         public ActionType Type { get; set; }
         public UIElement? Element { get; set; }
         public UIElement? Parent { get; set; }
+        public Stroke? Stroke { get; set; }
+        public List<Stroke>? Strokes { get; set; }
         public object? OldValue { get; set; }    // For modify operations
         public object? NewValue { get; set; }    // For modify operations
         public List<UndoRedoAction> BatchActions { get; set; } // For batch operations
@@ -61,8 +64,19 @@ namespace QASmartTouch.Forms
         }
     }
 
-    public partial class Form2_MainDashboard : Window
+    public partial class Form2_MainDashboard : Window, QASmartClass.WhiteboardCore.Managers.IWhiteboardContext
     {
+        #region IWhiteboardContext Implementation
+
+        public Canvas MainCanvas => MainInteractiveBoard;
+        public InkPresenter? MainInkPresenterControl => MainInkPresenter;
+        InkPresenter? IWhiteboardContext.MainInkPresenter => MainInkPresenter;
+        public System.Windows.Ink.StrokeCollection? Strokes => MainInkPresenter?.Strokes;
+        public QASmartClass.WhiteboardCore.History.IUndoRedoManager? History => _whiteboardManager?.History;
+        void IWhiteboardContext.InvalidateVisual() => MainInteractiveBoard?.InvalidateVisual();
+
+        #endregion
+
         private Button? _selectedTool;
         
         // Active submenu tracking
@@ -112,10 +126,10 @@ namespace QASmartTouch.Forms
             // 2. Tầng vẽ chú thích mới được nâng lên trên ảnh vừa chèn (chuẩn bị cho nét vẽ tiếp theo)
             _currentInkingZIndex = imageZ + 1;
 
-            // 3. Giới hạn trần an toàn không vượt quá dải UserContentMax (999) để không vượt qua tầng Widget (1000+)
-            if (_currentInkingZIndex >= QASmartTouch.Helpers.ZIndexConstants.UserContentMax - 2)
+            // 3. Giới hạn trần an toàn không vượt quá TableContainer (500) để luôn nằm dưới Bảng
+            if (_currentInkingZIndex >= QASmartTouch.Helpers.ZIndexConstants.TableContainer - 5)
             {
-                _currentInkingZIndex = QASmartTouch.Helpers.ZIndexConstants.UserContentMax - 2;
+                _currentInkingZIndex = QASmartTouch.Helpers.ZIndexConstants.TableContainer - 5;
                 imageZ = _currentInkingZIndex - 1;
             }
 
@@ -149,9 +163,11 @@ namespace QASmartTouch.Forms
             int maxZ = QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
             foreach (UIElement child in MainInteractiveBoard.Children)
             {
+                if (child == MainInkPresenter || child is InkPresenter) continue;
+
                 int z = Panel.GetZIndex(child);
                 if (z >= QASmartTouch.Helpers.ZIndexConstants.UserContentBase && 
-                    z <= QASmartTouch.Helpers.ZIndexConstants.UserContentMax)
+                    z < QASmartTouch.Helpers.ZIndexConstants.TableContainer)
                 {
                     if (z > maxZ) maxZ = z;
                 }
@@ -353,9 +369,16 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
 
-            // ── WhiteboardCore: Khởi tạo Façade ──
-            _whiteboardManager = new WhiteboardManager();
+            // ── WhiteboardCore: Khởi tạo Façade với Context ──
+            _whiteboardManager = new WhiteboardManager(this);
             _whiteboardManager.ToolManager.ToolChanged += OnWhiteboardToolChanged;
+
+            // Khởi tạo Lớp vẽ Inking tăng tốc phần cứng DirectX
+            if (MainInkPresenter != null)
+            {
+                MainInkPresenter.Strokes = new System.Windows.Ink.StrokeCollection();
+                Panel.SetZIndex(MainInkPresenter, QASmartTouch.Helpers.ZIndexConstants.InkingLayer);
+            }
 
             // =====================================================
             // PHASE 2: DPI AWARENESS - Handle DPI changes
@@ -401,6 +424,65 @@ namespace QASmartTouch.Forms
             _touchHandler.OnTwoFingerPinchPanEnded = OnTwoFingerPinchPanEnded;
             _touchHandler.IsMultiUserModeActive = () => _isMultiUserModeActive;
             _touchHandler.GetCurrentInkingZIndex = GetCurrentInkingZIndex;
+            _touchHandler.OnEraseNativeStrokes = (pos, lastPos, size, mode, touchId) =>
+            {
+                if (MainInkPresenter?.Strokes != null && MainInkPresenter.Strokes.Count > 0)
+                {
+                    var eraserTool = _whiteboardManager?.ToolManager.EraserTool;
+                    if (eraserTool != null)
+                    {
+                        var session = eraserTool.GetSession($"touch_{touchId}") ?? eraserTool.StartSession($"touch_{touchId}");
+                        eraserTool.EraseStrokesAt(
+                            MainInkPresenter.Strokes,
+                            pos,
+                            size,
+                            mode,
+                            lastPos,
+                            session,
+                            onStrokeAdded: (seg) => RegisterNewStrokeWithSelectionManager(seg),
+                            onStrokeRemoved: (s) => _selectionManager?.RemoveObjectByStroke(s)
+                        );
+                    }
+                }
+                // ✨ Tẩy xóa nét vẽ trên các container học liệu (Bảng/Ảnh)
+                EraseContainerEmbeddedStrokesAt(pos, mode == "Point", lastPos);
+            };
+            _touchHandler.OnEndTouchEraseSession = (touchId) =>
+            {
+                var eraserTool = _whiteboardManager?.ToolManager.EraserTool;
+                if (eraserTool != null)
+                {
+                    var session = eraserTool.EndSession($"touch_{touchId}");
+                    FinalizeNativeEraseSession(session, $"Touch erase (ID: {touchId})");
+                }
+            };
+            _touchHandler.OnAddNativeStroke = (points, color, size, brushType, touchId) =>
+            {
+                if (points != null && points.Count > 0)
+                {
+                    var penTool = _whiteboardManager?.ToolManager.PenTool;
+                    System.Windows.Ink.Stroke nativeStroke;
+                    if (penTool != null)
+                    {
+                        nativeStroke = penTool.CreateStroke(points, color);
+                    }
+                    else
+                    {
+                        var stylusPts = new System.Windows.Input.StylusPointCollection();
+                        foreach (var pt in points) stylusPts.Add(new System.Windows.Input.StylusPoint(pt.X, pt.Y));
+                        var da = new System.Windows.Ink.DrawingAttributes { Color = color, Width = size, Height = size, FitToCurve = true };
+                        nativeStroke = new System.Windows.Ink.Stroke(stylusPts, da);
+                    }
+
+                    // ✨ CONTAINER-OWNED INKING: Thử điều hướng nét vẽ vào Container học liệu (Bảng dữ liệu hoặc Ảnh tương tác)
+                    if (!TryRouteNativeStrokeToContainer(nativeStroke))
+                    {
+                        MainInkPresenter?.Strokes.Add(nativeStroke);
+                        RecordAddStrokeAction(nativeStroke, $"Touch draw (ID: {touchId})", MainInkPresenter);
+                        RegisterNewStrokeWithSelectionManager(nativeStroke);
+                    }
+                }
+            };
             System.Diagnostics.Debug.WriteLine("✅ Touch interaction initialized");
 
             // QC_4.2_TOUCH_TOOLBAR: Wire direct touch activation for all toolbar buttons
@@ -960,6 +1042,63 @@ namespace QASmartTouch.Forms
                 return;
             }
 
+            // ✅ Shortcut Delete / Back: Xóa các đối tượng đang chọn trong chế độ Selection
+            if ((e.Key == Key.Delete || e.Key == Key.Back) && _objectSelectionMode &&
+                (_selectionManager?.SelectedObjects.Count > 0 || _selectionManager?.SelectedObject != null))
+            {
+                OnToolbarDeleteClicked(this, EventArgs.Empty);
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Delete/Back: Deleted selected object(s)");
+                return;
+            }
+
+            // ✅ Shortcut Ctrl + D: Nhân bản đối tượng đang chọn (Duplicate)
+            if (e.Key == Key.D && Keyboard.Modifiers == ModifierKeys.Control && _objectSelectionMode &&
+                (_selectionManager?.SelectedObjects.Count > 0 || _selectionManager?.SelectedObject != null))
+            {
+                OnToolbarCopyClicked(this, EventArgs.Empty);
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+D: Duplicated selected object(s)");
+                return;
+            }
+
+            // ✅ Shortcut Ctrl + C: Sao chép đối tượng đang chọn (Copy)
+            if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control && _objectSelectionMode &&
+                (_selectionManager?.SelectedObjects.Count > 0 || _selectionManager?.SelectedObject != null))
+            {
+                _selectionManager?.CopySelectedObject();
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+C: Copied selected object(s)");
+                return;
+            }
+
+            // ✅ Shortcut Ctrl + V: Dán đối tượng từ Clipboard (Paste)
+            if (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control && _objectSelectionMode &&
+                _selectionManager?.HasClipboardContent() == true)
+            {
+                Point pastePos = Mouse.GetPosition(MainInteractiveBoard);
+                if (pastePos.X <= 0 || pastePos.Y <= 0 || pastePos.X >= MainInteractiveBoard.ActualWidth || pastePos.Y >= MainInteractiveBoard.ActualHeight)
+                {
+                    pastePos = new Point(Math.Max(100, MainInteractiveBoard.ActualWidth / 2.0), Math.Max(100, MainInteractiveBoard.ActualHeight / 2.0));
+                }
+                var pasted = _selectionManager.PasteAtPosition(pastePos);
+                if (pasted != null)
+                {
+                    if (pasted.Stroke != null)
+                    {
+                        RecordAddStrokeAction(pasted.Stroke, $"Paste {pasted.Type}");
+                    }
+                    else if (pasted.Element != null)
+                    {
+                        RecordAddAction(pasted.Element, $"Paste {pasted.Type}");
+                    }
+                }
+                _selectionManager.ClearClipboard();
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+V: Pasted object(s)");
+                return;
+            }
+
             // ✅ Shortcut Ctrl + 0: Reset Zoom về 100%
             if (e.Key == Key.D0 && Keyboard.Modifiers == ModifierKeys.Control)
             {
@@ -1171,6 +1310,7 @@ namespace QASmartTouch.Forms
             // Initialize services
             _transformService = new TransformService();
             _selectionManager = new SelectionManager(MainInteractiveBoard);
+            _selectionManager.InkPresenter = MainInkPresenter;
             
             // Initialize UI controls
             _selectionBox = new SelectionBox();
@@ -1711,8 +1851,63 @@ namespace QASmartTouch.Forms
                 }
             }
 
+            // Register Native Inking Strokes (System.Windows.Ink.Stroke)
+            if (MainInkPresenter?.Strokes != null)
+            {
+                foreach (var stroke in MainInkPresenter.Strokes)
+                {
+                    var bounds = stroke.GetBounds();
+                    if (bounds.IsEmpty || bounds.Width <= 0 || bounds.Height <= 0)
+                        continue;
+
+                    var selectableObj = new SelectableObject
+                    {
+                        Stroke = stroke,
+                        Type = ObjectType.Stroke,
+                        Bounds = bounds,
+                        Position = new Point(bounds.Left, bounds.Top),
+                        Size = new Size(bounds.Width, bounds.Height),
+                        ZIndex = 100,
+                        StrokeColor = stroke.DrawingAttributes.Color,
+                        StrokeThickness = stroke.DrawingAttributes.Width
+                    };
+
+                    _selectionManager.AddObject(selectableObj);
+                    registeredCount++;
+                    System.Diagnostics.Debug.WriteLine($"🖊️ Registered Native Stroke: Bounds=({bounds.Left:F0},{bounds.Top:F0},{bounds.Width:F0},{bounds.Height:F0})");
+                }
+            }
+
             _selectionManager.RebuildQuadTree();
             System.Diagnostics.Debug.WriteLine($"✅ Registered {registeredCount} selectable objects & rebuilt QuadTree index.");
+        }
+
+        /// <summary>
+        /// Register a newly created Native Inking Stroke with SelectionManager
+        /// </summary>
+        public void RegisterNewStrokeWithSelectionManager(System.Windows.Ink.Stroke stroke)
+        {
+            if (_selectionManager == null || stroke == null)
+                return;
+
+            var bounds = stroke.GetBounds();
+            if (bounds.IsEmpty || bounds.Width <= 0 || bounds.Height <= 0)
+                return;
+
+            var selectableObj = new SelectableObject
+            {
+                Stroke = stroke,
+                Type = ObjectType.Stroke,
+                Bounds = bounds,
+                Position = new Point(bounds.Left, bounds.Top),
+                Size = new Size(bounds.Width, bounds.Height),
+                ZIndex = 100,
+                StrokeColor = stroke.DrawingAttributes.Color,
+                StrokeThickness = stroke.DrawingAttributes.Width
+            };
+
+            _selectionManager.AddObject(selectableObj);
+            _selectionManager.RebuildQuadTree();
         }
         
         /// <summary>
@@ -2762,6 +2957,11 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void MainInteractiveBoard_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            if (MainInkPresenter != null)
+            {
+                MainInkPresenter.Width = e.NewSize.Width;
+                MainInkPresenter.Height = e.NewSize.Height;
+            }
             UpdateScrollBarVisibility();
         }
 

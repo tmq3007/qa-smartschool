@@ -10,6 +10,7 @@ using QASmartTouch.Models;
 using QASmartTouch.Controls;
 using CanvasControl = System.Windows.Controls.Canvas;
 using System.Windows.Media;
+using System.Windows.Ink;
 
 namespace QASmartTouch.Services
 {
@@ -21,6 +22,7 @@ namespace QASmartTouch.Services
         #region Fields
 
         private CanvasControl _canvas;
+        public InkPresenter? InkPresenter { get; set; }
         private SelectionState _state;
         private List<SelectableObject> _allObjects;
         private SelectableObject? _clipboard; // Store copied object (single)
@@ -147,6 +149,11 @@ namespace QASmartTouch.Services
                 _canvas.Children.Remove(obj.Element);
             }
 
+            if (obj.Stroke != null && InkPresenter?.Strokes != null)
+            {
+                InkPresenter.Strokes.Remove(obj.Stroke);
+            }
+
             if (obj.IsSelected)
             {
                 _state.RemoveFromSelection(obj);
@@ -170,6 +177,26 @@ namespace QASmartTouch.Services
                 if (_canvas.Children.Contains(element))
                 {
                     _canvas.Children.Remove(element);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Xóa đối tượng quản lý logic dựa trên Native Stroke tương ứng (dành cho Undo/Redo)
+        /// </summary>
+        public void RemoveObjectByStroke(Stroke stroke)
+        {
+            if (stroke == null) return;
+            var obj = _allObjects.Find(o => o.Stroke == stroke);
+            if (obj != null)
+            {
+                RemoveObject(obj);
+            }
+            else
+            {
+                if (InkPresenter?.Strokes != null && InkPresenter.Strokes.Contains(stroke))
+                {
+                    InkPresenter.Strokes.Remove(stroke);
                 }
             }
         }
@@ -414,9 +441,9 @@ namespace QASmartTouch.Services
         {
             System.Diagnostics.Debug.WriteLine($"🔍 CopySelectedObject called - PrimarySelectedObject: {(_state.PrimarySelectedObject != null ? _state.PrimarySelectedObject.Type.ToString() : "NULL")}");
             
-            if (_state.PrimarySelectedObject == null || _state.PrimarySelectedObject.Element == null)
+            if (_state.PrimarySelectedObject == null || (_state.PrimarySelectedObject.Element == null && _state.PrimarySelectedObject.Stroke == null))
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Copy failed: No object selected or Element is null");
+                System.Diagnostics.Debug.WriteLine($"❌ Copy failed: No object selected or Element/Stroke is null");
                 return null;
             }
 
@@ -429,7 +456,7 @@ namespace QASmartTouch.Services
                 double minX = double.MaxValue, minY = double.MaxValue;
                 foreach (var obj in _clipboardList)
                 {
-                    if (obj.Element == null) continue;
+                    if (obj.Element == null && obj.Stroke == null) continue;
                     minX = Math.Min(minX, obj.Position.X);
                     minY = Math.Min(minY, obj.Position.Y);
                 }
@@ -446,7 +473,7 @@ namespace QASmartTouch.Services
             _clipboard = original;
             _clipboardList = null; // Clear group clipboard
             
-            System.Diagnostics.Debug.WriteLine($"✅ Copied to clipboard: {original.Type} (Element: {original.Element?.GetType().Name}) - Click to place");
+            System.Diagnostics.Debug.WriteLine($"✅ Copied to clipboard: {original.Type} (Element: {original.Element?.GetType().Name ?? "Stroke"}) - Click to place");
             
             return _clipboard;
         }
@@ -495,11 +522,35 @@ namespace QASmartTouch.Services
 
             foreach (var original in targets)
             {
-                if (original.Element == null) continue;
+                if (original.Element == null && original.Stroke == null) continue;
 
                 var newPos = new Point(original.Position.X + offsetX, original.Position.Y + offsetY);
                 if (newPos.X + original.Size.Width > canvasWidth) newPos.X = Math.Max(10, original.Position.X - offsetX);
                 if (newPos.Y + original.Size.Height > canvasHeight) newPos.Y = Math.Max(10, original.Position.Y - offsetY);
+
+                if (original.Stroke != null)
+                {
+                    var clonedStroke = original.Stroke.Clone();
+                    double actOffsetX = newPos.X - original.Position.X;
+                    double actOffsetY = newPos.Y - original.Position.Y;
+                    var matrix = new Matrix(1, 0, 0, 1, actOffsetX, actOffsetY);
+                    clonedStroke.Transform(matrix, false);
+
+                    if (InkPresenter != null && InkPresenter.Strokes != null)
+                    {
+                        InkPresenter.Strokes.Add(clonedStroke);
+                    }
+
+                    var strokeClone = original.Clone();
+                    strokeClone.Stroke = clonedStroke;
+                    strokeClone.Element = null;
+                    strokeClone.Position = newPos;
+                    strokeClone.UpdateBounds();
+
+                    AddObject(strokeClone);
+                    duplicatedObjects.Add(strokeClone);
+                    continue;
+                }
 
                 UIElement? clonedElement = CloneSingleElement(original, newPos);
                 if (clonedElement == null) continue;
@@ -599,6 +650,31 @@ namespace QASmartTouch.Services
                 return null;
 
             var original = _clipboard;
+
+            // ✅ G2.2: Support Native Inking Stroke
+            if (original.Stroke != null)
+            {
+                var clonedStroke = original.Stroke.Clone();
+                double offsetX = position.X - original.Position.X;
+                double offsetY = position.Y - original.Position.Y;
+                var matrix = new Matrix(1, 0, 0, 1, offsetX, offsetY);
+                clonedStroke.Transform(matrix, false);
+
+                if (InkPresenter != null && InkPresenter.Strokes != null)
+                {
+                    InkPresenter.Strokes.Add(clonedStroke);
+                }
+
+                var strokeClone = original.Clone();
+                strokeClone.Stroke = clonedStroke;
+                strokeClone.Element = null;
+                strokeClone.Position = position;
+                strokeClone.UpdateBounds();
+
+                AddObject(strokeClone);
+                SelectObject(strokeClone);
+                return strokeClone;
+            }
             
             // Clone the UIElement at new position
             UIElement? clonedElement = null;
@@ -936,12 +1012,34 @@ namespace QASmartTouch.Services
 
             foreach (var original in _clipboardList)
             {
-                if (original.Element == null) continue;
+                if (original.Element == null && original.Stroke == null) continue;
 
                 // Tính vị trí mới = vị trí gốc + offset
                 var newPos = new Point(
                     original.Position.X + offsetX,
                     original.Position.Y + offsetY);
+
+                if (original.Stroke != null)
+                {
+                    var clonedStroke = original.Stroke.Clone();
+                    var matrix = new Matrix(1, 0, 0, 1, offsetX, offsetY);
+                    clonedStroke.Transform(matrix, false);
+
+                    if (InkPresenter != null && InkPresenter.Strokes != null)
+                    {
+                        InkPresenter.Strokes.Add(clonedStroke);
+                    }
+
+                    var strokeClone = original.Clone();
+                    strokeClone.Stroke = clonedStroke;
+                    strokeClone.Element = null;
+                    strokeClone.Position = newPos;
+                    strokeClone.UpdateBounds();
+
+                    AddObject(strokeClone);
+                    pastedObjects.Add(strokeClone);
+                    continue;
+                }
 
                 // Clone UIElement
                 UIElement? clonedElement = CloneSingleElement(original, newPos);
@@ -1365,12 +1463,20 @@ namespace QASmartTouch.Services
             if (obj == null)
                 return;
 
-            int maxZIndex = _allObjects.Max(o => o.ZIndex);
+            int maxZIndex = _allObjects.Count > 0 ? _allObjects.Max(o => o.ZIndex) : 0;
             obj.ZIndex = maxZIndex + 1;
 
             if (obj.Element != null)
             {
                 Panel.SetZIndex(obj.Element, obj.ZIndex);
+            }
+            else if (obj.Stroke != null && InkPresenter?.Strokes != null)
+            {
+                if (InkPresenter.Strokes.Contains(obj.Stroke))
+                {
+                    InkPresenter.Strokes.Remove(obj.Stroke);
+                    InkPresenter.Strokes.Add(obj.Stroke);
+                }
             }
         }
 
@@ -1398,6 +1504,14 @@ namespace QASmartTouch.Services
             if (obj.Element != null)
             {
                 Panel.SetZIndex(obj.Element, 0);
+            }
+            else if (obj.Stroke != null && InkPresenter?.Strokes != null)
+            {
+                if (InkPresenter.Strokes.Contains(obj.Stroke))
+                {
+                    InkPresenter.Strokes.Remove(obj.Stroke);
+                    InkPresenter.Strokes.Insert(0, obj.Stroke);
+                }
             }
         }
 
@@ -1548,54 +1662,82 @@ namespace QASmartTouch.Services
         /// <summary>
         /// Select multiple objects from lasso (tích hợp với LassoSelectionTool)
         /// </summary>
-        public void SelectFromLasso(List<UIElement> elements)
+        public void SelectFromLasso(List<UIElement> elements, List<Point>? lassoPolygon = null)
         {
-            if (elements == null || elements.Count == 0)
+            if ((elements == null || elements.Count == 0) && (lassoPolygon == null || lassoPolygon.Count < 3))
             {
-                System.Diagnostics.Debug.WriteLine("⚠️ Lasso selection: No elements found");
+                System.Diagnostics.Debug.WriteLine("⚠️ Lasso selection: No elements or polygon found");
                 return;
             }
 
             // Tìm SelectableObjects tương ứng với UIElements
             var selectableObjects = new List<SelectableObject>();
 
-            foreach (var element in elements)
+            if (elements != null && elements.Count > 0)
             {
-                var obj = _allObjects.FirstOrDefault(o => 
-                    o.Element == element || 
-                    (element is FrameworkElement fe1 && o.Element is FrameworkElement fe2 && 
-                     (fe1 == fe2 || fe1.IsAncestorOf(fe2) || fe2.IsAncestorOf(fe1))));
-
-                if (obj == null && element is FrameworkElement fe)
+                foreach (var element in elements)
                 {
-                    double left = System.Windows.Controls.Canvas.GetLeft(fe);
-                    double top = System.Windows.Controls.Canvas.GetTop(fe);
-                    if (double.IsNaN(left)) left = 0;
-                    if (double.IsNaN(top)) top = 0;
-                    double w = fe.ActualWidth > 0 ? fe.ActualWidth : fe.Width;
-                    double h = fe.ActualHeight > 0 ? fe.ActualHeight : fe.Height;
-                    if (double.IsNaN(w) || w <= 0) w = fe.RenderSize.Width > 0 ? fe.RenderSize.Width : 20;
-                    if (double.IsNaN(h) || h <= 0) h = fe.RenderSize.Height > 0 ? fe.RenderSize.Height : 20;
+                    var obj = _allObjects.FirstOrDefault(o => 
+                        o.Element == element || 
+                        (element is FrameworkElement fe1 && o.Element is FrameworkElement fe2 && 
+                         (fe1 == fe2 || fe1.IsAncestorOf(fe2) || fe2.IsAncestorOf(fe1))));
 
-                    obj = new SelectableObject
+                    if (obj == null && element is FrameworkElement fe)
                     {
-                        Element = fe,
-                        Type = ObjectType.Shape,
-                        Position = new Point(left, top),
-                        Size = new Size(w, h)
-                    };
-                    AddObject(obj);
-                    // ✅ BUG-FIX: Nếu AddObject reject (ví dụ Background element), bỏ qua không cho vào selection
-                    if (!_allObjects.Contains(obj))
+                        double left = System.Windows.Controls.Canvas.GetLeft(fe);
+                        double top = System.Windows.Controls.Canvas.GetTop(fe);
+                        if (double.IsNaN(left)) left = 0;
+                        if (double.IsNaN(top)) top = 0;
+                        double w = fe.ActualWidth > 0 ? fe.ActualWidth : fe.Width;
+                        double h = fe.ActualHeight > 0 ? fe.ActualHeight : fe.Height;
+                        if (double.IsNaN(w) || w <= 0) w = fe.RenderSize.Width > 0 ? fe.RenderSize.Width : 20;
+                        if (double.IsNaN(h) || h <= 0) h = fe.RenderSize.Height > 0 ? fe.RenderSize.Height : 20;
+
+                        obj = new SelectableObject
+                        {
+                            Element = fe,
+                            Type = ObjectType.Shape,
+                            Position = new Point(left, top),
+                            Size = new Size(w, h)
+                        };
+                        AddObject(obj);
+                        // ✅ BUG-FIX: Nếu AddObject reject (ví dụ Background element), bỏ qua không cho vào selection
+                        if (!_allObjects.Contains(obj))
+                        {
+                            obj = null;
+                        }
+                    }
+
+                    if (obj != null && !obj.IsLocked && !selectableObjects.Contains(obj))
                     {
-                        obj = null;
+                        obj.UpdateBounds(); // B.2.2: Cập nhật bounds mới nhất
+                        selectableObjects.Add(obj);
                     }
                 }
+            }
 
-                if (obj != null && !obj.IsLocked && !selectableObjects.Contains(obj))
+            // ✅ G2.3: Bổ sung quét Native Stroke trong vùng Lasso
+            if (lassoPolygon != null && lassoPolygon.Count >= 3)
+            {
+                foreach (var obj in _allObjects)
                 {
-                    obj.UpdateBounds(); // B.2.2: Cập nhật bounds mới nhất
-                    selectableObjects.Add(obj);
+                    if (obj.Stroke != null && obj.Stroke.StylusPoints != null && !selectableObjects.Contains(obj))
+                    {
+                        bool inLasso = false;
+                        foreach (var pt in obj.Stroke.StylusPoints)
+                        {
+                            if (QASmartTouch.Tools.LassoSelectionTool.IsPointInPolygon(new Point(pt.X, pt.Y), lassoPolygon))
+                            {
+                                inLasso = true;
+                                break;
+                            }
+                        }
+                        if (inLasso && !obj.IsLocked)
+                        {
+                            obj.UpdateBounds();
+                            selectableObjects.Add(obj);
+                        }
+                    }
                 }
             }
 
@@ -1608,8 +1750,6 @@ namespace QASmartTouch.Services
                 // Lasso chỉ chọn nhiều đối tượng (Multi-Selection), gom nhóm chỉ thực hiện khi GV bấm nút "Gom nhóm"
                 RebuildQuadTree();
                 System.Diagnostics.Debug.WriteLine($"✅ Lasso selected {selectableObjects.Count} object(s) (Multi-selection without auto-grouping)");
-                
-                System.Diagnostics.Debug.WriteLine($"✅ Lasso selected {selectableObjects.Count} object(s)");
             }
             else
             {
@@ -1908,6 +2048,11 @@ namespace QASmartTouch.Services
         public SelectableObject? GetSelectableObjectForElement(UIElement element)
         {
             return _allObjects.FirstOrDefault(o => o.Element == element);
+        }
+
+        public SelectableObject? GetSelectableObjectForStroke(Stroke stroke)
+        {
+            return _allObjects.FirstOrDefault(o => o.Stroke == stroke);
         }
 
         public void RebuildQuadTree()

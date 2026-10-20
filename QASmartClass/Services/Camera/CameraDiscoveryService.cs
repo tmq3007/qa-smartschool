@@ -1,4 +1,8 @@
-﻿using QASmartTouch.Models.Camera;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using QASmartTouch.Models.Camera;
 using OpenCvSharp;
 
 namespace QASmartTouch.Services.Camera;
@@ -27,41 +31,81 @@ public class CameraDiscoveryService
     public List<CameraDevice> RefreshCameras()
     {
         _cachedCameras.Clear();
+        var wmiNames = GetDeviceNamesFromWmi();
 
-        // Scan for cameras (typically 0-9 are common indices)
-        for (int i = 0; i < 10; i++)
+        // Scan for cameras (typically 0-4 are common indices in classroom setups)
+        for (int i = 0; i < 5; i++)
         {
             try
             {
-                using var capture = new VideoCapture(i);
-                if (capture.IsOpened())
+                VideoCapture? capture = null;
+                try
                 {
-                    var device = new CameraDevice
-                    {
-                        DeviceId = i.ToString(),
-                        FriendlyName = $"Camera {i}",
-                        Manufacturer = "Unknown",
-                        IsAvailable = true
-                    };
+                    capture = new VideoCapture(i, VideoCaptureAPIs.DSHOW);
+                }
+                catch { }
 
-                    // Try to get more detailed name from backend
-                    var backendName = capture.GetBackendName();
-                    if (!string.IsNullOrEmpty(backendName))
+                if (capture == null || !capture.IsOpened())
+                {
+                    capture?.Dispose();
+                    try
                     {
-                        device.FriendlyName = $"Camera {i} ({backendName})";
+                        capture = new VideoCapture(i, VideoCaptureAPIs.ANY);
+                    }
+                    catch { }
+                }
+
+                if (capture != null && capture.IsOpened())
+                {
+                    string friendlyName = (wmiNames.Count > i && !string.IsNullOrWhiteSpace(wmiNames[i]))
+                        ? wmiNames[i]
+                        : $"Camera {i}";
+
+                    var backendName = capture.GetBackendName();
+                    if (!string.IsNullOrEmpty(backendName) && !friendlyName.Contains(backendName))
+                    {
+                        friendlyName = $"{friendlyName} ({backendName})";
                     }
 
-                    _cachedCameras.Add(device);
+                    _cachedCameras.Add(new CameraDevice
+                    {
+                        DeviceId = i.ToString(),
+                        FriendlyName = friendlyName,
+                        Manufacturer = "Windows UVC",
+                        IsAvailable = true
+                    });
+
+                    capture.Release();
+                    capture.Dispose();
                 }
             }
             catch
             {
-                // Camera not available or error opening
                 continue;
             }
         }
 
         return _cachedCameras;
+    }
+
+    private List<string> GetDeviceNamesFromWmi()
+    {
+        var names = new List<string>();
+        try
+        {
+            using var searcher = new System.Management.ManagementObjectSearcher(
+                "SELECT Name FROM Win32_PnPEntity WHERE PNPClass = 'Camera' OR PNPClass = 'Image'");
+            foreach (var obj in searcher.Get())
+            {
+                var name = obj["Name"]?.ToString();
+                if (!string.IsNullOrWhiteSpace(name) && !names.Contains(name))
+                {
+                    names.Add(name);
+                }
+            }
+        }
+        catch { }
+        return names;
     }
 
     /// <summary>

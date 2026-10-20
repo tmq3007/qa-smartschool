@@ -1516,27 +1516,50 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// Kiểm tra xem có dữ liệu bài giảng thực sự chưa lưu hay không
         /// </summary>
         public bool CheckHasUnsavedChanges()
         {
-            if (!_isDirty) return false;
+            // 1. Kiểm tra xem có nét vẽ Native Inking nào trên trang hiện tại hay không
+            bool hasCurrentStrokes = MainInkPresenter?.Strokes != null && MainInkPresenter.Strokes.Count > 0;
 
-            // Kiểm tra các trang bảng trong BoardManager
-            if (_boardManager != null)
-            {
-                bool hasElementsInBoards = _boardManager.Boards.Any(b =>
-                    b.CanvasElements != null && b.CanvasElements.Any(el => !_boardManager.IsSystemElement(el)));
-                if (hasElementsInBoards) return true;
-            }
-
-            // Kiểm tra trang hiện tại trên Canvas
+            // 2. Kiểm tra các đối tượng UI trên Canvas hiện tại (Hình học, Văn bản, Bảng biểu, Ảnh, Media...)
             bool hasCanvasContent = MainInteractiveBoard.Children.OfType<UIElement>()
                 .Any(el => _boardManager != null 
                     ? !_boardManager.IsSystemElement(el) 
                     : (el is not FrameworkElement fe || fe.Tag?.ToString() != "BackgroundLayer"));
 
-            return hasCanvasContent;
+            // 3. Kiểm tra các trang bảng trong BoardManager (nét vẽ, đối tượng, hoặc số lượng trang > 1)
+            bool hasBoardManagerContent = false;
+            if (_boardManager != null)
+            {
+                if (_boardManager.BoardCount > 1)
+                {
+                    hasBoardManagerContent = true;
+                }
+                else
+                {
+                    hasBoardManagerContent = _boardManager.Boards.Any(b =>
+                        (b.CanvasElements != null && b.CanvasElements.Any(el => !_boardManager.IsSystemElement(el))) ||
+                        (b.Strokes != null && b.Strokes.Count > 0));
+                }
+            }
+
+            bool hasAnyRealContent = hasCurrentStrokes || hasCanvasContent || hasBoardManagerContent;
+
+            // Nếu bảng hoàn toàn trống và không có nội dung gì -> không cần hỏi lưu
+            if (!hasAnyRealContent)
+            {
+                return false;
+            }
+
+            // Nếu đã từng lưu thành công và chưa hề có chỉnh sửa mới nào kể từ lần lưu đó -> không cần hỏi lưu lại
+            if (_currentLectureFilePath != null && !_isDirty)
+            {
+                return false;
+            }
+
+            // Nếu có nội dung thực sự (nét vẽ/đối tượng) và (chưa từng lưu file HOẶC cờ _isDirty đang bật) -> cần hỏi lưu
+            return _isDirty || _currentLectureFilePath == null;
         }
 
         #endregion

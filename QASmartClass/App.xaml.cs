@@ -237,10 +237,6 @@ namespace QASmartTouch
                             // loginSelection.HideLoadingOverlay();
                             // InitializeModeAndRoleAfterLoading();
 
-                            // Đóng Splash Screen khi load xong
-                            splash.UpdateStatus("Sẵn sàng!", 100);
-                            splash.Close();
-
                             // Hard-code Teacher + đăng ký events + mở bảng vẽ trực tiếp
                             UserRoleService.SaveRole(QASmartClass.Shared.UserRole.Teacher);
                             ModeService.ModeChanged += OnModeChanged;
@@ -249,6 +245,10 @@ namespace QASmartTouch
                             ShowWhiteboard();
                             this.ShutdownMode = ShutdownMode.OnLastWindowClose;
                             EnsureFloatingModeBar();
+
+                            // Đóng Splash Screen khi Whiteboard đã hiển thị
+                            splash.UpdateStatus("Sẵn sàng!", 100);
+                            splash.Close();
                         });
                     }
                     catch (Exception ex)

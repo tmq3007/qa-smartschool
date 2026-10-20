@@ -1,5 +1,9 @@
 using QASmartTouch.Models.Camera;
 using OpenCvSharp;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
@@ -65,7 +69,7 @@ public class CameraPreviewService : IDisposable
                         targetIndex = parsedIdx;
                     }
 
-                    // 1. Thử mở camera theo targetIndex bằng DirectShow (DSHOW) - API chuẩn, nhanh và ổn định nhất trên Windows
+                    // 1. Thử mở camera theo targetIndex bằng DirectShow (DSHOW)
                     try
                     {
                         capture = new VideoCapture(targetIndex, VideoCaptureAPIs.DSHOW);
@@ -83,10 +87,10 @@ public class CameraPreviewService : IDisposable
                         catch { }
                     }
 
-                    // 3. Nếu targetIndex không hoạt động (ví dụ index 0 là virtual cam bị tắt), tự động quét các index khác (0-3)
+                    // 3. Nếu targetIndex không hoạt động, quét các index khác (0-4)
                     if (capture == null || !capture.IsOpened())
                     {
-                        for (int i = 0; i < 4; i++)
+                        for (int i = 0; i < 5; i++)
                         {
                             if (i == targetIndex) continue;
                             capture?.Dispose();
@@ -125,14 +129,22 @@ public class CameraPreviewService : IDisposable
                 return;
             }
 
-            // Set camera properties
+            // Set camera properties safely
             try
             {
                 if (!isRtsp)
                 {
-                    _capture.Set(VideoCaptureProperties.FrameWidth, profile.Width > 0 ? profile.Width : 640);
-                    _capture.Set(VideoCaptureProperties.FrameHeight, profile.Height > 0 ? profile.Height : 480);
-                    _capture.Set(VideoCaptureProperties.Fps, profile.FPS > 0 ? profile.FPS : 30);
+                    try { _capture.Set(VideoCaptureProperties.FourCC, VideoWriter.FourCC('M', 'J', 'P', 'G')); } catch { }
+
+                    if (profile.Width > 0 && profile.Height > 0)
+                    {
+                        _capture.Set(VideoCaptureProperties.FrameWidth, profile.Width);
+                        _capture.Set(VideoCaptureProperties.FrameHeight, profile.Height);
+                    }
+                    if (profile.FPS > 0)
+                    {
+                        _capture.Set(VideoCaptureProperties.Fps, profile.FPS);
+                    }
                 }
             }
             catch { }
@@ -193,6 +205,7 @@ public class CameraPreviewService : IDisposable
     private void CaptureLoop(CancellationToken cancellationToken)
     {
         using var frame = new Mat();
+        int consecutiveFailures = 0;
 
         while (!cancellationToken.IsCancellationRequested && _isRunning)
         {
@@ -200,7 +213,7 @@ public class CameraPreviewService : IDisposable
             {
                 if (_capture == null || !_capture.IsOpened())
                 {
-                    ErrorOccurred?.Invoke("Camera connection lost");
+                    ErrorOccurred?.Invoke("Kết nối Camera đã bị đóng hoặc gián đoạn.");
                     _isRunning = false;
                     break;
                 }
@@ -208,6 +221,7 @@ public class CameraPreviewService : IDisposable
                 // Read frame from camera
                 if (_capture.Read(frame) && !frame.Empty())
                 {
+                    consecutiveFailures = 0;
                     // Convert Mat to BitmapSource for WPF
                     var bitmap = ConvertMatToBitmapSource(frame);
                     
@@ -219,13 +233,17 @@ public class CameraPreviewService : IDisposable
                 }
                 else
                 {
-                    // Frame read failed, wait a bit and retry
-                    Thread.Sleep(10);
+                    consecutiveFailures++;
+                    if (consecutiveFailures == 25)
+                    {
+                        ErrorOccurred?.Invoke("Không đọc được hình ảnh từ Camera. Có thể camera đang bị phần mềm khác chiếm dụng hoặc bị chặn quyền riêng tư.");
+                    }
+                    Thread.Sleep(20);
                 }
             }
             catch (Exception ex)
             {
-                ErrorOccurred?.Invoke($"Frame capture error: {ex.Message}");
+                ErrorOccurred?.Invoke($"Lỗi đọc khung hình: {ex.Message}");
                 Thread.Sleep(100); // Wait before retry
             }
         }

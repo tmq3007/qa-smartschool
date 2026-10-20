@@ -25,12 +25,13 @@ namespace QASmartTouch.Forms
             // 1. Làm tươi danh sách đối tượng trên Canvas trước khi chọn
             RefreshSelectableObjects();
 
-            if (selectedElements.Count > 0)
+            var lassoPoints = _lassoTool?.GetLassoPoints();
+            if ((selectedElements != null && selectedElements.Count > 0) || (lassoPoints != null && lassoPoints.Count >= 3))
             {
-                // 2. Gọi SelectionManager để xử lý chọn đối tượng
-                _selectionManager?.SelectFromLasso(selectedElements);
+                // 2. Gọi SelectionManager để xử lý chọn đối tượng (bao gồm cả UIElement và Native Stroke)
+                _selectionManager?.SelectFromLasso(selectedElements ?? new List<UIElement>(), lassoPoints);
 
-                System.Diagnostics.Debug.WriteLine($"✅ Lasso selection completed: {selectedElements.Count} object(s) selected");
+                System.Diagnostics.Debug.WriteLine($"✅ Lasso selection completed");
 
                 var selectedObjects = _selectionManager?.GetSelectedObjects();
                 if (selectedObjects != null && selectedObjects.Count > 0)

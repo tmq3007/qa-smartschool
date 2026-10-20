@@ -14,11 +14,8 @@ namespace QASmartTouch.Controllers
         private Forms.FloatingToolbarWindow? _toolbar;
         private Forms.AnnotationOverlay? _overlay;
         private Forms.ColorPickerPopup? _colorPicker;
-        private Forms.FloatingCameraWindow? _floatingCamera;
         private Forms.Form2_MainDashboard _mainApp;
         private Services.ScreenCaptureService? _screenCapture;
-        private Services.ScreenRecorderService? _screenRecorder;
-        private System.Windows.Threading.DispatcherTimer? _recordingTimer;
         private bool _isWindowModeActive = false;
         private bool _isPenMode = false;
         private bool _isMouseMode = false;
@@ -43,7 +40,6 @@ namespace QASmartTouch.Controllers
             
             // Initialize services
             _screenCapture = new Services.ScreenCaptureService();
-            _screenRecorder = new Services.ScreenRecorderService();
             
             System.Diagnostics.Debug.WriteLine("✅ WindowModeController initialized with services");
         }
@@ -95,17 +91,9 @@ namespace QASmartTouch.Controllers
                 _toolbar.WindowModeToggled += OnWindowModeToggled;
                 _toolbar.SelectDisplayRequested += OnSelectDisplayRequested;
                 _toolbar.SelectAreaRequested += OnSelectAreaRequested;
-                _toolbar.RecordToggled += OnRecordToggled;
-                _toolbar.CameraToggled += OnCameraToggled;
-
-                _toolbar.RecordingOptionsSelected += OnRecordingOptionsSelected;
                 _toolbar.DeleteLastStrokeRequested += OnDeleteLastStrokeRequested;
                 _toolbar.MouseModeRequested += OnMouseModeRequested;
                 _toolbar.ToolbarHidden += OnToolbarHidden;
-                
-                // Subscribe Save event
-                if (_screenRecorder != null)
-                    _screenRecorder.SaveCompleted += OnRecordingSaveCompleted;
                 
                 if (_overlay?.UndoRedoManager != null)
                 {
@@ -148,16 +136,7 @@ namespace QASmartTouch.Controllers
 
             try
             {
-                // 1. Dừng ghi hình an toàn nếu đang chạy
-                if (_screenRecorder != null && _screenRecorder.IsRecording)
-                {
-                    _recordingTimer?.Stop();
-                    _recordingTimer = null;
-                    _screenRecorder.StopRecording();
-                    System.Diagnostics.Debug.WriteLine("⏹️ Screen recording stopped safely upon toolbar close");
-                }
-
-                // 2. Hỏi lưu nháp nếu phát hiện có nét vẽ trên bảng
+                // Hỏi lưu nháp nếu phát hiện có nét vẽ trên bảng
                 if (_overlay != null && _overlay.UndoRedoManager != null && _overlay.UndoRedoManager.CanUndo)
                 {
                     var confirm = MessageBox.Show(
@@ -206,9 +185,6 @@ namespace QASmartTouch.Controllers
                     _toolbar.WindowModeToggled -= OnWindowModeToggled;
                     _toolbar.SelectDisplayRequested -= OnSelectDisplayRequested;
                     _toolbar.SelectAreaRequested -= OnSelectAreaRequested;
-                    _toolbar.RecordToggled -= OnRecordToggled;
-                    _toolbar.CameraToggled -= OnCameraToggled;
-
                     _toolbar.DeleteLastStrokeRequested -= OnDeleteLastStrokeRequested;
                     _toolbar.MouseModeRequested -= OnMouseModeRequested;
                     _toolbar.ToolbarHidden -= OnToolbarHidden;
@@ -808,202 +784,6 @@ namespace QASmartTouch.Controllers
         
         [System.Runtime.InteropServices.DllImport("gdi32.dll")]
         private static extern bool DeleteObject(IntPtr hObject);
-
-        private void OnCameraToggled(object? sender, EventArgs e)
-        {
-            if (_floatingCamera == null)
-            {
-                _floatingCamera = new Forms.FloatingCameraWindow();
-                _floatingCamera.CameraClosed += () => _floatingCamera = null;
-                
-                var screenW = SystemParameters.PrimaryScreenWidth;
-                var screenH = SystemParameters.PrimaryScreenHeight;
-                _floatingCamera.Left = screenW - _floatingCamera.Width - 30;
-                _floatingCamera.Top = screenH - _floatingCamera.Height - 80;
-                
-                _floatingCamera.Show();
-                _floatingCamera.Activate();
-            }
-            else
-            {
-                _floatingCamera.Close();
-                _floatingCamera = null;
-            }
-        }
-
-        private void OnRecordToggled(object? sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("⏺️ Record toggled");
-            
-            if (_screenRecorder == null)
-            {
-                MessageBox.Show("Dịch vụ ghi màn hình chưa sẵn sàng", 
-                              "Lỗi", 
-                              MessageBoxButton.OK, 
-                              MessageBoxImage.Error);
-                return;
-            }
-            
-            if (_screenRecorder.IsRecording)
-            {
-                StopRecording();
-            }
-            // else case is now handled by popup and OnRecordingOptionsSelected
-        }
-
-        private void OnRecordingOptionsSelected(object? sender, Forms.FloatingToolbarWindow.RecordingOptionsEventArgs e)
-        {
-            if (e.IncludeCamera)
-            {
-                if (_floatingCamera == null)
-                {
-                    _floatingCamera = new Forms.FloatingCameraWindow();
-                    _floatingCamera.CameraClosed += () => _floatingCamera = null;
-                }
-
-                double screenW = SystemParameters.PrimaryScreenWidth;
-                double screenH = SystemParameters.PrimaryScreenHeight;
-                _floatingCamera.Left = screenW - _floatingCamera.Width - 30;
-                _floatingCamera.Top = screenH - _floatingCamera.Height - 80;
-                _floatingCamera.Show();
-                _floatingCamera.Activate();
-            }
-
-            StartRecording(e.IncludeMicrophone, e.IncludeSystemAudio);
-        }
-
-        #endregion
-
-        #region Recording Methods
-
-        private void StartRecording(bool enableMicrophone = true, bool enableSystemAudio = true)
-        {
-            try
-            {
-                _screenRecorder?.StartRecording(enableMicrophone, enableSystemAudio, null);
-                _toolbar?.SetRecordingState(true);
-
-                // Timer hiển thị thời gian ghi
-                _recordingTimer = new System.Windows.Threading.DispatcherTimer
-                {
-                    Interval = TimeSpan.FromSeconds(1)
-                };
-                _recordingTimer.Tick += RecordingTimer_Tick;
-                _recordingTimer.Start();
-
-                // Hiển toast nhỏ thay vì MessageBox toàn màn hình
-                string audioInfo = (enableMicrophone && enableSystemAudio) ? "Mic + Máy" : (enableMicrophone ? "Chỉ Mic" : (enableSystemAudio ? "Chỉ Máy" : "Tắt tiếng"));
-                _overlay?.ShowToast($"⏺️ Đang ghi màn hình ({audioInfo}) | Nhấn nút ● lại để dừng", "#5C6BC0");
-
-                System.Diagnostics.Debug.WriteLine($"⏺️ Recording started (MP4, Mic: {enableMicrophone}, SysAudio: {enableSystemAudio})");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Start recording error: {ex.Message}");
-                _toolbar?.SetRecordingState(false);
-                MessageBox.Show($"Lỗi khi bắt đầu ghi:\n{ex.Message}", "Lỗi",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void StopRecording()
-        {
-            try
-            {
-                _recordingTimer?.Stop();
-                _recordingTimer = null;
-
-                _screenRecorder?.StopRecording();
-                _toolbar?.SetRecordingState(false);
-
-                // Auto hide floating camera when recording stops
-                if (_floatingCamera != null)
-                {
-                    _floatingCamera.Close();
-                    _floatingCamera = null;
-                }
-
-                _overlay?.ShowToast("💾 Đang lưu file ghi màn hình MP4...", "#E65100");
-
-                System.Diagnostics.Debug.WriteLine("⏹️ Recording stopped, saving in background...");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Stop recording error: {ex.Message}");
-                MessageBox.Show($"Lỗi khi dừng ghi:\n{ex.Message}", "Lỗi",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void OnRecordingSaveCompleted(string? savedPath, string? errorMessage)
-        {
-            System.Diagnostics.Debug.WriteLine($"✅ Recording save completed: {savedPath}, Error: {errorMessage}");
-
-            if (savedPath != null && System.IO.File.Exists(savedPath))
-            {
-                var dialog = new Microsoft.Win32.SaveFileDialog
-                {
-                    Title = "Lưu video ghi màn hình",
-                    Filter = "MP4 Video|*.mp4|All Files|*.*",
-                    DefaultExt = ".mp4",
-                    FileName = $"Bài_giảng_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
-                };
-
-                if (dialog.ShowDialog() == true)
-                {
-                    try
-                    {
-                        if (System.IO.File.Exists(dialog.FileName))
-                        {
-                            System.IO.File.Delete(dialog.FileName);
-                        }
-                        System.IO.File.Move(savedPath, dialog.FileName);
-                        
-                        var res = MessageBox.Show(
-                            $"Đã lưu video thành công tại:\n{dialog.FileName}\n\nBạn có muốn mở video không?",
-                            "Lưu video", MessageBoxButton.YesNo, MessageBoxImage.Information);
-
-                        if (res == MessageBoxResult.Yes)
-                        {
-                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                            {
-                                FileName = dialog.FileName,
-                                UseShellExecute = true
-                            });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Lỗi khi lưu video:\n{ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-                else
-                {
-                    // User cancelled, maybe keep it in temp or delete?
-                    // Optional: delete the temp file
-                    try { System.IO.File.Delete(savedPath); } catch { }
-                }
-            }
-            else
-            {
-                var msg = savedPath == null
-                        ? $"Không có frames nào được ghi. Vui lòng thử lại.\nLỗi chi tiết: {errorMessage}"
-                        : $"Lỗi: File không được tạo!\n{savedPath}";
-
-                MessageBox.Show(
-                    msg,
-                    "Lỗi ghi màn hình", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void RecordingTimer_Tick(object? sender, EventArgs e)
-        {
-            // Update UI with recording time
-            var time = _screenRecorder?.GetFormattedRecordingTime() ?? "00:00";
-            System.Diagnostics.Debug.WriteLine($"⏱️ Recording: {time}");
-            
-            _toolbar?.UpdateRecordingTime(time);
-        }
 
         #endregion
 

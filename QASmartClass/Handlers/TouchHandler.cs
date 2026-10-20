@@ -85,6 +85,23 @@ namespace QASmartTouch.Handlers
         /// </summary>
         public Func<int>? GetCurrentInkingZIndex { get; set; }
 
+        /// <summary>
+        /// Callback xóa nét vẽ tự do Native Inking (System.Windows.Ink.Stroke)
+        /// Tham số: (currentPoint, lastPoint, eraserSize, eraserMode, touchId)
+        /// </summary>
+        public Action<Point, Point?, double, string, int>? OnEraseNativeStrokes { get; set; }
+
+        /// <summary>
+        /// Callback kết thúc phiên tẩy cảm ứng của một touchId (để chốt Undo/Redo)
+        /// </summary>
+        public Action<int>? OnEndTouchEraseSession { get; set; }
+
+        /// <summary>
+        /// Callback thêm nét vẽ tự do Native Inking (System.Windows.Ink.Stroke)
+        /// Tham số: (points, color, size, brushType, touchId)
+        /// </summary>
+        public Action<PointCollection, Color, double, string, int>? OnAddNativeStroke { get; set; }
+
         // Two-Finger Pinch-to-Zoom & Pan fields (Phase 3)
         private bool _isTwoFingerGestureActive = false;
         private bool _suppressDrawingUntilAllReleased = false;
@@ -563,6 +580,8 @@ namespace QASmartTouch.Handlers
                     }
                     _eraserEngine?.StartTouchSession(touchId);
 
+                    OnEraseNativeStrokes?.Invoke(position, null, _eraserSize, _eraserMode, touchId);
+
                     if (_eraserMode == "Point" || _eraserMode == "Drag")
                     {
                         EraseByPointAt(position, touchId);
@@ -715,7 +734,10 @@ namespace QASmartTouch.Handlers
                             return;
                         }
                     }
+                    Point? lastPos = _lastTouchPoints.TryGetValue(touchId, out var lp) ? lp : null;
                     _lastTouchPoints[touchId] = position;
+
+                    OnEraseNativeStrokes?.Invoke(position, lastPos, _eraserSize, _eraserMode, touchId);
 
                     if (_eraserMode == "Point" || _eraserMode == "Drag")
                     {
@@ -981,7 +1003,7 @@ namespace QASmartTouch.Handlers
                             // Bút laser: Tự động tan biến sau 2.5s, không ghi Undo stack
                             AnimateAndRemoveLaserStroke(stroke);
                         }
-                        else if (_currentBrushType == "Shape" || _currentBrushType == "Calligraphy")
+                        else if (_currentBrushType == "Shape")
                         {
                             int inkingZ = GetCurrentInkingZIndex?.Invoke() ?? QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
                             Color color = stroke.Stroke is SolidColorBrush scb ? scb.Color : _currentPenColor;
@@ -992,6 +1014,12 @@ namespace QASmartTouch.Handlers
                                 Panel.SetZIndex(recognizedShape, inkingZ);
                                 _canvas.Children.Add(recognizedShape);
                                 _recordAddAction?.Invoke(recognizedShape, $"Touch recognized shape (ID: {touchId})");
+                            }
+                            else if (OnAddNativeStroke != null)
+                            {
+                                // Không nhận diện được hình -> chuyển sang Native Ink nét tự do
+                                _canvas.Children.Remove(stroke);
+                                OnAddNativeStroke(stroke.Points, color, stroke.StrokeThickness, _currentBrushType, touchId);
                             }
                             else
                             {
@@ -1010,12 +1038,19 @@ namespace QASmartTouch.Handlers
                                 }
                             }
                         }
+                        else if (OnAddNativeStroke != null)
+                        {
+                            // 🚀 NATIVE INK ACCELERATION: Đưa nét cảm ứng vào GPU MilCore
+                            _canvas.Children.Remove(stroke);
+                            Color color = stroke.Stroke is SolidColorBrush scb ? scb.Color : _currentPenColor;
+                            OnAddNativeStroke(stroke.Points, color, stroke.StrokeThickness, _currentBrushType, touchId);
+                        }
                         else
                         {
-                            int currentInkingZ = GetCurrentInkingZIndex?.Invoke() ?? QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
+                            int currentInkingZ = GetCurrentInkingZIndex?.Invoke() ?? QASmartTouch.Helpers.ZIndexConstants.InkingLayer;
                             var smoothPath = _strokeService.ConvertToSmoothPath(stroke);
                             int zIndex = (_currentBrushType == "Highlighter" || _currentBrushType == "Marker" || _currentBrushType == "Mask" || _currentBrushType == "MaskPen")
-                                ? (currentInkingZ > QASmartTouch.Helpers.ZIndexConstants.UserContentBase ? currentInkingZ : QASmartTouch.Helpers.ZIndexConstants.HighlighterLayer)
+                                ? (currentInkingZ > QASmartTouch.Helpers.ZIndexConstants.InkingLayer ? currentInkingZ : QASmartTouch.Helpers.ZIndexConstants.HighlighterLayer)
                                 : currentInkingZ;
 
                             if (smoothPath != null)
@@ -1044,6 +1079,7 @@ namespace QASmartTouch.Handlers
                     {
                         _recordEraseSessionAction?.Invoke(session, $"Touch erase (ID: {touchId})");
                     }
+                    OnEndTouchEraseSession?.Invoke(touchId);
                     _eraserEngine?.HideEraserPreview();
                     _hideEraserPreview?.Invoke();
                     System.Diagnostics.Debug.WriteLine($"🧹 Touch {touchId} erase completed");

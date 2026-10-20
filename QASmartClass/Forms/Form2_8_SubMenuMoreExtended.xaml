@@ -360,6 +360,29 @@
                                        Style="{StaticResource SectionLabel}"
                                        Margin="0,0,0,8"/>
 
+                            <Button x:Name="btnScreenRecord" 
+                                    Style="{StaticResource ExtendedMenuItemButton}"
+                                    Click="btnScreenRecord_Click"
+                                    ToolTip="Ghi hình bài giảng toàn màn hình (MP4)">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Viewbox Grid.Column="0" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Fill="#EF4444" 
+                                                  Data="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                    <TextBlock Grid.Column="1" Text="Ghi hình bài giảng" 
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="#2F3542"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </Button>
+
                             <Button x:Name="btnCameraAI" 
                                     Style="{StaticResource ExtendedMenuItemButton}"
                                     Click="btnCameraAI_Click"

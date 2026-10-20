@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Ink;
 using QASmartTouch.Forms;
 
 namespace QASmartTouch.Managers
@@ -97,7 +98,7 @@ namespace QASmartTouch.Managers
             if (typeName == "SelectionBox" || typeName == "ContextToolbar" || 
                 typeName == "ThicknessPicker" || typeName == "ColorPicker" || 
                 typeName == "MoreMenu" || typeName == "FloatingTouchKeyboard" ||
-                typeName == "NotificationWindow")
+                typeName == "NotificationWindow" || element is InkPresenter || typeName == "InkPresenter")
                 return true;
 
             if (element is FrameworkElement fe && fe.Tag?.ToString() == "EraserPreview")
@@ -270,6 +271,7 @@ namespace QASmartTouch.Managers
                 newBoard.UndoStack = new Stack<QASmartTouch.Forms.UndoRedoAction>(sourceBoard.UndoStack.Reverse());
             }
             newBoard.ThumbnailImage = sourceBoard.ThumbnailImage;
+            newBoard.Strokes = sourceBoard.Strokes?.Clone();
             
             _boards.Add(newBoard);
             
@@ -608,6 +610,17 @@ namespace QASmartTouch.Managers
                 _mainCanvas.Children.Remove(element);
             }
             
+            // Clear InkPresenter native ink strokes
+            var inkPresenter = _mainCanvas.Children.OfType<InkPresenter>().FirstOrDefault();
+            if (inkPresenter?.Strokes != null)
+            {
+                inkPresenter.Strokes.Clear();
+            }
+            if (board.Strokes != null)
+            {
+                board.Strokes.Clear();
+            }
+
             board.LastModifiedAt = DateTime.Now;
             
             System.Diagnostics.Debug.WriteLine($"✅ Board cleared: {board.Name}");
@@ -723,6 +736,13 @@ namespace QASmartTouch.Managers
             // Store elements in board state
             board.CanvasElements = elements;
             board.ObjectCount = elements.Count; // Store object count
+
+            // Save Strokes for InkPresenter if present
+            var inkPresenter = _mainCanvas.Children.OfType<InkPresenter>().FirstOrDefault();
+            if (inkPresenter != null && inkPresenter.Strokes != null)
+            {
+                board.Strokes = inkPresenter.Strokes.Clone();
+            }
             board.CanvasWidth = _mainCanvas.Width > 0 && !double.IsNaN(_mainCanvas.Width) ? _mainCanvas.Width : (_mainCanvas.ActualWidth > 0 ? _mainCanvas.ActualWidth : 1920);
             board.CanvasHeight = _mainCanvas.Height > 0 && !double.IsNaN(_mainCanvas.Height) ? _mainCanvas.Height : (_mainCanvas.ActualHeight > 0 ? _mainCanvas.ActualHeight : 1080);
             board.LastModifiedAt = DateTime.Now;
@@ -745,11 +765,19 @@ namespace QASmartTouch.Managers
             try
             {
                 bool isEmpty = true;
-                foreach (UIElement child in _mainCanvas.Children)
+                var inkPresenter = _mainCanvas.Children.OfType<InkPresenter>().FirstOrDefault();
+                if (inkPresenter?.Strokes != null && inkPresenter.Strokes.Count > 0)
                 {
-                    if (IsSystemElement(child)) continue;
                     isEmpty = false;
-                    break;
+                }
+                else
+                {
+                    foreach (UIElement child in _mainCanvas.Children)
+                    {
+                        if (IsSystemElement(child)) continue;
+                        isEmpty = false;
+                        break;
+                    }
                 }
                 
                 // If empty, create placeholder thumbnail
@@ -758,11 +786,12 @@ namespace QASmartTouch.Managers
                     return CreateEmptyBoardPlaceholder();
                 }
                 
-                // HF-05: Tạm ẩn System UI elements trước khi chụp (bảo toàn BackgroundLayer)
+                // HF-05: Tạm ẩn System UI elements trước khi chụp (bảo toàn BackgroundLayer & InkPresenter)
                 var hiddenElements = new System.Collections.Generic.List<(UIElement element, Visibility original)>();
                 foreach (UIElement child in _mainCanvas.Children)
                 {
                     if (child is FrameworkElement fe && fe.Tag?.ToString() == "BackgroundLayer") continue;
+                    if (child is InkPresenter) continue;
 
                     if (IsSystemElement(child) && child.Visibility == Visibility.Visible)
                     {
@@ -987,6 +1016,13 @@ namespace QASmartTouch.Managers
                 _mainCanvas.Children.Add(element);
             }
 
+            // Restore Strokes for InkPresenter if present
+            var activeInkPresenter = _mainCanvas.Children.OfType<InkPresenter>().FirstOrDefault();
+            if (activeInkPresenter != null)
+            {
+                activeInkPresenter.Strokes = board.Strokes != null ? board.Strokes.Clone() : new StrokeCollection();
+            }
+
             // Notify caller that board loading has completed
             AfterBoardLoaded?.Invoke(board);
         }
@@ -1079,6 +1115,11 @@ namespace QASmartTouch.Managers
         /// Canvas elements (actual UIElement collection)
         /// </summary>
         public List<UIElement>? CanvasElements { get; set; }
+        
+        /// <summary>
+        /// Nét vẽ tự do Native Inking (System.Windows.Ink.StrokeCollection)
+        /// </summary>
+        public System.Windows.Ink.StrokeCollection? Strokes { get; set; }
         
         /// <summary>
         /// Thumbnail preview image of the board

@@ -34,7 +34,7 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
             ref int imgIndex, 
             HashSet<string>? writtenAssets = null)
         {
-            if (element == null) return null;
+            if (element == null || element is InkPresenter) return null;
 
             double left = Canvas.GetLeft(element);
             if (double.IsNaN(left)) left = 0;
@@ -200,7 +200,8 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                     Tag = tagStr,
                     FillColorHex = ColorToHex(ellipse.Fill),
                     StrokeColorHex = ColorToHex(ellipse.Stroke),
-                    StrokeThickness = ellipse.StrokeThickness
+                    StrokeThickness = ellipse.StrokeThickness,
+                    StrokeDashArray = ellipse.StrokeDashArray != null ? string.Join(",", ellipse.StrokeDashArray) : null
                 };
             }
 
@@ -224,7 +225,8 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                     Tag = tagStr,
                     StrokePoints = points,
                     StrokeColorHex = ColorToHex(line.Stroke),
-                    StrokeThickness = line.StrokeThickness
+                    StrokeThickness = line.StrokeThickness,
+                    StrokeDashArray = line.StrokeDashArray != null ? string.Join(",", line.StrokeDashArray) : null
                 };
             }
 
@@ -249,7 +251,8 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                     PolygonPoints = points,
                     FillColorHex = ColorToHex(polygon.Fill),
                     StrokeColorHex = ColorToHex(polygon.Stroke),
-                    StrokeThickness = polygon.StrokeThickness
+                    StrokeThickness = polygon.StrokeThickness,
+                    StrokeDashArray = polygon.StrokeDashArray != null ? string.Join(",", polygon.StrokeDashArray) : null
                 };
             }
 
@@ -269,7 +272,8 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                     GeometryData = path.Data?.ToString(),
                     FillColorHex = ColorToHex(path.Fill),
                     StrokeColorHex = ColorToHex(path.Stroke),
-                    StrokeThickness = path.StrokeThickness
+                    StrokeThickness = path.StrokeThickness,
+                    StrokeDashArray = path.StrokeDashArray != null ? string.Join(",", path.StrokeDashArray) : null
                 };
             }
 
@@ -293,34 +297,19 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                 };
             }
 
-            // 10. KHỐI HÌNH 3D (Tag == "3DShape")
-            if (tagStr == "3DShape")
-            {
-                return new SceneElementNode
-                {
-                    ElementType = SceneElementType.Shape3D,
-                    Left = left,
-                    Top = top,
-                    Width = width > 0 ? width : 400,
-                    Height = height > 0 ? height : 400,
-                    ZIndex = zIndex,
-                    Tag = tagStr,
-                    Model3DType = "Cube" // Default
-                };
-            }
-
-            // 11. CONTAINER LỒNG NHAU (Canvas con chứa Chart / Group)
+            // 10. KHỐI HÌNH 3D (Tag == "3DShape") HOẶC CONTAINER LỒNG NHAU (Canvas con chứa các hình con)
             if (element is Canvas subCanvas)
             {
                 var containerNode = new SceneElementNode
                 {
-                    ElementType = SceneElementType.Container,
+                    ElementType = (tagStr == "3DShape") ? SceneElementType.Shape3D : SceneElementType.Container,
                     Left = left,
                     Top = top,
                     Width = width,
                     Height = height,
                     ZIndex = zIndex,
                     Tag = tagStr,
+                    Model3DType = "Cube",
                     Children = new List<SceneElementNode>()
                 };
 
@@ -517,7 +506,7 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                     break;
 
                 case SceneElementType.Shape3D:
-                    result = Recreate3DPlaceholder(node);
+                    result = Recreate3DShape(node, assetCache);
                     break;
 
                 case SceneElementType.Chart:
@@ -547,7 +536,13 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
             {
                 Canvas.SetLeft(result, node.Left);
                 Canvas.SetTop(result, node.Top);
-                Panel.SetZIndex(result, node.ZIndex);
+
+                int zIndex = node.ZIndex;
+                if (zIndex <= 0)
+                {
+                    zIndex = QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
+                }
+                Panel.SetZIndex(result, zIndex);
 
                 if (node.Opacity < 1.0)
                 {
@@ -590,26 +585,36 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
             switch (node.ShapeKind)
             {
                 case "Rectangle":
-                    return new Rectangle
+                    var rect = new Rectangle
                     {
                         Width = Math.Max(1, node.Width),
                         Height = Math.Max(1, node.Height),
-                        Fill = ParseBrush(node.FillColorHex, Brushes.Transparent),
+                        Fill = ParseBrush(node.FillColorHex, null), // ✅ null khi FillColorHex là null
                         Stroke = ParseBrush(node.StrokeColorHex, Brushes.White),
                         StrokeThickness = node.StrokeThickness,
                         Tag = node.Tag
                     };
+                    if (!string.IsNullOrEmpty(node.StrokeDashArray))
+                    {
+                        rect.StrokeDashArray = ParseDashArray(node.StrokeDashArray);
+                    }
+                    return rect;
 
                 case "Ellipse":
-                    return new Ellipse
+                    var ellipse = new Ellipse
                     {
                         Width = Math.Max(1, node.Width),
                         Height = Math.Max(1, node.Height),
-                        Fill = ParseBrush(node.FillColorHex, Brushes.Transparent),
+                        Fill = ParseBrush(node.FillColorHex, null), // ✅ null khi FillColorHex là null
                         Stroke = ParseBrush(node.StrokeColorHex, Brushes.White),
                         StrokeThickness = node.StrokeThickness,
                         Tag = node.Tag
                     };
+                    if (!string.IsNullOrEmpty(node.StrokeDashArray))
+                    {
+                        ellipse.StrokeDashArray = ParseDashArray(node.StrokeDashArray);
+                    }
+                    return ellipse;
 
                 case "Line":
                     var line = new Line
@@ -618,6 +623,10 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                         StrokeThickness = node.StrokeThickness,
                         Tag = node.Tag
                     };
+                    if (!string.IsNullOrEmpty(node.StrokeDashArray))
+                    {
+                        line.StrokeDashArray = ParseDashArray(node.StrokeDashArray);
+                    }
                     if (node.StrokePoints != null && node.StrokePoints.Count >= 2)
                     {
                         line.X1 = node.StrokePoints[0].X;
@@ -630,11 +639,15 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                 case "Polygon":
                     var polygon = new Polygon
                     {
-                        Fill = ParseBrush(node.FillColorHex, Brushes.Transparent),
+                        Fill = ParseBrush(node.FillColorHex, null), // ✅ null khi FillColorHex là null
                         Stroke = ParseBrush(node.StrokeColorHex, Brushes.White),
                         StrokeThickness = node.StrokeThickness,
                         Tag = node.Tag
                     };
+                    if (!string.IsNullOrEmpty(node.StrokeDashArray))
+                    {
+                        polygon.StrokeDashArray = ParseDashArray(node.StrokeDashArray);
+                    }
                     if (node.PolygonPoints != null)
                     {
                         foreach (var pt in node.PolygonPoints)
@@ -647,14 +660,19 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                 case "Path":
                     if (!string.IsNullOrEmpty(node.GeometryData))
                     {
-                        return new Path
+                        var pathObj = new Path
                         {
                             Data = Geometry.Parse(node.GeometryData),
-                            Fill = ParseBrush(node.FillColorHex, Brushes.Transparent),
+                            Fill = ParseBrush(node.FillColorHex, null), // ✅ null khi FillColorHex là null
                             Stroke = ParseBrush(node.StrokeColorHex, Brushes.White),
                             StrokeThickness = node.StrokeThickness,
                             Tag = node.Tag
                         };
+                        if (!string.IsNullOrEmpty(node.StrokeDashArray))
+                        {
+                            pathObj.StrokeDashArray = ParseDashArray(node.StrokeDashArray);
+                        }
+                        return pathObj;
                     }
                     break;
             }
@@ -766,31 +784,99 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
             return border;
         }
 
-        private static UIElement Recreate3DPlaceholder(SceneElementNode node)
+        private static UIElement Recreate3DShape(SceneElementNode node, Dictionary<string, BitmapImage> assetCache)
         {
-            var border = new Border
+            var container = new Canvas
             {
                 Width = node.Width > 0 ? node.Width : 400,
                 Height = node.Height > 0 ? node.Height : 400,
-                Background = new SolidColorBrush(Color.FromArgb(40, 59, 130, 246)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(59, 130, 246)),
-                BorderThickness = new Thickness(2),
-                CornerRadius = new CornerRadius(8),
+                Background = Brushes.Transparent, // Cho phép chạm/kéo thả trên màn hình tương tác
                 Tag = "3DShape"
             };
 
-            var txt = new TextBlock
+            // 1. Phục hồi từ danh sách children vector thực tế
+            if (node.Children != null && node.Children.Count > 0)
             {
-                Text = $"🧊 Khối 3D: {node.Model3DType ?? "Cube"}",
-                FontSize = 16,
-                FontWeight = FontWeights.SemiBold,
-                Foreground = Brushes.White,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            border.Child = txt;
+                foreach (var childNode in node.Children)
+                {
+                    var childElement = DeserializeElement(childNode, assetCache);
+                    if (childElement != null)
+                    {
+                        container.Children.Add(childElement);
+                    }
+                }
+                return container;
+            }
 
-            return border;
+            // 2. Fallback cho bài giảng cũ từng bị lưu dạng stub (thiếu children):
+            // Tái tạo lại hình khối 3D thật (chuẩn SGK nét liền & nét đứt) thay vì hiển thị khung placeholder xanh
+            BuildFallback3DGeometry(container, node.Model3DType ?? "Cube", container.Width, container.Height, Brushes.White, 2.0);
+            return container;
+        }
+
+        private static void BuildFallback3DGeometry(Canvas container, string modelType, double w, double h, Brush stroke, double thickness)
+        {
+            GeometryGroup visibleGeo = new GeometryGroup();
+            GeometryGroup hiddenGeo = new GeometryGroup();
+
+            double x = 0, y = 0;
+            switch (modelType)
+            {
+                case "Cube":
+                default:
+                    double dx = w * 0.25;
+                    double dy = h * 0.25;
+
+                    Point a = new Point(x, y + dy);
+                    Point b = new Point(x + w - dx, y + dy);
+                    Point c = new Point(x + w - dx, y + h);
+                    Point d = new Point(x, y + h);
+
+                    Point aPrime = new Point(x + dx, y);
+                    Point bPrime = new Point(x + w, y);
+                    Point cPrime = new Point(x + w, y + h - dy);
+                    Point dPrime = new Point(x + dx, y + h - dy);
+
+                    // Nét liền: Mặt trước và các cạnh thấy
+                    visibleGeo.Children.Add(new LineGeometry(a, b));
+                    visibleGeo.Children.Add(new LineGeometry(b, c));
+                    visibleGeo.Children.Add(new LineGeometry(c, d));
+                    visibleGeo.Children.Add(new LineGeometry(d, a));
+
+                    visibleGeo.Children.Add(new LineGeometry(a, aPrime));
+                    visibleGeo.Children.Add(new LineGeometry(b, bPrime));
+                    visibleGeo.Children.Add(new LineGeometry(c, cPrime));
+
+                    visibleGeo.Children.Add(new LineGeometry(aPrime, bPrime));
+                    visibleGeo.Children.Add(new LineGeometry(bPrime, cPrime));
+
+                    // Nét đứt: Cạnh khuất đi qua đỉnh sau dPrime
+                    hiddenGeo.Children.Add(new LineGeometry(dPrime, aPrime));
+                    hiddenGeo.Children.Add(new LineGeometry(dPrime, cPrime));
+                    hiddenGeo.Children.Add(new LineGeometry(dPrime, d));
+                    break;
+            }
+
+            if (hiddenGeo.Children.Count > 0)
+            {
+                container.Children.Add(new Path
+                {
+                    Stroke = stroke,
+                    StrokeThickness = thickness,
+                    StrokeDashArray = new DoubleCollection { 4, 3 },
+                    Data = hiddenGeo
+                });
+            }
+
+            if (visibleGeo.Children.Count > 0)
+            {
+                container.Children.Add(new Path
+                {
+                    Stroke = stroke,
+                    StrokeThickness = thickness,
+                    Data = visibleGeo
+                });
+            }
         }
 
         private static UIElement? RecreateChart(SceneElementNode node, Dictionary<string, BitmapImage> assetCache)
@@ -1109,28 +1195,54 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
 
         #region Color Utilities
 
-        private static string ColorToHex(Brush? brush)
+        private static string? ColorToHex(Brush? brush)
         {
+            if (brush == null) return null;
+
             if (brush is SolidColorBrush scb)
             {
                 var c = scb.Color;
+                if (c.A == 0) return null; // Transparent / rỗng ruột -> trả về null để không tạo màu giả
                 return $"#{c.A:X2}{c.R:X2}{c.G:X2}{c.B:X2}";
             }
-            return "#FFFFFFFF";
+            return null; // Tuyệt đối KHÔNG hardcode #FFFFFFFF làm hỏng hình rỗng
         }
 
-        private static Brush ParseBrush(string? hex, Brush fallback)
+        private static Brush? ParseBrush(string? hex, Brush? fallback = null)
         {
             if (string.IsNullOrWhiteSpace(hex)) return fallback;
 
             try
             {
                 var color = (Color)ColorConverter.ConvertFromString(hex);
+                if (color.A == 0) return fallback;
                 return new SolidColorBrush(color);
             }
             catch
             {
                 return fallback;
+            }
+        }
+
+        private static DoubleCollection? ParseDashArray(string? dashStr)
+        {
+            if (string.IsNullOrWhiteSpace(dashStr)) return null;
+            try
+            {
+                var dc = new DoubleCollection();
+                var parts = dashStr.Split(new[] { ',', ' ', ';' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var part in parts)
+                {
+                    if (double.TryParse(part, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
+                    {
+                        dc.Add(val);
+                    }
+                }
+                return dc.Count > 0 ? dc : null;
+            }
+            catch
+            {
+                return null;
             }
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -23,6 +24,9 @@ namespace QASmartTouch.Models
         public double Height { get; set; } = double.NaN;
 
         public Transform? RenderTransform { get; set; }
+
+        // Dành cho Native Stroke (WPF System.Windows.Ink.Stroke)
+        public StylusPointCollection? StrokePoints { get; set; }
 
         // Dành cho Polyline (nét vẽ tay)
         public Point[]? PolylinePoints { get; set; }
@@ -49,6 +53,11 @@ namespace QASmartTouch.Models
                 Size = obj.Size,
                 RotationAngle = obj.RotationAngle
             };
+
+            if (obj.Stroke != null && obj.Stroke.StylusPoints != null)
+            {
+                state.StrokePoints = obj.Stroke.StylusPoints.Clone();
+            }
 
             if (obj.Element != null)
             {
@@ -111,6 +120,11 @@ namespace QASmartTouch.Models
         /// </summary>
         public void ApplyTo(UIElement? element, SelectableObject? obj = null)
         {
+            if (obj?.Stroke != null && StrokePoints != null)
+            {
+                obj.Stroke.StylusPoints = StrokePoints.Clone();
+            }
+
             if (element is Polyline polyline)
             {
                 if (PolylinePoints != null)
@@ -175,6 +189,21 @@ namespace QASmartTouch.Models
             if (!double.IsNaN(CanvasTop) && !double.IsNaN(other.CanvasTop) && Math.Abs(CanvasTop - other.CanvasTop) > 0.5) return true;
             if (!double.IsNaN(Width) && !double.IsNaN(other.Width) && Math.Abs(Width - other.Width) > 0.5) return true;
             if (!double.IsNaN(Height) && !double.IsNaN(other.Height) && Math.Abs(Height - other.Height) > 0.5) return true;
+
+            if (StrokePoints != null && other.StrokePoints != null)
+            {
+                if (StrokePoints.Count != other.StrokePoints.Count) return true;
+                if (StrokePoints.Count > 0 && other.StrokePoints.Count > 0)
+                {
+                    if (Math.Abs(StrokePoints[0].X - other.StrokePoints[0].X) > 0.5 || Math.Abs(StrokePoints[0].Y - other.StrokePoints[0].Y) > 0.5) return true;
+                    int lastIdx = StrokePoints.Count - 1;
+                    if (Math.Abs(StrokePoints[lastIdx].X - other.StrokePoints[lastIdx].X) > 0.5 || Math.Abs(StrokePoints[lastIdx].Y - other.StrokePoints[lastIdx].Y) > 0.5) return true;
+                }
+            }
+            else if ((StrokePoints == null) != (other.StrokePoints == null))
+            {
+                return true;
+            }
 
             if (PolylinePoints != null && other.PolylinePoints != null)
             {

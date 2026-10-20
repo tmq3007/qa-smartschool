@@ -521,6 +521,7 @@ namespace QASmartTouch.Forms
             this.Close();
         }
 
+
         private void btnInsertYouTube_Click(object sender, RoutedEventArgs e)
         {
             SelectedInsertType = "YouTube";

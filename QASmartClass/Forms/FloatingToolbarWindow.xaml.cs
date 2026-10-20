@@ -12,7 +12,6 @@ namespace QASmartTouch.Forms
 {
     public partial class FloatingToolbarWindow : Window
     {
-        private DispatcherTimer? _recDotTimer;
         private DockPosition? _currentDockPosition = null;
 
         // Events
@@ -28,9 +27,7 @@ namespace QASmartTouch.Forms
         public event EventHandler? WindowModeToggled;
         public event EventHandler? SelectDisplayRequested;
         public event EventHandler? SelectAreaRequested;
-        public event EventHandler? RecordToggled;
         public event EventHandler? DeleteLastStrokeRequested;
-        public event EventHandler? CameraToggled;
         
         /// <summary>
         /// Phát ra khi toolbar bị đóng hoặc ẩn đi để các dock button hiện lại
@@ -48,28 +45,7 @@ namespace QASmartTouch.Forms
             // Mặc định ban đầu ở cạnh dưới theo chiều ngang
             MoveToolbarToPosition(DockPosition.Bottom);
             
-            // Animate record dot
-            StartRecDotAnimation();
-            
             System.Diagnostics.Debug.WriteLine("✅ FloatingToolbarWindow initialized with Unfurl Animation");
-        }
-        
-        private void StartRecDotAnimation()
-        {
-            _recDotTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(500)
-            };
-            
-            _recDotTimer.Tick += (s, e) =>
-            {
-                if (recDot != null)
-                {
-                    recDot.Opacity = recDot.Opacity == 1.0 ? 0.3 : 1.0;
-                }
-            };
-            
-            _recDotTimer.Start();
         }
 
         #region Dynamic Layout Orientation & Unfurl Animation
@@ -98,7 +74,6 @@ namespace QASmartTouch.Forms
                 btnRedo.Margin = new Thickness(2, 0, 2, 0);
                 btnSelectArea.Margin = new Thickness(2, 0, 2, 0);
                 btnScreenshot.Margin = new Thickness(2, 0, 2, 0);
-                btnRecord.Margin = new Thickness(2, 0, 2, 0);
             }
             else
             {
@@ -116,7 +91,6 @@ namespace QASmartTouch.Forms
                 btnRedo.Margin = new Thickness(0, 2, 0, 2);
                 btnSelectArea.Margin = new Thickness(0, 2, 0, 2);
                 btnScreenshot.Margin = new Thickness(0, 2, 0, 2);
-                btnRecord.Margin = new Thickness(0, 2, 0, 2);
             }
 
             this.UpdateLayout();
@@ -425,90 +399,9 @@ namespace QASmartTouch.Forms
             SelectAreaRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        public event EventHandler<RecordingOptionsEventArgs>? RecordingOptionsSelected;
-
-        public class RecordingOptionsEventArgs : EventArgs
-        {
-            public bool IncludeCamera { get; set; }
-            public bool IncludeMicrophone { get; set; }
-            public bool IncludeSystemAudio { get; set; }
-        }
-
-        private bool _isRecording = false;
-
-        private void btnRecord_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("⏺️ Record toggled");
-            if (_isRecording)
-            {
-                // If already recording, just send toggle event to stop it
-                RecordToggled?.Invoke(this, EventArgs.Empty);
-            }
-            else if (popupRecordOptions != null)
-            {
-                // If not recording, show options popup
-                popupRecordOptions.IsOpen = !popupRecordOptions.IsOpen;
-            }
-            else
-            {
-                RecordToggled?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        private void btnCamera_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("📷 Camera toggled");
-            CameraToggled?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void btnStartRecordingOptions_Click(object sender, RoutedEventArgs e)
-        {
-            if (popupRecordOptions != null)
-            {
-                popupRecordOptions.IsOpen = false;
-            }
-            
-            bool includeCamera = rbScreenAndCam?.IsChecked ?? false;
-            bool includeMic = chkMicrophone?.IsChecked ?? true;
-            bool includeSysAudio = chkSystemAudio?.IsChecked ?? true;
-            
-            RecordingOptionsSelected?.Invoke(this, new RecordingOptionsEventArgs 
-            { 
-                IncludeCamera = includeCamera, 
-                IncludeMicrophone = includeMic,
-                IncludeSystemAudio = includeSysAudio
-            });
-        }
-
         #endregion
 
         #region Public Methods
-        
-        /// <summary>
-        /// Set recording state
-        /// </summary>
-        public void SetRecordingState(bool isRecording)
-        {
-            _isRecording = isRecording;
-            if (isRecording)
-            {
-                btnRecord.Background = new SolidColorBrush(Color.FromRgb(191, 97, 106)); // Red
-                txtRecordTime.Text = "00:00";
-            }
-            else
-            {
-                btnRecord.Background = new SolidColorBrush(Color.FromRgb(46, 52, 64)); // Dark
-                txtRecordTime.Text = "REC";
-            }
-        }
-
-        public void UpdateRecordingTime(string time)
-        {
-            if (txtRecordTime != null)
-            {
-                txtRecordTime.Text = time;
-            }
-        }
 
         /// <summary>
         /// Toggle visual state of Delete Stroke button (highlight when erase mode is active)
@@ -594,13 +487,6 @@ namespace QASmartTouch.Forms
                 }
                 SetPathFill(child, brush);
             }
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-            _recDotTimer?.Stop();
-            _recDotTimer = null;
         }
 
         #endregion

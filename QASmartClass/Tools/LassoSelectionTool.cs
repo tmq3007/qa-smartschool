@@ -122,6 +122,14 @@ namespace QASmartTouch.Tools
             catch { /* Safe release */ }
         }
 
+        /// <summary>
+        /// Lấy bản sao danh sách các điểm đỉnh đa giác của vùng chọn Lasso vừa vẽ
+        /// </summary>
+        public List<Point> GetLassoPoints()
+        {
+            return new List<Point>(_lassoPoints);
+        }
+
         #endregion
 
         #region Private Methods - Mouse & Touch Events
@@ -569,7 +577,7 @@ namespace QASmartTouch.Tools
         /// Thuật toán: Vẽ một tia từ điểm test đi về phía phải, đếm số lần cắt polygon
         /// Nếu số lần cắt là lẻ -> điểm nằm trong polygon
         /// </summary>
-        private bool IsPointInPolygon(Point point, List<Point> polygon)
+        public static bool IsPointInPolygon(Point point, List<Point> polygon)
         {
             if (polygon.Count < 3) return false;
 

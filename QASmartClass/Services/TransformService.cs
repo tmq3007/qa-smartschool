@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Ink;
 using QASmartTouch.Models;
 using CanvasControl = System.Windows.Controls.Canvas;
 
@@ -124,6 +125,11 @@ namespace QASmartTouch.Services
                     tgNew.Children.Add(new TranslateTransform(delta.X, delta.Y));
                     path.RenderTransform = tgNew;
                 }
+            }
+            else if (obj.Stroke != null)
+            {
+                var matrix = new Matrix(1, 0, 0, 1, delta.X, delta.Y);
+                obj.Stroke.Transform(matrix, false);
             }
             else if (obj.Element != null)
             {
@@ -482,6 +488,18 @@ namespace QASmartTouch.Services
                 }
                 
                 System.Diagnostics.Debug.WriteLine($"🔧 Resize {obj.Type}: {newSize.Width:F0}x{newSize.Height:F0}");
+            }
+            else if (obj.Stroke != null)
+            {
+                var sb = obj.Stroke.GetBounds();
+                if (sb.Width > 0 && sb.Height > 0)
+                {
+                    double scaleX = newSize.Width / sb.Width;
+                    double scaleY = newSize.Height / sb.Height;
+                    var matrix = Matrix.Identity;
+                    matrix.ScaleAt(scaleX, scaleY, obj.Position.X, obj.Position.Y);
+                    obj.Stroke.Transform(matrix, false);
+                }
             }
 
             obj.UpdateBounds();
@@ -934,6 +952,29 @@ namespace QASmartTouch.Services
                     element.RenderTransform = new RotateTransform(obj.RotationAngle, newSize.Width / 2.0, newSize.Height / 2.0);
                 }
             }
+            // 7. Native Inking Stroke (WPF System.Windows.Ink.Stroke): Biến đổi affine qua GPU MilCore
+            else if (obj.Stroke != null)
+            {
+                var stroke = obj.Stroke;
+                if (origMemSize.Width > 0 && origMemSize.Height > 0)
+                {
+                    if (state?.StrokePoints != null)
+                    {
+                        stroke.StylusPoints = state.StrokePoints.Clone();
+                    }
+                    double sX = newSize.Width / origMemSize.Width;
+                    double sY = newSize.Height / origMemSize.Height;
+                    var matrix = Matrix.Identity;
+                    matrix.Translate(-origCenter.X, -origCenter.Y);
+                    matrix.Scale(sX, sY);
+                    matrix.Translate(newCenter.X, newCenter.Y);
+                    if (obj.RotationAngle != 0)
+                    {
+                        matrix.RotateAt(obj.RotationAngle, newCenter.X, newCenter.Y);
+                    }
+                    stroke.Transform(matrix, false);
+                }
+            }
 
             obj.UpdateBounds();
         }
@@ -1111,6 +1152,15 @@ namespace QASmartTouch.Services
                 fe.RenderTransform = rotateTransform;
                 member.UpdateBounds();
             }
+            else if (member.Stroke != null && state.StrokePoints != null)
+            {
+                member.Stroke.StylusPoints = state.StrokePoints.Clone();
+                var m = Matrix.Identity;
+                m.RotateAt(deltaAngleDegrees, center.X, center.Y);
+                member.Stroke.Transform(m, false);
+                member.RotationAngle = 0;
+                member.UpdateBounds();
+            }
         }
 
         private void RotateSingleFromState(
@@ -1201,6 +1251,15 @@ namespace QASmartTouch.Services
                 var rotateTransform = new RotateTransform(targetAngleDegrees, w / 2.0, h / 2.0);
                 fe.RenderTransform = rotateTransform;
             }
+            else if (obj.Stroke != null && state.StrokePoints != null)
+            {
+                obj.Stroke.StylusPoints = state.StrokePoints.Clone();
+                var m = Matrix.Identity;
+                m.RotateAt(deltaAngleDegrees, center.X, center.Y);
+                obj.Stroke.Transform(m, false);
+                obj.RotationAngle = 0;
+                obj.UpdateBounds();
+            }
         }
 
         /// <summary>
@@ -1222,8 +1281,8 @@ namespace QASmartTouch.Services
                 return;
             }
 
-            // 2. Nét vẽ Polyline / Polygon / Line: Xoay các điểm trực tiếp theo delta quanh tâm
-            if (obj.Element is System.Windows.Shapes.Polyline || obj.Element is System.Windows.Shapes.Polygon || obj.Element is System.Windows.Shapes.Line)
+            // 2. Nét vẽ Polyline / Polygon / Line / Stroke: Xoay các điểm trực tiếp theo delta quanh tâm
+            if (obj.Element is System.Windows.Shapes.Polyline || obj.Element is System.Windows.Shapes.Polygon || obj.Element is System.Windows.Shapes.Line || obj.Stroke != null)
             {
                 double deltaAngle = normalizedAngle - obj.RotationAngle;
                 RotateInPlace(obj, deltaAngle);
@@ -1349,6 +1408,14 @@ namespace QASmartTouch.Services
                         member.ApplyTransform();
                         member.UpdateBounds();
                     }
+                    else if (member.Stroke != null)
+                    {
+                        var m = Matrix.Identity;
+                        m.RotateAt(deltaAngleDegrees, groupCenterX, groupCenterY);
+                        member.Stroke.Transform(m, false);
+                        member.RotationAngle = 0;
+                        member.UpdateBounds();
+                    }
                 }
 
                 // ✅ FIX: Recalculate group bounds từ members
@@ -1401,6 +1468,14 @@ namespace QASmartTouch.Services
                 singleLine.Y2 = centerY + (dx2 * sin + dy2 * cos);
 
                 singleLine.RenderTransform = Transform.Identity;
+                obj.RotationAngle = 0;
+                obj.UpdateBounds();
+            }
+            else if (obj.Stroke != null)
+            {
+                var m = Matrix.Identity;
+                m.RotateAt(deltaAngleDegrees, centerX, centerY);
+                obj.Stroke.Transform(m, false);
                 obj.RotationAngle = 0;
                 obj.UpdateBounds();
             }
@@ -1497,6 +1572,13 @@ namespace QASmartTouch.Services
                         path.RenderTransform = tg;
                         member.UpdateBounds();
                     }
+                    else if (member.Stroke != null)
+                    {
+                        var matrix = Matrix.Identity;
+                        matrix.ScaleAt(-1, 1, groupCenterX, 0);
+                        member.Stroke.Transform(matrix, false);
+                        member.UpdateBounds();
+                    }
                     else
                     {
                         if (member.Scale == null)
@@ -1557,6 +1639,15 @@ namespace QASmartTouch.Services
                 singleLine.RenderTransform = Transform.Identity;
                 if (!double.IsNaN(CanvasControl.GetLeft(singleLine))) CanvasControl.SetLeft(singleLine, double.NaN);
                 if (!double.IsNaN(CanvasControl.GetTop(singleLine))) CanvasControl.SetTop(singleLine, double.NaN);
+                obj.UpdateBounds();
+                return;
+            }
+
+            if (obj.Stroke != null)
+            {
+                var matrix = Matrix.Identity;
+                matrix.ScaleAt(-1, 1, centerX, 0);
+                obj.Stroke.Transform(matrix, false);
                 obj.UpdateBounds();
                 return;
             }
@@ -1632,6 +1723,13 @@ namespace QASmartTouch.Services
                         path.RenderTransform = tg;
                         member.UpdateBounds();
                     }
+                    else if (member.Stroke != null)
+                    {
+                        var matrix = Matrix.Identity;
+                        matrix.ScaleAt(1, -1, 0, groupCenterY);
+                        member.Stroke.Transform(matrix, false);
+                        member.UpdateBounds();
+                    }
                     else
                     {
                         if (member.Scale == null)
@@ -1692,6 +1790,15 @@ namespace QASmartTouch.Services
                 singleLine.RenderTransform = Transform.Identity;
                 if (!double.IsNaN(CanvasControl.GetLeft(singleLine))) CanvasControl.SetLeft(singleLine, double.NaN);
                 if (!double.IsNaN(CanvasControl.GetTop(singleLine))) CanvasControl.SetTop(singleLine, double.NaN);
+                obj.UpdateBounds();
+                return;
+            }
+
+            if (obj.Stroke != null)
+            {
+                var matrix = Matrix.Identity;
+                matrix.ScaleAt(1, -1, 0, centerY);
+                obj.Stroke.Transform(matrix, false);
                 obj.UpdateBounds();
                 return;
             }

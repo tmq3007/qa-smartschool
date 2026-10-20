@@ -225,7 +225,6 @@ namespace QASmartTouch
                 var trialMsg = QASmartTouch.Services.License.LicenseService.Instance.GetFreeTrialMessage();
                 Log.Information("Free Trial Mode: {Message}", trialMsg);
                 updateStatus("🎁 Chế độ dùng thử miễn phí 1 ngày", 75);
-                System.Threading.Thread.Sleep(1500);
             }
             else if (licenseStatus == QASmartTouch.Models.LicenseStatus.FullyExpired ||
                 licenseStatus == QASmartTouch.Models.LicenseStatus.Invalid ||
@@ -292,7 +291,6 @@ namespace QASmartTouch
                 Log.Information("Starting in STUDENT mode (command-line override)");
                 UserRoleService.SaveRole(UserRole.Student);
                 splash.UpdateStatus("Sẵn sàng!", 100);
-                System.Threading.Thread.Sleep(300);
                 splash.Close();
                 this.ShowStudentClient();
                 this.ShutdownMode = ShutdownMode.OnLastWindowClose;
@@ -380,7 +378,6 @@ namespace QASmartTouch
             if (splash.IsVisible)
             {
                 splash.UpdateStatus("Sẵn sàng!", 100);
-                System.Threading.Thread.Sleep(300);
                 splash.Close();
             }
 

@@ -426,6 +426,14 @@ namespace QASmartTouch.Forms
                 return;
             }
 
+            if (obj.Stroke != null)
+            {
+                var matrix = new Matrix(1, 0, 0, 1, dragVector.X, dragVector.Y);
+                obj.Stroke.Transform(matrix, false);
+                obj.UpdateBounds();
+                return;
+            }
+
             if (obj.Element == null) return;
             
             if (obj.Element is Polyline polyline)
@@ -568,7 +576,7 @@ namespace QASmartTouch.Forms
                     System.Diagnostics.Debug.WriteLine($"🎯 Started dragging object: {_draggedSelectionObject.Type}");
                 }
                 
-                if (_isDraggingSelection && _draggedSelectionObject.Element != null)
+                if (_isDraggingSelection && (_draggedSelectionObject.Element != null || _draggedSelectionObject.Stroke != null || _draggedSelectionObject.IsGroup))
                 {
                     var selectedObjects = _selectionManager?.GetSelectedObjects();
                     bool isMultiDrag = selectedObjects != null && selectedObjects.Count > 1;
@@ -890,7 +898,14 @@ namespace QASmartTouch.Forms
                 // 2. Ghi nhận Undo / Redo cho thao tác nhân bản
                 if (duplicated.Count == 1)
                 {
-                    RecordAddAction(duplicated[0].Element, $"Duplicate {duplicated[0].Type}");
+                    if (duplicated[0].Stroke != null)
+                    {
+                        RecordAddStrokeAction(duplicated[0].Stroke, $"Duplicate {duplicated[0].Type}");
+                    }
+                    else if (duplicated[0].Element != null)
+                    {
+                        RecordAddAction(duplicated[0].Element, $"Duplicate {duplicated[0].Type}");
+                    }
                 }
                 else
                 {
@@ -901,7 +916,17 @@ namespace QASmartTouch.Forms
                     };
                     foreach (var obj in duplicated)
                     {
-                        if (obj.Element != null)
+                        if (obj.Stroke != null)
+                        {
+                            batchAction.BatchActions.Add(new UndoRedoAction
+                            {
+                                Type = ActionType.Add,
+                                Stroke = obj.Stroke,
+                                Parent = MainInkPresenter ?? (UIElement)MainInteractiveBoard,
+                                Description = $"Duplicate {obj.Type}"
+                            });
+                        }
+                        else if (obj.Element != null)
                         {
                             batchAction.BatchActions.Add(new UndoRedoAction
                             {
@@ -1488,9 +1513,19 @@ namespace QASmartTouch.Forms
                     .Select(obj => obj.Element!)
                     .ToList();
 
+                var strokesToDelete = selectedList
+                    .Where(obj => obj.Stroke != null)
+                    .Select(obj => obj.Stroke!)
+                    .ToList();
+
                 if (elementsToDelete.Count > 0)
                 {
                     RecordRemoveBatchAction(elementsToDelete, $"Delete {elementsToDelete.Count} object(s)");
+                }
+
+                if (strokesToDelete.Count > 0)
+                {
+                    RecordRemoveStrokesAction(strokesToDelete, $"Delete {strokesToDelete.Count} stroke(s)");
                 }
 
                 // Immediately detach selection box & hide toolbar UI
@@ -1667,27 +1702,36 @@ namespace QASmartTouch.Forms
                 // Update model
                 obj.StrokeThickness = thickness;
                 
-                // Update actual UIElement
-                if (obj.Element is Polyline polyline)
+                // Update actual UIElement or Stroke
+                if (obj.Stroke != null)
+                {
+                    obj.Stroke.DrawingAttributes.Width = thickness;
+                    obj.Stroke.DrawingAttributes.Height = thickness;
+                    obj.UpdateBounds();
+                    RecordModifyStrokeAction(obj.Stroke, oldThickness, thickness, $"Change Thickness {oldThickness:F0}→{thickness:F0}px");
+                    System.Diagnostics.Debug.WriteLine($"   ✓ Stroke thickness changed: {oldThickness:F0}px → {thickness:F0}px");
+                }
+                else if (obj.Element is Polyline polyline)
                 {
                     polyline.StrokeThickness = thickness;
+                    RecordModifyAction(obj.Element, oldThickness, thickness, $"Change Thickness {oldThickness:F0}→{thickness:F0}px");
                     System.Diagnostics.Debug.WriteLine($"   ✓ Polyline thickness changed: {oldThickness:F0}px → {thickness:F0}px");
                 }
                 else if (obj.Element is System.Windows.Shapes.Shape shape)
                 {
                     shape.StrokeThickness = thickness;
+                    RecordModifyAction(obj.Element, oldThickness, thickness, $"Change Thickness {oldThickness:F0}→{thickness:F0}px");
                     System.Diagnostics.Debug.WriteLine($"   ✓ Shape thickness changed: {oldThickness:F0}px → {thickness:F0}px");
                 }
                 else if (obj.Element is Border border)
                 {
                     border.BorderThickness = new Thickness(thickness);
+                    RecordModifyAction(obj.Element, oldThickness, thickness, $"Change Thickness {oldThickness:F0}→{thickness:F0}px");
                     System.Diagnostics.Debug.WriteLine($"   ✓ Border thickness changed: {oldThickness:F0}px → {thickness:F0}px");
                 }
-                
-                // Record for undo/redo
-                RecordModifyAction(obj.Element, oldThickness, thickness, $"Change Thickness {oldThickness:F0}→{thickness:F0}px");
             }
             
+            _selectionBox?.UpdatePosition();
             System.Diagnostics.Debug.WriteLine($"✅ Thickness changed for {selectedObjects.Count} object(s): → {thickness:F0}px");
         }
 
@@ -1712,25 +1756,31 @@ namespace QASmartTouch.Forms
                 // Update model
                 obj.StrokeColor = color;
                 
-                // Update actual UIElement color
-                if (obj.Element is Polyline polyline)
+                // Update actual UIElement or Stroke color
+                if (obj.Stroke != null)
+                {
+                    obj.Stroke.DrawingAttributes.Color = color;
+                    RecordModifyStrokeAction(obj.Stroke, oldColor, color, $"Change Color {oldColor} → {color}");
+                    System.Diagnostics.Debug.WriteLine($"   ✓ Stroke color changed: {oldColor} → {color}");
+                }
+                else if (obj.Element is Polyline polyline)
                 {
                     polyline.Stroke = new SolidColorBrush(color);
+                    RecordModifyAction(obj.Element, oldColor, color, $"Change Color {oldColor} → {color}");
                     System.Diagnostics.Debug.WriteLine($"   ✓ Polyline color changed: {oldColor} → {color}");
                 }
                 else if (obj.Element is System.Windows.Shapes.Shape shape)
                 {
                     shape.Stroke = new SolidColorBrush(color);
+                    RecordModifyAction(obj.Element, oldColor, color, $"Change Color {oldColor} → {color}");
                     System.Diagnostics.Debug.WriteLine($"   ✓ Shape color changed: {oldColor} → {color}");
                 }
                 else if (obj.Element is Border border)
                 {
                     border.BorderBrush = new SolidColorBrush(color);
+                    RecordModifyAction(obj.Element, oldColor, color, $"Change Color {oldColor} → {color}");
                     System.Diagnostics.Debug.WriteLine($"   ✓ Border color changed: {oldColor} → {color}");
                 }
-                
-                // Record for undo/redo
-                RecordModifyAction(obj.Element, oldColor, color, $"Change Color {oldColor} → {color}");
             }
 
             // Update toolbar preview

@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Path = System.Windows.Shapes.Path;
 using System.Windows.Input;
+using System.Windows.Ink;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Speech.Synthesis;
@@ -974,7 +975,7 @@ namespace QASmartTouch.Forms
                 Point clickPoint = e.GetPosition(MainInteractiveBoard);
                 var pasted = _selectionManager?.PasteAtPosition(clickPoint);
                 
-                if (pasted != null && pasted.Element != null)
+                if (pasted != null)
                 {
                     System.Diagnostics.Debug.WriteLine($"📋 Pasted at ({clickPoint.X:F0}, {clickPoint.Y:F0})");
                     
@@ -984,10 +985,16 @@ namespace QASmartTouch.Forms
                     }
 
                     // Add to undo stack
-                    RecordAddAction(pasted.Element, $"Paste {pasted.Type}");
-                    
-                    // Visual feedback
-                    AnimateFadeIn(pasted.Element);
+                    if (pasted.Stroke != null)
+                    {
+                        RecordAddStrokeAction(pasted.Stroke, $"Paste {pasted.Type}");
+                    }
+                    else if (pasted.Element != null)
+                    {
+                        RecordAddAction(pasted.Element, $"Paste {pasted.Type}");
+                        // Visual feedback
+                        AnimateFadeIn(pasted.Element);
+                    }
                 }
                 
                 // Auto-clear clipboard after paste attempt to exit paste mode safely
@@ -1108,12 +1115,14 @@ namespace QASmartTouch.Forms
             {
                 Point clickPoint = e.GetPosition(MainInteractiveBoard);
                 _isDrawing = true;
+                _lastMouseEraserPoint = clickPoint;
                 MainInteractiveBoard.CaptureMouse();
                 _eraserEngine?.StartMouseSession();
+                _whiteboardManager?.ToolManager.EraserTool.StartSession("mouse");
                 
                 if (_eraserMode == "Point" || _eraserMode == "Drag")
                 {
-                    EraseByPointAt(clickPoint);
+                    EraseByPointAt(clickPoint, null);
                 }
                 else // Stroke
                 {
@@ -1256,11 +1265,12 @@ namespace QASmartTouch.Forms
             // Eraser mode: erase while mouse is held & dragged
             else if (_eraserEnabled && _isDrawing && e.LeftButton == MouseButtonState.Pressed)
             {
-                // Cho phép tẩy ở cả ngoài vùng Canvas (khi zoom) thay vì bị ngắt quãng
+                UpdateEraserCursorPreview(currentPoint);
 
                 if (_eraserMode == "Point" || _eraserMode == "Drag")
                 {
-                    EraseByPointAt(currentPoint);
+                    EraseByPointAt(currentPoint, _lastMouseEraserPoint);
+                    _lastMouseEraserPoint = currentPoint;
                 }
                 else // Stroke
                 {
@@ -1381,11 +1391,15 @@ namespace QASmartTouch.Forms
             else if (_eraserEnabled)
             {
                 _isDrawing = false;
+                _lastMouseEraserPoint = null;
                 if (MainInteractiveBoard.IsMouseCaptured)
                     MainInteractiveBoard.ReleaseMouseCapture();
 
                 var session = _eraserEngine?.EndMouseSession();
                 FinalizeEraseSession(session, "Mouse erase");
+
+                var nativeSession = _whiteboardManager?.ToolManager.EraserTool.EndSession("mouse");
+                FinalizeNativeEraseSession(nativeSession, "Mouse erase");
             }
             // Shape drawing mode - finalize shape
             else if (_shapeDrawingEnabled && _isDrawing && _previewShape != null)
@@ -1430,7 +1444,7 @@ namespace QASmartTouch.Forms
                 {
                     AnimateAndRemoveLaserStroke(_currentStroke);
                 }
-                else if (_currentBrushType == "Shape" || _currentBrushType == "Calligraphy")
+                else if (_currentBrushType == "Shape")
                 {
                     var recognizedShape = ShapeRecognizer.TryRecognizeShape(_currentStroke, _currentPenColor, _currentPenSize);
                     if (recognizedShape != null)
@@ -1443,30 +1457,70 @@ namespace QASmartTouch.Forms
                     }
                     else
                     {
-                        // Fallback an toàn: Giữ nguyên nét vẽ tự do
-                        Panel.SetZIndex(_currentStroke, _currentInkingZIndex);
-                        RecordAddAction(_currentStroke, "Draw stroke");
-                        RegisterNewObjectWithSelectionManager(_currentStroke);
+                        // Không nhận diện được hình -> chuyển sang Native Ink
+                        FinalizeNativeMouseStroke(_currentStroke);
                     }
                 }
                 else
                 {
-                    int zIndex = (_currentBrushType == "Highlighter" || _currentBrushType == "Marker" || _currentBrushType == "Mask" || _currentBrushType == "MaskPen")
-                        ? (_currentInkingZIndex > ZIndexConstants.UserContentBase ? _currentInkingZIndex : ZIndexConstants.HighlighterLayer)
-                        : _currentInkingZIndex;
-                    Panel.SetZIndex(_currentStroke, zIndex);
-
-                    // Add completed stroke to undo stack
-                    RecordAddAction(_currentStroke, "Draw stroke");
-                    
-                    // BUGFIX: Register new Polyline with SelectionManager
-                    RegisterNewObjectWithSelectionManager(_currentStroke);
+                    // 🚀 NATIVE INK ACCELERATION: Đưa nét vẽ chuột vào GPU MilCore
+                    FinalizeNativeMouseStroke(_currentStroke);
                 }
                 
                 _isDrawing = false;
                 _currentStroke = null;
                 _tempStrokePoints.Clear(); // Clear temporary collection
                 MainInteractiveBoard.ReleaseMouseCapture();
+            }
+        }
+
+        /// <summary>
+        /// Chuyển đổi nét vẽ tự do chuột (Polyline) thành Native Inking Stroke (WPF System.Windows.Ink.Stroke)
+        /// giải phóng Polyline tạm khỏi visual tree và nạp vào MainInkPresenter để tăng tốc phần cứng 60 FPS.
+        /// </summary>
+        private void FinalizeNativeMouseStroke(Polyline polyline)
+        {
+            if (polyline == null) return;
+
+            Color strokeColor = (polyline.Stroke as SolidColorBrush)?.Color ?? _currentPenColor;
+
+            // Xóa Polyline tạm khỏi canvas
+            if (MainInteractiveBoard.Children.Contains(polyline))
+            {
+                MainInteractiveBoard.Children.Remove(polyline);
+            }
+
+            if (MainInkPresenter?.Strokes != null && polyline.Points != null && polyline.Points.Count > 0)
+            {
+                var penTool = _whiteboardManager?.ToolManager.PenTool;
+                Stroke nativeStroke;
+                if (penTool != null)
+                {
+                    nativeStroke = penTool.CreateStroke(polyline.Points, strokeColor);
+                }
+                else
+                {
+                    var stylusPts = new StylusPointCollection();
+                    foreach (var pt in polyline.Points) stylusPts.Add(new StylusPoint(pt.X, pt.Y));
+                    var da = new DrawingAttributes { Color = strokeColor, Width = polyline.StrokeThickness, Height = polyline.StrokeThickness, FitToCurve = true };
+                    nativeStroke = new Stroke(stylusPts, da);
+                }
+
+                // ✨ CONTAINER-OWNED INKING: Thử điều hướng nét vẽ vào Container học liệu (Bảng dữ liệu hoặc Ảnh tương tác)
+                if (!TryRouteNativeStrokeToContainer(nativeStroke))
+                {
+                    MainInkPresenter.Strokes.Add(nativeStroke);
+                    RecordAddStrokeAction(nativeStroke, "Draw stroke", MainInkPresenter);
+                    RegisterNewStrokeWithSelectionManager(nativeStroke);
+                }
+            }
+            else
+            {
+                // Fallback an toàn nếu MainInkPresenter chưa sẵn sàng
+                MainInteractiveBoard.Children.Add(polyline);
+                Panel.SetZIndex(polyline, ZIndexConstants.InkingLayer);
+                RecordAddAction(polyline, "Draw stroke");
+                RegisterNewObjectWithSelectionManager(polyline);
             }
         }
 
@@ -1676,6 +1730,7 @@ namespace QASmartTouch.Forms
 
             // ── WhiteboardCore FSM: Chuyển sang Eraser Mode ──
             _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Eraser);
+            _whiteboardManager?.ToolManager.EraserTool.Configure(eraserSize, eraserMode);
             _drawingEnabled = false; // Disable drawing
             _shapeDrawingEnabled = false; // Disable shape drawing
             _textToolEnabled = false; // Disable text tool
@@ -6146,6 +6201,302 @@ namespace QASmartTouch.Forms
         /// Chỉ những nét vẽ thực sự được vẽ vào ô bảng mới được đính kèm và di chuyển theo bảng.
         /// </summary>
         private readonly Dictionary<FrameworkElement, HashSet<UIElement>> _tableAttachedStrokes = new();
+        private readonly Dictionary<FrameworkElement, HashSet<Stroke>> _tableAttachedNativeStrokes = new();
+
+        /// <summary>
+        /// QC_4.2_TABLE_OWNERSHIP: Kiểm tra nếu nét vẽ Native Stroke vừa hoàn thành nằm trong thân một Bảng dữ liệu,
+        /// tự động gắn nét vẽ đó vào danh sách thuộc Bảng để trôi theo khi kéo di chuyển bảng.
+        /// <summary>
+        /// QC_4.2_CONTAINER_OWNED_INKING: Điều hướng nét vẽ hoàn thành vào đúng Container học liệu
+        /// (Bảng dữ liệu TableContainer hoặc Ảnh tương tác InteractiveImage / InsertedImage).
+        /// Nét vẽ được chuyển đổi tọa độ tương đối sang lớp InkPresenter con của Container đó,
+        /// đảm bảo:
+        /// 1. Luôn nổi trên mặt Bảng / Ảnh (Z-Index tự nhiên theo Container).
+        /// 2. Tự động di chuyển theo Bảng / Ảnh khi kéo thả mà không bị lệch hay trôi.
+        /// 3. Ảnh mới chèn che lấp hoàn toàn nét chữ nền cũ trên bảng trắng (Z=100).
+        /// </summary>
+        public bool TryRouteNativeStrokeToContainer(Stroke stroke)
+        {
+            if (stroke == null || MainInteractiveBoard == null) return false;
+
+            Rect elemRect = stroke.GetBounds();
+            if (elemRect.IsEmpty) return false;
+
+            Point strokeCenter = new Point(elemRect.X + elemRect.Width / 2.0, elemRect.Y + elemRect.Height / 2.0);
+
+            // 1. Kiểm tra các Bảng dữ liệu (TableContainer - Z=500)
+            foreach (UIElement child in MainInteractiveBoard.Children)
+            {
+                if (child is StackPanel sp && sp.Tag is string tag && tag == "TableContainer")
+                {
+                    double left = Canvas.GetLeft(sp);
+                    double top = Canvas.GetTop(sp);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = sp.ActualWidth > 0 ? sp.ActualWidth : sp.Width;
+                    double height = sp.ActualHeight > 0 ? sp.ActualHeight : sp.Height;
+
+                    // Thân bảng (bên dưới thanh tiêu đề 34px)
+                    Rect tableBodyRect = new Rect(left, top + 34, width, Math.Max(10, height - 34));
+
+                    if (tableBodyRect.Contains(elemRect) || tableBodyRect.Contains(strokeCenter))
+                    {
+                        var tableInkPresenter = sp.Children.OfType<Grid>().FirstOrDefault()?.Children.OfType<InkPresenter>().FirstOrDefault();
+                        if (tableInkPresenter != null)
+                        {
+                            // Chuyển đổi tọa độ nét vẽ sang hệ tọa độ cục bộ của thân bảng
+                            double dx = -left;
+                            double dy = -(top + 34);
+                            stroke.Transform(new Matrix(1, 0, 0, 1, dx, dy), false);
+
+                            tableInkPresenter.Strokes.Add(stroke);
+                            RecordAddStrokeAction(stroke, "Draw stroke on Table", tableInkPresenter);
+                            System.Diagnostics.Debug.WriteLine($"🏷️ [Container Inking] Attached native stroke to Table at ({left:F0}, {top:F0})");
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            // 2. Kiểm tra các Ảnh tương tác (InteractiveImage / InsertedImage)
+            foreach (UIElement child in MainInteractiveBoard.Children)
+            {
+                if (child is Border b && b.Tag is string tag && (tag == "InteractiveImage" || tag == "InsertedImage"))
+                {
+                    double left = Canvas.GetLeft(b);
+                    double top = Canvas.GetTop(b);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = b.ActualWidth > 0 ? b.ActualWidth : b.Width;
+                    double height = b.ActualHeight > 0 ? b.ActualHeight : b.Height;
+
+                    double headerHeight = (tag == "InteractiveImage") ? 36 : 0;
+                    Rect imageBodyRect = new Rect(left, top + headerHeight, width, Math.Max(10, height - headerHeight));
+
+                    if (imageBodyRect.Contains(elemRect) || imageBodyRect.Contains(strokeCenter))
+                    {
+                        var grid = b.Child as Grid;
+                        var imgInkPresenter = grid?.Children.OfType<InkPresenter>().FirstOrDefault();
+                        if (imgInkPresenter != null)
+                        {
+                            // Chuyển đổi tọa độ nét vẽ sang hệ tọa độ cục bộ của thân ảnh
+                            double dx = -left;
+                            double dy = -(top + headerHeight);
+                            stroke.Transform(new Matrix(1, 0, 0, 1, dx, dy), false);
+
+                            imgInkPresenter.Strokes.Add(stroke);
+                            RecordAddStrokeAction(stroke, "Draw stroke on Image", imgInkPresenter);
+                            System.Diagnostics.Debug.WriteLine($"🏷️ [Container Inking] Attached native stroke to Image at ({left:F0}, {top:F0})");
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            // 3. Kiểm tra các Biểu đồ tương tác (Interactive Charts - Z=500)
+            foreach (UIElement child in MainInteractiveBoard.Children)
+            {
+                if (child is FrameworkElement feChart && InteractiveChartHelper.IsChartContainer(feChart))
+                {
+                    double left = Canvas.GetLeft(feChart);
+                    double top = Canvas.GetTop(feChart);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = feChart.ActualWidth > 0 ? feChart.ActualWidth : feChart.Width;
+                    double height = feChart.ActualHeight > 0 ? feChart.ActualHeight : feChart.Height;
+
+                    double headerHeight = InteractiveChartHelper.HeaderBarHeight;
+                    Rect chartBodyRect = new Rect(left, top + headerHeight, width, Math.Max(10, height - headerHeight));
+
+                    if (chartBodyRect.Contains(elemRect) || chartBodyRect.Contains(strokeCenter))
+                    {
+                        var chartInkPresenter = InteractiveChartHelper.GetChartInkPresenter(feChart);
+                        if (chartInkPresenter != null)
+                        {
+                            // Chuyển đổi tọa độ nét vẽ sang hệ tọa độ cục bộ của thân biểu đồ
+                            double dx = -left;
+                            double dy = -(top + headerHeight);
+                            stroke.Transform(new Matrix(1, 0, 0, 1, dx, dy), false);
+
+                            chartInkPresenter.Strokes.Add(stroke);
+                            RecordAddStrokeAction(stroke, "Draw stroke on Chart", chartInkPresenter);
+                            System.Diagnostics.Debug.WriteLine($"🏷️ [Container Inking] Attached native stroke to Chart at ({left:F0}, {top:F0})");
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Tẩy xóa nét vẽ trên các InkPresenter nhúng trong Container (Table / Image / Chart)
+        /// </summary>
+        public void EraseContainerEmbeddedStrokesAt(Point point, bool isPointMode, Point? lastPoint = null)
+        {
+            var eraserTool = _whiteboardManager?.ToolManager.EraserTool;
+            if (eraserTool == null || MainInteractiveBoard == null) return;
+
+            var session = eraserTool.GetSession("mouse");
+
+            // 1. Kiểm tra Bảng dữ liệu
+            foreach (UIElement child in MainInteractiveBoard.Children)
+            {
+                if (child is StackPanel sp && sp.Tag is string tag && tag == "TableContainer")
+                {
+                    double left = Canvas.GetLeft(sp);
+                    double top = Canvas.GetTop(sp);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = sp.ActualWidth > 0 ? sp.ActualWidth : sp.Width;
+                    double height = sp.ActualHeight > 0 ? sp.ActualHeight : sp.Height;
+
+                    Rect tableBodyRect = new Rect(left, top + 34, width, Math.Max(10, height - 34));
+                    if (tableBodyRect.Contains(point))
+                    {
+                        var tableInkPresenter = sp.Children.OfType<Grid>().FirstOrDefault()?.Children.OfType<InkPresenter>().FirstOrDefault();
+                        if (tableInkPresenter?.Strokes != null && tableInkPresenter.Strokes.Count > 0)
+                        {
+                            Point localPt = new Point(point.X - left, point.Y - (top + 34));
+                            Point? localLastPt = lastPoint.HasValue ? new Point(lastPoint.Value.X - left, lastPoint.Value.Y - (top + 34)) : null;
+
+                            if (isPointMode)
+                            {
+                                eraserTool.EraseByPointAt(tableInkPresenter.Strokes, localPt, localLastPt, _eraserSize, session);
+                            }
+                            else
+                            {
+                                eraserTool.EraseByStrokeAt(tableInkPresenter.Strokes, localPt, _eraserSize, session);
+                            }
+                        }
+                    }
+                }
+                else if (child is Border b && b.Tag is string imgTag && (imgTag == "InteractiveImage" || imgTag == "InsertedImage"))
+                {
+                    double left = Canvas.GetLeft(b);
+                    double top = Canvas.GetTop(b);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = b.ActualWidth > 0 ? b.ActualWidth : b.Width;
+                    double height = b.ActualHeight > 0 ? b.ActualHeight : b.Height;
+
+                    double headerHeight = (imgTag == "InteractiveImage") ? 36 : 0;
+                    Rect imageBodyRect = new Rect(left, top + headerHeight, width, Math.Max(10, height - headerHeight));
+                    if (imageBodyRect.Contains(point))
+                    {
+                        var grid = b.Child as Grid;
+                        var imgInkPresenter = grid?.Children.OfType<InkPresenter>().FirstOrDefault();
+                        if (imgInkPresenter?.Strokes != null && imgInkPresenter.Strokes.Count > 0)
+                        {
+                            Point localPt = new Point(point.X - left, point.Y - (top + headerHeight));
+                            Point? localLastPt = lastPoint.HasValue ? new Point(lastPoint.Value.X - left, lastPoint.Value.Y - (top + headerHeight)) : null;
+
+                            if (isPointMode)
+                            {
+                                eraserTool.EraseByPointAt(imgInkPresenter.Strokes, localPt, localLastPt, _eraserSize, session);
+                            }
+                            else
+                            {
+                                eraserTool.EraseByStrokeAt(imgInkPresenter.Strokes, localPt, _eraserSize, session);
+                            }
+                        }
+                    }
+                }
+                else if (child is FrameworkElement feChart && InteractiveChartHelper.IsChartContainer(feChart))
+                {
+                    double left = Canvas.GetLeft(feChart);
+                    double top = Canvas.GetTop(feChart);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = feChart.ActualWidth > 0 ? feChart.ActualWidth : feChart.Width;
+                    double height = feChart.ActualHeight > 0 ? feChart.ActualHeight : feChart.Height;
+
+                    double headerHeight = InteractiveChartHelper.HeaderBarHeight;
+                    Rect chartBodyRect = new Rect(left, top + headerHeight, width, Math.Max(10, height - headerHeight));
+                    if (chartBodyRect.Contains(point))
+                    {
+                        var chartInkPresenter = InteractiveChartHelper.GetChartInkPresenter(feChart);
+                        if (chartInkPresenter?.Strokes != null && chartInkPresenter.Strokes.Count > 0)
+                        {
+                            Point localPt = new Point(point.X - left, point.Y - (top + headerHeight));
+                            Point? localLastPt = lastPoint.HasValue ? new Point(lastPoint.Value.X - left, lastPoint.Value.Y - (top + headerHeight)) : null;
+
+                            if (isPointMode)
+                            {
+                                eraserTool.EraseByPointAt(chartInkPresenter.Strokes, localPt, localLastPt, _eraserSize, session);
+                            }
+                            else
+                            {
+                                eraserTool.EraseByStrokeAt(chartInkPresenter.Strokes, localPt, _eraserSize, session);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// </summary>
+        private void CheckAndAttachNativeStrokeToTable(Stroke stroke)
+        {
+            if (stroke == null || MainInteractiveBoard == null) return;
+
+            Rect elemRect = stroke.GetBounds();
+            if (elemRect.IsEmpty) return;
+
+            Point strokeCenter = new Point(elemRect.X + elemRect.Width / 2.0, elemRect.Y + elemRect.Height / 2.0);
+
+            foreach (UIElement child in MainInteractiveBoard.Children)
+            {
+                if (child is StackPanel sp && sp.Tag is string tag && tag == "TableContainer")
+                {
+                    double left = Canvas.GetLeft(sp);
+                    double top = Canvas.GetTop(sp);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = sp.ActualWidth > 0 ? sp.ActualWidth : sp.Width;
+                    double height = sp.ActualHeight > 0 ? sp.ActualHeight : sp.Height;
+
+                    // Thân bảng (outerBorder bên dưới thanh tiêu đề cao 34px)
+                    Rect tableBodyRect = new Rect(left, top + 34, width, Math.Max(10, height - 34));
+
+                    if (tableBodyRect.Contains(elemRect) || tableBodyRect.Contains(strokeCenter))
+                    {
+                        if (!_tableAttachedNativeStrokes.TryGetValue(sp, out var set))
+                        {
+                            set = new HashSet<Stroke>();
+                            _tableAttachedNativeStrokes[sp] = set;
+                        }
+                        set.Add(stroke);
+                        System.Diagnostics.Debug.WriteLine($"🏷️ [Table Ownership] Attached native stroke to TableContainer at ({left:F0}, {top:F0})");
+                        break;
+                    }
+                }
+            }
+        }
+
+        private List<Stroke> GetTableAttachedNativeStrokes(FrameworkElement tableContainer)
+        {
+            if (tableContainer != null && _tableAttachedNativeStrokes.TryGetValue(tableContainer, out var set))
+            {
+                set.RemoveWhere(s => MainInkPresenter?.Strokes == null || !MainInkPresenter.Strokes.Contains(s));
+                return set.ToList();
+            }
+            return new List<Stroke>();
+        }
+
+        private void MoveAttachedNativeStrokes(List<Stroke> strokes, double deltaX, double deltaY)
+        {
+            if (strokes == null || strokes.Count == 0 || (deltaX == 0 && deltaY == 0)) return;
+            var matrix = new Matrix(1, 0, 0, 1, deltaX, deltaY);
+            foreach (var stroke in strokes)
+            {
+                if (stroke != null && MainInkPresenter?.Strokes != null && MainInkPresenter.Strokes.Contains(stroke))
+                {
+                    stroke.Transform(matrix, false);
+                }
+            }
+        }
 
         /// <summary>
         /// QC_4.2_TABLE_OWNERSHIP: Kiểm tra nếu nét vẽ vừa hoàn thành nằm trọn trong thân một Bảng dữ liệu,
@@ -6627,8 +6978,19 @@ namespace QASmartTouch.Forms
                 dragHandleGrid.Children.Add(buttonPanel);
                 dragHandleBar.Child = dragHandleGrid;
 
+                // ✨ CONTAINER-OWNED INKING: Bọc outerBorder trong Grid và đặt TableInkPresenter nổi trên mặt bảng
+                var tableBodyGrid = new Grid();
+                tableBodyGrid.Children.Add(outerBorder);
+
+                var tableInkPresenter = new InkPresenter
+                {
+                    IsHitTestVisible = false,
+                    Tag = "TableInkPresenter"
+                };
+                tableBodyGrid.Children.Add(tableInkPresenter);
+
                 finalContainer.Children.Add(dragHandleBar);
-                finalContainer.Children.Add(outerBorder);
+                finalContainer.Children.Add(tableBodyGrid);
 
                 // Calculate size
                 double totalWidth = Math.Max(tableData.GetTotalWidth() + (tableData.BorderThickness * 2), 240);
@@ -6641,6 +7003,7 @@ namespace QASmartTouch.Forms
                 bool isDragging = false;
                 Point dragStartPoint = new Point();
                 List<UIElement> attachedElements = new List<UIElement>();
+                List<Stroke> attachedNativeStrokes = new List<Stroke>();
 
                 Action<Point> startMove = (startPt) =>
                 {
@@ -6649,6 +7012,7 @@ namespace QASmartTouch.Forms
                     isDragging = true;
                     dragStartPoint = startPt;
                     attachedElements = GetTableAttachedStrokes(finalContainer);
+                    attachedNativeStrokes = GetTableAttachedNativeStrokes(finalContainer);
                 };
 
                 Action<Point> processMove = (currentPoint) =>
@@ -6672,6 +7036,7 @@ namespace QASmartTouch.Forms
                         Canvas.SetTop(finalContainer, newTop);
 
                         MoveAttachedElements(attachedElements, actualDeltaX, actualDeltaY);
+                        MoveAttachedNativeStrokes(attachedNativeStrokes, actualDeltaX, actualDeltaY);
 
                         dragStartPoint = currentPoint;
                         _selectionBox?.UpdatePosition();
@@ -6684,6 +7049,7 @@ namespace QASmartTouch.Forms
                     {
                         isDragging = false;
                         attachedElements.Clear();
+                        attachedNativeStrokes.Clear();
                         RefreshSelectableObjects();
                     }
                 };
@@ -6956,8 +7322,8 @@ namespace QASmartTouch.Forms
 
                 if (result == true && tableDialog.ResultTableData != null)
                 {
-                    // ✅ QC_4.2_TABLE_EDIT_FIX: Sửa ép kiểu — parent thực tế là StackPanel, KHÔNG phải Grid
-                    var parent = tableContainer.Parent as StackPanel;
+                    // ✅ QC_4.2_TABLE_EDIT_FIX: Sửa ép kiểu — parent thực tế là StackPanel (có thể bọc qua tableBodyGrid)
+                    var parent = (tableContainer.Parent as StackPanel) ?? (tableContainer.Parent as FrameworkElement)?.Parent as StackPanel;
                     if (parent != null)
                     {
                         // Get position of old table
@@ -7033,6 +7399,15 @@ namespace QASmartTouch.Forms
                         }
 
                         _tableAttachedStrokes.Remove(targetToDelete);
+
+                        // Xóa các nét vẽ Native Stroke đính kèm
+                        var attachedNative = GetTableAttachedNativeStrokes(targetToDelete);
+                        foreach (var s in attachedNative)
+                        {
+                            RecordRemoveStrokeAction(s, "TableAttachedStroke");
+                            MainInkPresenter?.Strokes.Remove(s);
+                        }
+                        _tableAttachedNativeStrokes.Remove(targetToDelete);
 
                         MainInteractiveBoard.Children.Remove(targetToDelete);
                         RecordRemoveAction(targetToDelete, "Table");
@@ -7577,6 +7952,11 @@ namespace QASmartTouch.Forms
                     break;
             }
             
+            if (shape != null)
+            {
+                Panel.SetZIndex(shape, _currentInkingZIndex);
+            }
+
             return shape;
         }
 
@@ -8566,14 +8946,60 @@ namespace QASmartTouch.Forms
             stroke.BeginAnimation(UIElement.OpacityProperty, anim);
         }
 
+        private Point? _lastMouseEraserPoint = null;
+
         private void EraseStrokeAt(Point point)
         {
+            // 1. Native Inking Erase (Hardware-Accelerated DirectX MilCore, 0% miss rate)
+            if (MainInkPresenter?.Strokes != null && MainInkPresenter.Strokes.Count > 0)
+            {
+                var eraserTool = _whiteboardManager?.ToolManager.EraserTool;
+                if (eraserTool != null)
+                {
+                    var session = eraserTool.GetSession("mouse");
+                    eraserTool.EraseByStrokeAt(
+                        MainInkPresenter.Strokes,
+                        point,
+                        _eraserSize,
+                        session,
+                        onStrokeRemoved: (s) => _selectionManager?.RemoveObjectByStroke(s)
+                    );
+                }
+            }
+
+            // 2. Container-Embedded Inking Erase (Table & InteractiveImage)
+            EraseContainerEmbeddedStrokesAt(point, isPointMode: false);
+
+            // 3. Legacy / Canvas Elements Erase
             _eraserEngine ??= new EraserEngine(MainInteractiveBoard);
             _eraserEngine.EraseByStrokeAtPoint(point, _eraserSize, _eraserEngine.CurrentMouseSession);
         }
 
-        private void EraseByPointAt(Point point)
+        private void EraseByPointAt(Point point, Point? lastPoint = null)
         {
+            // 1. Native Inking Erase (Hardware-Accelerated DirectX MilCore)
+            if (MainInkPresenter?.Strokes != null && MainInkPresenter.Strokes.Count > 0)
+            {
+                var eraserTool = _whiteboardManager?.ToolManager.EraserTool;
+                if (eraserTool != null)
+                {
+                    var session = eraserTool.GetSession("mouse");
+                    eraserTool.EraseByPointAt(
+                        MainInkPresenter.Strokes,
+                        point,
+                        lastPoint,
+                        _eraserSize,
+                        session,
+                        onStrokeAdded: (seg) => RegisterNewStrokeWithSelectionManager(seg),
+                        onStrokeRemoved: (s) => _selectionManager?.RemoveObjectByStroke(s)
+                    );
+                }
+            }
+
+            // 2. Container-Embedded Inking Erase (Table & InteractiveImage)
+            EraseContainerEmbeddedStrokesAt(point, isPointMode: true, lastPoint);
+
+            // 3. Legacy / Canvas Elements Erase
             _eraserEngine ??= new EraserEngine(MainInteractiveBoard);
             _eraserEngine.EraseByPoint(point, _eraserSize, _eraserEngine.CurrentMouseSession);
         }

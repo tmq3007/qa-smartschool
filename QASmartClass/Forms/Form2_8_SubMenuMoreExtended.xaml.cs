@@ -324,6 +324,13 @@ namespace QASmartTouch.Forms
             }
         }
 
+        private void btnScreenRecord_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+            var setupDialog = new PreRecordSetupDialog();
+            setupDialog.ShowDialog();
+        }
+
         private void btnCameraAI_Click(object sender, RoutedEventArgs e)
         {
             // Close this menu first to avoid z-order conflicts

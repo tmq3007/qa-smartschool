@@ -511,7 +511,6 @@
                         </Button>
 
 
-
                         <Button Style="{StaticResource ContentButtonStyle}" Click="btnInsertImageLibrary_Click" Visibility="Collapsed">
 
                             <StackPanel Orientation="Horizontal">

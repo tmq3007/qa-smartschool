@@ -15,10 +15,12 @@ namespace QASmartTouch.Helpers
         
         // Layer 100-999: User Content (Strokes, Shapes, Images, Text)
         public const int UserContentBase = 100;
-        // ✅ QC_4.2_TABLE_ZINDEX (T9): Bảng nằm TRÊN nét vẽ thường nhưng DƯỚI Widget
+        // ✅ QC_4.2_TABLE_ZINDEX (T9): Bảng nằm TRÊN Ảnh nền nhưng DƯỚI Nét mực vẽ chú thích và Widget
         public const int TableContainer = 500;
         // ✅ QC_4.2_CHART_ZINDEX: Biểu đồ nằm trong dải UserContent
         public const int ChartContainer = 500;
+        // ✅ QC_4.2_INKING_LAYER: Tầng nét vẽ mực tự do tăng tốc DirectX MilCore trên bảng nền
+        public const int InkingLayer = 100;
         public const int UserContentMax = 999;
         
         // Layer 1000-1999: Embedded Widgets (Browser, Spreadsheet, 3D Model)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Ink;
 
 namespace QASmartClass.WhiteboardCore.History
 {
@@ -20,12 +21,15 @@ namespace QASmartClass.WhiteboardCore.History
 
     /// <summary>
     /// Đại diện cho 1 hành động có thể Undo/Redo.
+    /// Hỗ trợ cả UIElement (Canvas) và Stroke/Strokes (Native Inking).
     /// </summary>
     public class UndoRedoAction
     {
         public ActionType Type { get; set; }
         public UIElement? Element { get; set; }
         public UIElement? Parent { get; set; }
+        public Stroke? Stroke { get; set; }
+        public List<Stroke>? Strokes { get; set; }
         public object? OldValue { get; set; }
         public object? NewValue { get; set; }
         public List<UndoRedoAction> BatchActions { get; set; }
@@ -51,17 +55,21 @@ namespace QASmartClass.WhiteboardCore.History
         void RecordAdd(UIElement element, string? description = null);
         void RecordRemove(UIElement element, string? description = null);
         void RecordModify(UIElement element, object oldValue, object newValue, string? description = null);
+        void RecordAddStroke(Stroke stroke, string? description = null);
+        void RecordRemoveStroke(Stroke stroke, string? description = null);
+        void RecordRemoveStrokes(IEnumerable<Stroke> strokes, string? description = null);
         void Undo();
         void Redo();
     }
 
     /// <summary>
     /// UndoRedoManager — quản lý lịch sử hoàn tác/làm lại theo Command Pattern.
-    /// Đây là class thuần logic, không phụ thuộc UI (ngoại trừ UIElement references).
+    /// Hỗ trợ hoàn tác đồng thời cả UIElement và Native Inking (System.Windows.Ink.Stroke).
     /// </summary>
     public class UndoRedoManager : IUndoRedoManager
     {
         private readonly Canvas _canvas;
+        private readonly InkPresenter? _inkPresenter;
         private Stack<UndoRedoAction> _undoStack = new();
         private Stack<UndoRedoAction> _redoStack = new();
         private int _maxUndoLevels = 100;
@@ -79,9 +87,14 @@ namespace QASmartClass.WhiteboardCore.History
         public int UndoCount => _undoStack.Count;
         public int RedoCount => _redoStack.Count;
 
-        public UndoRedoManager(Canvas canvas, int maxUndoLevels = 100)
+        public UndoRedoManager(Canvas canvas, int maxUndoLevels = 100) : this(canvas, null, maxUndoLevels)
+        {
+        }
+
+        public UndoRedoManager(Canvas canvas, InkPresenter? inkPresenter, int maxUndoLevels = 100)
         {
             _canvas = canvas;
+            _inkPresenter = inkPresenter;
             _maxUndoLevels = maxUndoLevels;
         }
 
@@ -171,6 +184,48 @@ namespace QASmartClass.WhiteboardCore.History
             RecordAction(action);
         }
 
+        public void RecordAddStroke(Stroke stroke, string? description = null)
+        {
+            if (stroke == null) return;
+            var action = new UndoRedoAction
+            {
+                Type = ActionType.Add,
+                Stroke = stroke,
+                Parent = _canvas,
+                Description = description ?? "Add Native Stroke"
+            };
+            RecordAction(action);
+        }
+
+        public void RecordRemoveStroke(Stroke stroke, string? description = null)
+        {
+            if (stroke == null) return;
+            var action = new UndoRedoAction
+            {
+                Type = ActionType.Remove,
+                Stroke = stroke,
+                Parent = _canvas,
+                Description = description ?? "Remove Native Stroke"
+            };
+            RecordAction(action);
+        }
+
+        public void RecordRemoveStrokes(IEnumerable<Stroke> strokes, string? description = null)
+        {
+            if (strokes == null) return;
+            var list = strokes.ToList();
+            if (list.Count == 0) return;
+
+            var action = new UndoRedoAction
+            {
+                Type = ActionType.Remove,
+                Strokes = list,
+                Parent = _canvas,
+                Description = description ?? $"Remove {list.Count} Native Strokes"
+            };
+            RecordAction(action);
+        }
+
         public void Undo()
         {
             if (_undoStack.Count == 0) return;
@@ -193,48 +248,134 @@ namespace QASmartClass.WhiteboardCore.History
 
         private void ExecuteUndo(UndoRedoAction action)
         {
+            var targetIP = action.Parent as InkPresenter ?? _inkPresenter;
             switch (action.Type)
             {
                 case ActionType.Add:
                     if (action.Element != null && _canvas.Children.Contains(action.Element))
                         _canvas.Children.Remove(action.Element);
+
+                    if (action.Stroke != null && targetIP?.Strokes != null)
+                        targetIP.Strokes.Remove(action.Stroke);
+
+                    if (action.Strokes != null && targetIP?.Strokes != null)
+                    {
+                        foreach (var s in action.Strokes)
+                            targetIP.Strokes.Remove(s);
+                    }
                     break;
+
                 case ActionType.Remove:
                     if (action.Element != null && !_canvas.Children.Contains(action.Element))
                         _canvas.Children.Add(action.Element);
+
+                    if (action.Stroke != null && targetIP?.Strokes != null)
+                    {
+                        if (!targetIP.Strokes.Contains(action.Stroke))
+                            targetIP.Strokes.Add(action.Stroke);
+                    }
+
+                    if (action.Strokes != null && targetIP?.Strokes != null)
+                    {
+                        foreach (var s in action.Strokes)
+                        {
+                            if (!targetIP.Strokes.Contains(s))
+                                targetIP.Strokes.Add(s);
+                        }
+                    }
                     break;
+
                 case ActionType.Batch:
                     for (int i = action.BatchActions.Count - 1; i >= 0; i--)
                         ExecuteUndo(action.BatchActions[i]);
                     break;
+
                 case ActionType.ClearAll:
                     foreach (var ba in action.BatchActions)
+                    {
+                        var baTargetIP = ba.Parent as InkPresenter ?? _inkPresenter;
                         if (ba.Element != null && !_canvas.Children.Contains(ba.Element))
                             _canvas.Children.Add(ba.Element);
+
+                        if (ba.Stroke != null && baTargetIP?.Strokes != null)
+                        {
+                            if (!baTargetIP.Strokes.Contains(ba.Stroke))
+                                baTargetIP.Strokes.Add(ba.Stroke);
+                        }
+
+                        if (ba.Strokes != null && baTargetIP?.Strokes != null)
+                        {
+                            foreach (var s in ba.Strokes)
+                            {
+                                if (!baTargetIP.Strokes.Contains(s))
+                                    baTargetIP.Strokes.Add(s);
+                            }
+                        }
+                    }
                     break;
             }
         }
 
         private void ExecuteRedo(UndoRedoAction action)
         {
+            var targetIP = action.Parent as InkPresenter ?? _inkPresenter;
             switch (action.Type)
             {
                 case ActionType.Add:
                     if (action.Element != null && !_canvas.Children.Contains(action.Element))
                         _canvas.Children.Add(action.Element);
+
+                    if (action.Stroke != null && targetIP?.Strokes != null)
+                    {
+                        if (!targetIP.Strokes.Contains(action.Stroke))
+                            targetIP.Strokes.Add(action.Stroke);
+                    }
+
+                    if (action.Strokes != null && targetIP?.Strokes != null)
+                    {
+                        foreach (var s in action.Strokes)
+                        {
+                            if (!targetIP.Strokes.Contains(s))
+                                targetIP.Strokes.Add(s);
+                        }
+                    }
                     break;
+
                 case ActionType.Remove:
                     if (action.Element != null && _canvas.Children.Contains(action.Element))
                         _canvas.Children.Remove(action.Element);
+
+                    if (action.Stroke != null && targetIP?.Strokes != null)
+                        targetIP.Strokes.Remove(action.Stroke);
+
+                    if (action.Strokes != null && targetIP?.Strokes != null)
+                    {
+                        foreach (var s in action.Strokes)
+                            targetIP.Strokes.Remove(s);
+                    }
                     break;
+
                 case ActionType.Batch:
                     foreach (var ba in action.BatchActions)
                         ExecuteRedo(ba);
                     break;
+
                 case ActionType.ClearAll:
                     foreach (var ba in action.BatchActions)
+                    {
+                        var baTargetIP = ba.Parent as InkPresenter ?? _inkPresenter;
                         if (ba.Element != null && _canvas.Children.Contains(ba.Element))
                             _canvas.Children.Remove(ba.Element);
+
+                        if (ba.Stroke != null && baTargetIP?.Strokes != null)
+                            baTargetIP.Strokes.Remove(ba.Stroke);
+
+                        if (ba.Strokes != null && baTargetIP?.Strokes != null)
+                        {
+                            foreach (var s in ba.Strokes)
+                                baTargetIP.Strokes.Remove(s);
+                        }
+                    }
                     break;
             }
         }
