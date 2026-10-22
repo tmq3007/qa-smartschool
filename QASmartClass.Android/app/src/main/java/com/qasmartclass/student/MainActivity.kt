@@ -1249,6 +1249,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        focusReporter.appInForeground = true
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Học sinh thoát sang ứng dụng khác / về màn hình chính → báo cho giáo viên
+        focusReporter.appInForeground = false
+    }
+
     private fun disconnectFromTeacher(reason: String) {
         stopScreenBroadcast()
         heartbeatJob?.cancel()

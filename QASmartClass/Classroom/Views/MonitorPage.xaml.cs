@@ -772,7 +772,7 @@ namespace QASmartClass.Classroom.Views
 
                             // Cảnh báo mất tập trung: HS rời app học sinh khi phiên lớp đang diễn ra
                             bool sessionActive = ClassroomAppContext.Session?.IsSessionActive ?? false;
-                            if (!isWatching && sessionActive)
+                            if (!isWatching)
                             {
                                 student.IsOnline = true;
                                 bool wasAlert = student.FocusAlert;
@@ -4357,6 +4357,7 @@ namespace QASmartClass.Classroom.Views
         public static string FriendlyAppName(string pkg)
         {
             if (string.IsNullOrWhiteSpace(pkg)) return "Không rõ";
+            if (pkg == "unknown") return "Ứng dụng khác";
             string p = pkg.ToLowerInvariant();
             if (p.Contains("chrome")) return "Chrome";
             if (p.Contains("youtube")) return "YouTube";

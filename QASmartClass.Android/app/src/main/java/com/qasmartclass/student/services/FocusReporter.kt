@@ -8,25 +8,40 @@ import java.io.OutputStream
 
 class FocusReporter(private val context: Context, private val outputStreamProvider: () -> OutputStream?) {
     private val handler = Handler(Looper.getMainLooper())
+    // Ghi socket phải ở luồng nền (tránh NetworkOnMainThreadException)
+    private val netExecutor = java.util.concurrent.Executors.newSingleThreadExecutor()
 
     /** Trang/tab đang mở trong app học sinh (gửi kèm để GV xem HS đang ở đâu). */
     @Volatile
     var currentPage: String = ""
 
+    /** Activity có đang hiển thị không (đặt từ onStart/onStop) — không cần quyền Usage Access. */
+    @Volatile
+    var appInForeground: Boolean = true
+
     private val reportRunnable = object : Runnable {
         override fun run() {
-            val foregroundApp = getForegroundAppPackage()
-            val isWatching = foregroundApp == "com.qasmartclass.vncviewer" 
+            val usageApp = getForegroundAppPackage()
+            val foregroundApp = if (appInForeground) context.packageName
+                                else if (usageApp != context.packageName) usageApp else "unknown"
+            val isWatching = appInForeground
+                          || foregroundApp == "com.qasmartclass.vncviewer"
                           || foregroundApp == "com.qasmartclass.student"
-                          || foregroundApp == context.packageName
 
             try {
                 val os = outputStreamProvider()
                 if (os != null) {
                     val page = currentPage.replace("|", " ").replace("\n", " ").trim()
                     val focusCmd = "CMD|FOCUS_STATUS|${if (isWatching) 1 else 0}|$foregroundApp|$page\n"
-                    os.write(focusCmd.toByteArray(Charsets.UTF_8))
-                    os.flush()
+                    netExecutor.execute {
+                        try {
+                            os.write(focusCmd.toByteArray(Charsets.UTF_8))
+                            os.flush()
+                        } catch (ex: Exception) {
+                            ex.printStackTrace()
+                        }
+                    }
+
                 }
             } catch (ex: Exception) {
                 ex.printStackTrace()
