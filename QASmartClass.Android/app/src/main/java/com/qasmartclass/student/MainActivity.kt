@@ -146,6 +146,22 @@ class MainActivity : AppCompatActivity() {
     private var isHandRaised = false
     private var currentHandRaiseReason = "Phát biểu"
     private var currentTab = 0
+    private var needCapturePrompt = false
+
+    private val captureLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val data = result.data
+        if (result.resultCode == android.app.Activity.RESULT_OK && data != null) {
+            val svc = android.content.Intent(this, com.qasmartclass.student.services.ScreenCaptureService::class.java)
+                .putExtra(com.qasmartclass.student.services.ScreenCaptureService.EXTRA_CODE, result.resultCode)
+                .putExtra(com.qasmartclass.student.services.ScreenCaptureService.EXTRA_DATA, data)
+            androidx.core.content.ContextCompat.startForegroundService(this, svc)
+            needCapturePrompt = false
+        } else {
+            Toast.makeText(this, "Giáo viên sẽ không xem được màn hình của bạn nếu bạn từ chối chia sẻ", Toast.LENGTH_LONG).show()
+        }
+    }
 
     // Cached student info
     private var currentStudentName = ""
@@ -857,6 +873,7 @@ class MainActivity : AppCompatActivity() {
         homeClassName = className
         homeTeacherName = teacherName
         txtHomeNotice.text = "Chưa có thông báo mới từ Giáo viên."
+        requestScreenCapture()
         switchTab(3)
 
         // Reset broadcast UI state
@@ -961,6 +978,9 @@ class MainActivity : AppCompatActivity() {
 
         runOnUiThread {
             when {
+                cleanCmd.startsWith("CMD|REQUEST_SCREENSHOT") -> {
+                    sendScreenshotToTeacher()
+                }
                 cleanCmd.startsWith("CMD|BLACK_SCREEN") -> {
                     val on = cleanCmd.split("|").getOrNull(2) == "1"
                     if (on) {
@@ -1249,9 +1269,47 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Xin quyền chia sẻ màn hình (hộp thoại hệ thống) để giáo viên xem HS đang làm gì. */
+    private fun requestScreenCapture() {
+        if (com.qasmartclass.student.services.ScreenCaptureService.instance != null) return
+        try {
+            val mpm = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as android.media.projection.MediaProjectionManager
+            captureLauncher.launch(mpm.createScreenCaptureIntent())
+        } catch (e: Exception) {
+            Log.w(TAG, "Cannot request screen capture: ${e.message}")
+        }
+    }
+
+    /** Chụp khung hình màn hình mới nhất và gửi cho giáo viên (SCREENSHOT|code|base64). */
+    private fun sendScreenshotToTeacher() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val jpeg = com.qasmartclass.student.services.ScreenCaptureService.captureJpeg()
+            if (jpeg == null) {
+                // Chưa được cấp quyền → xin lại khi HS quay lại app
+                withContext(Dispatchers.Main) { needCapturePrompt = true }
+                return@launch
+            }
+            val os = tcpOutputStream ?: return@launch
+            try {
+                val b64 = android.util.Base64.encodeToString(jpeg, android.util.Base64.NO_WRAP)
+                val line = "SCREENSHOT|$currentStudentCode|$b64\n".toByteArray(Charsets.UTF_8)
+                synchronized(os) {
+                    os.write(line)
+                    os.flush()
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Send screenshot failed: ${e.message}")
+            }
+        }
+    }
+
     override fun onStart() {
         super.onStart()
         focusReporter.appInForeground = true
+        if (needCapturePrompt && tcpOutputStream != null) {
+            needCapturePrompt = false
+            requestScreenCapture()
+        }
     }
 
     override fun onStop() {
@@ -1265,6 +1323,7 @@ class MainActivity : AppCompatActivity() {
         heartbeatJob?.cancel()
         heartbeatJob = null
         focusReporter.stopReporting()
+        try { stopService(android.content.Intent(this, com.qasmartclass.student.services.ScreenCaptureService::class.java)) } catch (_: Exception) {}
         heartbeatWatchdog.releaseLock()
         currentSessionKey = ""
         currentSessionSalt = ""

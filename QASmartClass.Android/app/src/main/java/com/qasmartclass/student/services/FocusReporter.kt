@@ -35,8 +35,10 @@ class FocusReporter(private val context: Context, private val outputStreamProvid
                     val focusCmd = "CMD|FOCUS_STATUS|${if (isWatching) 1 else 0}|$foregroundApp|$page\n"
                     netExecutor.execute {
                         try {
-                            os.write(focusCmd.toByteArray(Charsets.UTF_8))
-                            os.flush()
+                            synchronized(os) {
+                                os.write(focusCmd.toByteArray(Charsets.UTF_8))
+                                os.flush()
+                            }
                         } catch (ex: Exception) {
                             ex.printStackTrace()
                         }
