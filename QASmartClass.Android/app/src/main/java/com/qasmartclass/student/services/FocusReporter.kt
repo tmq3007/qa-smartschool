@@ -9,6 +9,10 @@ import java.io.OutputStream
 class FocusReporter(private val context: Context, private val outputStreamProvider: () -> OutputStream?) {
     private val handler = Handler(Looper.getMainLooper())
 
+    /** Trang/tab đang mở trong app học sinh (gửi kèm để GV xem HS đang ở đâu). */
+    @Volatile
+    var currentPage: String = ""
+
     private val reportRunnable = object : Runnable {
         override fun run() {
             val foregroundApp = getForegroundAppPackage()
@@ -19,7 +23,8 @@ class FocusReporter(private val context: Context, private val outputStreamProvid
             try {
                 val os = outputStreamProvider()
                 if (os != null) {
-                    val focusCmd = "CMD|FOCUS_STATUS|${if (isWatching) 1 else 0}|$foregroundApp\n"
+                    val page = currentPage.replace("|", " ").replace("\n", " ").trim()
+                    val focusCmd = "CMD|FOCUS_STATUS|${if (isWatching) 1 else 0}|$foregroundApp|$page\n"
                     os.write(focusCmd.toByteArray(Charsets.UTF_8))
                     os.flush()
                 }

@@ -120,6 +120,10 @@ namespace QASmartClass.Classroom.Views
 
         private string _currentFilter = "all";
 
+        private string _searchText = "";
+
+        private string _lastFilterSignature = "";
+
         private bool _isSelectMode = false;
 
         private string _displayMode = "all_class";  // "connected" or "all_class"
@@ -663,6 +667,8 @@ namespace QASmartClass.Classroom.Views
                     student.ScreenshotSource = null;
 
                     student.HasAlert         = false; // Clear alerts when student disconnects
+                    student.FocusAlert       = false;
+                    student.CurrentApp       = "";
 
                     student.OffTaskApp       = "";
 
@@ -756,6 +762,32 @@ namespace QASmartClass.Classroom.Views
                         {
                             student.IsWatchingBroadcast = isWatching;
                             student.ForegroundApp = foregroundApp;
+
+                            // Trang/tab HS đang ở (trường tùy chọn thứ 3 do app Android gửi kèm)
+                            string pageName = parts.Length >= offset + 3 ? parts[offset + 2].Trim() : "";
+                            string friendlyApp = ConnectedStudent.FriendlyAppName(foregroundApp);
+                            student.CurrentApp = isWatching
+                                ? (string.IsNullOrEmpty(pageName) ? "Trong phòng học" : $"Trong lớp • {pageName}")
+                                : friendlyApp;
+
+                            // Cảnh báo mất tập trung: HS rời app học sinh khi phiên lớp đang diễn ra
+                            bool sessionActive = ClassroomAppContext.Session?.IsSessionActive ?? false;
+                            if (!isWatching && sessionActive)
+                            {
+                                student.IsOnline = true;
+                                bool wasAlert = student.FocusAlert;
+                                student.FocusAppName = friendlyApp;
+                                student.FocusAlert = true;
+                                if (!wasAlert)
+                                {
+                                    AddLog($"Cảnh báo: {student.PCName}", $"{student.Name} rời khỏi bài học, đang mở: {friendlyApp}", "#3D2020", "#FF5252");
+                                }
+                            }
+                            else if (student.FocusAlert)
+                            {
+                                student.FocusAlert = false;
+                                student.FocusAppName = "";
+                            }
                             UpdateFocusStatistics();
                         }
                     });
@@ -846,6 +878,7 @@ namespace QASmartClass.Classroom.Views
                     student.IsOnline = true; // UPGRADE_06: Consolidate status on heartbeat receipt!
 
                     student.CpuUsage = cpu;
+                    if (!string.IsNullOrWhiteSpace(activeApp)) student.CurrentApp = activeApp;
 
 
 
@@ -1569,10 +1602,69 @@ namespace QASmartClass.Classroom.Views
             };
 
             ApplyFilter();
+            UpdateFilterChips();
 
         }
 
 
+
+        private void SearchStudent_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _searchText = txtSearchStudent?.Text ?? "";
+            ApplyFilter();
+        }
+
+        private void FilterChip_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.Tag is string tag)
+            {
+                _currentFilter = tag;
+                ApplyFilter();
+                UpdateFilterChips();
+            }
+        }
+
+        private void SyncHandRaiseAndChips()
+        {
+            try
+            {
+                var sess = ClassroomAppContext.Session?.ConnectedStudents;
+                if (sess != null)
+                {
+                    foreach (var s in _allStudents)
+                    {
+                        bool raised = !string.IsNullOrEmpty(s.StudentCode) &&
+                            sess.Any(x => x.StudentCode == s.StudentCode && x.IsHandRaised);
+                        s.IsHandRaised = raised;
+                    }
+                }
+            }
+            catch { }
+
+            string sig = _currentFilter + "|" + string.Join(",", _allStudents.Where(s => s.IsOnline).Select(s => s.StudentCode + (s.HasAlert ? "!" : "") + (s.IsHandRaised ? "h" : "")));
+            if (sig != _lastFilterSignature)
+            {
+                bool first = _lastFilterSignature == "";
+                _lastFilterSignature = sig;
+                if (!first && (_currentFilter == "hand" || _currentFilter == "alert" || _currentFilter == "online" || _currentFilter == "offline")) ApplyFilter();
+            }
+            UpdateFilterChips();
+        }
+
+        private void UpdateFilterChips()
+        {
+            if (chipAll == null) return;
+            chipAll.Content     = $"Tất cả {_allStudents.Count}";
+            chipHand.Content    = $"✋ Đang giơ tay {_allStudents.Count(s => s.IsHandRaised && s.IsOnline)}";
+            chipAlert.Content   = $"⚠️ Mất tập trung {_allStudents.Count(s => s.HasAlert)}";
+            chipOffline.Content = $"Offline {_allStudents.Count(s => !s.IsOnline)}";
+            foreach (var b in new[] { chipAll, chipHand, chipAlert, chipOffline })
+            {
+                bool active = (string)b.Tag == _currentFilter;
+                b.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(active ? "#005BAA" : "#E6EEFF"));
+                b.Foreground = active ? System.Windows.Media.Brushes.White : new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#1E293B"));
+            }
+        }
 
         private void ApplyFilter()
 
@@ -1603,6 +1695,7 @@ namespace QASmartClass.Classroom.Views
                 "offline" => src.Where(s => !s.IsOnline),
 
                 "alert"   => src.Where(s => s.HasAlert),
+                "hand"    => src.Where(s => s.IsHandRaised),
 
                 _         => src
 
@@ -1610,6 +1703,13 @@ namespace QASmartClass.Classroom.Views
 
 
 
+            if (!string.IsNullOrWhiteSpace(_searchText))
+            {
+                string q = _searchText.Trim();
+                src = src.Where(s => (s.Name ?? "").IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0
+                                  || (s.DisplayPCName ?? "").IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0
+                                  || (s.StudentCode ?? "").IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
             var list = src.ToList();
 
             var rows = new List<StudentRow>();
@@ -1649,6 +1749,7 @@ namespace QASmartClass.Classroom.Views
             int online  = _allStudents.Count(s => s.IsOnline);
 
             int alerts  = _allStudents.Count(s => s.HasAlert);
+            SyncHandRaiseAndChips();
 
             double cpuAvg = online > 0 ? _allStudents.Where(s => s.IsOnline).Average(s => s.CpuUsage) : 0;
 
@@ -3997,6 +4098,8 @@ namespace QASmartClass.Classroom.Views
                 OnPropertyChanged(nameof(StatusPillBackground));
                 OnPropertyChanged(nameof(StatusTextColor));
                 OnPropertyChanged(nameof(StatusText));
+                OnPropertyChanged(nameof(CurrentAppVisibility));
+                OnPropertyChanged(nameof(CurrentAppLabel));
                 OnPropertyChanged(nameof(ActivityColor));
                 OnPropertyChanged(nameof(FocusLabel));
             }
@@ -4060,9 +4163,9 @@ namespace QASmartClass.Classroom.Views
 
         {
 
-            get => _hasAlert;
+            get => _hasAlert || _focusAlert;
 
-            set { _hasAlert = value; OnPropertyChanged(); OnPropertyChanged(nameof(OffTaskVisibility)); OnPropertyChanged(nameof(OffTaskLabel)); }
+            set { _hasAlert = value; OnPropertyChanged(); NotifyAlertChanged(); }
 
         }
 
@@ -4084,7 +4187,7 @@ namespace QASmartClass.Classroom.Views
 
         {
 
-            get => _offTaskApp;
+            get => !string.IsNullOrEmpty(_offTaskApp) ? _offTaskApp : (_focusAlert ? _focusAppName : "");
 
             set { _offTaskApp = value; OnPropertyChanged(); OnPropertyChanged(nameof(OffTaskLabel)); OnPropertyChanged(nameof(OffTaskVisibility)); }
 
@@ -4203,6 +4306,68 @@ namespace QASmartClass.Classroom.Views
         public string BroadcastFocusLabel => IsWatchingBroadcast ? "👁️ Đang xem" : $"⚠️ {ForegroundApp}";
 
         public string BroadcastFocusVisibility => QASmartClass.Services.VncBroadcastService.Instance.IsVncBroadcasting ? "Visible" : "Collapsed";
+
+        // ===== Cảnh báo mất tập trung / tab hiện tại / giơ tay (theo thiết kế Stitch) =====
+        private bool   _focusAlert;
+        private string _focusAppName = "";
+        private string _currentApp   = "";
+        private bool   _isHandRaised;
+
+        public bool FocusAlert
+        {
+            get => _focusAlert;
+            set { if (_focusAlert == value) return; _focusAlert = value; OnPropertyChanged(); NotifyAlertChanged(); }
+        }
+
+        public string FocusAppName
+        {
+            get => _focusAppName;
+            set { _focusAppName = value ?? ""; OnPropertyChanged(); OnPropertyChanged(nameof(OffTaskApp)); OnPropertyChanged(nameof(OffTaskLabel)); OnPropertyChanged(nameof(OffTaskVisibility)); }
+        }
+
+        public string CurrentApp
+        {
+            get => _currentApp;
+            set { _currentApp = value ?? ""; OnPropertyChanged(); OnPropertyChanged(nameof(CurrentAppLabel)); }
+        }
+
+        public bool IsHandRaised
+        {
+            get => _isHandRaised;
+            set { if (_isHandRaised == value) return; _isHandRaised = value; OnPropertyChanged(); OnPropertyChanged(nameof(HandRaiseVisibility)); }
+        }
+
+        public string HandRaiseVisibility => _isHandRaised && IsOnline ? "Visible" : "Collapsed";
+        public string AlertBadgeText => "⚠️ Mất tập trung";
+        public string CurrentAppVisibility => IsOnline ? "Visible" : "Collapsed";
+        public string CurrentAppLabel => string.IsNullOrEmpty(_currentApp) ? "🪟 Đang học" : "🪟 " + _currentApp;
+        public string CurrentAppBackground => HasAlert ? "#FEE2E2" : "#F1F5F9";
+        public string CurrentAppForeground => HasAlert ? "#B91C1C" : "#475569";
+
+        public void NotifyAlertChanged()
+        {
+            OnPropertyChanged(nameof(HasAlert));
+            OnPropertyChanged(nameof(OffTaskVisibility));
+            OnPropertyChanged(nameof(OffTaskLabel));
+            OnPropertyChanged(nameof(OffTaskApp));
+            OnPropertyChanged(nameof(CurrentAppBackground));
+            OnPropertyChanged(nameof(CurrentAppForeground));
+        }
+
+        public static string FriendlyAppName(string pkg)
+        {
+            if (string.IsNullOrWhiteSpace(pkg)) return "Không rõ";
+            string p = pkg.ToLowerInvariant();
+            if (p.Contains("chrome")) return "Chrome";
+            if (p.Contains("youtube")) return "YouTube";
+            if (p.Contains("facebook")) return "Facebook";
+            if (p.Contains("tiktok")) return "TikTok";
+            if (p.Contains("zalo")) return "Zalo";
+            if (p.Contains("messenger") || p.Contains("orca")) return "Messenger";
+            if (p.Contains("launcher") || p.Contains("home")) return "Màn hình chính";
+            var parts = pkg.Split('.');
+            return parts[parts.Length - 1];
+        }
 
         public void NotifyBroadcastStateChanged()
         {

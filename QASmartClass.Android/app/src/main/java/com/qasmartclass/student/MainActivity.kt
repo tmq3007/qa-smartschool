@@ -428,6 +428,12 @@ class MainActivity : AppCompatActivity() {
             else -> "🏠 Trang chủ"
         }
         setNavActive(activeBtn)
+        focusReporter.currentPage = when (index) {
+            0 -> "Bài giảng"
+            1 -> "Tin nhắn"
+            2 -> "Giơ tay"
+            else -> "Trang chủ"
+        }
         navDrawerOverlay.visibility = View.GONE
 
         if (index == 1) {
@@ -463,6 +469,7 @@ class MainActivity : AppCompatActivity() {
         txtSoonTitle.text = title
         txtPageTitle.text = title
         setNavActive(btn)
+        focusReporter.currentPage = title.substringAfter(" ")
         navDrawerOverlay.visibility = View.GONE
     }
 

@@ -10,16 +10,18 @@
       Unloaded="Page_Unloaded">
 
     <Page.Resources>
-        <!-- Segmented Tab Button Style (Light Theme matching other pages) -->
+        <!-- ═══ Menu dọc bên trái (thay cho tab ngang). Giữ key "HubTabButton"/"HubTabButtonActive" để code-behind không đổi ═══ -->
         <Style x:Key="HubTabButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#64748B"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#475569"/>
+            <Setter Property="FontSize" Value="13.5"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="16,11"/>
-            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="MinHeight" Value="52"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0,0,0,3"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="BorderThickness" Value="4,0,0,0"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -29,13 +31,13 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}"
-                                CornerRadius="4,4,0,0">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Foreground" Value="#1E293B"/>
-                                <Setter TargetName="border" Property="Background" Value="#F8FAFC"/>
+                                <Setter TargetName="border" Property="Background" Value="#F1F5F9"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -46,25 +48,28 @@
         <Style x:Key="HubTabButtonActive" TargetType="Button" BasedOn="{StaticResource HubTabButton}">
             <Setter Property="Foreground" Value="#1976D2"/>
             <Setter Property="BorderBrush" Value="#1976D2"/>
-            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Background" Value="#EAF2FD"/>
+            <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
-        <!-- Quick Action Primary Button Style -->
+        <!-- ═══ Ô hành động nhanh (touch-friendly, icon lớn + chú thích) ═══ -->
         <Style x:Key="QuickActionButtonPrimary" TargetType="Button">
             <Setter Property="Background" Value="#1976D2"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="12.5"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="14,8"/>
             <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="MinHeight" Value="64"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="b" Background="{TemplateBinding Background}"
-                                CornerRadius="8" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                CornerRadius="12" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -79,30 +84,30 @@
             </Setter>
         </Style>
 
-        <!-- Quick Action Neutral Button Style -->
         <Style x:Key="QuickActionButtonNeutral" TargetType="Button">
             <Setter Property="Background" Value="#F1F5F9"/>
             <Setter Property="Foreground" Value="#334155"/>
-            <Setter Property="FontSize" Value="12.5"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="12,7"/>
-            <Setter Property="Margin" Value="3,0"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="MinHeight" Value="64"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="b" Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                CornerRadius="12" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="b" Property="Background" Value="#E2E8F0"/>
-                                <Setter Property="Foreground" Value="#0F172A"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="b" Property="Background" Value="#CBD5E1"/>
@@ -116,110 +121,169 @@
 
     <!-- [RULE] QC_4.2_LAYOUT_GRID: rootGrid Stretch, No MaxWidth -->
     <Grid x:Name="rootGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Top Control Bar -->
-            <RowDefinition Height="Auto"/> <!-- Tabs Header -->
-            <RowDefinition Height="*"/>    <!-- Sub-page Container -->
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="232"/> <!-- Menu dọc -->
+            <ColumnDefinition Width="*"/>   <!-- Nội dung -->
+        </Grid.ColumnDefinitions>
 
-        <!-- ═══ 1. TOP CONTROL BAR (Overview + Status + Quick Actions) ═══ -->
-        <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="18,12">
-            <Border.Effect>
-                <DropShadowEffect Color="#000000" Opacity="0.03" BlurRadius="10" ShadowDepth="2"/>
-            </Border.Effect>
-            <DockPanel LastChildFill="True">
-                <!-- Left: Title & Live Indicators -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left">
-                    <TextBlock Text="🖥️ ĐIỀU KHIỂN LỚP HỌC" FontSize="16" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" Margin="0,0,14,0"/>
-
-                    <!-- Live Share Status Pill -->
-                    <Border x:Name="pillLiveStatus" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,8,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse x:Name="dotLiveStatus" Width="8" Height="8" Fill="#94A3B8" Margin="0,0,6,0"/>
-                            <TextBlock x:Name="txtLiveStatus" Text="Chưa phát màn hình" FontSize="11.5" FontWeight="SemiBold" Foreground="#475569"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Student Count Pill -->
-                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,8,0">
-                        <TextBlock x:Name="txtStudentCount" Text="👥 0 Học sinh" FontSize="11.5" FontWeight="SemiBold" Foreground="#1D4ED8"/>
-                    </Border>
-
-                    <!-- Silence Pill -->
-                    <Border x:Name="pillSilence" Visibility="Collapsed" Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,8,0">
-                        <TextBlock Text="🔇 Đang im lặng" FontSize="11.5" FontWeight="Bold" Foreground="#B91C1C"/>
-                    </Border>
+        <!-- ═══ 1. MENU DỌC BÊN TRÁI ═══ -->
+        <Border Grid.Column="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,1,0" Padding="12,16">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Top" Margin="6,0,6,16">
+                    <TextBlock Text="🖥️ ĐIỀU KHIỂN" FontSize="17" FontWeight="Bold" Foreground="#1E293B"/>
+                    <TextBlock Text="LỚP HỌC" FontSize="17" FontWeight="Bold" Foreground="#1976D2"/>
+                    <TextBlock Text="Chọn chức năng bên dưới" FontSize="11.5" Foreground="#94A3B8" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <!-- Right: Quick Actions -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" DockPanel.Dock="Right">
-                    <!-- Quick Broadcast -->
-                    <Button x:Name="btnQuickBroadcast" Style="{StaticResource QuickActionButtonPrimary}" Background="#1976D2" Click="QuickBroadcast_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📺" FontSize="13" Margin="0,0,6,0"/>
-                            <TextBlock x:Name="txtQuickBroadcast" Text="Phát màn hình"/>
+                <StackPanel DockPanel.Dock="Top">
+                    <Button x:Name="tabBtnMonitor" Style="{StaticResource HubTabButtonActive}" Tag="Monitor" Click="TabButton_Click">
+                        <StackPanel>
+                            <TextBlock Text="🖥️  Giám sát &amp; Quản lý lớp"/>
+                            <TextBlock Text="Xem màn hình, trạng thái học sinh" FontSize="11" FontWeight="Normal" Opacity="0.75" Margin="26,2,0,0"/>
                         </StackPanel>
                     </Button>
-
-                    <!-- Quick Lock All -->
-                    <Button x:Name="btnQuickLock" Style="{StaticResource QuickActionButtonPrimary}" Background="#DC2626" Click="QuickLock_Click" ToolTip="Khóa màn hình và chuột bàn phím tất cả máy học sinh">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🔒" FontSize="13" Margin="0,0,5,0"/>
-                            <TextBlock Text="Khóa tất cả"/>
+                    <Button x:Name="tabBtnBroadcast" Style="{StaticResource HubTabButton}" Tag="Broadcast" Click="TabButton_Click">
+                        <StackPanel>
+                            <TextBlock Text="📺  Trình chiếu &amp; Phát sóng"/>
+                            <TextBlock Text="Chiếu màn hình cho cả lớp" FontSize="11" FontWeight="Normal" Opacity="0.75" Margin="26,2,0,0"/>
                         </StackPanel>
                     </Button>
-
-                    <!-- Quick Unlock All -->
-                    <Button x:Name="btnQuickUnlock" Style="{StaticResource QuickActionButtonPrimary}" Background="#16A34A" Click="QuickUnlock_Click" ToolTip="Mở khóa tất cả máy học sinh">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🔓" FontSize="13" Margin="0,0,5,0"/>
-                            <TextBlock Text="Mở khóa"/>
+                    <Button x:Name="tabBtnFiles" Style="{StaticResource HubTabButton}" Tag="Files" Click="TabButton_Click">
+                        <StackPanel>
+                            <TextBlock Text="📁  Trao đổi tài liệu"/>
+                            <TextBlock Text="Gửi / nhận file với học sinh" FontSize="11" FontWeight="Normal" Opacity="0.75" Margin="26,2,0,0"/>
                         </StackPanel>
                     </Button>
-
-                    <!-- Quick Mute/Silence -->
-                    <Button x:Name="btnQuickMute" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickMute_Click" ToolTip="Bật / Tắt âm thanh hoặc yêu cầu trật tự">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="iconQuickMute" Text="🔇" FontSize="13" Margin="0,0,5,0"/>
-                            <TextBlock x:Name="txtQuickMute" Text="Im lặng"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Quick Send File -->
-                    <Button x:Name="btnQuickFile" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickFile_Click" ToolTip="Chuyển nhanh sang phân hệ gửi tài liệu">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📁" FontSize="13" Margin="0,0,5,0"/>
-                            <TextBlock Text="Gửi file"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Quick Push Web -->
-                    <Button x:Name="btnQuickWeb" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickWeb_Click" ToolTip="Chuyển nhanh sang phân hệ điều hướng website">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🌐" FontSize="13" Margin="0,0,5,0"/>
-                            <TextBlock Text="Mở Web"/>
+                    <Button x:Name="tabBtnWeb" Style="{StaticResource HubTabButton}" Tag="Web" Click="TabButton_Click">
+                        <StackPanel>
+                            <TextBlock Text="🌐  Điều hướng website"/>
+                            <TextBlock Text="Đẩy trang web tới máy học sinh" FontSize="11" FontWeight="Normal" Opacity="0.75" Margin="26,2,0,0"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
             </DockPanel>
         </Border>
 
-        <!-- ═══ 2. TABS NAVIGATION HEADER ═══ -->
-        <Border Grid.Row="1" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="14,0,14,0">
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="tabBtnMonitor" Style="{StaticResource HubTabButtonActive}" Content="🖥️ Giám sát &amp; Quản lý lớp" Tag="Monitor" Click="TabButton_Click"/>
-                <Button x:Name="tabBtnBroadcast" Style="{StaticResource HubTabButton}" Content="📺 Trình chiếu &amp; Phát sóng" Tag="Broadcast" Click="TabButton_Click"/>
-                <Button x:Name="tabBtnFiles" Style="{StaticResource HubTabButton}" Content="📁 Trao đổi tài liệu" Tag="Files" Click="TabButton_Click"/>
-                <Button x:Name="tabBtnWeb" Style="{StaticResource HubTabButton}" Content="🌐 Điều hướng website" Tag="Web" Click="TabButton_Click"/>
-            </StackPanel>
-        </Border>
+        <!-- ═══ 2. KHU VỰC NỘI DUNG ═══ -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Trạng thái lớp -->
+                <RowDefinition Height="Auto"/> <!-- Hành động nhanh -->
+                <RowDefinition Height="*"/>    <!-- Sub-page -->
+            </Grid.RowDefinitions>
 
-        <!-- ═══ 3. SUB-PAGES CONTAINER ═══ -->
-        <Grid Grid.Row="2" x:Name="PagesContainer" Background="#F0F2F5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Frame x:Name="frameMonitor" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Visible"/>
-            <Frame x:Name="frameBroadcast" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
-            <Frame x:Name="frameFiles" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
-            <Frame x:Name="frameWeb" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+            <!-- Thanh trạng thái -->
+            <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="18,12">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Trạng thái lớp" FontSize="15" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" Margin="0,0,14,0"/>
+
+                    <!-- Live Share Status Pill -->
+                    <Border x:Name="pillLiveStatus" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="14" Padding="12,5" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse x:Name="dotLiveStatus" Width="9" Height="9" Fill="#94A3B8" Margin="0,0,7,0"/>
+                            <TextBlock x:Name="txtLiveStatus" Text="Chưa phát màn hình" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Student Count Pill -->
+                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="14" Padding="12,5" Margin="0,0,8,0">
+                        <TextBlock x:Name="txtStudentCount" Text="👥 0 Học sinh" FontSize="12" FontWeight="SemiBold" Foreground="#1D4ED8"/>
+                    </Border>
+
+                    <!-- Silence Pill -->
+                    <Border x:Name="pillSilence" Visibility="Collapsed" Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="14" Padding="12,5" Margin="0,0,8,0">
+                        <TextBlock Text="🔇 Đang im lặng" FontSize="12" FontWeight="Bold" Foreground="#B91C1C"/>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- Hành động nhanh: 6 ô lớn, có chú thích -->
+            <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="14,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.3*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Phát màn hình -->
+                    <Button Grid.Column="0" x:Name="btnQuickBroadcast" Style="{StaticResource QuickActionButtonPrimary}" Background="#1976D2" Click="QuickBroadcast_Click" ToolTip="Chiếu màn hình giáo viên cho cả lớp">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📺" FontSize="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="txtQuickBroadcast" Text="Phát màn hình"/>
+                                <TextBlock Text="Chiếu cho cả lớp" FontSize="11" FontWeight="Normal" Opacity="0.85"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Khóa tất cả -->
+                    <Button Grid.Column="1" x:Name="btnQuickLock" Style="{StaticResource QuickActionButtonPrimary}" Background="#DC2626" Click="QuickLock_Click" ToolTip="Khóa màn hình và chuột bàn phím tất cả máy học sinh">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔒" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Khóa tất cả"/>
+                                <TextBlock Text="Khóa chuột &amp; bàn phím" FontSize="11" FontWeight="Normal" Opacity="0.85"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Mở khóa -->
+                    <Button Grid.Column="2" x:Name="btnQuickUnlock" Style="{StaticResource QuickActionButtonPrimary}" Background="#16A34A" Click="QuickUnlock_Click" ToolTip="Mở khóa tất cả máy học sinh">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔓" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Mở khóa"/>
+                                <TextBlock Text="Cho phép thao tác máy" FontSize="11" FontWeight="Normal" Opacity="0.85"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Im lặng -->
+                    <Button Grid.Column="3" x:Name="btnQuickMute" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickMute_Click" ToolTip="Bật / Tắt âm thanh hoặc yêu cầu trật tự">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="iconQuickMute" Text="🔇" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="txtQuickMute" Text="Im lặng"/>
+                                <TextBlock Text="Yêu cầu giữ trật tự" FontSize="11" FontWeight="Normal" Opacity="0.75"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Gửi file -->
+                    <Button Grid.Column="4" x:Name="btnQuickFile" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickFile_Click" ToolTip="Chuyển nhanh sang phân hệ gửi tài liệu">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📁" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Gửi file"/>
+                                <TextBlock Text="Đề, tài liệu tức thì" FontSize="11" FontWeight="Normal" Opacity="0.75"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Mở Web -->
+                    <Button Grid.Column="5" x:Name="btnQuickWeb" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickWeb_Click" ToolTip="Chuyển nhanh sang phân hệ điều hướng website">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🌐" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Mở Web"/>
+                                <TextBlock Text="Gửi link tới học sinh" FontSize="11" FontWeight="Normal" Opacity="0.75"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Sub-pages container -->
+            <Grid Grid.Row="2" x:Name="PagesContainer" Background="#F0F2F5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Frame x:Name="frameMonitor" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Visible"/>
+                <Frame x:Name="frameBroadcast" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+                <Frame x:Name="frameFiles" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+                <Frame x:Name="frameWeb" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+            </Grid>
         </Grid>
     </Grid>
 </Page>
