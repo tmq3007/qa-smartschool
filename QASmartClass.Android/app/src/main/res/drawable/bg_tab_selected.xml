@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Tab đang chọn: gradient xanh #2563EB → #3B82F6 như StuNavActive (WPF) -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#FFFFFF" />
-    <corners android:radius="10dp" />
-    <stroke android:width="1.5dp" android:color="#059669" />
+    <gradient
+        android:angle="0"
+        android:startColor="#2563EB"
+        android:endColor="#3B82F6" />
+    <corners android:radius="12dp" />
 </shape>

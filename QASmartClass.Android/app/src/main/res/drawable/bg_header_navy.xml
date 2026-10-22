@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Navy gradient giống Sidebar của StudentShell (WPF): #0B1929 → #112240 → #0A1628 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="#0B1929"
+        android:centerColor="#112240"
+        android:endColor="#0A1628" />
+</shape>

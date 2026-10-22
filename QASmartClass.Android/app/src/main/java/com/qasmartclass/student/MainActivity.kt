@@ -64,6 +64,29 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnTabChat: Button
     private lateinit var btnTabHandRaise: Button
 
+    // Sidebar (drawer) & Home dashboard (giao diện giống StudentShell WPF)
+    private lateinit var navDrawerOverlay: FrameLayout
+    private lateinit var btnMenu: Button
+    private lateinit var txtPageTitle: TextView
+    private lateinit var btnNavHome: Button
+    private lateinit var panelHome: LinearLayout
+    private lateinit var panelSoon: LinearLayout
+    private lateinit var txtSoonTitle: TextView
+    private lateinit var txtHomeGreeting: TextView
+    private lateinit var txtHomeSub: TextView
+    private lateinit var txtStatClass: TextView
+    private lateinit var txtStatBroadcast: TextView
+    private lateinit var txtStatHand: TextView
+    private lateinit var txtStatTeacher: TextView
+    private lateinit var txtHomeLessonTitle: TextView
+    private lateinit var txtHomeLessonSub: TextView
+    private lateinit var txtHomeTeacherChip: TextView
+    private lateinit var txtHomeNotice: TextView
+    private var homeStudentName = ""
+    private var homeClassName = ""
+    private var homeTeacherName = ""
+    private val soonNavButtons = mutableListOf<Pair<Button, String>>()
+
     // Tab 1: Lecture & Broadcast
     private lateinit var panelLecture: LinearLayout
     private lateinit var layoutNoBroadcast: LinearLayout
@@ -196,6 +219,34 @@ class MainActivity : AppCompatActivity() {
         btnTabChat = findViewById(R.id.btnTabChat)
         btnTabHandRaise = findViewById(R.id.btnTabHandRaise)
 
+        // Sidebar & Home dashboard
+        navDrawerOverlay = findViewById(R.id.navDrawerOverlay)
+        btnMenu = findViewById(R.id.btnMenu)
+        txtPageTitle = findViewById(R.id.txtPageTitle)
+        btnNavHome = findViewById(R.id.btnNavHome)
+        panelHome = findViewById(R.id.panelHome)
+        panelSoon = findViewById(R.id.panelSoon)
+        txtSoonTitle = findViewById(R.id.txtSoonTitle)
+        txtHomeGreeting = findViewById(R.id.txtHomeGreeting)
+        txtHomeSub = findViewById(R.id.txtHomeSub)
+        txtStatClass = findViewById(R.id.txtStatClass)
+        txtStatBroadcast = findViewById(R.id.txtStatBroadcast)
+        txtStatHand = findViewById(R.id.txtStatHand)
+        txtStatTeacher = findViewById(R.id.txtStatTeacher)
+        txtHomeLessonTitle = findViewById(R.id.txtHomeLessonTitle)
+        txtHomeLessonSub = findViewById(R.id.txtHomeLessonSub)
+        txtHomeTeacherChip = findViewById(R.id.txtHomeTeacherChip)
+        txtHomeNotice = findViewById(R.id.txtHomeNotice)
+        soonNavButtons.clear()
+        soonNavButtons += findViewById<Button>(R.id.btnNavWhiteboard) to "🖍️ Bảng trắng học sinh"
+        soonNavButtons += findViewById<Button>(R.id.btnNavQuiz) to "📝 Bài kiểm tra"
+        soonNavButtons += findViewById<Button>(R.id.btnNavAssignment) to "📚 Bài tập học tập"
+        soonNavButtons += findViewById<Button>(R.id.btnNavSurvey) to "📋 Khảo sát"
+        soonNavButtons += findViewById<Button>(R.id.btnNavResults) to "📊 Kết quả học tập"
+        soonNavButtons += findViewById<Button>(R.id.btnNavProgress) to "🎯 Tiến trình học tập"
+        soonNavButtons += findViewById<Button>(R.id.btnNavSettings) to "⚙️ Cài đặt"
+        soonNavButtons += findViewById<Button>(R.id.btnNavGuide) to "💡 Hướng dẫn sử dụng"
+
         // Tab 1: Lecture & Broadcast
         panelLecture = findViewById(R.id.panelLecture)
         layoutNoBroadcast = findViewById(R.id.layoutNoBroadcast)
@@ -323,6 +374,15 @@ class MainActivity : AppCompatActivity() {
         btnTabLecture.setOnClickListener { switchTab(0) }
         btnTabChat.setOnClickListener { switchTab(1) }
         btnTabHandRaise.setOnClickListener { switchTab(2) }
+        btnNavHome.setOnClickListener { switchTab(3) }
+        btnMenu.setOnClickListener { navDrawerOverlay.visibility = View.VISIBLE }
+        navDrawerOverlay.setOnClickListener { navDrawerOverlay.visibility = View.GONE }
+        for ((btn, title) in soonNavButtons) {
+            btn.setOnClickListener { showComingSoon(btn, title) }
+        }
+        findViewById<Button>(R.id.btnHomeRaise).setOnClickListener { switchTab(2) }
+        findViewById<Button>(R.id.btnHomeChat).setOnClickListener { switchTab(1) }
+        findViewById<Button>(R.id.btnHomeLecture).setOnClickListener { switchTab(0) }
 
         // Hand Raise Listeners (Quick Button, Main Button, and Fullscreen Button)
         btnRaiseHand.setOnClickListener { toggleRaiseHand() }
@@ -352,40 +412,78 @@ class MainActivity : AppCompatActivity() {
         panelLecture.visibility = if (index == 0) View.VISIBLE else View.GONE
         panelChat.visibility = if (index == 1) View.VISIBLE else View.GONE
         panelHandRaise.visibility = if (index == 2) View.VISIBLE else View.GONE
+        panelHome.visibility = if (index == 3) View.VISIBLE else View.GONE
+        panelSoon.visibility = View.GONE
 
-        when (index) {
-            0 -> {
-                btnTabLecture.setBackgroundResource(R.drawable.bg_tab_selected)
-                btnTabLecture.setTextColor(0xFF059669.toInt())
-                btnTabChat.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                btnTabChat.setTextColor(0xFF64748B.toInt())
-                btnTabHandRaise.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                btnTabHandRaise.setTextColor(0xFF64748B.toInt())
-            }
-            1 -> {
-                btnTabChat.text = "💬 NHẮN TIN"
-                btnTabChat.setBackgroundResource(R.drawable.bg_tab_selected)
-                btnTabChat.setTextColor(0xFF059669.toInt())
-                btnTabLecture.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                btnTabLecture.setTextColor(0xFF64748B.toInt())
-                btnTabHandRaise.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                btnTabHandRaise.setTextColor(0xFF64748B.toInt())
-                scrollChat.post { scrollChat.fullScroll(View.FOCUS_DOWN) }
-            }
-            2 -> {
-                btnTabHandRaise.setBackgroundResource(R.drawable.bg_tab_selected)
-                btnTabHandRaise.setTextColor(0xFF059669.toInt())
-                btnTabLecture.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                btnTabLecture.setTextColor(0xFF64748B.toInt())
-                btnTabChat.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                btnTabChat.setTextColor(0xFF64748B.toInt())
+        val activeBtn = when (index) {
+            0 -> btnTabLecture
+            1 -> btnTabChat
+            2 -> btnTabHandRaise
+            else -> btnNavHome
+        }
+        txtPageTitle.text = when (index) {
+            0 -> "📺 Bài giảng hôm nay"
+            1 -> "💬 Tin nhắn"
+            2 -> "✋ Hỏi bài Giáo viên"
+            else -> "🏠 Trang chủ"
+        }
+        setNavActive(activeBtn)
+        navDrawerOverlay.visibility = View.GONE
+
+        if (index == 1) {
+            btnTabChat.text = "💬  Tin nhắn"
+            scrollChat.post { scrollChat.fullScroll(View.FOCUS_DOWN) }
+        }
+        if (index == 3) refreshHome()
+    }
+
+    /** Tô sáng mục đang chọn trên Sidebar (gradient xanh giống StuNavActive của WPF). */
+    private fun setNavActive(active: Button?) {
+        val all = mutableListOf(btnNavHome, btnTabLecture, btnTabChat, btnTabHandRaise)
+        all += soonNavButtons.map { it.first }
+        for (btn in all) {
+            if (btn === active) {
+                btn.setBackgroundResource(R.drawable.bg_tab_selected)
+                btn.setTextColor(0xFFFFFFFF.toInt())
+            } else {
+                btn.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                btn.setTextColor(0xFFCBD5E1.toInt())
             }
         }
     }
 
+    /** Các trang của bản Windows chưa có trên Android: hiển thị trang thông báo thay vì bỏ trống. */
+    private fun showComingSoon(btn: Button, title: String) {
+        currentTab = 4
+        panelHome.visibility = View.GONE
+        panelLecture.visibility = View.GONE
+        panelChat.visibility = View.GONE
+        panelHandRaise.visibility = View.GONE
+        panelSoon.visibility = View.VISIBLE
+        txtSoonTitle.text = title
+        txtPageTitle.text = title
+        setNavActive(btn)
+        navDrawerOverlay.visibility = View.GONE
+    }
+
+    /** Cập nhật Trang chủ (dashboard) từ trạng thái thật của phiên lớp. */
+    private fun refreshHome() {
+        if (!::txtHomeGreeting.isInitialized) return
+        val dateText = SimpleDateFormat("EEEE, dd/MM/yyyy", Locale("vi", "VN")).format(Date())
+        txtHomeGreeting.text = "Xin chào, ${homeStudentName.ifBlank { "Học sinh" }} 👋"
+        txtHomeSub.text = "📅 $dateText  •  $homeClassName"
+        txtStatClass.text = homeClassName.ifBlank { "—" }
+        txtStatTeacher.text = homeTeacherName.ifBlank { "—" }
+        txtStatBroadcast.text = if (isScreenBroadcastActive) "Đang phát" else "Chưa phát"
+        txtStatHand.text = if (isHandRaised) "Đang giơ tay" else "Không"
+        txtHomeLessonTitle.text = homeClassName.ifBlank { "—" }
+        txtHomeLessonSub.text = if (isScreenBroadcastActive) "Giáo viên đang chia sẻ màn hình bài giảng" else "Chờ Giáo viên bắt đầu chia sẻ bài giảng"
+        txtHomeTeacherChip.text = "GV: ${homeTeacherName.ifBlank { "—" }}"
+    }
+
     private fun selectHandRaiseReason(reason: String) {
         currentHandRaiseReason = reason
-        val activeBgTint = ColorStateList.valueOf(0xFFD1FAE5.toInt())
+        val activeBgTint = ColorStateList.valueOf(0xFFDBEAFE.toInt())
         val idleBgTint = ColorStateList.valueOf(0xFFF1F5F9.toInt())
 
         btnReasonSpeaking.backgroundTintList = if (reason == "Phát biểu") activeBgTint else idleBgTint
@@ -422,6 +520,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateHandRaiseUI(raised: Boolean) {
         isHandRaised = raised
+        runOnUiThread { if (::txtStatHand.isInitialized) txtStatHand.text = if (raised) "Đang giơ tay" else "Không" }
         runOnUiThread {
             if (raised) {
                 btnRaiseHand.text = "✅ Đang Giơ Tay (Bấm để hạ tay)"
@@ -487,7 +586,7 @@ class MainActivity : AppCompatActivity() {
             val senderLabel = TextView(this).apply {
                 text = if (isSelf) "Bạn" else sender
                 textSize = 11f
-                setTextColor(if (isSelf) 0xFF059669.toInt() else 0xFF475569.toInt())
+                setTextColor(if (isSelf) 0xFF2563EB.toInt() else 0xFF475569.toInt())
                 setTypeface(null, Typeface.BOLD)
                 val params = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -747,7 +846,11 @@ class MainActivity : AppCompatActivity() {
 
         updateHandRaiseUI(false)
         selectHandRaiseReason("Phát biểu")
-        switchTab(0)
+        homeStudentName = name
+        homeClassName = className
+        homeTeacherName = teacherName
+        txtHomeNotice.text = "Chưa có thông báo mới từ Giáo viên."
+        switchTab(3)
 
         // Reset broadcast UI state
         stopScreenBroadcast()
@@ -949,9 +1052,10 @@ class MainActivity : AppCompatActivity() {
                     addChatMessage("👨‍🏫 Giáo viên", msgText, isSelf = false)
                     messageCard.visibility = View.VISIBLE
                     txtTeacherMessage.text = msgText
+                    txtHomeNotice.text = "📩 Giáo viên: $msgText"
 
                     if (currentTab != 1) {
-                        btnTabChat.text = "💬 NHẮN TIN (●)"
+                        btnTabChat.text = "💬  Tin nhắn  ●"
                     }
                     Toast.makeText(this, "📩 Tin nhắn từ GV: $msgText", Toast.LENGTH_LONG).show()
                 }
@@ -994,6 +1098,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startScreenBroadcast(token: String, webPort: Int, isForce: Boolean, title: String) {
         isScreenBroadcastActive = true
+        runOnUiThread { if (::txtStatBroadcast.isInitialized) txtStatBroadcast.text = "Đang phát" }
         currentBroadcastToken = token
         currentTeacherWebPort = webPort
 
@@ -1017,6 +1122,62 @@ class MainActivity : AppCompatActivity() {
 
         broadcastPollJob = lifecycleScope.launch(Dispatchers.IO) {
             Log.i(TAG, "Starting broadcast frame polling from $teacherIp:$currentTeacherWebPort with token: $currentBroadcastToken")
+            val tokenParamOnce = if (currentBroadcastToken.isNotEmpty()) "&token=$currentBroadcastToken" else ""
+
+            // Ưu tiên luồng đẩy khung liên tục (độ trễ thấp). Lỗi/không hỗ trợ -> quay lại polling.
+            var streamFailures = 0
+            while (isActive && isScreenBroadcastActive && streamFailures < 3) {
+                var streamConn: HttpURLConnection? = null
+                try {
+                    val sUrl = URL("http://$teacherIp:$currentTeacherWebPort/api/broadcast_stream?t=${System.currentTimeMillis()}$tokenParamOnce")
+                    streamConn = (sUrl.openConnection() as HttpURLConnection).apply {
+                        connectTimeout = 2500
+                        readTimeout = 15000
+                        requestMethod = "GET"
+                        useCaches = false
+                        setRequestProperty("User-Agent", "QASmartClass-Android/1.0")
+                    }
+                    if (streamConn.responseCode != 200) {
+                        streamFailures++
+                        streamConn.disconnect()
+                        delay(300)
+                        continue
+                    }
+                    val din = java.io.DataInputStream(java.io.BufferedInputStream(streamConn.inputStream, 65536))
+                    var gotFrame = false
+                    while (isActive && isScreenBroadcastActive) {
+                        val len = din.readInt()
+                        if (len <= 0 || len > 20_000_000) throw java.io.IOException("Invalid frame length $len")
+                        val data = ByteArray(len)
+                        din.readFully(data)
+                        // Đã có khung mới đang chờ -> bỏ khung cũ để bắt kịp thời gian thực
+                        if (din.available() >= 4) continue
+                        val bitmap = BitmapFactory.decodeByteArray(data, 0, len)
+                        if (bitmap != null) {
+                            gotFrame = true
+                            streamFailures = 0
+                            withContext(Dispatchers.Main) {
+                                if (isScreenBroadcastActive) {
+                                    imgInlineBroadcast.setImageBitmap(bitmap)
+                                    imgBroadcastScreen.setImageBitmap(bitmap)
+                                    progressBroadcastLoading.visibility = View.GONE
+                                }
+                            }
+                        }
+                    }
+                    if (!gotFrame) streamFailures++
+                } catch (e: Exception) {
+                    if (isActive && isScreenBroadcastActive) {
+                        Log.d(TAG, "Frame stream error: ${e.message}")
+                        streamFailures++
+                        delay(300)
+                    }
+                } finally {
+                    try { streamConn?.disconnect() } catch (_: Exception) {}
+                }
+            }
+
+            // Dự phòng: polling từng ảnh (tương thích server cũ)
             while (isActive && isScreenBroadcastActive) {
                 try {
                     val tokenParam = if (currentBroadcastToken.isNotEmpty()) "&token=$currentBroadcastToken" else ""
@@ -1051,7 +1212,7 @@ class MainActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     Log.d(TAG, "Frame fetch error: ${e.message}")
                 }
-                delay(250) // ~4 FPS polling
+                delay(100) // ~10 FPS polling dự phòng
             }
         }
     }
@@ -1067,6 +1228,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopScreenBroadcast() {
         isScreenBroadcastActive = false
+        runOnUiThread { if (::txtStatBroadcast.isInitialized) txtStatBroadcast.text = "Chưa phát" }
         broadcastPollJob?.cancel()
         broadcastPollJob = null
 
@@ -1100,6 +1262,7 @@ class MainActivity : AppCompatActivity() {
 
         runOnUiThread {
             lockOverlay.visibility = View.GONE
+            navDrawerOverlay.visibility = View.GONE
             connectedPanel.visibility = View.GONE
             discoveryPanel.visibility = View.VISIBLE
             btnConnect.isEnabled = true

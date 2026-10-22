@@ -339,10 +339,78 @@ namespace QASmartClass.Classroom.Services
         //  STATIC FILE SERVER
         // ═══════════════════════════════════════════════════════════
 
+        private void StreamBroadcastFrames(HttpListenerContext context, string clientIP)
+        {
+            var response = context.Response;
+            try
+            {
+                response.StatusCode = 200;
+                response.SendChunked = true;
+                response.ContentType = "application/octet-stream";
+                response.Headers.Add("Cache-Control", "no-cache");
+                response.Headers.Add("Access-Control-Allow-Origin", "*");
+
+                var output = response.OutputStream;
+                byte[]? last = null;
+                var header = new byte[4];
+                var idleSince = DateTime.UtcNow;
+
+                while (true)
+                {
+                    var frame = QASmartClass.Services.BroadcastStateService.Instance.ScreenCaptureBytes;
+                    if (frame != null && frame.Length > 0 && !ReferenceEquals(frame, last))
+                    {
+                        last = frame;
+                        idleSince = DateTime.UtcNow;
+                        header[0] = (byte)(frame.Length >> 24);
+                        header[1] = (byte)(frame.Length >> 16);
+                        header[2] = (byte)(frame.Length >> 8);
+                        header[3] = (byte)frame.Length;
+                        output.Write(header, 0, 4);
+                        output.Write(frame, 0, frame.Length);
+                        output.Flush();
+                    }
+                    else
+                    {
+                        // Không còn khung mới trong 20s (đã dừng phát) -> đóng luồng
+                        if ((DateTime.UtcNow - idleSince).TotalSeconds > 20) break;
+                        Thread.Sleep(10);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Client ngắt kết nối là bình thường
+                Log.Debug("WebSocketBridge: broadcast_stream closed for {IP}: {Err}", clientIP, ex.Message);
+            }
+            finally
+            {
+                try { response.Close(); } catch { }
+            }
+        }
+
         private void ServeStaticFile(HttpListenerContext context)
         {
             var urlPath = context.Request.Url?.AbsolutePath ?? "/";
             string clientIP = context.Request.RemoteEndPoint?.Address.ToString() ?? "unknown";
+
+            // === API Route: Broadcast Stream (đẩy khung liên tục, độ trễ thấp cho Android) ===
+            // Khung: [4 byte độ dài big-endian][dữ liệu JPEG], lặp lại mỗi khi có khung mới.
+            if (urlPath.Equals("/api/broadcast_stream", StringComparison.OrdinalIgnoreCase))
+            {
+                string streamToken = context.Request.QueryString["token"] ?? "";
+                string streamServerToken = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+                if (!string.IsNullOrEmpty(streamServerToken) && streamToken != streamServerToken)
+                {
+                    context.Response.StatusCode = 401;
+                    context.Response.Close();
+                    return;
+                }
+
+                // Giữ kết nối dài: chạy trên thread riêng để không làm cạn ThreadPool khi lớp đông
+                _ = Task.Factory.StartNew(() => StreamBroadcastFrames(context, clientIP), TaskCreationOptions.LongRunning);
+                return;
+            }
 
             // === API Route: Broadcast Image ===
             if (urlPath.Equals("/api/broadcast_image", StringComparison.OrdinalIgnoreCase))
