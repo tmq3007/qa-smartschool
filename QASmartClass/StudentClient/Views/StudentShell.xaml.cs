@@ -2556,57 +2556,51 @@ namespace QASmartClass.StudentClient.Views
 
 
 				if (!client.IsConnected)
-
 				{
-
-					txtConnectionStatus.Text = "Đang tìm GV...";
-
-					txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(byte.MaxValue, 152, 0));
-
+					if (client.ConnectionState == StudentConnectionState.ConnectionFailed && !string.IsNullOrEmpty(client.LastErrorReason))
+					{
+						txtConnectionStatus.Text = "Lỗi kết nối";
+						txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
+						txtConnectionStatus.ToolTip = client.LastErrorReason;
+						iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
+					}
+					else
+					{
+						txtConnectionStatus.Text = "Đang tìm lớp...";
+						txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(byte.MaxValue, 152, 0));
+						txtConnectionStatus.ToolTip = "Đang lắng nghe tín hiệu từ Giáo viên trên cổng 29876...";
+						iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(byte.MaxValue, 152, 0));
+					}
 				}
-
+				else
+				{
+					txtConnectionStatus.Text = "Đã kết nối — " + client.ClassName;
+					txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(102, 187, 106));
+					txtConnectionStatus.ToolTip = $"Đã kết nối tới GV: {client.TeacherName} ({client.ServerIP})";
+					iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(102, 187, 106));
+				}
 			}
-
 			catch (Exception ex)
-
 			{
-
 				Exception ex2 = ex;
-
 				Log.Warning("Student network start error: {Err}", ex2.Message);
-
 				txtConnectionStatus.Text = "Lỗi kết nối";
-
 				txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
-
+				txtConnectionStatus.ToolTip = ex2.Message;
+				iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
 			}
 
 			try
-
 			{
-
 				Application current = Application.Current;
-
 				if (!(current is App app2))
-
 				{
-
 					return;
-
 				}
-
 				app2.LocalCommandReceived -= App_LocalCommandReceived;
-
 				app2.LocalCommandReceived += App_LocalCommandReceived;
-
-				txtConnectionStatus.Text = "✅ Đã kết nối (cùng máy)";
-
-				txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(102, 187, 106));
-
 				Log.Information("Local command bus connected — same machine mode");
-
 				SyncBroadcastState(app2);
-
 			}
 
 			catch (Exception ex)
@@ -11670,26 +11664,27 @@ namespace QASmartClass.StudentClient.Views
 
 				}
 
-				NetworkDiscoveryService networkService = app.NetworkService;
-
-				if (networkService != null && networkService.IsBroadcasting)
-
+				var studentClient = app.StudentNetwork;
+				if (studentClient != null && studentClient.IsConnected)
 				{
-
-					txtConnectionStatus.Text = "Đã kết nối";
-
+					txtConnectionStatus.Text = "Đã kết nối — " + studentClient.ClassName;
 					txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(102, 187, 106));
-
+					txtConnectionStatus.ToolTip = $"Đã kết nối tới GV: {studentClient.TeacherName} ({studentClient.ServerIP})";
+					iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(102, 187, 106));
 				}
-
-				else
-
+				else if (studentClient != null && studentClient.ConnectionState == StudentConnectionState.ConnectionFailed)
 				{
-
+					txtConnectionStatus.Text = "Lỗi kết nối";
+					txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
+					txtConnectionStatus.ToolTip = !string.IsNullOrEmpty(studentClient.LastErrorReason) ? studentClient.LastErrorReason : "Không thể kết nối đến máy Giáo viên.";
+					iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
+				}
+				else
+				{
 					txtConnectionStatus.Text = "Chưa kết nối";
-
 					txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
-
+					txtConnectionStatus.ToolTip = "Chưa kết nối tới lớp học.";
+					iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
 				}
 
 				UpdateWifiIndicator();
@@ -12848,29 +12843,25 @@ namespace QASmartClass.StudentClient.Views
 					}
 
 					app.StudentNetwork.Stop();
-
 					await Task.Delay(500);
-
 					await StartStudentNetworkAsync();
-
 					UpdateWifiIndicator();
 
+					if (!app.StudentNetwork.IsConnected && !string.IsNullOrEmpty(app.StudentNetwork.LastErrorReason))
+					{
+						ShowNotification("Lỗi kết nối mạng", app.StudentNetwork.LastErrorReason, "#C62828");
+					}
 				}
-
 			}
-
 			catch (Exception ex)
-
 			{
-
 				Log.Warning("Manual reconnection failed: {Err}", ex.Message);
-
 				txtConnectionStatus.Text = "Lỗi kết nối";
-
 				txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
-
+				txtConnectionStatus.ToolTip = ex.Message;
+				iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
 				UpdateWifiIndicator();
-
+				ShowNotification("Lỗi kết nối", ex.Message, "#C62828");
 			}
 
 			finally
@@ -13124,141 +13115,125 @@ namespace QASmartClass.StudentClient.Views
 
 
 		private void Client_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-
 		{
-
 			if (e.PropertyName == "IsHandRaised")
-
 			{
-
 				var app = Application.Current as App;
-
 				if (app?.StudentNetwork != null)
-
 				{
-
 					UpdateQuickHandRaiseUI(app.StudentNetwork.IsHandRaised);
-
 				}
-
 			}
+			else if (e.PropertyName == "ConnectionState")
+			{
+				base.Dispatcher.Invoke(() =>
+				{
+					var app = Application.Current as App;
+					var client = app?.StudentNetwork;
+					if (client == null) return;
 
+					switch (client.ConnectionState)
+					{
+						case StudentConnectionState.SearchingTeacher:
+							txtConnectionStatus.Text = "Đang tìm lớp...";
+							txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+							txtConnectionStatus.ToolTip = "Đang lắng nghe tín hiệu từ Giáo viên trên cổng 29876...";
+							iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0));
+							break;
+						case StudentConnectionState.ConnectingTcp:
+							txtConnectionStatus.Text = "Đang kết nối...";
+							txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(96, 165, 250));
+							txtConnectionStatus.ToolTip = $"Đang bắt tay TCP tới máy GV ({client.ServerIP}:{StudentNetworkClient.TCP_PORT})...";
+							iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(96, 165, 250));
+							break;
+						case StudentConnectionState.Connected:
+							txtConnectionStatus.Text = "Đã kết nối — " + client.ClassName;
+							txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(102, 187, 106));
+							txtConnectionStatus.ToolTip = $"Đã kết nối tới GV: {client.TeacherName} ({client.ServerIP})";
+							iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(102, 187, 106));
+							break;
+						case StudentConnectionState.ConnectionFailed:
+							txtConnectionStatus.Text = "Lỗi kết nối";
+							txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
+							txtConnectionStatus.ToolTip = !string.IsNullOrEmpty(client.LastErrorReason) ? client.LastErrorReason : "Không thể kết nối đến máy Giáo viên.";
+							iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
+							break;
+						case StudentConnectionState.Disconnected:
+							txtConnectionStatus.Text = "Chưa kết nối";
+							txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
+							txtConnectionStatus.ToolTip = "Chưa tham gia lớp học.";
+							iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
+							break;
+					}
+					UpdateWifiIndicator();
+				});
+			}
 		}
-
-
 
 		private void UpdateWifiIndicator()
-
 		{
-
 			try
-
 			{
-
 				var app = Application.Current as App;
-
 				bool isConnected = app?.StudentNetwork?.IsConnected ?? false;
-
 				if (isConnected)
-
 				{
-
 					txtWifiIndicator.Text = "ONLINE";
-
 					txtWifiIndicator.Foreground = new SolidColorBrush(Color.FromRgb(16, 185, 129)); // Green #10B981
-
-					txtWifiIndicator.ToolTip = "Đã kết nối trực tuyến";
-
+					txtWifiIndicator.ToolTip = $"Đã kết nối trực tuyến tới GV: {app?.StudentNetwork?.TeacherName} ({app?.StudentNetwork?.ServerIP})";
 				}
-
 				else
-
 				{
-
 					txtWifiIndicator.Text = "OFFLINE";
-
 					txtWifiIndicator.Foreground = new SolidColorBrush(Color.FromRgb(239, 68, 68)); // Red #EF4444
-
-					txtWifiIndicator.ToolTip = "Mất kết nối mạng";
-
+					txtWifiIndicator.ToolTip = !string.IsNullOrEmpty(app?.StudentNetwork?.LastErrorReason) 
+						? app?.StudentNetwork?.LastErrorReason 
+						: "Chưa kết nối tới lớp học";
 				}
-
 			}
-
 			catch (Exception ex)
-
 			{
-
 				Log.Warning("UpdateWifiIndicator error: {Err}", ex.Message);
-
 			}
-
 		}
-
-
 
 		private void Client_Connected(object? sender, EventArgs e)
-
 		{
-
 			base.Dispatcher.Invoke(delegate
-
 			{
-
 				var app = Application.Current as App;
-
 				if (app?.StudentNetwork != null)
-
 				{
-
 					var client = app.StudentNetwork;
-
 					txtConnectionStatus.Text = "Đã kết nối — " + client.ClassName;
-
 					txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(102, 187, 106));
-
+					txtConnectionStatus.ToolTip = $"Đã kết nối tới GV: {client.TeacherName} ({client.ServerIP})";
+					iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(102, 187, 106));
 					txtClassInfo.Text = client.ClassName + " — " + client.TeacherName;
-
 					txtTeacherInfo.Text = "GV: " + client.TeacherName;
-
 					Log.Information("Student connected to teacher: {Teacher}", client.TeacherName);
 
-					
-
 					// Crash Recovery (Đề xuất 2): Query teacher for forced broadcast on reconnect/startup
-
 					_ = client.SendAsync("CMD|GET_BROADCAST_STATUS");
-
 				}
-
 				UpdateWifiIndicator();
-
 			});
-
 		}
 
-
-
 		private void Client_Disconnected(object? sender, EventArgs e)
-
 		{
-
 			base.Dispatcher.Invoke(delegate
-
 			{
-
+				var app = Application.Current as App;
+				var client = app?.StudentNetwork;
 				txtConnectionStatus.Text = "Mất kết nối";
-
 				txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
-
+				txtConnectionStatus.ToolTip = !string.IsNullOrEmpty(client?.LastErrorReason) ? client.LastErrorReason : "Mất kết nối tới máy Giáo viên.";
+				iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
 				CloseScreenBroadcast();
-
 				CloseScreenLockOverlay();
-
 				UpdateWifiIndicator();
-
 			});
-
 		}
 
 

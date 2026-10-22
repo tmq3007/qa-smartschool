@@ -82,8 +82,40 @@ namespace QASmartClass.Classroom.Services
                     IsLocked = false
                 });
             }
+
+            var activeClients = _networkService.GetConnectedStudents();
+            if (activeClients != null)
+            {
+                foreach (var client in activeClients)
+                {
+                    var existing = list.FirstOrDefault(s =>
+                        (!string.IsNullOrEmpty(s.StudentCode) && s.StudentCode.Equals(client.Code, StringComparison.OrdinalIgnoreCase)) ||
+                        s.Name.Equals(client.Name, StringComparison.OrdinalIgnoreCase));
+
+                    if (existing != null)
+                    {
+                        existing.IsOnline = true;
+                        existing.StudentCode = client.Code;
+                        if (!string.IsNullOrEmpty(client.PCName)) existing.PCName = client.PCName;
+                        if (!string.IsNullOrEmpty(client.IPAddress)) existing.IPAddress = client.IPAddress;
+                    }
+                    else
+                    {
+                        list.Insert(0, new ConnectedStudent
+                        {
+                            Name = client.Name,
+                            StudentCode = client.Code,
+                            PCName = string.IsNullOrEmpty(client.PCName) ? $"PC-{client.Code}" : client.PCName,
+                            IPAddress = client.IPAddress,
+                            IsOnline = true,
+                            IsLocked = false
+                        });
+                    }
+                }
+            }
+
             ConnectedStudents.ReplaceRange(list);
-            OnlineCount = 0;
+            OnlineCount = ConnectedStudents.Count(s => s.IsOnline);
 
             // Log event
             _db.EventLogs.Add(new EventLog

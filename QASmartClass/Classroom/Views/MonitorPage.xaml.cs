@@ -366,6 +366,12 @@ namespace QASmartClass.Classroom.Views
 
                     }
 
+                    SyncConnectedStudentsFromNetwork();
+
+                    ApplyFilter();
+
+                    UpdateStats();
+
                 }
 
             }
@@ -1162,7 +1168,7 @@ namespace QASmartClass.Classroom.Views
 
                             IPAddress = string.IsNullOrWhiteSpace(s.IPAddress) ? $"192.168.1.{100+s.Id}" : s.IPAddress,
 
-                            IsOnline  = s.IsOnline,
+                            IsOnline  = false,
 
                             StudentCode = s.StudentCode,
 
@@ -1200,7 +1206,7 @@ namespace QASmartClass.Classroom.Views
 
                 {
 
-                    // Full demo: 35 students â€” all offline by default
+                    // Full demo: 35 students — all offline by default
 
                     // Status will be updated by SyncFromNetworkService()
 
@@ -1226,6 +1232,8 @@ namespace QASmartClass.Classroom.Views
 
 
 
+                SyncConnectedStudentsFromNetwork();
+
                 ApplyFilter();
 
                 UpdateStats();
@@ -1245,6 +1253,128 @@ namespace QASmartClass.Classroom.Views
                 Log.Warning("MonitorPage load error: {Error}", ex.Message);
 
                 AddLog("Lỗi", ex.Message, "#FFF3E0", "#E65100");
+
+            }
+
+        }
+
+
+
+        private void SyncConnectedStudentsFromNetwork()
+
+        {
+
+            try
+
+            {
+
+                var connectedClients = ClassroomAppContext.Network?.GetConnectedStudents();
+
+                if (connectedClients == null || !connectedClients.Any())
+
+                {
+
+                    foreach (var s in _allStudents)
+
+                    {
+
+                        s.IsOnline = false;
+
+                    }
+
+                    return;
+
+                }
+
+
+
+                var matchedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+
+
+                foreach (var client in connectedClients)
+
+                {
+
+                    matchedCodes.Add(client.Code);
+
+                    var existing = _allStudents.FirstOrDefault(s =>
+
+                        (!string.IsNullOrEmpty(s.StudentCode) && s.StudentCode.Equals(client.Code, StringComparison.OrdinalIgnoreCase)) ||
+
+                        IsNameMatch(s.Name, client.Name));
+
+
+
+                    if (existing != null)
+
+                    {
+
+                        existing.IsOnline = true;
+
+                        existing.StudentCode = client.Code;
+
+                        if (!string.IsNullOrEmpty(client.PCName)) existing.PCName = client.PCName;
+
+                        if (!string.IsNullOrEmpty(client.IPAddress)) existing.IPAddress = client.IPAddress;
+
+                        _webCodeMap[client.Code] = existing;
+
+                    }
+
+                    else
+
+                    {
+
+                        var dynamicStudent = new ConnectedStudent
+
+                        {
+
+                            Name = client.Name,
+
+                            StudentCode = client.Code,
+
+                            PCName = string.IsNullOrEmpty(client.PCName) ? $"PC-{client.Code}" : client.PCName,
+
+                            IPAddress = client.IPAddress,
+
+                            IsOnline = true,
+
+                            FocusPct = 85
+
+                        };
+
+                        _allStudents.Insert(0, dynamicStudent);
+
+                        _webCodeMap[client.Code] = dynamicStudent;
+
+                    }
+
+                }
+
+
+
+                foreach (var s in _allStudents)
+
+                {
+
+                    if (string.IsNullOrEmpty(s.StudentCode) || !matchedCodes.Contains(s.StudentCode))
+
+                    {
+
+                        s.IsOnline = false;
+
+                    }
+
+                }
+
+            }
+
+            catch (Exception ex)
+
+            {
+
+                Log.Warning("SyncConnectedStudentsFromNetwork error: {Err}", ex.Message);
 
             }
 
@@ -3720,10 +3850,16 @@ namespace QASmartClass.Classroom.Views
                     await sessionService.StartSessionAsync(rosterName, teacherName);
 
                     if (Window.GetWindow(this) is ClassroomShell shell)
+                    {
                         shell.UpdateSessionInfo(rosterName, _allStudents.Count(s => s.IsOnline));
+                        shell.ShowToast("Lớp học", $"✅ Phiên học lớp {rosterName} đã bắt đầu thành công!", "SUCCESS");
+                    }
+                    else
+                    {
+                        ClassroomDialog.Info($"✅ Lớp học đã bắt đầu!\n\n👥 {_allStudents.Count} HS trong danh sách.", "Bắt đầu lớp học");
+                    }
 
                     AddLog("Bắt đầu lớp", $"Phiên học lớp {rosterName} đã bắt đầu thành công", "#EFF6FF", "#1D4ED8");
-                    ClassroomDialog.Info($"✅ Lớp học đã bắt đầu!\n\n👥 {_allStudents.Count} HS trong danh sách.", "Bắt đầu lớp học");
                 }
                 else
                 {
@@ -3733,10 +3869,16 @@ namespace QASmartClass.Classroom.Views
                         await sessionService.EndSessionAsync();
 
                         if (Window.GetWindow(this) is ClassroomShell shell)
+                        {
                             shell.UpdateSessionInfo("Chưa chọn lớp", 0);
+                            shell.ShowToast("Lớp học", "⏹️ Đã kết thúc phiên học.", "INFO");
+                        }
+                        else
+                        {
+                            ClassroomDialog.Info("⏹️ Lớp học đã kết thúc.", "Kết thúc lớp học");
+                        }
 
                         AddLog("Kết thúc lớp", "Đã kết thúc phiên học", "#FEF2F2", "#DC2626");
-                        ClassroomDialog.Info("⏹️ Lớp học đã kết thúc.", "Kết thúc lớp học");
                     }
                 }
 

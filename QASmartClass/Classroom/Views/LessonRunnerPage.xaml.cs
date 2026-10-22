@@ -17,10 +17,23 @@ namespace QASmartClass.Classroom.Views
     public partial class LessonRunnerPage : Page
     {
         private int _lessonId;
+        public int LessonId => _lessonId;
         private Lesson? _lesson;
+        public string LessonTitle => _lesson?.Title ?? "Bài giảng";
+        public string RemainingTimeDisplay
+        {
+            get
+            {
+                int totalSeconds = (_lesson?.DurationMinutes ?? 45) * 60;
+                int remaining = Math.Max(0, totalSeconds - _lessonSecondsElapsed);
+                return $"{remaining / 60:D2}:{remaining % 60:D2}";
+            }
+        }
         private int _currentStage = 1;
         private DispatcherTimer? _lessonTimer;
         public bool IsRunning => _lessonTimer?.IsEnabled == true;
+        public event EventHandler<string>? TimerTick;
+        public event EventHandler? LessonEnded;
         private DispatcherTimer? _activityTimer;
         private int _lessonSecondsElapsed = 0;
         private int _activitySecondsLeft = 0;
@@ -1269,6 +1282,7 @@ namespace QASmartClass.Classroom.Views
                 int mins = Math.Max(0, remaining / 60);
                 int secs = Math.Max(0, remaining % 60);
                 txtTimer.Text = $"{mins:D2}:{secs:D2}";
+                TimerTick?.Invoke(this, $"{mins:D2}:{secs:D2}");
 
                 // Color warning
                 if (remaining <= 300) // 5 phút
@@ -1774,6 +1788,7 @@ namespace QASmartClass.Classroom.Views
 
             _ = ShowStage(6);
             UpdateSummary();
+            LessonEnded?.Invoke(this, EventArgs.Empty);
             Log.Information("Lesson ended: {Title}, {Duration}s", _lesson?.Title, _lessonSecondsElapsed);
         }
 
@@ -1781,6 +1796,22 @@ namespace QASmartClass.Classroom.Views
         {
             int elapsed = _lessonSecondsElapsed / 60;
             txtSumDuration.Text = $"{elapsed}'";
+        }
+
+        private void OpenScreenShare_Click(object sender, RoutedEventArgs e)
+        {
+            if (Window.GetWindow(this) is ClassroomShell shell)
+            {
+                shell.NavigateTo("F16");
+            }
+        }
+
+        private void OpenClassControl_Click(object sender, RoutedEventArgs e)
+        {
+            if (Window.GetWindow(this) is ClassroomShell shell)
+            {
+                shell.NavigateTo("FHUB");
+            }
         }
     }
 }

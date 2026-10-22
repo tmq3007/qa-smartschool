@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">QA SmartClass Student</string>
+    <string name="device_admin_label">QA SmartClass Admin</string>
+    <string name="device_admin_description">Cho phép quản lý khóa màn hình Kiosk trong giờ học.</string>
+</resources>

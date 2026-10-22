@@ -1,0 +1,5 @@
+# QA SmartClass Student Proguard Rules
+-keepattributes *Annotation*
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}

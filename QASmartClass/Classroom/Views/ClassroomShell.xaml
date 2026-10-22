@@ -651,6 +651,21 @@
                         <TextBlock x:Name="txtClock" Text="--:--" Foreground="#9E9E9E" FontSize="13"
                                    Margin="0,0,16,0" VerticalAlignment="Center"/>
                         
+                        <!-- Active Lesson Indicator & Quick Return Pill -->
+                        <Border x:Name="brdActiveLessonStatus" Background="#E8F5E9" BorderBrush="#A5D6A7" BorderThickness="1"
+                                CornerRadius="6" Padding="10,5" Margin="0,0,8,0" Cursor="Hand"
+                                MouseLeftButtonDown="brdActiveLessonStatus_Click" Visibility="Collapsed"
+                                ToolTip="Bấm để quay lại tiết giảng dạy đang diễn ra">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🎬 " FontSize="12" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtActiveLessonTitle" Text="Đang dạy bài..." FontSize="11" Foreground="#2E7D32" FontWeight="SemiBold" VerticalAlignment="Center" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="txtActiveLessonTimer" Text=" (00:00)" FontSize="11" Foreground="#1B5E20" FontWeight="Bold" VerticalAlignment="Center" Margin="2,0,6,0"/>
+                                <Border Background="#2E7D32" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="Quay lại ➔" FontSize="10" Foreground="White" FontWeight="Bold"/>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
                         <!-- VNC Blinking Indicator (LOI_VID_46) -->
                         <Border x:Name="brdBroadcastStatus" Background="#FFEBEE" BorderBrush="#FFCDD2" BorderThickness="1"
                                 CornerRadius="6" Padding="10,5" Margin="0,0,8,0" Cursor="Hand"

@@ -20,6 +20,15 @@ namespace QASmartClass.StudentClient.Services
     ///   3. Gửi JOIN, heartbeat, hand-raise, question
     ///   4. Nhận CMD từ GV (lock, quiz, broadcast)
     /// </summary>
+    public enum StudentConnectionState
+    {
+        Disconnected,
+        SearchingTeacher,
+        ConnectingTcp,
+        Connected,
+        ConnectionFailed
+    }
+
     public partial class StudentNetworkClient : ObservableObject, IDisposable
     {
         public const int DISCOVERY_PORT = 29876;
@@ -37,6 +46,9 @@ namespace QASmartClass.StudentClient.Services
         private readonly CircuitBreaker _circuitBreaker;
 
         [ObservableProperty] private bool _isConnected;
+        [ObservableProperty] private StudentConnectionState _connectionState = StudentConnectionState.Disconnected;
+        [ObservableProperty] private string _lastErrorMessage = "";
+        [ObservableProperty] private string _lastErrorReason = "";
         [ObservableProperty] private string _teacherName = "";
         [ObservableProperty] private string _className = "";
         [ObservableProperty] private string _serverIP = "";
@@ -215,6 +227,7 @@ namespace QASmartClass.StudentClient.Services
             _udpListener?.Close();
             _udpListener = null;
             IsConnected = false;
+            ConnectionState = StudentConnectionState.Disconnected;
             Log.Information("StudentNetworkClient: Stopped");
         }
 
@@ -242,6 +255,7 @@ namespace QASmartClass.StudentClient.Services
                     {
                         _udpListener = new UdpClient(DISCOVERY_PORT);
                         _udpListener.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                        ConnectionState = StudentConnectionState.SearchingTeacher;
                         Log.Information("UDP discovery listening on :{Port}", DISCOVERY_PORT);
                     }
 
@@ -357,6 +371,7 @@ namespace QASmartClass.StudentClient.Services
 
         private async Task ConnectTcpAsync(string ip, int port, CancellationToken ct)
         {
+            ConnectionState = StudentConnectionState.ConnectingTcp;
             try
             {
                 _tcpClient = new TcpClient();
@@ -411,6 +426,9 @@ namespace QASmartClass.StudentClient.Services
                         Log.Information("Clock drift relative to server: {Drift} seconds", ClockDrift);
                     }
                     IsConnected = true;
+                    ConnectionState = StudentConnectionState.Connected;
+                    LastErrorMessage = "";
+                    LastErrorReason = "";
                     Log.Information("TCP connected to {IP}:{Port} — ACK: {Ack}", ip, port, ack);
                     Connected?.Invoke(this, EventArgs.Empty);
 
@@ -421,6 +439,9 @@ namespace QASmartClass.StudentClient.Services
                 else
                 {
                     Log.Warning("Unexpected ACK: {Ack}", ack);
+                    ConnectionState = StudentConnectionState.ConnectionFailed;
+                    LastErrorMessage = $"Phản hồi không hợp lệ từ máy chủ: {ack}";
+                    LastErrorReason = "Máy chủ phản hồi sai giao thức bắt tay (Handshake ACK không hợp lệ).";
                     _tcpClient?.Close();
                 }
             }
@@ -428,7 +449,29 @@ namespace QASmartClass.StudentClient.Services
             {
                 Log.Warning("TCP connect error: {Err}", ex.Message);
                 IsConnected = false;
+                ConnectionState = StudentConnectionState.ConnectionFailed;
                 IsHandRaised = false;
+
+                LastErrorMessage = ex.Message;
+                Exception rootEx = ex;
+                while (rootEx.InnerException != null) rootEx = rootEx.InnerException;
+
+                if (rootEx is SocketException sockEx)
+                {
+                    LastErrorReason = sockEx.SocketErrorCode switch
+                    {
+                        SocketError.ConnectionRefused => "Máy Giáo viên từ chối kết nối (Giáo viên chưa mở phần mềm hoặc tường lửa cổng 29877 đang chặn).",
+                        SocketError.TimedOut => $"Hết thời gian chờ phản hồi từ {ip}:{port}. Vui lòng kiểm tra xem hai máy có cùng mạng LAN/Wi-Fi không.",
+                        SocketError.HostUnreachable or SocketError.NetworkUnreachable => $"Không thể định tuyến đến địa chỉ IP {ip}. Kiểm tra lại địa chỉ mạng.",
+                        SocketError.AccessDenied => "Hệ thống từ chối quyền truy cập Socket mạng.",
+                        _ => $"Lỗi mạng Socket ({sockEx.SocketErrorCode}): {sockEx.Message}"
+                    };
+                }
+                else
+                {
+                    LastErrorReason = $"Lỗi kết nối ({ex.GetType().Name}): {ex.Message}";
+                }
+
                 Disconnected?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -618,6 +661,11 @@ namespace QASmartClass.StudentClient.Services
                                     else if (cleanCmd.StartsWith("MSG|"))
                                     {
                                         var text = cleanCmd.Substring(4);
+                                        int idIdx = text.LastIndexOf("|id=");
+                                        if (idIdx >= 0)
+                                        {
+                                            text = text.Substring(0, idIdx);
+                                        }
                                         MessageReceived?.Invoke(this, text);
                                     }
                                     else if (cleanCmd.StartsWith("POLICY|"))

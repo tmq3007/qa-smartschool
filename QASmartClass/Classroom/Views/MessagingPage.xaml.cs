@@ -864,27 +864,9 @@ namespace QASmartClass.Classroom.Views
                         }
                         else if (msg.StartsWith("HAND_RAISE|"))
                         {
-                            bool raised = msg.Contains("raised=True");
-                            string reason = "";
-                            if (msg.Contains("reason="))
-                            {
-                                var reasonPart = msg.Split('|').FirstOrDefault(p => p.StartsWith("reason="));
-                                if (reasonPart != null)
-                                {
-                                    reason = reasonPart.Replace("reason=", "").Trim();
-                                }
-                            }
-
-                            if (raised)
-                            {
-                                string reasonDetail = !string.IsNullOrEmpty(reason) ? $" ({reason})" : "";
-                                text = $"🖐️ Giơ tay xin phát biểu{reasonDetail}";
-                            }
-                            else
-                            {
-                                text = "✋ Đã hạ tay";
-                            }
-                            channel = args.StudentCode;
+                            // Không chèn tin nhắn giơ tay vào khung chat để tránh spam;
+                            // thông báo đã được ClassroomShell xử lý qua Toast và huy hiệu thông báo
+                            return;
                         }
 
                         var chatMsg = new ChatMessage

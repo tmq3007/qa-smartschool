@@ -158,6 +158,37 @@ namespace QASmartClass.Classroom.Views
                     });
                 }
 
+                var connectedClients = ClassroomAppContext.Network?.GetConnectedStudents();
+                if (connectedClients != null)
+                {
+                    foreach (var client in connectedClients)
+                    {
+                        var existing = list.FirstOrDefault(s =>
+                            (!string.IsNullOrEmpty(s.StudentCode) && s.StudentCode.Equals(client.Code, StringComparison.OrdinalIgnoreCase)) ||
+                            s.Name.Equals(client.Name, StringComparison.OrdinalIgnoreCase));
+
+                        if (existing != null)
+                        {
+                            existing.IsOnline = true;
+                            existing.StudentCode = client.Code;
+                            if (!string.IsNullOrEmpty(client.PCName)) existing.PCName = client.PCName;
+                            if (!string.IsNullOrEmpty(client.IPAddress)) existing.IPAddress = client.IPAddress;
+                        }
+                        else
+                        {
+                            list.Insert(0, new QASmartClass.Classroom.Services.ConnectedStudent
+                            {
+                                Name = client.Name,
+                                StudentCode = client.Code,
+                                PCName = string.IsNullOrEmpty(client.PCName) ? $"PC-{client.Code}" : client.PCName,
+                                IPAddress = client.IPAddress,
+                                IsOnline = true,
+                                IsLocked = false
+                            });
+                        }
+                    }
+                }
+
                 // Nạp toàn bộ danh sách một lần duy nhất với 1 sự kiện Reset
                 _sessionService.ConnectedStudents.ReplaceRange(list);
 
@@ -294,10 +325,16 @@ namespace QASmartClass.Classroom.Views
 
                     // Đồng bộ thông tin sang ClassroomShell
                     if (Window.GetWindow(this) is ClassroomShell shell)
+                    {
                         shell.UpdateSessionInfo(rosterName, _sessionService.ConnectedStudents.Count(s => s.IsOnline));
+                        shell.ShowToast("Bắt đầu lớp học", $"✅ Lớp {rosterName} đã bắt đầu thành công!", "SUCCESS");
+                    }
+                    else
+                    {
+                        ClassroomDialog.Info($"✅ Lớp học đã bắt đầu!\n\n👥 {_sessionService.ConnectedStudents.Count} HS trong danh sách lớp.\n📡 Đang khám phá các thiết bị kết nối dưới mạng LAN...", "Bắt đầu lớp học");
+                    }
 
                     Log.Information("Classroom session started successfully.");
-                    ClassroomDialog.Info($"✅ Lớp học đã bắt đầu!\n\n👥 {_sessionService.ConnectedStudents.Count} HS trong danh sách lớp.\n📡 Đang khám phá các thiết bị kết nối dưới mạng LAN...", "Bắt đầu lớp học");
                 }
                 else
                 {
@@ -307,9 +344,14 @@ namespace QASmartClass.Classroom.Views
                         await _sessionService.EndSessionAsync();
 
                         if (Window.GetWindow(this) is ClassroomShell shell)
+                        {
                             shell.UpdateSessionInfo("Chưa chọn lớp", 0);
-
-                        ClassroomDialog.Info("⏹️ Lớp học đã kết thúc. Đã đóng kết nối với các thiết bị học sinh.", "Kết thúc lớp học");
+                            shell.ShowToast("Kết thúc lớp học", "⏹️ Lớp học đã kết thúc.", "INFO");
+                        }
+                        else
+                        {
+                            ClassroomDialog.Info("⏹️ Lớp học đã kết thúc. Đã đóng kết nối với các thiết bị học sinh.", "Kết thúc lớp học");
+                        }
                     }
                 }
 

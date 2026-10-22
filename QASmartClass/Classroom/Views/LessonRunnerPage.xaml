@@ -158,42 +158,62 @@
 
 
 
-                <!-- Bottom: End Lesson -->
-
+                <!-- Bottom: Quick Actions + End Lesson -->
                 <Border DockPanel.Dock="Bottom" Padding="12,10">
+                    <StackPanel>
+                        <!-- Quick Broadcast Screen Button -->
+                        <Button Content="📺 Chiếu màn hình GV" Background="#1976D2" Foreground="White"
+                                BorderThickness="0" Padding="0,8" FontSize="11.5" FontWeight="SemiBold"
+                                Margin="0,0,0,6" Cursor="Hand" Click="OpenScreenShare_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="b" Property="Background" Value="#1565C0"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
 
-                    <Button Content="⏹ KẾT THÚC TIẾT" Background="#C62828" Foreground="White"
+                        <!-- Quick Class Control Hub Button -->
+                        <Button Content="🖥️ Điều khiển lớp" Background="#37474F" Foreground="White"
+                                BorderThickness="0" Padding="0,8" FontSize="11.5" FontWeight="SemiBold"
+                                Margin="0,0,0,6" Cursor="Hand" Click="OpenClassControl_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="b" Property="Background" Value="#263238"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
 
-                            BorderThickness="0" Padding="0,10" FontSize="12" FontWeight="Bold"
-
-                            Cursor="Hand" Click="EndLesson_Click">
-
-                        <Button.Template>
-
-                            <ControlTemplate TargetType="Button">
-
-                                <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-
-                                    <ContentPresenter HorizontalAlignment="Center"/>
-
-                                </Border>
-
-                                <ControlTemplate.Triggers>
-
-                                    <Trigger Property="IsMouseOver" Value="True">
-
-                                        <Setter TargetName="b" Property="Background" Value="#B71C1C"/>
-
-                                    </Trigger>
-
-                                </ControlTemplate.Triggers>
-
-                            </ControlTemplate>
-
-                        </Button.Template>
-
-                    </Button>
-
+                        <Button Content="⏹ KẾT THÚC TIẾT" Background="#C62828" Foreground="White"
+                                BorderThickness="0" Padding="0,10" FontSize="12" FontWeight="Bold"
+                                Cursor="Hand" Click="EndLesson_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="b" Property="Background" Value="#B71C1C"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
                 </Border>
 
 

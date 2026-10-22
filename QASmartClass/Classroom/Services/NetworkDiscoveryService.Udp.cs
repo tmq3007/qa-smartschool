@@ -14,12 +14,16 @@ namespace QASmartClass.Classroom.Services
     // ═══════════════════════════════════════════════════════════
     public partial class NetworkDiscoveryService
     {
+        /// <summary>Beacon hiện tại, trả lời cho truy vấn WHO| qua TCP (client không nhận được UDP broadcast).</summary>
+        private volatile string _currentBeacon = "";
+
         /// <summary>
         /// Phát UDP beacon mỗi 2 giây để máy học sinh tìm thấy server.
         /// Format: "QASC|className|teacherName|serverIP|tcpPort"
         /// </summary>
         private async Task RunUdpBroadcastAsync(string beacon, CancellationToken ct)
         {
+            _currentBeacon = beacon;
             var bytes    = Encoding.UTF8.GetBytes(beacon);
             var endpoint = new IPEndPoint(IPAddress.Broadcast, DISCOVERY_PORT);
 

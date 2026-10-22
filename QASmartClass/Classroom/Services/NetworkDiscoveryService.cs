@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
@@ -7,6 +7,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using CommunityToolkit.Mvvm.ComponentModel;
 using QASmartClass.Classroom.Helpers;
 using Serilog;
@@ -205,6 +207,16 @@ namespace QASmartClass.Classroom.Services
                 var len = await stream.ReadAsync(buffer, 0, buffer.Length, ct);
                 var msg = Encoding.UTF8.GetString(buffer, 0, len).Trim();
 
+                if (msg.StartsWith("WHO|") && !string.IsNullOrEmpty(_currentBeacon))
+                {
+                    // Android dò lớp học qua TCP khi không nhận được UDP beacon
+                    var whoBytes = Encoding.UTF8.GetBytes(_currentBeacon + "\n");
+                    await stream.WriteAsync(whoBytes, ct);
+                    await stream.FlushAsync(ct);
+                    tcp.Close();
+                    return;
+                }
+
                 if (!msg.StartsWith("JOIN|"))
                 {
                     Log.Warning("Invalid handshake from {IP}: {Msg}", remoteIP, msg);
@@ -212,10 +224,88 @@ namespace QASmartClass.Classroom.Services
                     return;
                 }
 
-                // JOIN|name|code|pcName|version|pubKeyBase64|macAddress
+                // JOIN|name|code|pcName|version|pubKeyBase64|macAddress|password
                 var p = msg.Split('|');
+                string studentName = p.Length > 1 ? p[1] : "Unknown";
+                string studentCode = p.Length > 2 ? p[2] : "???";
+                string pcName = p.Length > 3 ? p[3] : remoteIP;
+                string version = p.Length > 4 ? p[4] : "1.0";
                 string studentPubKeyStr = p.Length > 5 ? p[5] : "";
                 string macAddress = p.Length > 6 ? p[6] : "00:00:00:00:00:00";
+                string password = p.Length > 7 ? p[7] : "";
+
+                // ── Kiểm tra tài khoản & mật khẩu học sinh đối với CSDL ──
+                try
+                {
+                    using var db = new QASmartClass.Data.AppDbContext();
+                    var dbStudent = await db.Students
+                        .FirstOrDefaultAsync(s => s.StudentCode.ToLower() == studentCode.ToLower(), ct);
+
+                    if (dbStudent == null)
+                    {
+                        Log.Warning("[Auth] Từ chối kết nối từ {IP}: Mã học sinh '{Code}' không tồn tại trong danh sách lớp.", remoteIP, studentCode);
+                        byte[] errBytes = Encoding.UTF8.GetBytes($"ERR|AUTH_FAILED|Mã học sinh '{studentCode}' không tồn tại trong danh sách lớp!\n");
+                        await stream.WriteAsync(errBytes, ct);
+                        await stream.FlushAsync(ct);
+                        tcp.Close();
+                        return;
+                    }
+
+                    // Nếu tài khoản đã có PasswordHash hoặc client gửi password (ví dụ Android)
+                    if (!string.IsNullOrEmpty(dbStudent.PasswordHash))
+                    {
+                        bool isValid = !string.IsNullOrEmpty(password) &&
+                                       QASmartTouch.Services.AuthenticationService.VerifyPassword(password, dbStudent.PasswordHash);
+                        if (!isValid)
+                        {
+                            Log.Warning("[Auth] Từ chối kết nối từ {IP}: Sai mật khẩu cho HS '{Code}'.", remoteIP, studentCode);
+                            byte[] errBytes = Encoding.UTF8.GetBytes("ERR|AUTH_FAILED|Mật khẩu không chính xác. Vui lòng thử lại!\n");
+                            await stream.WriteAsync(errBytes, ct);
+                            await stream.FlushAsync(ct);
+                            tcp.Close();
+                            return;
+                        }
+                    }
+                    else if (p.Length > 7)
+                    {
+                        // Client có trường mật khẩu (Android): yêu cầu mật khẩu không được rỗng
+                        if (string.IsNullOrWhiteSpace(password))
+                        {
+                            Log.Warning("[Auth] Từ chối kết nối từ {IP}: HS '{Code}' chưa nhập mật khẩu.", remoteIP, studentCode);
+                            byte[] errBytes = Encoding.UTF8.GetBytes("ERR|AUTH_FAILED|Vui lòng nhập mật khẩu tài khoản!\n");
+                            await stream.WriteAsync(errBytes, ct);
+                            await stream.FlushAsync(ct);
+                            tcp.Close();
+                            return;
+                        }
+
+                        // Khởi tạo mật khẩu ban đầu cho học sinh nếu trong CSDL chưa có PasswordHash
+                        try
+                        {
+                            dbStudent.PasswordHash = QASmartTouch.Services.AuthenticationService.HashPassword(password);
+                            await db.SaveChangesAsync(ct);
+                            Log.Information("[Auth] Đã khởi tạo mật khẩu ban đầu cho học sinh '{Code}'.", studentCode);
+                        }
+                        catch (Exception exPw)
+                        {
+                            Log.Warning("[Auth] Lỗi lưu mật khẩu khởi tạo cho HS '{Code}': {Err}", studentCode, exPw.Message);
+                        }
+                    }
+
+                    // Chuẩn hóa tên và mã học sinh từ cơ sở dữ liệu
+                    if (!string.IsNullOrWhiteSpace(dbStudent.FullName))
+                    {
+                        studentName = dbStudent.FullName;
+                    }
+                    if (!string.IsNullOrWhiteSpace(dbStudent.StudentCode))
+                    {
+                        studentCode = dbStudent.StudentCode;
+                    }
+                }
+                catch (Exception exAuth)
+                {
+                    Log.Error(exAuth, "[Auth] Lỗi kiểm tra tài khoản học sinh {Code}", studentCode);
+                }
 
                 // CSPRNG SessionKey generation (32 hex characters)
                 byte[] keyBytes = new byte[16];
@@ -227,10 +317,10 @@ namespace QASmartClass.Classroom.Services
 
                 info = new ClientInfo
                 {
-                    Name      = p.Length > 1 ? p[1] : "Unknown",
-                    Code      = p.Length > 2 ? p[2] : "???",
-                    PCName    = p.Length > 3 ? p[3] : remoteIP,
-                    Version   = p.Length > 4 ? p[4] : "1.0",
+                    Name      = studentName,
+                    Code      = studentCode,
+                    PCName    = pcName,
+                    Version   = version,
                     IPAddress = remoteIP,
                     TcpClient = tcp,
                     Stream    = stream,
@@ -299,17 +389,26 @@ namespace QASmartClass.Classroom.Services
                     var control = QASmartClass.Services.ClassControlService.Instance;
                     if (control.IsWebBlocked)
                     {
-                        var cmd = QASmartClass.Utilities.CryptoHelper.Encrypt("CMD|BLOCK_WEB_ON", info.SessionKey) + "\n";
+                        string signedCmd = SignCommand("CMD|BLOCK_WEB_ON", classCode);
+                        string cmd = !string.IsNullOrEmpty(sessionSalt)
+                            ? QASmartClass.Utilities.NetworkCryptoHelper.EncryptCommand(signedCmd, sessionSalt) + "\n"
+                            : QASmartClass.Utilities.CryptoHelper.Encrypt(signedCmd, info.SessionKey) + "\n";
                         await stream.WriteAsync(Encoding.UTF8.GetBytes(cmd), ct);
                     }
                     else if (control.IsWebWhitelistActive)
                     {
-                        var cmd1 = QASmartClass.Utilities.CryptoHelper.Encrypt("CMD|WEB_WHITELIST_ON", info.SessionKey) + "\n";
+                        string signedCmd1 = SignCommand("CMD|WEB_WHITELIST_ON", classCode);
+                        string cmd1 = !string.IsNullOrEmpty(sessionSalt)
+                            ? QASmartClass.Utilities.NetworkCryptoHelper.EncryptCommand(signedCmd1, sessionSalt) + "\n"
+                            : QASmartClass.Utilities.CryptoHelper.Encrypt(signedCmd1, info.SessionKey) + "\n";
                         await stream.WriteAsync(Encoding.UTF8.GetBytes(cmd1), ct);
                         
                         if (!string.IsNullOrEmpty(control.WebWhitelistUrls))
                         {
-                            var cmd2 = QASmartClass.Utilities.CryptoHelper.Encrypt($"CMD|WHITELIST_ADD|{control.WebWhitelistUrls}", info.SessionKey) + "\n";
+                            string signedCmd2 = SignCommand($"CMD|WHITELIST_ADD|{control.WebWhitelistUrls}", classCode);
+                            string cmd2 = !string.IsNullOrEmpty(sessionSalt)
+                                ? QASmartClass.Utilities.NetworkCryptoHelper.EncryptCommand(signedCmd2, sessionSalt) + "\n"
+                                : QASmartClass.Utilities.CryptoHelper.Encrypt(signedCmd2, info.SessionKey) + "\n";
                             await stream.WriteAsync(Encoding.UTF8.GetBytes(cmd2), ct);
                         }
                     }
@@ -325,7 +424,10 @@ namespace QASmartClass.Classroom.Services
                     var control = QASmartClass.Services.ClassControlService.Instance;
                     if (control.IsExitPinRequired && !string.IsNullOrEmpty(control.ExitPinHash))
                     {
-                        var cmd = QASmartClass.Utilities.CryptoHelper.Encrypt($"CMD|EXIT_PIN_CONFIG|true|{control.ExitPinHash}", info.SessionKey) + "\n";
+                        string signedPinCmd = SignCommand($"CMD|EXIT_PIN_CONFIG|true|{control.ExitPinHash}", classCode);
+                        string cmd = !string.IsNullOrEmpty(sessionSalt)
+                            ? QASmartClass.Utilities.NetworkCryptoHelper.EncryptCommand(signedPinCmd, sessionSalt) + "\n"
+                            : QASmartClass.Utilities.CryptoHelper.Encrypt(signedPinCmd, info.SessionKey) + "\n";
                         await stream.WriteAsync(Encoding.UTF8.GetBytes(cmd), ct);
                     }
                 }

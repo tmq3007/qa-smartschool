@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+app/build/
+.kotlin/
+
+# Máy cục bộ (đường dẫn SDK, keystore)
+local.properties
+*.jks
+*.keystore
+
+# Sản phẩm build & ảnh chụp test
+releases/
+*.apk
+*.aab
+*.ap_
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Khác
+captures/
+.externalNativeBuild/
+.cxx/
+*.log
+.DS_Store

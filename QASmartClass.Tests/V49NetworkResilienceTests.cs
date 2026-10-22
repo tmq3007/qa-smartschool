@@ -207,5 +207,28 @@ namespace QASmartClass.Tests
                 }
             }
         }
+
+        [Fact]
+        public async Task StudentNetworkClient_OnConnectionRefused_PopulatesLastErrorReason()
+        {
+            // Pick an unused port without starting listener
+            var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            int unusedPort = ((IPEndPoint)listener.LocalEndpoint).Port;
+            listener.Stop(); // Port is now closed, connections will be refused
+
+            using var client = new StudentNetworkClient
+            {
+                StudentCode = "TEST_HS02",
+                StudentName = "Student Fail Test"
+            };
+
+            await client.ConnectDirectAsync("127.0.0.1", unusedPort);
+
+            Assert.False(client.IsConnected);
+            Assert.Equal(StudentConnectionState.ConnectionFailed, client.ConnectionState);
+            Assert.NotEmpty(client.LastErrorMessage);
+            Assert.Contains("từ chối", client.LastErrorReason.ToLowerInvariant());
+        }
     }
 }

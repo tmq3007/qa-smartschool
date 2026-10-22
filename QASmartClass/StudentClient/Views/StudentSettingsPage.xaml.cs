@@ -150,7 +150,7 @@ namespace QASmartClass.StudentClient.Views
 
                 if (client.IsConnected)
                 {
-                    MessageBox.Show($"✅ Đã kết nối thành công!\n\nGV: {client.TeacherName}\nLớp: {client.ClassName}\nIP: {ip}:{port}",
+                    MessageBox.Show($"✅ Đã kết nối thành công!\n\nGV: {client.TeacherName}\nLớp: {client.ClassName}\nĐịa chỉ: {ip}:{port}",
                         "Kết nối thành công", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     // Save Teacher IP to Cache Profile if connection is successful
@@ -177,7 +177,14 @@ namespace QASmartClass.StudentClient.Views
                 }
                 else
                 {
-                    MessageBox.Show($"❌ Không thể kết nối đến {ip}:{port}\n\nKiểm tra:\n1. GV đã mở phần mềm chưa?\n2. Cùng mạng LAN?\n3. IP có đúng không?",
+                    string reason = !string.IsNullOrEmpty(client.LastErrorReason) 
+                        ? client.LastErrorReason 
+                        : "Không nhận được phản hồi từ địa chỉ IP trên.";
+                    string detail = !string.IsNullOrEmpty(client.LastErrorMessage) 
+                        ? $"\nChi tiết kỹ thuật: {client.LastErrorMessage}\n" 
+                        : "";
+
+                    MessageBox.Show($"❌ Không thể kết nối đến {ip}:{port}\n\nNguyên nhân: {reason}\n{detail}\nKiểm tra lại:\n1. Máy Giáo viên đã mở phần mềm và bắt đầu tiết học chưa?\n2. Hai máy đã kết nối cùng mạng Wi-Fi/LAN chưa?\n3. Tường lửa trên máy Giáo viên đã cho phép cổng TCP {port} chưa?",
                         "Kết nối thất bại", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
 

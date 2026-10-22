@@ -143,6 +143,21 @@ namespace QASmartClass.Classroom.Views
                     _allStudents = GenerateDemoStudents();
                 }
 
+                // Sync actual real-time online status from NetworkService
+                var activeClients = ClassroomAppContext.Network?.GetConnectedStudents();
+                var activeCodes = activeClients != null
+                    ? new HashSet<string>(activeClients.Select(c => c.Code), StringComparer.OrdinalIgnoreCase)
+                    : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var activeNames = activeClients != null
+                    ? new HashSet<string>(activeClients.Select(c => c.Name), StringComparer.OrdinalIgnoreCase)
+                    : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var st in _allStudents)
+                {
+                    st.IsOnline = (!string.IsNullOrEmpty(st.StudentCode) && activeCodes.Contains(st.StudentCode)) ||
+                                  (!string.IsNullOrEmpty(st.FullName) && activeNames.Contains(st.FullName));
+                }
+
                 UpdateStats();
                 RefreshGrid();
 
@@ -183,7 +198,7 @@ namespace QASmartClass.Classroom.Views
             {
                 Id = i + 1, FullName = n, StudentCode = $"HS{i + 1:D3}",
                 PCName = $"PC-{i + 1:D2}", IPAddress = $"192.168.1.{100 + i}",
-                IsOnline = i % 7 != 0, LastSeen = DateTime.Now.AddMinutes(-i * 3)
+                IsOnline = false, LastSeen = DateTime.Now.AddMinutes(-i * 3)
             }).ToList();
         }
 

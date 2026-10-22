@@ -518,8 +518,8 @@
             <!-- Hàng nút phát phía bên phải (Xếp 2 hàng để chống tràn màn hình) -->
             <StackPanel Grid.Column="1" Orientation="Vertical">
                 <!-- Hàng 1: Hai nút phát cũ (Ẩn tạm thời) -->
-                <StackPanel Orientation="Horizontal" Margin="0" HorizontalAlignment="Right" Visibility="Collapsed">
-                    <Button x:Name="btnBroadcast" Content="▶️ Phát Thường" Visibility="Collapsed" Padding="16,8" FontSize="12" FontWeight="SemiBold"
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8" HorizontalAlignment="Right">
+                    <Button x:Name="btnBroadcast" Content="▶️ Phát Thường" Padding="16,8" FontSize="12" FontWeight="SemiBold"
                             Background="#1976D2" Foreground="White"
                             Click="Broadcast_Click" Template="{StaticResource RoundBtn}" ToolTip="Phát frame-by-frame mặc định, phù hợp slide tĩnh."/>
                     

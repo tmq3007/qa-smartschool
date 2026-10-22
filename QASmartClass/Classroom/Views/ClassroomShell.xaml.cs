@@ -66,6 +66,7 @@ namespace QASmartClass.Classroom.Views
 		private string? _lastPageBeforeSwitch = null;
 
 		private AIAssistantPage? _aiAssistantPage;
+		private LessonRunnerPage? _activeLessonRunner = null;
 
 
 
@@ -1231,13 +1232,10 @@ namespace QASmartClass.Classroom.Views
 			}
 
 			else if (contentFrame.Content is LessonRunnerPage runner && runner.IsRunning)
-
 			{
-
-				bool confirm = await ShowAsyncConfirmDialog("Phiên giảng dạy đang diễn ra. Bạn có chắc muốn thoát?");
-
-				if (!confirm) return;
-
+				// Giữ nguyên tiết học đang chạy trong cache để tiếp tục chạy nền, không chặn chuyển tab của GV
+				_activeLessonRunner = runner;
+				_pageCache["F_RUNNER"] = runner;
 			}
 
 
@@ -1558,6 +1556,9 @@ namespace QASmartClass.Classroom.Views
 				await AnimatePageInAsync();
 			}
 
+			// Cập nhật trạng thái hiển thị của pill Tiết học đang chạy trên TopBar
+			UpdateActiveLessonPill(formId);
+
 
 
 			if (cts != null)
@@ -1694,6 +1695,7 @@ namespace QASmartClass.Classroom.Views
 				"F_ApproveAwards" => new Leadership.Views.AwardManagementView(),
 				"F_MoetReport" => new UserControlHostPage(new Staff.Views.MoetReportView()),
 				"F_Payroll" => new UserControlHostPage(new Staff.Views.PayrollView()),
+				"F_RUNNER" => _activeLessonRunner,
 				_ => null
 			};
 		}
@@ -1917,25 +1919,90 @@ namespace QASmartClass.Classroom.Views
 
 
 		/// <summary>Mở LessonRunner — 6-giai đoạn giảng dạy</summary>
-
 		public void NavigateToRunner(int lessonId = 0)
-
 		{
-
-			if (contentFrame.Content is IDisposable disposable)
-
+			if (_activeLessonRunner != null && (lessonId == 0 || _activeLessonRunner.LessonId == lessonId) && _activeLessonRunner.IsRunning)
 			{
-
-				try { disposable.Dispose(); } catch {}
-
+				NavigateToLessonRunnerInstance(_activeLessonRunner);
+				return;
 			}
 
-			txtPageTitle.Text = "🎬 Tiến Trình Giảng Dạy";
+			if (contentFrame.Content is IDisposable disposable && !_pageCache.ContainsValue((Page)contentFrame.Content))
+			{
+				try { disposable.Dispose(); } catch {}
+			}
 
-			contentFrame.Content = new LessonRunnerPage(lessonId);
-
+			var runner = new LessonRunnerPage(lessonId);
+			RegisterActiveLessonRunner(runner);
+			NavigateToLessonRunnerInstance(runner);
 			Log.Information("Navigate to LessonRunner, LessonID={Id}", lessonId);
+		}
 
+		private void RegisterActiveLessonRunner(LessonRunnerPage runner)
+		{
+			_activeLessonRunner = runner;
+			_pageCache["F_RUNNER"] = runner;
+
+			runner.TimerTick += (s, timeStr) =>
+			{
+				Dispatcher.Invoke(() =>
+				{
+					if (txtActiveLessonTimer != null)
+						txtActiveLessonTimer.Text = $" ({timeStr})";
+				});
+			};
+
+			runner.LessonEnded += (s, e) =>
+			{
+				Dispatcher.Invoke(() =>
+				{
+					_activeLessonRunner = null;
+					_pageCache.Remove("F_RUNNER");
+					if (brdActiveLessonStatus != null)
+						brdActiveLessonStatus.Visibility = Visibility.Collapsed;
+				});
+			};
+		}
+
+		private void NavigateToLessonRunnerInstance(LessonRunnerPage runner)
+		{
+			_currentPage = "F_RUNNER";
+			txtPageTitle.Text = "🎬 Tiến Trình Giảng Dạy";
+			contentFrame.Content = runner;
+			if (brdActiveLessonStatus != null)
+				brdActiveLessonStatus.Visibility = Visibility.Collapsed;
+			UpdateActiveButtonStyles("F2");
+		}
+
+		private void brdActiveLessonStatus_Click(object sender, MouseButtonEventArgs e)
+		{
+			if (_activeLessonRunner != null)
+			{
+				NavigateToLessonRunnerInstance(_activeLessonRunner);
+			}
+		}
+
+		private void UpdateActiveLessonPill(string formId)
+		{
+			if (brdActiveLessonStatus == null) return;
+
+			if (_activeLessonRunner != null && _activeLessonRunner.IsRunning)
+			{
+				if (formId == "F_RUNNER")
+				{
+					brdActiveLessonStatus.Visibility = Visibility.Collapsed;
+				}
+				else
+				{
+					txtActiveLessonTitle.Text = _activeLessonRunner.LessonTitle;
+					txtActiveLessonTimer.Text = $" ({_activeLessonRunner.RemainingTimeDisplay})";
+					brdActiveLessonStatus.Visibility = Visibility.Visible;
+				}
+			}
+			else
+			{
+				brdActiveLessonStatus.Visibility = Visibility.Collapsed;
+			}
 		}
 
 
@@ -2365,6 +2432,17 @@ namespace QASmartClass.Classroom.Views
 		private void ExitApp_Click(object sender, RoutedEventArgs e)
 
 		{
+
+			if (_activeLessonRunner != null && _activeLessonRunner.IsRunning)
+			{
+				var lessonResult = System.Windows.MessageBox.Show(
+					$"Tiết học '{_activeLessonRunner.LessonTitle}' đang diễn ra. Nếu thoát, tiết học sẽ kết thúc.\n\nBạn vẫn muốn thoát?",
+					"Cảnh báo tiết học đang diễn ra",
+					MessageBoxButton.YesNo,
+					MessageBoxImage.Warning);
+
+				if (lessonResult != MessageBoxResult.Yes) return;
+			}
 
 			if (QASmartClass.Services.VncBroadcastService.Instance.IsVncBroadcasting)
 			{

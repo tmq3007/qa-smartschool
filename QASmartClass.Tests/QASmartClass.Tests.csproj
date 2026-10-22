@@ -213,6 +213,8 @@
     <Compile Include="V42ExportSaveLectureTests.cs" />
     <Compile Include="V42BoardResizeAndIsolationTests.cs" />
     <Compile Include="V42TouchActivationSubMenuTests.cs" />
+    <Compile Include="V114TeacherClassroomScaleTests.cs" />
+    <Compile Include="V115ClassroomMonitoringAndConnectionEdgeCasesTests.cs" />
   </ItemGroup>
 
 </Project>

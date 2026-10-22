@@ -50,7 +50,7 @@ namespace QASmartTouch.Services.License
         private static readonly string FirstInstallMarkerPath = Path.Combine(LicenseDir, ".first_install");
 
         /// <summary>Thời gian dùng thử miễn phí (1 ngày = 24 giờ)</summary>
-        private const int FREE_TRIAL_HOURS = 24;
+        private const int FREE_TRIAL_HOURS = 30 * 24;
 
         // ═══ PROPERTIES ═══
 
