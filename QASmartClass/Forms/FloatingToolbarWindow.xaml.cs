@@ -39,6 +39,9 @@ namespace QASmartTouch.Forms
         public FloatingToolbarWindow()
         {
             InitializeComponent();
+#if SMARTTOUCH_STANDALONE
+            this.Title = "QA Smart Touch - DESKTOP Mode";
+#endif
             TouchActivationHelper.ApplyToWindow(this);
             this.WindowStartupLocation = WindowStartupLocation.Manual;
             

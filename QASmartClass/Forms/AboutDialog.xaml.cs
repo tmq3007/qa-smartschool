@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
@@ -22,15 +22,28 @@ namespace QASmartTouch.Forms
             try
             {
                 var version = Assembly.GetExecutingAssembly().GetName().Version;
-                tbVersion.Text = $"{version?.Major ?? 3}.{version?.Minor ?? 0}.{version?.Build ?? 0}";
+                tbVersion.Text = $"{version?.Major ?? 1}.{version?.Minor ?? 0}.{version?.Build ?? 0}";
             }
             catch
             {
-                tbVersion.Text = "3.0.0";
+                tbVersion.Text = "1.0.0";
             }
 
-            // Build date
-            tbBuildDate.Text = DateTime.Now.ToString("MM/yyyy");
+            // Build date: ngày ghi của tệp thực thi (không dùng DateTime.Now vì sẽ luôn hiện tháng hiện tại)
+            try
+            {
+                string asmPath = Assembly.GetExecutingAssembly().Location;
+                tbBuildDate.Text = !string.IsNullOrEmpty(asmPath) && System.IO.File.Exists(asmPath)
+                    ? System.IO.File.GetLastWriteTime(asmPath).ToString("MM/yyyy")
+                    : "—";
+            }
+            catch
+            {
+                tbBuildDate.Text = "—";
+            }
+
+            // Runtime thực tế
+            tbPlatform.Text = $"WPF / .NET {Environment.Version.Major}.{Environment.Version.Minor}";
 
             // OS info
             tbOS.Text = $"Windows {Environment.OSVersion.Version.Major}";

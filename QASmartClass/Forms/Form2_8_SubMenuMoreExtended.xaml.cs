@@ -16,6 +16,7 @@ namespace QASmartTouch.Forms
             _mainDashboard = mainDashboard;
             InitializeComponent();
             TouchActivationHelper.ApplyToSubMenu(this, btnClose);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             if (btnClose != null)
             {
                 System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
@@ -70,7 +71,16 @@ namespace QASmartTouch.Forms
             }
             
             // Apply feature visibility on load
-            this.Loaded += (s, e) => ApplyFeatureVisibility();
+            this.Loaded += (s, e) =>
+            {
+                ApplyFeatureVisibility();
+#if SMARTTOUCH_STANDALONE
+                // Bản phát hành QA Smart Touch: ẩn mục chưa có chức năng thật
+                if (btnSettings != null) btnSettings.Visibility = Visibility.Collapsed;
+                if (btnUpdate != null) btnUpdate.Visibility = Visibility.Collapsed;
+                if (gridBottomActions != null) gridBottomActions.Columns = 2;
+#endif
+            };
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
@@ -84,9 +94,14 @@ namespace QASmartTouch.Forms
             // Close this menu first to avoid z-order conflicts
             this.Close();
             
+#if !SMARTTOUCH_STANDALONE
             // Open Form3_3_Settings
             var settingsWindow = new Form3_3_Settings();
             WindowHelper.ShowChildDialog(settingsWindow);
+#else
+            var about = new AboutDialog();
+            WindowHelper.ShowChildDialog(about);
+#endif
         }
 
         private Form2_MainDashboard? GetMainDashboard()
@@ -119,8 +134,13 @@ namespace QASmartTouch.Forms
 
             var openDialog = new Microsoft.Win32.OpenFileDialog
             {
+#if SMARTTOUCH_STANDALONE
+                Title = "Mở tệp bài giảng QA Smart Touch",
+                Filter = "Bài giảng QA Smart Touch (*.qasc)|*.qasc|Tất cả tệp (*.*)|*.*",
+#else
                 Title = "Mở tệp bài giảng QA SmartClass",
                 Filter = "Bài giảng QA SmartClass (*.qasc)|*.qasc|Tất cả tệp (*.*)|*.*",
+#endif
                 DefaultExt = ".qasc",
                 InitialDirectory = defaultDir
             };
@@ -263,7 +283,11 @@ namespace QASmartTouch.Forms
             var saveDialog = new Microsoft.Win32.SaveFileDialog
             {
                 Title = "Lưu bài giảng thành tệp bản sao mới (Save As)",
+#if SMARTTOUCH_STANDALONE
+                Filter = "Bài giảng QA Smart Touch (*.qasc)|*.qasc",
+#else
                 Filter = "Bài giảng QA SmartClass (*.qasc)|*.qasc",
+#endif
                 DefaultExt = ".qasc",
                 InitialDirectory = defaultDir,
                 FileName = $"{defaultName}.qasc"
@@ -356,9 +380,13 @@ namespace QASmartTouch.Forms
             // Close this menu first to avoid z-order conflicts
             this.Close();
             
+#if !SMARTTOUCH_STANDALONE
             // Open Form4_1_QuickSurvey
             var surveyWindow = new Form4_1_QuickSurvey();
             WindowHelper.ShowChildDialog(surveyWindow);
+#else
+            MessageBox.Show("Tính năng Khảo sát nhanh yêu cầu phân hệ QA SmartClass kết nối với học sinh.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+#endif
         }
 
         private void btnQuickVote_Click(object sender, RoutedEventArgs e)
