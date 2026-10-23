@@ -867,9 +867,11 @@
                 </Grid>
 
                 <!-- Horizontal Scroll Cards of Boards -->
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" 
+                <ScrollViewer x:Name="scrollOrganizerBoardCards"
+                              HorizontalScrollBarVisibility="Auto" 
                               VerticalScrollBarVisibility="Disabled"
                               PanningMode="HorizontalOnly"
+                              PanningDeceleration="0.002"
                               Height="72"
                               Margin="0,0,0,10">
                     <StackPanel x:Name="panelOrganizerBoardCards" Orientation="Horizontal"/>

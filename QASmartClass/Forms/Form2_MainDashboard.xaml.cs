@@ -244,6 +244,12 @@ namespace QASmartTouch.Forms
         
         private bool _isDraggingElement = false;
         
+        // Table drawing mode settings
+        private bool _isTableDrawingMode = false;
+        private bool _isDrawingTable = false;
+        private Point _tableDrawStartPoint;
+        private Border? _tablePreviewBorder = null;
+        
         // Zoom area selection settings
         private bool _zoomAreaSelectionEnabled = false;
         private Rectangle? _zoomAreaPreview;
@@ -557,6 +563,11 @@ namespace QASmartTouch.Forms
             this.Loaded += (s, e) => {
                 UpdateScrollBarVisibility();
                 CheckLicenseWarnings();
+                // QC_4.2_TOUCH_SCROLL: Kích hoạt vuốt cuộn cảm ứng cho duy nhất thanh thẻ trang bảng vẽ (bảo vệ tuyệt đối Canvas)
+                if (scrollOrganizerBoardCards != null)
+                {
+                    QASmartTouch.Helpers.TouchScrollHelper.EnableTouchAndDragScroll(scrollOrganizerBoardCards);
+                }
             };
             
             // Show welcome state on startup (no tool selected)
@@ -1435,6 +1446,7 @@ namespace QASmartTouch.Forms
             // Initialize Lasso Selection Tool (NEW)
             _lassoTool = new QASmartTouch.Tools.LassoSelectionTool(MainInteractiveBoard);
             _lassoTool.SelectionCompleted += LassoTool_SelectionCompleted;
+            ConfigureLassoToolHooks();
             
             // Initialize Handwriting Recognition Services
             InitializeHandwritingRecognitionServices();
@@ -2443,6 +2455,13 @@ namespace QASmartTouch.Forms
             _eraserEnabled = false;
             _shapeDrawingEnabled = false;
             _textToolEnabled = false;
+            _isTableDrawingMode = false;
+            _isDrawingTable = false;
+            if (_tablePreviewBorder != null)
+            {
+                MainInteractiveBoard.Children.Remove(_tablePreviewBorder);
+                _tablePreviewBorder = null;
+            }
             _selectionToolEnabled = false;
             _zoomAreaSelectionEnabled = false;
             _objectSelectionMode = false; // BUGFIX: Disable object selection mode
@@ -2856,7 +2875,11 @@ namespace QASmartTouch.Forms
                 if (headerAppName != null)
                 {
                     headerAppName.Visibility = config.ShowAppName ? Visibility.Visible : Visibility.Collapsed;
+#if SMARTTOUCH_STANDALONE
+                    headerAppName.Text = "QA Smart Touch";
+#else
                     headerAppName.Text = config.AppName;
+#endif
                     
                     try
                     {
@@ -2909,9 +2932,13 @@ namespace QASmartTouch.Forms
             {
                 if (Keyboard.Modifiers == ModifierKeys.Shift)
                 {
+#if !SMARTTOUCH_STANDALONE
                     var ticketWindow = new QASmartClass.Forms.InAppSupportTicketWindow();
                     ticketWindow.Owner = this;
                     ticketWindow.ShowDialog();
+#else
+                    MessageBox.Show("Tính năng gửi Ticket chỉ khả dụng trong hệ thống QA SmartClass mạng LAN.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+#endif
                 }
                 else
                 {

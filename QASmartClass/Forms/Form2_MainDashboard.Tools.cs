@@ -2042,11 +2042,16 @@ namespace QASmartTouch.Forms
         {
             DeactivateAllTools();
             CloseAllSubmenus();
+            HideWelcomeState();
             
-            // ✅ B.2.1: Đồng bộ với btn8_Select_Click — đăng ký objects + visual feedback
-            SelectTool(btn8_Select);                // Highlight button trên toolbar
-            HideWelcomeState();                     // Ẩn welcome state
+            // 1. Kích hoạt nút btn8_Select trước để dọn dẹp các công cụ khác và cập nhật màu nút
+            SelectTool(btn8_Select);
+
+            // 2. Thiết lập cờ chế độ CHỌN CHỮ NHẬT SAU KHI SelectTool đã ResetAllToolStates
             _objectSelectionMode = true;
+            _isLassoMode = false;
+            _isMagicWandMode = false;
+            _lassoTool?.Deactivate();
 
             // ── WhiteboardCore FSM: Chuyển sang Select Mode (Rectangle) ──
             _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
@@ -2073,17 +2078,20 @@ namespace QASmartTouch.Forms
         {
             DeactivateAllTools();
             CloseAllSubmenus();
-            
-            // ✅ B.2.2: Đồng bộ initialization — đăng ký objects trước khi lasso
             HideWelcomeState();
+
+            // 1. Kích hoạt nút btn8_Select trước để dọn dẹp các công cụ khác và cập nhật màu nút
+            SelectTool(btn8_Select);
+
+            // 2. Thiết lập cờ chế độ CHỌN TỰ DO (Lasso) SAU KHI SelectTool đã ResetAllToolStates
             _objectSelectionMode = true;
             _isLassoMode = true;
+            _isMagicWandMode = false;
 
             // ── WhiteboardCore FSM: Chuyển sang Select Mode (Lasso) ──
             _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
             _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartClass.WhiteboardCore.Enums.SelectionMode.Lasso);
 
-            SelectTool(btn8_Select);
             MainInteractiveBoard.Cursor = Cursors.Cross;
             _selectionManager?.DeselectAll();        // Reset selection cũ
             RefreshSelectableObjects();              // Scan canvas, đăng ký objects với bounds chính xác
@@ -2109,21 +2117,34 @@ namespace QASmartTouch.Forms
         {
             DeactivateAllTools();
             CloseAllSubmenus();
-            
             HideWelcomeState();
+
+            // 1. Kích hoạt nút btn8_Select trước để dọn dẹp các công cụ khác và cập nhật màu nút
+            SelectTool(btn8_Select);
+
+            // 2. Thiết lập cờ chế độ ĐŨA PHÉP (Magic Wand) SAU KHI SelectTool đã ResetAllToolStates
             _objectSelectionMode = true;
+            _isLassoMode = false;
             _isMagicWandMode = true;
+            _lassoTool?.Deactivate();
 
             // ── WhiteboardCore FSM: Chuyển sang Select Mode (MagicWand) ──
             _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
             _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartClass.WhiteboardCore.Enums.SelectionMode.MagicWand);
 
-            SelectTool(btn8_Select);
             MainInteractiveBoard.Cursor = Cursors.Hand;
             _selectionManager?.DeselectAll();
             RefreshSelectableObjects();
             _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Selection);
             
+            try
+            {
+                this.Activate();
+                this.Focus();
+                MainInteractiveBoard.Focus();
+            }
+            catch { }
+
             ShowSmartStatusBadge("🪄 Chế độ Đũa phép: Chạm vào 1 nét vẽ để tự động chọn tất cả đối tượng CÙNG MÀU trên bảng");
             System.Diagnostics.Debug.WriteLine("Selection Mode: Magic Wand Selection Activated");
         }
@@ -2274,8 +2295,8 @@ namespace QASmartTouch.Forms
                     _contextToolbar?.ShowAt(toolbarPos, groupObject);
                 }
                 
-                // ✅ FIX: Chuyển sang ObjectSelectionMode để kích hoạt Drag-to-Move và Resize cho Magic Wand
-                _isMagicWandMode = false;
+                // ✅ GIỮ NGUYÊN CHẾ ĐỘ ĐŨA PHÉP để người dùng có thể tiếp tục chọn nhiều lần liên tiếp
+                _isMagicWandMode = true;
                 _objectSelectionMode = true;
                 MainInteractiveBoard.Cursor = Cursors.Hand;
 
@@ -2285,7 +2306,8 @@ namespace QASmartTouch.Forms
             }
             else
             {
-                _isMagicWandMode = false;
+                // Giữ nguyên _isMagicWandMode = true kể cả khi không tìm thấy đối tượng
+                _isMagicWandMode = true;
             }
         }
 
@@ -2448,12 +2470,19 @@ namespace QASmartTouch.Forms
                     _activeSubMenu = null;
                     _activeSubMenuButton = null;
 
-                    if (button != null)
+                    // Nếu đang ở chế độ chọn (Lasso, Magic Wand hoặc Rectangle), GIỮ NGUYÊN trạng thái kích hoạt của btn8_Select
+                    if (_objectSelectionMode && button != null)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(46, 134, 222)); // #2E86DE
+                        UpdateIconColor(button, Colors.White);
+                        _selectedTool = button;
+                    }
+                    else if (button != null)
                     {
                         button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
                         UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
+                        _selectedTool = null;
                     }
-                    _selectedTool = null;
                 }
             };
 

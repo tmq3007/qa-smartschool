@@ -350,13 +350,56 @@ namespace QASmartTouch.Helpers
 
             button.PreviewTouchDown += (s, e) =>
             {
+                var parentScroll = TouchScrollHelper.FindVisualParent<ScrollViewer>(button);
+                bool isInsideScroll = parentScroll != null && 
+                                      parentScroll.Name != "MainScrollViewer" && 
+                                      !Equals(parentScroll.Tag, "NoTouchScroll");
+
                 touchStart = e.GetTouchPoint(button).Position;
+
+                // QC_4.2_TOUCH_GESTURE_ARBITRATION:
+                // Nếu Button nằm trong ScrollViewer, KHÔNG capture trên TouchDown và KHÔNG set e.Handled = true.
+                // Cho phép ScrollViewer nhận được PreviewTouchDown và PreviewTouchMove để thực hiện vuốt cuộn mượt mà.
+                if (isInsideScroll)
+                {
+                    return;
+                }
+
                 e.TouchDevice.Capture(button);
                 e.Handled = true;
             };
 
             button.PreviewTouchUp += (s, e) =>
             {
+                var parentScroll = TouchScrollHelper.FindVisualParent<ScrollViewer>(button);
+                bool isInsideScroll = parentScroll != null && 
+                                      parentScroll.Name != "MainScrollViewer" && 
+                                      !Equals(parentScroll.Tag, "NoTouchScroll");
+
+                if (isInsideScroll)
+                {
+                    // Nếu ScrollViewer đã chiếm quyền cảm ứng để thực hiện thao tác vuốt cuộn -> HỦY CLICK
+                    if (e.TouchDevice.Captured != null && e.TouchDevice.Captured != button)
+                    {
+                        touchStart = null;
+                        return;
+                    }
+
+                    if (touchStart.HasValue)
+                    {
+                        var currentPoint = e.GetTouchPoint(button).Position;
+                        double dist = Math.Sqrt(Math.Pow(currentPoint.X - touchStart.Value.X, 2) + Math.Pow(currentPoint.Y - touchStart.Value.Y, 2));
+                        // Chạm nhẹ (< 20px) -> Kích hoạt ngay lập tức (1st tap)
+                        if (dist < 20)
+                        {
+                            TriggerClickIfInside(button, touchStart, currentPoint);
+                            e.Handled = true;
+                        }
+                    }
+                    touchStart = null;
+                    return;
+                }
+
                 if (e.TouchDevice.Captured == button)
                 {
                     button.ReleaseTouchCapture(e.TouchDevice);
@@ -370,13 +413,51 @@ namespace QASmartTouch.Helpers
 
             button.PreviewStylusDown += (s, e) =>
             {
+                var parentScroll = TouchScrollHelper.FindVisualParent<ScrollViewer>(button);
+                bool isInsideScroll = parentScroll != null && 
+                                      parentScroll.Name != "MainScrollViewer" && 
+                                      !Equals(parentScroll.Tag, "NoTouchScroll");
+
                 stylusStart = e.GetPosition(button);
+
+                if (isInsideScroll)
+                {
+                    return;
+                }
+
                 e.StylusDevice.Capture(button);
                 e.Handled = true;
             };
 
             button.PreviewStylusUp += (s, e) =>
             {
+                var parentScroll = TouchScrollHelper.FindVisualParent<ScrollViewer>(button);
+                bool isInsideScroll = parentScroll != null && 
+                                      parentScroll.Name != "MainScrollViewer" && 
+                                      !Equals(parentScroll.Tag, "NoTouchScroll");
+
+                if (isInsideScroll)
+                {
+                    if (e.StylusDevice.Captured != null && e.StylusDevice.Captured != button)
+                    {
+                        stylusStart = null;
+                        return;
+                    }
+
+                    if (stylusStart.HasValue)
+                    {
+                        var currentPoint = e.GetPosition(button);
+                        double dist = Math.Sqrt(Math.Pow(currentPoint.X - stylusStart.Value.X, 2) + Math.Pow(currentPoint.Y - stylusStart.Value.Y, 2));
+                        if (dist < 20)
+                        {
+                            TriggerClickIfInside(button, stylusStart, currentPoint);
+                            e.Handled = true;
+                        }
+                    }
+                    stylusStart = null;
+                    return;
+                }
+
                 if (e.StylusDevice.Captured == button)
                 {
                     button.ReleaseStylusCapture();

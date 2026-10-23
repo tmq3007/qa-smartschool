@@ -16,7 +16,8 @@
         MouseUp="DrawingCanvas_MouseUp"
         StylusDown="DrawingCanvas_StylusDown"
         StylusMove="DrawingCanvas_StylusMove"
-        StylusUp="DrawingCanvas_StylusUp">
+        StylusUp="DrawingCanvas_StylusUp"
+        MouseLeave="DrawingCanvas_MouseLeave">
 
     <!-- Drawing Canvas -->
     <Canvas x:Name="DrawingCanvas"
@@ -24,7 +25,8 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             Cursor="Pen"
-            ForceCursor="True">
+            ForceCursor="True"
+            MouseLeave="DrawingCanvas_MouseLeave">
         <!-- All strokes will be added here dynamically -->
     </Canvas>
 </Window>

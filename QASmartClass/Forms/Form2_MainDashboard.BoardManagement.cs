@@ -1607,8 +1607,13 @@ namespace QASmartTouch.Forms
                 {
                     var saveDialog = new Microsoft.Win32.SaveFileDialog
                     {
+#if SMARTTOUCH_STANDALONE
+                        Title = "Lưu bài giảng QA Smart Touch",
+                        Filter = "Bài giảng QA Smart Touch (*.qasc)|*.qasc",
+#else
                         Title = "Lưu bài giảng QA SmartClass",
                         Filter = "Bài giảng QA SmartClass (*.qasc)|*.qasc",
+#endif
                         DefaultExt = ".qasc",
                         InitialDirectory = defaultDir,
                         FileName = $"BaiGiang_{DateTime.Now:yyyyMMdd_HHmm}.qasc"

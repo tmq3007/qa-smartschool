@@ -70,12 +70,12 @@ namespace QASmartTouch.Forms
                         _contextToolbar?.ShowAt(toolbarPos, groupObject);
                     }
 
-                    // ✅ FIX DRAG & RESIZE: Sau khi Lasso chọn thành công đối tượng,
-                    // chuyển sang Chế độ Chọn đối tượng (Object Selection Mode) để kích hoạt Drag-to-Move & Resize
-                    _isLassoMode = false;
-                    _lassoTool?.Deactivate();
+                    // ✅ DUY TRÌ LIÊN TỤC CHẾ ĐỘ CHỌN TỰ DO (Lasso Mode)
+                    // Giữ nguyên _isLassoMode = true để giáo viên có thể khoanh chọn nhiều lần liên tiếp.
+                    // Thao tác kéo di chuyển / co giãn / xoay đối tượng đã chọn đã được nhường quyền qua CanStartSelectionPredicate
+                    _isLassoMode = true;
                     _objectSelectionMode = true;
-                    MainInteractiveBoard.Cursor = Cursors.Hand;
+                    MainInteractiveBoard.Cursor = Cursors.Cross;
                 }
                 else
                 {
@@ -121,6 +121,74 @@ namespace QASmartTouch.Forms
             {
                 System.Diagnostics.Debug.WriteLine($"❌ Error showing ContextToolbar: {ex.Message}");
             }
+        }
+
+        #endregion
+
+        #region Lasso Tool Hooks Configuration
+
+        /// <summary>
+        /// Cấu hình các hook kiểm tra cho Lasso Selection Tool
+        /// Ngăn vẽ đè nét Lasso khi người dùng tương tác kéo di chuyển/co giãn/xoay SelectionBox, Toolbar hoặc đối tượng đã chọn
+        /// </summary>
+        public void ConfigureLassoToolHooks()
+        {
+            if (_lassoTool == null) return;
+
+            _lassoTool.CanStartSelectionPredicate = (clickPoint, originalSource) =>
+            {
+                // 1. Nếu click vào button, thanh công cụ dưới đáy, menu context
+                if (originalSource is DependencyObject depObj)
+                {
+                    if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(depObj, MainInteractiveBoard) ||
+                        QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(depObj, MainInteractiveBoard))
+                    {
+                        return false;
+                    }
+                }
+
+                // 2. Nếu click vào SelectionBox hoặc Adorner của nó (để kéo di chuyển, co giãn, xoay)
+                if (_selectionBox != null && _selectionBox.Visibility == Visibility.Visible)
+                {
+                    if (originalSource is DependencyObject hitDep && _selectionBox.IsAncestorOf(hitDep))
+                    {
+                        return false;
+                    }
+
+                    if (_selectionBox.AttachedObject != null && _selectionBox.AttachedObject.Bounds.Contains(clickPoint))
+                    {
+                        return false;
+                    }
+                }
+
+                // 3. Nếu click vào Context Toolbar
+                if (_contextToolbar != null && _contextToolbar.Visibility == Visibility.Visible)
+                {
+                    if (originalSource is DependencyObject hitDep && _contextToolbar.IsAncestorOf(hitDep))
+                    {
+                        return false;
+                    }
+                }
+
+                // 4. Nếu click vào đối tượng ĐANG ĐƯỢC CHỌN (để kéo di chuyển)
+                var hitObject = _selectionManager?.HitTest(clickPoint);
+                var currentSelection = _selectionManager?.GetSelectedObjects();
+                if (hitObject != null && currentSelection != null && currentSelection.Contains(hitObject))
+                {
+                    return false;
+                }
+
+                return true;
+            };
+
+            _lassoTool.BeforeSelectionStarted = () =>
+            {
+                // Khi người dùng bấm ra vùng trống để khoanh vùng mới:
+                // Tự động deselect vùng chọn cũ và ẩn SelectionBox
+                _selectionManager?.DeselectAll();
+                _selectionBox?.Detach();
+                _contextToolbar?.Hide();
+            };
         }
 
         #endregion

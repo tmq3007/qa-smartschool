@@ -299,7 +299,7 @@ namespace QASmartTouch.Forms
         /// </summary>
         private bool StartSelectionInteraction(Point clickPoint, object originalSource, bool isCtrlPressed)
         {
-            if (!_objectSelectionMode || _selectionManager == null || _isLassoMode)
+            if (!_objectSelectionMode || _selectionManager == null)
                 return false;
 
             // ✅ QC_4.2_3D_DRAG_GUARD: Nếu đang trong phiên kéo đối tượng 3D/STEM, không vẽ khung chọn chữ nhật
@@ -319,11 +319,79 @@ namespace QASmartTouch.Forms
                 _isDraggingSelection = false;
             }
 
+            // ✂️ Chế độ Chọn tự do (Lasso Mode):
+            if (_isLassoMode)
+            {
+                var hit = _selectionManager.HitTest(clickPoint);
+                var currentSel = _selectionManager.GetSelectedObjects();
+                bool isClickOnSel = hit != null && currentSel != null && currentSel.Contains(hit);
+
+                if (!isClickOnSel && hit == null && _selectionBox != null && _selectionBox.Visibility == Visibility.Visible && _selectionBox.AttachedObject != null)
+                {
+                    if (_selectionBox.AttachedObject.Bounds.Contains(clickPoint))
+                    {
+                        isClickOnSel = true;
+                        hit = _selectionBox.AttachedObject;
+                    }
+                }
+
+                if (isClickOnSel && hit != null && !isCtrlPressed)
+                {
+                    if (originalSource is DependencyObject dep &&
+                        (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(dep, MainInteractiveBoard) ||
+                         QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(dep, MainInteractiveBoard)))
+                    {
+                        _isDraggingSelection = false;
+                        _draggedSelectionObject = null;
+                        _isPreparingRectangleSelection = false;
+                        return false;
+                    }
+
+                    // Kéo di chuyển đối tượng đã chọn trong chế độ Lasso
+                    _draggedSelectionObject = hit;
+                    _selectionDragStartPoint = clickPoint;
+                    _isDraggingSelection = false;
+                    _pendingHitObject = null;
+                    _isPreparingRectangleSelection = false;
+                    _canvasDragInitialStates = CaptureSelectedObjectsTransformStates();
+                    System.Diagnostics.Debug.WriteLine($"🔒 Lasso: Dragging existing selection - anchor: {hit.Type}");
+                    return true;
+                }
+
+                // Click vào vùng trống: nhường toàn quyền cho _lassoTool vẽ nét Lasso mới
+                _isDraggingSelection = false;
+                _draggedSelectionObject = null;
+                _isPreparingRectangleSelection = false;
+                return false;
+            }
+
             var hitObject = _selectionManager.HitTest(clickPoint);
+            var currentSelection = _selectionManager.GetSelectedObjects();
             
             // 🪄 Magic Wand Mode handling (N27 FIX: Support both Single Click Wand & Drag Rectangle Wand)
             if (_isMagicWandMode)
             {
+                bool isClickOnSel = hitObject != null && currentSelection != null && currentSelection.Contains(hitObject);
+                if (!isClickOnSel && hitObject == null && _selectionBox != null && _selectionBox.Visibility == Visibility.Visible && _selectionBox.AttachedObject != null)
+                {
+                    if (_selectionBox.AttachedObject.Bounds.Contains(clickPoint))
+                    {
+                        isClickOnSel = true;
+                        hitObject = _selectionBox.AttachedObject;
+                    }
+                }
+
+                if (isClickOnSel && hitObject != null && !isCtrlPressed)
+                {
+                    _draggedSelectionObject = hitObject;
+                    _selectionDragStartPoint = clickPoint;
+                    _isDraggingSelection = false;
+                    _pendingHitObject = null;
+                    _isPreparingRectangleSelection = false;
+                    _canvasDragInitialStates = CaptureSelectedObjectsTransformStates();
+                    return true;
+                }
+
                 _rectangleSelectionStartPoint = clickPoint;
                 _isRectangleSelecting = false;
                 _draggedSelectionObject = null;
@@ -335,7 +403,6 @@ namespace QASmartTouch.Forms
             
             // ✅ QC_4.2_WIDGET_DRAG_FIX: Kiểm tra xem người dùng có bấm vào đối tượng ĐÃ ĐƯỢC CHỌN hay không
             // Ưu tiên cho phép kéo di chuyển đối tượng/bảng/widget (Data Table, 3D Graph...) bất kể chạm vào cell hay nội dung bên trong!
-            var currentSelection = _selectionManager.GetSelectedObjects();
             bool isClickOnSelectedObject = hitObject != null && currentSelection != null && currentSelection.Contains(hitObject);
 
             // ✅ FIX CẢM ỨNG: Nếu chạm vào khoảng trống bên trong khung SelectionBox đang hiển thị (hitObject == null),
@@ -559,7 +626,7 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void UpdateSelectionInteraction(Point currentPoint, object originalSource)
         {
-            if (!_objectSelectionMode || _isLassoMode)
+            if (!_objectSelectionMode)
                 return;
 
             // ✅ QC_4.2_3D_DRAG_GUARD: Nếu đang trong phiên kéo đối tượng 3D/STEM, bỏ qua mouse move của Selection
@@ -645,6 +712,10 @@ namespace QASmartTouch.Forms
                 return;
             }
 
+            // 🛑 Trong chế độ Lasso, tuyệt đối không tạo khung hình chữ nhật preview nét đứt màu xanh dương
+            if (_isLassoMode)
+                return;
+
             // ✅ QC_4.2_WIDGET_DRAG_FIX: Chỉ kiểm tra IsEventFromInteractiveControl nếu KHÔNG đang kéo di chuyển đối tượng
             if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(originalSource, MainInteractiveBoard))
             {
@@ -720,9 +791,34 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void EndSelectionInteraction(Point endPoint)
         {
+            // 1. Xử lý kết thúc thao tác với đối tượng đã chọn (Kéo di chuyển hoặc Chạm giữ)
+            if (_draggedSelectionObject != null)
+            {
+                if (_isDraggingSelection)
+                {
+                    // ✅ Rebuild QuadTree spatial index ngay khi kết thúc kéo di chuyển
+                    _selectionManager?.RebuildQuadTree();
+                    var finalStates = CaptureSelectedObjectsTransformStates();
+                    RecordTransformAction(_canvasDragInitialStates, finalStates, "Move object(s)");
+                    System.Diagnostics.Debug.WriteLine("🌳 Selection drag ended: Rebuilt QuadTree & recorded Undo action.");
+                }
+
+                // Reset toàn bộ cờ kéo di chuyển
+                _isDraggingSelection = false;
+                _draggedSelectionObject = null;
+                _isPreparingRectangleSelection = false;
+                _pendingHitObject = null;
+                _canvasDragInitialStates?.Clear();
+
+                // ✅ FIX TRIỆT ĐỂ: Thao tác trên đối tượng đã chọn xong thì RETURN NGAY
+                return;
+            }
+
+            // 🛑 Trong chế độ Lasso, nhường toàn quyền xử lý vùng chọn cho _lassoTool
             if (_isLassoMode)
                 return;
-            // 1. Handle Rectangle Selection completion
+
+            // 2. Handle Rectangle Selection completion
             if (_rectangleSelectionPreview != null || _isRectangleSelecting)
             {
                 double left = Math.Min(_rectangleSelectionStartPoint.X, endPoint.X);
@@ -773,30 +869,6 @@ namespace QASmartTouch.Forms
 
                     return;
                 }
-            }
-            
-            // 2. Xử lý kết thúc thao tác với đối tượng đã chọn (Kéo di chuyển hoặc Chạm giữ)
-            if (_draggedSelectionObject != null)
-            {
-                if (_isDraggingSelection)
-                {
-                    // ✅ N23 FIX: Rebuild QuadTree spatial index ngay khi kết thúc kéo di chuyển
-                    _selectionManager?.RebuildQuadTree();
-                    var finalStates = CaptureSelectedObjectsTransformStates();
-                    RecordTransformAction(_canvasDragInitialStates, finalStates, "Move object(s)");
-                    System.Diagnostics.Debug.WriteLine("🌳 Selection drag ended: Rebuilt QuadTree & recorded Undo action.");
-                }
-
-                // Reset toàn bộ cờ kéo di chuyển
-                _isDraggingSelection = false;
-                _draggedSelectionObject = null;
-                _isPreparingRectangleSelection = false;
-                _pendingHitObject = null;
-                _canvasDragInitialStates.Clear();
-
-                // ✅ FIX TRIỆT ĐỂ: Thao tác trên đối tượng đã chọn xong thì RETURN NGAY,
-                // TUYỆT ĐỐI KHÔNG để rơi xuống nhánh DeselectAll() bên dưới!
-                return;
             }
 
             if (_isMagicWandMode && !_isRectangleSelecting)

@@ -43,6 +43,23 @@ namespace QASmartTouch.Tools
         /// </summary>
         public bool IsActive { get; private set; }
 
+        /// <summary>
+        /// Trạng thái đang vẽ nét khoanh vùng Lasso
+        /// </summary>
+        public bool IsDrawing => _isDrawing;
+
+        /// <summary>
+        /// Delegate kiểm tra xem có được phép bắt đầu vẽ Lasso tại vị trí point / source này không.
+        /// Trả về false nếu chạm vào SelectionBox, Adorner, Toolbar,... để nhường quyền tương tác kéo di chuyển/xoay/co giãn.
+        /// </summary>
+        public Func<Point, object, bool>? CanStartSelectionPredicate { get; set; }
+
+        /// <summary>
+        /// Action được gọi ngay trước khi bắt đầu vẽ Lasso mới (khi CanStartSelectionPredicate trả về true).
+        /// Dùng để Deselect vùng chọn cũ nếu người dùng bắt đầu khoanh vùng mới ở chỗ trống.
+        /// </summary>
+        public Action? BeforeSelectionStarted { get; set; }
+
         #endregion
 
         #region Constructor
@@ -73,16 +90,21 @@ namespace QASmartTouch.Tools
             _canvas.MouseMove += Canvas_MouseMove;
             _canvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
 
-            // 2. Đăng ký Touch Events (Cho ngón tay và bút cảm ứng trên màn hình SMART TOUCH)
+            // 2. Đăng ký Touch Events (Cho ngón tay trên màn hình SMART TOUCH)
             _canvas.TouchDown += Canvas_TouchDown;
             _canvas.TouchMove += Canvas_TouchMove;
             _canvas.TouchUp += Canvas_TouchUp;
 
-            // 3. Vô hiệu hóa Stylus Press-And-Hold để nét vẽ ăn ngay lập tức
+            // 3. Đăng ký Stylus Events (Cho Bút cảm ứng tương tác phòng học)
+            _canvas.StylusDown += Canvas_StylusDown;
+            _canvas.StylusMove += Canvas_StylusMove;
+            _canvas.StylusUp += Canvas_StylusUp;
+
+            // 4. Vô hiệu hóa Stylus Press-And-Hold để nét vẽ ăn ngay lập tức không bị trễ
             Stylus.SetIsPressAndHoldEnabled(_canvas, false);
 
             _canvas.Cursor = Cursors.Cross;
-            System.Diagnostics.Debug.WriteLine("✅ Lasso Tool activated with Mouse & Touch support");
+            System.Diagnostics.Debug.WriteLine("✅ Lasso Tool activated with Mouse, Touch & Stylus support");
         }
 
         /// <summary>
@@ -102,11 +124,69 @@ namespace QASmartTouch.Tools
             _canvas.TouchMove -= Canvas_TouchMove;
             _canvas.TouchUp -= Canvas_TouchUp;
 
+            _canvas.StylusDown -= Canvas_StylusDown;
+            _canvas.StylusMove -= Canvas_StylusMove;
+            _canvas.StylusUp -= Canvas_StylusUp;
+
             _canvas.Cursor = Cursors.Arrow;
 
             ReleaseAllCaptures();
             CleanupVisual();
             System.Diagnostics.Debug.WriteLine("❌ Lasso Tool deactivated");
+        }
+
+        /// <summary>
+        /// Kiểm tra xem có thể bắt đầu vẽ Lasso tại tọa độ và nguồn sự kiện được chỉ định không
+        /// </summary>
+        public bool CanStart(Point point, object? originalSource)
+        {
+            if (!IsActive) return false;
+            if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(point, originalSource))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Khởi tạo nét vẽ Lasso tại tọa độ bắt đầu (Hỗ trợ gọi trực tiếp từ tầng Preview Hardware)
+        /// </summary>
+        public void StartLasso(Point startPoint)
+        {
+            BeforeSelectionStarted?.Invoke();
+
+            _isDrawing = true;
+            _startPoint = startPoint;
+            _lassoPoints.Clear();
+            _lassoPoints.Add(_startPoint);
+
+            CreateLassoVisual();
+            System.Diagnostics.Debug.WriteLine($"🎯 Lasso started at ({_startPoint.X:F0}, {_startPoint.Y:F0})");
+        }
+
+        /// <summary>
+        /// Cập nhật tọa độ nét vẽ Lasso khi di chuyển (Hỗ trợ gọi trực tiếp từ tầng Preview Hardware)
+        /// </summary>
+        public void MoveLasso(Point currentPoint)
+        {
+            if (!_isDrawing) return;
+
+            if (_lassoPoints.Count == 0 || GetDistance(_lassoPoints.Last(), currentPoint) > 4)
+            {
+                _lassoPoints.Add(currentPoint);
+                UpdateLassoVisual();
+            }
+        }
+
+        /// <summary>
+        /// Hoàn tất nét vẽ Lasso và thực hiện gom chọn đối tượng (Hỗ trợ gọi trực tiếp từ tầng Preview Hardware)
+        /// </summary>
+        public void EndLasso()
+        {
+            if (!_isDrawing) return;
+
+            _isDrawing = false;
+            CompleteLassoSelection();
         }
 
         private void ReleaseAllCaptures()
@@ -136,68 +216,55 @@ namespace QASmartTouch.Tools
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            _isDrawing = true;
-            _startPoint = e.GetPosition(_canvas);
-            _lassoPoints.Clear();
-            _lassoPoints.Add(_startPoint);
+            Point clickPoint = e.GetPosition(_canvas);
 
-            CreateLassoVisual();
+            if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(clickPoint, e.OriginalSource))
+            {
+                return;
+            }
+
+            StartLasso(clickPoint);
             _canvas.CaptureMouse();
-
-            System.Diagnostics.Debug.WriteLine($"🎯 Lasso Mouse started at ({_startPoint.X:F0}, {_startPoint.Y:F0})");
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (!_isDrawing) return;
-
             Point currentPoint = e.GetPosition(_canvas);
-
-            if (_lassoPoints.Count == 0 || GetDistance(_lassoPoints.Last(), currentPoint) > 4)
-            {
-                _lassoPoints.Add(currentPoint);
-                UpdateLassoVisual();
-            }
+            MoveLasso(currentPoint);
         }
 
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (!_isDrawing) return;
 
-            _isDrawing = false;
             if (_canvas.IsMouseCaptured)
             {
                 _canvas.ReleaseMouseCapture();
             }
 
-            CompleteLassoSelection();
+            EndLasso();
         }
 
         private void Canvas_TouchDown(object? sender, TouchEventArgs e)
         {
-            _isDrawing = true;
-            _startPoint = e.GetTouchPoint(_canvas).Position;
-            _lassoPoints.Clear();
-            _lassoPoints.Add(_startPoint);
+            Point clickPoint = e.GetTouchPoint(_canvas).Position;
 
-            CreateLassoVisual();
+            if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(clickPoint, e.OriginalSource))
+            {
+                return;
+            }
+
+            StartLasso(clickPoint);
             _canvas.CaptureTouch(e.TouchDevice);
             e.Handled = true;
-
-            System.Diagnostics.Debug.WriteLine($"🎯 Lasso Touch started at ({_startPoint.X:F0}, {_startPoint.Y:F0})");
         }
 
         private void Canvas_TouchMove(object? sender, TouchEventArgs e)
         {
             if (!_isDrawing) return;
-
             Point currentPoint = e.GetTouchPoint(_canvas).Position;
-
-            if (_lassoPoints.Count == 0 || GetDistance(_lassoPoints.Last(), currentPoint) > 4)
-            {
-                _lassoPoints.Add(currentPoint);
-                UpdateLassoVisual();
-            }
+            MoveLasso(currentPoint);
             e.Handled = true;
         }
 
@@ -205,7 +272,6 @@ namespace QASmartTouch.Tools
         {
             if (!_isDrawing) return;
 
-            _isDrawing = false;
             try
             {
                 if (e.TouchDevice.Captured == _canvas)
@@ -215,7 +281,47 @@ namespace QASmartTouch.Tools
             }
             catch { }
 
-            CompleteLassoSelection();
+            EndLasso();
+            e.Handled = true;
+        }
+
+        private void Canvas_StylusDown(object sender, StylusDownEventArgs e)
+        {
+            Point clickPoint = e.GetPosition(_canvas);
+
+            if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(clickPoint, e.OriginalSource))
+            {
+                return;
+            }
+
+            StartLasso(clickPoint);
+            _canvas.CaptureStylus();
+            e.Handled = true;
+            System.Diagnostics.Debug.WriteLine($"🎯 Lasso Stylus started at ({clickPoint.X:F0}, {clickPoint.Y:F0})");
+        }
+
+        private void Canvas_StylusMove(object sender, StylusEventArgs e)
+        {
+            if (!_isDrawing) return;
+            Point currentPoint = e.GetPosition(_canvas);
+            MoveLasso(currentPoint);
+            e.Handled = true;
+        }
+
+        private void Canvas_StylusUp(object sender, StylusEventArgs e)
+        {
+            if (!_isDrawing) return;
+
+            try
+            {
+                if (_canvas.IsStylusCaptured)
+                {
+                    _canvas.ReleaseStylusCapture();
+                }
+            }
+            catch { }
+
+            EndLasso();
             e.Handled = true;
         }
 
@@ -280,7 +386,8 @@ namespace QASmartTouch.Tools
                 StrokeLineJoin = PenLineJoin.Round,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
-                Fill = new SolidColorBrush(Color.FromArgb(25, 255, 193, 7)) // Semi-transparent amber fill
+                Fill = new SolidColorBrush(Color.FromArgb(25, 255, 193, 7)), // Semi-transparent amber fill
+                IsHitTestVisible = false // 🛑 NGĂN CHẶN CƯỚP QUYỀN HIT-TEST TRÊN MÀN HÌNH TƯƠNG TÁC
             };
 
             // ✅ G1.1: Marching Ants animation — nét đứt chuyển động
@@ -337,8 +444,12 @@ namespace QASmartTouch.Tools
                     continue;
 
                 var typeName = element.GetType().Name;
+
+                // 🛑 LOẠI TRỪ 1: Tuyệt đối không chọn InkPresenter (lớp vẽ mực trực tiếp của hệ thống)
+                if (element is InkPresenter || typeName.Equals("InkPresenter", StringComparison.OrdinalIgnoreCase) || typeName.Contains("InkPresenter"))
+                    continue;
                 
-                // Bỏ qua các UI controls của hệ thống và Background layers (nền bảng, lưới)
+                // 🛑 LOẠI TRỪ 2: Bỏ qua các UI controls của hệ thống và Background layers (nền bảng, lưới)
                 if (element is FrameworkElement feCheck)
                 {
                     string tagStr = feCheck.Tag?.ToString() ?? "";
@@ -349,7 +460,8 @@ namespace QASmartTouch.Tools
                         tagStr.Contains("Grid", StringComparison.OrdinalIgnoreCase))
                         continue;
 
-                    if (QASmartTouch.Services.SelectionManager.IsBackgroundElement(feCheck, Rect.Empty, _canvas.ActualWidth, _canvas.ActualHeight))
+                    Rect elBounds = GetElementCanvasBounds(feCheck);
+                    if (QASmartTouch.Services.SelectionManager.IsBackgroundElement(feCheck, elBounds, _canvas.ActualWidth, _canvas.ActualHeight))
                         continue;
                 }
 
@@ -497,6 +609,13 @@ namespace QASmartTouch.Tools
 
                 if (bounds.Width <= 0 || bounds.Height <= 0 || bounds.IsEmpty)
                     return false;
+
+                // 🛑 Bỏ qua đối tượng quá lớn phủ >= 80% kích thước bảng (tránh chọn nhầm panel/lớp nền hệ thống)
+                if (_canvas.ActualWidth > 100 && _canvas.ActualHeight > 100)
+                {
+                    if (bounds.Width >= _canvas.ActualWidth * 0.8 && bounds.Height >= _canvas.ActualHeight * 0.8)
+                        return false;
+                }
 
                 // Kiểm tra tâm, 4 góc và 4 trung điểm cạnh có nằm trong Lasso không
                 Point[] testPoints = new Point[]
