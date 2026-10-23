@@ -44,7 +44,7 @@ namespace QASmartTouch.PeriodicTable.Views
         {
             try
             {
-                string jsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PeriodicTable", "Data", "metal_reactivity.json");
+                string jsonPath = ElementDataManager.ResolveDataPath("metal_reactivity.json");
                 
                 if (File.Exists(jsonPath))
                 {

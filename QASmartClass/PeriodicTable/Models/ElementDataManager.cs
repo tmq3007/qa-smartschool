@@ -123,13 +123,69 @@ namespace QASmartTouch.PeriodicTable.Models
         }
 
         /// <summary>
+        /// Tìm đường dẫn thực tế đến thư mục hoặc file dữ liệu của Bảng tuần hoàn.
+        /// Ưu tiên thư mục bin/output, nếu không có sẽ tự động tìm theo đường dẫn dự phòng về thư mục nguồn QASmartClass.
+        /// </summary>
+        public static string ResolveDataPath(string fileName = "")
+        {
+            // 1. Kiểm tra trong thư mục chạy hiện tại (AppDomain BaseDirectory)
+            string binDataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PeriodicTable", "Data");
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                string targetInBin = Path.Combine(binDataDir, fileName);
+                if (File.Exists(targetInBin))
+                {
+                    return targetInBin;
+                }
+            }
+            else if (Directory.Exists(binDataDir))
+            {
+                return binDataDir;
+            }
+
+            // 2. Thử các đường dẫn dự phòng về thư mục mã nguồn dự án (cho môi trường dev / dotnet run)
+            string[] possibleDirs = new[]
+            {
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartClass", "PeriodicTable", "Data"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "QASmartClass", "PeriodicTable", "Data"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "QASmartClass", "PeriodicTable", "Data"),
+                Path.Combine(Directory.GetCurrentDirectory(), "PeriodicTable", "Data"),
+                Path.Combine(Directory.GetCurrentDirectory(), "QASmartClass", "PeriodicTable", "Data"),
+                Path.Combine(Directory.GetCurrentDirectory(), "..", "QASmartClass", "PeriodicTable", "Data")
+            };
+
+            foreach (var dir in possibleDirs)
+            {
+                if (Directory.Exists(dir))
+                {
+                    string fullDir = Path.GetFullPath(dir);
+                    if (!string.IsNullOrEmpty(fileName))
+                    {
+                        string targetFile = Path.Combine(fullDir, fileName);
+                        if (File.Exists(targetFile))
+                        {
+                            return targetFile;
+                        }
+                    }
+                    else
+                    {
+                        return fullDir;
+                    }
+                }
+            }
+
+            // Fallback cuối cùng: trả về đường dẫn chuẩn trong BaseDirectory
+            return string.IsNullOrEmpty(fileName) ? binDataDir : Path.Combine(binDataDir, fileName);
+        }
+
+        /// <summary>
         /// Load dữ liệu từ một file cụ thể
         /// </summary>
         private List<ElementDetail> LoadFromFile(string fileName)
         {
             try
             {
-                string jsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PeriodicTable", "Data", fileName);
+                string jsonPath = ResolveDataPath(fileName);
 
                 if (!File.Exists(jsonPath))
                 {
