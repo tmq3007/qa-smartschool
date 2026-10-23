@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Chọn vùng" 
-        Width="310" Height="150"
+        Width="420" Height="150"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -87,9 +87,9 @@
                         Click="btnClose_Click"/>
             </Grid>
 
-            <!-- CONTENT: 2 Cột cân đối cho Chữ nhật và Đũa phép -->
+            <!-- CONTENT: 3 Cột cân đối cho Chữ nhật, Tự do (Lasso) và Đũa phép -->
             <Grid Grid.Row="1">
-                <UniformGrid Columns="2" Rows="1">
+                <UniformGrid Columns="3" Rows="1">
                     <!-- Nút Chọn chữ nhật -->
                     <Button x:Name="btnSelectRect" 
                             Style="{StaticResource SelectionToolButtonStyle}"
@@ -103,6 +103,27 @@
                                 </Canvas>
                             </Viewbox>
                             <TextBlock Text="Chữ nhật" 
+                                       FontSize="12.5" 
+                                       FontWeight="SemiBold"
+                                       Foreground="#2F3542"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Nút Chọn tự do (Lasso) -->
+                    <Button x:Name="btnSelectLasso" 
+                            Style="{StaticResource SelectionToolButtonStyle}"
+                            Click="btnSelectLasso_Click"
+                            ToolTip="Khoanh vùng tự do quanh các đối tượng cần chọn (Lasso)">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Viewbox Width="24" Height="24" HorizontalAlignment="Center">
+                                <Canvas Width="24" Height="24">
+                                    <Path Fill="#20BF6B" 
+                                          Data="M15.44,13.5C16.4,12.61 17,11.36 17,10C17,7.24 14.76,5 12,5C9.24,5 7,7.24 7,10C7,11.36 7.6,12.61 8.56,13.5C6.1,14.63 4.28,17.07 4.04,20H6.06C6.34,17.78 7.91,15.93 10,15.35V17H14V15.35C16.09,15.93 17.66,17.78 17.94,20H19.96C19.72,17.07 17.9,14.63 15.44,13.5M12,7C13.66,7 15,8.34 15,10C15,11.66 13.66,13 12,13C10.34,13 9,11.66 9,10C9,8.34 10.34,7 12,7Z"/>
+                                </Canvas>
+                            </Viewbox>
+                            <TextBlock Text="Tự do" 
                                        FontSize="12.5" 
                                        FontWeight="SemiBold"
                                        Foreground="#2F3542"
@@ -134,10 +155,9 @@
                 </UniformGrid>
 
                 <!-- =========================================================================
-                     TẠM ẨN: Các nút và tính năng chưa kích hoạt (bảo toàn code-behind)
+                     TẠM ẨN: Các tính năng AI/OCR chưa kích hoạt (bảo toàn code-behind)
                 ========================================================================= -->
                 <StackPanel Visibility="Collapsed">
-                    <Button x:Name="btnSelectLasso" Click="btnSelectLasso_Click"/>
                     <Button x:Name="btnOCR" Click="btnOCR_Click"/>
                     <Button x:Name="btnTranslate" Click="btnTranslate_Click"/>
                     <Button x:Name="btnTextToSpeech" Click="btnTextToSpeech_Click"/>

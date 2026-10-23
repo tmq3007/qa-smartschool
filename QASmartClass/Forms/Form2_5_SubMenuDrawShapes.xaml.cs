@@ -22,6 +22,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToSubMenu(this, btnClose);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             if (btnClose != null)
             {
                 System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
@@ -153,6 +154,12 @@ namespace QASmartTouch.Forms
                 
                 return isEnabled;
             }).ToArray();
+            
+            // Fallback an toàn: Nếu không tìm thấy feature hoặc cấu hình bị lỗi, luôn hiển thị shapes mặc định để không bị trắng giao diện
+            if (enabledShapes.Length == 0 && shapes.Length > 0)
+            {
+                enabledShapes = shapes;
+            }
             
             System.Diagnostics.Debug.WriteLine($"[Form2_5] Showing {enabledShapes.Length}/{shapes.Length} shapes for category {category}");
             

@@ -31,7 +31,7 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// Định nghĩa tất cả bước trong tour
+        /// Định nghĩa tất cả bước trong tour chuẩn hóa theo v4.2
         /// </summary>
         private List<TourStep> BuildTourSteps()
         {
@@ -40,87 +40,103 @@ namespace QASmartTouch.Forms
                 new()
                 {
                     Title = "Chào mừng đến QA SmartTouch! 👋",
-                    Description = "Đây là bảng trắng tương tác thông minh, được thiết kế cho màn hình cảm ứng 65-86 inch.\n\nHãy cùng tìm hiểu các công cụ chính!",
+                    Description = "Bảng trắng tương tác thông minh thế hệ mới, tối ưu cho màn hình cảm ứng phòng học.\n\nHãy cùng khám phá các công cụ giảng dạy cốt lõi!",
                     Category = "Bắt đầu",
-                    ElementName = null, // No target — center screen
-                    Shortcut = "F1 để mở lại tour"
+                    ElementName = null, // Giữa màn hình
+                    Shortcut = "F1 hoặc Mở rộng ⚙️ → Trợ giúp"
                 },
                 new()
                 {
                     Title = "✏️ Bút viết",
-                    Description = "Công cụ chính để viết và vẽ trên bảng.\n• Nhấn giữ để mở bảng chọn màu & kích thước\n• Hỗ trợ nhận dạng chữ viết tay (OCR)",
+                    Description = "Công cụ chính để viết, vẽ và chú thích trên bảng.\n• Chạm 1 lần để kích hoạt và viết ngay\n• Chạm lần 2 để mở bảng chọn 4 loại bút (Thường, Dạ quang, Bút lông, Laser), màu sắc & nét vẽ",
                     Category = "Công cụ vẽ",
                     ElementName = "btn1_Pen",
-                    Shortcut = "P"
+                    Shortcut = null
                 },
                 new()
                 {
-                    Title = "🧹 Tẩy",
-                    Description = "Xóa nét vẽ trên bảng.\n• Nhấn giữ để chọn kích thước tẩy\n• Hoặc dùng Ctrl+Z để hoàn tác nhanh",
+                    Title = "🧹 Tẩy xóa",
+                    Description = "Xóa nét vẽ và đối tượng nhanh chóng.\n• Chạm 1 lần để kích hoạt tẩy\n• Chạm lần 2 để chọn 3 chế độ: Xóa từng nét, Xóa theo vệt điểm, hoặc Xóa sạch toàn bộ bảng",
                     Category = "Công cụ vẽ",
                     ElementName = "btn2_Eraser",
-                    Shortcut = "E"
+                    Shortcut = null
                 },
                 new()
                 {
-                    Title = "↩ Hoàn tác / Làm lại",
-                    Description = "Quay lại thao tác trước hoặc làm lại thao tác đã hoàn tác.\n• Hỗ trợ tối đa 50 bước",
+                    Title = "↩ Hoàn tác & Làm lại",
+                    Description = "Quay lại thao tác trước (Undo) hoặc khôi phục thao tác vừa hoàn tác (Redo).\n• Nút ↩: Hoàn tác | Nút ↪: Làm lại bên cạnh\n• Hỗ trợ lưu trữ lịch sử đến 100 bước",
                     Category = "Chỉnh sửa",
                     ElementName = "btn3_Undo",
                     Shortcut = "Ctrl+Z / Ctrl+Y"
                 },
                 new()
                 {
-                    Title = "🔷 Hình học",
-                    Description = "Vẽ hình nhanh: Vuông, Tròn, Tam giác, Mũi tên...\n• Nhấn giữ để mở bảng hình\n• Bao gồm biểu đồ: Line Chart, Pie Chart",
-                    Category = "Chèn",
+                    Title = "🔷 Hình học 2D & 3D",
+                    Description = "Chèn nhanh các hình vẽ trực quan cho bài giảng.\n• 2D: Đường thẳng, nét đứt, mũi tên, hình tròn, tam giác, hình vuông, chữ nhật...\n• 3D: Khối lập phương, khối cầu, hình chóp, khối trụ, hình nón, lăng kính...",
+                    Category = "Hình học",
                     ElementName = "btn5_Shapes",
-                    Shortcut = "S"
+                    Shortcut = null
                 },
                 new()
                 {
-                    Title = "➕ Chèn nội dung",
-                    Description = "Chèn đa phương tiện vào bảng:\n• 📷 Ảnh & Video\n• 📝 Văn bản\n• 🔤 OCR AI — nhận dạng chữ viết tay\n• 🌐 Dịch 100+ ngôn ngữ\n• 🔊 Text-to-Speech",
-                    Category = "Chèn",
+                    Title = "➕ Chèn nội dung & Học liệu",
+                    Description = "Kho học liệu đa phương tiện phong phú gồm 5 danh mục:\n• Thước kẻ, com-pa, ê-ke, thước đo độ, bàn phím ảo\n• Hộp văn bản, bảng biểu, hình ảnh, video MP4\n• Biểu đồ, đồ thị hàm số 2D & 3D, Desmos 3D\n• Bảng tuần hoàn 118 nguyên tố, Sách giáo khoa\n• Mô hình 3D, thí nghiệm ảo PhET, Google Maps",
+                    Category = "Học liệu",
                     ElementName = "btn6_Inserts",
-                    Shortcut = "I"
+                    Shortcut = "Ctrl+T (Chèn văn bản)"
                 },
                 new()
                 {
-                    Title = "🔍 Thu phóng & Điều hướng (HUD)",
-                    Description = "Thu phóng và điều hướng bảng vẽ nhanh:\n• Nút − / + / 100% trên thanh điều hướng nổi\n• Cuộn chuột (Ctrl + Wheel) hoặc Pinch-to-Zoom 2 ngón tay",
-                    Category = "Điều hướng",
-                    ElementName = "btnHudZoomReset",
-                    Shortcut = "Ctrl+Wheel / Pinch"
-                },
-                new()
-                {
-                    Title = "👆 Chọn & Di chuyển",
-                    Description = "Chọn đối tượng để:\n• Di chuyển, xoay, thay đổi kích thước\n• Sao chép, nhóm, xuất ảnh\n• Xem thuộc tính chi tiết",
+                    Title = "👆 Chọn vùng (Lasso, Đũa phép)",
+                    Description = "Khoanh chọn đối tượng để chỉnh sửa:\n• 3 chế độ: Khung chữ nhật, Tự do (Lasso) hoặc Đũa phép (chọn toàn bộ nét cùng màu)\n• Di chuyển, xoay, thay đổi kích thước\n• Thanh nổi nhanh: Đổi màu nét, độ dày, sao chép, xóa",
                     Category = "Chỉnh sửa",
                     ElementName = "btn8_Select",
-                    Shortcut = "V"
+                    Shortcut = "Ctrl+C / Ctrl+V / Delete"
                 },
                 new()
                 {
-                    Title = "📋 Công cụ bảng",
-                    Description = "Quản lý nhiều trang bảng:\n• Thêm / Xóa / Đổi tên trang\n• Đổi màu nền, đặt lưới\n• Thước kẻ, com-pa, ê-ke 3D",
-                    Category = "Quản lý",
+                    Title = "📋 Công cụ bảng sư phạm",
+                    Description = "Bộ 6 trợ thủ giảng dạy đắc lực cho giáo viên:\n• Đổi màu nền bảng & mẫu lưới kẻ ô ly\n• Màn che bảng (hé mở đáp án từng phần)\n• Kính lúp phóng to chi tiết bài học\n• Đèn rọi Spotlight tập trung sự chú ý\n• Cắt chụp nhanh một vùng bảng vẽ\n• Đa người dùng (chia đôi bảng cho 2 HS cùng viết)",
+                    Category = "Sư phạm",
                     ElementName = "btn9_BoardManagement",
-                    Shortcut = "B"
+                    Shortcut = null
                 },
                 new()
                 {
-                    Title = "⚙️ Mở rộng",
-                    Description = "Các tính năng nâng cao:\n• Cài đặt ứng dụng\n• Camera AI\n• Đếm giờ, Máy tính\n• Khảo sát nhanh\n• Thông tin & Cập nhật",
+                    Title = "🖥️ Chế độ DESKTOP",
+                    Description = "Chuyển đổi linh hoạt giữa Bảng vẽ và Màn hình Windows:\n• Thu nhỏ toolbar thành thanh công cụ nổi tinh gọn\n• Viết vẽ, ghi chú trực tiếp lên slide PowerPoint, tài liệu Word/PDF hoặc trang web đang trình chiếu",
+                    Category = "Chế độ",
+                    ElementName = "btn10_WindowMode",
+                    Shortcut = null
+                },
+                new()
+                {
+                    Title = "⚙️ Mở rộng & Quản lý bài giảng",
+                    Description = "Quản lý tệp tin và tiện ích giảng dạy nâng cao:\n• Mở & lưu bài giảng (.qasc), xuất PDF / Ảnh, in bảng\n• Ghi hình toàn bộ bài giảng thành video (MP4)\n• Đồng hồ đếm ngược giờ, máy tính\n• Cài đặt ứng dụng & Quản trị phiên bản",
                     Category = "Tiện ích",
                     ElementName = "btn12_MoreExtended",
-                    Shortcut = "M"
+                    Shortcut = null
+                },
+                new()
+                {
+                    Title = "📑 Quản lý & Chuyển trang",
+                    Description = "Thanh điều hướng trang nổi ở góc dưới bên trái:\n• Nút ◀ / ▶: Lùi hoặc tiến giữa các trang bảng\n• Chạm vào số trang: Mở bảng quản lý danh sách trang\n• Nút ➕: Tạo nhanh trang bảng mới",
+                    Category = "Điều hướng",
+                    ElementName = "hudPageNavigation",
+                    Shortcut = "Ctrl+N (Trang mới) / PageUp / PageDown"
+                },
+                new()
+                {
+                    Title = "🔍 Thu phóng bảng (Zoom)",
+                    Description = "Điều chỉnh không gian hiển thị bảng vẽ:\n• Nút − / + : Thu nhỏ hoặc phóng to bảng\n• Chạm vào % : Đưa góc nhìn về chuẩn 100%\n• Cử chỉ: Cuộn chuột (Ctrl + Wheel) hoặc chụm 2 ngón tay (Pinch-to-Zoom)",
+                    Category = "Thu phóng",
+                    ElementName = "hudZoomIndicator",
+                    Shortcut = "Ctrl+0 (Về 100%) / Pinch"
                 },
                 new()
                 {
                     Title = "🎉 Bạn đã sẵn sàng!",
-                    Description = "Bắt đầu tạo bài giảng tuyệt vời ngay!\n\n💡 Mẹo: Nhấn F1 bất kỳ lúc nào để mở lại hướng dẫn này.\n\nChúc bạn dạy và học hiệu quả! 🚀",
+                    Description = "Chúc bạn có những tiết dạy sinh động và hiệu quả cùng QA SmartTouch! 🚀\n\n💡 Mẹo mở lại hướng dẫn bất kỳ lúc nào:\n• Nhấn phím F1 trên bàn phím, hoặc\n• Vào menu Mở rộng ⚙️ → chọn Trợ giúp.",
                     Category = "Hoàn thành",
                     ElementName = null,
                     Shortcut = null
@@ -172,9 +188,16 @@ namespace QASmartTouch.Forms
                 SpotlightBorder.Visibility = Visibility.Collapsed;
                 TooltipCard.Visibility = Visibility.Visible;
 
+                double screenWidth = this.ActualWidth > 100 ? this.ActualWidth : SystemParameters.PrimaryScreenWidth;
+                double screenHeight = this.ActualHeight > 100 ? this.ActualHeight : SystemParameters.PrimaryScreenHeight;
+                double tooltipWidth = 380;
+                TooltipCard.Width = tooltipWidth;
+                TooltipCard.Measure(new Size(tooltipWidth, double.PositiveInfinity));
+                double cardHeight = TooltipCard.DesiredSize.Height > 100 ? TooltipCard.DesiredSize.Height : 280;
+
                 TooltipCard.Margin = new Thickness(
-                    (SystemParameters.PrimaryScreenWidth - 380) / 2,
-                    (SystemParameters.PrimaryScreenHeight - 300) / 2,
+                    (screenWidth - tooltipWidth) / 2,
+                    (screenHeight - cardHeight) / 2,
                     0, 0);
             }
 
@@ -183,27 +206,35 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// Đặt spotlight và tooltip tại vị trí của element trên target window
+        /// Đặt spotlight và tooltip tại vị trí của element trên target window (chuẩn hóa đa độ phân giải DPI)
         /// </summary>
         private void PositionOnElement(string elementName)
         {
             try
             {
+                double screenWidth = this.ActualWidth > 100 ? this.ActualWidth : SystemParameters.PrimaryScreenWidth;
+                double screenHeight = this.ActualHeight > 100 ? this.ActualHeight : SystemParameters.PrimaryScreenHeight;
+                double tooltipWidth = 380;
+
                 // Tìm element trong target window
                 var element = FindElementByName(_targetWindow, elementName) as FrameworkElement;
                 if (element == null)
                 {
                     SpotlightBorder.Visibility = Visibility.Collapsed;
                     TooltipCard.Visibility = Visibility.Visible;
+                    TooltipCard.Width = tooltipWidth;
+                    TooltipCard.Measure(new Size(tooltipWidth, double.PositiveInfinity));
+                    double cardH = TooltipCard.DesiredSize.Height > 100 ? TooltipCard.DesiredSize.Height : 280;
                     TooltipCard.Margin = new Thickness(
-                        (SystemParameters.PrimaryScreenWidth - 380) / 2,
-                        (SystemParameters.PrimaryScreenHeight - 300) / 2,
+                        (screenWidth - tooltipWidth) / 2,
+                        (screenHeight - cardH) / 2,
                         0, 0);
                     return;
                 }
 
-                // Lấy vị trí tuyệt đối trên màn hình
-                var point = element.PointToScreen(new Point(0, 0));
+                // Lấy vị trí phần tử và chuyển đổi sang tọa độ local của HelpTourOverlay (chuẩn hóa đa DPI màn hình tương tác)
+                var screenPoint = element.PointToScreen(new Point(0, 0));
+                var point = this.PointFromScreen(screenPoint);
                 double elWidth = element.ActualWidth;
                 double elHeight = element.ActualHeight;
 
@@ -217,22 +248,24 @@ namespace QASmartTouch.Forms
                     0, 0);
                 SpotlightBorder.Visibility = Visibility.Visible;
 
-                // Tooltip card — đặt phía trên element
-                double tooltipWidth = 360;
-                double tooltipX = point.X + elWidth / 2 - tooltipWidth / 2;
-                double tooltipY = point.Y - 240; // Phía trên element
+                // Tooltip card — đo kích thước thực tế và đặt phía trên element
+                TooltipCard.Width = tooltipWidth;
+                TooltipCard.Measure(new Size(tooltipWidth, double.PositiveInfinity));
+                double cardHeight = TooltipCard.DesiredSize.Height > 100 ? TooltipCard.DesiredSize.Height : 260;
 
-                // Nếu tooltip bị che, đặt sang phải
+                double tooltipX = point.X + elWidth / 2 - tooltipWidth / 2;
+                double tooltipY = point.Y - cardHeight - 16; // 16px phía trên spotlight
+
+                // Nếu tooltip bị chạm mép trên màn hình, đặt phía dưới element
                 if (tooltipY < 20)
                 {
-                    tooltipY = point.Y + elHeight + 20;
+                    tooltipY = point.Y + elHeight + 16;
                 }
 
-                // Giữ trong màn hình
-                tooltipX = Math.Max(20, Math.Min(tooltipX, SystemParameters.PrimaryScreenWidth - tooltipWidth - 20));
-                tooltipY = Math.Max(20, Math.Min(tooltipY, SystemParameters.PrimaryScreenHeight - 350));
+                // Giữ trong giới hạn màn hình
+                tooltipX = Math.Max(20, Math.Min(tooltipX, screenWidth - tooltipWidth - 20));
+                tooltipY = Math.Max(20, Math.Min(tooltipY, screenHeight - cardHeight - 20));
 
-                TooltipCard.Width = tooltipWidth;
                 TooltipCard.Margin = new Thickness(tooltipX, tooltipY, 0, 0);
                 TooltipCard.Visibility = Visibility.Visible;
 

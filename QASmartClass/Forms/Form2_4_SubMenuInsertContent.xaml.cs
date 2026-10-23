@@ -21,6 +21,9 @@ namespace QASmartTouch.Forms
             InitializeComponent();
             _mainDashboard = mainDashboard;
 
+            // QC_4.2_TOUCH_SCROLL: Kích hoạt vuốt cuộn cảm ứng và kéo thả mượt mà trên IFP
+            TouchScrollHelper.AttachToAllScrollViewers(this);
+
             // QC_4.2_SUBMENU_CLOSE_TOUCH_FIX: Dam bao nut X mau do dong SubMenu 100% tuc thi voi chuot, ngon tay va put Stylus
             if (btnClose != null)
             {
@@ -248,15 +251,171 @@ namespace QASmartTouch.Forms
         // TAB 3: TEXT
         private void btnInsertText_Click(object sender, RoutedEventArgs e)
         {
-            SelectedInsertType = "Text";
-            this.Close();
+            btnInsertTextBox_Click(sender, e);
         }
+
+        private const int MATRIX_ROWS = 6;
+        private const int MATRIX_COLS = 8;
+        private Border[,] _matrixCells = new Border[MATRIX_ROWS, MATRIX_COLS];
+        private bool _isMatrixBuilt = false;
+        private int _selectedMatrixRows = 3;
+        private int _selectedMatrixCols = 3;
 
         private void btnInsertTable_Click(object sender, RoutedEventArgs e)
         {
+            if (pnlTableQuickPicker.Visibility == Visibility.Visible)
+            {
+                pnlTableQuickPicker.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                pnlTableQuickPicker.Visibility = Visibility.Visible;
+                EnsureTableMatrixBuilt();
+                HighlightMatrix(3, 3);
+            }
+        }
+
+        private void EnsureTableMatrixBuilt()
+        {
+            if (_isMatrixBuilt) return;
+
+            gridTableMatrix.RowDefinitions.Clear();
+            gridTableMatrix.ColumnDefinitions.Clear();
+            gridTableMatrix.Children.Clear();
+
+            for (int r = 0; r < MATRIX_ROWS; r++)
+            {
+                gridTableMatrix.RowDefinitions.Add(new RowDefinition { Height = new GridLength(28) });
+            }
+            for (int c = 0; c < MATRIX_COLS; c++)
+            {
+                gridTableMatrix.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30) });
+            }
+
+            for (int r = 0; r < MATRIX_ROWS; r++)
+            {
+                for (int c = 0; c < MATRIX_COLS; c++)
+                {
+                    int row = r + 1;
+                    int col = c + 1;
+
+                    var cell = new Border
+                    {
+                        Width = 26,
+                        Height = 24,
+                        Margin = new Thickness(2),
+                        Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+                        BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                        BorderThickness = new Thickness(1),
+                        CornerRadius = new CornerRadius(3),
+                        Cursor = Cursors.Hand,
+                        Tag = new Point(row, col)
+                    };
+
+                    cell.MouseEnter += (s, e) =>
+                    {
+                        HighlightMatrix(row, col);
+                    };
+
+                    cell.MouseLeftButtonUp += (s, e) =>
+                    {
+                        InsertTableWithSize(row, col);
+                    };
+
+                    cell.PreviewTouchDown += (s, e) =>
+                    {
+                        HighlightMatrix(row, col);
+                    };
+
+                    cell.PreviewTouchUp += (s, e) =>
+                    {
+                        InsertTableWithSize(row, col);
+                    };
+
+                    Grid.SetRow(cell, r);
+                    Grid.SetColumn(cell, c);
+                    gridTableMatrix.Children.Add(cell);
+                    _matrixCells[r, c] = cell;
+                }
+            }
+
+            _isMatrixBuilt = true;
+        }
+
+        private void HighlightMatrix(int targetRows, int targetCols)
+        {
+            _selectedMatrixRows = Math.Max(1, Math.Min(MATRIX_ROWS, targetRows));
+            _selectedMatrixCols = Math.Max(1, Math.Min(MATRIX_COLS, targetCols));
+
+            txtTableMatrixLabel.Text = $" ({_selectedMatrixRows} hàng x {_selectedMatrixCols} cột)";
+
+            var activeBg = new SolidColorBrush(Color.FromRgb(59, 130, 246)); // #3B82F6 Blue
+            var activeBorder = new SolidColorBrush(Color.FromRgb(29, 78, 216)); // #1D4ED8
+            var inactiveBg = new SolidColorBrush(Color.FromRgb(241, 245, 249)); // #F1F5F9
+            var inactiveBorder = new SolidColorBrush(Color.FromRgb(203, 213, 225)); // #CBD5E1
+
+            for (int r = 0; r < MATRIX_ROWS; r++)
+            {
+                for (int c = 0; c < MATRIX_COLS; c++)
+                {
+                    if (_matrixCells[r, c] != null)
+                    {
+                        if (r < _selectedMatrixRows && c < _selectedMatrixCols)
+                        {
+                            _matrixCells[r, c].Background = activeBg;
+                            _matrixCells[r, c].BorderBrush = activeBorder;
+                        }
+                        else
+                        {
+                            _matrixCells[r, c].Background = inactiveBg;
+                            _matrixCells[r, c].BorderBrush = inactiveBorder;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void InsertTableWithSize(int rows, int cols)
+        {
             try
             {
-                // Ẩn menu trước khi mở dialog con để không bị chồng cửa sổ
+                var tableData = new QASmartTouch.Models.TableData(rows, cols);
+                _mainDashboard?.InsertTableToCanvas(tableData);
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi tạo bảng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void btnCloseTableQuickPicker_Click(object sender, RoutedEventArgs e)
+        {
+            pnlTableQuickPicker.Visibility = Visibility.Collapsed;
+        }
+
+        private void BtnTablePreset_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string tagStr)
+            {
+                var parts = tagStr.Split(',');
+                if (parts.Length == 2 && int.TryParse(parts[0], out int r) && int.TryParse(parts[1], out int c))
+                {
+                    InsertTableWithSize(r, c);
+                }
+            }
+        }
+
+        private void BtnTableDragToDraw_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+            _mainDashboard?.EnableTableDrawingMode();
+        }
+
+        private void BtnTableAdvanced_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
                 this.Hide();
                 var tableDialog = new Form2_TableEditorDialog();
                 if (_mainDashboard != null)
@@ -264,25 +423,20 @@ namespace QASmartTouch.Forms
                     tableDialog.Owner = _mainDashboard;
                 }
                 bool? result = tableDialog.ShowDialog();
-                
                 if (result == true && tableDialog.ResultTableData != null)
                 {
-                    // Insert table to canvas
                     _mainDashboard?.InsertTableToCanvas(tableDialog.ResultTableData);
-                    System.Diagnostics.Debug.WriteLine("✅ Table inserted to canvas");
-                    this.Close(); // Đóng menu sau khi chèn thành công
+                    this.Close();
                 }
                 else
                 {
-                    this.Show(); // Hiện lại menu nếu người dùng hủy
+                    this.Show();
                 }
             }
             catch (Exception ex)
             {
                 this.Show();
-                MessageBox.Show($"Lỗi mở trình chỉnh sửa bảng: {ex.Message}", "Lỗi", 
-                              MessageBoxButton.OK, MessageBoxImage.Error);
-                System.Diagnostics.Debug.WriteLine($"❌ Table editor error: {ex.Message}");
+                MessageBox.Show($"Lỗi mở tùy chỉnh bảng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -290,29 +444,19 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                // Ẩn menu trước khi mở dialog con để không bị chồng cửa sổ
                 this.Hide();
                 var textBoxEditor = new Form2_TextBoxEditor();
-                bool? result = textBoxEditor.ShowDialog();
-                
+                bool? result = WindowHelper.ShowChildDialog(textBoxEditor, _mainDashboard);
                 if (result == true && textBoxEditor.IsConfirmed && textBoxEditor.TextBoxControl != null)
                 {
-                    // Insert text box to canvas
                     _mainDashboard?.InsertTextBoxToCanvas(textBoxEditor.TextBoxControl);
-                    System.Diagnostics.Debug.WriteLine("✅ Text box inserted to canvas");
-                    this.Close(); // Đóng menu sau khi chèn thành công
                 }
-                else
-                {
-                    this.Show(); // Hiện lại menu nếu người dùng hủy
-                }
+                this.Close();
             }
             catch (Exception ex)
             {
                 this.Show();
-                MessageBox.Show($"Lỗi mở trình chỉnh sửa hộp văn bản: {ex.Message}", "Lỗi", 
-                              MessageBoxButton.OK, MessageBoxImage.Error);
-                System.Diagnostics.Debug.WriteLine($"❌ Text box editor error: {ex.Message}");
+                MessageBox.Show($"Lỗi mở hộp thoại văn bản: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -760,6 +904,7 @@ namespace QASmartTouch.Forms
             {
                 // Ẩn menu trước khi mở AI Copilot
                 this.Hide();
+#if !SMARTTOUCH_STANDALONE
                 var db = QASmartClass.Services.AppServices.Database ?? QASmartClass.Services.AppServices.CreateDb();
                 var copilot = new QASmartClass.TeacherHub.Views.AiCopilotWindow(db);
                 copilot.Owner = this.Owner ?? _mainDashboard;
@@ -813,6 +958,10 @@ namespace QASmartTouch.Forms
                 {
                     this.Show(); // Re-show menu if user cancelled
                 }
+#else
+                MessageBox.Show("Tính năng AI Copilot tự động tạo câu hỏi yêu cầu phân hệ QA SmartClass.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                this.Show();
+#endif
             }
             catch (Exception ex)
             {
@@ -1187,102 +1336,12 @@ namespace QASmartTouch.Forms
 
                 if (child is Button button && button != btnClose)
                 {
-                    WireTouchActivationButton(button);
+                    TouchActivationHelper.WireButton(button);
                 }
 
                 // Recurse vào con
                 WireAllInteractiveControls(child);
             }
-        }
-
-        /// <summary>
-        /// QC_4.2_TOUCH_PIPELINE: Wire touch activation cho Button.
-        /// Bắt trực tiếp PreviewTouchDown/Up để đảm bảo Zero 2nd tap.
-        /// Phân biệt tap (< 15px) vs drag scroll (> 15px) để giữ ScrollViewer hoạt động.
-        /// </summary>
-        private void WireTouchActivationButton(Button button)
-        {
-            if (button == null) return;
-            button.Focusable = false;
-            Stylus.SetIsPressAndHoldEnabled(button, false);
-
-            Point? touchStart = null;
-
-            button.PreviewTouchDown += (s, e) =>
-            {
-                touchStart = e.GetTouchPoint(button).Position;
-                e.TouchDevice.Capture(button);
-                e.Handled = true;
-            };
-
-            button.PreviewTouchUp += (s, e) =>
-            {
-                if (e.TouchDevice.Captured == button)
-                {
-                    button.ReleaseTouchCapture(e.TouchDevice);
-                    try
-                    {
-                        var pos = e.GetTouchPoint(button).Position;
-                        double dist = touchStart.HasValue
-                            ? Math.Sqrt(Math.Pow(pos.X - touchStart.Value.X, 2) + Math.Pow(pos.Y - touchStart.Value.Y, 2))
-                            : 0;
-
-                        // Tap (< 15px) → kích hoạt Click; Drag (>= 15px) → nhường cho ScrollViewer
-                        if (dist < 15 &&
-                            pos.X >= 0 && pos.X <= button.ActualWidth &&
-                            pos.Y >= 0 && pos.Y <= button.ActualHeight)
-                        {
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
-                            }), System.Windows.Threading.DispatcherPriority.Normal);
-                        }
-                    }
-                    catch
-                    {
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
-                        }), System.Windows.Threading.DispatcherPriority.Normal);
-                    }
-                }
-                touchStart = null;
-                e.Handled = true;
-            };
-
-            button.PreviewStylusDown += (s, e) =>
-            {
-                e.StylusDevice.Capture(button);
-                e.Handled = true;
-            };
-
-            button.PreviewStylusUp += (s, e) =>
-            {
-                if (e.StylusDevice.Captured == button)
-                {
-                    button.ReleaseStylusCapture();
-                    try
-                    {
-                        var pos = e.GetPosition(button);
-                        if (pos.X >= 0 && pos.X <= button.ActualWidth &&
-                            pos.Y >= 0 && pos.Y <= button.ActualHeight)
-                        {
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
-                            }), System.Windows.Threading.DispatcherPriority.Normal);
-                        }
-                    }
-                    catch
-                    {
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
-                        }), System.Windows.Threading.DispatcherPriority.Normal);
-                    }
-                }
-                e.Handled = true;
-            };
         }
 
         /// <summary>

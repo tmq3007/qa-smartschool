@@ -131,7 +131,8 @@
             </UniformGrid>
 
             <!-- SHAPE GALLERY -->
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                          PanningMode="Both" PanningDeceleration="0.002">
                 <WrapPanel x:Name="ShapeGallery" Orientation="Horizontal" HorizontalAlignment="Center">
                     <!-- Shapes will be populated dynamically -->
                 </WrapPanel>
