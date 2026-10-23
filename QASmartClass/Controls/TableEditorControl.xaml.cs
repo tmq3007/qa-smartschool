@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Globalization;
 using QASmartTouch.Models;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Controls
 {
@@ -56,6 +57,9 @@ namespace QASmartTouch.Controls
             chkAutoHeight.IsChecked = _tableData.AutoExpandRows;
             
             BuildTableUI();
+
+            // QC_4.2_TOUCH_SCROLL: Kích hoạt vuốt cuộn cảm ứng cho bảng
+            TouchScrollHelper.AttachToAllScrollViewers(this);
         }
 
         public TableEditorControl(TableData existingData)
@@ -68,6 +72,9 @@ namespace QASmartTouch.Controls
             chkAutoHeight.IsChecked = _tableData.AutoExpandRows;
             
             BuildTableUI();
+
+            // QC_4.2_TOUCH_SCROLL: Kích hoạt vuốt cuộn cảm ứng cho bảng
+            TouchScrollHelper.AttachToAllScrollViewers(this);
         }
 
         /// <summary>

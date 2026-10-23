@@ -584,6 +584,10 @@
 
                      HorizontalScrollBarVisibility="Auto"
 
+                     PanningMode="Both"
+
+                     PanningDeceleration="0.002"
+
                      Padding="20">
 
             <!-- Wrapper với resize handles -->

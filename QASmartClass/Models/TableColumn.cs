@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace QASmartTouch.Models
 {
@@ -8,7 +8,7 @@ namespace QASmartTouch.Models
     public class TableColumn : INotifyPropertyChanged
     {
         private double _width = 120; // Default width in pixels
-        private double _minWidth = 80; // Minimum width
+        private double _minWidth = 35; // Minimum width
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
