@@ -1,16 +1,21 @@
 using System.Windows;
+#if !SMARTTOUCH_STANDALONE
 using QASmartClass.Classroom.Views;
+#endif
 
 namespace QASmartTouch.Forms
 {
     public partial class AskAIWindow : Window
     {
-        private AIAssistantPage _page;
+#if !SMARTTOUCH_STANDALONE
+        private AIAssistantPage? _page;
+#endif
 
         public AskAIWindow(string initialText)
         {
             InitializeComponent();
             
+#if !SMARTTOUCH_STANDALONE
             _page = new AIAssistantPage();
             MainFrame.Navigate(_page);
             
@@ -21,6 +26,7 @@ namespace QASmartTouch.Forms
                     _page.PrepopulateWithText(initialText);
                 }
             };
+#endif
         }
     }
 }

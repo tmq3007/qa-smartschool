@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -22,6 +22,7 @@ namespace QASmartTouch.Controls
             // 1. Database Check
             try
             {
+#if !SMARTTOUCH_STANDALONE
                 var app = Application.Current as App;
                 if (app?.Database == null)
                 {
@@ -34,6 +35,10 @@ namespace QASmartTouch.Controls
                     txtDbIcon.Text = "🟢";
                     txtDbStatus.Text = $"Kết nối SQLite thành công. Cơ sở dữ liệu hoạt động. Tìm thấy {studentCount} học sinh trong hệ thống.";
                 }
+#else
+                txtDbIcon.Text = "🟢";
+                txtDbStatus.Text = "Chế độ Standalone (Bảng viết độc lập): Không sử dụng Database SQLite.";
+#endif
             }
             catch (Exception ex)
             {

@@ -1,0 +1,251 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ApplicationIcon>..\QASmartClass\logo.ico</ApplicationIcon>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+
+    <!-- Tối ưu hóa hiệu suất & khởi động -->
+    <TieredCompilation>true</TieredCompilation>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+
+    <Platforms>x64</Platforms>
+    <Platform>x64</Platform>
+    <PlatformTarget>x64</PlatformTarget>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <AssemblyName>QASmartTouch</AssemblyName>
+    <RootNamespace>QASmartTouch</RootNamespace>
+
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0</Version>
+    <AssemblyTitle>QA Smart Touch</AssemblyTitle>
+    <Product>QA Smart Touch - Interactive Whiteboard</Product>
+    <Company>QA Education Technology</Company>
+    <Copyright>Copyright © 2025-2026</Copyright>
+
+    <ApplicationManifest>..\QASmartClass\app.manifest</ApplicationManifest>
+
+    <NoWarn>NU1701;NU1603;NETSDK1206;NETSDK1086;CS0414;CS0169;CS0067;CS0649;CS8618;CS8600;CS8601;CS8602;CS8604;CS8625</NoWarn>
+    <CodePage>65001</CodePage>
+    <DefineConstants>SMARTTOUCH_STANDALONE;NO_SMARTSCHOOL</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Thư viện phụ thuộc cho Bảng vẽ, STEM Tools, Đồ thị, 3D, Âm thanh & Nhận dạng AI (KHÔNG CÓ EF CORE & SQLITE) -->
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.1.1" />
+    <PackageReference Include="EPPlus" Version="8.5.4" />
+    <PackageReference Include="Google.Cloud.Vision.V1" Version="3.8.0" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3912.50" />
+    <PackageReference Include="NAudio" Version="2.3.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="HelixToolkit.Wpf" Version="2.25.0" />
+    <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
+    <PackageReference Include="QRCoder" Version="1.8.0" />
+    <PackageReference Include="QuestPDF" Version="2026.5.0" />
+    <PackageReference Include="ScreenRecorderLib" Version="7.0.1" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.8" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.8" />
+    <PackageReference Include="System.Speech" Version="8.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.11" />
+    <PackageReference Include="Imazen.WebP" Version="1.0.29" />
+    <PackageReference Include="OpenCvSharp4" Version="4.11.0.20241117" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.11.0.20241117" />
+    <PackageReference Include="OpenCvSharp4.Extensions" Version="4.11.0.20241117" />
+    <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="WpfMath" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.Wpf" />
+  </ItemGroup>
+
+  <!-- Tài nguyên giao diện toàn cục -->
+  <ItemGroup>
+    <Page Include="..\QASmartClass\Resources\DesignTokens.xaml" Link="Resources\DesignTokens.xaml" />
+    <Page Include="..\QASmartClass\Resources\Styles.xaml" Link="Resources\Styles.xaml" />
+    <Page Include="..\QASmartClass\Resources\InterOutfitFonts.xaml" Link="Resources\InterOutfitFonts.xaml" />
+    <Page Include="..\QASmartClass\Resources\SvgIcons.xaml" Link="Resources\SvgIcons.xaml" />
+    <Page Include="..\QASmartClass\Localization\Strings_vi.xaml" Link="Localization\Strings_vi.xaml" />
+  </ItemGroup>
+
+  <!-- Mã nguồn lõi Bảng vẽ & Công cụ (WhiteboardCore, Controls, Handlers, Managers, Helpers, Models, Shared) -->
+  <ItemGroup>
+    <Compile Include="..\QASmartClass\WhiteboardCore\**\*.cs" Link="WhiteboardCore\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Page Include="..\QASmartClass\Controls\**\*.xaml" Link="Controls\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Controls\**\*.cs" Link="Controls\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Handlers\**\*.cs" Link="Handlers\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Managers\**\*.cs" Link="Managers\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Helpers\**\*.cs" Exclude="..\QASmartClass\Helpers\OfflineSyncManager.cs;..\QASmartClass\Helpers\SmartClass*.cs;..\QASmartClass\Helpers\Network*.cs;..\QASmartClass\Helpers\QuizAnswerParser.cs" Link="Helpers\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Models\**\*.cs" Link="Models\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Shared\ModeService.cs" Link="Shared\ModeService.cs" />
+    <Compile Include="..\QASmartClass\Shared\UserRoleService.cs" Link="Shared\UserRoleService.cs" />
+    <Compile Include="..\QASmartClass\Shared\LanguageManager.cs" Link="Shared\LanguageManager.cs" />
+    <Compile Include="..\QASmartClass\Shared\WindowHelper.cs" Link="Shared\WindowHelper.cs" />
+    <Compile Include="..\QASmartClass\Shared\RelayCommand.cs" Link="Shared\RelayCommand.cs" />
+    <Compile Include="..\QASmartClass\Controllers\**\*.cs" Link="Controllers\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Tools\**\*.cs" Link="Tools\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Interfaces\**\*.cs" Link="Interfaces\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Modules\InteractiveBooks\**\*.cs" Link="Modules\InteractiveBooks\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Page Include="..\QASmartClass\PeriodicTable\**\*.xaml" Link="PeriodicTable\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\PeriodicTable\**\*.cs" Link="PeriodicTable\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Page Include="..\QASmartClass\Forms\Admin\**\*.xaml" Link="Forms\Admin\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Forms\Admin\**\*.cs" Link="Forms\Admin\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Data\Models\Student.cs" Link="Data\Models\Student.cs" />
+    <Compile Include="..\QASmartClass\Utilities\**\*.cs" Link="Utilities\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Dịch vụ hỗ trợ Bảng vẽ (Settings, Paths, License, Sound, AI OCR, Diagnostics, Camera, Recorder) -->
+  <ItemGroup>
+    <Compile Include="..\QASmartClass\Services\AppSettings.cs" Link="Services\AppSettings.cs" />
+    <Compile Include="..\QASmartClass\Services\AppPaths.cs" Link="Services\AppPaths.cs" />
+    <Compile Include="..\QASmartClass\Services\AppConfig.cs" Link="Services\AppConfig.cs" />
+    <Compile Include="..\QASmartClass\Services\AppBrandingService.cs" Link="Services\AppBrandingService.cs" />
+    <Compile Include="..\QASmartClass\Services\CanvasExportService.cs" Link="Services\CanvasExportService.cs" />
+    <Compile Include="..\QASmartClass\Services\SpeechSynthesizerService.cs" Link="Services\SpeechSynthesizerService.cs" />
+    <Compile Include="..\QASmartClass\Services\VocabularyService.cs" Link="Services\VocabularyService.cs" />
+    <Compile Include="..\QASmartClass\Services\SelectionManager.cs" Link="Services\SelectionManager.cs" />
+    <Compile Include="..\QASmartClass\Services\SettingsManager.cs" Link="Services\SettingsManager.cs" />
+    <Compile Include="..\QASmartClass\Services\TelemetryService.cs" Link="Services\TelemetryService.cs" />
+    <Compile Include="..\QASmartClass\Services\StatusReportService.cs" Link="Services\StatusReportService.cs" />
+    <Compile Include="..\QASmartClass\Services\GlobalExceptionHandler.cs" Link="Services\GlobalExceptionHandler.cs" />
+    <Compile Include="..\QASmartClass\Services\Camera\**\*.cs" Link="Services\Camera\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Services\Charts\**\*.cs" Link="Services\Charts\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Services\Canvas\**\*.cs" Link="Services\Canvas\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Services\Tools\**\*.cs" Link="Services\Tools\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Services\ScreenRecorderService.cs" Link="Services\ScreenRecorderService.cs" />
+    <Compile Include="..\QASmartClass\Services\ScreenCaptureService.cs" Link="Services\ScreenCaptureService.cs" />
+    <Compile Include="..\QASmartClass\Services\RecordingFormat.cs" Link="Services\RecordingFormat.cs" />
+    <Compile Include="..\QASmartClass\Services\WindowsOCRService.cs" Link="Services\WindowsOCRService.cs" />
+    <Compile Include="..\QASmartClass\Services\GoogleVisionOCRService.cs" Link="Services\GoogleVisionOCRService.cs" />
+    <Compile Include="..\QASmartClass\Services\TransformService.cs" Link="Services\TransformService.cs" />
+    <Compile Include="..\QASmartClass\Services\SelectionCaptureService.cs" Link="Services\SelectionCaptureService.cs" />
+    <Compile Include="..\QASmartClass\Services\HandwritingRecognitionService.cs" Link="Services\HandwritingRecognitionService.cs" />
+    <Compile Include="..\QASmartClass\Services\SmartHandwritingRecognitionService.cs" Link="Services\SmartHandwritingRecognitionService.cs" />
+    <Compile Include="..\QASmartClass\Services\Model3DImporter.cs" Link="Services\Model3DImporter.cs" />
+    <Compile Include="..\QASmartClass\Services\RecentFilesService.cs" Link="Services\RecentFilesService.cs" />
+    <Compile Include="..\QASmartClass\Services\WorkstationConfig.cs" Link="Services\WorkstationConfig.cs" />
+    <Compile Include="..\QASmartClass\Services\RulerCalibrationService.cs" Link="Services\RulerCalibrationService.cs" />
+    <Compile Include="..\QASmartClass\Services\Compass3DBuilder.cs" Link="Services\Compass3DBuilder.cs" />
+    <Compile Include="..\QASmartClass\Services\ColorToBrushConverter.cs" Link="Services\ColorToBrushConverter.cs" />
+    <Compile Include="..\QASmartClass\Services\ISaveFileDialogService.cs" Link="Services\ISaveFileDialogService.cs" />
+    <Compile Include="..\QASmartClass\Services\IUserInterfaceService.cs" Link="Services\IUserInterfaceService.cs" />
+    <Compile Include="..\QASmartClass\Services\WpfUserInterfaceService.cs" Link="Services\WpfUserInterfaceService.cs" />
+    <Compile Include="..\QASmartClass\Services\License\**\*.cs" Link="Services\License\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Services\VersionManagement\**\*.cs" Link="Services\VersionManagement\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Properties\Settings.Designer.cs" Link="Properties\Settings.Designer.cs" />
+    <Compile Include="..\QASmartClass\Properties\Resources.Designer.cs" Link="Properties\Resources.Designer.cs" />
+  </ItemGroup>
+
+  <!-- Toàn bộ Màn hình Bảng vẽ & Công cụ STEM (Forms/Form2_*) -->
+  <ItemGroup>
+    <Page Include="..\QASmartClass\Forms\Form2_*.xaml" Link="Forms\%(Filename)%(Extension)" />
+    <Compile Include="..\QASmartClass\Forms\Form2_*.cs" Link="Forms\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Các Hộp thoại tiện ích đi kèm Bảng vẽ -->
+  <ItemGroup>
+    <Page Include="..\QASmartClass\Forms\AboutDialog.xaml" Link="Forms\AboutDialog.xaml" />
+    <Compile Include="..\QASmartClass\Forms\AboutDialog.xaml.cs" Link="Forms\AboutDialog.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\ActivationDialog.xaml" Link="Forms\ActivationDialog.xaml" />
+    <Compile Include="..\QASmartClass\Forms\ActivationDialog.xaml.cs" Link="Forms\ActivationDialog.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\AnnotationOverlay.xaml" Link="Forms\AnnotationOverlay.xaml" />
+    <Compile Include="..\QASmartClass\Forms\AnnotationOverlay.xaml.cs" Link="Forms\AnnotationOverlay.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\AreaSelectionWindow.xaml" Link="Forms\AreaSelectionWindow.xaml" />
+    <Compile Include="..\QASmartClass\Forms\AreaSelectionWindow.xaml.cs" Link="Forms\AreaSelectionWindow.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\CalculatorWindow.xaml" Link="Forms\CalculatorWindow.xaml" />
+    <Compile Include="..\QASmartClass\Forms\CalculatorWindow.xaml.cs" Link="Forms\CalculatorWindow.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\ColorPickerPopup.xaml" Link="Forms\ColorPickerPopup.xaml" />
+    <Compile Include="..\QASmartClass\Forms\ColorPickerPopup.xaml.cs" Link="Forms\ColorPickerPopup.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\CountdownOverlay.xaml" Link="Forms\CountdownOverlay.xaml" />
+    <Compile Include="..\QASmartClass\Forms\CountdownOverlay.xaml.cs" Link="Forms\CountdownOverlay.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\FloatingCameraWindow.xaml" Link="Forms\FloatingCameraWindow.xaml" />
+    <Compile Include="..\QASmartClass\Forms\FloatingCameraWindow.xaml.cs" Link="Forms\FloatingCameraWindow.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\FloatingRecorderBar.xaml" Link="Forms\FloatingRecorderBar.xaml" />
+    <Compile Include="..\QASmartClass\Forms\FloatingRecorderBar.xaml.cs" Link="Forms\FloatingRecorderBar.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\FloatingToolbarWindow.xaml" Link="Forms\FloatingToolbarWindow.xaml" />
+    <Compile Include="..\QASmartClass\Forms\FloatingToolbarWindow.xaml.cs" Link="Forms\FloatingToolbarWindow.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\Form3_2_CameraAI.xaml" Link="Forms\Form3_2_CameraAI.xaml" />
+    <Compile Include="..\QASmartClass\Forms\Form3_2_CameraAI.xaml.cs" Link="Forms\Form3_2_CameraAI.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\Form3_3_CameraConfiguration.xaml" Link="Forms\Form3_3_CameraConfiguration.xaml" />
+    <Compile Include="..\QASmartClass\Forms\Form3_3_CameraConfiguration.xaml.cs" Link="Forms\Form3_3_CameraConfiguration.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\AskAIWindow.xaml" Link="Forms\AskAIWindow.xaml" />
+    <Compile Include="..\QASmartClass\Forms\AskAIWindow.xaml.cs" Link="Forms\AskAIWindow.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\Form3_1_LectureLibrary.xaml" Link="Forms\Form3_1_LectureLibrary.xaml" />
+    <Compile Include="..\QASmartClass\Forms\Form3_1_LectureLibrary.xaml.cs" Link="Forms\Form3_1_LectureLibrary.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\Form5_1_ColorPicker.xaml" Link="Forms\Form5_1_ColorPicker.xaml" />
+    <Compile Include="..\QASmartClass\Forms\Form5_1_ColorPicker.xaml.cs" Link="Forms\Form5_1_ColorPicker.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\Form5_2_FileDialog.xaml" Link="Forms\Form5_2_FileDialog.xaml" />
+    <Compile Include="..\QASmartClass\Forms\Form5_2_FileDialog.xaml.cs" Link="Forms\Form5_2_FileDialog.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\Form5_3_ProgressDialog.xaml" Link="Forms\Form5_3_ProgressDialog.xaml" />
+    <Compile Include="..\QASmartClass\Forms\Form5_3_ProgressDialog.xaml.cs" Link="Forms\Form5_3_ProgressDialog.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\HandwritingRecognitionDialog.xaml" Link="Forms\HandwritingRecognitionDialog.xaml" />
+    <Compile Include="..\QASmartClass\Forms\HandwritingRecognitionDialog.xaml.cs" Link="Forms\HandwritingRecognitionDialog.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\HelpTourOverlay.xaml" Link="Forms\HelpTourOverlay.xaml" />
+    <Compile Include="..\QASmartClass\Forms\HelpTourOverlay.xaml.cs" Link="Forms\HelpTourOverlay.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\PreRecordSetupDialog.xaml" Link="Forms\PreRecordSetupDialog.xaml" />
+    <Compile Include="..\QASmartClass\Forms\PreRecordSetupDialog.xaml.cs" Link="Forms\PreRecordSetupDialog.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\QuickDockTabWindow.xaml" Link="Forms\QuickDockTabWindow.xaml" />
+    <Compile Include="..\QASmartClass\Forms\QuickDockTabWindow.xaml.cs" Link="Forms\QuickDockTabWindow.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\RecentFilesDialog.xaml" Link="Forms\RecentFilesDialog.xaml" />
+    <Compile Include="..\QASmartClass\Forms\RecentFilesDialog.xaml.cs" Link="Forms\RecentFilesDialog.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\SelfDiagnosticsWindow.xaml" Link="Forms\SelfDiagnosticsWindow.xaml" />
+    <Compile Include="..\QASmartClass\Forms\SelfDiagnosticsWindow.xaml.cs" Link="Forms\SelfDiagnosticsWindow.xaml.cs" />
+    <Page Include="..\QASmartClass\Forms\SplashScreen.xaml" Link="Forms\SplashScreen.xaml" />
+    <Compile Include="..\QASmartClass\Forms\SplashScreen.xaml.cs" Link="Forms\SplashScreen.xaml.cs" />
+  </ItemGroup>
+
+  <!-- Cấu hình Version Management & App Settings -->
+  <ItemGroup>
+    <None Include="..\config\VersionStatus.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>config\VersionStatus.json</Link>
+    </None>
+    <None Include="..\config\VersionDetail.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>config\VersionDetail.json</Link>
+    </None>
+    <None Include="..\config\AppBranding.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>config\AppBranding.json</Link>
+    </None>
+    <None Include="..\config\5_UserSettings.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>config\5_UserSettings.ini</Link>
+    </None>
+  </ItemGroup>
+
+  <!-- Tài nguyên Fonts & Hình ảnh giao diện nhúng -->
+  <ItemGroup>
+    <Resource Include="..\QASmartClass\Resources\Fonts\*.ttf" Link="Resources\Fonts\%(Filename)%(Extension)" />
+    <Resource Include="..\QASmartClass\Assets\Images\app_*.png" Link="Assets\Images\%(Filename)%(Extension)" />
+    <Resource Include="..\QASmartClass\Assets\Images\app_*.jpg" Link="Assets\Images\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Sao chép Assets & Thư mục Tài nguyên (Loại trừ file XAML để không đè lên Page BAML) -->
+  <ItemGroup>
+    <None Include="..\QASmartClass\Assets\**\*" Exclude="..\QASmartClass\Assets\**\*.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+    <None Include="..\QASmartClass\Resources\**\*" Exclude="..\QASmartClass\Resources\**\*.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Resources\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+    <None Include="..\QASmartClass\PeriodicTable\Data\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>PeriodicTable\Data\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
+</Project>

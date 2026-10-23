@@ -10,8 +10,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+#if !SMARTTOUCH_STANDALONE
 using Microsoft.EntityFrameworkCore;
 using QASmartClass.Data;
+#endif
 
 namespace QASmartClass.Forms
 {
@@ -30,12 +32,14 @@ namespace QASmartClass.Forms
         {
             try
             {
+#if !SMARTTOUCH_STANDALONE
                 using var db = new AppDbContext();
                 var ipSetting = db.SystemSettings.FirstOrDefault(s => s.Id == "ServerIP" || s.Id == "TeacherIP" || s.Id == "Server_IP");
                 if (ipSetting != null && !string.IsNullOrEmpty(ipSetting.Value))
                 {
                     _targetIp = ipSetting.Value;
                 }
+#endif
                 lblNetworkDetails.Text = $"Ping tới máy chủ: {_targetIp}";
             }
             catch
@@ -101,6 +105,7 @@ namespace QASmartClass.Forms
         {
             txtConsoleOutput.Text += "-> Đang kiểm tra cơ sở dữ liệu SQLite...\n";
             var start = DateTime.Now;
+#if !SMARTTOUCH_STANDALONE
             try
             {
                 using var db = new AppDbContext();
@@ -145,6 +150,14 @@ namespace QASmartClass.Forms
 
                 _result.Database = new CheckItem { Status = "FAIL", Message = ex.Message };
             }
+#else
+            await Task.CompletedTask;
+            lblDbStatus.Text = "N/A";
+            lblDbStatus.Foreground = Brushes.Gray;
+            lblDbDetails.Text = "Standalone Mode (Không dùng Database)";
+            txtConsoleOutput.Text += "   [INFO] Standalone Mode (Không dùng Database).\n";
+            _result.Database = new CheckItem { Status = "PASS", Message = "Standalone Mode (N/A)" };
+#endif
         }
 
         private async Task RunPingTestAsync()

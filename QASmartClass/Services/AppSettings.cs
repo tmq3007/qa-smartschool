@@ -203,6 +203,7 @@ namespace QASmartTouch.Services
             }
         }
 
+#if !SMARTTOUCH_STANDALONE
         public static void LoadFromDatabase(QASmartClass.Data.AppDbContext db)
         {
             try
@@ -248,6 +249,7 @@ namespace QASmartTouch.Services
                 Serilog.Log.Warning("[AppSettings] Load from database failed: {Error}", ex.Message);
             }
         }
+#endif
     }
 
     public class AppSettingsData
