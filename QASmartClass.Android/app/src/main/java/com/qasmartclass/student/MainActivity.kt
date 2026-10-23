@@ -10,6 +10,7 @@ import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -202,9 +203,37 @@ class MainActivity : AppCompatActivity() {
 
         initViews()
         setupListeners()
+        applyResponsiveLayout()
 
         // Start Auto Discovery via UDP
         startAutoDiscovery()
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyResponsiveLayout()
+    }
+
+    /**
+     * Responsive: giới hạn chiều rộng khối nội dung theo kích thước màn hình
+     * (điện thoại = full width, tablet/landscape = giới hạn và căn giữa).
+     */
+    private fun applyResponsiveLayout() {
+        val dm = resources.displayMetrics
+        val screenDp = dm.widthPixels / dm.density
+        fun capWidth(view: View, maxDp: Float) {
+            val lp = view.layoutParams as? LinearLayout.LayoutParams ?: return
+            val targetPx = if (screenDp > maxDp) (maxDp * dm.density).toInt()
+                           else ViewGroup.LayoutParams.MATCH_PARENT
+            if (lp.width != targetPx || lp.gravity != android.view.Gravity.CENTER_HORIZONTAL) {
+                lp.width = targetPx
+                lp.gravity = android.view.Gravity.CENTER_HORIZONTAL
+                view.layoutParams = lp
+            }
+        }
+        capWidth(findViewById(R.id.formContainer), 520f)
+        listOf(panelHome, panelSoon, panelLecture, panelChat, panelHandRaise)
+            .forEach { capWidth(it, 900f) }
     }
 
     private fun initViews() {
