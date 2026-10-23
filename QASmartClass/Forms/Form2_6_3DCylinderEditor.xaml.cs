@@ -52,6 +52,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             InitializeAutoRotateTimer();
             if (initialEdgeColor.HasValue)
             {

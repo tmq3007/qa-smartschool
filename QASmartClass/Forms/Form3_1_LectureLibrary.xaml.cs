@@ -16,6 +16,8 @@ namespace QASmartTouch.Forms
         public Form3_1_LectureLibrary()
         {
             InitializeComponent();
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
+            QASmartTouch.Helpers.TouchScrollHelper.AttachToAllScrollViewers(this);
             LoadSampleData();
         }
 

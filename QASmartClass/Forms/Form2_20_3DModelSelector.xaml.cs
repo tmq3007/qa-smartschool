@@ -30,6 +30,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             _importer = new Model3DImporter();
             InitializeAutoRotate();
             ApplyGraphicsSettings();

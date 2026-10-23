@@ -59,7 +59,8 @@
             </Grid>
 
             <!-- 2. CONTENT -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12"
+                          PanningMode="Both" PanningDeceleration="0.002">
                 <StackPanel>
                     <!-- THÔNG TIN BÀI GIẢNG -->
                     <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="14,10" Margin="0,0,0,16">

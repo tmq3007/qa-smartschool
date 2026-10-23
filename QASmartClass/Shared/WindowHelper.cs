@@ -61,6 +61,9 @@ namespace QASmartTouch.Shared
             // 4. QC_4.2_TOUCH_ACTIVATION: Đảm bảo cửa sổ nhận cú chạm đầu tiên trên màn hình tương tác (IFP)
             TouchActivationHelper.ApplyToWindow(childWindow);
 
+            // QC_4.2_TOUCH_SCROLL: Tự động kích hoạt vuốt cuộn cảm ứng và kéo thả mượt mà cho toàn bộ ScrollViewer con
+            TouchScrollHelper.AttachToAllScrollViewers(childWindow);
+
             // 5. Đảm bảo Focus và Activate khi cửa sổ con hiển thị
             childWindow.Loaded += ChildWindow_Loaded;
 
@@ -110,6 +113,9 @@ namespace QASmartTouch.Shared
 
             // 4. QC_4.2_TOUCH_ACTIVATION: Đảm bảo cửa sổ nhận cú chạm đầu tiên trên màn hình tương tác (IFP)
             TouchActivationHelper.ApplyToWindow(childWindow);
+
+            // QC_4.2_TOUCH_SCROLL: Tự động kích hoạt vuốt cuộn cảm ứng và kéo thả mượt mà cho toàn bộ ScrollViewer con
+            TouchScrollHelper.AttachToAllScrollViewers(childWindow);
 
             // 5. Đảm bảo Focus và Activate
             childWindow.Loaded += ChildWindow_Loaded;

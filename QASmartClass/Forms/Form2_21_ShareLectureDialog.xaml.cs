@@ -23,6 +23,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             _mainDashboard = mainDashboard ?? Application.Current.MainWindow as Form2_MainDashboard;
             Owner = _mainDashboard;
 

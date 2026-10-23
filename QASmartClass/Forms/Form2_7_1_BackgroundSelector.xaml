@@ -364,7 +364,8 @@
 
             <!-- CONTENT -->
 
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,15,0,0">
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,15,0,0"
+                          PanningMode="Both" PanningDeceleration="0.002">
 
                 <StackPanel>
 

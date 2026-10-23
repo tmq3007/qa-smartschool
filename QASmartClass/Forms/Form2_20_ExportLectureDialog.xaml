@@ -59,7 +59,8 @@
             </Grid>
 
             <!-- CONTENT: FORM OPTIONS -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,16">
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,16"
+                          PanningMode="Both" PanningDeceleration="0.002">
                 <StackPanel x:Name="panelFormOptions">
                     <!-- PHẠM VI XUẤT -->
                     <TextBlock Text="1. Phạm vi xuất" FontSize="13" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,8"/>

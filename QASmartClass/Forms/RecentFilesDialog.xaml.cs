@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using QASmartTouch.Services;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
 {
@@ -19,6 +20,8 @@ namespace QASmartTouch.Forms
         public RecentFilesDialog()
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             LoadRecentFiles();
         }
 

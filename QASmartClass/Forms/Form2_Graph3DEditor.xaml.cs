@@ -36,6 +36,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
+            QASmartTouch.Helpers.TouchScrollHelper.AttachToAllScrollViewers(this);
 
             _config = existingConfig ?? new Graph3DConfiguration();
             

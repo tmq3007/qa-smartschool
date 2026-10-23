@@ -41,6 +41,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
 
             _config = new GraphConfiguration();
             graphsList.ItemsSource = _config.Functions;
@@ -81,6 +82,8 @@ namespace QASmartTouch.Forms
         public Form2_GraphEditorUnified(object existingConfig)
         {
             InitializeComponent();
+            TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
 
             if (existingConfig is GraphConfiguration config)
             {

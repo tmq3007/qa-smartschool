@@ -53,6 +53,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             EdgeColor = initialEdgeColor ?? Colors.White;
             InitializePrism();
             this.Loaded += (s, e) =>

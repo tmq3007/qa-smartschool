@@ -48,6 +48,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             InitializeAutoRotateTimer();
             
             // Khởi tạo giá trị mặc định - Khối lập phương đứng thẳng

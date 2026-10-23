@@ -29,6 +29,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToSubMenu(this, btnClose);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             
             LineSpacing = lineSpacing > 0 ? lineSpacing : 40;
             LineOpacity = lineOpacity > 0 ? lineOpacity : 10;

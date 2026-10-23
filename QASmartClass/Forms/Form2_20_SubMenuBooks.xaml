@@ -210,7 +210,11 @@
 
                                  HorizontalScrollBarVisibility="Auto" 
 
-                                 VerticalScrollBarVisibility="Disabled">
+                                 VerticalScrollBarVisibility="Disabled"
+
+                                 PanningMode="HorizontalOnly"
+
+                                 PanningDeceleration="0.002">
 
                         <StackPanel x:Name="gradeTabsPanel" 
 
@@ -352,7 +356,11 @@
 
             <ScrollViewer Grid.Row="3" 
 
-                         VerticalScrollBarVisibility="Auto">
+                         VerticalScrollBarVisibility="Auto"
+
+                         PanningMode="Both"
+
+                         PanningDeceleration="0.002">
 
                 <ItemsControl x:Name="booksGrid" Margin="20">
 
