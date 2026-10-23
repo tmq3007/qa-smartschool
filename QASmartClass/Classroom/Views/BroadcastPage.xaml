@@ -53,10 +53,10 @@
                     <Border x:Name="tabNotice" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,6,6" Cursor="Hand" MouseLeftButtonDown="Tab_Click" Tag="notice">
                         <TextBlock Text="Thông báo" FontSize="13" FontWeight="Bold" Foreground="#333333"/>
                     </Border>
-                    <Border x:Name="tabMedia" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,6,6" Cursor="Hand" MouseLeftButtonDown="Tab_Click" Tag="media">
+                    <Border x:Name="tabMedia" Visibility="Collapsed" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,6,6" Cursor="Hand" MouseLeftButtonDown="Tab_Click" Tag="media">
                         <TextBlock Text="Gửi ảnh/file" FontSize="13" FontWeight="Bold" Foreground="#333333"/>
                     </Border>
-                    <Border x:Name="tabWeb" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,6,6" Cursor="Hand" MouseLeftButtonDown="Tab_Click" Tag="web">
+                    <Border x:Name="tabWeb" Visibility="Collapsed" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="14,8" Margin="0,0,6,6" Cursor="Hand" MouseLeftButtonDown="Tab_Click" Tag="web">
                         <TextBlock Text="Mở website" FontSize="13" FontWeight="Bold" Foreground="#333333"/>
                     </Border>
                 </WrapPanel>
@@ -220,7 +220,7 @@
                         </Border>
                     </StackPanel>
                 </Border>
-                <!-- ═══ TAB 3: MEDIA / FILE ═══ -->
+                <!-- ═══ TAB 3: MEDIA / FILE (ẩn tab: trùng với menu Trao đổi tài liệu của Hub) ═══ -->
                 <Border x:Name="panelMedia" Grid.Row="1" Visibility="Collapsed" Background="White" CornerRadius="12" Padding="24" BorderBrush="#E0E0E0" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="Gửi ảnh / tài liệu cho HS xem" FontSize="14" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,12"/>
@@ -251,7 +251,7 @@
                                 Click="SendMedia_Click" Template="{StaticResource RoundBtn}"/>
                     </StackPanel>
                 </Border>
-                <!-- ═══ TAB 4: WEBSITE ═══ -->
+                <!-- ═══ TAB 4: WEBSITE (ẩn tab: trùng với menu Điều hướng website của Hub) ═══ -->
                 <Border x:Name="panelWeb" Grid.Row="1" Visibility="Collapsed" Background="White" CornerRadius="12" Padding="24" BorderBrush="#E0E0E0" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="Mở website trên máy HS" FontSize="14" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,12"/>
@@ -488,12 +488,7 @@
                 <Border Background="White" CornerRadius="12" Padding="16" BorderBrush="#E0E0E0" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="⚡ Thao tác nhanh" FontSize="16" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,10"/>
-                        <Button Content="Khóa màn hình HS" Padding="0,10" Margin="0,0,0,6" FontSize="14" FontWeight="SemiBold"
-                                Background="#D32F2F" Foreground="White" BorderThickness="0" Cursor="Hand"
-                                Click="LockScreen_Click" Template="{StaticResource RoundBtn}"/>
-                        <Button Content="Mở khóa màn hình HS" Padding="0,10" Margin="0,0,0,6" FontSize="14" FontWeight="SemiBold"
-                                Background="#2E7D32" Foreground="White" BorderThickness="0" Cursor="Hand"
-                                Click="UnlockScreen_Click" Template="{StaticResource RoundBtn}"/>
+                        <!-- Khóa/Mở khóa tất cả đã có ở thanh điều khiển của Hub -->
                         <Button Content="Tắt màn hình HS" Padding="0,10" FontSize="14" FontWeight="SemiBold"
                                 Background="#757575" Foreground="White" BorderThickness="0" Cursor="Hand"
                                 Click="BlackScreen_Click" Template="{StaticResource RoundBtn}"/>

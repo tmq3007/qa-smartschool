@@ -31,6 +31,11 @@ namespace QASmartClass.Classroom.Services
 
         public event EventHandler? LiveChanged;
 
+        /// <summary>Yêu cầu dừng mọi hoạt động chiếu màn hình (vd: khi kết thúc lớp). BroadcastPage lắng nghe và dừng đúng quy trình.</summary>
+        public event EventHandler? StopRequested;
+
+        public void RequestStop() => StopRequested?.Invoke(this, EventArgs.Empty);
+
         private ScreenShareController()
         {
             try

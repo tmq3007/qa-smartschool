@@ -354,7 +354,9 @@ namespace QASmartClass.Classroom.Views
 
                     net.StudentConnected     += OnWebStudentConnected;     // relays WS too
 
-                    net.StudentDisconnected  += OnWebStudentDisconnected;  // relays WS too
+                    net.StudentDisconnected  += OnWebStudentDisconnected;  // relays WS too
+                    ScreenShareController.Instance.LiveChanged -= OnScreenShareLiveChanged;
+                    ScreenShareController.Instance.LiveChanged += OnScreenShareLiveChanged;  // hết chiếu → lấy lại preview HS
 
 
 
@@ -408,7 +410,8 @@ namespace QASmartClass.Classroom.Views
 
                     net.StudentConnected    -= OnWebStudentConnected;
 
-                    net.StudentDisconnected -= OnWebStudentDisconnected;
+                    net.StudentDisconnected -= OnWebStudentDisconnected;
+                    ScreenShareController.Instance.LiveChanged -= OnScreenShareLiveChanged;
 
                     if (net.WebBridge != null)
 
@@ -638,7 +641,8 @@ namespace QASmartClass.Classroom.Views
 
                 UpdateStats();
 
-                AddLog("Kết nối", $"{e.StudentName} • {e.IPAddress}", "#E3F2FD", "#1565C0");
+                AddLog("Kết nối", $"{e.StudentName} • {e.IPAddress}", "#E3F2FD", "#1565C0");
+                RequestScreenshotFromStudent(student); // lấy preview ngay khi HS (kết nối lại) vào lớp
 
             });
 
@@ -658,7 +662,9 @@ namespace QASmartClass.Classroom.Views
 
             {
 
-                if (_webCodeMap.TryGetValue(code, out var student))
+                // Học sinh TCP (app native) không nằm trong _webCodeMap → tra thêm theo StudentCode chính xác để xóa preview khi rời lớp
+                var student = _webCodeMap.TryGetValue(code, out var webSt) ? webSt : _allStudents.FirstOrDefault(s => s.StudentCode != null && s.StudentCode.Equals(code, StringComparison.OrdinalIgnoreCase));
+                if (student != null)
 
                 {
 
@@ -2070,6 +2076,15 @@ namespace QASmartClass.Classroom.Views
 
 
 
+        // Khi dừng chiếu màn hình: yêu cầu HS gửi lại ảnh preview ngay (tránh chờ chu kỳ 10s / mất preview)
+        private void OnScreenShareLiveChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (!ScreenShareController.Instance.IsLive) RequestScreenshots();
+            });
+        }
+
         /// <summary>Gửi lệnh REQUEST_SCREENSHOT tới tất cả HS</summary>
 
         private void RequestScreenshots()

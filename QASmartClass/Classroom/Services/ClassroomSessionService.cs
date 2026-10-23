@@ -183,6 +183,23 @@ namespace QASmartClass.Classroom.Services
         /// </summary>
         public async Task EndSessionAsync()
         {
+            // Kết thúc lớp phải dừng chiếu màn hình (gửi lệnh STOP cho HS TRƯỚC khi đóng mạng)
+            try
+            {
+                if (ScreenShareController.Instance.IsLive)
+                {
+                    ScreenShareController.Instance.RequestStop();
+                    await Task.Delay(700); // chờ BroadcastPage gửi xong lệnh STOP
+                    if (ScreenShareController.Instance.IsLive)
+                    {
+                        // Dự phòng khi trang chiếu không còn sống: ép tắt cờ + VNC
+                        try { QASmartClass.Services.VncBroadcastService.Instance.StopBroadcast(); } catch { }
+                        QASmartClass.Services.BroadcastStateService.Instance.Reset();
+                    }
+                }
+            }
+            catch (Exception ex) { Log.Warning("Không thể dừng chiếu màn hình khi kết thúc lớp: {Err}", ex.Message); }
+
             _networkService.Stop();
             SessionStartTime = null;
 

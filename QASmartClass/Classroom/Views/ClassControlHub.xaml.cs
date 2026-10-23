@@ -85,9 +85,6 @@ namespace QASmartClass.Classroom.Views
                 txtLiveStatus.Foreground = new SolidColorBrush(Color.FromRgb(220, 38, 38)); // #DC2626
                 pillLiveStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(254, 202, 202)); // #FECACA
                 pillLiveStatus.Background = new SolidColorBrush(Color.FromRgb(254, 242, 242)); // #FEF2F2
-
-                txtQuickBroadcast.Text = "Dừng phát";
-                btnQuickBroadcast.Background = new SolidColorBrush(Color.FromRgb(220, 38, 38));
             }
             else
             {
@@ -96,9 +93,6 @@ namespace QASmartClass.Classroom.Views
                 txtLiveStatus.Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)); // #475569
                 pillLiveStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)); // #CBD5E1
                 pillLiveStatus.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)); // #F1F5F9
-
-                txtQuickBroadcast.Text = "Phát màn hình";
-                btnQuickBroadcast.Background = new SolidColorBrush(Color.FromRgb(25, 118, 210)); // #1976D2
             }
         }
 
@@ -196,12 +190,6 @@ namespace QASmartClass.Classroom.Views
 
         #region Quick Actions
 
-        private void QuickBroadcast_Click(object sender, RoutedEventArgs e)
-        {
-            // Chuyển sang tab Trình chiếu & Phát sóng để thao tác chi tiết hoặc bấm phát
-            SelectTab("Broadcast");
-        }
-
         private async void QuickLock_Click(object sender, RoutedEventArgs e)
         {
             if (!_sessionService.IsSessionActive)
@@ -269,16 +257,6 @@ namespace QASmartClass.Classroom.Views
                 Log.Error(ex, "Lỗi khi thay đổi chế độ im lặng");
                 ClassroomDialog.Error($"Không thể thực hiện: {ex.Message}", "Lỗi");
             }
-        }
-
-        private void QuickFile_Click(object sender, RoutedEventArgs e)
-        {
-            SelectTab("Files");
-        }
-
-        private void QuickWeb_Click(object sender, RoutedEventArgs e)
-        {
-            SelectTab("Web");
         }
 
         #endregion

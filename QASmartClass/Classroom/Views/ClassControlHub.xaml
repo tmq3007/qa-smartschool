@@ -1,4 +1,4 @@
-<Page x:Class="QASmartClass.Classroom.Views.ClassControlHub"
+﻿<Page x:Class="QASmartClass.Classroom.Views.ClassControlHub"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Điều Khiển Lớp Học"
@@ -167,14 +167,29 @@
         <!-- ═══ 2. KHU VỰC NỘI DUNG ═══ -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Trạng thái lớp -->
-                <RowDefinition Height="Auto"/> <!-- Hành động nhanh -->
+                <RowDefinition Height="Auto"/> <!-- Trạng thái + điều khiển nhanh (1 hàng duy nhất) -->
                 <RowDefinition Height="*"/>    <!-- Sub-page -->
             </Grid.RowDefinitions>
 
-            <!-- Thanh trạng thái -->
-            <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="18,12">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <!-- Thanh trạng thái + điều khiển nhanh: chỉ giữ thao tác TOÀN LỚP (khóa/mở khóa/im lặng).
+                 Phát màn hình / Gửi file / Mở web đã có ở menu dọc bên trái nên không lặp lại ở đây. -->
+            <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="18,10">
+              <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnQuickLock" Style="{StaticResource QuickActionButtonPrimary}" Background="#DC2626" MinHeight="46" Padding="14,6" Click="QuickLock_Click" ToolTip="Khóa màn hình và chuột bàn phím tất cả máy học sinh">
+                        <TextBlock Text="🔒 Khóa tất cả" VerticalAlignment="Center"/>
+                    </Button>
+                    <Button x:Name="btnQuickUnlock" Style="{StaticResource QuickActionButtonPrimary}" Background="#16A34A" MinHeight="46" Padding="14,6" Click="QuickUnlock_Click" ToolTip="Mở khóa tất cả máy học sinh">
+                        <TextBlock Text="🔓 Mở khóa" VerticalAlignment="Center"/>
+                    </Button>
+                    <Button x:Name="btnQuickMute" Style="{StaticResource QuickActionButtonNeutral}" MinHeight="46" Padding="14,6" Click="QuickMute_Click" ToolTip="Bật / Tắt chế độ yêu cầu im lặng">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="iconQuickMute" Text="🔇" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="txtQuickMute" Text="Im lặng"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Trạng thái lớp" FontSize="15" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" Margin="0,0,14,0"/>
 
                     <!-- Live Share Status Pill -->
@@ -195,90 +210,11 @@
                         <TextBlock Text="🔇 Đang im lặng" FontSize="12" FontWeight="Bold" Foreground="#B91C1C"/>
                     </Border>
                 </StackPanel>
-            </Border>
-
-            <!-- Hành động nhanh: 6 ô lớn, có chú thích -->
-            <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="14,12">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.3*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Phát màn hình -->
-                    <Button Grid.Column="0" x:Name="btnQuickBroadcast" Style="{StaticResource QuickActionButtonPrimary}" Background="#1976D2" Click="QuickBroadcast_Click" ToolTip="Chiếu màn hình giáo viên cho cả lớp">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📺" FontSize="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock x:Name="txtQuickBroadcast" Text="Phát màn hình"/>
-                                <TextBlock Text="Chiếu cho cả lớp" FontSize="11" FontWeight="Normal" Opacity="0.85"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Khóa tất cả -->
-                    <Button Grid.Column="1" x:Name="btnQuickLock" Style="{StaticResource QuickActionButtonPrimary}" Background="#DC2626" Click="QuickLock_Click" ToolTip="Khóa màn hình và chuột bàn phím tất cả máy học sinh">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🔒" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Khóa tất cả"/>
-                                <TextBlock Text="Khóa chuột &amp; bàn phím" FontSize="11" FontWeight="Normal" Opacity="0.85"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Mở khóa -->
-                    <Button Grid.Column="2" x:Name="btnQuickUnlock" Style="{StaticResource QuickActionButtonPrimary}" Background="#16A34A" Click="QuickUnlock_Click" ToolTip="Mở khóa tất cả máy học sinh">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🔓" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Mở khóa"/>
-                                <TextBlock Text="Cho phép thao tác máy" FontSize="11" FontWeight="Normal" Opacity="0.85"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Im lặng -->
-                    <Button Grid.Column="3" x:Name="btnQuickMute" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickMute_Click" ToolTip="Bật / Tắt âm thanh hoặc yêu cầu trật tự">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="iconQuickMute" Text="🔇" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock x:Name="txtQuickMute" Text="Im lặng"/>
-                                <TextBlock Text="Yêu cầu giữ trật tự" FontSize="11" FontWeight="Normal" Opacity="0.75"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Gửi file -->
-                    <Button Grid.Column="4" x:Name="btnQuickFile" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickFile_Click" ToolTip="Chuyển nhanh sang phân hệ gửi tài liệu">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📁" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Gửi file"/>
-                                <TextBlock Text="Đề, tài liệu tức thì" FontSize="11" FontWeight="Normal" Opacity="0.75"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Mở Web -->
-                    <Button Grid.Column="5" x:Name="btnQuickWeb" Style="{StaticResource QuickActionButtonNeutral}" Click="QuickWeb_Click" ToolTip="Chuyển nhanh sang phân hệ điều hướng website">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🌐" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Mở Web"/>
-                                <TextBlock Text="Gửi link tới học sinh" FontSize="11" FontWeight="Normal" Opacity="0.75"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Button>
-                </Grid>
+              </DockPanel>
             </Border>
 
             <!-- Sub-pages container -->
-            <Grid Grid.Row="2" x:Name="PagesContainer" Background="#F0F2F5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid Grid.Row="1" x:Name="PagesContainer" Background="#F0F2F5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <Frame x:Name="frameMonitor" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Visible"/>
                 <Frame x:Name="frameBroadcast" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
                 <Frame x:Name="frameFiles" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>

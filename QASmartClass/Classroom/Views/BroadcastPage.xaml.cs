@@ -93,6 +93,8 @@ namespace QASmartClass.Classroom.Views
                 // Subscribe VNC events (LOI_VID_46)
                 QASmartClass.Services.VncBroadcastService.Instance.StatusChanged += OnVncBroadcastStatusChanged;
                 QASmartClass.Services.VncBroadcastService.Instance.TimerTick += OnVncBroadcastTimerTick;
+                ScreenShareController.Instance.StopRequested -= OnStopShareRequested;
+                ScreenShareController.Instance.StopRequested += OnStopShareRequested;
 
                 // Sync VNC UI state
                 SyncVncUiState(QASmartClass.Services.VncBroadcastService.Instance.IsVncBroadcasting);
@@ -136,7 +138,14 @@ namespace QASmartClass.Classroom.Views
                 // Unsubscribe VNC events (LOI_VID_46)
                 QASmartClass.Services.VncBroadcastService.Instance.StatusChanged -= OnVncBroadcastStatusChanged;
                 QASmartClass.Services.VncBroadcastService.Instance.TimerTick -= OnVncBroadcastTimerTick;
+                ScreenShareController.Instance.StopRequested -= OnStopShareRequested;
             };
+        }
+
+        // Kết thúc lớp → dừng chiếu màn hình (gửi lệnh STOP cho HS trước khi mạng bị đóng)
+        private void OnStopShareRequested(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(StopAllBroadcasting);
         }
 
         internal void StopAllBroadcasting()
