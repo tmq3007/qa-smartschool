@@ -805,6 +805,7 @@ namespace QASmartClass.Classroom.Views
                 double scaleX = 1, scaleY = 1;
                 bool isWindowSource = false;
                 IntPtr targetHWnd = IntPtr.Zero;
+                ScreenSourceInfo? pickedSrc = null;
                 int targetWidth = 1280;
 
                 Dispatcher.Invoke(() =>
@@ -816,6 +817,7 @@ namespace QASmartClass.Classroom.Views
                     scaleX = dpiScale.DpiScaleX;
                     scaleY = dpiScale.DpiScaleY;
 
+                    lock (_srcLock) pickedSrc = _picked;
                     isWindowSource = rbWindow.IsChecked == true;
                     if (isWindowSource && cmbWindowList.SelectedItem is ComboBoxItem item && item.Tag is int pId)
                     {
@@ -845,13 +847,43 @@ namespace QASmartClass.Classroom.Views
                         int pixelW = (int)(screenW * scaleX);
                         int pixelH = (int)(screenH * scaleY);
 
+                        // Nguồn do GV chọn trong hộp "Chọn màn hình / cửa sổ" (đọc lại mỗi khung hình → đổi nguồn ngay khi đang chiếu)
+                        bool usePrintWindow = false;
+                        if (pickedSrc != null)
+                        {
+                            if (pickedSrc.Kind == ScreenSourceKind.Screen)
+                            {
+                                var scr = ScreenSourceEnumerator.FindScreen(pickedSrc.X, pickedSrc.Y, pickedSrc.Width, pickedSrc.Height);
+                                if (scr != null) { x = scr.X; y = scr.Y; pixelW = scr.Width; pixelH = scr.Height; }
+                                isWindowSource = false;
+                            }
+                            else if (ScreenSourceEnumerator.IsWindowAlive(pickedSrc.Hwnd) || ScreenSourceEnumerator.IsMinimized(pickedSrc.Hwnd))
+                            {
+                                isWindowSource = true;
+                                targetHWnd = pickedSrc.Hwnd;
+                                usePrintWindow = true;
+                            }
+                            else
+                            {
+                                // Cửa sổ đã đóng → tự quay về màn hình chính
+                                isWindowSource = false;
+                                Dispatcher.BeginInvoke(new Action(ResetPickedToPrimary));
+                            }
+                        }
+
                         if (isWindowSource && targetHWnd != IntPtr.Zero)
                         {
                             NativeMethods.RECT rect;
                             if (NativeMethods.GetWindowRect(targetHWnd, out rect))
                             {
                                 // Phục hồi cửa sổ nếu bị thu nhỏ
-                                NativeMethods.ShowWindow(targetHWnd, 9); // SW_RESTORE = 9
+                                // Chỉ phục hồi khi đang thu nhỏ (SW_RESTORE trên cửa sổ phóng to sẽ làm nó nhỏ lại)
+                                if (NativeMethods.IsIconic(targetHWnd))
+                                {
+                                    NativeMethods.ShowWindow(targetHWnd, 9); // SW_RESTORE = 9
+                                    System.Threading.Thread.Sleep(120);
+                                    NativeMethods.GetWindowRect(targetHWnd, out rect);
+                                }
 
                                 x = rect.Left;
                                 y = rect.Top;
@@ -886,7 +918,10 @@ namespace QASmartClass.Classroom.Views
                             hBitmap = NativeMethods.CreateCompatibleBitmap(hdcSrc, pixelW, pixelH);
                             hOld = NativeMethods.SelectObject(hdcDest, hBitmap);
 
-                            NativeMethods.BitBlt(hdcDest, 0, 0, pixelW, pixelH, hdcSrc, x, y, 0x00CC0020); // SRCCOPY
+                            // Cửa sổ do GV chọn: PrintWindow lấy đúng nội dung kể cả khi bị che; thất bại thì chụp vùng màn hình
+                            bool printed = usePrintWindow && NativeMethods.PrintWindow(targetHWnd, hdcDest, 2); // PW_RENDERFULLCONTENT
+                            if (!printed)
+                                NativeMethods.BitBlt(hdcDest, 0, 0, pixelW, pixelH, hdcSrc, x, y, 0x00CC0020); // SRCCOPY
 
                             // Convert to BitmapSource
                             bmpSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
@@ -895,6 +930,16 @@ namespace QASmartClass.Classroom.Views
 
                             // Freeze bmpSource TRƯỚC KHI giải phóng tài nguyên GDI để tránh lỗi mất handle
                             bmpSource.Freeze();
+
+                            // PrintWindow thường trả về khung đen với ứng dụng dùng GPU (Chrome, game...) → dự phòng chụp vùng màn hình của cửa sổ
+                            if (printed && IsMostlyBlack(bmpSource))
+                            {
+                                NativeMethods.BitBlt(hdcDest, 0, 0, pixelW, pixelH, hdcSrc, x, y, 0x00CC0020); // SRCCOPY
+                                bmpSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                                    hBitmap, IntPtr.Zero, Int32Rect.Empty,
+                                    BitmapSizeOptions.FromWidthAndHeight(targetWidth, (int)(pixelH * ((double)targetWidth / pixelW))));
+                                bmpSource.Freeze();
+                            }
 
                             // ─── UPGRADE_07: Get Drawing Bitmap from hBitmap for WebP encoding ───
                             if (compFormat == "WebP")
@@ -1036,7 +1081,19 @@ namespace QASmartClass.Classroom.Views
                             // app → ClassroomAppContext (refactored)
                             
                             // Cập nhật ảnh Live Preview xem trước trên màn hình GV (Sử dụng ảnh tĩnh tránh đệ quy Hall of Mirrors)
-                            imgLivePreview.Source = GetBroadcastPlaceholder();
+                            // Live Preview: hiện đúng nguồn đang chiếu (throttle ~2,5 khung/giây). Chỉ dùng ảnh tĩnh khi có nguy cơ "Hall of Mirrors"
+                            // (chiếu toàn màn hình mà cửa sổ app GV không bị loại khỏi luồng chiếu).
+                            if ((DateTime.UtcNow - _lastLivePreview).TotalMilliseconds >= 400)
+                            {
+                                _lastLivePreview = DateTime.UtcNow;
+                                bool previewSafe = (pickedSrc != null && pickedSrc.Kind == ScreenSourceKind.Window) || isWindowSource || IsScreenExclusionActive();
+                                imgLivePreview.Source = (previewSafe && bmpSource != null) ? bmpSource : GetBroadcastPlaceholder();
+                                if (pickedSrc != null)
+                                {
+                                    string lbl = "Đang chiếu: " + DescribeSource(pickedSrc);
+                                    if (txtPreviewLabel.Text != lbl) txtPreviewLabel.Text = lbl;
+                                }
+                            }
 
                             // Luôn gửi qua local bus (chế độ demo trên cùng máy)
                             ClassroomAppContext.DispatchCommand(cmd);
@@ -1172,6 +1229,10 @@ namespace QASmartClass.Classroom.Views
             public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
             [System.Runtime.InteropServices.DllImport("user32.dll")]
             public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+            [System.Runtime.InteropServices.DllImport("user32.dll")]
+            public static extern bool IsIconic(IntPtr hWnd);
+            [System.Runtime.InteropServices.DllImport("user32.dll")]
+            public static extern bool PrintWindow(IntPtr hWnd, IntPtr hdcBlt, uint nFlags);
             
             [System.Runtime.InteropServices.DllImport("user32.dll")]
             public static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint dwAffinity);
@@ -1238,9 +1299,124 @@ namespace QASmartClass.Classroom.Views
         //  SOURCE & TARGET PICKERS
         // ═══════════════════════════════════════════════════════════
 
+        // ═══════════════════════════════════════════════════════════
+        //  CHỌN NGUỒN CHIẾU KIỂU GOOGLE MEET (màn hình / cửa sổ có ảnh xem trước)
+        // ═══════════════════════════════════════════════════════════
+        private readonly object _srcLock = new();
+        private ScreenSourceInfo? _picked;
+        private bool _suppressSourceReset;
+        private const string DefaultSourceText = "Nguồn hiện tại: Toàn màn hình (màn hình chính)";
+
+        private void PickSource_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isBroadcasting && rbCamera.IsChecked == true)
+            {
+                txtPickedSource.Text = "Đang phát Camera — hãy dừng phát trước khi đổi sang màn hình.";
+                return;
+            }
+
+            var owner = Window.GetWindow(this);
+            IntPtr self = owner != null ? new System.Windows.Interop.WindowInteropHelper(owner).Handle : IntPtr.Zero;
+            var dlg = new ScreenSourcePickerWindow(self, IsCurrentSource) { Owner = owner };
+            dlg.SourceInitialized += (_, _) =>
+            {
+                // Đang chiếu: ẩn chính hộp chọn khỏi luồng chiếu để học sinh không thấy GV đang chọn
+                if (_isBroadcasting)
+                    NativeMethods.SetWindowDisplayAffinity(new System.Windows.Interop.WindowInteropHelper(dlg).Handle, 0x11); // WDA_EXCLUDEFROMCAPTURE
+            };
+            if (dlg.ShowDialog() != true || dlg.Selected == null) return;
+            ApplyPickedSource(dlg.Selected);
+        }
+
+        private bool IsCurrentSource(ScreenSourceInfo s)
+        {
+            ScreenSourceInfo? cur;
+            lock (_srcLock) cur = _picked;
+            if (cur == null) return s.Kind == ScreenSourceKind.Screen && s.IsPrimary;
+            if (cur.Kind != s.Kind) return false;
+            return s.Kind == ScreenSourceKind.Window
+                ? s.Hwnd == cur.Hwnd
+                : s.X == cur.X && s.Y == cur.Y && s.Width == cur.Width && s.Height == cur.Height;
+        }
+
+        private void ApplyPickedSource(ScreenSourceInfo src)
+        {
+            lock (_srcLock) _picked = src;
+
+            _suppressSourceReset = true;
+            try
+            {
+                if (src.Kind == ScreenSourceKind.Screen) rbFullScreen.IsChecked = true;
+                else rbWindow.IsChecked = true;
+            }
+            finally { _suppressSourceReset = false; }
+            panelWindowPicker.Visibility = Visibility.Collapsed; // hộp chọn mới thay cho ComboBox cũ
+
+            if (src.Kind == ScreenSourceKind.Window)
+            {
+                if (NativeMethods.IsIconic(src.Hwnd)) NativeMethods.ShowWindow(src.Hwnd, 9);
+                txtPickedSource.Text = $"Nguồn hiện tại: Cửa sổ — {src.Title}";
+            }
+            else
+            {
+                int no = ScreenSourceEnumerator.GetScreens().FindIndex(s => s.X == src.X && s.Y == src.Y) + 1;
+                txtPickedSource.Text = $"Nguồn hiện tại: Màn hình {Math.Max(no, 1)}{(src.IsPrimary ? " (chính)" : "")} — {src.Width}×{src.Height}";
+            }
+            Log.Information("[BroadcastPage] Source picked: {Kind} {Title} ({W}x{H}) live={Live}", src.Kind, src.Title, src.Width, src.Height, _isBroadcasting);
+        }
+
+        private void ResetPickedToPrimary()
+        {
+            lock (_srcLock) _picked = null;
+            _suppressSourceReset = true;
+            try { rbFullScreen.IsChecked = true; }
+            finally { _suppressSourceReset = false; }
+            panelWindowPicker.Visibility = Visibility.Collapsed;
+            txtPickedSource.Text = "Cửa sổ đang chiếu đã đóng — chuyển về Toàn màn hình (màn hình chính)";
+        }
+
+        private void ClearPickedSource()
+        {
+            lock (_srcLock) _picked = null;
+            if (txtPickedSource != null) txtPickedSource.Text = DefaultSourceText;
+        }
+
+        private DateTime _lastLivePreview = DateTime.MinValue;
+
+        private static bool IsScreenExclusionActive() =>
+            QASmartTouch.Services.AppSettings.Broadcast_EnableScreenExclusion
+            && !(QASmartTouch.Services.AppSettings.Broadcast_TurboMode && QASmartTouch.Services.AppSettings.Broadcast_TurboDisableExclusion);
+
+        private static string DescribeSource(ScreenSourceInfo src)
+        {
+            if (src.Kind == ScreenSourceKind.Window) return $"Cửa sổ — {src.Title}";
+            int no = ScreenSourceEnumerator.GetScreens().FindIndex(s => s.X == src.X && s.Y == src.Y) + 1;
+            return $"Màn hình {Math.Max(no, 1)}{(src.IsPrimary ? " (chính)" : "")}";
+        }
+
+        /// <summary>true nếu ảnh gần như đen toàn bộ (mẫu 16×9 điểm).</summary>
+        private static bool IsMostlyBlack(BitmapSource bs)
+        {
+            try
+            {
+                int w = bs.PixelWidth, h = bs.PixelHeight;
+                if (w < 16 || h < 9) return false;
+                var small = new TransformedBitmap(bs, new ScaleTransform(16.0 / w, 9.0 / h));
+                var conv = new FormatConvertedBitmap(small, PixelFormats.Bgra32, null, 0);
+                int sw = conv.PixelWidth, sh = conv.PixelHeight;
+                var buf = new byte[sw * sh * 4];
+                conv.CopyPixels(buf, sw * 4, 0);
+                for (int i = 0; i < buf.Length; i += 4)
+                    if (buf[i] > 8 || buf[i + 1] > 8 || buf[i + 2] > 8) return false;
+                return true;
+            }
+            catch { return false; }
+        }
+
         private void SourceChanged(object sender, RoutedEventArgs e)
         {
             if (panelWindowPicker == null || panelCameraPicker == null) return;
+            if (!_suppressSourceReset) ClearPickedSource(); // GV tự bấm radio cũ → bỏ nguồn đã chọn trong hộp
             panelWindowPicker.Visibility = rbWindow.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             panelCameraPicker.Visibility = rbCamera.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
 

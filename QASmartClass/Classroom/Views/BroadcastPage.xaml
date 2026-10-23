@@ -297,10 +297,13 @@
                 <Border Background="White" CornerRadius="12" Padding="16" Margin="0,0,0,10" BorderBrush="#E0E0E0" BorderThickness="1">
                     <StackPanel>
                         <TextBlock Text="Nguồn phát" FontSize="16" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,10"/>
+                        <!-- Hộp chọn nguồn chiếu kiểu Google Meet (màn hình / cửa sổ có ảnh xem trước) -->
+                        <Button x:Name="btnPickSource" Content="🖥️ Chọn màn hình để chiếu…" FontSize="14" FontWeight="SemiBold" MinHeight="44" Padding="12,8" Margin="0,0,0,6" HorizontalContentAlignment="Left" Background="#E3F2FD" Foreground="#1565C0" BorderThickness="0" Cursor="Hand" Click="PickSource_Click" Template="{StaticResource RoundBtn}" ToolTip="Chọn màn hình muốn chiếu (có ảnh xem trước). Có thể đổi màn hình ngay khi đang chiếu."/>
+                        <TextBlock x:Name="txtPickedSource" Text="Nguồn hiện tại: Toàn màn hình (màn hình chính)" FontSize="12" Foreground="#546E7A" TextWrapping="Wrap" Margin="0,0,0,10"/>
                         <RadioButton x:Name="rbFullScreen" Content="Toàn màn hình" IsChecked="True" FontSize="14" Margin="0,0,0,6"
                                      GroupName="Source" Checked="SourceChanged"
                                      ToolTip="📽️ Phù hợp cho: Trình chiếu PowerPoint, video bài giảng, demo toàn bộ desktop"/>
-                        <RadioButton x:Name="rbWindow" Content="Cửa sổ ứng dụng" FontSize="14" Margin="0,0,0,6"
+                        <RadioButton x:Name="rbWindow" Visibility="Collapsed" Content="Cửa sổ ứng dụng" FontSize="14" Margin="0,0,0,6"
                                      GroupName="Source" Checked="SourceChanged"
                                      ToolTip="💻 Phù hợp cho: Demo coding, thí nghiệm ảo PhET, ứng dụng cụ thể"/>
                         <RadioButton x:Name="rbCamera" Content="Camera/Webcam" FontSize="14"
