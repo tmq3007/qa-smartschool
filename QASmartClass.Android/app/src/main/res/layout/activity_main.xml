@@ -884,6 +884,20 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
 
+                        <!-- Chọn kênh: Nhắn với lớp / các Nhóm / Nhắn riêng với giáo viên (tab dựng bằng code, cuộn ngang) -->
+                        <HorizontalScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:scrollbars="none">
+
+                            <LinearLayout
+                                android:id="@+id/chatTabBar"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal" />
+                        </HorizontalScrollView>
+
                         <!-- Chat Messages Scroll Container -->
                         <ScrollView
                             android:id="@+id/scrollChat"

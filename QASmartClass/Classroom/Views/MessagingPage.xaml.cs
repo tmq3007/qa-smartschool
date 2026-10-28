@@ -185,6 +185,35 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex) { Log.Warning("LoadGroups error: {Err}", ex.Message); }
         }
 
+        /// <summary>Gửi cho 1 học sinh danh sách nhóm chat mà em là thành viên (app Android dùng để dựng kênh Nhóm).</summary>
+        private void SendChatGroupsToStudent(string studentCode)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(studentCode)) return;
+                var mine = _groups
+                    .Where(g => g.MemberCodes != null && g.MemberCodes.Contains(studentCode))
+                    .Select(g => new { id = $"GROUP_{g.Id}", n = (g.Name ?? "").Replace("|", "¦"), e = g.Emoji })
+                    .ToList();
+                var json = System.Text.Json.JsonSerializer.Serialize(mine);
+                _ = ClassroomAppContext.Network?.SendToStudentAsync(studentCode, $"CMD|CHAT_GROUPS|{json}");
+            }
+            catch (Exception ex) { Log.Warning("SendChatGroupsToStudent error: {Err}", ex.Message); }
+        }
+
+        /// <summary>Đồng bộ lại nhóm chat cho mọi học sinh đang kết nối (gọi sau khi GV đổi nhóm).</summary>
+        private void SyncChatGroupsToAllStudents()
+        {
+            try
+            {
+                var net = ClassroomAppContext.Network;
+                if (net == null) return;
+                foreach (var c in net.GetConnectedStudents())
+                    SendChatGroupsToStudent(c.Code);
+            }
+            catch (Exception ex) { Log.Warning("SyncChatGroupsToAllStudents error: {Err}", ex.Message); }
+        }
+
         private void SaveGroups()
         {
             try
@@ -203,6 +232,7 @@ namespace QASmartClass.Classroom.Views
                 }
             }
             catch (Exception ex) { Log.Warning("SaveGroups error: {Err}", ex.Message); }
+            SyncChatGroupsToAllStudents();
         }
 
         // ═══════════════════════════════════════════════════
@@ -563,6 +593,7 @@ namespace QASmartClass.Classroom.Views
                                      || e.EventType == "PRIVATE_CHAT"
                                      || e.EventType == "HAND_RAISE"
                                      || e.EventType == "STUDENT_QUESTION")
+                            .Where(e => !e.Details.Contains("CMD|") && !e.Details.Contains("HB_UPDATE|"))
                             .OrderBy(e => e.Timestamp)
                             .ToList()
                             .TakeLast(100)
@@ -578,6 +609,10 @@ namespace QASmartClass.Classroom.Views
                         if (chatEvents.Any())
                         {
                             AddSystemMessage($"📜 {chatEvents.Count} tin nhắn từ lịch sử");
+
+                            // Bỏ tin giao thức hệ thống bị lưu nhầm trước đây + gộp giơ tay lặp (cùng HS, cùng nội dung, <5 phút)
+                            var sysPrefixes = new[] { "CMD|", "FOCUS_STATUS|", "HB_UPDATE|", "HB_ACK", "HB|", "SCREENSHOT|", "ACK|", "ERR_REPORT|", "ENC_CMD|", "POLICY|", "LOCK_KEYBOARD|", "SILENCE|", "QUIET_MODE|", "MSG|", "CHEATING_ALERT|" };
+                            var lastHand = new Dictionary<string, (string Text, DateTime Time)>();
 
                             foreach (var ev in chatEvents)
                             {
@@ -616,6 +651,14 @@ namespace QASmartClass.Classroom.Views
                                 var bracketIdx = text.LastIndexOf(" [");
                                 if (bracketIdx > 0 && text.EndsWith("]"))
                                     text = text.Substring(0, bracketIdx);
+
+                                if (sysPrefixes.Any(p => text.StartsWith(p, StringComparison.Ordinal))) continue;
+                                if (ev.EventType == "HAND_RAISE")
+                                {
+                                    string hk = ev.Actor ?? "";
+                                    if (lastHand.TryGetValue(hk, out var prevHand) && prevHand.Text == text && (ev.Timestamp - prevHand.Time).TotalMinutes < 5) continue;
+                                    lastHand[hk] = (text, ev.Timestamp);
+                                }
 
                                 // Resolve author name using student lookup
                                 string author;
@@ -976,6 +1019,9 @@ namespace QASmartClass.Classroom.Views
                             
                             // Send Anonymous feedback status to newly connected student
                             _ = ClassroomAppContext.Network?.SendToStudentAsync(args.StudentCode, $"CMD|CLASS_CHAT_ANONYMOUS|{_isFeedbackAnonymous}");
+
+                            // Đồng bộ danh sách nhóm chat cho HS vừa kết nối (kênh Nhóm trên Android)
+                            SendChatGroupsToStudent(args.StudentCode);
 
                             // Send recent message history to newly connected student
                             var recentMsgs = Messages

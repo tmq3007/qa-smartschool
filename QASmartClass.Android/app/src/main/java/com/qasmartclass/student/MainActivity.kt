@@ -106,6 +106,24 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chatContainer: LinearLayout
     private lateinit var edtChatMessage: EditText
     private lateinit var btnSendChat: Button
+    private lateinit var chatTabBar: LinearLayout
+
+    // Chat: 2 kênh — "CLASS" (nhắn với lớp) và "TEACHER" (nhắn riêng với giáo viên)
+    private data class ChatEntry(
+        val sender: String,
+        val message: String,
+        val isSelf: Boolean,
+        val time: String,
+        val channel: String
+    )
+    private val chatHistory = mutableListOf<ChatEntry>()
+    private var currentChatChannel = "TEACHER" // "CLASS" | "TEACHER" | "GROUP_xxx"
+    private var classChatMuted = false
+    private val unreadChatChannels = mutableSetOf<String>()
+
+    // Nhóm chat do giáo viên tạo (đồng bộ qua CMD|CHAT_GROUPS): code = "GROUP_xxx"
+    private data class ChatGroupChannel(val code: String, val name: String, val emoji: String)
+    private val chatGroups = mutableListOf<ChatGroupChannel>()
 
     // Tab 3: Hand Raise
     private lateinit var panelHandRaise: LinearLayout
@@ -310,6 +328,7 @@ class MainActivity : AppCompatActivity() {
         chatContainer = findViewById(R.id.chatContainer)
         edtChatMessage = findViewById(R.id.edtChatMessage)
         btnSendChat = findViewById(R.id.btnSendChat)
+        chatTabBar = findViewById(R.id.chatTabBar)
 
         // Tab 3: Hand Raise
         panelHandRaise = findViewById(R.id.panelHandRaise)
@@ -441,6 +460,7 @@ class MainActivity : AppCompatActivity() {
 
         // Chat Send Listener
         btnSendChat.setOnClickListener { sendChatMessage() }
+        switchChatChannel("TEACHER")
 
         // Screen Broadcast Fullscreen Toggle
         btnFullscreenBroadcast.setOnClickListener {
@@ -602,13 +622,25 @@ class MainActivity : AppCompatActivity() {
         val text = edtChatMessage.text.toString().trim()
         if (text.isEmpty()) return
 
+        val channel = currentChatChannel
+        if (channel == "CLASS" && classChatMuted) {
+            Toast.makeText(this, "🔇 Giáo viên đang tạm khóa trò chuyện cả lớp", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val studentCode = currentStudentCode.ifBlank { edtStudentCode.text.toString().trim() }
         edtChatMessage.setText("")
-        addChatMessage(currentStudentName.ifBlank { "Học sinh" }, text, isSelf = true)
+        addChatMessage(currentStudentName.ifBlank { "Học sinh" }, text, isSelf = true, channel = channel)
 
+        // Giao thức: CHAT|code|ALL|text (cả lớp) | CHAT|code|GROUP_xxx|text (nhóm) | CHAT|code|TEACHER|text (riêng với GV)
+        val wireChannel = when {
+            channel == "CLASS" -> "ALL"
+            channel.startsWith("GROUP_") -> channel
+            else -> "TEACHER"
+        }
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val chatMsg = "CHAT|$studentCode|TEACHER|$text\n"
+                val chatMsg = "CHAT|$studentCode|$wireChannel|$text\n"
                 tcpOutputStream?.write(chatMsg.toByteArray(Charsets.UTF_8))
                 tcpOutputStream?.flush()
             } catch (e: Exception) {
@@ -617,65 +649,189 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun addChatMessage(sender: String, message: String, isSelf: Boolean) {
-        runOnUiThread {
-            val density = resources.displayMetrics.density
-            val padH = (14 * density).toInt()
-            val padV = (10 * density).toInt()
-            val marginV = (6 * density).toInt()
+    /** Chuyển kênh chat (Lớp / Nhóm / Giáo viên), vẽ lại lịch sử của kênh đó. */
+    private fun switchChatChannel(channel: String) {
+        currentChatChannel = channel
+        unreadChatChannels.remove(channel)
+        updateChatTabStyles()
+        renderChat()
+    }
 
-            val bubbleLayout = LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                val params = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    setMargins(0, marginV, 0, marginV)
-                }
-                layoutParams = params
-            }
+    private fun chatChannelLabel(channel: String): String = when {
+        channel == "CLASS" -> "👥 Nhắn với lớp"
+        channel.startsWith("GROUP_") ->
+            chatGroups.firstOrNull { it.code == channel }?.let { "${it.emoji} ${it.name}" } ?: "📋 Nhóm"
+        else -> "👨‍🏫 Nhắn với giáo viên"
+    }
 
-            val senderLabel = TextView(this).apply {
-                text = if (isSelf) "Bạn" else sender
-                textSize = 11f
-                setTextColor(if (isSelf) 0xFF2563EB.toInt() else 0xFF475569.toInt())
+    /** Vẽ lại thanh tab: Lớp → các Nhóm → Giáo viên (cuộn ngang nếu nhiều nhóm). */
+    private fun updateChatTabStyles() {
+        val density = resources.displayMetrics.density
+        val channels = mutableListOf("CLASS")
+        channels.addAll(chatGroups.map { it.code })
+        channels.add("TEACHER")
+
+        chatTabBar.removeAllViews()
+        channels.forEachIndexed { i, ch ->
+            val active = ch == currentChatChannel
+            val label = chatChannelLabel(ch)
+            val btn = Button(this).apply {
+                text = if (unreadChatChannels.contains(ch) && !active) "$label  ●" else label
+                isAllCaps = false
+                textSize = 12.5f
                 setTypeface(null, Typeface.BOLD)
-                val params = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    gravity = if (isSelf) Gravity.END else Gravity.START
-                    bottomMargin = (2 * density).toInt()
-                }
-                layoutParams = params
-            }
-            bubbleLayout.addView(senderLabel)
-
-            val timeString = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-            val msgTextView = TextView(this).apply {
-                text = "$message   $timeString"
-                textSize = 13.5f
-                setPadding(padH, padV, padH, padV)
-                if (isSelf) {
-                    setBackgroundResource(R.drawable.bg_chat_student)
-                    setTextColor(0xFFFFFFFF.toInt())
-                } else {
-                    setBackgroundResource(R.drawable.bg_chat_teacher)
-                    setTextColor(0xFF1E293B.toInt())
-                }
-                maxWidth = (resources.displayMetrics.widthPixels * 0.72).toInt()
+                minWidth = 0
+                minimumWidth = 0
+                setPadding((14 * density).toInt(), 0, (14 * density).toInt(), 0)
+                setBackgroundColor(if (active) 0xFF2563EB.toInt() else 0xFFE2E8F0.toInt())
+                setTextColor(if (active) 0xFFFFFFFF.toInt() else 0xFF475569.toInt())
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    gravity = if (isSelf) Gravity.END else Gravity.START
+                    (40 * density).toInt()
+                ).apply { if (i > 0) marginStart = (6 * density).toInt() }
+                setOnClickListener { switchChatChannel(ch) }
+            }
+            chatTabBar.addView(btn)
+        }
+
+        val isClass = currentChatChannel == "CLASS"
+        txtChatChannelBadge.text = "Gửi: ${chatChannelLabel(currentChatChannel).replace("Nhắn với ", "")}"
+        edtChatMessage.hint = when {
+            isClass && classChatMuted -> "Giáo viên đang tạm khóa trò chuyện cả lớp"
+            isClass -> "Nhập tin nhắn gửi cả lớp..."
+            currentChatChannel.startsWith("GROUP_") -> "Nhập tin nhắn gửi nhóm..."
+            else -> "Nhập tin nhắn riêng gửi Giáo viên..."
+        }
+    }
+
+    /** Nhận danh sách nhóm từ GV: JSON [{"id":"GROUP_x","n":"Tên","e":"📋"}] — chỉ nhóm mà HS là thành viên. */
+    private fun applyChatGroups(json: String) {
+        try {
+            val arr = org.json.JSONArray(json)
+            val list = mutableListOf<ChatGroupChannel>()
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                val id = o.optString("id")
+                if (id.startsWith("GROUP_")) {
+                    list.add(ChatGroupChannel(id, o.optString("n", "Nhóm"), o.optString("e", "📋")))
                 }
             }
-            bubbleLayout.addView(msgTextView)
-
-            chatContainer.addView(bubbleLayout)
-            scrollChat.post { scrollChat.fullScroll(View.FOCUS_DOWN) }
+            runOnUiThread {
+                chatGroups.clear()
+                chatGroups.addAll(list)
+                // Nếu kênh đang mở là nhóm đã bị xoá → về kênh Giáo viên
+                if (currentChatChannel.startsWith("GROUP_") && chatGroups.none { it.code == currentChatChannel }) {
+                    switchChatChannel("TEACHER")
+                } else {
+                    updateChatTabStyles()
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Invalid CHAT_GROUPS payload: ${e.message}")
         }
+    }
+
+    private fun renderChat() {
+        chatContainer.removeAllViews()
+        val density = resources.displayMetrics.density
+        val notice = TextView(this).apply {
+            text = when {
+                currentChatChannel == "CLASS" -> "👥 Tin nhắn tại đây được gửi tới Cả lớp."
+                currentChatChannel.startsWith("GROUP_") -> "📋 Tin nhắn tại đây được gửi tới nhóm “${chatGroups.firstOrNull { it.code == currentChatChannel }?.name ?: ""}”."
+                else -> "🔒 Tin nhắn tại đây chỉ gửi riêng cho Giáo viên."
+            }
+            textSize = 11f
+            gravity = Gravity.CENTER
+            setTextColor(0xFF64748B.toInt())
+            setBackgroundColor(0xFFF1F5F9.toInt())
+            val p = (8 * density).toInt()
+            setPadding(p, p, p, p)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { bottomMargin = (8 * density).toInt() }
+        }
+        chatContainer.addView(notice)
+        chatHistory.filter { it.channel == currentChatChannel }.forEach { appendChatBubble(it) }
+    }
+
+    private fun addChatMessage(sender: String, message: String, isSelf: Boolean, channel: String = "TEACHER") {
+        runOnUiThread {
+            val entry = ChatEntry(
+                sender, message, isSelf,
+                SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+                channel
+            )
+            chatHistory.add(entry)
+            if (entry.channel == currentChatChannel) {
+                appendChatBubble(entry)
+            } else {
+                unreadChatChannels.add(entry.channel)
+                updateChatTabStyles()
+            }
+        }
+    }
+
+    // Phải gọi trên UI thread
+    private fun appendChatBubble(entry: ChatEntry) {
+        val sender = entry.sender
+        val message = entry.message
+        val isSelf = entry.isSelf
+        val density = resources.displayMetrics.density
+        val padH = (14 * density).toInt()
+        val padV = (10 * density).toInt()
+        val marginV = (6 * density).toInt()
+
+        val bubbleLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            val params = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, marginV, 0, marginV)
+            }
+            layoutParams = params
+        }
+
+        val senderLabel = TextView(this).apply {
+            text = if (isSelf) "Bạn" else sender
+            textSize = 11f
+            setTextColor(if (isSelf) 0xFF2563EB.toInt() else 0xFF475569.toInt())
+            setTypeface(null, Typeface.BOLD)
+            val params = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = if (isSelf) Gravity.END else Gravity.START
+                bottomMargin = (2 * density).toInt()
+            }
+            layoutParams = params
+        }
+        bubbleLayout.addView(senderLabel)
+
+        val msgTextView = TextView(this).apply {
+            text = "$message   ${entry.time}"
+            textSize = 13.5f
+            setPadding(padH, padV, padH, padV)
+            if (isSelf) {
+                setBackgroundResource(R.drawable.bg_chat_student)
+                setTextColor(0xFFFFFFFF.toInt())
+            } else {
+                setBackgroundResource(R.drawable.bg_chat_teacher)
+                setTextColor(0xFF1E293B.toInt())
+            }
+            maxWidth = (resources.displayMetrics.widthPixels * 0.72).toInt()
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = if (isSelf) Gravity.END else Gravity.START
+            }
+        }
+        bubbleLayout.addView(msgTextView)
+
+        chatContainer.addView(bubbleLayout)
+        scrollChat.post { scrollChat.fullScroll(View.FOCUS_DOWN) }
     }
 
     private fun savePreferences(name: String, code: String, password: String, ip: String, remember: Boolean) {
@@ -1091,6 +1247,16 @@ class MainActivity : AppCompatActivity() {
                     }
                     updateScreenBroadcast(token, webPort, title)
                 }
+                cleanCmd.startsWith("CMD|CLASS_CHAT_MUTE|") || cleanCmd.startsWith("CMD|CLASS_CHAT_MUTE_STUDENT|") -> {
+                    // Giáo viên khóa/mở trò chuyện cả lớp (chỉ ảnh hưởng kênh "Nhắn với lớp")
+                    val flag = if (cleanCmd.startsWith("CMD|CLASS_CHAT_MUTE_STUDENT|")) parts.getOrNull(3) else parts.getOrNull(2)
+                    classChatMuted = flag?.trim().equals("true", ignoreCase = true)
+                    runOnUiThread { updateChatTabStyles() }
+                }
+                cleanCmd.startsWith("CMD|CHAT_GROUPS|") -> {
+                    // GV đồng bộ danh sách nhóm chat mà HS là thành viên
+                    applyChatGroups(cleanCmd.removePrefix("CMD|CHAT_GROUPS|"))
+                }
                 cleanCmd.startsWith("MSG|") || cleanCmd.startsWith("CMD|MESSAGE|") || cleanCmd.startsWith("CMD|CHAT|") || cleanCmd.startsWith("CHAT|") -> {
                     var msgText = when {
                         cleanCmd.startsWith("MSG|") -> cleanCmd.removePrefix("MSG|")
@@ -1105,7 +1271,15 @@ class MainActivity : AppCompatActivity() {
                         msgText = msgText.substringBefore("|id=")
                     }
 
-                    addChatMessage("👨‍🏫 Giáo viên", msgText, isSelf = false)
+                    // 🔒 = nhắn riêng từ GV → kênh Giáo viên; 📨 [Tên nhóm] → kênh Nhóm; còn lại (📢 thông báo lớp, 📚...) → kênh Cả lớp
+                    val trimmedMsg = msgText.trimStart()
+                    val groupName = Regex("^📨\\s*\\[(.+?)\\]").find(trimmedMsg)?.groupValues?.get(1)
+                    val incomingChannel = when {
+                        trimmedMsg.startsWith("🔒") -> "TEACHER"
+                        groupName != null -> chatGroups.firstOrNull { it.name == groupName }?.code ?: "CLASS"
+                        else -> "CLASS"
+                    }
+                    addChatMessage("👨‍🏫 Giáo viên", msgText, isSelf = false, channel = incomingChannel)
                     messageCard.visibility = View.VISIBLE
                     txtTeacherMessage.text = msgText
                     txtHomeNotice.text = "📩 Giáo viên: $msgText"

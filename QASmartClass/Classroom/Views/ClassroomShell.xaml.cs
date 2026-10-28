@@ -652,6 +652,16 @@ namespace QASmartClass.Classroom.Views
 
 								bool raised = msg.Contains("raised=True");
 
+                                // Học sinh gửi lặp HAND_RAISE định kỳ → chỉ xử lý (toast/âm/log) khi trạng thái thay đổi, tránh spam
+                                try
+                                {
+                                    var curSt = ClassroomAppContext.Session?.ConnectedStudents.FirstOrDefault(s =>
+                                        (!string.IsNullOrEmpty(s.StudentCode) && s.StudentCode.Equals(args.StudentCode, StringComparison.OrdinalIgnoreCase)) ||
+                                        s.Name.Equals(studentName, StringComparison.OrdinalIgnoreCase));
+                                    if (curSt != null && curSt.IsHandRaised == raised) return;
+                                }
+                                catch { }
+
 								
 
 								// Cập nhật trạng thái IsHandRaised trong ClassroomSession
@@ -958,7 +968,8 @@ namespace QASmartClass.Classroom.Views
 
 							// Only save if MessagingPage is NOT currently open (it saves its own)
 
-							if (_currentPage != "F13")
+							// Chỉ lưu tin thật của chat; bỏ lệnh hệ thống (CMD|FOCUS_STATUS, HB_UPDATE...) để không làm rác lịch sử
+                            if (_currentPage != "F13" && QASmartClass.Utilities.MessageGuard.Evaluate(msg).IsAllowedInChat)
 
 							{
 
