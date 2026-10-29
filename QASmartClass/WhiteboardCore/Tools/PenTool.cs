@@ -149,10 +149,12 @@ namespace QASmartClass.WhiteboardCore.Tools
 
             if (IsHighlighter)
             {
-                da.IsHighlighter = true;
+                da.IsHighlighter = false;
+                da.Color = Color.FromArgb(102, strokeColor.R, strokeColor.G, strokeColor.B);
                 da.StylusTip = StylusTip.Rectangle;
-                da.Width = Math.Max(6.0, size * 1.0);
-                da.Height = Math.Max(14.0, size * 2.2);
+                da.Width = Math.Max(10.0, size * 2.2);
+                da.Height = Math.Max(10.0, size * 2.2);
+                da.StylusTip = StylusTip.Ellipse;
             }
             else if (IsCalligraphy)
             {

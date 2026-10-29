@@ -233,6 +233,7 @@ namespace QASmartTouch.Managers
                 IsActive = false
             };
             
+            var elementMap = new Dictionary<UIElement, UIElement>();
             // Deep copy all canvas elements
             if (sourceBoard.CanvasElements != null && sourceBoard.CanvasElements.Count > 0)
             {
@@ -248,6 +249,7 @@ namespace QASmartTouch.Managers
                         if (clonedElement != null)
                         {
                             newBoard.CanvasElements.Add(clonedElement);
+                            elementMap[element] = clonedElement;
                         }
                     }
                     catch (Exception ex)
@@ -268,10 +270,47 @@ namespace QASmartTouch.Managers
             newBoard.LineOpacity = sourceBoard.LineOpacity;
             if (sourceBoard.UndoStack != null)
             {
-                newBoard.UndoStack = new Stack<QASmartTouch.Forms.UndoRedoAction>(sourceBoard.UndoStack.Reverse());
+                // Remapped after Strokes are cloned below
             }
             newBoard.ThumbnailImage = sourceBoard.ThumbnailImage;
             newBoard.Strokes = sourceBoard.Strokes?.Clone();
+
+            var strokeMap = new Dictionary<Stroke, Stroke>();
+            if (sourceBoard.Strokes != null && newBoard.Strokes != null)
+            {
+                for (int i = 0; i < sourceBoard.Strokes.Count && i < newBoard.Strokes.Count; i++)
+                {
+                    strokeMap[sourceBoard.Strokes[i]] = newBoard.Strokes[i];
+                }
+            }
+
+            if (sourceBoard.UndoStack != null)
+            {
+                var remappedUndo = new List<QASmartTouch.Forms.UndoRedoAction>();
+                foreach (var action in sourceBoard.UndoStack.Reverse())
+                {
+                    var clonedAction = CloneAndRemapUndoRedoAction(action, elementMap, strokeMap);
+                    if (clonedAction != null)
+                    {
+                        remappedUndo.Add(clonedAction);
+                    }
+                }
+                newBoard.UndoStack = new Stack<QASmartTouch.Forms.UndoRedoAction>(remappedUndo);
+            }
+
+            if (sourceBoard.RedoStack != null)
+            {
+                var remappedRedo = new List<QASmartTouch.Forms.UndoRedoAction>();
+                foreach (var action in sourceBoard.RedoStack.Reverse())
+                {
+                    var clonedAction = CloneAndRemapUndoRedoAction(action, elementMap, strokeMap);
+                    if (clonedAction != null)
+                    {
+                        remappedRedo.Add(clonedAction);
+                    }
+                }
+                newBoard.RedoStack = new Stack<QASmartTouch.Forms.UndoRedoAction>(remappedRedo);
+            }
             
             _boards.Add(newBoard);
             
@@ -286,6 +325,88 @@ namespace QASmartTouch.Managers
         /// <summary>
         /// Clones a UI element (with fallback for shapes and dynamic controls)
         /// </summary>
+        private QASmartTouch.Forms.UndoRedoAction? CloneAndRemapUndoRedoAction(
+            QASmartTouch.Forms.UndoRedoAction? srcAction,
+            Dictionary<UIElement, UIElement> elementMap,
+            Dictionary<Stroke, Stroke> strokeMap)
+        {
+            if (srcAction == null) return null;
+
+            UIElement? mappedElement = null;
+            if (srcAction.Element != null)
+            {
+                if (!elementMap.TryGetValue(srcAction.Element, out mappedElement))
+                {
+                    mappedElement = CloneElement(srcAction.Element);
+                    if (mappedElement != null)
+                    {
+                        elementMap[srcAction.Element] = mappedElement;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            Stroke? mappedStroke = null;
+            if (srcAction.Stroke != null)
+            {
+                if (!strokeMap.TryGetValue(srcAction.Stroke, out mappedStroke))
+                {
+                    mappedStroke = srcAction.Stroke.Clone();
+                    strokeMap[srcAction.Stroke] = mappedStroke;
+                }
+            }
+
+            List<Stroke>? mappedStrokes = null;
+            if (srcAction.Strokes != null)
+            {
+                mappedStrokes = new List<Stroke>(srcAction.Strokes.Count);
+                foreach (var s in srcAction.Strokes)
+                {
+                    if (s == null) continue;
+                    if (!strokeMap.TryGetValue(s, out var ms))
+                    {
+                        ms = s.Clone();
+                        strokeMap[s] = ms;
+                    }
+                    mappedStrokes.Add(ms);
+                }
+            }
+
+            var mappedBatch = new List<QASmartTouch.Forms.UndoRedoAction>();
+            if (srcAction.BatchActions != null && srcAction.BatchActions.Count > 0)
+            {
+                foreach (var sub in srcAction.BatchActions)
+                {
+                    var clonedSub = CloneAndRemapUndoRedoAction(sub, elementMap, strokeMap);
+                    if (clonedSub != null)
+                    {
+                        mappedBatch.Add(clonedSub);
+                    }
+                }
+                if (mappedBatch.Count == 0 && mappedElement == null && mappedStroke == null && (mappedStrokes == null || mappedStrokes.Count == 0))
+                {
+                    return null;
+                }
+            }
+
+            return new QASmartTouch.Forms.UndoRedoAction
+            {
+                Type = srcAction.Type,
+                Element = mappedElement,
+                Parent = srcAction.Parent,
+                Stroke = mappedStroke,
+                Strokes = mappedStrokes,
+                OldValue = srcAction.OldValue,
+                NewValue = srcAction.NewValue,
+                BatchActions = mappedBatch,
+                Timestamp = srcAction.Timestamp,
+                Description = srcAction.Description
+            };
+        }
+
         private UIElement? CloneElement(UIElement source)
         {
             try
@@ -741,7 +862,7 @@ namespace QASmartTouch.Managers
             var inkPresenter = _mainCanvas.Children.OfType<InkPresenter>().FirstOrDefault();
             if (inkPresenter != null && inkPresenter.Strokes != null)
             {
-                board.Strokes = inkPresenter.Strokes.Clone();
+                board.Strokes = new StrokeCollection(inkPresenter.Strokes);
             }
             board.CanvasWidth = _mainCanvas.Width > 0 && !double.IsNaN(_mainCanvas.Width) ? _mainCanvas.Width : (_mainCanvas.ActualWidth > 0 ? _mainCanvas.ActualWidth : 1920);
             board.CanvasHeight = _mainCanvas.Height > 0 && !double.IsNaN(_mainCanvas.Height) ? _mainCanvas.Height : (_mainCanvas.ActualHeight > 0 ? _mainCanvas.ActualHeight : 1080);
@@ -1020,7 +1141,7 @@ namespace QASmartTouch.Managers
             var activeInkPresenter = _mainCanvas.Children.OfType<InkPresenter>().FirstOrDefault();
             if (activeInkPresenter != null)
             {
-                activeInkPresenter.Strokes = board.Strokes != null ? board.Strokes.Clone() : new StrokeCollection();
+                activeInkPresenter.Strokes = board.Strokes != null ? new StrokeCollection(board.Strokes) : new StrokeCollection();
             }
 
             // Notify caller that board loading has completed

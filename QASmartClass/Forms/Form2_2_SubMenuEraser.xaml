@@ -286,7 +286,7 @@
                             Maximum="50" 
                             Value="20" 
                             TickFrequency="5" 
-                            IsSnapToTickEnabled="True" 
+                            IsSnapToTickEnabled="True" ValueChanged="sliderSize_ValueChanged" 
                             VerticalAlignment="Center"/>
                             
                     <!-- Size value text -->

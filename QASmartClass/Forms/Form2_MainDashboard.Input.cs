@@ -6165,6 +6165,10 @@ namespace QASmartTouch.Forms
 
                 dragHandleBar.MouseLeftButtonDown += (s, e) =>
                 {
+                    if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar) ||
+                        (e.OriginalSource is DependencyObject dep && IsDescendantOf(dep, buttonPanel)))
+                        return;
+
                     isDragging = true;
                     dragStartPoint = e.GetPosition(MainInteractiveBoard);
                     dragHandleBar.CaptureMouse();
@@ -6199,6 +6203,10 @@ namespace QASmartTouch.Forms
 
                 dragHandleBar.PreviewTouchDown += (s, e) =>
                 {
+                    if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar) ||
+                        (e.OriginalSource is DependencyObject dep && IsDescendantOf(dep, buttonPanel)))
+                        return;
+
                     isDragging = true;
                     dragStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
                     dragHandleBar.CaptureTouch(e.TouchDevice);
@@ -7005,16 +7013,8 @@ namespace QASmartTouch.Forms
                     FontWeight = FontWeights.SemiBold,
                     Cursor = Cursors.Hand
                 };
-                btnAddRow.Click += (s, e) =>
-                {
-                    e.Handled = true;
-                    AddTableRow(finalContainer);
-                };
-                btnAddRow.PreviewTouchUp += (s, e) =>
-                {
-                    e.Handled = true;
-                    AddTableRow(finalContainer);
-                };
+                // ✅ QC_4.2_TABLE_DOUBLE_TAP_FIX: 1 cú chạm sinh cả TouchUp lẫn Click → chỉ thực thi 1 lần
+                WireTableTapButton(btnAddRow, () => AddTableRow(finalContainer));
                 buttonPanel.Children.Add(btnAddRow);
 
                 // 2. Nút Thêm Cột ➕ Cột
@@ -7032,16 +7032,7 @@ namespace QASmartTouch.Forms
                     FontWeight = FontWeights.SemiBold,
                     Cursor = Cursors.Hand
                 };
-                btnAddCol.Click += (s, e) =>
-                {
-                    e.Handled = true;
-                    AddTableColumn(finalContainer);
-                };
-                btnAddCol.PreviewTouchUp += (s, e) =>
-                {
-                    e.Handled = true;
-                    AddTableColumn(finalContainer);
-                };
+                WireTableTapButton(btnAddCol, () => AddTableColumn(finalContainer));
                 buttonPanel.Children.Add(btnAddCol);
 
                 // 3. Nút Tùy chọn ⚙️ (Bớt hàng, bớt cột, chỉnh sửa chi tiết)
@@ -7129,18 +7120,9 @@ namespace QASmartTouch.Forms
                     FontSize = 13,
                     Cursor = Cursors.Hand
                 };
-                btnDelete.Click += (s, e) =>
-                {
-                    e.Handled = true;
-                    DeleteTable(finalContainer);
-                };
-                btnDelete.PreviewTouchUp += (s, e) =>
-                {
-                    // ✅ QC_4.2_TABLE_TOUCHUP_FIX (T5): Dùng TouchUp thay TouchDown
-                    // tránh vô tình chọn "Có" khi nhấc tay khỏi MessageBox
-                    e.Handled = true;
-                    DeleteTable(finalContainer);
-                };
+                // ✅ QC_4.2_TABLE_TOUCHUP_FIX (T5): Dùng TouchUp thay TouchDown
+                // tránh vô tình chọn "Có" khi nhấc tay khỏi MessageBox
+                WireTableTapButton(btnDelete, () => DeleteTable(finalContainer));
                 buttonPanel.Children.Add(btnDelete);
 
                 dragHandleGrid.Children.Add(buttonPanel);
@@ -7460,6 +7442,39 @@ namespace QASmartTouch.Forms
             Grid.SetColumn(cellBorder, c);
 
             return cellBorder;
+        }
+
+        /// <summary>
+        /// Gắn hành động cho nút trên thanh công cụ Bảng, hỗ trợ cả chuột lẫn cảm ứng.
+        /// Trên màn hình tương tác, một cú chạm sinh ra cả PreviewTouchUp lẫn Click (mouse/stylus promotion);
+        /// hàm này chỉ thực thi 1 lần cho mỗi cú bấm bằng cách bỏ qua sự kiện trùng đến từ nguồn kia trong 250ms.
+        /// Các cú bấm liên tiếp cùng một nguồn vẫn luôn được xử lý.
+        /// </summary>
+        private static void WireTableTapButton(Button button, Action action)
+        {
+            const long DuplicateWindowMs = 250;
+            long lastTouchTick = long.MinValue / 2;
+            long lastClickTick = long.MinValue / 2;
+
+            button.PreviewTouchUp += (s, e) =>
+            {
+                e.Handled = true;
+                long now = Environment.TickCount64;
+                bool isDuplicate = now - lastClickTick < DuplicateWindowMs;
+                lastTouchTick = now;
+                if (!isDuplicate) action();
+                lastTouchTick = Environment.TickCount64; // mốc sau action (action có thể là hộp thoại modal)
+            };
+
+            button.Click += (s, e) =>
+            {
+                e.Handled = true;
+                long now = Environment.TickCount64;
+                bool isDuplicate = now - lastTouchTick < DuplicateWindowMs;
+                lastClickTick = now;
+                if (!isDuplicate) action();
+                lastClickTick = Environment.TickCount64;
+            };
         }
 
         /// <summary>
@@ -10265,7 +10280,7 @@ namespace QASmartTouch.Forms
             // Apply different styles based on brush type
             switch (_currentBrushType)
             {
-                case "Normal" or "Simple" or "AI":
+                case "Normal" or "Simple" or "AI" or "Shape":
                     // Standard smooth pen
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
@@ -10273,7 +10288,7 @@ namespace QASmartTouch.Forms
                     stroke.StrokeThickness = _currentPenSize;
                     break;
 
-                case "Calligraphy" or "Hoc" or "Shape":
+                case "Calligraphy" or "Hoc":
                     // Educational calligraphy - thicker, round caps
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
@@ -10283,9 +10298,9 @@ namespace QASmartTouch.Forms
 
                 case "Highlighter" or "Marker" or "Mask" or "MaskPen":
                     // Highlighter - semi-transparent, flat ends, wider
-                    stroke.StrokeLineJoin = PenLineJoin.Miter;
-                    stroke.StrokeStartLineCap = PenLineCap.Flat;
-                    stroke.StrokeEndLineCap = PenLineCap.Flat;
+                    stroke.StrokeLineJoin = PenLineJoin.Round;
+                    stroke.StrokeStartLineCap = PenLineCap.Round;
+                    stroke.StrokeEndLineCap = PenLineCap.Round;
                     stroke.Opacity = 0.4;
                     stroke.StrokeThickness = Math.Max(_currentPenSize * 2.2, 10);
                     break;

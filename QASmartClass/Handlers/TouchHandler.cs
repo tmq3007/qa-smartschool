@@ -1124,7 +1124,7 @@ namespace QASmartTouch.Handlers
             // Apply different styles based on brush type
             switch (_currentBrushType)
             {
-                case "Normal" or "Simple" or "AI":
+                case "Normal" or "Simple" or "AI" or "Shape":
                     // Standard smooth pen
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
@@ -1132,7 +1132,7 @@ namespace QASmartTouch.Handlers
                     stroke.StrokeThickness = _currentPenSize;
                     break;
 
-                case "Calligraphy" or "Hoc" or "Shape":
+                case "Calligraphy" or "Hoc":
                     // Educational calligraphy - thicker, round caps
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
@@ -1142,9 +1142,9 @@ namespace QASmartTouch.Handlers
 
                 case "Highlighter" or "Marker" or "Mask" or "MaskPen":
                     // Highlighter - semi-transparent, flat ends, wider
-                    stroke.StrokeLineJoin = PenLineJoin.Miter;
-                    stroke.StrokeStartLineCap = PenLineCap.Flat;
-                    stroke.StrokeEndLineCap = PenLineCap.Flat;
+                    stroke.StrokeLineJoin = PenLineJoin.Round;
+                    stroke.StrokeStartLineCap = PenLineCap.Round;
+                    stroke.StrokeEndLineCap = PenLineCap.Round;
                     stroke.Opacity = 0.4;
                     stroke.StrokeThickness = Math.Max(_currentPenSize * 2.2, 10);
                     break;
