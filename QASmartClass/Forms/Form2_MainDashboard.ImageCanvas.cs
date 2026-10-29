@@ -64,59 +64,13 @@ namespace QASmartTouch.Forms
             // Add image border to container (this will be zoomed)
             container.Children.Add(imageBorder);
 
-            // === CREATE ACTION PANEL (Above image, outside) ===
-            var actionPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(0, -40, 0, 0), // ✨ Negative margin to place above image
-                Background = new SolidColorBrush(Color.FromArgb(230, 255, 255, 255)), // Semi-transparent white
-                Tag = "ActionPanel", // To identify and exclude from mouse events
-                Opacity = 0.35 // ✨ Default faded opacity for touch screens
-            };
-
-            // Zoom In Button
-            var btnZoomIn = CreateActionButton("➕", "#4CAF50", "Phóng to");
-            btnZoomIn.Click += (s, e) =>
-            {
-                // ✨ FIX: Zoom imageBorder (includes border + image)
-                var transform = imageBorder.RenderTransform as ScaleTransform ?? new ScaleTransform(1, 1);
-                imageBorder.RenderTransform = transform;
-                imageBorder.RenderTransformOrigin = new Point(0.5, 0.5);
-                transform.ScaleX *= 1.2;
-                transform.ScaleY *= 1.2;
-                transform.ScaleX = Math.Min(5.0, transform.ScaleX);
-                transform.ScaleY = Math.Min(5.0, transform.ScaleY);
-            };
-
-            // Zoom Out Button
-            var btnZoomOut = CreateActionButton("➖", "#2196F3", "Thu nhỏ");
-            btnZoomOut.Click += (s, e) =>
-            {
-                // ✨ FIX: Zoom imageBorder (includes border + image)
-                var transform = imageBorder.RenderTransform as ScaleTransform ?? new ScaleTransform(1, 1);
-                imageBorder.RenderTransform = transform;
-                imageBorder.RenderTransformOrigin = new Point(0.5, 0.5);
-                transform.ScaleX *= 0.8;
-                transform.ScaleY *= 0.8;
-                transform.ScaleX = Math.Max(0.1, transform.ScaleX);
-                transform.ScaleY = Math.Max(0.1, transform.ScaleY);
-            };
-
-            actionPanel.Children.Add(btnZoomIn);
-            actionPanel.Children.Add(btnZoomOut);
-
-            // Add action panel to container
-            container.Children.Add(actionPanel);
-
             // Set initial position (center of canvas)
             double x = (MainInteractiveBoard.ActualWidth - container.Width) / 2;
             double y = (MainInteractiveBoard.ActualHeight - container.Height) / 2;
             Canvas.SetLeft(container, Math.Max(0, x));
             Canvas.SetTop(container, Math.Max(0, y));
 
-            // === SHOW/HIDE ACTION PANEL + DRAG TO MOVE ===
+            // === DRAG TO MOVE ===
             Point? dragStart = null;
             Point? originalPosition = null;
 
@@ -128,12 +82,11 @@ namespace QASmartTouch.Forms
                 // Only process if not clicking on a button or its children
                 if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(e.OriginalSource, container)) return;
                 
-                // Show this image's action panel and border
-                actionPanel.Opacity = 1.0;
+                // Show this image's border
                 imageBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243)); // #2196F3
                 imageBorder.BorderThickness = new Thickness(2);
                 
-                // Hide all other images' action panels and borders
+                // Hide all other images' borders
                 HideOtherActionPanels(container);
                 
                 // Start dragging
@@ -143,20 +96,6 @@ namespace QASmartTouch.Forms
                 Panel.SetZIndex(container, GetMaxZIndex() + 1);
                 
                 e.Handled = true;
-            };
-
-            // Hover effects to highlight action panel when mouse is over image container
-            container.MouseEnter += (s, e) =>
-            {
-                actionPanel.Opacity = 1.0;
-            };
-            container.MouseLeave += (s, e) =>
-            {
-                // Only fade if the image is not currently selected (has no blue border)
-                if (imageBorder.BorderThickness.Left == 0)
-                {
-                    actionPanel.Opacity = 0.35;
-                }
             };
 
             container.MouseMove += (s, e) =>
@@ -214,34 +153,23 @@ namespace QASmartTouch.Forms
                 e.Handled = true;
             };
             
-            // === HIDE ACTION PANEL WHEN CLICKING OUTSIDE (Memory leak free) ===
+            // === HIDE BORDER WHEN CLICKING OUTSIDE (Memory leak free) ===
             MouseButtonEventHandler clickOutsideHandler = null!;
             clickOutsideHandler = (s, e) =>
             {
-                // If click is not on this container, hide its action panel
+                // If click is not on this container, hide its border
                 if (!IsMouseOverElement(container, e.GetPosition(MainInteractiveBoard)))
                 {
-                    actionPanel.Opacity = 0.35;
                     imageBorder.BorderBrush = null;
                     imageBorder.BorderThickness = new Thickness(0);
                 }
             };
             MainInteractiveBoard.MouseLeftButtonDown += clickOutsideHandler;
 
-            // Delete Button - registered after clickOutsideHandler to safely unsubscribe it
-            var btnDelete = CreateActionButton("🗑️", "#EE5A6F", "Xóa ảnh");
-            btnDelete.Click += (s, e) =>
+            container.Unloaded += (s, e) =>
             {
-                if (container.IsMouseCaptured)
-                {
-                    container.ReleaseMouseCapture();
-                }
-                MainInteractiveBoard.Children.Remove(container);
-                MainInteractiveBoard.MouseLeftButtonDown -= clickOutsideHandler; // Clean up delegate to prevent memory leak
-                try { RecordRemoveAction(container, "Xóa ảnh chụp màn hình"); } catch { }
-                e.Handled = true;
+                MainInteractiveBoard.MouseLeftButtonDown -= clickOutsideHandler;
             };
-            actionPanel.Children.Add(btnDelete);
 
             // === ADD TO CANVAS (QC_4.2_MILESTONE_ZINDEX) ===
             int mediaZ = AllocateMediaWidgetZIndex();
@@ -249,44 +177,6 @@ namespace QASmartTouch.Forms
             MainInteractiveBoard.Children.Add(container);
             try { RegisterNewObjectWithSelectionManager(container); } catch { }
             try { RecordAddAction(container, "Thêm ảnh chụp màn hình"); } catch { }
-        }
-
-        /// <summary>
-        /// Helper method to create action button
-        /// </summary>
-        private Button CreateActionButton(string content, string bgColor, string tooltip)
-        {
-            var button = new Button
-            {
-                Content = content,
-                Width = 32,
-                Height = 32,
-                Margin = new Thickness(2),
-                FontSize = 14,
-                Cursor = Cursors.Hand,
-                ToolTip = tooltip,
-                BorderThickness = new Thickness(0)
-            };
-
-            // Parse color
-            var color = (Color)ColorConverter.ConvertFromString(bgColor);
-            button.Background = new SolidColorBrush(color);
-
-            // Template for rounded button
-            var template = new ControlTemplate(typeof(Button));
-            var border = new FrameworkElementFactory(typeof(Border));
-            border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
-
-            var content_presenter = new FrameworkElementFactory(typeof(ContentPresenter));
-            content_presenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            content_presenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-
-            border.AppendChild(content_presenter);
-            template.VisualTree = border;
-            button.Template = template;
-
-            return button;
         }
 
         /// <summary>
@@ -305,7 +195,7 @@ namespace QASmartTouch.Forms
         }
         
         /// <summary>
-        /// Hide action panels of all other image containers
+        /// Hide borders of all other image containers
         /// </summary>
         private void HideOtherActionPanels(Grid currentContainer)
         {
@@ -313,16 +203,9 @@ namespace QASmartTouch.Forms
             {
                 if (child is Grid grid && grid != currentContainer)
                 {
-                    // Find action panel and image border in this grid
                     foreach (UIElement gridChild in grid.Children)
                     {
-                        // Fade action panel
-                        if (gridChild is StackPanel panel && panel.Tag?.ToString() == "ActionPanel")
-                        {
-                            panel.Opacity = 0.35;
-                        }
-                        
-                        // ✨ FIX: Remove border from imageBorder (Border with Image child)
+                        // Remove border from imageBorder (Border with Image child)
                         if (gridChild is Border border && border.Child is Image img && img.Tag?.ToString() == "Screenshot")
                         {
                             border.BorderBrush = null;

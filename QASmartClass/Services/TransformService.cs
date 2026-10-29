@@ -111,11 +111,28 @@ namespace QASmartTouch.Services
                     }
                     tt.X += delta.X;
                     tt.Y += delta.Y;
+
+                    // ✅ QC_4.2_ROTATE_MOVE_SYNC: Đồng bộ tâm xoay RotateTransform theo delta khi di chuyển
+                    foreach (var rt in tg.Children.OfType<RotateTransform>())
+                    {
+                        rt.CenterX += delta.X;
+                        rt.CenterY += delta.Y;
+                    }
                 }
                 else if (path.RenderTransform is TranslateTransform tt)
                 {
                     tt.X += delta.X;
                     tt.Y += delta.Y;
+                }
+                else if (path.RenderTransform is RotateTransform rt)
+                {
+                    // ✅ QC_4.2_ROTATE_MOVE_SYNC: Nếu chỉ có RotateTransform đơn lẻ, bọc lại chuẩn TransformGroup
+                    var tgNew = new TransformGroup();
+                    tgNew.Children.Add(new TranslateTransform(delta.X, delta.Y));
+                    rt.CenterX += delta.X;
+                    rt.CenterY += delta.Y;
+                    tgNew.Children.Add(rt);
+                    path.RenderTransform = tgNew;
                 }
                 else
                 {
@@ -1215,11 +1232,21 @@ namespace QASmartTouch.Services
             else if (obj.Element is System.Windows.Shapes.Path path && path.Data != null)
             {
                 var tg = new TransformGroup();
-                if (state.RenderTransform != null && state.RenderTransform != Transform.Identity)
+                if (state.RenderTransform is TransformGroup sourceTg)
+                {
+                    foreach (var child in sourceTg.Children)
+                    {
+                        if (child is not RotateTransform)
+                        {
+                            tg.Children.Add(child.Clone());
+                        }
+                    }
+                }
+                else if (state.RenderTransform != null && state.RenderTransform != Transform.Identity && state.RenderTransform is not RotateTransform)
                 {
                     tg.Children.Add(state.RenderTransform.Clone());
                 }
-                tg.Children.Add(new RotateTransform(deltaAngleDegrees, center.X, center.Y));
+                tg.Children.Add(new RotateTransform(targetAngleDegrees, center.X, center.Y));
                 path.RenderTransform = tg;
             }
             else if (obj.Element is CanvasControl canvas)

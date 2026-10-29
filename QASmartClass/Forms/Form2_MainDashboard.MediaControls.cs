@@ -2826,6 +2826,7 @@ namespace QASmartTouch.Forms
                     Cursor = Cursors.Hand,
                     ToolTip = "Xóa đồ thị 3D"
                 };
+                TouchActivationHelper.WireButton(btnDelete);
 
                 var dragGrid = new Grid();
                 dragGrid.Children.Add(titleText);
@@ -2861,6 +2862,9 @@ namespace QASmartTouch.Forms
 
                 dragHandleBar.MouseLeftButtonDown += (s, e) =>
                 {
+                    if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar))
+                        return;
+
                     isDragging = true;
                     dragStartPoint = e.GetPosition(MainInteractiveBoard);
                     dragHandleBar.CaptureMouse();
@@ -2898,6 +2902,9 @@ namespace QASmartTouch.Forms
 
                 dragHandleBar.PreviewTouchDown += (s, e) =>
                 {
+                    if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar))
+                        return;
+
                     isDragging = true;
                     dragStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
                     dragHandleBar.CaptureTouch(e.TouchDevice);

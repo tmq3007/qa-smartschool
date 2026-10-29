@@ -68,7 +68,9 @@ namespace QASmartTouch.Forms
 
             if (!string.IsNullOrEmpty(currentColor))
             {
-                SelectedColor = currentColor;
+                SelectedColor = (currentColor.Equals("#F8F9FA", StringComparison.OrdinalIgnoreCase) || currentColor.Equals("#E2E8F0", StringComparison.OrdinalIgnoreCase))
+                    ? "#B0BEC5"
+                    : currentColor;
                 SelectedPattern = currentPattern;
             }
             else
@@ -293,7 +295,7 @@ namespace QASmartTouch.Forms
             return color switch
             {
                 "White" => "Trắng",
-                "#F8F9FA" => "Xám nhạt",
+                "#B0BEC5" or "#CBD5E1" or "#E2E8F0" or "#F8F9FA" => "Xám nhạt",
                 "#E3F2FD" => "Xanh nhạt",
                 "#E8F5E9" => "Xanh lá nhạt",
                 "#FFFDE7" => "Vàng nhạt",

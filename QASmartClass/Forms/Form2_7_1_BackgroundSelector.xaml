@@ -471,13 +471,13 @@
 
                                Click="btnBackground_Click"
 
-                               Tag="#F8F9FA">
+                               Tag="#B0BEC5">
 
                             <StackPanel>
 
                                 <Border Width="40" Height="30" 
 
-                                       Background="#F8F9FA"
+                                       Background="#B0BEC5"
 
                                        BorderBrush="#DFE4EA"
 
