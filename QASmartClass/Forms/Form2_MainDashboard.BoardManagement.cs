@@ -1519,6 +1519,12 @@ namespace QASmartTouch.Forms
         /// </summary>
         public bool CheckHasUnsavedChanges()
         {
+            // Nếu chưa từng có thay đổi (hoặc đã lưu/ClearDirty) -> không có gì để lưu
+            if (!_isDirty)
+            {
+                return false;
+            }
+
             // 1. Kiểm tra xem có nét vẽ Native Inking nào trên trang hiện tại hay không
             bool hasCurrentStrokes = MainInkPresenter?.Strokes != null && MainInkPresenter.Strokes.Count > 0;
 
@@ -1547,19 +1553,7 @@ namespace QASmartTouch.Forms
             bool hasAnyRealContent = hasCurrentStrokes || hasCanvasContent || hasBoardManagerContent;
 
             // Nếu bảng hoàn toàn trống và không có nội dung gì -> không cần hỏi lưu
-            if (!hasAnyRealContent)
-            {
-                return false;
-            }
-
-            // Nếu đã từng lưu thành công và chưa hề có chỉnh sửa mới nào kể từ lần lưu đó -> không cần hỏi lưu lại
-            if (_currentLectureFilePath != null && !_isDirty)
-            {
-                return false;
-            }
-
-            // Nếu có nội dung thực sự (nét vẽ/đối tượng) và (chưa từng lưu file HOẶC cờ _isDirty đang bật) -> cần hỏi lưu
-            return _isDirty || _currentLectureFilePath == null;
+            return hasAnyRealContent;
         }
 
         #endregion

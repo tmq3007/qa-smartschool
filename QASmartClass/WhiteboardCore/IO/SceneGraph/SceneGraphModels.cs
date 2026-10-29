@@ -37,6 +37,7 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
     }
 
     /// <summary>
+    /// <summary>
     /// Định danh loại phần tử trong Scene Graph
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -44,10 +45,12 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
     {
         Stroke,         // Nét vẽ tự do (Polyline / Path)
         Shape,          // Hình học 2D (Rectangle, Ellipse, Line, Triangle, Arrow, Polygon)
-        Image,          // Hình ảnh tĩnh chèn vào bảng
-        Text,           // Hộp văn bản (TextBlock / TextBox / RichText)
+        Image,          // Hình ảnh tĩnh hoặc khung ảnh tương tác chèn vào bảng
+        Text,           // Hộp văn bản đơn giản (TextBlock / TextBox)
+        Table,          // Bảng biểu dữ liệu ma trận (Hàng x Cột)
+        RichText,       // Hộp văn bản định dạng phong phú (RichTextBox / FlowDocument)
         WebEmbed,       // YouTube, PhET Simulation, Google Maps, WebBrowser
-        Shape3D,        // Khối hình học 3D (Cube, Sphere, Cylinder, Cone, Prism...)
+        Shape3D,        // Khối hình học 3D SGK (Cube, Sphere, Cylinder, Cone, Prism...)
         Chart,          // Biểu đồ (Cột, Đường, Tròn, Miền, Radar, Phân tán)
         Container,      // Nhóm đối tượng lồng nhau (Canvas con)
         GenericXaml     // Fallback cho các UIElement XAML khác
@@ -67,6 +70,7 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
         public int ZIndex { get; set; } = 0;
         public double Opacity { get; set; } = 1.0;
         public double RotationAngle { get; set; } = 0.0;
+        public bool IsLocked { get; set; } = false;
         public string? Tag { get; set; }
 
         // --- Cấu hình riêng cho Stroke (Bút viết) ---
@@ -85,6 +89,8 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
         // --- Cấu hình riêng cho Image ---
         public string? AssetKey { get; set; } // Đường dẫn file ảnh trong ZIP (assets/board_0_img_1.png)
         public string? StretchMode { get; set; } = "Uniform";
+        public string? BorderColorHex { get; set; }
+        public double BorderThickness { get; set; } = 0;
 
         // --- Cấu hình riêng cho Text ---
         public string? TextContent { get; set; }
@@ -92,6 +98,19 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
         public string? FontFamily { get; set; } = "Segoe UI";
         public string? FontWeight { get; set; } = "Normal";
         public string? ForegroundColorHex { get; set; } = "#FFFFFF";
+
+        // --- Cấu hình riêng cho Bảng biểu (Table) ---
+        public int TableRowCount { get; set; }
+        public int TableColumnCount { get; set; }
+        public List<double>? TableRowHeights { get; set; }
+        public List<double>? TableColumnWidths { get; set; }
+        public List<TableCellDTO>? TableCells { get; set; }
+        public string? TableGridColorHex { get; set; } = "#2563EB";
+        public double TableGridThickness { get; set; } = 1.5;
+
+        // --- Cấu hình riêng cho RichText ---
+        public string? RichTextDocumentXaml { get; set; }
+        public string? RichTextPlainText { get; set; }
 
         // --- Cấu hình riêng cho Web Embed (YouTube, PhET, Maps) ---
         public string? EmbedKind { get; set; } // YouTube, PhET, GoogleMaps, LocalVideo
@@ -102,9 +121,14 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
         // --- Cấu hình riêng cho 3D Models / Shapes ---
         public string? Model3DPath { get; set; }
         public string? Model3DType { get; set; } // Cube, Cylinder, Cone, Sphere...
+        public string? VisibleGeometrySvg { get; set; } // SVG Path string cho cạnh nhìn thấy (Nét liền)
+        public string? HiddenGeometrySvg { get; set; }  // SVG Path string cho cạnh khuất (Nét đứt)
         public double RotationX { get; set; }
         public double RotationY { get; set; }
         public double RotationZ { get; set; }
+
+        // --- Nét vẽ ghi chú đè trên đối tượng (Container-Owned Relative Inking) ---
+        public List<AnnotationStrokeDTO>? AnnotationStrokes { get; set; }
 
         // --- Cấu hình riêng cho Nested Container (Ví dụ Chart Canvas) ---
         public List<SceneElementNode>? Children { get; set; }
@@ -118,6 +142,32 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
 
         // --- Fallback XAML Content ---
         public string? FallbackXaml { get; set; }
+    }
+
+    /// <summary>
+    /// Mô hình dữ liệu ô bảng (Table Cell)
+    /// </summary>
+    public class TableCellDTO
+    {
+        public int Row { get; set; }
+        public int Column { get; set; }
+        public string Text { get; set; } = string.Empty;
+        public string? FontFamily { get; set; } = "Segoe UI";
+        public double FontSize { get; set; } = 14.0;
+        public string? FontWeight { get; set; } = "Normal";
+        public string? TextColorHex { get; set; } = "#000000";
+        public string? BackgroundColorHex { get; set; }
+        public string? TextAlignment { get; set; } = "Left";
+    }
+
+    /// <summary>
+    /// Nét vẽ ghi chú cục bộ đè trên thân ảnh hoặc biểu đồ (tính theo tỉ lệ tương đối 0.0 - 1.0)
+    /// </summary>
+    public class AnnotationStrokeDTO
+    {
+        public string? StrokeColorHex { get; set; } = "#FFFF00";
+        public double StrokeThickness { get; set; } = 2.0;
+        public List<Point2D> RelativePoints { get; set; } = new();
     }
 
     /// <summary>

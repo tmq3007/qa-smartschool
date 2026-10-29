@@ -302,5 +302,180 @@ namespace QASmartClass.Tests
             thread.Start();
             thread.Join();
         }
+
+        [Fact]
+        public void Test_SaveLoadService_SaveAndLoad_Table_Image_And_Chart()
+        {
+            var thread = new Thread(() =>
+            {
+                string tempDir = Path.Combine(Path.GetTempPath(), "QASmartTouch_TestAssets_" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(tempDir);
+                string testQascFile = Path.Combine(tempDir, "TestLectureWithAssets.qasc");
+
+                try
+                {
+                    var canvas = new Canvas { Width = 1200, Height = 800 };
+                    var manager = new BoardManager(canvas);
+
+                    // 1. Thêm Bảng (TableContainer)
+                    var tableData = new QASmartTouch.Models.TableData(2, 2);
+                    tableData.Cells[0, 0].Content = "Họ và tên";
+                    tableData.Cells[0, 1].Content = "Điểm số";
+                    tableData.Cells[1, 0].Content = "Nguyễn Văn A";
+                    tableData.Cells[1, 1].Content = "10";
+
+                    var tableGrid = new Grid { Tag = tableData };
+                    var outerBorder = new Border { Child = tableGrid };
+                    var tableBodyGrid = new Grid();
+                    tableBodyGrid.Children.Add(outerBorder);
+
+                    var dragHandle = new Border { Tag = "DragHandle", Height = 34 };
+                    var spTable = new StackPanel
+                    {
+                        Tag = "TableContainer",
+                        Width = 320,
+                        Height = 200
+                    };
+                    spTable.Children.Add(dragHandle);
+                    spTable.Children.Add(tableBodyGrid);
+                    Canvas.SetLeft(spTable, 50);
+                    Canvas.SetTop(spTable, 50);
+                    canvas.Children.Add(spTable);
+
+                    // 2. Thêm Hình ảnh tương tác (InteractiveImage) với BitmapSource thực
+                    var wb = new System.Windows.Media.Imaging.WriteableBitmap(100, 100, 96, 96, PixelFormats.Bgra32, null);
+                    var img = new Image { Source = wb, Width = 100, Height = 100 };
+                    var imgGrid = new Grid();
+                    imgGrid.Children.Add(img);
+                    var imgBorder = new Border
+                    {
+                        Tag = "InteractiveImage",
+                        Child = imgGrid,
+                        Width = 120,
+                        Height = 120,
+                        BorderThickness = new Thickness(2),
+                        BorderBrush = Brushes.Blue
+                    };
+                    Canvas.SetLeft(imgBorder, 400);
+                    Canvas.SetTop(imgBorder, 50);
+                    canvas.Children.Add(imgBorder);
+
+                    // 3. Thêm Biểu đồ (Chart)
+                    var chartConfig = new QASmartTouch.Forms.AreaChartConfiguration
+                    {
+                        Title = "Doanh thu Q3",
+                        RawLabels = "T7, T8, T9",
+                        Series = new List<QASmartTouch.Forms.AreaChartSeriesData>
+                        {
+                            new QASmartTouch.Forms.AreaChartSeriesData
+                            {
+                                Name = "Doanh thu",
+                                Data = new List<double> { 100, 200, 150 },
+                                Color = Colors.Red
+                            }
+                        }
+                    };
+                    var chartImg = new Image { Source = wb, Width = 200, Height = 150 };
+                    var chartBodyGrid = new Grid();
+                    chartBodyGrid.Children.Add(chartImg);
+                    var chartBorder = new Border { Child = chartBodyGrid };
+                    var chartHeader = new Border { Tag = "DragHandle", Height = 34 };
+                    var chartGrid = new Grid
+                    {
+                        Tag = chartConfig,
+                        Width = 220,
+                        Height = 190
+                    };
+                    chartGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(34) });
+                    chartGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                    Grid.SetRow(chartHeader, 0);
+                    Grid.SetRow(chartBorder, 1);
+                    chartGrid.Children.Add(chartHeader);
+                    chartGrid.Children.Add(chartBorder);
+                    Canvas.SetLeft(chartGrid, 600);
+                    Canvas.SetTop(chartGrid, 50);
+                    canvas.Children.Add(chartGrid);
+
+                    // 4. Thêm Khối 3D (3DShape) với màu Đỏ (#FFFF0000) và độ dày 4.5px
+                    var shape3DCanvas = new Canvas
+                    {
+                        Width = 150,
+                        Height = 150,
+                        Tag = "3DShape"
+                    };
+                    var p3D = new Path
+                    {
+                        Stroke = new SolidColorBrush(Colors.Red),
+                        StrokeThickness = 4.5,
+                        Data = new LineGeometry(new Point(0, 0), new Point(100, 100))
+                    };
+                    shape3DCanvas.Children.Add(p3D);
+                    Canvas.SetLeft(shape3DCanvas, 850);
+                    Canvas.SetTop(shape3DCanvas, 50);
+                    canvas.Children.Add(shape3DCanvas);
+
+                    // 5. Act: Lưu bài giảng
+                    bool saveOk = SaveLoadService.SaveLecture(manager, testQascFile, "Bài giảng kiểm tra Assets");
+                    Assert.True(saveOk);
+                    Assert.True(File.Exists(testQascFile));
+
+                    // 6. Assert: Mở tệp ZIP để kiểm tra các file asset đã được lưu thực tế
+                    using (var zip = System.IO.Compression.ZipFile.OpenRead(testQascFile))
+                    {
+                        var assetEntries = zip.Entries.Where(e => e.FullName.StartsWith("assets/")).ToList();
+                        Assert.True(assetEntries.Count >= 2, $"Cần có ít nhất 2 assets (ảnh + chart), thực tế tìm thấy: {assetEntries.Count}");
+                        foreach (var ae in assetEntries)
+                        {
+                            Assert.True(ae.Length > 0, $"Asset {ae.FullName} phải có dung lượng > 0 bytes");
+                        }
+                    }
+
+                    // 7. Act: Nạp lại bài giảng vào BoardManager mới
+                    var newCanvas = new Canvas { Width = 1200, Height = 800 };
+                    var newManager = new BoardManager(newCanvas);
+                    var manifest = SaveLoadService.LoadLecture(newManager, testQascFile);
+
+                    // 8. Assert: Đối tượng phải được khôi phục đầy đủ
+                    Assert.NotNull(manifest);
+                    Assert.True(newManager.BoardCount >= 1);
+                    var board = newManager.Boards[0];
+                    Assert.NotNull(board.CanvasElements);
+                    Assert.Equal(4, board.CanvasElements.Count);
+
+                    // A. Bảng biểu
+                    var loadedTable = board.CanvasElements.OfType<StackPanel>().FirstOrDefault(sp => sp.Tag?.ToString() == "TableContainer");
+                    Assert.NotNull(loadedTable);
+
+                    // B. Ảnh
+                    var loadedImg = board.CanvasElements.OfType<Border>().FirstOrDefault(b => b.Tag?.ToString() == "InteractiveImage");
+                    Assert.NotNull(loadedImg);
+
+                    // C. Biểu đồ
+                    var loadedChart = board.CanvasElements.OfType<Grid>().FirstOrDefault(g => g.Tag is QASmartTouch.Forms.AreaChartConfiguration);
+                    Assert.NotNull(loadedChart);
+
+                    // D. Khối 3D: Phải giữ nguyên màu Đỏ và độ dày nét 4.5px (không bị biến thành màu trắng hoặc 2.0px)
+                    var loaded3D = board.CanvasElements.OfType<Canvas>().FirstOrDefault(c => c.Tag?.ToString() == "3DShape");
+                    Assert.NotNull(loaded3D);
+                    var loadedPath = loaded3D.Children.OfType<Path>().FirstOrDefault();
+                    Assert.NotNull(loadedPath);
+                    Assert.Equal(4.5, loadedPath.StrokeThickness);
+                    Assert.True(loadedPath.Stroke is SolidColorBrush scb3D && scb3D.Color.R == 255 && scb3D.Color.G == 0 && scb3D.Color.B == 0,
+                        $"Màu nét 3D phải là Đỏ, thực tế: {loadedPath.Stroke}");
+                }
+                finally
+                {
+                    try
+                    {
+                        if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
+                    }
+                    catch { }
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
     }
 }

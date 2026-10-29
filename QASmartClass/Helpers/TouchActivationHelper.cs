@@ -288,6 +288,7 @@ namespace QASmartTouch.Helpers
             if (slider == null || GetIsTouchWired(slider)) return;
             SetIsTouchWired(slider, true);
 
+            slider.Focusable = false;
             TouchSliderHelper.ConfigureSlider(slider);
         }
 

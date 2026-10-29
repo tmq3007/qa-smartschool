@@ -1,4 +1,4 @@
-using System;
+ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -167,21 +167,10 @@ namespace QASmartTouch.WhiteboardCore.IO
                             writer.Write(xamlContent);
                         }
 
-                        // 3. Lưu Thumbnail ảnh thu nhỏ
+                        // 3. Lưu Thumbnail ảnh thu nhỏ (>0 bytes an toàn qua MemoryStream)
                         if (board.ThumbnailImage != null)
                         {
-                            try
-                            {
-                                var thumbEntry = archive.CreateEntry(thumbEntryPath, CompressionLevel.Fastest);
-                                using var thumbStream = thumbEntry.Open();
-                                var encoder = new PngBitmapEncoder();
-                                encoder.Frames.Add(BitmapFrame.Create(board.ThumbnailImage));
-                                encoder.Save(thumbStream);
-                            }
-                            catch (Exception ex)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] Lỗi lưu thumbnail trang {boardIndex}: {ex.Message}");
-                            }
+                            WriteBitmapToZipEntry(archive, thumbEntryPath, board.ThumbnailImage);
                         }
 
                         manifest.Boards.Add(boardItem);
@@ -211,6 +200,44 @@ namespace QASmartTouch.WhiteboardCore.IO
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ❌ Lỗi SaveLecture: {ex.Message}\n{ex.StackTrace}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Ghi BitmapSource an toàn vào ZipArchiveEntry thông qua bộ nhớ đệm MemoryStream.
+        /// Khắc phục triệt để lỗi System.NotSupportedException của Windows WIC khi ghi vào luồng nén 1 chiều.
+        /// </summary>
+        public static bool WriteBitmapToZipEntry(ZipArchive archive, string entryPath, BitmapSource bitmap, CompressionLevel level = CompressionLevel.Fastest)
+        {
+            if (archive == null || string.IsNullOrEmpty(entryPath) || bitmap == null) return false;
+            try
+            {
+                if (archive.Mode == ZipArchiveMode.Update)
+                {
+                    var existing = archive.GetEntry(entryPath);
+                    if (existing != null)
+                    {
+                        existing.Delete();
+                    }
+                }
+
+                var entry = archive.CreateEntry(entryPath, level);
+                using (var entryStream = entry.Open())
+                using (var memoryBuffer = new MemoryStream())
+                {
+                    var encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(bitmap));
+                    encoder.Save(memoryBuffer); // MemoryStream có CanSeek == true
+
+                    memoryBuffer.Position = 0;
+                    memoryBuffer.CopyTo(entryStream);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ❌ Lỗi ghi bitmap asset '{entryPath}': {ex.Message}");
                 return false;
             }
         }
@@ -354,8 +381,15 @@ namespace QASmartTouch.WhiteboardCore.IO
                                 var elements = new List<UIElement>();
                                 foreach (var node in nodes)
                                 {
-                                    var elem = SceneGraphSerializer.DeserializeElement(node, assetCache);
-                                    if (elem != null) elements.Add(elem);
+                                    try
+                                    {
+                                        var elem = SceneGraphSerializer.DeserializeElement(node, assetCache);
+                                        if (elem != null) elements.Add(elem);
+                                    }
+                                    catch (Exception nodeEx)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ⚠️ Bỏ qua node {node.Id} ({node.ElementType}) do lỗi: {nodeEx.Message}");
+                                    }
                                 }
                                 board.CanvasElements = elements;
                                 board.ObjectCount = elements.Count;
@@ -445,12 +479,10 @@ namespace QASmartTouch.WhiteboardCore.IO
                             string assetFileName = $"assets/board_{boardIndex}_img_{imgIndex}.png";
                             if (writtenAssets == null || !writtenAssets.Contains(assetFileName))
                             {
-                                var assetEntry = archive.CreateEntry(assetFileName, CompressionLevel.Fastest);
-                                using var assetStream = assetEntry.Open();
-                                var encoder = new PngBitmapEncoder();
-                                encoder.Frames.Add(BitmapFrame.Create(bs));
-                                encoder.Save(assetStream);
-                                writtenAssets?.Add(assetFileName);
+                                if (WriteBitmapToZipEntry(archive, assetFileName, bs))
+                                {
+                                    writtenAssets?.Add(assetFileName);
+                                }
                             }
 
                             double left = Canvas.GetLeft(img);
@@ -472,12 +504,10 @@ namespace QASmartTouch.WhiteboardCore.IO
                                 string assetFileName = $"assets/board_{boardIndex}_chart_{imgIndex}.png";
                                 if (writtenAssets == null || !writtenAssets.Contains(assetFileName))
                                 {
-                                    var assetEntry = archive.CreateEntry(assetFileName, CompressionLevel.Fastest);
-                                    using var assetStream = assetEntry.Open();
-                                    var encoder = new PngBitmapEncoder();
-                                    encoder.Frames.Add(BitmapFrame.Create(cbs));
-                                    encoder.Save(assetStream);
-                                    writtenAssets?.Add(assetFileName);
+                                    if (WriteBitmapToZipEntry(archive, assetFileName, cbs))
+                                    {
+                                        writtenAssets?.Add(assetFileName);
+                                    }
                                 }
 
                                 double left = Canvas.GetLeft(feChart);
