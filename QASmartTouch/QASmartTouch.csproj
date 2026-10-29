@@ -246,6 +246,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>PeriodicTable\Data\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
+    <None Include="..\QASmartClass\Modules\InteractiveBooks\Data\books.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Modules\InteractiveBooks\Data\books.json</Link>
+    </None>
+    <None Include="..\QASmartClass\Modules\InteractiveBooks\Data\images\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Modules\InteractiveBooks\Data\images\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
   </ItemGroup>
 
 </Project>
