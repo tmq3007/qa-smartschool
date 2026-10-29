@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -42,8 +42,13 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                // Ensure WebView2 runtime is initialized
-                await webView.EnsureCoreWebView2Async(null);
+                // Ensure WebView2 runtime is initialized (giới hạn 30s để không treo vô hạn ở màn hình "Đang tải")
+                var initTask = webView.EnsureCoreWebView2Async(null);
+                if (await Task.WhenAny(initTask, Task.Delay(TimeSpan.FromSeconds(30))) != initTask)
+                {
+                    throw new TimeoutException("Trình duyệt WebView2 không khởi tạo được trong 30 giây. Vui lòng kiểm tra Microsoft Edge WebView2 Runtime.");
+                }
+                await initTask;
                 
                 // Configure WebView2 settings
                 webView.CoreWebView2.Settings.IsScriptEnabled = true;
@@ -75,9 +80,8 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs e)
         {
-            // Show loading indicator
+            // Show loading indicator (không Collapse webView: WebView2 cần luôn ở trạng thái hiển thị)
             loadingPanel.Visibility = Visibility.Visible;
-            webView.Visibility = Visibility.Collapsed;
             
             System.Diagnostics.Debug.WriteLine($"🔄 Navigating to: {e.Uri}");
         }
@@ -89,7 +93,6 @@ namespace QASmartTouch.Forms
         {
             // Hide loading indicator
             loadingPanel.Visibility = Visibility.Collapsed;
-            webView.Visibility = Visibility.Visible;
             
             if (e.IsSuccess)
             {

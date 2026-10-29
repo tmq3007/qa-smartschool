@@ -1,4 +1,4 @@
-﻿<Window x:Class="QASmartTouch.Forms.Form2_21_PhETSimulationBrowser"
+<Window x:Class="QASmartTouch.Forms.Form2_21_PhETSimulationBrowser"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -154,7 +154,7 @@
 
                 <wv2:WebView2 x:Name="webView" 
 
-                             Visibility="Collapsed"/>
+                             Visibility="Visible"/>
 
             </Grid>
 
