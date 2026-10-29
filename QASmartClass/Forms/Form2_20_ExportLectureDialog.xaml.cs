@@ -1,3 +1,4 @@
+
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -160,6 +161,9 @@ namespace QASmartTouch.Forms
             pbExport.Minimum = 0;
             pbExport.Maximum = isAllBoards ? totalBoards : 1;
             pbExport.Value = 0;
+            txtProgressStatus.Text = isAllBoards
+                ? $"Đang chuẩn bị xuất dữ liệu... (Trang 1/{totalBoards})"
+                : "Đang chuẩn bị xuất dữ liệu trang hiện tại...";
 
             // Chạy xuất dữ liệu
             Dispatcher.BeginInvoke(new Action(() =>
@@ -182,12 +186,14 @@ namespace QASmartTouch.Forms
                                 {
                                     pbExport.Value = current;
                                     txtProgressStatus.Text = $"Đang xuất bài giảng... (Trang {current}/{total})";
+                                    Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
                                 });
                         }
                         else
                         {
                             pbExport.Value = 1;
                             txtProgressStatus.Text = "Đang kết xuất PDF trang hiện tại...";
+                            Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
                             success = CanvasExportService.ExportToPdf(
                                 _mainDashboard.MainInteractiveBoard,
                                 targetPath,
@@ -221,6 +227,7 @@ namespace QASmartTouch.Forms
                                 {
                                     pbExport.Value = current;
                                     txtProgressStatus.Text = $"Đang lưu hình ảnh... (Trang {current}/{total})";
+                                    Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
                                 });
 
                             targetPath = Path.Combine(outDir, $"{baseName}_Trang_1.{format}");
@@ -229,6 +236,7 @@ namespace QASmartTouch.Forms
                         {
                             pbExport.Value = 1;
                             txtProgressStatus.Text = "Đang lưu hình ảnh trang hiện tại...";
+                            Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
                             success = CanvasExportService.ExportSingleBoardToImage(
                                 _mainDashboard.MainInteractiveBoard,
                                 targetPath,
