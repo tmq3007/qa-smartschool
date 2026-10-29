@@ -560,42 +560,7 @@ namespace QASmartTouch.Forms
 
         public void EraseAtPoint(Point point)
         {
-            var elementsToRemove = new List<UIElement>();
-
-            foreach (UIElement element in DrawingCanvas.Children)
-            {
-                if (element is Polyline stroke)
-                {
-                    // Check if point is near any point in the stroke
-                    foreach (Point strokePoint in stroke.Points)
-                    {
-                        var distance = Math.Sqrt(
-                            Math.Pow(point.X - strokePoint.X, 2) +
-                            Math.Pow(point.Y - strokePoint.Y, 2)
-                        );
-
-                        if (distance < 20) // Eraser radius
-                        {
-                            elementsToRemove.Add(element);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            foreach (var element in elementsToRemove)
-            {
-                DrawingCanvas.Children.Remove(element);
-                if (element is Polyline stroke)
-                {
-                    _strokes.Remove(stroke);
-                }
-            }
-
-            if (elementsToRemove.Count > 0)
-            {
-                System.Diagnostics.Debug.WriteLine($"🧹 Erased {elementsToRemove.Count} strokes");
-            }
+            EraseStrokesAtPoint(point, EraserRadius);
         }
 
         #endregion
@@ -716,11 +681,11 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// Xóa các nét vẽ/hình học cắt qua hoặc nằm trong bán kính tẩy
+        /// Xóa các nét vẽ và hình học (Line, Polygon, Rectangle, Ellipse, Path) cắt qua hoặc nằm trong bán kính tẩy
         /// </summary>
         private void EraseStrokesAtPoint(Point center, double radius)
         {
-            // 1. Kiểm tra xóa trực tiếp nếu click trúng một Shape trên canvas (Rectangle, Ellipse, Line...)
+            // 1. Kiểm tra xóa trực tiếp nếu click trúng một Shape trên canvas
             HitTestResult hitResult = VisualTreeHelper.HitTest(DrawingCanvas, center);
             if (hitResult?.VisualHit is Shape directHitShape && directHitShape != _eraserPreview && DrawingCanvas.Children.Contains(directHitShape))
             {
@@ -732,48 +697,175 @@ namespace QASmartTouch.Forms
                 }
             }
 
-            // 2. Kiểm tra va chạm với các nét vẽ Polyline
-            var strokesToRemove = new List<Polyline>();
-            foreach (var stroke in _strokes)
+            // 2. Quét toàn diện các hình học trên Canvas (Polyline, Line, Polygon, Rectangle, Ellipse, Path)
+            var elementsToRemove = new List<Shape>();
+            var allShapes = DrawingCanvas.Children.OfType<Shape>().ToList();
+
+            foreach (var shape in allShapes)
             {
-                if (_currentEraseSessionElements.Contains(stroke)) continue;
+                if (shape == _eraserPreview) continue;
+                if (_currentEraseSessionElements.Contains(shape)) continue;
 
-                var points = stroke.Points;
-                if (points == null || points.Count == 0) continue;
-
-                double effectiveRadius = radius + (stroke.StrokeThickness / 2.0);
-                double effectiveRadiusSq = effectiveRadius * effectiveRadius;
                 bool hit = false;
+                double effectiveRadius = radius + (shape.StrokeThickness / 2.0);
+                double effectiveRadiusSq = effectiveRadius * effectiveRadius;
 
-                if (points.Count == 1)
+                if (shape is Polyline polyline)
                 {
-                    double d2 = (points[0].X - center.X) * (points[0].X - center.X) +
-                                (points[0].Y - center.Y) * (points[0].Y - center.Y);
-                    if (d2 <= effectiveRadiusSq) hit = true;
-                }
-                else
-                {
-                    for (int i = 0; i < points.Count - 1; i++)
+                    var points = polyline.Points;
+                    if (points != null && points.Count > 0)
                     {
-                        if (DistanceSquaredToSegment(center, points[i], points[i + 1]) <= effectiveRadiusSq)
+                        if (points.Count == 1)
                         {
-                            hit = true;
-                            break;
+                            double d2 = (points[0].X - center.X) * (points[0].X - center.X) +
+                                        (points[0].Y - center.Y) * (points[0].Y - center.Y);
+                            if (d2 <= effectiveRadiusSq) hit = true;
+                        }
+                        else
+                        {
+                            for (int i = 0; i < points.Count - 1; i++)
+                            {
+                                if (DistanceSquaredToSegment(center, points[i], points[i + 1]) <= effectiveRadiusSq)
+                                {
+                                    hit = true;
+                                    break;
+                                }
+                            }
                         }
                     }
+                }
+                else if (shape is Line line)
+                {
+                    Point p1 = new Point(line.X1, line.Y1);
+                    Point p2 = new Point(line.X2, line.Y2);
+                    if (DistanceSquaredToSegment(center, p1, p2) <= effectiveRadiusSq)
+                    {
+                        hit = true;
+                    }
+                }
+                else if (shape is Polygon polygon)
+                {
+                    var points = polygon.Points;
+                    if (points != null && points.Count >= 2)
+                    {
+                        int ptCount = points.Count;
+                        for (int i = 0; i < ptCount; i++)
+                        {
+                            Point p1 = points[i];
+                            Point p2 = points[(i + 1) % ptCount];
+                            if (DistanceSquaredToSegment(center, p1, p2) <= effectiveRadiusSq)
+                            {
+                                hit = true;
+                                break;
+                            }
+                        }
+
+                        // Nếu quét xuyên qua lòng đa giác/tam giác
+                        if (!hit && IsPointInsidePolygon(center, points))
+                        {
+                            hit = true;
+                        }
+                    }
+                }
+                else if (shape is Rectangle rect)
+                {
+                    double left = System.Windows.Controls.Canvas.GetLeft(rect); if (double.IsNaN(left)) left = 0;
+                    double top = System.Windows.Controls.Canvas.GetTop(rect); if (double.IsNaN(top)) top = 0;
+                    double w = rect.Width > 0 ? rect.Width : rect.ActualWidth;
+                    double h = rect.Height > 0 ? rect.Height : rect.ActualHeight;
+
+                    Point tl = new Point(left, top);
+                    Point tr = new Point(left + w, top);
+                    Point br = new Point(left + w, top + h);
+                    Point bl = new Point(left, top + h);
+
+                    if (DistanceSquaredToSegment(center, tl, tr) <= effectiveRadiusSq ||
+                        DistanceSquaredToSegment(center, tr, br) <= effectiveRadiusSq ||
+                        DistanceSquaredToSegment(center, br, bl) <= effectiveRadiusSq ||
+                        DistanceSquaredToSegment(center, bl, tl) <= effectiveRadiusSq)
+                    {
+                        hit = true;
+                    }
+                    // Quét xuyên qua lòng hình chữ nhật
+                    else if (center.X >= left && center.X <= left + w && center.Y >= top && center.Y <= top + h)
+                    {
+                        hit = true;
+                    }
+                }
+                else if (shape is Ellipse ellipse)
+                {
+                    double left = System.Windows.Controls.Canvas.GetLeft(ellipse); if (double.IsNaN(left)) left = 0;
+                    double top = System.Windows.Controls.Canvas.GetTop(ellipse); if (double.IsNaN(top)) top = 0;
+                    double w = ellipse.Width > 0 ? ellipse.Width : ellipse.ActualWidth;
+                    double h = ellipse.Height > 0 ? ellipse.Height : ellipse.ActualHeight;
+
+                    Point ellipseCenter = new Point(left + w / 2.0, top + h / 2.0);
+                    double rx = w / 2.0;
+                    double ry = h / 2.0;
+
+                    if (rx > 0 && ry > 0)
+                    {
+                        double dx = center.X - ellipseCenter.X;
+                        double dy = center.Y - ellipseCenter.Y;
+
+                        // Kiểm tra hình tròn đều
+                        if (Math.Abs(rx - ry) < 1.0)
+                        {
+                            double distToCenter = Math.Sqrt(dx * dx + dy * dy);
+                            // Chạm vào chu vi đường tròn hoặc nằm trong lòng đường tròn
+                            if (Math.Abs(distToCenter - rx) <= effectiveRadius || distToCenter <= rx)
+                            {
+                                hit = true;
+                            }
+                        }
+                        else
+                        {
+                            // Kiểm tra elip tổng quát
+                            double normDistSq = (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry);
+                            if (normDistSq <= 1.0)
+                            {
+                                hit = true;
+                            }
+                            else
+                            {
+                                double outerRx = rx + effectiveRadius;
+                                double outerRy = ry + effectiveRadius;
+                                double normDistOuter = (dx * dx) / (outerRx * outerRx) + (dy * dy) / (outerRy * outerRy);
+                                if (normDistOuter <= 1.0)
+                                {
+                                    hit = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (shape is Path path && path.Data != null)
+                {
+                    try
+                    {
+                        var pen = new Pen(Brushes.Black, (path.StrokeThickness > 0 ? path.StrokeThickness : 2) + radius * 2);
+                        if (path.Data.StrokeContains(pen, center) || (path.Fill != null && path.Data.FillContains(center)))
+                        {
+                            hit = true;
+                        }
+                    }
+                    catch { }
                 }
 
                 if (hit)
                 {
-                    strokesToRemove.Add(stroke);
+                    elementsToRemove.Add(shape);
                 }
             }
 
-            foreach (var stroke in strokesToRemove)
+            foreach (var elem in elementsToRemove)
             {
-                DrawingCanvas.Children.Remove(stroke);
-                _strokes.Remove(stroke);
-                _currentEraseSessionElements.Add(stroke);
+                DrawingCanvas.Children.Remove(elem);
+                if (elem is Polyline poly)
+                {
+                    _strokes.Remove(poly);
+                }
+                _currentEraseSessionElements.Add(elem);
             }
         }
 
@@ -787,11 +879,13 @@ namespace QASmartTouch.Forms
 
             if (_currentEraseSessionElements.Count == 0) return;
 
+            int remainingDrawings = DrawingCanvas.Children.OfType<Shape>().Count(s => s != _eraserPreview);
+
             if (_currentEraseSessionElements.Count == 1)
             {
                 var elem = _currentEraseSessionElements[0];
                 _undoRedoManager?.RecordRemoveAction(elem, DrawingCanvas, "Xóa nét (click)");
-                ShowToast($"❌ Đã xóa 1 nét vẽ. Còn lại: {_strokes.Count}", "#D32F2F");
+                ShowToast($"❌ Đã xóa 1 nét vẽ. Còn lại: {remainingDrawings}", "#D32F2F");
             }
             else
             {
@@ -807,7 +901,7 @@ namespace QASmartTouch.Forms
                     });
                 }
                 _undoRedoManager?.RecordBatchAction(batchActions, $"Xóa {_currentEraseSessionElements.Count} nét vẽ");
-                ShowToast($"❌ Đã xóa {_currentEraseSessionElements.Count} nét vẽ. Còn lại: {_strokes.Count}", "#D32F2F");
+                ShowToast($"❌ Đã xóa {_currentEraseSessionElements.Count} nét vẽ. Còn lại: {remainingDrawings}", "#D32F2F");
             }
 
             _currentEraseSessionElements.Clear();
@@ -833,6 +927,26 @@ namespace QASmartTouch.Forms
             double distX = p.X - projX;
             double distY = p.Y - projY;
             return distX * distX + distY * distY;
+        }
+
+        /// <summary>
+        /// Kiểm tra xem điểm P có nằm trong đa giác khép kín hay không (Ray-casting algorithm)
+        /// </summary>
+        private static bool IsPointInsidePolygon(Point pt, PointCollection points)
+        {
+            if (points == null || points.Count < 3) return false;
+            bool inside = false;
+            int j = points.Count - 1;
+            for (int i = 0; i < points.Count; i++)
+            {
+                if (((points[i].Y > pt.Y) != (points[j].Y > pt.Y)) &&
+                    (pt.X < (points[j].X - points[i].X) * (pt.Y - points[i].Y) / (points[j].Y - points[i].Y) + points[i].X))
+                {
+                    inside = !inside;
+                }
+                j = i;
+            }
+            return inside;
         }
 
         /// <summary>
