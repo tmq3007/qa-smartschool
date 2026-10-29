@@ -48,6 +48,9 @@ namespace QASmartTouch.Helpers
         /// </summary>
         public static Grid BuildChartContainer(ChartContainerOptions options, Canvas? mainCanvas = null)
         {
+            if (double.IsNaN(options.InitialWidth) || options.InitialWidth <= 0) options.InitialWidth = 640;
+            if (double.IsNaN(options.InitialHeight) || options.InitialHeight <= 0) options.InitialHeight = 420;
+
             // 1. Root Container (Grid 2 dòng: Dòng 0 Header Drag Bar, Dòng 1 Chart Body)
             var rootContainer = new Grid
             {
@@ -240,6 +243,13 @@ namespace QASmartTouch.Helpers
                 if (options.OnCopy != null && options.Bitmap is RenderTargetBitmap rtb)
                 {
                     options.OnCopy(rootContainer, rtb);
+                    var srcInk = GetChartInkPresenter(rootContainer);
+                    var newChart = (mainCanvas ?? rootContainer.Parent as Canvas)?.Children.OfType<Grid>().LastOrDefault(g => !ReferenceEquals(g, rootContainer) && IsChartContainer(g));
+                    var dstInk = GetChartInkPresenter(newChart);
+                    if (srcInk != null && dstInk != null && srcInk.Strokes.Count > 0 && dstInk.Strokes.Count == 0)
+                    {
+                        foreach (var stroke in srcInk.Strokes) dstInk.Strokes.Add(stroke.Clone());
+                    }
                 }
                 else
                 {
@@ -350,7 +360,8 @@ namespace QASmartTouch.Helpers
             {
                 if (originalSource is DependencyObject dep)
                 {
-                    return FindVisualParent<Button>(dep) != null;
+                    return QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(dep, headerBar) ||
+                           FindVisualParent<Button>(dep) != null;
                 }
                 return false;
             }
@@ -741,6 +752,15 @@ namespace QASmartTouch.Helpers
         public static bool IsChartContainer(FrameworkElement? element)
         {
             if (element is not Grid grid) return false;
+
+            // Kiểm tra cấu hình Tag
+            if (grid.Tag != null)
+            {
+                var typeName = grid.Tag.GetType().Name;
+                if (typeName.EndsWith("ChartConfiguration"))
+                    return true;
+            }
+
             if (grid.RowDefinitions.Count != 2) return false;
             if (grid.Children.Count < 2) return false;
 
@@ -756,15 +776,26 @@ namespace QASmartTouch.Helpers
                 }
             }
 
-            // Kiểm tra cấu hình Tag
-            if (grid.Tag != null)
-            {
-                var typeName = grid.Tag.GetType().Name;
-                if (typeName.EndsWith("ChartConfiguration"))
-                    return true;
-            }
-
             return false;
+        }
+
+        /// <summary>
+        public static double GetChartBodyHeight(Grid? container, double fallback = 420)
+        {
+            if (container == null) return fallback;
+            var chartImg = GetChartImage(container);
+            if (chartImg != null)
+            {
+                if (!double.IsNaN(chartImg.Height) && chartImg.Height > 0)
+                    return chartImg.Height;
+                if (chartImg.ActualHeight > 0)
+                    return chartImg.ActualHeight;
+            }
+            if (!double.IsNaN(container.Height) && container.Height > HeaderBarHeight)
+                return container.Height - HeaderBarHeight;
+            if (container.ActualHeight > HeaderBarHeight)
+                return container.ActualHeight - HeaderBarHeight;
+            return fallback;
         }
 
         /// <summary>
@@ -816,6 +847,7 @@ namespace QASmartTouch.Helpers
 
         public static T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
         {
+            if (child is T typedSelf) return typedSelf;
             DependencyObject? parentObject = VisualTreeHelper.GetParent(child);
             if (parentObject == null) return null;
             if (parentObject is T parent) return parent;

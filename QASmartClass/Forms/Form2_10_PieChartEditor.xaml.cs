@@ -961,7 +961,7 @@ namespace QASmartTouch.Forms
                 Icon = "🥧",
                 Bitmap = bitmap,
                 InitialWidth = originalContainer.Width,
-                InitialHeight = (originalContainer.Children.OfType<Border>().FirstOrDefault(b => Grid.GetRow(b) == 1)?.Child as Image)?.Height ?? (ChartBorder.ActualHeight * 0.9),
+                InitialHeight = InteractiveChartHelper.GetChartBodyHeight(originalContainer),
                 TargetLeft = originalLeft + 30,
                 TargetTop = originalTop + 30,
                 Configuration = CurrentConfiguration,

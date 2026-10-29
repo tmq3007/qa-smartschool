@@ -740,7 +740,7 @@ namespace QASmartTouch.Forms
                 Icon = "🕸️",
                 Bitmap = bitmap,
                 InitialWidth = originalContainer.Width,
-                InitialHeight = originalContainer.Height - InteractiveChartHelper.HeaderBarHeight,
+                InitialHeight = InteractiveChartHelper.GetChartBodyHeight(originalContainer),
                 TargetLeft = originalLeft + 30,
                 TargetTop = originalTop + 30,
                 Configuration = CurrentConfiguration,
