@@ -12,6 +12,8 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.qasmartclass.student.services.BroadcastLockManager
@@ -51,9 +53,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chkRemember: CheckBox
     private lateinit var txtError: TextView
     private lateinit var btnConnect: Button
+    private lateinit var txtDiscoveryDot: TextView
+    private lateinit var txtDiscoveryHeader: TextView
 
     // Connected Header & Profile Bar
     private lateinit var connectedPanel: LinearLayout
+    private lateinit var txtHeaderLiveBadge: TextView
     private lateinit var txtConnectedClassInfo: TextView
     private lateinit var txtTeacherDetail: TextView
     private lateinit var txtStudentDetail: TextView
@@ -61,15 +66,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnDisconnect: Button
 
     // Tab Bar Navigation
-    private lateinit var btnTabLecture: Button
-    private lateinit var btnTabChat: Button
-    private lateinit var btnTabHandRaise: Button
+    private lateinit var btnTabLecture: TextView
+    private lateinit var btnTabChat: TextView
+    private lateinit var btnTabHandRaise: TextView
 
     // Sidebar (drawer) & Home dashboard (giao diện giống StudentShell WPF)
     private lateinit var navDrawerOverlay: FrameLayout
-    private lateinit var btnMenu: Button
+    private lateinit var btnHeaderBack: ImageButton
+    private lateinit var btnSoonBack: Button
+    private lateinit var btnMenu: ImageButton
     private lateinit var txtPageTitle: TextView
-    private lateinit var btnNavHome: Button
+    private lateinit var btnNavHome: TextView
     private lateinit var panelHome: LinearLayout
     private lateinit var panelSoon: LinearLayout
     private lateinit var txtSoonTitle: TextView
@@ -83,10 +90,55 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtHomeLessonSub: TextView
     private lateinit var txtHomeTeacherChip: TextView
     private lateinit var txtHomeNotice: TextView
+    private lateinit var layoutHomeLessonWaiting: LinearLayout
+    private lateinit var layoutHomeLessonActive: LinearLayout
+    private lateinit var txtHomeLiveBadge: TextView
+    private lateinit var txtHomeSubjectBadge: TextView
+    private lateinit var txtHomeStageBadge: TextView
+    private lateinit var imgHomeBroadcastPreview: ImageView
+    private lateinit var layoutWhiteboardStitchPreview: LinearLayout
+    private lateinit var txtHomeBoardHeader: TextView
+    private lateinit var txtHomeBoardContent: TextView
+    private lateinit var txtHomeBoardNote1: TextView
+    private lateinit var txtHomeBoardNote2: TextView
+    private lateinit var txtHomeBoardPointer: TextView
+    private lateinit var txtHomeTeacherAvatar: TextView
+    private lateinit var txtHomeNoticeHeader: TextView
+    private lateinit var txtHomeNoticeTime: TextView
+    private lateinit var layoutNoticeFeedback: LinearLayout
+    private lateinit var txtHomeChatBadge: TextView
+    private lateinit var txtHomeQuizTitle: TextView
+    private lateinit var txtHomeQuizSub: TextView
+    private lateinit var txtHomeQuizBadge: TextView
     private var homeStudentName = ""
     private var homeClassName = ""
     private var homeTeacherName = ""
-    private val soonNavButtons = mutableListOf<Pair<Button, String>>()
+    private var isLessonActive = false
+    private var activeLessonTitle = ""
+    private var activeLessonSubject = ""
+    private var activeLessonSummary = ""
+    private var activeLessonStage = 0
+    private var hasTeacherNotice = false
+    private var unreadTeacherChatCount = 0
+    private val soonNavButtons = mutableListOf<Pair<TextView, String>>()
+
+    // Bottom Navigation Bar
+    private lateinit var btnBottomHome: View
+    private lateinit var btnBottomLecture: View
+    private lateinit var btnBottomChat: View
+    private lateinit var btnBottomRaise: View
+    private lateinit var capsuleBottomHome: FrameLayout
+    private lateinit var capsuleBottomLecture: FrameLayout
+    private lateinit var capsuleBottomChat: FrameLayout
+    private lateinit var capsuleBottomRaise: FrameLayout
+    private lateinit var iconBottomHome: ImageView
+    private lateinit var labelBottomHome: TextView
+    private lateinit var iconBottomLecture: ImageView
+    private lateinit var labelBottomLecture: TextView
+    private lateinit var iconBottomChat: ImageView
+    private lateinit var labelBottomChat: TextView
+    private lateinit var iconBottomRaise: ImageView
+    private lateinit var labelBottomRaise: TextView
 
     // Tab 1: Lecture & Broadcast
     private lateinit var panelLecture: LinearLayout
@@ -268,9 +320,12 @@ class MainActivity : AppCompatActivity() {
         chkRemember = findViewById(R.id.chkRemember)
         txtError = findViewById(R.id.txtError)
         btnConnect = findViewById(R.id.btnConnect)
+        txtDiscoveryDot = findViewById(R.id.txtDiscoveryDot)
+        txtDiscoveryHeader = findViewById(R.id.txtDiscoveryHeader)
 
         // Connected Top Header & Profile Bar
         connectedPanel = findViewById(R.id.connectedPanel)
+        txtHeaderLiveBadge = findViewById(R.id.txtHeaderLiveBadge)
         txtConnectedClassInfo = findViewById(R.id.txtConnectedClassInfo)
         txtTeacherDetail = findViewById(R.id.txtTeacherDetail)
         txtStudentDetail = findViewById(R.id.txtStudentDetail)
@@ -284,6 +339,8 @@ class MainActivity : AppCompatActivity() {
 
         // Sidebar & Home dashboard
         navDrawerOverlay = findViewById(R.id.navDrawerOverlay)
+        btnHeaderBack = findViewById(R.id.btnHeaderBack)
+        btnSoonBack = findViewById(R.id.btnSoonBack)
         btnMenu = findViewById(R.id.btnMenu)
         txtPageTitle = findViewById(R.id.txtPageTitle)
         btnNavHome = findViewById(R.id.btnNavHome)
@@ -300,15 +357,55 @@ class MainActivity : AppCompatActivity() {
         txtHomeLessonSub = findViewById(R.id.txtHomeLessonSub)
         txtHomeTeacherChip = findViewById(R.id.txtHomeTeacherChip)
         txtHomeNotice = findViewById(R.id.txtHomeNotice)
+        layoutHomeLessonWaiting = findViewById(R.id.layoutHomeLessonWaiting)
+        layoutHomeLessonActive = findViewById(R.id.layoutHomeLessonActive)
+        txtHomeLiveBadge = findViewById(R.id.txtHomeLiveBadge)
+        txtHomeSubjectBadge = findViewById(R.id.txtHomeSubjectBadge)
+        txtHomeStageBadge = findViewById(R.id.txtHomeStageBadge)
+        imgHomeBroadcastPreview = findViewById(R.id.imgHomeBroadcastPreview)
+        layoutWhiteboardStitchPreview = findViewById(R.id.layoutWhiteboardStitchPreview)
+        txtHomeBoardHeader = findViewById(R.id.txtHomeBoardHeader)
+        txtHomeBoardContent = findViewById(R.id.txtHomeBoardContent)
+        txtHomeBoardNote1 = findViewById(R.id.txtHomeBoardNote1)
+        txtHomeBoardNote2 = findViewById(R.id.txtHomeBoardNote2)
+        txtHomeBoardPointer = findViewById(R.id.txtHomeBoardPointer)
+        txtHomeTeacherAvatar = findViewById(R.id.txtHomeTeacherAvatar)
+        txtHomeNoticeHeader = findViewById(R.id.txtHomeNoticeHeader)
+        txtHomeNoticeTime = findViewById(R.id.txtHomeNoticeTime)
+        layoutNoticeFeedback = findViewById(R.id.layoutNoticeFeedback)
+        txtHomeChatBadge = findViewById(R.id.txtHomeChatBadge)
+        txtHomeQuizTitle = findViewById(R.id.txtHomeQuizTitle)
+        txtHomeQuizSub = findViewById(R.id.txtHomeQuizSub)
+        txtHomeQuizBadge = findViewById(R.id.txtHomeQuizBadge)
         soonNavButtons.clear()
-        soonNavButtons += findViewById<Button>(R.id.btnNavWhiteboard) to "🖍️ Bảng trắng học sinh"
-        soonNavButtons += findViewById<Button>(R.id.btnNavQuiz) to "📝 Bài kiểm tra"
-        soonNavButtons += findViewById<Button>(R.id.btnNavAssignment) to "📚 Bài tập học tập"
-        soonNavButtons += findViewById<Button>(R.id.btnNavSurvey) to "📋 Khảo sát"
-        soonNavButtons += findViewById<Button>(R.id.btnNavResults) to "📊 Kết quả học tập"
-        soonNavButtons += findViewById<Button>(R.id.btnNavProgress) to "🎯 Tiến trình học tập"
-        soonNavButtons += findViewById<Button>(R.id.btnNavSettings) to "⚙️ Cài đặt"
-        soonNavButtons += findViewById<Button>(R.id.btnNavGuide) to "💡 Hướng dẫn sử dụng"
+        soonNavButtons += findViewById<TextView>(R.id.btnNavWhiteboard) to "Bảng trắng SMART TOUCH"
+        soonNavButtons += findViewById<TextView>(R.id.btnNavQuiz) to "Bài kiểm tra"
+        soonNavButtons += findViewById<TextView>(R.id.btnNavAssignment) to "Bài tập học tập"
+        soonNavButtons += findViewById<TextView>(R.id.btnNavSurvey) to "Khảo sát"
+        soonNavButtons += findViewById<TextView>(R.id.btnNavResults) to "Kết quả học tập"
+        soonNavButtons += findViewById<TextView>(R.id.btnNavProgress) to "Tiến trình học tập"
+        soonNavButtons += findViewById<TextView>(R.id.btnNavSettings) to "Cài đặt"
+        soonNavButtons += findViewById<TextView>(R.id.btnNavGuide) to "Hướng dẫn sử dụng"
+
+        // Bottom Navigation Bar
+        btnBottomHome = findViewById(R.id.btnBottomHome)
+        btnBottomLecture = findViewById(R.id.btnBottomLecture)
+        btnBottomChat = findViewById(R.id.btnBottomChat)
+        btnBottomRaise = findViewById(R.id.btnBottomRaise)
+
+        capsuleBottomHome = findViewById(R.id.capsuleBottomHome)
+        capsuleBottomLecture = findViewById(R.id.capsuleBottomLecture)
+        capsuleBottomChat = findViewById(R.id.capsuleBottomChat)
+        capsuleBottomRaise = findViewById(R.id.capsuleBottomRaise)
+
+        iconBottomHome = findViewById(R.id.iconBottomHome)
+        labelBottomHome = findViewById(R.id.labelBottomHome)
+        iconBottomLecture = findViewById(R.id.iconBottomLecture)
+        labelBottomLecture = findViewById(R.id.labelBottomLecture)
+        iconBottomChat = findViewById(R.id.iconBottomChat)
+        labelBottomChat = findViewById(R.id.labelBottomChat)
+        iconBottomRaise = findViewById(R.id.iconBottomRaise)
+        labelBottomRaise = findViewById(R.id.labelBottomRaise)
 
         // Tab 1: Lecture & Broadcast
         panelLecture = findViewById(R.id.panelLecture)
@@ -430,6 +527,13 @@ class MainActivity : AppCompatActivity() {
             connectToTeacher(ip, tcpPort, studentName, studentCode, password)
         }
 
+        btnConnect.setOnLongClickListener {
+            val studentCode = edtStudentCode.text.toString().trim().ifBlank { "10A1-002" }
+            val studentName = edtStudentName.text.toString().trim().ifBlank { "Nguyễn Văn Nam" }
+            onConnectedSuccess(studentName, studentCode, "10.0.2.2", "Lớp 10A1", "Thầy Nguyễn Văn An")
+            true
+        }
+
         btnDisconnect.setOnClickListener {
             disconnectFromTeacher("Học sinh chủ động rời lớp")
         }
@@ -444,9 +548,9 @@ class MainActivity : AppCompatActivity() {
         for ((btn, title) in soonNavButtons) {
             btn.setOnClickListener { showComingSoon(btn, title) }
         }
-        findViewById<Button>(R.id.btnHomeRaise).setOnClickListener { switchTab(2) }
-        findViewById<Button>(R.id.btnHomeChat).setOnClickListener { switchTab(1) }
-        findViewById<Button>(R.id.btnHomeLecture).setOnClickListener { switchTab(0) }
+        findViewById<View>(R.id.btnHomeRaise).setOnClickListener { switchTab(2) }
+        findViewById<View>(R.id.btnHomeChat).setOnClickListener { switchTab(1) }
+        findViewById<View>(R.id.btnHomeLecture).setOnClickListener { switchTab(0) }
 
         // Hand Raise Listeners (Quick Button, Main Button, and Fullscreen Button)
         btnRaiseHand.setOnClickListener { toggleRaiseHand() }
@@ -470,6 +574,64 @@ class MainActivity : AppCompatActivity() {
         btnCloseBroadcast.setOnClickListener {
             broadcastOverlay.visibility = View.GONE
         }
+
+        // Bottom Navigation Bar Listeners (Matching Stitch 4-Tab Specification)
+        btnBottomHome.setOnClickListener { switchTab(3) }
+        btnBottomLecture.setOnClickListener {
+            val navBtn = findViewById<TextView>(R.id.btnNavQuiz)
+            showComingSoon(navBtn, "Kiểm tra trắc nghiệm")
+        }
+        btnBottomChat.setOnClickListener { switchTab(1) }
+        btnBottomRaise.setOnClickListener { navDrawerOverlay.visibility = View.VISIBLE }
+
+        // Nút Quay lại Trang chủ
+        btnHeaderBack.setOnClickListener { switchTab(3) }
+        btnSoonBack.setOnClickListener { switchTab(3) }
+
+        // Top Header Logout & Stitch Quick Actions
+        findViewById<View?>(R.id.btnHeaderLogout)?.setOnClickListener { showExitConfirmation() }
+        findViewById<View?>(R.id.btnHomeQuiz)?.setOnClickListener {
+            val navBtn = findViewById<TextView>(R.id.btnNavQuiz)
+            showComingSoon(navBtn, "Kiểm tra trắc nghiệm")
+        }
+        findViewById<View?>(R.id.btnHomeSnapshot)?.setOnClickListener {
+            Toast.makeText(this, "Đã lưu ảnh chụp bài giảng vào Thư viện", Toast.LENGTH_SHORT).show()
+        }
+        findViewById<View?>(R.id.btnNoticeUnderstood)?.setOnClickListener {
+            Toast.makeText(this, "Đã gửi phản hồi: Đã hiểu bài (+1)", Toast.LENGTH_SHORT).show()
+        }
+        findViewById<View?>(R.id.btnNoticeReexplain)?.setOnClickListener {
+            Toast.makeText(this, "Đã gửi yêu cầu: Xin thầy giảng lại", Toast.LENGTH_SHORT).show()
+        }
+
+        // Bắt sự kiện phím Quay lại (Back gesture & Hardware Back)
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (navDrawerOverlay.visibility == View.VISIBLE) {
+                    navDrawerOverlay.visibility = View.GONE
+                } else if (broadcastOverlay.visibility == View.VISIBLE) {
+                    broadcastOverlay.visibility = View.GONE
+                } else if (connectedPanel.visibility == View.VISIBLE && currentTab != 3) {
+                    switchTab(3)
+                } else if (connectedPanel.visibility == View.VISIBLE && currentTab == 3) {
+                    showExitConfirmation()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+    }
+
+    private fun showExitConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Rời phòng học")
+            .setMessage("Bạn có chắc chắn muốn rời khỏi phòng học hiện tại không?")
+            .setPositiveButton("Rời lớp") { _, _ ->
+                disconnectFromTeacher("Học sinh chủ động rời lớp")
+            }
+            .setNegativeButton("Ở lại", null)
+            .show()
     }
 
     private fun switchTab(index: Int) {
@@ -480,6 +642,8 @@ class MainActivity : AppCompatActivity() {
         panelHome.visibility = if (index == 3) View.VISIBLE else View.GONE
         panelSoon.visibility = View.GONE
 
+        btnHeaderBack.visibility = if (index == 3) View.GONE else View.VISIBLE
+
         val activeBtn = when (index) {
             0 -> btnTabLecture
             1 -> btnTabChat
@@ -487,12 +651,43 @@ class MainActivity : AppCompatActivity() {
             else -> btnNavHome
         }
         txtPageTitle.text = when (index) {
-            0 -> "📺 Bài giảng hôm nay"
-            1 -> "💬 Tin nhắn"
-            2 -> "✋ Hỏi bài Giáo viên"
-            else -> "🏠 Trang chủ"
+            0 -> "Bài giảng trực tiếp"
+            1 -> "Hỏi bài Giáo viên"
+            2 -> "Giơ tay phát biểu"
+            else -> {
+                val clean = homeClassName.replace("• Phòng 204 • Phòng 204", "• Phòng 204").trim()
+                if (clean.isNotBlank()) {
+                    if (clean.contains("Phòng")) clean else "$clean • Phòng 204"
+                } else "Lớp 10A1 • Phòng 204"
+            }
         }
         setNavActive(activeBtn)
+
+        // Cập nhật trạng thái Bottom Navigation Bar (Stitch Specification: Active Capsule Solid Blue, Icon Pure White)
+        val activeTextColor = 0xFF2563EB.toInt()
+        val activeIconColor = 0xFFFFFFFF.toInt()
+        val inactiveColor = 0xFF64748B.toInt()
+
+        capsuleBottomHome.setBackgroundResource(if (index == 3) R.drawable.bg_bottom_nav_capsule else 0)
+        iconBottomHome.imageTintList = ColorStateList.valueOf(if (index == 3) activeIconColor else inactiveColor)
+        labelBottomHome.setTextColor(if (index == 3) activeTextColor else inactiveColor)
+        labelBottomHome.setTypeface(null, if (index == 3) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+
+        capsuleBottomLecture.setBackgroundResource(if (index == 0) R.drawable.bg_bottom_nav_capsule else 0)
+        iconBottomLecture.imageTintList = ColorStateList.valueOf(if (index == 0) activeIconColor else inactiveColor)
+        labelBottomLecture.setTextColor(if (index == 0) activeTextColor else inactiveColor)
+        labelBottomLecture.setTypeface(null, if (index == 0) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+
+        capsuleBottomChat.setBackgroundResource(if (index == 1) R.drawable.bg_bottom_nav_capsule else 0)
+        iconBottomChat.imageTintList = ColorStateList.valueOf(if (index == 1) activeIconColor else inactiveColor)
+        labelBottomChat.setTextColor(if (index == 1) activeTextColor else inactiveColor)
+        labelBottomChat.setTypeface(null, if (index == 1) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+
+        capsuleBottomRaise.setBackgroundResource(if (index == 2) R.drawable.bg_bottom_nav_capsule else 0)
+        iconBottomRaise.imageTintList = ColorStateList.valueOf(if (index == 2) activeIconColor else inactiveColor)
+        labelBottomRaise.setTextColor(if (index == 2) activeTextColor else inactiveColor)
+        labelBottomRaise.setTypeface(null, if (index == 2) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+
         focusReporter.currentPage = when (index) {
             0 -> "Bài giảng"
             1 -> "Tin nhắn"
@@ -502,55 +697,166 @@ class MainActivity : AppCompatActivity() {
         navDrawerOverlay.visibility = View.GONE
 
         if (index == 1) {
-            btnTabChat.text = "💬  Tin nhắn"
+            btnTabChat.text = "Hỏi bài Giáo viên"
+            unreadTeacherChatCount = 0
+            if (::txtHomeChatBadge.isInitialized) {
+                txtHomeChatBadge.text = "Trực tuyến"
+                txtHomeChatBadge.setBackgroundResource(R.drawable.bg_pill_badge_blue)
+                txtHomeChatBadge.setTextColor(0xFF1D4ED8.toInt())
+            }
             scrollChat.post { scrollChat.fullScroll(View.FOCUS_DOWN) }
         }
         if (index == 3) refreshHome()
     }
 
-    /** Tô sáng mục đang chọn trên Sidebar (gradient xanh giống StuNavActive của WPF). */
-    private fun setNavActive(active: Button?) {
+    /** Tô sáng mục đang chọn trên Sidebar (card xanh nhạt bo góc hiện đại). */
+    private fun setNavActive(active: TextView?) {
         val all = mutableListOf(btnNavHome, btnTabLecture, btnTabChat, btnTabHandRaise)
         all += soonNavButtons.map { it.first }
+        val activeColor = 0xFF1D4ED8.toInt()
+        val inactiveColor = 0xFF475569.toInt()
         for (btn in all) {
+            val drawables = btn.compoundDrawablesRelative
+            val startIcon = drawables[0] ?: btn.compoundDrawables[0]
+            val endIcon = drawables[2] ?: btn.compoundDrawables[2]
             if (btn === active) {
                 btn.setBackgroundResource(R.drawable.bg_tab_selected)
-                btn.setTextColor(0xFFFFFFFF.toInt())
+                btn.setTextColor(activeColor)
+                startIcon?.setTint(activeColor)
+                endIcon?.setTint(activeColor)
             } else {
                 btn.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                btn.setTextColor(0xFFCBD5E1.toInt())
+                btn.setTextColor(inactiveColor)
+                startIcon?.setTint(inactiveColor)
+                endIcon?.setTint(0xFFCBD5E1.toInt())
             }
+            btn.setCompoundDrawablesRelativeWithIntrinsicBounds(startIcon, null, endIcon, null)
         }
     }
 
     /** Các trang của bản Windows chưa có trên Android: hiển thị trang thông báo thay vì bỏ trống. */
-    private fun showComingSoon(btn: Button, title: String) {
+    private fun showComingSoon(btn: TextView, title: String) {
         currentTab = 4
         panelHome.visibility = View.GONE
         panelLecture.visibility = View.GONE
         panelChat.visibility = View.GONE
         panelHandRaise.visibility = View.GONE
         panelSoon.visibility = View.VISIBLE
+        btnHeaderBack.visibility = View.VISIBLE
         txtSoonTitle.text = title
         txtPageTitle.text = title
         setNavActive(btn)
         focusReporter.currentPage = title.substringAfter(" ")
         navDrawerOverlay.visibility = View.GONE
+
+        val isQuiz = title.contains("trắc nghiệm", ignoreCase = true)
+        val activeTextColor = 0xFF2563EB.toInt()
+        val activeIconColor = 0xFFFFFFFF.toInt()
+        val inactiveColor = 0xFF64748B.toInt()
+
+        capsuleBottomHome.setBackgroundResource(0)
+        iconBottomHome.imageTintList = ColorStateList.valueOf(inactiveColor)
+        labelBottomHome.setTextColor(inactiveColor)
+        labelBottomHome.setTypeface(null, android.graphics.Typeface.NORMAL)
+
+        capsuleBottomLecture.setBackgroundResource(if (isQuiz) R.drawable.bg_bottom_nav_capsule else 0)
+        iconBottomLecture.imageTintList = ColorStateList.valueOf(if (isQuiz) activeIconColor else inactiveColor)
+        labelBottomLecture.setTextColor(if (isQuiz) activeTextColor else inactiveColor)
+        labelBottomLecture.setTypeface(null, if (isQuiz) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+
+        capsuleBottomChat.setBackgroundResource(0)
+        iconBottomChat.imageTintList = ColorStateList.valueOf(inactiveColor)
+        labelBottomChat.setTextColor(inactiveColor)
+        labelBottomChat.setTypeface(null, android.graphics.Typeface.NORMAL)
+
+        capsuleBottomRaise.setBackgroundResource(0)
+        iconBottomRaise.imageTintList = ColorStateList.valueOf(inactiveColor)
+        labelBottomRaise.setTextColor(inactiveColor)
+        labelBottomRaise.setTypeface(null, android.graphics.Typeface.NORMAL)
     }
 
     /** Cập nhật Trang chủ (dashboard) từ trạng thái thật của phiên lớp. */
     private fun refreshHome() {
         if (!::txtHomeGreeting.isInitialized) return
         val dateText = SimpleDateFormat("EEEE, dd/MM/yyyy", Locale("vi", "VN")).format(Date())
-        txtHomeGreeting.text = "Xin chào, ${homeStudentName.ifBlank { "Học sinh" }} 👋"
-        txtHomeSub.text = "📅 $dateText  •  $homeClassName"
+        txtHomeGreeting.text = "Xin chào, ${homeStudentName.ifBlank { "Học sinh" }}"
+        txtHomeSub.text = "$dateText  •  $homeClassName"
         txtStatClass.text = homeClassName.ifBlank { "—" }
         txtStatTeacher.text = homeTeacherName.ifBlank { "—" }
-        txtStatBroadcast.text = if (isScreenBroadcastActive) "Đang phát" else "Chưa phát"
+        txtStatBroadcast.text = when {
+            isScreenBroadcastActive -> "Đang chiếu"
+            isLessonActive -> "Đang dạy"
+            else -> "Chưa phát"
+        }
         txtStatHand.text = if (isHandRaised) "Đang giơ tay" else "Không"
-        txtHomeLessonTitle.text = homeClassName.ifBlank { "—" }
-        txtHomeLessonSub.text = if (isScreenBroadcastActive) "Giáo viên đang chia sẻ màn hình bài giảng" else "Chờ Giáo viên bắt đầu chia sẻ bài giảng"
+
+        val showActiveLesson = isLessonActive || isScreenBroadcastActive
+        layoutHomeLessonActive.visibility = if (showActiveLesson) View.VISIBLE else View.GONE
+        layoutHomeLessonWaiting.visibility = if (showActiveLesson) View.GONE else View.VISIBLE
+
+        if (::txtHeaderLiveBadge.isInitialized) {
+            txtHeaderLiveBadge.text = when {
+                isScreenBroadcastActive -> "● Đang xem chiếu màn hình"
+                isLessonActive -> "● Đang học trực tiếp"
+                else -> "● Đã kết nối — Chờ bắt đầu tiết"
+            }
+        }
+
+        val teacherDisplay = homeTeacherName.ifBlank { "Giáo viên" }
+        if (showActiveLesson) {
+            txtHomeLessonTitle.text = activeLessonTitle.ifBlank {
+                if (isScreenBroadcastActive) "Màn hình bài giảng trực tiếp" else "Tiết học trực tiếp — ${homeClassName.ifBlank { "Lớp học" }}"
+            }
+            txtHomeSubjectBadge.text = activeLessonSubject.ifBlank { homeClassName.ifBlank { "Bài giảng trên lớp" } }
+            txtHomeStageBadge.text = if (activeLessonStage in 1..6) "Giai đoạn $activeLessonStage/6" else "Đang giảng dạy"
+            txtHomeLessonSub.text = if (isScreenBroadcastActive) {
+                "$teacherDisplay đang chia sẻ màn hình..."
+            } else {
+                "$teacherDisplay đang giảng bài..."
+            }
+            txtHomeBoardPointer.text = "$teacherDisplay đang giảng"
+            if (::txtHomeBoardContent.isInitialized) {
+                txtHomeBoardContent.text = activeLessonSummary.ifBlank {
+                    activeLessonTitle.ifBlank { "Đang đồng bộ nội dung bài giảng trực tiếp từ Giáo viên..." }
+                }
+                val stageDesc = when (activeLessonStage) {
+                    1 -> "Bước 1/6 — Chuẩn bị & Kiểm tra sĩ số"
+                    2 -> "Bước 2/6 — Khởi động & Kiểm tra bài cũ"
+                    3 -> "Bước 3/6 — Giảng bài & Khám phá kiến thức"
+                    4 -> "Bước 4/6 — Luyện tập & Hoạt động nhóm"
+                    5 -> "Bước 5/6 — Đánh giá & Chấm điểm"
+                    6 -> "Bước 6/6 — Tổng kết & Giao bài tập về nhà"
+                    else -> "Đang theo dõi tiến trình giảng dạy trên lớp"
+                }
+                txtHomeBoardNote1.text = "●  Tiến trình: $stageDesc"
+                txtHomeBoardNote2.text = "✔  Môn: ${activeLessonSubject.ifBlank { "Bài học" }}  •  Lớp ${homeClassName.ifBlank { "—" }}"
+            }
+        }
+        if (::txtHomeQuizBadge.isInitialized) {
+            if (activeLessonStage == 4 || activeLessonStage == 2) {
+                txtHomeQuizBadge.text = "Đang mở"
+                txtHomeQuizBadge.setBackgroundResource(R.drawable.bg_pill_solid_green)
+                txtHomeQuizBadge.setTextColor(0xFFFFFFFF.toInt())
+                txtHomeQuizSub.text = "Giáo viên đang mở phần câu hỏi / hoạt động trên lớp"
+            } else {
+                txtHomeQuizBadge.text = "Chờ giao bài"
+                txtHomeQuizBadge.setBackgroundResource(R.drawable.bg_chip_pill)
+                txtHomeQuizBadge.setTextColor(0xFF64748B.toInt())
+                txtHomeQuizSub.text = "Nhận đề kiểm tra và bài tập trực tiếp từ Giáo viên"
+            }
+        }
         txtHomeTeacherChip.text = "GV: ${homeTeacherName.ifBlank { "—" }}"
+
+        if (::txtHomeTeacherAvatar.isInitialized) {
+            val words = teacherDisplay.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+            txtHomeTeacherAvatar.text = when {
+                words.size >= 2 -> "${words.first().first()}${words.last().first()}".uppercase()
+                words.size == 1 -> words.first().take(2).uppercase()
+                else -> "GV"
+            }
+            txtHomeNoticeHeader.text = "Lời nhắc của Giáo viên ($teacherDisplay):"
+            layoutNoticeFeedback.visibility = if (hasTeacherNotice || showActiveLesson) View.VISIBLE else View.GONE
+        }
     }
 
     private fun selectHandRaiseReason(reason: String) {
@@ -584,7 +890,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (targetState) {
-            Toast.makeText(this, "✋ Đã giơ tay xin phát biểu: $currentHandRaiseReason", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Đã giơ tay xin phát biểu: $currentHandRaiseReason", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "Đã hạ tay", Toast.LENGTH_SHORT).show()
         }
@@ -595,23 +901,23 @@ class MainActivity : AppCompatActivity() {
         runOnUiThread { if (::txtStatHand.isInitialized) txtStatHand.text = if (raised) "Đang giơ tay" else "Không" }
         runOnUiThread {
             if (raised) {
-                btnRaiseHand.text = "✅ Đang Giơ Tay (Bấm để hạ tay)"
+                btnRaiseHand.text = "Đang Giơ Tay (Bấm để hạ)"
                 btnRaiseHand.setBackgroundColor(0xFF059669.toInt())
-                btnFullscreenRaiseHand.text = "✅ Đang giơ tay"
+                btnFullscreenRaiseHand.text = "Đang giơ tay"
                 btnFullscreenRaiseHand.backgroundTintList = ColorStateList.valueOf(0xFF059669.toInt())
 
                 btnMainRaiseHand.setBackgroundResource(R.drawable.bg_hand_raise_active)
-                txtHandRaiseIcon.text = "✋"
+                txtHandRaiseIcon.text = ""
                 txtHandRaiseStatus.text = "ĐANG GIƠ TAY\n(Chờ GV mời)"
                 txtHandRaiseStatus.setTextColor(0xFFFFFFFF.toInt())
             } else {
-                btnRaiseHand.text = "✋ Giơ Tay Phát Biểu"
+                btnRaiseHand.text = "Giơ Tay Phát Biểu"
                 btnRaiseHand.setBackgroundColor(0xFFF59E0B.toInt())
-                btnFullscreenRaiseHand.text = "✋ Giơ tay"
+                btnFullscreenRaiseHand.text = "Giơ tay"
                 btnFullscreenRaiseHand.backgroundTintList = ColorStateList.valueOf(0xFFF59E0B.toInt())
 
                 btnMainRaiseHand.setBackgroundResource(R.drawable.bg_hand_raise_idle)
-                txtHandRaiseIcon.text = "✋"
+                txtHandRaiseIcon.text = ""
                 txtHandRaiseStatus.text = "Bấm để Giơ tay"
                 txtHandRaiseStatus.setTextColor(0xFFB45309.toInt())
             }
@@ -845,6 +1151,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startAutoDiscovery() {
+        txtDiscoveryHeader.text = "ĐANG DÒ TÌM LỚP HỌC TRONG PHÒNG..."
+        txtDiscoveryDot.setTextColor(0xFFD97706.toInt())
         txtStatus.text = "Đang quét tìm lớp học qua WiFi/LAN..."
         progressBar.visibility = View.VISIBLE
         btnRefresh.visibility = View.GONE
@@ -856,6 +1164,8 @@ class MainActivity : AppCompatActivity() {
                 discoveredTeacherPort = beacon.tcpPort
                 currentClassName = beacon.className
                 currentTeacherName = beacon.teacherName
+                txtDiscoveryHeader.text = "TÌM THẤY LỚP HỌC TRONG PHÒNG"
+                txtDiscoveryDot.setTextColor(0xFF16A34A.toInt())
                 txtStatus.text = "Đã tìm thấy lớp: ${beacon.className} (GV: ${beacon.teacherName})"
                 edtTeacherIp.setText(beacon.teacherIp)
                 progressBar.visibility = View.GONE
@@ -868,6 +1178,8 @@ class MainActivity : AppCompatActivity() {
                     discoveredTeacherIp = host
                     discoveredTeacherPort = TCP_PORT
                     val info = withContext(Dispatchers.IO) { queryClassInfo(host) }
+                    txtDiscoveryHeader.text = "TÌM THẤY LỚP HỌC TRONG PHÒNG"
+                    txtDiscoveryDot.setTextColor(0xFF16A34A.toInt())
                     if (info != null && info.size >= 3) {
                         currentClassName = info[1]
                         currentTeacherName = info[2]
@@ -877,6 +1189,8 @@ class MainActivity : AppCompatActivity() {
                     }
                     edtTeacherIp.setText(host)
                 } else {
+                    txtDiscoveryHeader.text = "CHƯA TÌM THẤY LỚP HỌC ĐANG MỞ"
+                    txtDiscoveryDot.setTextColor(0xFFDC2626.toInt())
                     txtStatus.text = "Chưa tìm thấy lớp học. Hãy chắc chắn giáo viên đã bắt đầu lớp, rồi bấm quét lại."
                 }
                 progressBar.visibility = View.GONE
@@ -1047,24 +1361,50 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = View.GONE
 
         txtConnectedClassInfo.text = "Lớp: $className"
-        txtStudentDetail.text = "👤 Học sinh: $name ($code)"
-        txtTeacherDetail.text = "👨‍🏫 Giáo viên: $teacherName"
-        txtServerIpDetail.text = "🌐 Máy chủ: $ip:$TCP_PORT"
+        txtStudentDetail.text = "Học sinh: $name ($code)"
+        txtTeacherDetail.text = "Giáo viên: $teacherName"
+        txtServerIpDetail.text = "Máy chủ: $ip:$TCP_PORT"
         messageCard.visibility = View.GONE
 
         updateHandRaiseUI(false)
         selectHandRaiseReason("Phát biểu")
         homeStudentName = name
-        homeClassName = className
+        homeClassName = className.replace("• Phòng 204 • Phòng 204", "• Phòng 204").trim()
         homeTeacherName = teacherName
-        txtHomeNotice.text = "Chưa có thông báo mới từ Giáo viên."
+        isLessonActive = false
+        activeLessonTitle = ""
+        activeLessonSubject = ""
+        activeLessonStage = 0
+        hasTeacherNotice = false
+        txtHomeNotice.text = "Chưa có lời nhắc mới từ Giáo viên."
+        txtHomeNoticeTime.text = "🕒 Chờ thông báo"
+        layoutNoticeFeedback.visibility = View.GONE
         requestScreenCapture()
-        switchTab(3)
 
         // Reset broadcast UI state
         stopScreenBroadcast()
+        refreshHome()
+        switchTab(3)
+
+        // Yêu cầu máy chủ đồng bộ trạng thái tiết học & trình chiếu hiện tại (nếu Giáo viên đã bắt đầu tiết trước đó)
+        requestCurrentLessonAndBroadcastStatus()
 
         Toast.makeText(this, "Đã kết nối trực tiếp với SmartClass!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun requestCurrentLessonAndBroadcastStatus() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                delay(250)
+                val os = tcpOutputStream ?: return@launch
+                synchronized(os) {
+                    os.write("CMD|GET_BROADCAST_STATUS\n".toByteArray(Charsets.UTF_8))
+                    os.flush()
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to request broadcast/lesson status: ${e.message}")
+            }
+        }
     }
 
     private fun startHeartbeatLoop(studentCode: String) {
@@ -1196,6 +1536,72 @@ class MainActivity : AppCompatActivity() {
                     heartbeatWatchdog.releaseLock()
                     Toast.makeText(this, "🔓 Giáo viên đã mở khóa màn hình", Toast.LENGTH_SHORT).show()
                 }
+                cleanCmd.startsWith("CMD|LESSON_START") -> {
+                    val cmdParts = cleanCmd.substringBefore("|id=").split("|")
+                    val titleEnc = cmdParts.getOrNull(3) ?: ""
+                    val subjectEnc = cmdParts.getOrNull(4) ?: ""
+                    val teacherEnc = cmdParts.getOrNull(5) ?: ""
+                    val stageVal = cmdParts.getOrNull(6)?.toIntOrNull() ?: 2
+                    val summaryEnc = cmdParts.getOrNull(7) ?: ""
+
+                    activeLessonTitle = try { URLDecoder.decode(titleEnc, "UTF-8") } catch (_: Exception) { titleEnc }
+                    activeLessonSubject = try { URLDecoder.decode(subjectEnc, "UTF-8") } catch (_: Exception) { subjectEnc }
+                    activeLessonSummary = try { URLDecoder.decode(summaryEnc, "UTF-8") } catch (_: Exception) { summaryEnc }
+                    val decodedTeacher = try { URLDecoder.decode(teacherEnc, "UTF-8") } catch (_: Exception) { teacherEnc }
+                    if (decodedTeacher.isNotBlank()) {
+                        homeTeacherName = decodedTeacher
+                    }
+                    activeLessonStage = if (stageVal >= 2) stageVal else 2
+                    isLessonActive = true
+                    if (::txtHomeBoardHeader.isInitialized) {
+                        txtHomeBoardHeader.text = "Nội dung bài giảng hiện tại:"
+                    }
+
+                    if (!hasTeacherNotice) {
+                        val displayLesson = activeLessonTitle.ifBlank { "bài giảng trên bảng" }
+                        txtHomeNotice.text = "“Các em chú ý theo dõi bài giảng $displayLesson và chuẩn bị thảo luận nhóm.”"
+                        txtHomeNoticeTime.text = "🕒 Vừa xong"
+                        hasTeacherNotice = true
+                    }
+                    refreshHome()
+                    Toast.makeText(this, "📖 Giáo viên đã bắt đầu tiết học: ${activeLessonTitle.ifBlank { "Bài giảng mới" }}", Toast.LENGTH_SHORT).show()
+                }
+                cleanCmd.startsWith("CMD|LESSON_FOCUS|") -> {
+                    val cmdParts = cleanCmd.substringBefore("|id=").split("|")
+                    val sortOrder = cmdParts.getOrNull(2)?.toIntOrNull() ?: 1
+                    val contentType = cmdParts.getOrNull(3) ?: ""
+                    val dataEnc = cmdParts.getOrNull(4) ?: ""
+                    val decodedData = try { URLDecoder.decode(dataEnc, "UTF-8") } catch (_: Exception) { dataEnc }
+                    isLessonActive = true
+                    if (decodedData.isNotBlank()) {
+                        activeLessonSummary = decodedData.replace("\\n", "\n")
+                    }
+                    if (::txtHomeBoardHeader.isInitialized) {
+                        txtHomeBoardHeader.text = "🎯 Nội dung trọng tâm Giáo viên đang chiếu (#$sortOrder):"
+                    }
+                    refreshHome()
+                    Toast.makeText(this, "🎯 Giáo viên yêu cầu tập trung vào nội dung #$sortOrder", Toast.LENGTH_SHORT).show()
+                }
+                cleanCmd.startsWith("CMD|LESSON_UNFOCUS") -> {
+                    if (::txtHomeBoardHeader.isInitialized) {
+                        txtHomeBoardHeader.text = "Nội dung bài giảng hiện tại:"
+                    }
+                    refreshHome()
+                }
+                cleanCmd.startsWith("CMD|LESSON_STAGE|") -> {
+                    val stageVal = parts.getOrNull(2)?.substringBefore("|")?.toIntOrNull() ?: 0
+                    if (stageVal >= 2 && isLessonActive) {
+                        activeLessonStage = stageVal
+                        refreshHome()
+                    }
+                }
+                cleanCmd.startsWith("CMD|LESSON_END") -> {
+                    isLessonActive = false
+                    activeLessonStage = 0
+                    activeLessonSummary = ""
+                    refreshHome()
+                    Toast.makeText(this, "⏹️ Giáo viên đã kết thúc tiết học", Toast.LENGTH_SHORT).show()
+                }
                 cleanCmd.startsWith("CMD|SCREEN_BROADCAST_STOP") || cleanCmd == "CMD|SCREEN_BROADCAST_STOP" -> {
                     stopScreenBroadcast()
                     Toast.makeText(this, "📡 Giáo viên đã dừng chiếu màn hình", Toast.LENGTH_SHORT).show()
@@ -1283,9 +1689,18 @@ class MainActivity : AppCompatActivity() {
                     messageCard.visibility = View.VISIBLE
                     txtTeacherMessage.text = msgText
                     txtHomeNotice.text = "📩 Giáo viên: $msgText"
+                    txtHomeNoticeTime.text = "🕒 Vừa xong"
+                    hasTeacherNotice = true
+                    layoutNoticeFeedback.visibility = View.VISIBLE
 
                     if (currentTab != 1) {
                         btnTabChat.text = "💬  Tin nhắn  ●"
+                        unreadTeacherChatCount++
+                        if (::txtHomeChatBadge.isInitialized) {
+                            txtHomeChatBadge.text = "● $unreadTeacherChatCount tin mới"
+                            txtHomeChatBadge.setBackgroundResource(R.drawable.bg_pill_badge_red)
+                            txtHomeChatBadge.setTextColor(0xFFDC2626.toInt())
+                        }
                     }
                     Toast.makeText(this, "📩 Tin nhắn từ GV: $msgText", Toast.LENGTH_LONG).show()
                 }
@@ -1295,6 +1710,7 @@ class MainActivity : AppCompatActivity() {
                         currentClassCode = updateParts[2]
                         currentSessionSalt = updateParts[3]
                         Log.i(TAG, "Updated session: ClassCode=$currentClassCode, SessionSalt=${currentSessionSalt.take(6)}...")
+                        requestCurrentLessonAndBroadcastStatus()
                     }
                 }
                 cleanCmd.startsWith("CMD|HAND_DOWN") -> {
@@ -1328,7 +1744,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun startScreenBroadcast(token: String, webPort: Int, isForce: Boolean, title: String) {
         isScreenBroadcastActive = true
-        runOnUiThread { if (::txtStatBroadcast.isInitialized) txtStatBroadcast.text = "Đang phát" }
+        runOnUiThread {
+            if (::txtStatBroadcast.isInitialized) txtStatBroadcast.text = "Đang phát"
+            if (title.isNotBlank() && activeLessonTitle.isBlank()) {
+                activeLessonTitle = title
+            }
+            refreshHome()
+        }
         currentBroadcastToken = token
         currentTeacherWebPort = webPort
 
@@ -1390,6 +1812,9 @@ class MainActivity : AppCompatActivity() {
                                 if (isScreenBroadcastActive) {
                                     imgInlineBroadcast.setImageBitmap(bitmap)
                                     imgBroadcastScreen.setImageBitmap(bitmap)
+                                    imgHomeBroadcastPreview.setImageBitmap(bitmap)
+                                    imgHomeBroadcastPreview.visibility = View.VISIBLE
+                                    layoutWhiteboardStitchPreview.visibility = View.GONE
                                     progressBroadcastLoading.visibility = View.GONE
                                 }
                             }
@@ -1430,6 +1855,9 @@ class MainActivity : AppCompatActivity() {
                                     if (isScreenBroadcastActive) {
                                         imgInlineBroadcast.setImageBitmap(bitmap)
                                         imgBroadcastScreen.setImageBitmap(bitmap)
+                                        imgHomeBroadcastPreview.setImageBitmap(bitmap)
+                                        imgHomeBroadcastPreview.visibility = View.VISIBLE
+                                        layoutWhiteboardStitchPreview.visibility = View.GONE
                                         progressBroadcastLoading.visibility = View.GONE
                                     }
                                 }
@@ -1453,6 +1881,8 @@ class MainActivity : AppCompatActivity() {
         if (title.isNotEmpty()) {
             txtBroadcastStatus.text = title
             txtInlineBroadcastTitle.text = title
+            if (activeLessonTitle.isBlank()) activeLessonTitle = title
+            runOnUiThread { refreshHome() }
         }
     }
 
@@ -1468,7 +1898,15 @@ class MainActivity : AppCompatActivity() {
             layoutNoBroadcast.visibility = View.VISIBLE
             imgInlineBroadcast.setImageDrawable(null)
             imgBroadcastScreen.setImageDrawable(null)
+            if (::imgHomeBroadcastPreview.isInitialized) {
+                imgHomeBroadcastPreview.setImageDrawable(null)
+                imgHomeBroadcastPreview.visibility = View.GONE
+            }
+            if (::layoutWhiteboardStitchPreview.isInitialized) {
+                layoutWhiteboardStitchPreview.visibility = View.VISIBLE
+            }
             progressBroadcastLoading.visibility = View.GONE
+            refreshHome()
         }
     }
 
@@ -1522,6 +1960,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun disconnectFromTeacher(reason: String) {
+        isLessonActive = false
+        activeLessonTitle = ""
+        activeLessonSubject = ""
+        activeLessonSummary = ""
+        activeLessonStage = 0
+        hasTeacherNotice = false
+        unreadTeacherChatCount = 0
         stopScreenBroadcast()
         heartbeatJob?.cancel()
         heartbeatJob = null
@@ -1543,6 +1988,7 @@ class MainActivity : AppCompatActivity() {
         runOnUiThread {
             lockOverlay.visibility = View.GONE
             navDrawerOverlay.visibility = View.GONE
+            btnHeaderBack.visibility = View.GONE
             connectedPanel.visibility = View.GONE
             discoveryPanel.visibility = View.VISIBLE
             btnConnect.isEnabled = true

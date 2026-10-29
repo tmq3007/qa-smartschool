@@ -1,679 +1,1587 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_login_gradient">
 
-    <!-- Scrollable container for smaller screens -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- 1. DISCOVERY & LOGIN PANEL (Stitch Design)             -->
+    <!-- ═══════════════════════════════════════════════════════ -->
     <ScrollView
+        android:id="@+id/discoveryScroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:scrollbars="none">
 
         <LinearLayout
+            android:id="@+id/discoveryPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="24dp"
+            android:visibility="visible">
 
-            <!-- 1. Discovery & Join Panel (Matching StudentLoginWindow.xaml) -->
+            <!-- 1.1 Brand Top Bar -->
             <LinearLayout
-                android:id="@+id/discoveryPanel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="20dp"
-                android:visibility="visible">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingTop="6dp"
+                android:paddingBottom="14dp">
 
-                <!-- Glassmorphism Container Card -->
-                <LinearLayout
-                    android:id="@+id/formContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_login_card"
-                    android:elevation="6dp"
-                    android:orientation="vertical"
-                    android:padding="24dp">
+                <!-- App Brand Badge -->
+                <FrameLayout
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_squircle_blue">
 
-                    <!-- Logo & Title -->
                     <ImageView
-                        android:layout_width="52dp"
-                        android:layout_height="52dp"
-                        android:layout_gravity="center_horizontal"
-                        android:src="@drawable/ic_mortarboard"
-                        android:contentDescription="QA SmartClass Logo" />
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="QA SmartClass Logo"
+                        android:src="@drawable/ic_mortarboard" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginTop="8dp"
+                        android:fontFamily="sans-serif-medium"
                         android:text="QA SmartClass"
-                        android:textColor="#1E293B"
-                        android:textSize="22sp"
+                        android:textColor="#0F172A"
+                        android:textSize="18sp"
                         android:textStyle="bold" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginTop="2dp"
-                        android:text="Cổng Đăng Nhập Học Sinh"
-                        android:textColor="#059669"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <!-- Discovery Status -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="16dp"
-                        android:background="#ECFDF5"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="8dp">
-
-                        <ProgressBar
-                            android:id="@+id/progressBar"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:indeterminate="true"
-                            android:indeterminateTint="#059669" />
+                        android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/txtStatus"
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill_badge_blue"
+                            android:paddingStart="8dp"
+                            android:paddingTop="2dp"
+                            android:paddingEnd="8dp"
+                            android:paddingBottom="2dp"
+                            android:text="Học Sinh"
+                            android:textColor="#1D4ED8"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:layout_weight="1"
-                            android:text="Đang quét tìm lớp học qua WiFi/LAN..."
-                            android:textColor="#047857"
-                            android:textSize="12sp" />
-
-                        <Button
-                            android:id="@+id/btnRefresh"
-                            android:layout_width="wrap_content"
-                            android:layout_height="32dp"
-                            android:background="@android:color/transparent"
-                            android:minWidth="0dp"
-                            android:paddingStart="8dp"
-                            android:paddingEnd="8dp"
-                            android:text="🔄 Quét lại"
-                            android:textColor="#059669"
-                            android:textSize="12sp"
-                            android:visibility="gone" />
+                            android:fontFamily="sans-serif"
+                            android:text="● Sẵn sàng kết nối"
+                            android:textColor="#16A34A"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
-
-                    <!-- Input: Mã học sinh (Bắt buộc) -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Mã học sinh / Tài khoản *"
-                        android:textColor="#475569"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/edtStudentCode"
-                        android:layout_width="match_parent"
-                        android:layout_height="44dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="12dp"
-                        android:background="@drawable/bg_input_field"
-                        android:hint="Ví dụ: HS001"
-                        android:inputType="textCapCharacters"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:text="HS001"
-                        android:textColor="#1E293B"
-                        android:textColorHint="#94A3B8"
-                        android:textSize="14sp" />
-
-                    <!-- Input: Mật khẩu (Bắt buộc) -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Mật khẩu *"
-                        android:textColor="#475569"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="44dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="12dp">
-
-                        <EditText
-                            android:id="@+id/edtPassword"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/bg_input_field"
-                            android:hint="Nhập mật khẩu tài khoản"
-                            android:inputType="textPassword"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="42dp"
-                            android:text="123456"
-                            android:textColor="#1E293B"
-                            android:textColorHint="#94A3B8"
-                            android:textSize="14sp" />
-
-                        <ImageButton
-                            android:id="@+id/btnTogglePassword"
-                            android:layout_width="38dp"
-                            android:layout_height="38dp"
-                            android:layout_gravity="end|center_vertical"
-                            android:layout_marginEnd="3dp"
-                            android:background="@android:color/transparent"
-                            android:contentDescription="Hiện/Ẩn mật khẩu"
-                            android:src="@drawable/ic_visibility" />
-                    </FrameLayout>
-
-                    <!-- Tên hiển thị lấy từ CSDL giáo viên: ẩn ô nhập -->
-                    <EditText
-                        android:id="@+id/edtStudentName"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:visibility="gone"
-                        android:text="" />
-
-                    <!-- Input: Địa chỉ IP Giáo viên (Tự động) -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Địa chỉ máy chủ Giáo viên (Tự động)"
-                        android:textColor="#475569"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/edtTeacherIp"
-                        android:layout_width="match_parent"
-                        android:layout_height="44dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="12dp"
-                        android:background="@drawable/bg_input_field"
-                        android:hint="Để trống để tự động tìm kiếm"
-                        android:inputType="textUri"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:textColor="#1E293B"
-                        android:textColorHint="#94A3B8"
-                        android:textSize="14sp" />
-
-                    <!-- Remember Account Checkbox -->
-                    <CheckBox
-                        android:id="@+id/chkRemember"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:buttonTint="#059669"
-                        android:checked="true"
-                        android:text="Ghi nhớ tài khoản trên thiết bị này"
-                        android:textColor="#475569"
-                        android:textSize="13sp" />
-
-                    <!-- Error Banner -->
-                    <TextView
-                        android:id="@+id/txtError"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:background="#FEE2E2"
-                        android:gravity="center"
-                        android:padding="8dp"
-                        android:textColor="#EF4444"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:visibility="gone" />
-
-                    <!-- Login Button -->
-                    <Button
-                        android:id="@+id/btnConnect"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:background="@drawable/bg_btn_primary"
-                        android:text="VÀO LỚP HỌC"
-                        android:textColor="#FFFFFF"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- 2. Connected / In-Class Workspace (Matching Windows StudentShell) -->
+            <!-- 1.2 Class Discovery Radar Card -->
             <LinearLayout
-                android:id="@+id/connectedPanel"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="#F0F2F5"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_discovery_card"
+                android:elevation="1dp"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:padding="16dp">
 
-                <!-- 2.1 Top Bar (giống thanh trên StudentShell): ☰ + tiêu đề trang + trạng thái -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:background="#FFFFFF"
-                    android:elevation="3dp"
+                    android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="6dp"
-                    android:paddingEnd="12dp">
-
-                    <Button
-                        android:id="@+id/btnMenu"
-                        style="@style/StuNav"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:gravity="center"
-                        android:text="☰"
-                        android:textColor="#1E293B"
-                        android:textSize="22sp" />
+                    android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/txtPageTitle"
+                        android:id="@+id/txtDiscoveryDot"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="● "
+                        android:textColor="#16A34A"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/txtDiscoveryHeader"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
                         android:layout_weight="1"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="🏠 Trang chủ"
-                        android:textColor="#1E293B"
-                        android:textSize="17sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.04"
+                        android:text="ĐANG DÒ TÌM LỚP HỌC TRONG PHÒNG..."
+                        android:textAllCaps="true"
+                        android:textColor="#166534"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:indeterminate="true"
+                        android:indeterminateTint="#16A34A" />
+
+                    <Button
+                        android:id="@+id/btnRefresh"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/ic_refresh"
+                        android:drawablePadding="6dp"
+                        android:drawableTint="#16A34A"
+                        android:minWidth="0dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="4dp"
+                        android:text="Quét lại"
+                        android:textAllCaps="false"
+                        android:textColor="#16A34A"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/txtStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_chip_green"
+                    android:paddingStart="12dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="8dp"
+                    android:text="Đang quét tìm lớp học qua WiFi/LAN..."
+                    android:textColor="#14532D"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- 1.3 Main Login Card (Matching Stitch UI) -->
+            <LinearLayout
+                android:id="@+id/formContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_login_card"
+                android:elevation="4dp"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Đăng Nhập Học Sinh"
+                    android:textColor="#0F172A"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="Vui lòng nhập mã học sinh do giáo viên cấp"
+                    android:textColor="#64748B"
+                    android:textSize="13sp" />
+
+                <!-- Field 1: Mã học sinh -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mã học sinh / Tài khoản *"
+                    android:textColor="#334155"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/edtStudentCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="14dp"
+                    android:background="@drawable/bg_input_field"
+                    android:drawableStart="@drawable/ic_person"
+                    android:drawablePadding="10dp"
+                    android:drawableTint="#94A3B8"
+                    android:hint="Ví dụ: 10A1-024"
+                    android:inputType="textCapCharacters"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:text="HS001"
+                    android:textColor="#0F172A"
+                    android:textColorHint="#94A3B8"
+                    android:textSize="14sp" />
+
+                <!-- Field 2: Mật khẩu -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Mật khẩu *"
+                        android:textColor="#334155"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="#DCFCE7"
-                        android:paddingStart="8dp"
-                        android:paddingTop="3dp"
-                        android:paddingEnd="8dp"
-                        android:paddingBottom="3dp"
-                        android:text="● ONLINE"
-                        android:textColor="#15803D"
+                        android:text="Mặc định: 123456"
+                        android:textColor="#64748B"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="14dp">
+
+                    <EditText
+                        android:id="@+id/edtPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_input_field"
+                        android:drawableStart="@drawable/ic_lock"
+                        android:drawablePadding="10dp"
+                        android:drawableTint="#94A3B8"
+                        android:hint="Nhập mật khẩu"
+                        android:inputType="textPassword"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="46dp"
+                        android:text="123456"
+                        android:textColor="#0F172A"
+                        android:textColorHint="#94A3B8"
+                        android:textSize="14sp" />
+
+                    <ImageButton
+                        android:id="@+id/btnTogglePassword"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="end|center_vertical"
+                        android:layout_marginEnd="4dp"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="Hiện/Ẩn mật khẩu"
+                        android:src="@drawable/ic_visibility" />
+                </FrameLayout>
+
+                <!-- Hidden Student Name helper -->
+                <EditText
+                    android:id="@+id/edtStudentName"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:text=""
+                    android:visibility="gone" />
+
+                <!-- Field 3: Teacher Server IP -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Địa chỉ máy Giáo viên (IP)"
+                        android:textColor="#334155"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✓ Tự nhận diện"
+                        android:textColor="#16A34A"
                         android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- 2.2 TRANG CHỦ (Dashboard) -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="16dp">
+
+                    <EditText
+                        android:id="@+id/edtTeacherIp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_input_field"
+                        android:drawableStart="@drawable/ic_wifi"
+                        android:drawablePadding="10dp"
+                        android:drawableTint="#94A3B8"
+                        android:hint="Tự động dò qua WiFi"
+                        android:inputType="textUri"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="80dp"
+                        android:textColor="#0F172A"
+                        android:textColorHint="#94A3B8"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end|center_vertical"
+                        android:layout_marginEnd="10dp"
+                        android:background="@drawable/bg_pill_badge_blue"
+                        android:paddingStart="8dp"
+                        android:paddingTop="3dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="3dp"
+                        android:text=":29876"
+                        android:textColor="#1D4ED8"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+                <!-- Remember Login Checkbox -->
+                <CheckBox
+                    android:id="@+id/chkRemember"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:buttonTint="#1D4ED8"
+                    android:checked="true"
+                    android:text="Ghi nhớ đăng nhập trên thiết bị này"
+                    android:textColor="#334155"
+                    android:textSize="13sp" />
+
+                <!-- Error Alert Banner -->
+                <TextView
+                    android:id="@+id/txtError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:background="#FEE2E2"
+                    android:gravity="center"
+                    android:padding="10dp"
+                    android:textColor="#DC2626"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+                <!-- Primary Action Button -->
+                <Button
+                    android:id="@+id/btnConnect"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:background="@drawable/bg_btn_primary"
+                    android:drawableEnd="@drawable/ic_arrow_forward"
+                    android:drawablePadding="8dp"
+                    android:drawableTint="#FFFFFF"
+                    android:paddingStart="24dp"
+                    android:paddingEnd="20dp"
+                    android:text="VÀO LỚP HỌC"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- 1.4 Helper & WiFi Guide Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_card_action_elevated"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="14dp">
+
+                <FrameLayout
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_squircle_blue">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Trợ giúp"
+                        android:src="@drawable/ic_help" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chưa thấy tên lớp? Hãy chắc chắn bạn đã kết nối cùng mạng WiFi phòng học."
+                        android:textColor="#1E40AF"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="QA SmartClass Client v4.2.0 • Phòng máy thông minh"
+                        android:textColor="#64748B"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- 2. CONNECTED WORKSPACE (Stitch Inspired Dashboard)     -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/connectedPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F8FAFC"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- 2.1 Top Header Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="62dp"
+            android:background="#FFFFFF"
+            android:elevation="2dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="16dp">
+
+            <!-- Nút Quay lại Trang chủ (khi ở subtab) -->
+            <ImageButton
+                android:id="@+id/btnHeaderBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_squircle_nav"
+                android:contentDescription="Quay lại"
+                android:padding="9dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_arrow_back"
+                android:tint="#1E293B"
+                android:visibility="gone" />
+
+            <!-- Nút Profile / Menu Drawer -->
+            <ImageButton
+                android:id="@+id/btnMenu"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_squircle_nav"
+                android:contentDescription="Menu"
+                android:padding="8dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_mortarboard"
+                android:tint="#2563EB" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txtPageTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/ic_door"
+                    android:drawablePadding="6dp"
+                    android:drawableTint="#1E3A8A"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:text="Lớp 10A1 • Phòng 204"
+                    android:textColor="#1E3A8A"
+                    android:textSize="16.5sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/txtHeaderLiveBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_pill_badge_green"
+                        android:paddingStart="8dp"
+                        android:paddingTop="1.5dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="1.5dp"
+                        android:text="● Đã kết nối — Chờ bắt đầu tiết"
+                        android:textColor="#059669"
+                        android:textSize="10.5sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Nút Rời lớp nhanh (Stitch Top-Right Exit Button) -->
+            <ImageButton
+                android:id="@+id/btnHeaderLogout"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_squircle_logout"
+                android:contentDescription="Rời phòng học"
+                android:padding="9dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_logout"
+                android:tint="#DC2626" />
+
+            <!-- Hidden online badge for backward compatibility -->
+            <TextView
+                android:id="@+id/txtHeaderOnlineStatus"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:text="ONLINE"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 2.2 Scrollable Content Container -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- 2.2.1 TAB TRANG CHỦ (Home Dashboard)               -->
+                <!-- ═══════════════════════════════════════════════════ -->
                 <LinearLayout
                     android:id="@+id/panelHome"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="14dp"
+                    android:padding="16dp"
                     android:visibility="visible">
 
-                    <!-- Greeting card -->
+                    <!-- HERO: Màn hình Bài giảng trực tiếp (Matching Stitch Design) -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_login_card"
-                        android:elevation="2dp"
+                        android:background="@drawable/bg_hero_lecture_card"
+                        android:elevation="3dp"
                         android:orientation="vertical"
                         android:padding="16dp">
 
-                        <TextView
-                            android:id="@+id/txtHomeGreeting"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Xin chào 👋"
-                            android:textColor="#1E293B"
-                            android:textSize="19sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/txtHomeSub"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="📅 ..."
-                            android:textColor="#64748B"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:background="#DCFCE7"
-                            android:paddingStart="10dp"
-                            android:paddingTop="4dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="4dp"
-                            android:text="● Đang kết nối lớp học"
-                            android:textColor="#15803D"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <!-- Stat cards row 1 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal">
-
+                        <!-- Trạng thái chờ Giáo viên bắt đầu tiết học -->
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:id="@+id/layoutHomeLessonWaiting"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_login_card"
-                            android:elevation="2dp"
+                            android:gravity="center"
                             android:orientation="vertical"
-                            android:padding="14dp">
-
-                            <TextView
-                                android:id="@+id/txtStatClass"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:ellipsize="end"
-                                android:maxLines="1"
-                                android:text="—"
-                                android:textColor="#2563EB"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
+                            android:paddingTop="18dp"
+                            android:paddingBottom="18dp"
+                            android:visibility="visible">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Lớp học hiện tại"
-                                android:textColor="#475569"
+                                android:background="@drawable/bg_pill_badge_blue"
+                                android:paddingStart="10dp"
+                                android:paddingTop="4dp"
+                                android:paddingEnd="10dp"
+                                android:paddingBottom="4dp"
+                                android:text="⏳ ĐANG CHỜ TIẾT HỌC"
+                                android:textColor="#1D4ED8"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:fontFamily="sans-serif-medium"
+                                android:gravity="center"
+                                android:text="Chưa bắt đầu tiết học"
+                                android:textColor="#1E3A8A"
+                                android:textSize="17sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:gravity="center"
+                                android:lineSpacingExtra="2dp"
+                                android:paddingStart="12dp"
+                                android:paddingEnd="12dp"
+                                android:text="Bài giảng sẽ tự động hiển thị tại đây khi Giáo viên bấm Bắt đầu tiết học ở trong lớp."
+                                android:textColor="#64748B"
+                                android:textSize="12.5sp" />
                         </LinearLayout>
 
+                        <!-- Nội dung bài giảng khi Giáo viên đã bắt đầu tiết học -->
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:id="@+id/layoutHomeLessonActive"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_login_card"
-                            android:elevation="2dp"
                             android:orientation="vertical"
-                            android:padding="14dp">
+                            android:visibility="gone">
 
-                            <TextView
-                                android:id="@+id/txtStatBroadcast"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Chưa phát"
-                                android:textColor="#EA580C"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Màn hình Giáo viên"
-                                android:textColor="#475569"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- Stat cards row 2 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_login_card"
-                            android:elevation="2dp"
-                            android:orientation="vertical"
-                            android:padding="14dp">
-
-                            <TextView
-                                android:id="@+id/txtStatHand"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Không"
-                                android:textColor="#15803D"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Giơ tay phát biểu"
-                                android:textColor="#475569"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_login_card"
-                            android:elevation="2dp"
-                            android:orientation="vertical"
-                            android:padding="14dp">
-
-                            <TextView
-                                android:id="@+id/txtStatTeacher"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:ellipsize="end"
-                                android:maxLines="1"
-                                android:text="—"
-                                android:textColor="#7C3AED"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Giáo viên phụ trách"
-                                android:textColor="#475569"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- Bài giảng đang diễn ra -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:background="@drawable/bg_login_card"
-                        android:elevation="2dp"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="📖 Bài giảng đang diễn ra"
-                            android:textColor="#1E293B"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
-
+                        <!-- Top Status Row -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:background="#F8FAFC"
-                            android:orientation="vertical"
-                            android:padding="12dp">
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
                             <TextView
-                                android:id="@+id/txtHomeLessonTitle"
+                                android:id="@+id/txtHomeLiveBadge"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="—"
-                                android:textColor="#1E3A8A"
-                                android:textSize="15sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/txtHomeLessonSub"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="—"
-                                android:textColor="#64748B"
-                                android:textSize="12sp" />
-
-                            <TextView
-                                android:id="@+id/txtHomeTeacherChip"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:background="#DBEAFE"
+                                android:background="@drawable/bg_pill_badge_red"
                                 android:paddingStart="8dp"
                                 android:paddingTop="3dp"
                                 android:paddingEnd="8dp"
                                 android:paddingBottom="3dp"
-                                android:text="GV: —"
-                                android:textColor="#1D4ED8"
-                                android:textSize="10sp"
+                                android:text="● TRỰC TIẾP"
+                                android:textColor="#DC2626"
+                                android:textSize="10.5sp"
                                 android:textStyle="bold" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:layout_marginEnd="6dp"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:contentDescription="WiFi stream"
+                                    android:src="@drawable/ic_wifi"
+                                    android:tint="#2563EB" />
+
+                                <TextView
+                                    android:id="@+id/txtHomeLessonSub"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:ellipsize="end"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:maxLines="1"
+                                    android:text="Thầy Nguyễn Văn An đang chia sẻ..."
+                                    android:textColor="#2563EB"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_pill_badge_blue"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="8dp"
+                                android:paddingTop="3dp"
+                                android:paddingEnd="8dp"
+                                android:paddingBottom="3dp">
+
+                                <ImageView
+                                    android:layout_width="11dp"
+                                    android:layout_height="11dp"
+                                    android:layout_marginEnd="4dp"
+                                    android:contentDescription="OK"
+                                    android:src="@drawable/ic_check_circle"
+                                    android:tint="#16A34A" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="1080p • 60fps • 0.2s"
+                                    android:textColor="#1D4ED8"
+                                    android:textSize="10sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
                         </LinearLayout>
 
+                        <!-- Subject Tag and Slide Count Row -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
+                            android:gravity="center_vertical"
                             android:orientation="horizontal">
 
-                            <Button
-                                android:id="@+id/btnHomeRaise"
-                                android:layout_width="0dp"
-                                android:layout_height="40dp"
-                                android:layout_marginEnd="4dp"
-                                android:layout_weight="1"
-                                android:backgroundTint="#DCFCE7"
-                                android:insetTop="0dp"
-                                android:insetBottom="0dp"
-                                android:minWidth="0dp"
-                                android:padding="0dp"
-                                android:text="✋ Giơ tay hỏi"
-                                android:textAllCaps="false"
-                                android:textColor="#15803D"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_pill_badge_blue"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="8dp"
+                                android:paddingTop="3dp"
+                                android:paddingEnd="8dp"
+                                android:paddingBottom="3dp">
 
-                            <Button
-                                android:id="@+id/btnHomeChat"
-                                android:layout_width="0dp"
-                                android:layout_height="40dp"
-                                android:layout_marginStart="4dp"
-                                android:layout_marginEnd="4dp"
-                                android:layout_weight="1"
-                                android:backgroundTint="#DBEAFE"
-                                android:insetTop="0dp"
-                                android:insetBottom="0dp"
-                                android:minWidth="0dp"
-                                android:padding="0dp"
-                                android:text="💬 Gửi tin nhắn"
-                                android:textAllCaps="false"
-                                android:textColor="#1D4ED8"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
+                                <ImageView
+                                    android:layout_width="13dp"
+                                    android:layout_height="13dp"
+                                    android:contentDescription="Môn học"
+                                    android:src="@drawable/ic_assignment"
+                                    android:tint="#1D4ED8" />
 
-                            <Button
-                                android:id="@+id/btnHomeLecture"
+                                <TextView
+                                    android:id="@+id/txtHomeSubjectBadge"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="4dp"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:text="Bài giảng trên lớp"
+                                    android:textColor="#1D4ED8"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <View
                                 android:layout_width="0dp"
-                                android:layout_height="40dp"
-                                android:layout_marginStart="4dp"
-                                android:layout_weight="1"
-                                android:backgroundTint="#FFEDD5"
-                                android:insetTop="0dp"
-                                android:insetBottom="0dp"
-                                android:minWidth="0dp"
-                                android:padding="0dp"
-                                android:text="📺 Xem bài giảng"
-                                android:textAllCaps="false"
-                                android:textColor="#C2410C"
+                                android:layout_height="1dp"
+                                android:layout_weight="1" />
+
+                            <TextView
+                                android:id="@+id/txtHomeStageBadge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_chip_pill"
+                                android:paddingStart="8dp"
+                                android:paddingTop="3dp"
+                                android:paddingEnd="8dp"
+                                android:paddingBottom="3dp"
+                                android:text="Giai đoạn 2/6"
+                                android:textColor="#64748B"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
+
+                        <!-- Lesson Title -->
+                        <TextView
+                            android:id="@+id/txtHomeLessonTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:lineSpacingExtra="3dp"
+                            android:text="Tiết học trực tiếp"
+                            android:textColor="#1E3A8A"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <!-- Interactive Blackboard Frame -->
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_board_preview"
+                            android:padding="12dp">
+
+                            <ImageView
+                                android:id="@+id/imgHomeBroadcastPreview"
+                                android:layout_width="match_parent"
+                                android:layout_height="180dp"
+                                android:adjustViewBounds="true"
+                                android:contentDescription="Màn hình bài giảng trực tiếp"
+                                android:scaleType="fitCenter"
+                                android:visibility="gone" />
+
+                            <LinearLayout
+                                android:id="@+id/layoutWhiteboardStitchPreview"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <!-- Subhead: Nội dung trọng tâm -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal">
+
+                                    <ImageView
+                                        android:layout_width="14dp"
+                                        android:layout_height="14dp"
+                                        android:contentDescription="Check"
+                                        android:src="@drawable/ic_check_circle"
+                                        android:tint="#16A34A" />
+
+                                    <TextView
+                                        android:id="@+id/txtHomeBoardHeader"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="6dp"
+                                        android:text="Nội dung bài giảng hiện tại:"
+                                        android:textColor="#16A34A"
+                                        android:textSize="12.5sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <!-- Lesson Content Box (Dynamic from Teacher's Lesson) -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:background="@drawable/bg_math_box"
+                                    android:gravity="center_vertical"
+                                    android:minHeight="48dp"
+                                    android:orientation="vertical"
+                                    android:paddingStart="12dp"
+                                    android:paddingTop="10dp"
+                                    android:paddingEnd="12dp"
+                                    android:paddingBottom="10dp">
+
+                                    <TextView
+                                        android:id="@+id/txtHomeBoardContent"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="sans-serif-medium"
+                                        android:gravity="center"
+                                        android:lineSpacingExtra="2dp"
+                                        android:maxLines="4"
+                                        android:ellipsize="end"
+                                        android:text="Đang đồng bộ nội dung bài giảng từ Giáo viên..."
+                                        android:textColor="#1D4ED8"
+                                        android:textSize="14.5sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <!-- Lesson Stage & Sync Status Box -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
+                                    android:background="@drawable/bg_callout_blue"
+                                    android:orientation="vertical"
+                                    android:padding="10dp">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center_vertical"
+                                        android:orientation="horizontal">
+
+                                        <ImageView
+                                            android:layout_width="14dp"
+                                            android:layout_height="14dp"
+                                            android:contentDescription="Tiến trình"
+                                            android:src="@drawable/ic_brush"
+                                            android:tint="#2563EB" />
+
+                                        <TextView
+                                            android:id="@+id/txtHomeBoardNoteHeader"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="6dp"
+                                            android:fontFamily="sans-serif-medium"
+                                            android:letterSpacing="0.03"
+                                            android:text="TIẾN TRÌNH &amp; TRẠNG THÁI TIẾT HỌC:"
+                                            android:textColor="#2563EB"
+                                            android:textSize="11sp"
+                                            android:textStyle="bold" />
+                                    </LinearLayout>
+
+                                    <TextView
+                                        android:id="@+id/txtHomeBoardNote1"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="5dp"
+                                        android:text="●  Đang theo dõi tiến trình giảng dạy trên lớp"
+                                        android:textColor="#1E40AF"
+                                        android:textSize="12sp"
+                                        android:textStyle="bold" />
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:gravity="center_vertical"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            android:id="@+id/txtHomeBoardNote2"
+                                            android:layout_width="0dp"
+                                            android:layout_height="wrap_content"
+                                            android:layout_weight="1"
+                                            android:text="✔  Đã kết nối đồng bộ với máy Giáo viên"
+                                            android:textColor="#059669"
+                                            android:textSize="12sp"
+                                            android:textStyle="bold" />
+
+                                        <TextView
+                                            android:id="@+id/txtHomeBoardPointer"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:background="@drawable/bg_pill_btn_blue"
+                                            android:paddingStart="8dp"
+                                            android:paddingTop="2dp"
+                                            android:paddingEnd="8dp"
+                                            android:paddingBottom="2dp"
+                                            android:text="Đang giảng bài"
+                                            android:textColor="#FFFFFF"
+                                            android:textSize="10sp"
+                                            android:textStyle="bold" />
+                                    </LinearLayout>
+                                </LinearLayout>
+                            </LinearLayout>
+                        </FrameLayout>
+
+                        <!-- Hero Action Buttons & Sound Pill -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <!-- Sound indicator (Stitch Equalizer Pill) -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="38dp"
+                                android:background="@drawable/bg_pill_audio"
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                android:paddingStart="12dp"
+                                android:paddingEnd="12dp">
+
+                                <ImageView
+                                    android:layout_width="32dp"
+                                    android:layout_height="18dp"
+                                    android:contentDescription="Âm thanh"
+                                    android:src="@drawable/ic_audio_equalizer" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="8dp"
+                                android:layout_height="1dp" />
+
+                            <!-- Snapshot button -->
+                            <androidx.appcompat.widget.AppCompatButton
+                                android:id="@+id/btnHomeSnapshot"
+                                android:layout_width="0dp"
+                                android:layout_height="38dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_pill_btn_white"
+                                android:backgroundTint="@null"
+                                android:drawableStart="@drawable/ic_camera"
+                                android:drawablePadding="6dp"
+                                android:drawableTint="#334155"
+                                android:minWidth="0dp"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="10dp"
+                                android:text="Chụp ảnh bài giảng"
+                                android:textAllCaps="false"
+                                android:textColor="#334155"
+                                android:textSize="11.5sp"
+                                android:textStyle="bold" />
+
+                            <View
+                                android:layout_width="8dp"
+                                android:layout_height="1dp" />
+
+                            <!-- Fullscreen button -->
+                            <androidx.appcompat.widget.AppCompatButton
+                                android:id="@+id/btnHomeLecture"
+                                android:layout_width="0dp"
+                                android:layout_height="38dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_pill_btn_blue"
+                                android:backgroundTint="@null"
+                                android:drawableStart="@drawable/ic_fullscreen"
+                                android:drawablePadding="6dp"
+                                android:drawableTint="#FFFFFF"
+                                android:minWidth="0dp"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="10dp"
+                                android:text="Toàn màn hình"
+                                android:textAllCaps="false"
+                                android:textColor="#FFFFFF"
+                                android:textSize="11.5sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Backward compatibility hidden binding -->
+                        <TextView
+                            android:id="@+id/txtHomeTeacherChip"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:visibility="gone" />
+                        </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Thông báo -->
+                    <!-- Section Header -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:background="@drawable/bg_login_card"
-                        android:elevation="2dp"
-                        android:orientation="vertical"
-                        android:padding="16dp">
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="12dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="Tương tác"
+                            android:src="@drawable/ic_bolt"
+                            android:tint="#2563EB" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="Tương tác trong lớp"
+                            android:textColor="#0F172A"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🔔 Thông báo"
-                            android:textColor="#1E293B"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
+                            android:text="Chạm nhanh 1 chạm"
+                            android:textColor="#94A3B8"
+                            android:textSize="12sp" />
+                    </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/txtHomeNotice"
+                    <!-- Interactive Card 1: Giơ tay phát biểu -->
+                    <LinearLayout
+                        android:id="@+id/btnHomeRaise"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:background="@drawable/bg_card_action_elevated"
+                        android:clickable="true"
+                        android:elevation="2dp"
+                        android:focusable="true"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:background="#DBEAFE"
-                            android:padding="10dp"
-                            android:text="Chưa có thông báo mới từ Giáo viên."
-                            android:textColor="#1E3A8A"
-                            android:textSize="12sp" />
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <FrameLayout
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:background="@drawable/bg_squircle_blue">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="Giơ tay"
+                                    android:src="@drawable/ic_hand_raise"
+                                    android:tint="#2563EB" />
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:text="Giơ tay phát biểu"
+                                    android:textColor="#0F172A"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Gửi tín hiệu muốn trả lời lên bảng giáo viên"
+                                    android:textColor="#64748B"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_pill_badge_blue"
+                                android:paddingStart="8dp"
+                                android:paddingTop="3dp"
+                                android:paddingEnd="8dp"
+                                android:paddingBottom="3dp"
+                                android:text="Sẵn sàng"
+                                android:textColor="#1D4ED8"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="8dp"
+                            android:background="#F1F5F9" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="sans-serif-medium"
+                                android:text="Nhấn để giơ tay"
+                                android:textColor="#2563EB"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:contentDescription="Mở"
+                                android:src="@drawable/ic_arrow_forward"
+                                android:tint="#2563EB" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Interactive Card 2: Hỏi bài Giáo viên -->
+                    <LinearLayout
+                        android:id="@+id/btnHomeChat"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:background="@drawable/bg_card_action_elevated"
+                        android:clickable="true"
+                        android:elevation="2dp"
+                        android:focusable="true"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <FrameLayout
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:background="@drawable/bg_squircle_blue">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="Hỏi bài"
+                                    android:src="@drawable/ic_chat"
+                                    android:tint="#2563EB" />
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:text="Hỏi bài Giáo viên"
+                                    android:textColor="#0F172A"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Đặt câu hỏi riêng hoặc trao đổi nhóm lớp"
+                                    android:textColor="#64748B"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/txtHomeChatBadge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_pill_badge_blue"
+                                android:paddingStart="8dp"
+                                android:paddingTop="3dp"
+                                android:paddingEnd="8dp"
+                                android:paddingBottom="3dp"
+                                android:text="Trực tuyến"
+                                android:textColor="#1D4ED8"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="8dp"
+                            android:background="#F1F5F9" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="sans-serif-medium"
+                                android:text="Mở khung chat"
+                                android:textColor="#2563EB"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:contentDescription="Mở"
+                                android:src="@drawable/ic_arrow_forward"
+                                android:tint="#2563EB" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Interactive Card 3: Kiểm tra & Quiz trực tuyến -->
+                    <LinearLayout
+                        android:id="@+id/btnHomeQuiz"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:background="@drawable/bg_card_action_elevated"
+                        android:clickable="true"
+                        android:elevation="2dp"
+                        android:focusable="true"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <FrameLayout
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:background="@drawable/bg_squircle_emerald">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="Quiz"
+                                    android:src="@drawable/ic_quiz"
+                                    android:tint="#059669" />
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/txtHomeQuizTitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:text="Kiểm tra &amp; Bài tập nhanh"
+                                    android:textColor="#0F172A"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/txtHomeQuizSub"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Nhận đề kiểm tra và bài tập trực tiếp từ Giáo viên"
+                                    android:textColor="#64748B"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/txtHomeQuizBadge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_chip_pill"
+                                android:paddingStart="10dp"
+                                android:paddingTop="4dp"
+                                android:paddingEnd="10dp"
+                                android:paddingBottom="4dp"
+                                android:text="Chờ giao bài"
+                                android:textColor="#64748B"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="8dp"
+                            android:background="#F1F5F9" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="sans-serif-medium"
+                                android:text="Bắt đầu nộp bài"
+                                android:textColor="#059669"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:contentDescription="Mở"
+                                android:src="@drawable/ic_arrow_forward"
+                                android:tint="#059669" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Teacher Notice / Announcement Card (Stitch Matching) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/bg_card_action_elevated"
+                        android:clipToOutline="true"
+                        android:elevation="2dp"
+                        android:orientation="horizontal">
+
+                        <!-- Left Blue Accent Stripe -->
+                        <View
+                            android:layout_width="4dp"
+                            android:layout_height="match_parent"
+                            android:background="#2563EB" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <!-- Teacher Avatar Circle -->
+                                <FrameLayout
+                                    android:layout_width="36dp"
+                                    android:layout_height="36dp">
+
+                                    <TextView
+                                        android:id="@+id/txtHomeTeacherAvatar"
+                                        android:layout_width="36dp"
+                                        android:layout_height="36dp"
+                                        android:background="@drawable/bg_pill_badge_blue"
+                                        android:gravity="center"
+                                        android:text="GV"
+                                        android:textColor="#1D4ED8"
+                                        android:textSize="12sp"
+                                        android:textStyle="bold" />
+
+                                    <View
+                                        android:layout_width="8dp"
+                                        android:layout_height="8dp"
+                                        android:layout_gravity="bottom|end"
+                                        android:background="@drawable/bg_pill_badge_green" />
+                                </FrameLayout>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/txtHomeNoticeHeader"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="sans-serif-medium"
+                                        android:text="Lời nhắc của Giáo viên:"
+                                        android:textColor="#0F172A"
+                                        android:textSize="13.5sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/txtHomeNoticeTime"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="🕒 Thông báo lớp học"
+                                        android:textColor="#94A3B8"
+                                        android:textSize="11sp" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/txtHomeNotice"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:lineSpacingMultiplier="1.2"
+                                android:text="Chưa có lời nhắc mới từ Giáo viên."
+                                android:textColor="#334155"
+                                android:textSize="13sp" />
+
+                            <!-- Feedback Action Buttons -->
+                            <LinearLayout
+                                android:id="@+id/layoutNoticeFeedback"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <androidx.appcompat.widget.AppCompatButton
+                                    android:id="@+id/btnNoticeUnderstood"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="34dp"
+                                    android:background="@drawable/bg_pill_btn_soft_blue"
+                                    android:backgroundTint="@null"
+                                    android:drawableStart="@drawable/ic_thumb_up"
+                                    android:drawablePadding="6dp"
+                                    android:drawableTint="#1D4ED8"
+                                    android:minWidth="0dp"
+                                    android:paddingStart="12dp"
+                                    android:paddingEnd="12dp"
+                                    android:text="Đã hiểu (28)"
+                                    android:textAllCaps="false"
+                                    android:textColor="#1D4ED8"
+                                    android:textSize="11.5sp"
+                                    android:textStyle="bold" />
+
+                                <View
+                                    android:layout_width="8dp"
+                                    android:layout_height="1dp" />
+
+                                <androidx.appcompat.widget.AppCompatButton
+                                    android:id="@+id/btnNoticeReexplain"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="34dp"
+                                    android:background="@drawable/bg_pill_btn_white"
+                                    android:backgroundTint="@null"
+                                    android:drawableStart="@drawable/ic_question_mark"
+                                    android:drawablePadding="6dp"
+                                    android:drawableTint="#64748B"
+                                    android:minWidth="0dp"
+                                    android:paddingStart="12dp"
+                                    android:paddingEnd="12dp"
+                                    android:text="Xin giảng lại"
+                                    android:textAllCaps="false"
+                                    android:textColor="#475569"
+                                    android:textSize="11.5sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Network Connectivity Status Pill (Stitch Design) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_chip_pill"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:padding="9dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="● "
+                            android:textColor="#16A34A"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif"
+                            android:text="WiFi THPT_P204 • Ping: 4ms (Rất ổn định)"
+                            android:textColor="#334155"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Hidden utility bindings for backwards compatibility -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:visibility="gone">
+
+                        <TextView android:id="@+id/txtHomeGreeting" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/txtHomeSub" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/txtStatClass" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/txtStatBroadcast" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/txtStatHand" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/txtStatTeacher" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- 2.2b Trang chưa hỗ trợ trên Android -->
-                <LinearLayout
-                    android:id="@+id/panelSoon"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="32dp"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🚧"
-                        android:textSize="52sp" />
-
-                    <TextView
-                        android:id="@+id/txtSoonTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Tính năng"
-                        android:textColor="#1E293B"
-                        android:textSize="17sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:gravity="center"
-                        android:text="Trang này đang được phát triển trên Android.\nVui lòng dùng bản Windows để sử dụng."
-                        android:textColor="#64748B"
-                        android:textSize="13sp" />
-                </LinearLayout>
-
-                <!-- 2.3 TAB 1: BÀI GIẢNG & MÀN HÌNH GIÁO VIÊN -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- 2.2.2 TAB 1: BÀI GIẢNG & MÀN HÌNH GIÁO VIÊN        -->
+                <!-- ═══════════════════════════════════════════════════ -->
                 <LinearLayout
                     android:id="@+id/panelLecture"
                     android:layout_width="match_parent"
@@ -682,47 +1590,77 @@
                     android:padding="16dp"
                     android:visibility="gone">
 
-                    <!-- Lecture Screen Container Card -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_login_card"
-                        android:elevation="4dp"
+                        android:background="@drawable/bg_hero_lecture_card"
+                        android:elevation="2dp"
                         android:orientation="vertical"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="🖥️ Màn Hình Bài Giảng"
-                            android:textColor="#1E293B"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <FrameLayout
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/bg_squircle_blue">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="Bài giảng"
+                                    android:src="@drawable/ic_tv" />
+                            </FrameLayout>
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:fontFamily="sans-serif-medium"
+                                android:text="Màn Hình Bài Giảng"
+                                android:textColor="#0F172A"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
 
                         <!-- State A: Khi Giáo viên CHƯA chia sẻ màn hình -->
                         <LinearLayout
                             android:id="@+id/layoutNoBroadcast"
                             android:layout_width="match_parent"
-                            android:layout_height="200dp"
-                            android:layout_marginTop="12dp"
-                            android:background="#F8FAFC"
+                            android:layout_height="220dp"
+                            android:layout_marginTop="14dp"
+                            android:background="@drawable/bg_input_field"
                             android:gravity="center"
                             android:orientation="vertical"
                             android:padding="16dp"
                             android:visibility="visible">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="👨‍🏫"
-                                android:textSize="48sp" />
+                            <FrameLayout
+                                android:layout_width="64dp"
+                                android:layout_height="64dp"
+                                android:background="@drawable/bg_squircle_blue">
+
+                                <ImageView
+                                    android:layout_width="36dp"
+                                    android:layout_height="36dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="Bài giảng"
+                                    android:src="@drawable/ic_tv" />
+                            </FrameLayout>
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
+                                android:layout_marginTop="12dp"
+                                android:fontFamily="sans-serif-medium"
                                 android:text="Bàn Giảng Dạy Trực Tuyến"
-                                android:textColor="#1E293B"
+                                android:textColor="#0F172A"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
 
@@ -741,7 +1679,7 @@
                             android:id="@+id/layoutLiveBroadcast"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="14dp"
                             android:orientation="vertical"
                             android:visibility="gone">
 
@@ -784,29 +1722,41 @@
                             <Button
                                 android:id="@+id/btnFullscreenBroadcast"
                                 android:layout_width="match_parent"
-                                android:layout_height="42dp"
-                                android:layout_marginTop="8dp"
-                                android:backgroundTint="#2563EB"
-                                android:text="⛶ Xem Toàn Màn Hình"
+                                android:layout_height="44dp"
+                                android:layout_marginTop="10dp"
+                                android:background="@drawable/bg_btn_primary"
+                                android:drawableStart="@drawable/ic_fullscreen"
+                                android:drawablePadding="8dp"
+                                android:drawableTint="#FFFFFF"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:text="Xem Toàn Màn Hình"
+                                android:textAllCaps="false"
                                 android:textColor="#FFFFFF"
                                 android:textSize="13sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Quick Raise Hand Bar in Lecture Tab -->
+                    <!-- Quick Raise Hand Button in Lecture Tab -->
                     <Button
                         android:id="@+id/btnRaiseHand"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:layout_marginTop="12dp"
                         android:backgroundTint="#F59E0B"
-                        android:text="✋ Giơ Tay Phát Biểu"
+                        android:drawableStart="@drawable/ic_hand_raise"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="#FFFFFF"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:text="Giơ Tay Phát Biểu"
+                        android:textAllCaps="false"
                         android:textColor="#FFFFFF"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
-                    <!-- Quick Toast Message Card from Teacher -->
+                    <!-- Quick Message Card from Teacher -->
                     <LinearLayout
                         android:id="@+id/messageCard"
                         android:layout_width="match_parent"
@@ -820,7 +1770,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📩 Tin nhắn mới từ Giáo viên:"
+                            android:text="Tin nhắn mới từ Giáo viên:"
                             android:textColor="#34D399"
                             android:textSize="12sp"
                             android:textStyle="bold" />
@@ -836,7 +1786,9 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- 2.4 TAB 2: TRÒ CHUYỆN / NHẮN TIN VỚI GIÁO VIÊN -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- 2.2.3 TAB 2: HỎI BÀI / TRÒ CHUYỆN                  -->
+                <!-- ═══════════════════════════════════════════════════ -->
                 <LinearLayout
                     android:id="@+id/panelChat"
                     android:layout_width="match_parent"
@@ -848,43 +1800,58 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_login_card"
-                        android:elevation="4dp"
+                        android:background="@drawable/bg_hero_lecture_card"
+                        android:elevation="2dp"
                         android:orientation="vertical"
-                        android:padding="12dp">
+                        android:padding="16dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center_vertical"
                             android:orientation="horizontal"
-                            android:paddingBottom="8dp">
+                            android:paddingBottom="10dp">
+
+                            <FrameLayout
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/bg_squircle_blue">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="Hỏi bài"
+                                    android:src="@drawable/ic_chat" />
+                            </FrameLayout>
 
                             <TextView
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
                                 android:layout_weight="1"
-                                android:text="💬 Trò Chuyện Trong Lớp"
-                                android:textColor="#1E293B"
-                                android:textSize="15sp"
+                                android:fontFamily="sans-serif-medium"
+                                android:text="Hỏi Bài &amp; Thảo Luận"
+                                android:textColor="#0F172A"
+                                android:textSize="16sp"
                                 android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/txtChatChannelBadge"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:background="#EFF6FF"
-                                android:paddingStart="8dp"
+                                android:background="@drawable/bg_pill_badge_blue"
+                                android:paddingStart="10dp"
                                 android:paddingTop="3dp"
-                                android:paddingEnd="8dp"
+                                android:paddingEnd="10dp"
                                 android:paddingBottom="3dp"
-                                android:text="Gửi: 👨‍🏫 Giáo viên"
-                                android:textColor="#2563EB"
+                                android:text="Gửi: Giáo viên"
+                                android:textColor="#1D4ED8"
                                 android:textSize="11sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
 
-                        <!-- Chọn kênh: Nhắn với lớp / các Nhóm / Nhắn riêng với giáo viên (tab dựng bằng code, cuộn ngang) -->
+                        <!-- Chọn kênh chat -->
                         <HorizontalScrollView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -898,14 +1865,14 @@
                                 android:orientation="horizontal" />
                         </HorizontalScrollView>
 
-                        <!-- Chat Messages Scroll Container -->
+                        <!-- Chat Messages Container -->
                         <ScrollView
                             android:id="@+id/scrollChat"
                             android:layout_width="match_parent"
                             android:layout_height="260dp"
+                            android:background="@drawable/bg_input_field"
                             android:fillViewport="true"
-                            android:background="#F8FAFC"
-                            android:padding="8dp">
+                            android:padding="10dp">
 
                             <LinearLayout
                                 android:id="@+id/chatContainer"
@@ -913,16 +1880,15 @@
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical">
 
-                                <!-- Welcome system notice -->
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_marginBottom="8dp"
-                                    android:background="#F1F5F9"
+                                    android:background="@drawable/bg_pill_badge_blue"
                                     android:gravity="center"
                                     android:padding="8dp"
-                                    android:text="🎓 Bạn đã vào phòng học trực tuyến. Mọi tin nhắn gửi tại đây sẽ chuyển tới Giáo viên."
-                                    android:textColor="#64748B"
+                                    android:text="Bạn đã kết nối lớp học. Mọi câu hỏi gửi tại đây sẽ chuyển tới Giáo viên."
+                                    android:textColor="#475569"
                                     android:textSize="11sp" />
                             </LinearLayout>
                         </ScrollView>
@@ -943,9 +1909,9 @@
                                 android:background="@drawable/bg_input_field"
                                 android:hint="Nhập tin nhắn gửi Giáo viên..."
                                 android:inputType="textShortMessage"
-                                android:paddingStart="12dp"
-                                android:paddingEnd="12dp"
-                                android:textColor="#1E293B"
+                                android:paddingStart="14dp"
+                                android:paddingEnd="14dp"
+                                android:textColor="#0F172A"
                                 android:textColorHint="#94A3B8"
                                 android:textSize="13sp" />
 
@@ -955,9 +1921,12 @@
                                 android:layout_height="44dp"
                                 android:layout_marginStart="8dp"
                                 android:background="@drawable/bg_btn_primary"
+                                android:drawableEnd="@drawable/ic_send"
+                                android:drawablePadding="6dp"
+                                android:drawableTint="#FFFFFF"
                                 android:minWidth="0dp"
                                 android:paddingStart="16dp"
-                                android:paddingEnd="16dp"
+                                android:paddingEnd="14dp"
                                 android:text="GỬI"
                                 android:textColor="#FFFFFF"
                                 android:textSize="13sp"
@@ -966,7 +1935,9 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- 2.5 TAB 3: GIƠ TAY PHÁT BIỂU Ý KIẾN -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- 2.2.4 TAB 3: GIƠ TAY PHÁT BIỂU Ý KIẾN              -->
+                <!-- ═══════════════════════════════════════════════════ -->
                 <LinearLayout
                     android:id="@+id/panelHandRaise"
                     android:layout_width="match_parent"
@@ -978,24 +1949,39 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_login_card"
-                        android:elevation="4dp"
+                        android:background="@drawable/bg_hero_lecture_card"
+                        android:elevation="2dp"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="24dp">
 
+                        <FrameLayout
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
+                            android:background="@drawable/bg_squircle_amber">
+
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="Giơ tay"
+                                android:src="@drawable/ic_hand_raise" />
+                        </FrameLayout>
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="✋ Phát Biểu Trong Lớp"
-                            android:textColor="#1E293B"
+                            android:layout_marginTop="12dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="Giơ Tay Phát Biểu"
+                            android:textColor="#0F172A"
                             android:textSize="18sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:layout_marginTop="4dp"
                             android:gravity="center"
                             android:text="Chạm vào nút bên dưới để giơ tay xin phát biểu ý kiến hoặc gọi Giáo viên."
                             android:textColor="#64748B"
@@ -1004,8 +1990,8 @@
                         <!-- Large Interactive Hand Button -->
                         <LinearLayout
                             android:id="@+id/btnMainRaiseHand"
-                            android:layout_width="180dp"
-                            android:layout_height="180dp"
+                            android:layout_width="160dp"
+                            android:layout_height="160dp"
                             android:layout_marginTop="20dp"
                             android:background="@drawable/bg_hand_raise_idle"
                             android:clickable="true"
@@ -1013,18 +1999,24 @@
                             android:gravity="center"
                             android:orientation="vertical">
 
+                            <ImageView
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:contentDescription="Giơ tay"
+                                android:src="@drawable/ic_hand_raise" />
+
                             <TextView
                                 android:id="@+id/txtHandRaiseIcon"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="✋"
-                                android:textSize="58sp" />
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:visibility="gone" />
 
                             <TextView
                                 android:id="@+id/txtHandRaiseStatus"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
+                                android:layout_marginTop="8dp"
+                                android:fontFamily="sans-serif-medium"
                                 android:text="Bấm để Giơ tay"
                                 android:textColor="#B45309"
                                 android:textSize="14sp"
@@ -1036,8 +2028,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="20dp"
+                            android:fontFamily="sans-serif-medium"
                             android:text="Lý do xin phát biểu:"
-                            android:textColor="#475569"
+                            android:textColor="#334155"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -1051,54 +2044,280 @@
                             <Button
                                 android:id="@+id/btnReasonSpeaking"
                                 android:layout_width="0dp"
-                                android:layout_height="36dp"
+                                android:layout_height="38dp"
                                 android:layout_marginEnd="4dp"
                                 android:layout_weight="1"
                                 android:backgroundTint="#ECFDF5"
                                 android:minWidth="0dp"
                                 android:padding="0dp"
-                                android:text="🗣️ Phát biểu"
+                                android:text="Phát biểu"
+                                android:textAllCaps="false"
                                 android:textColor="#059669"
-                                android:textSize="11sp"
+                                android:textSize="12sp"
                                 android:textStyle="bold" />
 
                             <Button
                                 android:id="@+id/btnReasonQuestion"
                                 android:layout_width="0dp"
-                                android:layout_height="36dp"
+                                android:layout_height="38dp"
                                 android:layout_marginStart="4dp"
                                 android:layout_marginEnd="4dp"
                                 android:layout_weight="1"
                                 android:backgroundTint="#EFF6FF"
                                 android:minWidth="0dp"
                                 android:padding="0dp"
-                                android:text="❓ Đặt câu hỏi"
+                                android:text="Đặt câu hỏi"
+                                android:textAllCaps="false"
                                 android:textColor="#2563EB"
-                                android:textSize="11sp"
+                                android:textSize="12sp"
                                 android:textStyle="bold" />
 
                             <Button
                                 android:id="@+id/btnReasonHelp"
                                 android:layout_width="0dp"
-                                android:layout_height="36dp"
+                                android:layout_height="38dp"
                                 android:layout_marginStart="4dp"
                                 android:layout_weight="1"
                                 android:backgroundTint="#FEF2F2"
                                 android:minWidth="0dp"
                                 android:padding="0dp"
-                                android:text="🛠️ Trợ giúp"
+                                android:text="Trợ giúp"
+                                android:textAllCaps="false"
                                 android:textColor="#DC2626"
-                                android:textSize="11sp"
+                                android:textSize="12sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
+
+                <!-- ═══════════════════════════════════════════════════ -->
+                <!-- 2.2.5 TAB 4: COMING SOON                           -->
+                <!-- ═══════════════════════════════════════════════════ -->
+                <LinearLayout
+                    android:id="@+id/panelSoon"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="32dp"
+                    android:visibility="gone">
+
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:background="@drawable/bg_squircle_blue">
+
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Tính năng"
+                            android:src="@drawable/ic_brush" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/txtSoonTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Tính năng"
+                        android:textColor="#0F172A"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:text="Tính năng này đang được tối ưu hóa cho màn hình Android.\nVui lòng sử dụng phiên bản Windows để có đầy đủ trải nghiệm."
+                        android:textColor="#64748B"
+                        android:textSize="13sp" />
+
+                    <Button
+                        android:id="@+id/btnSoonBack"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="20dp"
+                        android:background="@drawable/bg_btn_primary"
+                        android:drawableStart="@drawable/ic_home"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="#FFFFFF"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:text="Quay lại Trang chủ"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- 2.3 BOTTOM NAVIGATION BAR (Fixed at bottom) -->
+        <LinearLayout
+            android:id="@+id/bottomNavBar"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/bg_bottom_nav"
+            android:elevation="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Tab 0: Bài giảng (Trang chủ) -->
+            <LinearLayout
+                android:id="@+id/btnBottomHome"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:id="@+id/capsuleBottomHome"
+                    android:layout_width="56dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/bg_bottom_nav_capsule">
+
+                    <ImageView
+                        android:id="@+id/iconBottomHome"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Bài giảng"
+                        android:src="@drawable/ic_tv"
+                        android:tint="#FFFFFF" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/labelBottomHome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Bài giảng"
+                    android:textColor="#2563EB"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
-        </LinearLayout>
-    </ScrollView>
+            <!-- Tab 1: Trắc nghiệm -->
+            <LinearLayout
+                android:id="@+id/btnBottomLecture"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical">
 
-    <!-- ═══ Sidebar (giống Sidebar StudentShell) — mở bằng nút ☰ ═══ -->
+                <FrameLayout
+                    android:id="@+id/capsuleBottomLecture"
+                    android:layout_width="56dp"
+                    android:layout_height="30dp">
+
+                    <ImageView
+                        android:id="@+id/iconBottomLecture"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Trắc nghiệm"
+                        android:src="@drawable/ic_quiz" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/labelBottomLecture"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="sans-serif"
+                    android:text="Trắc nghiệm"
+                    android:textColor="#64748B"
+                    android:textSize="10.5sp" />
+            </LinearLayout>
+
+            <!-- Tab 2: Trò chuyện -->
+            <LinearLayout
+                android:id="@+id/btnBottomChat"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:id="@+id/capsuleBottomChat"
+                    android:layout_width="56dp"
+                    android:layout_height="30dp">
+
+                    <ImageView
+                        android:id="@+id/iconBottomChat"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Trò chuyện"
+                        android:src="@drawable/ic_chat" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/labelBottomChat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="sans-serif"
+                    android:text="Trò chuyện"
+                    android:textColor="#64748B"
+                    android:textSize="10.5sp" />
+            </LinearLayout>
+
+            <!-- Tab 3: Cá nhân -->
+            <LinearLayout
+                android:id="@+id/btnBottomRaise"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:id="@+id/capsuleBottomRaise"
+                    android:layout_width="56dp"
+                    android:layout_height="30dp">
+
+                    <ImageView
+                        android:id="@+id/iconBottomRaise"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Cá nhân"
+                        android:src="@drawable/ic_person" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/labelBottomRaise"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="sans-serif"
+                    android:text="Cá nhân"
+                    android:textColor="#64748B"
+                    android:textSize="10.5sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- 3. SIDEBAR NAVIGATION DRAWER                           -->
+    <!-- ═══════════════════════════════════════════════════════ -->
     <FrameLayout
         android:id="@+id/navDrawerOverlay"
         android:layout_width="match_parent"
@@ -1109,20 +2328,22 @@
         android:visibility="gone">
 
         <LinearLayout
-            android:layout_width="285dp"
+            android:layout_width="290dp"
             android:layout_height="match_parent"
-            android:background="@drawable/bg_header_navy"
+            android:background="#FFFFFF"
             android:clickable="true"
+            android:elevation="16dp"
             android:focusable="true"
             android:orientation="vertical">
 
-            <!-- Logo -->
+            <!-- Logo & Brand Header -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_hero_card"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <ImageView
                     android:layout_width="36dp"
@@ -1133,46 +2354,58 @@
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="12dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="QA SMART CLASS"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="SMART CLASS"
                         android:textColor="#FFFFFF"
-                        android:textSize="15sp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Giao diện Học sinh"
-                        android:textColor="#94A3B8"
+                        android:text="Học sinh • v4.2"
+                        android:textColor="#DBEAFE"
                         android:textSize="11sp" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Class card -->
+            <!-- Student Profile Badge -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
-                android:background="#0F2847"
+                android:background="#F8FAFC"
                 android:orientation="vertical"
-                android:padding="10dp">
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/txtStudentDetail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:text="Học sinh: —"
+                    android:textColor="#0F172A"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/txtConnectedClassInfo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="Lớp học SmartClass"
-                    android:textColor="#FFFFFF"
-                    android:textSize="13sp"
+                    android:text="Lớp: —"
+                    android:textColor="#1976D2"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -1182,211 +2415,220 @@
                     android:layout_marginTop="2dp"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="👨‍🏫 GV: Đang đồng bộ..."
-                    android:textColor="#4ADE80"
+                    android:text="Giáo viên: —"
+                    android:textColor="#64748B"
                     android:textSize="11sp" />
-            </LinearLayout>
-
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:fillViewport="false">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingTop="6dp"
-                    android:paddingBottom="8dp">
-
-                    <TextView
-                        style="@style/StuSection"
-                        android:text="CHÍNH"
-                        android:textColor="#60A5FA" />
-
-                    <Button
-                        android:id="@+id/btnNavHome"
-                        style="@style/StuNav"
-                        android:background="@drawable/bg_tab_selected"
-                        android:text="🏠  Trang chủ"
-                        android:textColor="#FFFFFF" />
-
-                    <Button
-                        android:id="@+id/btnTabLecture"
-                        style="@style/StuNav"
-                        android:text="📺  Bài giảng hôm nay" />
-
-                    <TextView
-                        style="@style/StuSection"
-                        android:text="HỌC TẬP"
-                        android:textColor="#4ADE80" />
-
-                    <Button
-                        android:id="@+id/btnNavWhiteboard"
-                        style="@style/StuNav"
-                        android:text="🖍️  Bảng trắng học sinh" />
-
-                    <Button
-                        android:id="@+id/btnNavQuiz"
-                        style="@style/StuNav"
-                        android:text="📝  Bài kiểm tra" />
-
-                    <Button
-                        android:id="@+id/btnNavAssignment"
-                        style="@style/StuNav"
-                        android:text="📚  Bài tập học tập" />
-
-                    <Button
-                        android:id="@+id/btnNavSurvey"
-                        style="@style/StuNav"
-                        android:text="📋  Khảo sát" />
-
-                    <TextView
-                        style="@style/StuSection"
-                        android:text="TƯƠNG TÁC"
-                        android:textColor="#F472B6" />
-
-                    <Button
-                        android:id="@+id/btnTabChat"
-                        style="@style/StuNav"
-                        android:text="💬  Tin nhắn" />
-
-                    <Button
-                        android:id="@+id/btnTabHandRaise"
-                        style="@style/StuNav"
-                        android:text="✋  Hỏi bài Giáo viên" />
-
-                    <TextView
-                        style="@style/StuSection"
-                        android:text="CÁ NHÂN"
-                        android:textColor="#94A3B8" />
-
-                    <Button
-                        android:id="@+id/btnNavResults"
-                        style="@style/StuNav"
-                        android:text="📊  Kết quả học tập" />
-
-                    <Button
-                        android:id="@+id/btnNavProgress"
-                        style="@style/StuNav"
-                        android:text="🎯  Tiến trình học tập" />
-
-                    <Button
-                        android:id="@+id/btnNavSettings"
-                        style="@style/StuNav"
-                        android:text="⚙️  Cài đặt" />
-
-                    <Button
-                        android:id="@+id/btnNavGuide"
-                        style="@style/StuNav"
-                        android:text="💡  Hướng dẫn sử dụng" />
-
-                    <Button
-                        android:id="@+id/btnDisconnect"
-                        style="@style/StuNav"
-                        android:text="⏻  Rời lớp học"
-                        android:textColor="#FCA5A5" />
-                </LinearLayout>
-            </ScrollView>
-
-            <!-- Profile footer -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#080F1A"
-                android:orientation="vertical"
-                android:padding="12dp">
-
-                <TextView
-                    android:id="@+id/txtStudentDetail"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text="👤 Học sinh: ..."
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/txtServerIpDetail"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="🌐 Máy chủ: ..."
-                    android:textColor="#64748B"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="IP: —"
+                    android:textColor="#94A3B8"
                     android:textSize="10sp" />
             </LinearLayout>
+
+            <!-- Navigation Items Scroll -->
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingStart="8dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/StuSection"
+                        android:text="TRANG CHỦ" />
+
+                    <TextView
+                        android:id="@+id/btnNavHome"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_home"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Trang tổng quan" />
+
+                    <TextView
+                        style="@style/StuSection"
+                        android:text="TƯƠNG TÁC LỚP HỌC" />
+
+                    <TextView
+                        android:id="@+id/btnTabLecture"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_tv"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Bài giảng trực tiếp" />
+
+                    <TextView
+                        android:id="@+id/btnTabChat"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_chat"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Hỏi bài Giáo viên" />
+
+                    <TextView
+                        android:id="@+id/btnTabHandRaise"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_hand_raise"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Giơ tay phát biểu" />
+
+                    <TextView
+                        android:id="@+id/btnNavQuiz"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_quiz"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Kiểm tra trắc nghiệm" />
+
+                    <TextView
+                        android:id="@+id/btnNavWhiteboard"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_brush"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="SMART TOUCH" />
+
+                    <TextView
+                        style="@style/StuSection"
+                        android:text="HỌC TẬP &amp; ĐÁNH GIÁ" />
+
+                    <TextView
+                        android:id="@+id/btnNavAssignment"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_assignment"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Bài tập về nhà" />
+
+                    <TextView
+                        android:id="@+id/btnNavResults"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_stats"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Kết quả học tập" />
+
+                    <TextView
+                        android:id="@+id/btnNavProgress"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_stats"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Tiến độ học tập" />
+
+                    <TextView
+                        android:id="@+id/btnNavSurvey"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_help"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Khảo sát ý kiến" />
+
+                    <TextView
+                        style="@style/StuSection"
+                        android:text="HỆ THỐNG" />
+
+                    <TextView
+                        android:id="@+id/btnNavGuide"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_help"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Hướng dẫn sử dụng" />
+
+                    <TextView
+                        android:id="@+id/btnNavSettings"
+                        style="@style/StuNav"
+                        android:drawableStart="@drawable/ic_settings"
+                        android:drawableEnd="@drawable/ic_chevron_right"
+                        android:text="Cài đặt" />
+                </LinearLayout>
+            </ScrollView>
+
+            <!-- Disconnect Action -->
+            <Button
+                android:id="@+id/btnDisconnect"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_margin="12dp"
+                android:backgroundTint="#FEE2E2"
+                android:drawableStart="@drawable/ic_logout"
+                android:drawablePadding="10dp"
+                android:drawableTint="#DC2626"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Rời phòng học"
+                android:textAllCaps="false"
+                android:textColor="#DC2626"
+                android:textSize="13sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </FrameLayout>
 
-    <!-- 3. Screen Broadcast Fullscreen Overlay -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- 4. FULLSCREEN BROADCAST OVERLAY                        -->
+    <!-- ═══════════════════════════════════════════════════════ -->
     <FrameLayout
         android:id="@+id/broadcastOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#0D1B2A"
+        android:background="#000000"
         android:visibility="gone">
 
-        <!-- Screen Image View -->
         <ImageView
             android:id="@+id/imgBroadcastScreen"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            android:contentDescription="Màn hình Giáo viên chia sẻ" />
+            android:contentDescription="Màn hình GV toàn màn hình"
+            android:scaleType="fitCenter" />
 
-        <!-- Loading indicator while waiting for first frame -->
         <ProgressBar
             android:id="@+id/progressBroadcastLoading"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:indeterminate="true"
-            android:visibility="visible" />
+            android:indeterminateTint="#FFFFFF"
+            android:visibility="gone" />
 
-        <!-- Top Header Bar with Live Indicator & Title -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/txtBroadcastStatus"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#CC000000"
-            android:padding="12dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_gravity="top|start"
+            android:layout_margin="16dp"
+            android:background="#88000000"
+            android:paddingStart="12dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="6dp"
+            android:text="● TRỰC TIẾP — Màn hình Giáo viên"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#E53935"
-                android:text="● TRỰC TIẾP"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="3dp"
-                android:paddingBottom="3dp" />
-
-            <TextView
-                android:id="@+id/txtBroadcastStatus"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="12dp"
-                android:text="Màn hình Giáo viên (Đang phát)"
-                android:textColor="#FFFFFF"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="16dp"
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnFullscreenRaiseHand"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="38dp"
                 android:layout_marginEnd="8dp"
                 android:backgroundTint="#F59E0B"
-                android:text="✋ Giơ tay"
+                android:drawableStart="@drawable/ic_hand_raise"
+                android:drawablePadding="6dp"
+                android:drawableTint="#FFFFFF"
+                android:minWidth="0dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="Giơ tay"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -1394,21 +2636,26 @@
             <Button
                 android:id="@+id/btnCloseBroadcast"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:backgroundTint="#37474F"
+                android:layout_height="38dp"
+                android:backgroundTint="#334155"
+                android:minWidth="0dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:text="Thu nhỏ"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
-                android:visibility="gone" />
+                android:textStyle="bold" />
         </LinearLayout>
     </FrameLayout>
 
-    <!-- ═══ 4. FULLSCREEN SCREEN LOCK OVERLAY ═══ -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- 5. KIOSK LOCK SCREEN OVERLAY                           -->
+    <!-- ═══════════════════════════════════════════════════════ -->
     <FrameLayout
         android:id="@+id/lockOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#F80B0F19"
+        android:background="#0F172A"
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone">
@@ -1419,22 +2666,30 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="32dp">
+            android:padding="24dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🔒"
-                android:textSize="64sp" />
+            <FrameLayout
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/bg_squircle_blue">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="Khóa màn hình"
+                    android:src="@drawable/ic_lock" />
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/txtLockTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="MÀN HÌNH ĐÃ BỊ KHÓA"
-                android:textColor="#EF4444"
-                android:textSize="22sp"
+                android:fontFamily="sans-serif-medium"
+                android:text="MÀN HÌNH ĐÃ ĐƯỢC KHÓA"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -1443,25 +2698,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:maxWidth="340dp"
-                android:text="Giáo viên đã áp dụng chính sách khóa màn hình tập trung. Vui lòng chú ý lắng nghe bài giảng trên bảng."
+                android:text="Giáo viên đang giảng bài. Vui lòng tập trung chú ý lên bảng."
                 android:textColor="#94A3B8"
                 android:textSize="14sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:background="#1E293B"
-                android:paddingStart="16dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="16dp"
-                android:paddingBottom="8dp"
-                android:text="⏳ Chế độ bảo vệ bài giảng đang hoạt động"
-                android:textColor="#38BDF8"
-                android:textSize="12sp" />
         </LinearLayout>
     </FrameLayout>
 
 </FrameLayout>
-

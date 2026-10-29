@@ -1035,11 +1035,30 @@ namespace QASmartClass.Classroom.Services
 
         // ═══ LESSON SYNC COMMANDS ═══
         /// <summary>GV bắt đầu dạy — HS tự chuyển sang trang Bài giảng</summary>
-        public Task StartLessonAsync(int lessonId) => SendCommandAsync($"CMD|LESSON_START|{lessonId}");
+        public Task StartLessonAsync(int lessonId, string? title = null, string? subject = null, string? teacherName = null, int stage = 2, string? summary = null)
+        {
+            if (!string.IsNullOrWhiteSpace(title) || !string.IsNullOrWhiteSpace(subject) || !string.IsNullOrWhiteSpace(teacherName) || !string.IsNullOrWhiteSpace(summary))
+            {
+                string encTitle = Uri.EscapeDataString(title ?? string.Empty);
+                string encSubject = Uri.EscapeDataString(subject ?? string.Empty);
+                string encTeacher = Uri.EscapeDataString(teacherName ?? string.Empty);
+                string encSummary = Uri.EscapeDataString(summary ?? string.Empty);
+                return SendCommandAsync($"CMD|LESSON_START|{lessonId}|{encTitle}|{encSubject}|{encTeacher}|{stage}|{encSummary}");
+            }
+            return SendCommandAsync($"CMD|LESSON_START|{lessonId}");
+        }
         /// <summary>GV chuyển giai đoạn (1-6) — HS cập nhật trạng thái</summary>
         public Task SetLessonStageAsync(int stage) => SendCommandAsync($"CMD|LESSON_STAGE|{stage}");
         /// <summary>GV muốn HS focus vào block nội dung cụ thể (sortOrder)</summary>
-        public Task FocusContentAsync(int sortOrder, string contentType) => SendCommandAsync($"CMD|LESSON_FOCUS|{sortOrder}|{contentType}");
+        public Task FocusContentAsync(int sortOrder, string contentType, string? contentData = null)
+        {
+            if (!string.IsNullOrWhiteSpace(contentData))
+            {
+                string encData = Uri.EscapeDataString(contentData);
+                return SendCommandAsync($"CMD|LESSON_FOCUS|{sortOrder}|{contentType}|{encData}");
+            }
+            return SendCommandAsync($"CMD|LESSON_FOCUS|{sortOrder}|{contentType}");
+        }
         /// <summary>GV kết thúc tiết học — HS nhận thông báo</summary>
         public Task EndLessonAsync() => SendCommandAsync("CMD|LESSON_END|0");
         /// <summary>GV gửi BTVN — HS nhận thông báo</summary>

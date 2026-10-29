@@ -127,6 +127,30 @@ namespace QASmartClass.Classroom.Services
             });
             await _db.SaveChangesAsync();
 
+            var activeLesson = _db.Lessons
+                .Where(l => l.Status == "Approved" || l.Status == "Taught")
+                .OrderByDescending(l => l.LastTaughtAt ?? l.UpdatedAt)
+                .FirstOrDefault() ?? _db.Lessons.OrderByDescending(l => l.UpdatedAt).FirstOrDefault();
+            int lessonId = activeLesson?.Id ?? 0;
+            string lessonTitle = activeLesson?.Title ?? $"Tiết học trực tiếp — Lớp {className}";
+            string lessonSubject = activeLesson?.Subject ?? "Bài giảng trên lớp";
+            var lessonBlocks = lessonId > 0
+                ? _db.LessonContents.Where(c => c.LessonId == lessonId).OrderBy(c => c.SortOrder).Take(3).ToList()
+                : new List<LessonContent>();
+            string lessonSummary = string.Join("\n", lessonBlocks.Select(c => c.Data?.Replace("\\n", "\n").Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));
+            if (string.IsNullOrWhiteSpace(lessonSummary)) lessonSummary = activeLesson?.HomeworkText ?? lessonTitle;
+
+            var lessonState = QASmartClass.Services.LessonStateService.Instance;
+            lessonState.IsLessonActive = true;
+            lessonState.ActiveLessonId = lessonId;
+            lessonState.ActiveLessonStage = 2;
+            lessonState.ActiveLessonTitle = lessonTitle;
+            lessonState.ActiveLessonSubject = lessonSubject;
+            lessonState.ActiveTeacherName = teacherName;
+            lessonState.ActiveLessonSummary = lessonSummary;
+            lessonState.LastCommandTime = DateTime.Now;
+            lessonState.LastTeacherCommand = $"CMD|LESSON_START|{lessonId}|{Uri.EscapeDataString(lessonTitle)}|{Uri.EscapeDataString(lessonSubject)}|{Uri.EscapeDataString(teacherName)}|2|{Uri.EscapeDataString(lessonSummary)}";
+
             // Bắt đầu broadcast UDP + TCP listener
             await _networkService.StartAsync(className, teacherName);
 
@@ -135,6 +159,7 @@ namespace QASmartClass.Classroom.Services
             // Ký bằng muối CŨ để HS xác minh, mã hóa bằng SessionKey riêng từng HS
             string newSessionSalt = QASmartClass.Services.ClassControlService.Instance.SessionSalt;
             await _networkService.SyncActiveClientsToNewSessionAsync(ClassCode, newSessionSalt, oldSessionSalt);
+            await _networkService.StartLessonAsync(lessonId, lessonTitle, lessonSubject, teacherName, 2, lessonSummary);
 
             // Cập nhật trạng thái IsOnline trên giao diện GV cho các HS đang kết nối
             UpdateOnlineStatusFromDiscovery();
@@ -199,6 +224,16 @@ namespace QASmartClass.Classroom.Services
                 }
             }
             catch (Exception ex) { Log.Warning("Không thể dừng chiếu màn hình khi kết thúc lớp: {Err}", ex.Message); }
+
+            try
+            {
+                if (QASmartClass.Services.LessonStateService.Instance.IsLessonActive)
+                {
+                    QASmartClass.Services.LessonStateService.Instance.Reset();
+                    await _networkService.EndLessonAsync();
+                }
+            }
+            catch { }
 
             _networkService.Stop();
             SessionStartTime = null;

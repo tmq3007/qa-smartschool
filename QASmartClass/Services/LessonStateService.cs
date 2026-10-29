@@ -18,6 +18,10 @@ namespace QASmartClass.Services
         public volatile bool IsLessonActive;
         public string? ActiveToolId { get; set; }
         public string? ActiveToolFocusId { get; set; }
+        public string? ActiveLessonTitle { get; set; }
+        public string? ActiveLessonSubject { get; set; }
+        public string? ActiveTeacherName { get; set; }
+        public string? ActiveLessonSummary { get; set; }
 
         private string _lastTeacherCommand = string.Empty;
         public string LastTeacherCommand
@@ -37,6 +41,10 @@ namespace QASmartClass.Services
             IsLessonActive = false;
             ActiveToolId = null;
             ActiveToolFocusId = null;
+            ActiveLessonTitle = null;
+            ActiveLessonSubject = null;
+            ActiveTeacherName = null;
+            ActiveLessonSummary = null;
             LastTeacherCommand = string.Empty;
             LastCommandTime = DateTime.MinValue;
             Log.Information("[LessonState] Reset");

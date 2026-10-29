@@ -192,7 +192,8 @@ namespace QASmartClass.Classroom.Views
                 {
                     // 1. Send standard CMD to all (TCP + WebSocket + local bus)
                     //    Fire-and-forget is OK â€” this path is proven working
-                    _ = net.FocusContentAsync(capturedSort, capturedType);
+                    ClassroomAppContext.LessonState.ActiveLessonSummary = capturedData;
+                    _ = net.FocusContentAsync(capturedSort, capturedType, capturedData);
 
                     // 2. Send rich content JSON directly to web students
                     //    NOTE: Do NOT wrap in Task.Run â€” SendToClient needs same context
@@ -1098,12 +1099,21 @@ namespace QASmartClass.Classroom.Views
             ClassroomAppContext.LessonState.ActiveLessonStage = 3;
             ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
-            var cmd = $"CMD|LESSON_START|{_lesson?.Id ?? 0}";
+            var lessonTitle = _lesson?.Title ?? "Bài giảng";
+            var lessonSubject = _lesson?.Subject ?? "Bài học";
+            var teacherName = ClassroomAppContext.Session?.TeacherName ?? "Giáo viên";
+            ClassroomAppContext.LessonState.ActiveLessonTitle = lessonTitle;
+            ClassroomAppContext.LessonState.ActiveLessonSubject = lessonSubject;
+            ClassroomAppContext.LessonState.ActiveTeacherName = teacherName;
+            var lessonSummary = string.Join("\n", _lessonContents.Take(3).Select(c => c.Data?.Replace("\\n", "\n").Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));
+            if (string.IsNullOrWhiteSpace(lessonSummary)) lessonSummary = _lesson?.HomeworkText ?? lessonTitle;
+            ClassroomAppContext.LessonState.ActiveLessonSummary = lessonSummary;
+            var cmd = $"CMD|LESSON_START|{_lesson?.Id ?? 0}|{Uri.EscapeDataString(lessonTitle)}|{Uri.EscapeDataString(lessonSubject)}|{Uri.EscapeDataString(teacherName)}|3|{Uri.EscapeDataString(lessonSummary)}";
             ClassroomAppContext.LessonState.LastTeacherCommand = cmd;
 
             var net = ClassroomAppContext.Network;
             if (net?.IsBroadcasting == true)
-                _ = net.StartLessonAsync(_lesson?.Id ?? 0);
+                _ = net.StartLessonAsync(_lesson?.Id ?? 0, lessonTitle, lessonSubject, teacherName, 3, lessonSummary);
             else
                 ClassroomAppContext.DispatchCommand(cmd);
 
@@ -1185,7 +1195,9 @@ namespace QASmartClass.Classroom.Views
             {
                 // → ClassroomAppContext
 
-                // Luôn cập nhật shared state
+                // Chỉ cập nhật và broadcast stage khi tiết học đã bắt đầu
+                if (ClassroomAppContext.LessonState.IsLessonActive)
+                {
                 ClassroomAppContext.LessonState.ActiveLessonStage = stage;
                 ClassroomAppContext.LessonState.LastTeacherCommand = $"CMD|LESSON_STAGE|{stage}";
                 ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
@@ -1196,6 +1208,7 @@ namespace QASmartClass.Classroom.Views
                     await net.SetLessonStageAsync(stage);
                 else
                     ClassroomAppContext.DispatchCommand($"CMD|LESSON_STAGE|{stage}");
+                }
             }
             catch { }
 
@@ -1247,20 +1260,30 @@ namespace QASmartClass.Classroom.Views
                 ClassroomAppContext.LessonState.IsLessonActive = true;
                 ClassroomAppContext.LessonState.ActiveLessonId = _lesson?.Id ?? 0;
                 ClassroomAppContext.LessonState.ActiveLessonStage = 2;
-                ClassroomAppContext.LessonState.LastTeacherCommand = $"CMD|LESSON_START|{_lesson?.Id ?? 0}";
+                var lessonTitle = _lesson?.Title ?? "Bài giảng";
+                var lessonSubject = _lesson?.Subject ?? "Bài học";
+                var teacherName = ClassroomAppContext.Session?.TeacherName ?? "Giáo viên";
+                ClassroomAppContext.LessonState.ActiveLessonTitle = lessonTitle;
+                ClassroomAppContext.LessonState.ActiveLessonSubject = lessonSubject;
+                ClassroomAppContext.LessonState.ActiveTeacherName = teacherName;
+                var lessonSummary = string.Join("\n", _lessonContents.Take(3).Select(c => c.Data?.Replace("\\n", "\n").Trim()).Where(s => !string.IsNullOrWhiteSpace(s)));
+                if (string.IsNullOrWhiteSpace(lessonSummary)) lessonSummary = _lesson?.HomeworkText ?? lessonTitle;
+                ClassroomAppContext.LessonState.ActiveLessonSummary = lessonSummary;
+                var startCmd = $"CMD|LESSON_START|{_lesson?.Id ?? 0}|{Uri.EscapeDataString(lessonTitle)}|{Uri.EscapeDataString(lessonSubject)}|{Uri.EscapeDataString(teacherName)}|2|{Uri.EscapeDataString(lessonSummary)}";
+                ClassroomAppContext.LessonState.LastTeacherCommand = startCmd;
                 ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
                 // Gửi qua network (cho HS trên mạng)
                 var net = ClassroomAppContext.Network;
                 if (net?.IsBroadcasting == true && _lesson != null)
                 {
-                    await net.StartLessonAsync(_lesson.Id);
+                    await net.StartLessonAsync(_lesson.Id, lessonTitle, lessonSubject, teacherName, 2, lessonSummary);
                     await net.SetLessonStageAsync(2);
                 }
                 else
                 {
                     // Nếu chưa broadcast qua mạng, vẫn gửi local bus
-                    ClassroomAppContext.DispatchCommand($"CMD|LESSON_START|{_lesson?.Id ?? 0}");
+                    ClassroomAppContext.DispatchCommand(startCmd);
                     ClassroomAppContext.DispatchCommand("CMD|LESSON_STAGE|2");
                 }
             }
@@ -1775,6 +1798,7 @@ namespace QASmartClass.Classroom.Views
                 // Clear shared state
                 ClassroomAppContext.LessonState.IsLessonActive = false;
                 ClassroomAppContext.LessonState.ActiveLessonStage = 0;
+                ClassroomAppContext.LessonState.Reset();
                 ClassroomAppContext.LessonState.LastTeacherCommand = "CMD|LESSON_END|0";
                 ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 

@@ -351,6 +351,18 @@ namespace QASmartClass.Classroom.Views
 									// app → ClassroomAppContext (refactored)
 
 									var state = QASmartClass.Services.BroadcastStateService.Instance;
+									var lessonState = ClassroomAppContext.LessonState;
+									if (lessonState != null && lessonState.IsLessonActive && ClassroomAppContext.Network != null)
+									{
+										string title = Uri.EscapeDataString(lessonState.ActiveLessonTitle ?? "Bài giảng");
+										string subject = Uri.EscapeDataString(lessonState.ActiveLessonSubject ?? "Bài học");
+										string teacher = Uri.EscapeDataString(lessonState.ActiveTeacherName ?? ClassroomAppContext.Session?.TeacherName ?? "Giáo viên");
+										int stage = lessonState.ActiveLessonStage > 0 ? lessonState.ActiveLessonStage : 2;
+										string summary = Uri.EscapeDataString(lessonState.ActiveLessonSummary ?? lessonState.ActiveLessonTitle ?? "Bài giảng");
+										string lessonCmd = $"CMD|LESSON_START|{lessonState.ActiveLessonId}|{title}|{subject}|{teacher}|{stage}|{summary}";
+										_ = ClassroomAppContext.Network.SendToStudentAsync(args.StudentCode, lessonCmd);
+										Log.Information("[LessonSync] Resent LESSON_START to student {Code}: {Title} (stage {Stage})", args.StudentCode, lessonState.ActiveLessonTitle, stage);
+									}
 
 									if (state != null && state.IsScreenBroadcastActive && ClassroomAppContext.Network != null)
 
@@ -377,6 +389,10 @@ namespace QASmartClass.Classroom.Views
 										_ = ClassroomAppContext.Network.SendToStudentAsync(args.StudentCode, cmd);
 
 										Log.Information("[BroadcastPage] Resent broadcast start to reconnected student {Code} (Force: {Force})", args.StudentCode, isForce);
+									}
+									return;
+									if (false)
+									{
 
 									}
 
@@ -387,6 +403,7 @@ namespace QASmartClass.Classroom.Views
 								{
 
 									Log.Warning("[BroadcastPage] Resend broadcast on reconnect error: {Err}", ex.Message);
+								return;
 
 								}
 

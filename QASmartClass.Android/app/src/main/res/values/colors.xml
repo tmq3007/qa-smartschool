@@ -1,13 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#059669</color>
-    <color name="primary_dark">#047857</color>
-    <color name="accent">#10B981</color>
+    <!-- Brand Primary Colors (SmartClass Blue Palette) -->
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="primary_light">#EFF6FF</color>
+    <color name="primary_gradient_start">#1976D2</color>
+    <color name="primary_gradient_end">#2563EB</color>
+    
+    <!-- Accent & Success Colors (Emerald) -->
+    <color name="accent">#16A34A</color>
+    <color name="accent_light">#DCFCE7</color>
+    <color name="status_live">#EF4444</color>
+    
+    <!-- Warning & Amber -->
+    <color name="warning">#D97706</color>
+    <color name="warning_light">#FEF3C7</color>
+    
+    <!-- Neutral Daylight Surfaces -->
     <color name="white">#FFFFFF</color>
-    <color name="background">#D1FAE5</color>
+    <color name="background">#F8FAFC</color>
     <color name="card_bg">#FFFFFF</color>
-    <color name="text_dark">#1E293B</color>
+    <color name="card_border">#E2E8F0</color>
+    <color name="card_surface_subtle">#F1F5F9</color>
+    
+    <!-- Text Colors (Slate) -->
+    <color name="text_dark">#0F172A</color>
+    <color name="text_secondary">#334155</color>
     <color name="text_muted">#64748B</color>
+    
+    <!-- Input Fields -->
+    <color name="input_bg">#FFFFFF</color>
     <color name="input_border">#CBD5E1</color>
-    <color name="input_bg">#F8FAFC</color>
-    <color name="error_red">#EF4444</color>
+    <color name="input_border_focus">#1976D2</color>
+    
+    <!-- State Colors -->
+    <color name="error_red">#DC2626</color>
+    <color name="discovery_active_bg">#F0FDF4</color>
+    <color name="discovery_active_border">#86EFAC</color>
 </resources>
