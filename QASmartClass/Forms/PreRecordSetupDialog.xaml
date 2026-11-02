@@ -1,12 +1,12 @@
 <Window x:Class="QASmartTouch.Forms.PreRecordSetupDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Cài đặt ghi hình bài giảng" 
-        Width="560" SizeToContent="Height"
-        WindowStyle="None" 
-        AllowsTransparency="True" 
+        Title="Cài đặt ghi hình bài giảng"
+        Width="680" SizeToContent="Height"
+        WindowStyle="None"
+        AllowsTransparency="True"
         Background="Transparent"
-        Topmost="True" 
+        Topmost="True"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterScreen"
         FontFamily="{StaticResource InterFont}">
@@ -15,34 +15,33 @@
         <!-- Modern Dark ComboBox ToggleButton Template -->
         <ControlTemplate x:Key="ComboBoxToggleButtonTemplate" TargetType="ToggleButton">
             <Border x:Name="border"
-                    Background="#1E2235"
-                    BorderBrush="#3B4261"
-                    BorderThickness="1.5"
-                    CornerRadius="10"
-                    Height="44"
+                    Background="#151828"
+                    BorderBrush="#333B5C"
+                    BorderThickness="1.2"
+                    CornerRadius="8"
+                    Height="38"
                     Cursor="Hand">
                 <Grid>
-                    <!-- Down Chevron Vector Arrow -->
                     <Path x:Name="arrow"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
-                          Margin="0,0,16,0"
+                          Margin="0,0,12,0"
                           Data="M7 9.5L12 14.5L17 9.5"
                           Stroke="#94A3B8"
-                          StrokeThickness="2.2"
+                          StrokeThickness="2"
                           StrokeStartLineCap="Round"
                           StrokeEndLineCap="Round"/>
                 </Grid>
             </Border>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="border" Property="Background" Value="#252B42"/>
+                    <Setter TargetName="border" Property="Background" Value="#1E243B"/>
                     <Setter TargetName="border" Property="BorderBrush" Value="#60A5FA"/>
                     <Setter TargetName="arrow" Property="Stroke" Value="#60A5FA"/>
                 </Trigger>
                 <Trigger Property="IsChecked" Value="True">
                     <Setter TargetName="border" Property="BorderBrush" Value="#3B82F6"/>
-                    <Setter TargetName="border" Property="Background" Value="#1E2235"/>
+                    <Setter TargetName="border" Property="Background" Value="#151828"/>
                     <Setter TargetName="arrow" Property="Stroke" Value="#3B82F6"/>
                 </Trigger>
             </ControlTemplate.Triggers>
@@ -50,9 +49,9 @@
 
         <!-- Modern Dark ComboBox Style -->
         <Style x:Key="DarkModernComboBox" TargetType="ComboBox">
-            <Setter Property="Height" Value="44"/>
+            <Setter Property="Height" Value="38"/>
             <Setter Property="Foreground" Value="#F8FAFC"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
             <Setter Property="OverridesDefaultStyle" Value="True"/>
@@ -60,17 +59,17 @@
                 <Setter.Value>
                     <Style TargetType="ComboBoxItem">
                         <Setter Property="SnapsToDevicePixels" Value="True"/>
-                        <Setter Property="Padding" Value="14,10"/>
+                        <Setter Property="Padding" Value="12,8"/>
                         <Setter Property="Margin" Value="2,1"/>
                         <Setter Property="Foreground" Value="#F8FAFC"/>
-                        <Setter Property="FontSize" Value="13"/>
+                        <Setter Property="FontSize" Value="12.5"/>
                         <Setter Property="Cursor" Value="Hand"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ComboBoxItem">
                                     <Border x:Name="ItemBorder"
                                             Background="Transparent"
-                                            CornerRadius="8"
+                                            CornerRadius="6"
                                             Padding="{TemplateBinding Padding}">
                                         <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                     </Border>
@@ -80,7 +79,7 @@
                                             <Setter Property="Foreground" Value="#93C5FD"/>
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="ItemBorder" Property="Background" Value="#1D4ED8"/>
+                                            <Setter TargetName="ItemBorder" Property="Background" Value="#2563EB"/>
                                             <Setter Property="Foreground" Value="#FFFFFF"/>
                                             <Setter Property="FontWeight" Value="SemiBold"/>
                                         </Trigger>
@@ -105,13 +104,13 @@
                                               Content="{TemplateBinding SelectionBoxItem}"
                                               ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                               ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                                              Margin="14,0,38,0"
+                                              Margin="12,0,32,0"
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Left">
                                 <ContentPresenter.Resources>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="#F8FAFC"/>
-                                        <Setter Property="FontSize" Value="13.5"/>
+                                        <Setter Property="FontSize" Value="12.5"/>
                                         <Setter Property="FontWeight" Value="Medium"/>
                                         <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                                     </Style>
@@ -126,19 +125,19 @@
                                 <Grid Name="DropDown"
                                       SnapsToDevicePixels="True"
                                       MinWidth="{TemplateBinding ActualWidth}"
-                                      MaxHeight="260">
+                                      MaxHeight="220">
                                     <Border Name="DropDownBorder"
                                             Background="#161826"
-                                            BorderThickness="1.5"
+                                            BorderThickness="1.2"
                                             BorderBrush="#3B82F6"
-                                            CornerRadius="10"
+                                            CornerRadius="8"
                                             Margin="0,4,0,8"
                                             Padding="4">
                                         <Border.Effect>
-                                            <DropShadowEffect Color="#000000" BlurRadius="20" Opacity="0.75" ShadowDepth="4"/>
+                                            <DropShadowEffect Color="#000000" BlurRadius="16" Opacity="0.7" ShadowDepth="4"/>
                                         </Border.Effect>
                                         <ScrollViewer SnapsToDevicePixels="True" VerticalScrollBarVisibility="Auto">
-                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
                                         </ScrollViewer>
                                     </Border>
                                 </Grid>
@@ -149,28 +148,29 @@
             </Setter>
         </Style>
 
-        <!-- Modern iOS/Fluent Toggle Switch Style for CheckBox -->
+        <!-- Modern Toggle Switch Style for CheckBox -->
         <Style x:Key="ModernToggleSwitch" TargetType="CheckBox">
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="False"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Grid Width="48" Height="28" Background="Transparent">
+                        <Grid Width="44" Height="24" Background="Transparent">
                             <Border x:Name="Track"
-                                    Width="48" Height="28"
-                                    CornerRadius="14"
+                                    Width="44" Height="24"
+                                    CornerRadius="12"
                                     Background="#334155"
-                                    BorderThickness="1.5"
+                                    BorderThickness="1.2"
                                     BorderBrush="#475569">
                                 <Border x:Name="Thumb"
-                                        Width="20" Height="20"
-                                        CornerRadius="10"
+                                        Width="18" Height="18"
+                                        CornerRadius="9"
                                         Background="#FFFFFF"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center"
-                                        Margin="3,0,0,0">
+                                        Margin="2.5,0,0,0">
                                     <Border.Effect>
-                                        <DropShadowEffect Color="#000000" BlurRadius="5" Opacity="0.35" ShadowDepth="1.5"/>
+                                        <DropShadowEffect Color="#000000" BlurRadius="4" Opacity="0.35" ShadowDepth="1"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
@@ -180,10 +180,14 @@
                                 <Setter TargetName="Track" Property="Background" Value="#10B981"/>
                                 <Setter TargetName="Track" Property="BorderBrush" Value="#059669"/>
                                 <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
-                                <Setter TargetName="Thumb" Property="Margin" Value="0,0,3,0"/>
+                                <Setter TargetName="Thumb" Property="Margin" Value="0,0,2.5,0"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Track" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Track" Property="Opacity" Value="0.4"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -191,29 +195,30 @@
             </Setter>
         </Style>
 
-        <!-- Modern Shape Selection Card Style for RadioButton -->
+        <!-- Modern Selection Card Style for RadioButton -->
         <Style x:Key="ShapeCardRadioButton" TargetType="RadioButton">
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="#E2E8F0"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Foreground" Value="#CBD5E1"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Margin" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Border x:Name="CardBorder"
-                                Background="#1E2235"
-                                BorderBrush="#3B4261"
-                                BorderThickness="1.5"
-                                CornerRadius="10"
-                                Padding="16,10"
-                                Margin="0,0,12,0"
-                                MinWidth="170">
+                                Background="#151828"
+                                BorderBrush="#2E3654"
+                                BorderThickness="1.4"
+                                CornerRadius="9"
+                                Padding="10,10"
+                                Margin="{TemplateBinding Margin}">
                             <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="CardBorder" Property="BorderBrush" Value="#60A5FA"/>
-                                <Setter TargetName="CardBorder" Property="Background" Value="#252B42"/>
+                                <Setter TargetName="CardBorder" Property="Background" Value="#1E243B"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="CardBorder" Property="Background" Value="#1E3A8A"/>
@@ -228,14 +233,19 @@
         </Style>
     </Window.Resources>
 
-    <Border CornerRadius="20" Background="#12131F" BorderBrush="#3B82F6" BorderThickness="1.5" Padding="26" Margin="10">
+    <Border CornerRadius="18"
+            Background="#111320"
+            BorderBrush="#3B82F6"
+            BorderThickness="1.5"
+            Padding="20,18,20,18"
+            Margin="10">
         <Border.Effect>
-            <DropShadowEffect Color="#000000" BlurRadius="30" Opacity="0.75" ShadowDepth="10"/>
+            <DropShadowEffect Color="#000000" BlurRadius="24" Opacity="0.75" ShadowDepth="8"/>
         </Border.Effect>
 
         <StackPanel>
-            <!-- Header -->
-            <Grid Margin="0,0,0,22">
+            <!-- ================= HEADER ================= -->
+            <Grid Margin="0,0,0,14" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown" Cursor="SizeAll">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -243,32 +253,37 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Icon Badge -->
-                <Border Grid.Column="0" Width="46" Height="46" CornerRadius="12" Background="#1E2235" Margin="0,0,14,0">
-                    <Viewbox Width="24" Height="24">
+                <Border Grid.Column="0" Width="40" Height="40" CornerRadius="10" Background="#261824" BorderBrush="#4C1D2E" BorderThickness="1" Margin="0,0,12,0">
+                    <Viewbox Width="20" Height="20">
                         <Canvas Width="24" Height="24">
-                            <Path Fill="#EF4444" Data="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"/>
+                            <Path Fill="#F43F5E" Data="M17,10.5V7A1,1 0 0,0 16,6H4A1,1 0 0,0 3,7V17A1,1 0 0,0 4,18H16A1,1 0 0,0 17,17V13.5L21,17.5V6.5L17,10.5Z"/>
                         </Canvas>
                     </Viewbox>
                 </Border>
 
                 <!-- Title & Subtitle -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="GHI HÌNH BÀI GIẢNG" FontSize="17.5" FontWeight="Bold" Foreground="#F8FAFC"/>
-                    <TextBlock Text="Tùy chỉnh Micro, Âm thanh máy tính và Camera trước khi bắt đầu" FontSize="12.5" Foreground="#94A3B8" Margin="0,3,0,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+                    <TextBlock Text="GHI HÌNH BÀI GIẢNG" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                    <TextBlock Text="Thiết lập thiết bị thu âm, camera và chất lượng video"
+                               FontSize="12" Foreground="#94A3B8" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                 </StackPanel>
 
                 <!-- Close Button -->
-                <Button Grid.Column="2" x:Name="btnClose" Click="btnClose_Click" 
-                        Width="36" Height="36" Cursor="Hand" Background="Transparent" BorderThickness="0">
+                <Button Grid.Column="2" x:Name="btnClose" Click="btnClose_Click"
+                        Width="32" Height="32" Cursor="Hand" Background="Transparent" BorderThickness="0" ToolTip="Đóng">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="#252A40" CornerRadius="10" x:Name="bdr">
-                                <TextBlock Text="✕" FontSize="14" FontWeight="Bold" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border Background="#22273D" CornerRadius="8" x:Name="bdr">
+                                <Viewbox Width="12" Height="12">
+                                    <Canvas Width="24" Height="24">
+                                        <Path x:Name="closeIcon" Fill="#94A3B8" Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                                    </Canvas>
+                                </Viewbox>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="bdr" Property="Background" Value="#EF4444"/>
-                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter TargetName="closeIcon" Property="Fill" Value="#FFFFFF"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -276,149 +291,273 @@
                 </Button>
             </Grid>
 
-            <!-- Card 1: Microphone -->
-            <Border Background="#1A1C2E" CornerRadius="14" BorderBrush="#2D3250" BorderThickness="1.2" Padding="16" Margin="0,0,0,14">
-                <StackPanel>
-                    <Grid>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border Width="32" Height="32" CornerRadius="8" Background="#232742" Margin="0,0,12,0">
-                                <TextBlock Text="🎤" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Thu âm Microphone (Giáo viên)" FontSize="14" FontWeight="SemiBold" Foreground="#F1F5F9"/>
-                                <TextBlock Text="Ghi âm giọng nói giảng bài của giáo viên" FontSize="11.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
+            <!-- ================= BODY: BỐ CỤC 2 CỘT CÂN ĐỐI ================= -->
+            <Grid Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.05*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="0.95*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ===== CỘT TRÁI: MICROPHONE & CHẤT LƯỢNG VIDEO ===== -->
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Khối 1: Thu âm Microphone -->
+                    <Border Grid.Row="0" Background="#181B2C" CornerRadius="12" BorderBrush="#282E4A" BorderThickness="1.2" Padding="14,13">
+                        <StackPanel VerticalAlignment="Center">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Width="32" Height="32" CornerRadius="8" Background="#162840" Margin="0,0,10,0">
+                                    <Viewbox Width="16" Height="16">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Fill="#38BDF8" Data="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Thu âm Microphone" FontSize="13.5" FontWeight="SemiBold" Foreground="#F1F5F9"/>
+                                    <TextBlock Text="Thu giọng nói và âm thanh bài giảng" FontSize="11.5" Foreground="#94A3B8" Margin="0,1,0,0"/>
+                                </StackPanel>
+                                <CheckBox Grid.Column="2" x:Name="chkMicrophone" Style="{StaticResource ModernToggleSwitch}"
+                                          IsChecked="True" VerticalAlignment="Center"
+                                          Checked="chkMicrophone_Changed" Unchecked="chkMicrophone_Changed"/>
+                            </Grid>
+
+                            <StackPanel x:Name="panelMicOptions" Margin="0,12,0,0">
+                                <TextBlock Text="Thiết bị thu âm:" FontSize="11.5" Foreground="#94A3B8" Margin="0,0,0,5"/>
+                                <ComboBox x:Name="cboMicrophone" Style="{StaticResource DarkModernComboBox}" SelectionChanged="cboMicrophone_SelectionChanged"/>
+
+                                <!-- Live Sound VU Meter -->
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Mức âm lượng:" FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <Border Grid.Column="1" Height="6" CornerRadius="3" Background="#252C44" ClipToBounds="True">
+                                        <ProgressBar x:Name="pbAudioMeter" Height="6" Minimum="0" Maximum="100" Value="0"
+                                                     Foreground="#10B981" Background="Transparent" BorderThickness="0"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+                                        <Ellipse x:Name="dotMicStatus" Width="6" Height="6" Fill="#38BDF8" Margin="0,0,4,0"/>
+                                        <TextBlock x:Name="txtMicStatus" Text="Sẵn sàng" FontSize="11" FontWeight="Medium" Foreground="#38BDF8"/>
+                                    </StackPanel>
+                                </Grid>
                             </StackPanel>
                         </StackPanel>
-                        <CheckBox x:Name="chkMicrophone" Style="{StaticResource ModernToggleSwitch}" 
-                                  IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center" 
-                                  Checked="chkMicrophone_Changed" Unchecked="chkMicrophone_Changed"/>
-                    </Grid>
+                    </Border>
 
-                    <StackPanel x:Name="panelMicOptions" Margin="0,14,0,0">
-                        <TextBlock Text="Chọn thiết bị Microphone:" FontSize="12" Foreground="#94A3B8" Margin="0,0,0,6"/>
-                        <ComboBox x:Name="cboMicrophone" Style="{StaticResource DarkModernComboBox}"/>
-                        
-                        <!-- Sound VU Meter Animation (Live sound check) -->
-                        <Grid Margin="0,12,0,2">
+                    <!-- Khối 2: Chất lượng Video -->
+                    <Border Grid.Row="2" Background="#181B2C" CornerRadius="12" BorderBrush="#282E4A" BorderThickness="1.2" Padding="14,12">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Width="32" Height="32" CornerRadius="8" Background="#2B2316" Margin="0,0,10,0">
+                                    <Viewbox Width="16" Height="16">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Fill="#FBBF24" Data="M18,4L20,8H17L15,4H13L15,8H12L10,4H8L10,8H7L5,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V4H18M13,16V10L18,13L13,16Z"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Chất lượng video" FontSize="13.5" FontWeight="SemiBold" Foreground="#F1F5F9"/>
+                                    <TextBlock Text="Chọn độ phân giải hình ảnh đầu ra" FontSize="11.5" Foreground="#94A3B8" Margin="0,1,0,0"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <RadioButton Grid.Column="0" x:Name="rbQuality1080p" GroupName="VideoQualityGroup"
+                                             Style="{StaticResource ShapeCardRadioButton}" IsChecked="True">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Border Background="#3B82F6" CornerRadius="4" Padding="4,1" Margin="0,0,6,0" VerticalAlignment="Center">
+                                            <TextBlock Text="FHD" FontSize="9.5" FontWeight="Bold" Foreground="#FFFFFF"/>
+                                        </Border>
+                                        <TextBlock Text="Full HD (1080p)" FontSize="12.5" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton Grid.Column="2" x:Name="rbQuality720p" GroupName="VideoQualityGroup"
+                                             Style="{StaticResource ShapeCardRadioButton}">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Border Background="#475569" CornerRadius="4" Padding="4,1" Margin="0,0,6,0" VerticalAlignment="Center">
+                                            <TextBlock Text="HD" FontSize="9.5" FontWeight="Bold" Foreground="#FFFFFF"/>
+                                        </Border>
+                                        <TextBlock Text="HD (720p)" FontSize="12.5" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </RadioButton>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ===== CỘT PHẢI: CAMERA GIÁO VIÊN ===== -->
+                <Border Grid.Column="2" Background="#181B2C" CornerRadius="12" BorderBrush="#282E4A" BorderThickness="1.2" Padding="14,13">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header Camera -->
+                        <Grid Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Mức tín hiệu:" FontSize="11.5" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            
-                            <Border Grid.Column="1" Height="8" CornerRadius="4" Background="#262D42">
-                                <ProgressBar x:Name="pbAudioMeter" Height="8" Minimum="0" Maximum="100" Value="60" 
-                                             Foreground="#10B981" Background="Transparent" BorderThickness="0"/>
+                            <Border Grid.Column="0" Width="32" Height="32" CornerRadius="8" Background="#201F3D" Margin="0,0,10,0">
+                                <Viewbox Width="16" Height="16">
+                                    <Canvas Width="24" Height="24">
+                                        <Path Fill="#818CF8" Data="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"/>
+                                    </Canvas>
+                                </Viewbox>
                             </Border>
-
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
-                                <Ellipse Width="7" Height="7" Fill="#10B981" Margin="0,0,5,0"/>
-                                <TextBlock Text="Đang thu tốt" FontSize="11.5" FontWeight="Medium" Foreground="#10B981"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Camera giáo viên" FontSize="13.5" FontWeight="SemiBold" Foreground="#F1F5F9"/>
+                                <TextBlock Text="Hiển thị khung hình trên bài giảng" FontSize="11.5" Foreground="#94A3B8" Margin="0,1,0,0"/>
                             </StackPanel>
+                            <CheckBox Grid.Column="2" x:Name="chkCamera" Style="{StaticResource ModernToggleSwitch}"
+                                      IsChecked="False" VerticalAlignment="Center"
+                                      Checked="chkCamera_Changed" Unchecked="chkCamera_Changed"/>
                         </Grid>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
 
-            <!-- Card 2: System Audio -->
-            <Border Background="#1A1C2E" CornerRadius="14" BorderBrush="#2D3250" BorderThickness="1.2" Padding="16" Margin="0,0,0,14">
-                <Grid>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Width="32" Height="32" CornerRadius="8" Background="#232742" Margin="0,0,12,0">
-                            <TextBlock Text="🔊" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Thu âm máy tính (Loa / Video / Media)" FontSize="14" FontWeight="SemiBold" Foreground="#F1F5F9"/>
-                            <TextBlock Text="Thu âm thanh khi phát clip YouTube, video tư liệu giảng dạy" FontSize="11.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </StackPanel>
-                    <CheckBox x:Name="chkSystemAudio" Style="{StaticResource ModernToggleSwitch}" 
-                              IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
-
-            <!-- Card 3: Camera -->
-            <Border Background="#1A1C2E" CornerRadius="14" BorderBrush="#2D3250" BorderThickness="1.2" Padding="16" Margin="0,0,0,22">
-                <StackPanel>
-                    <Grid>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border Width="32" Height="32" CornerRadius="8" Background="#232742" Margin="0,0,12,0">
-                                <TextBlock Text="📷" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Khung hình Camera giáo viên (Picture-in-Picture)" FontSize="14" FontWeight="SemiBold" Foreground="#F1F5F9"/>
-                                <TextBlock Text="Hiển thị video giáo viên nổi trên màn hình bài giảng" FontSize="11.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                        <!-- Trạng thái 1: Khi TẮT Camera -->
+                        <Border Grid.Row="1" x:Name="panelCameraDisabledState"
+                                Background="#131624" CornerRadius="10" BorderBrush="#232842" BorderThickness="1"
+                                Margin="0,12,0,0" Padding="14">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border Width="44" Height="44" CornerRadius="22" Background="#1C2035" HorizontalAlignment="Center" Margin="0,0,0,8">
+                                    <Viewbox Width="20" Height="20">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Fill="#64748B" Data="M1.2,4.27L2.47,5.54C2.18,5.92 2,6.39 2,6.9V17.1A2.1,2.1 0 0,0 4.1,19.2H16.13L19.73,22.8L21,21.53L1.2,4.27M18,10.5L22,6.5V17.5L18,13.5V17.1A2.1,2.1 0 0,1 15.9,19.2L14.1,17.4L18,13.5V10.5M5.8,5.1L4.1,3.4L5.5,2H15.9A2.1,2.1 0 0,1 18,4.1V9.9L16.2,8.1V4.1A0.3,0.3 0 0,0 15.9,3.8H7.5L5.8,5.1Z"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                </Border>
+                                <TextBlock x:Name="txtCameraDisabledTitle" Text="Camera đang tắt" FontSize="13" FontWeight="SemiBold" Foreground="#CBD5E1" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="txtCameraDisabledDesc" Text="Chỉ ghi hình nội dung trên màn hình bảng viết. Bật công tắc phía trên nếu muốn hiển thị camera."
+                                           FontSize="11" Foreground="#64748B" TextWrapping="Wrap" TextAlignment="Center" Margin="4,4,4,10"/>
+                                <Button x:Name="btnEnableCameraQuick" Click="btnEnableCameraQuick_Click"
+                                        Content="Bật Camera" Cursor="Hand"
+                                        Height="30" Padding="14,0" HorizontalAlignment="Center"
+                                        Background="#232946" Foreground="#93C5FD" FontSize="12" FontWeight="SemiBold" BorderThickness="0">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="8"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
                             </StackPanel>
-                        </StackPanel>
-                        <CheckBox x:Name="chkCamera" Style="{StaticResource ModernToggleSwitch}" 
-                              IsChecked="False" HorizontalAlignment="Right" VerticalAlignment="Center" 
-                              Checked="chkCamera_Changed" Unchecked="chkCamera_Changed"/>
-                    </Grid>
-
-                    <StackPanel x:Name="panelCameraOptions" Margin="0,14,0,0" Visibility="Collapsed">
-                        <TextBlock Text="Chọn thiết bị Camera:" FontSize="12" Foreground="#94A3B8" Margin="0,0,0,6"/>
-                        <ComboBox x:Name="cboCamera" Style="{StaticResource DarkModernComboBox}" SelectionChanged="cboCamera_SelectionChanged"/>
-
-                        <!-- Live Camera Preview Box -->
-                        <Border x:Name="bdrCameraPreview" Height="140" CornerRadius="10" Background="#11131F" BorderBrush="#3B4261" BorderThickness="1.2" Margin="0,12,0,4" ClipToBounds="True">
-                            <Grid>
-                                <Image x:Name="imgDialogCameraPreview" Stretch="UniformToFill"/>
-                                <StackPanel x:Name="panelCameraPreviewLoading" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <TextBlock x:Name="txtCameraPreviewStatus" Text="📷 Đang kết nối camera..." Foreground="#94A3B8" FontSize="12" HorizontalAlignment="Center" TextAlignment="Center" Margin="10"/>
-                                </StackPanel>
-                            </Grid>
                         </Border>
 
-                        <!-- Shape Selection -->
-                        <TextBlock Text="Kiểu dáng hiển thị video:" FontSize="12" Foreground="#94A3B8" Margin="0,12,0,8"/>
-                        <StackPanel Orientation="Horizontal">
-                            <RadioButton x:Name="rbCircle" Style="{StaticResource ShapeCardRadioButton}" IsChecked="True">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="🟢" FontSize="14" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Bong bóng tròn"/>
-                                </StackPanel>
-                            </RadioButton>
+                        <!-- Trạng thái 2: Khi BẬT Camera -->
+                        <StackPanel Grid.Row="1" x:Name="panelCameraOptions" Margin="0,10,0,0" Visibility="Collapsed">
+                            <ComboBox x:Name="cboCamera" Style="{StaticResource DarkModernComboBox}" SelectionChanged="cboCamera_SelectionChanged"/>
 
-                            <RadioButton x:Name="rbRect" Style="{StaticResource ShapeCardRadioButton}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="⬛" FontSize="14" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Chữ nhật (16:9)"/>
-                                </StackPanel>
-                            </RadioButton>
+                            <!-- Khung Live Preview -->
+                            <Border Height="124" CornerRadius="10" Background="#11131F" BorderBrush="#262C47" BorderThickness="1" Margin="0,8,0,8">
+                                <Grid>
+                                    <Border x:Name="bdrCameraPreview"
+                                            Width="108" Height="108"
+                                            CornerRadius="54"
+                                            Background="#0D0F18"
+                                            BorderBrush="#3B82F6"
+                                            BorderThickness="2"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            ClipToBounds="True">
+                                        <Image x:Name="imgDialogCameraPreview" Stretch="UniformToFill"/>
+                                    </Border>
+
+                                    <StackPanel x:Name="panelCameraPreviewLoading" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                                        <TextBlock x:Name="txtCameraPreviewStatus" Text="Đang kết nối camera..."
+                                                   Foreground="#94A3B8" FontSize="11.5" HorizontalAlignment="Center" TextAlignment="Center" Margin="8"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Chọn kiểu dáng khung hình -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <RadioButton Grid.Column="0" x:Name="rbCircle" GroupName="CameraShapeGroup"
+                                             Style="{StaticResource ShapeCardRadioButton}" IsChecked="True"
+                                             Checked="CameraShape_Changed">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Ellipse Width="11" Height="11" Fill="#3B82F6" Stroke="#93C5FD" StrokeThickness="1.5" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Khung tròn" FontSize="12"/>
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton Grid.Column="2" x:Name="rbRect" GroupName="CameraShapeGroup"
+                                             Style="{StaticResource ShapeCardRadioButton}"
+                                             Checked="CameraShape_Changed">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Rectangle Width="14" Height="9" RadiusX="2" RadiusY="2" Fill="#3B82F6" Stroke="#93C5FD" StrokeThickness="1.5" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Chữ nhật 16:9" FontSize="12"/>
+                                    </StackPanel>
+                                </RadioButton>
+                            </Grid>
                         </StackPanel>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                    </Grid>
+                </Border>
+            </Grid>
 
-            <!-- Footer Action Buttons -->
+            <!-- ================= FOOTER ACTION BUTTONS ================= -->
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160"/>
+                    <ColumnDefinition Width="12"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="2*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button x:Name="btnCancel" Content="Hủy bỏ" Height="50" Margin="0,0,12,0" 
-                        Click="btnCancel_Click" Background="#252A40" Foreground="#CBD5E1" 
-                        FontWeight="SemiBold" FontSize="14" Cursor="Hand" BorderThickness="0">
+                <Button Grid.Column="0" x:Name="btnCancel" Content="Hủy bỏ" Height="44"
+                        Click="btnCancel_Click" Background="#22273D" Foreground="#CBD5E1"
+                        FontWeight="SemiBold" FontSize="13.5" Cursor="Hand" BorderThickness="0">
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="12"/>
+                            <Setter Property="CornerRadius" Value="10"/>
                         </Style>
                     </Button.Resources>
                 </Button>
 
-                <Button Grid.Column="1" x:Name="btnStartRecording" Content="● BẮT ĐẦU GHI HÌNH" Height="50" 
-                        Click="btnStartRecording_Click" Background="#EF4444" Foreground="#FFFFFF" 
-                        FontWeight="Bold" FontSize="15" Cursor="Hand" BorderThickness="0">
+                <Button Grid.Column="2" x:Name="btnStartRecording" Height="44"
+                        Click="btnStartRecording_Click" Background="#EF4444" Foreground="#FFFFFF"
+                        FontWeight="Bold" FontSize="14.5" Cursor="Hand" BorderThickness="0">
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="12"/>
+                            <Setter Property="CornerRadius" Value="10"/>
                         </Style>
                     </Button.Resources>
                     <Button.Effect>
-                        <DropShadowEffect Color="#EF4444" BlurRadius="18" Opacity="0.5" ShadowDepth="2"/>
+                        <DropShadowEffect Color="#EF4444" BlurRadius="14" Opacity="0.45" ShadowDepth="2"/>
                     </Button.Effect>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Ellipse Width="9" Height="9" Fill="#FFFFFF" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="BẮT ĐẦU GHI HÌNH" VerticalAlignment="Center"/>
+                    </StackPanel>
                 </Button>
             </Grid>
         </StackPanel>

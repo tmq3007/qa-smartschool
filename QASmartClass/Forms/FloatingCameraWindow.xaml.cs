@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -17,6 +18,7 @@ namespace QASmartTouch.Forms
         private int _shapeMode = 0; // 0 = Tròn (Circle), 1 = Vuông (Square bo góc), 2 = Chữ nhật (Rectangle 16:9)
         private int _sizeMode = 1;  // 0 = S (180px), 1 = M (240px), 2 = L (320px)
         private bool _isFlipped = false;
+        private bool _isClosingOnError = false;
         private string _targetCameraId = "0";
 
         public event Action? CameraClosed;
@@ -39,7 +41,8 @@ namespace QASmartTouch.Forms
 
         public static void OpenOrActivate(string cameraId = "0", int shapeMode = 0)
         {
-            var existing = Application.Current.Windows.OfType<FloatingCameraWindow>().FirstOrDefault();
+            var existing = Application.Current.Windows.OfType<FloatingCameraWindow>()
+                .FirstOrDefault(w => !w._isClosingOnError);
             if (existing != null)
             {
                 existing._shapeMode = shapeMode;
@@ -57,7 +60,8 @@ namespace QASmartTouch.Forms
 
         public static void ToggleVisibility()
         {
-            var existing = Application.Current.Windows.OfType<FloatingCameraWindow>().FirstOrDefault();
+            var existing = Application.Current.Windows.OfType<FloatingCameraWindow>()
+                .FirstOrDefault(w => !w._isClosingOnError);
             if (existing != null)
             {
                 if (existing.Visibility == Visibility.Visible)
@@ -113,10 +117,42 @@ namespace QASmartTouch.Forms
 
         private void OnCameraError(string error)
         {
-            Dispatcher.InvokeAsync(() =>
+            System.Diagnostics.Debug.WriteLine($"[FloatingCameraWindow] Auto-closing on camera error: {error}");
+            Dispatcher.InvokeAsync(async () =>
             {
-                LoadingPanel.Visibility = Visibility.Visible;
-                txtStatus.Text = $"⚠️ {error}";
+                if (_isClosingOnError) return;
+                _isClosingOnError = true;
+
+                if (_currentInstance == this)
+                {
+                    _currentInstance = null;
+                }
+
+                var svc = _cameraService;
+                _cameraService = null;
+                if (svc != null)
+                {
+                    svc.FrameArrived -= OnFrameArrived;
+                    svc.ErrorOccurred -= OnCameraError;
+                    try
+                    {
+                        await svc.StopAsync();
+                        svc.Dispose();
+                    }
+                    catch { }
+                }
+
+                try
+                {
+                    CameraClosed?.Invoke();
+                }
+                catch { }
+
+                try
+                {
+                    Close();
+                }
+                catch { }
             });
         }
 
@@ -127,12 +163,21 @@ namespace QASmartTouch.Forms
                 _currentInstance = null;
             }
 
-            if (_cameraService != null)
+            var svc = _cameraService;
+            _cameraService = null;
+            if (svc != null)
             {
-                _cameraService.FrameArrived -= OnFrameArrived;
-                _cameraService.ErrorOccurred -= OnCameraError;
-                _ = _cameraService.StopAsync();
-                _cameraService = null;
+                svc.FrameArrived -= OnFrameArrived;
+                svc.ErrorOccurred -= OnCameraError;
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await svc.StopAsync().ConfigureAwait(false);
+                        svc.Dispose();
+                    }
+                    catch { }
+                });
             }
         }
 

@@ -1,6 +1,8 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
@@ -13,6 +15,10 @@ namespace QASmartTouch.Forms
         private readonly Action _onComplete;
         private readonly Action? _onCancel;
         private bool _isFinished = false;
+
+        [DllImport("user32.dll")]
+        private static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint dwAffinity);
+        private const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
 
         public CountdownOverlay(Action onComplete, Action? onCancel = null)
         {
@@ -30,6 +36,21 @@ namespace QASmartTouch.Forms
             KeyDown += CountdownOverlay_KeyDown;
             MouseDown += CountdownOverlay_MouseDown;
             TouchDown += CountdownOverlay_TouchDown;
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            try
+            {
+                var hwnd = new WindowInteropHelper(this).Handle;
+                if (hwnd != IntPtr.Zero)
+                {
+                    // Đảm bảo hiệu ứng đếm ngược 3-2-1 không bao giờ bị lọt vào frame đầu tiên của video
+                    SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
+                }
+            }
+            catch { }
         }
 
         private void CountdownOverlay_Loaded(object sender, RoutedEventArgs e)
@@ -80,6 +101,11 @@ namespace QASmartTouch.Forms
 
         private void CountdownOverlay_TouchDown(object? sender, TouchEventArgs e)
         {
+        }
+
+        public void CancelCountdown()
+        {
+            Cancel();
         }
 
         private void Cancel()

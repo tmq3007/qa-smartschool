@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using QASmartTouch.Services;
@@ -18,6 +20,13 @@ namespace QASmartTouch.Forms
         private readonly ScreenRecorderService _recorderService;
         private readonly DispatcherTimer _durationTimer;
         private bool _isClosing = false;
+        private bool _suppressCompletionPrompt = false;
+        private bool _hasSessionCamera = false;
+        private FloatingCameraWindow? _trackedCameraWindow = null;
+
+        [DllImport("user32.dll")]
+        private static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint dwAffinity);
+        private const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
 
         private const string PlayPathData = "M8,5.14V19.14L19,12.14L8,5.14Z";
         private const string PausePathData = "M14,19H18V5H14M6,19H10V5H6V19Z";
@@ -31,6 +40,7 @@ namespace QASmartTouch.Forms
         public FloatingRecorderBar()
         {
             InitializeComponent();
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
 
             _recorderService = ScreenRecorderService.Instance;
 
@@ -53,7 +63,33 @@ namespace QASmartTouch.Forms
             _recorderService.SaveCompleted += OnSaveCompleted;
         }
 
-        public static void OpenOrActivate(bool enableMic = true, bool enableSystemAudio = true, string? selectedMicId = null)
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            try
+            {
+                var hwnd = new WindowInteropHelper(this).Handle;
+                if (hwnd != IntPtr.Zero)
+                {
+                    // Ẩn thanh điều khiển khỏi luồng quay video (WDA_EXCLUDEFROMCAPTURE):
+                    // 1. Video bài giảng xuất ra sạch đẹp, không bị dính thanh công cụ của giáo viên.
+                    // 2. Bộ đếm giây (00:00:01) và đèn REC nhấp nháy không làm biến đổi pixel khung hình,
+                    //    giúp màn hình tĩnh 100% khi giáo viên dừng viết, giảm mạnh dung lượng file.
+                    SetWindowDisplayAffinity(hwnd, WDA_EXCLUDEFROMCAPTURE);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SetWindowDisplayAffinity warning: {ex.Message}");
+            }
+        }
+
+        public static void OpenOrActivate(
+            bool enableMic = true,
+            bool enableSystemAudio = true,
+            string? selectedMicId = null,
+            RecordingQualityPreset qualityPreset = RecordingQualityPreset.Standard1080p,
+            bool hasCamera = false)
         {
             var existing = System.Linq.Enumerable.FirstOrDefault(Application.Current.Windows.OfType<FloatingRecorderBar>());
             if (existing != null)
@@ -64,42 +100,137 @@ namespace QASmartTouch.Forms
             }
 
             var recorderBar = new FloatingRecorderBar();
-            recorderBar.StartNewRecording(enableMic, enableSystemAudio, selectedMicId);
+            recorderBar.StartNewRecording(enableMic, enableSystemAudio, selectedMicId, qualityPreset, hasCamera);
         }
 
-        public void StartNewRecording(bool enableMic = true, bool enableSystemAudio = true, string? selectedMicId = null)
+        public void StartNewRecording(
+            bool enableMic = true,
+            bool enableSystemAudio = true,
+            string? selectedMicId = null,
+            RecordingQualityPreset qualityPreset = RecordingQualityPreset.Standard1080p,
+            bool hasCamera = false)
         {
             try
             {
-                _recorderService.StartRecording(enableMic, enableSystemAudio, specifiedMicId: selectedMicId, customPath: null);
+                AttachSessionCamera(hasCamera);
+                _recorderService.StartRecording(
+                    enableMic,
+                    enableSystemAudio,
+                    specifiedMicId: selectedMicId,
+                    customPath: null,
+                    qualityPreset: qualityPreset);
+                UpdateMicButtonVisual();
+                UpdateCamButtonVisual();
                 _durationTimer.Start();
                 this.Show();
             }
             catch (Exception ex)
             {
+                DetachSessionCamera();
                 MessageBox.Show($"Không thể bắt đầu ghi hình bài giảng:\n{ex.Message}", 
                     "Lỗi Ghi Hình", MessageBoxButton.OK, MessageBoxImage.Error);
                 this.Close();
             }
         }
 
-        private void btnToggleMic_Click(object sender, RoutedEventArgs e)
+        private void AttachSessionCamera(bool hasCamera)
         {
-            _recorderService.ToggleMicrophoneMute();
+            DetachSessionCamera();
+            var cam = FloatingCameraWindow.CurrentInstance;
+            if (hasCamera && cam != null)
+            {
+                _hasSessionCamera = true;
+                _trackedCameraWindow = cam;
+                _trackedCameraWindow.CameraClosed += OnFloatingCameraClosed;
+            }
+            else
+            {
+                _hasSessionCamera = false;
+            }
+        }
+
+        private void DetachSessionCamera()
+        {
+            if (_trackedCameraWindow != null)
+            {
+                _trackedCameraWindow.CameraClosed -= OnFloatingCameraClosed;
+                _trackedCameraWindow = null;
+            }
+        }
+
+        private void OnFloatingCameraClosed()
+        {
+            Dispatcher.InvokeAsync(() =>
+            {
+                DetachSessionCamera();
+                _hasSessionCamera = false;
+                UpdateCamButtonVisual(cameraDisconnected: true);
+            });
+        }
+
+        private void UpdateMicButtonVisual()
+        {
+            if (!_recorderService.HasAudioSources)
+            {
+                btnToggleMic.IsEnabled = false;
+                btnToggleMic.Opacity = 0.45;
+                iconMic.Data = Geometry.Parse(MicMutePathData);
+                iconMic.Fill = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
+                btnToggleMic.ToolTip = "Không tìm thấy thiết bị âm thanh";
+                return;
+            }
+
+            btnToggleMic.IsEnabled = true;
+            btnToggleMic.Opacity = 1.0;
             bool isMuted = _recorderService.IsMicrophoneMuted;
             iconMic.Data = Geometry.Parse(isMuted ? MicMutePathData : MicOnPathData);
             iconMic.Fill = isMuted ? new SolidColorBrush(Color.FromRgb(0xEF, 0x44, 0x44)) : new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC));
-            btnToggleMic.ToolTip = isMuted ? "Bật Microphone" : "Tắt Microphone";
+            btnToggleMic.ToolTip = isMuted ? "Bật thu âm" : "Tắt thu âm";
+        }
+
+        private void UpdateCamButtonVisual(bool cameraDisconnected = false)
+        {
+            var cam = FloatingCameraWindow.CurrentInstance;
+            if (!_hasSessionCamera || cam == null)
+            {
+                btnToggleCam.IsEnabled = false;
+                btnToggleCam.Opacity = 0.45;
+                iconCam.Data = Geometry.Parse(CamOffPathData);
+                iconCam.Fill = cameraDisconnected
+                    ? new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B))
+                    : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
+                btnToggleCam.ToolTip = cameraDisconnected
+                    ? "Camera đã đóng hoặc mất kết nối"
+                    : "Phiên ghi hình không bật Camera";
+                return;
+            }
+
+            btnToggleCam.IsEnabled = true;
+            btnToggleCam.Opacity = 1.0;
+            bool isVisible = cam.Visibility == Visibility.Visible;
+            iconCam.Data = Geometry.Parse(isVisible ? CamOnPathData : CamOffPathData);
+            iconCam.Fill = isVisible ? new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC)) : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
+            btnToggleCam.ToolTip = isVisible ? "Ẩn Camera" : "Hiện Camera";
+        }
+
+        private void btnToggleMic_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_recorderService.HasAudioSources) return;
+            _recorderService.ToggleMicrophoneMute();
+            UpdateMicButtonVisual();
         }
 
         private void btnToggleCam_Click(object sender, RoutedEventArgs e)
         {
+            if (!_hasSessionCamera || FloatingCameraWindow.CurrentInstance == null)
+            {
+                _hasSessionCamera = false;
+                UpdateCamButtonVisual();
+                return;
+            }
+
             FloatingCameraWindow.ToggleVisibility();
-            var cam = FloatingCameraWindow.CurrentInstance;
-            bool isVisible = cam != null && cam.Visibility == Visibility.Visible;
-            iconCam.Data = Geometry.Parse(isVisible ? CamOnPathData : CamOffPathData);
-            iconCam.Fill = isVisible ? new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC)) : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
-            btnToggleCam.ToolTip = isVisible ? "Ẩn Camera" : "Hiện Camera";
+            UpdateCamButtonVisual();
         }
 
         private void DurationTimer_Tick(object? sender, EventArgs e)
@@ -147,11 +278,25 @@ namespace QASmartTouch.Forms
             }
         }
 
+        public void PrepareForApplicationExit(bool discardRecording)
+        {
+            _suppressCompletionPrompt = true;
+            _durationTimer.Stop();
+            txtDuration.Text = discardRecording ? "Đang hủy..." : "Đang lưu...";
+            btnStop.IsEnabled = false;
+            btnPauseResume.IsEnabled = false;
+            btnToggleMic.IsEnabled = false;
+            btnToggleCam.IsEnabled = false;
+            btnOpenFolder.IsEnabled = false;
+            btnCancel.IsEnabled = false;
+        }
+
         private void btnStop_Click(object sender, RoutedEventArgs e)
         {
             txtDuration.Text = "Đang lưu...";
             btnStop.IsEnabled = false;
             btnPauseResume.IsEnabled = false;
+            btnCancel.IsEnabled = false;
             _durationTimer.Stop();
 
             _recorderService.StopRecording();
@@ -162,22 +307,49 @@ namespace QASmartTouch.Forms
             if (_isClosing) return;
             _isClosing = true;
 
-            Dispatcher.Invoke(() =>
+            Dispatcher.BeginInvoke(new Action(() =>
             {
-                this.Close();
+                try
+                {
+                    this.Close();
+                }
+                catch { }
+
+                if (_suppressCompletionPrompt)
+                {
+                    return;
+                }
+
+                Window? owner = Application.Current?.MainWindow;
+                if (owner != null && (!owner.IsLoaded || !owner.IsVisible))
+                {
+                    owner = null;
+                }
 
                 if (!string.IsNullOrEmpty(error))
                 {
-                    MessageBox.Show($"Quá trình lưu video bài giảng gặp lỗi:\n{error}",
-                        "Lỗi Lưu Video", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    if (owner != null)
+                    {
+                        MessageBox.Show(owner, $"Quá trình lưu video bài giảng gặp lỗi:\n{error}",
+                            "Lỗi Lưu Video", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Quá trình lưu video bài giảng gặp lỗi:\n{error}",
+                            "Lỗi Lưu Video", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
                     return;
                 }
 
                 if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
                 {
-                    var result = MessageBox.Show(
-                        $"Đã ghi hình bài giảng thành công!\n\nVideo được lưu tại:\n{filePath}\n\nBạn có muốn mở video ngay bây giờ không?",
-                        "Ghi Hình Hoàn Tất", MessageBoxButton.YesNoCancel, MessageBoxImage.Information);
+                    var result = owner != null
+                        ? MessageBox.Show(owner,
+                            $"Đã ghi hình bài giảng thành công!\n\nVideo được lưu tại:\n{filePath}\n\nBạn có muốn mở video ngay bây giờ không?",
+                            "Ghi Hình Hoàn Tất", MessageBoxButton.YesNoCancel, MessageBoxImage.Information)
+                        : MessageBox.Show(
+                            $"Đã ghi hình bài giảng thành công!\n\nVideo được lưu tại:\n{filePath}\n\nBạn có muốn mở video ngay bây giờ không?",
+                            "Ghi Hình Hoàn Tất", MessageBoxButton.YesNoCancel, MessageBoxImage.Information);
 
                     if (result == MessageBoxResult.Yes)
                     {
@@ -203,7 +375,7 @@ namespace QASmartTouch.Forms
                         catch { }
                     }
                 }
-            });
+            }));
         }
 
         private void btnOpenFolder_Click(object sender, RoutedEventArgs e)
@@ -211,17 +383,22 @@ namespace QASmartTouch.Forms
             _recorderService.OpenRecordingsFolder();
         }
 
-        private void btnCancel_Click(object sender, RoutedEventArgs e)
+        private async void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
-                "Bạn có muốn dừng và hủy phiên ghi hình bài giảng hiện tại không?",
+                this,
+                "Bạn có muốn dừng và hủy phiên ghi hình bài giảng hiện tại không?\n(Video đang quay dở sẽ không được lưu)",
                 "Hủy Ghi Hình", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
-                _durationTimer.Stop();
-                _recorderService.StopRecording();
-                this.Close();
+                PrepareForApplicationExit(discardRecording: true);
+                await _recorderService.StopAndFinalizeAsync(discardFile: true);
+                try
+                {
+                    this.Close();
+                }
+                catch { }
             }
         }
 
@@ -229,6 +406,7 @@ namespace QASmartTouch.Forms
         {
             _durationTimer.Stop();
             _recorderService.SaveCompleted -= OnSaveCompleted;
+            DetachSessionCamera();
             try
             {
                 FloatingCameraWindow.CurrentInstance?.Close();
