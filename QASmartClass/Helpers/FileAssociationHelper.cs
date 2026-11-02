@@ -13,9 +13,17 @@ namespace QASmartClass.Helpers
     /// </summary>
     public static class FileAssociationHelper
     {
+#if SMARTTOUCH_STANDALONE
+        private const string PROG_ID = "QA.SmartTouch.Lecture";
+        private const string EXTENSION = ".qasc";
+        private const string FILE_DESCRIPTION = "Bài giảng QA Smart Touch";
+        private const string FALLBACK_EXE_NAME = "QASmartTouch.exe";
+#else
         private const string PROG_ID = "QASmartClass.Lecture";
         private const string EXTENSION = ".qasc";
         private const string FILE_DESCRIPTION = "Bài giảng QA SmartClass";
+        private const string FALLBACK_EXE_NAME = "QASmartClass.exe";
+#endif
 
         [DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
@@ -34,10 +42,16 @@ namespace QASmartClass.Helpers
                 string? exePath = Process.GetCurrentProcess().MainModule?.FileName;
                 if (string.IsNullOrEmpty(exePath) || !File.Exists(exePath))
                 {
-                    exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "QASmartClass.exe");
+                    exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FALLBACK_EXE_NAME);
                 }
 
                 if (!File.Exists(exePath)) return;
+
+                string expectedCommand = $"\"{exePath}\" \"%1\"";
+                if (IsAlreadyRegisteredInClassesRoot(expectedCommand))
+                {
+                    return;
+                }
 
                 bool changed = false;
 
@@ -109,6 +123,27 @@ namespace QASmartClass.Helpers
             catch (Exception ex)
             {
                 Log.Warning(ex, "[FileAssociation] Không thể cập nhật liên kết tệp .qasc trong Windows Registry");
+            }
+        }
+
+        private static bool IsAlreadyRegisteredInClassesRoot(string expectedCommand)
+        {
+            try
+            {
+                using var extKey = Registry.ClassesRoot.OpenSubKey(EXTENSION);
+                var currentProgId = extKey?.GetValue("") as string;
+                if (!string.Equals(currentProgId, PROG_ID, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                using var cmdKey = Registry.ClassesRoot.OpenSubKey($@"{PROG_ID}\shell\open\command");
+                var currentCmd = cmdKey?.GetValue("") as string;
+                return string.Equals(currentCmd, expectedCommand, StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
             }
         }
     }

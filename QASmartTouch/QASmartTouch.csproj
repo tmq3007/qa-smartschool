@@ -12,6 +12,7 @@
     <TieredCompilation>true</TieredCompilation>
     <PublishReadyToRun>true</PublishReadyToRun>
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <SatelliteResourceLanguages>en;vi</SatelliteResourceLanguages>
 
     <Platforms>x64</Platforms>
     <Platform>x64</Platform>
@@ -225,22 +226,29 @@
     </None>
   </ItemGroup>
 
-  <!-- Tài nguyên Fonts & Hình ảnh giao diện nhúng -->
+  <!-- Tài nguyên Fonts & Hình ảnh giao diện nhúng (Chỉ nhúng đúng tài nguyên thực sự dùng trong Bảng viết & Bảng tuần hoàn) -->
   <ItemGroup>
     <Resource Include="..\QASmartClass\Resources\Fonts\*.ttf" Link="Resources\Fonts\%(Filename)%(Extension)" />
-    <Resource Include="..\QASmartClass\Assets\Images\app_*.png" Link="Assets\Images\%(Filename)%(Extension)" />
-    <Resource Include="..\QASmartClass\Assets\Images\app_*.jpg" Link="Assets\Images\%(Filename)%(Extension)" />
+    <Resource Include="..\QASmartClass\Resources\Images\periodic_table_overview.png" Link="Resources\Images\periodic_table_overview.png" />
   </ItemGroup>
 
-  <!-- Sao chép Assets & Thư mục Tài nguyên (Loại trừ file XAML để không đè lên Page BAML) -->
+  <!-- Sao chép đúng các Assets & Tài nguyên mà QA Smart Touch sử dụng (Loại bỏ ~1.4GB ảnh thừa của SMART CLASS) -->
   <ItemGroup>
-    <None Include="..\QASmartClass\Assets\**\*" Exclude="..\QASmartClass\Assets\**\*.xaml">
+    <None Include="..\QASmartClass\Assets\Images\app_periodictable_*.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>Assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <Link>Assets\Images\%(Filename)%(Extension)</Link>
     </None>
-    <None Include="..\QASmartClass\Resources\**\*" Exclude="..\QASmartClass\Resources\**\*.xaml">
+    <None Include="..\QASmartClass\Assets\Data\Language\VocabularyData.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>Resources\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <Link>Assets\Data\Language\VocabularyData.json</Link>
+    </None>
+    <None Include="..\QASmartClass\Resources\Fonts\*.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Resources\Fonts\%(Filename)%(Extension)</Link>
+    </None>
+    <None Include="..\QASmartClass\Resources\Images\periodic_table_overview.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Resources\Images\periodic_table_overview.png</Link>
     </None>
     <None Include="..\QASmartClass\PeriodicTable\Data\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
