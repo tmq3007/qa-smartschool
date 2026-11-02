@@ -211,7 +211,7 @@ namespace QASmartTouch.Forms
         
         // âœ¨ Line spacing for patterns
         private int _currentLineSpacing = 40; // Default 40px (â‰ˆ1.1cm)
-        private int _currentLineOpacity = 10; // Default 10% (0-100)
+        private int _currentLineOpacity = 25; // Default 25% (0-100)
         private string? _currentBackgroundColor = "#3D6D64";
         private string? _currentBackgroundPattern = "grid";
         private string? _currentBackgroundImagePath = null;
@@ -713,21 +713,63 @@ namespace QASmartTouch.Forms
 
         private bool _isHandlingExit = false;
         private bool _isClosingConfirmed = false;
+        private bool _isFinalizingExit = false;
 
         /// <summary>
-        /// Xử lý xác nhận lưu bài giảng và thoát an toàn.
+        /// Xử lý xác nhận lưu video ghi hình (nếu đang quay), lưu bài giảng (.qasc) và thoát an toàn.
         /// Sử dụng cho cả sự kiện đóng cửa sổ (OnClosing, Alt+F4, Taskbar "X") và nút Thoát trên toolbar.
         /// Trả về true nếu người dùng đồng ý thoát (hoặc đã lưu thành công), false nếu người dùng hủy bỏ lệnh thoát.
         /// </summary>
         public bool ConfirmAndHandleExit()
         {
+            return ConfirmAndHandleExit(out _);
+        }
+
+        private bool ConfirmAndHandleExit(out bool discardActiveRecording)
+        {
+            discardActiveRecording = false;
             if (_isClosingConfirmed) return true;
-            if (_isHandlingExit) return false;
+            if (_isHandlingExit || _isFinalizingExit) return false;
             _isHandlingExit = true;
 
             try
             {
-                // 1. Nếu có dữ liệu chưa lưu, hỏi giáo viên có muốn lưu trước khi thoát không
+                // 0. Nếu đang đếm ngược 3-2-1 chuẩn bị quay (CountdownOverlay), hủy đếm ngược ngay
+                // để tránh tự động bật ghi hình đằng sau hộp thoại xác nhận thoát.
+                foreach (var countdown in Application.Current.Windows.OfType<CountdownOverlay>().ToList())
+                {
+                    try { countdown.CancelCountdown(); } catch { }
+                }
+
+                // 1. Nếu đang ghi hình bài giảng, hỏi giáo viên Lưu hay Hủy video trước khi thoát
+                bool wasActivelyRecording = ScreenRecorderService.Instance.IsRecording;
+                if (wasActivelyRecording)
+                {
+                    try { this.Activate(); } catch { }
+
+                    string durationText = ScreenRecorderService.Instance.GetFormattedRecordingTime();
+                    string saveFolder = ScreenRecorderService.Instance.DefaultSavePath;
+
+                    var recordResult = MessageBox.Show(
+                        this,
+                        $"Hệ thống đang ghi hình bài giảng (thời lượng: {durationText}).\n" +
+                        "Bạn có muốn dừng và lưu video bài giảng trước khi thoát phần mềm không?\n\n" +
+                        $"• Chọn [Yes]: Dừng và lưu video (vào {saveFolder}) rồi thoát\n" +
+                        "• Chọn [No]: Hủy bỏ video đang quay và thoát\n" +
+                        "• Chọn [Cancel]: Ở lại bảng viết, tiếp tục ghi hình",
+                        "Đang ghi hình bài giảng",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Warning);
+
+                    if (recordResult == MessageBoxResult.Cancel)
+                    {
+                        return false; // Giữ nguyên phiên ghi hình, không thoát
+                    }
+
+                    discardActiveRecording = (recordResult == MessageBoxResult.No);
+                }
+
+                // 2. Nếu có dữ liệu bài giảng (.qasc) chưa lưu, hỏi giáo viên có muốn lưu trước khi thoát không
                 if (CheckHasUnsavedChanges())
                 {
                     try { this.Activate(); } catch { }
@@ -741,7 +783,7 @@ namespace QASmartTouch.Forms
 
                     if (saveResult == MessageBoxResult.Cancel)
                     {
-                        return false; // Hủy lệnh thoát
+                        return false; // Hủy lệnh thoát (phiên ghi hình nếu có vẫn chưa bị dừng)
                     }
                     else if (saveResult == MessageBoxResult.Yes)
                     {
@@ -753,13 +795,13 @@ namespace QASmartTouch.Forms
                             return false;
                         }
                     }
-                    // Nếu chọn No -> Tiếp tục thoát mà không lưu
+                    // Nếu chọn No -> Tiếp tục thoát mà không lưu .qasc
                 }
-                else if (AppSettings.ShouldShowExitConfirmation)
+                else if (!wasActivelyRecording && AppSettings.ShouldShowExitConfirmation)
                 {
                     try { this.Activate(); } catch { }
 
-                    // Nếu không có dữ liệu chưa lưu (bảng trắng hoặc đã lưu rồi), chỉ hỏi xác nhận thoát đơn giản
+                    // Nếu không có phiên quay và không có dữ liệu chưa lưu, chỉ hỏi xác nhận thoát đơn giản
                     var confirmResult = MessageBox.Show(
                         this,
                         "Bạn có chắc chắn muốn thoát phần mềm?",
@@ -789,15 +831,45 @@ namespace QASmartTouch.Forms
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            // Kiểm tra và hỏi lưu bài giảng trước khi cho phép đóng cửa sổ
+            if (_isFinalizingExit)
+            {
+                // Đang chờ bộ mã hóa đóng gói nốt tệp MP4 trước khi đóng cửa sổ
+                e.Cancel = true;
+                return;
+            }
+
+            bool discardActiveRecording = false;
+
+            // Kiểm tra phiên ghi hình và hỏi lưu bài giảng trước khi cho phép đóng cửa sổ
             if (!_isClosingConfirmed)
             {
-                if (!ConfirmAndHandleExit())
+                if (!ConfirmAndHandleExit(out discardActiveRecording))
                 {
                     e.Cancel = true;
                     return;
                 }
             }
+
+            // Nếu bộ ghi hình vẫn đang chạy hoặc đang đóng gói chỉ mục MP4 (moov atom),
+            // tạm hoãn đóng cửa sổ để chờ hoàn tất 100% bất đồng bộ, tránh mất/hỏng tệp video
+            if (ScreenRecorderService.Instance.IsSessionActive)
+            {
+                e.Cancel = true;
+                _isFinalizingExit = true;
+                _ = FinalizeRecordingAndCloseAsync(discardActiveRecording);
+                return;
+            }
+
+            // Đóng thanh điều khiển ghi hình / camera nổi nếu còn mở độc lập
+            try
+            {
+                foreach (var bar in Application.Current.Windows.OfType<FloatingRecorderBar>().ToList())
+                {
+                    try { bar.Close(); } catch { }
+                }
+                FloatingCameraWindow.CurrentInstance?.Close();
+            }
+            catch { }
 
             // Đóng tất cả cửa sổ công cụ đo lường và menu con trước khi đóng Form2
             try
@@ -819,6 +891,51 @@ namespace QASmartTouch.Forms
             }
             catch { }
             base.OnClosing(e);
+        }
+
+        private async Task FinalizeRecordingAndCloseAsync(bool discardRecording)
+        {
+            try
+            {
+                var recorderBar = Application.Current.Windows.OfType<FloatingRecorderBar>().FirstOrDefault();
+                recorderBar?.PrepareForApplicationExit(discardRecording);
+
+                var (_, error) = await ScreenRecorderService.Instance.StopAndFinalizeAsync(
+                    discardFile: discardRecording,
+                    timeoutMs: 10000);
+
+                try
+                {
+                    recorderBar?.Close();
+                    FloatingCameraWindow.CurrentInstance?.Close();
+                }
+                catch { }
+
+                if (!discardRecording && !string.IsNullOrEmpty(error))
+                {
+                    var retryChoice = MessageBox.Show(
+                        this,
+                        $"Quá trình lưu video bài giảng gặp sự cố:\n{error}\n\nBạn vẫn muốn thoát phần mềm chứ?",
+                        "Cảnh báo lưu video",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (retryChoice != MessageBoxResult.Yes)
+                    {
+                        _isClosingConfirmed = false;
+                        _isFinalizingExit = false;
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ FinalizeRecordingAndCloseAsync error: {ex.Message}");
+            }
+
+            _isClosingConfirmed = true;
+            _isFinalizingExit = false;
+            this.Close();
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -1360,10 +1477,11 @@ namespace QASmartTouch.Forms
             MainInteractiveBoard.PreviewTouchMove += MainInteractiveBoard_PreviewTouchMove;
             MainInteractiveBoard.PreviewTouchUp += MainInteractiveBoard_PreviewTouchUp;
             MainInteractiveBoard.PreviewStylusDown += MainInteractiveBoard_PreviewStylusDown;
-            MainInteractiveBoard.PreviewStylusMove += MainInteractiveBoard_PreviewStylusMove;
-            MainInteractiveBoard.PreviewStylusUp += MainInteractiveBoard_PreviewStylusUp;
+            MainInteractiveBoard.PreviewStylusInAirMove += MainInteractiveBoard_PreviewStylusInAirMove;
+            MainInteractiveBoard.PreviewStylusMove += MainInteractiveBoard_DirectStylusMove;
+            MainInteractiveBoard.PreviewStylusUp += MainInteractiveBoard_DirectStylusUp;
             MainInteractiveBoard.LostTouchCapture += MainInteractiveBoard_LostTouchCapture;
-            MainInteractiveBoard.LostStylusCapture += MainInteractiveBoard_LostStylusCapture;
+            MainInteractiveBoard.LostStylusCapture += MainInteractiveBoard_DirectLostStylusCapture;
 
             // Wire up SelectionManager events
             _selectionManager.SelectionChanged += OnSelectionChanged;
@@ -1858,6 +1976,12 @@ namespace QASmartTouch.Forms
                         };
                         _selectionManager.AddObject(selectableObj);
                         registeredCount++;
+                        var firstChildShape = shapeCanvas.Children.OfType<System.Windows.Shapes.Shape>().FirstOrDefault();
+                        if (firstChildShape != null)
+                        {
+                            selectableObj.StrokeColor = (firstChildShape.Stroke as SolidColorBrush)?.Color ?? Colors.Black;
+                            selectableObj.StrokeThickness = firstChildShape.StrokeThickness;
+                        }
                         System.Diagnostics.Debug.WriteLine($"🎲 Registered 3D Shape / Canvas Container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
                     }
                 }
@@ -2111,6 +2235,12 @@ namespace QASmartTouch.Forms
                     ZIndex = Panel.GetZIndex(canvasElement)
                 };
                 _selectionManager?.AddObject(selectableObj);
+                var firstChildShape = canvasElement.Children.OfType<System.Windows.Shapes.Shape>().FirstOrDefault();
+                if (firstChildShape != null)
+                {
+                    selectableObj.StrokeColor = (firstChildShape.Stroke as SolidColorBrush)?.Color ?? Colors.Black;
+                    selectableObj.StrokeThickness = firstChildShape.StrokeThickness;
+                }
                 System.Diagnostics.Debug.WriteLine($"🎲 Auto-registered Canvas container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
             }
             // ✅ QC_4.2_GRID_CHART_REGISTER: Register Grid Container (Interactive Chart Containers)
@@ -2490,6 +2620,8 @@ namespace QASmartTouch.Forms
             _pendingHitObject = null;
 
             // Release mouse, touch, and stylus captures
+            _isStylusInkingSession = false;
+            _activeStylusPoints = null;
             MainInteractiveBoard?.ReleaseMouseCapture();
             MainInteractiveBoard?.ReleaseStylusCapture();
             MainInteractiveBoard?.ReleaseAllTouchCaptures();
@@ -2690,7 +2822,9 @@ namespace QASmartTouch.Forms
                 // 3. Rebuild lại chỉ mục QuadTree để đồng bộ không gian
                 _selectionManager?.RebuildQuadTree();
 
-                // 4. Giải phóng chuột/ngón tay capture nếu có
+                // 4. Giải phóng chuột/ngón tay/stylus capture và reset phiên Stylus nếu có
+                _isStylusInkingSession = false;
+                _activeStylusPoints = null;
                 MainInteractiveBoard?.ReleaseMouseCapture();
                 MainInteractiveBoard?.ReleaseStylusCapture();
                 MainInteractiveBoard?.ReleaseAllTouchCaptures();

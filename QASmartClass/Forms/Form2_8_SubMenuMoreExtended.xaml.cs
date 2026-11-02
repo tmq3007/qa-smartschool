@@ -321,7 +321,10 @@ namespace QASmartTouch.Forms
             {
                 var exportDialog = new Form2_20_ExportLectureDialog(mainWindow);
                 WindowHelper.ShowChildDialog(exportDialog);
-                mainWindow.Activate();
+                if (!exportDialog.OpenedExternalViewer)
+                {
+                    mainWindow.Activate();
+                }
             }
         }
 
@@ -351,6 +354,22 @@ namespace QASmartTouch.Forms
         private void btnScreenRecord_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+            if (QASmartTouch.Services.ScreenRecorderService.Instance.IsSessionActive)
+            {
+                var existingBar = Application.Current.Windows.OfType<FloatingRecorderBar>().FirstOrDefault();
+                if (existingBar != null)
+                {
+                    existingBar.Show();
+                    existingBar.Activate();
+                }
+                MessageBox.Show(
+                    "Hệ thống đang trong phiên ghi hình bài giảng.\nVui lòng sử dụng thanh điều khiển ghi hình nổi ở góc trên màn hình.",
+                    "Đang Ghi Hình",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
             var setupDialog = new PreRecordSetupDialog();
             setupDialog.ShowDialog();
         }

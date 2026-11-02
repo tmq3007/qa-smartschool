@@ -14,6 +14,12 @@ namespace QASmartTouch.Forms
         private readonly Form2_MainDashboard? _mainDashboard;
         private string? _exportedFilePath;
 
+        /// <summary>
+        /// Đánh dấu người dùng vừa chọn Mở tệp ngay hoặc Mở thư mục bên ngoài,
+        /// giúp cửa sổ bảng chính không tự gọi Activate() đè lên ứng dụng vừa mở.
+        /// </summary>
+        public bool OpenedExternalViewer { get; private set; } = false;
+
         public Form2_20_ExportLectureDialog(Form2_MainDashboard? mainDashboard = null)
         {
             InitializeComponent();
@@ -288,15 +294,19 @@ namespace QASmartTouch.Forms
             {
                 try
                 {
+                    this.Topmost = false;
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = _exportedFilePath,
                         UseShellExecute = true
                     });
+                    OpenedExternalViewer = true;
+                    this.Close();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Không thể mở tệp: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Topmost = true;
+                    MessageBox.Show(this, $"Không thể mở tệp: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -307,6 +317,9 @@ namespace QASmartTouch.Forms
             {
                 try
                 {
+                    bool launched = false;
+                    this.Topmost = false;
+
                     if (File.Exists(_exportedFilePath))
                     {
                         Process.Start(new ProcessStartInfo
@@ -315,6 +328,7 @@ namespace QASmartTouch.Forms
                             Arguments = $"/select,\"{_exportedFilePath}\"",
                             UseShellExecute = true
                         });
+                        launched = true;
                     }
                     else
                     {
@@ -326,12 +340,24 @@ namespace QASmartTouch.Forms
                                 FileName = dir,
                                 UseShellExecute = true
                             });
+                            launched = true;
                         }
+                    }
+
+                    if (launched)
+                    {
+                        OpenedExternalViewer = true;
+                        this.Close();
+                    }
+                    else
+                    {
+                        this.Topmost = true;
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Không thể mở thư mục: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Topmost = true;
+                    MessageBox.Show(this, $"Không thể mở thư mục: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

@@ -153,7 +153,7 @@
                         <Button x:Name="btnOpenFile" Height="44" Padding="18,0" Background="#2563EB" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="btnOpenFile_Click">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>
@@ -164,10 +164,10 @@
                             </StackPanel>
                         </Button>
 
-                        <Button x:Name="btnOpenFolder" Height="44" Padding="18,0" Background="#F1F5F9" Foreground="#1E293B" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="btnOpenFolder_Click">
+                        <Button x:Name="btnOpenFolder" Height="44" Padding="18,0" Background="#F1F5F9" Foreground="#1E293B" BorderThickness="0" Cursor="Hand" Click="btnOpenFolder_Click">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>

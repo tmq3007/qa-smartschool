@@ -97,7 +97,7 @@ namespace QASmartTouch.Forms
                 currentBoard?.BackgroundPattern,
                 currentBoard?.BackgroundImagePath,
                 currentBoard?.LineSpacing ?? 40,
-                currentBoard?.LineOpacity ?? 10
+                currentBoard?.LineOpacity ?? 25
             );
             
             // Position dialog centered

@@ -1280,7 +1280,7 @@ namespace QASmartTouch.Managers
         /// <summary>
         /// Độ mờ đường kẻ ô ly (0-100)
         /// </summary>
-        public int LineOpacity { get; set; } = 10;
+        public int LineOpacity { get; set; } = 25;
 
         /// <summary>
         /// Chiều rộng Canvas của trang (mặc định 1920)

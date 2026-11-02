@@ -15,24 +15,24 @@ namespace QASmartTouch.Forms
         public System.Windows.Media.Imaging.BitmapImage? SelectedBackgroundImage { get; private set; }
         public string? SelectedBackgroundImagePath { get; private set; }
         public int LineSpacing { get; private set; } = 40; // Default 40px (≈1.1cm)
-        public int LineOpacity { get; private set; } = 10; // Default 10% (0-100)
+        public int LineOpacity { get; private set; } = 25; // Default 25% (0-100)
 
         private Button? _lastSelectedColorButton;
         private Button? _lastSelectedPatternButton;
         private Button? _lastSelectedImageButton;
 
-        public Form2_7_1_BackgroundSelector() : this(null, null, null, 40, 10)
+        public Form2_7_1_BackgroundSelector() : this(null, null, null, 40, 25)
         {
         }
 
-        public Form2_7_1_BackgroundSelector(string? currentColor, string? currentPattern, string? currentImagePath = null, int lineSpacing = 40, int lineOpacity = 10)
+        public Form2_7_1_BackgroundSelector(string? currentColor, string? currentPattern, string? currentImagePath = null, int lineSpacing = 40, int lineOpacity = 25)
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToSubMenu(this, btnClose);
             TouchScrollHelper.AttachToAllScrollViewers(this);
             
             LineSpacing = lineSpacing > 0 ? lineSpacing : 40;
-            LineOpacity = lineOpacity > 0 ? lineOpacity : 10;
+            LineOpacity = lineOpacity > 0 ? lineOpacity : 25;
 
             // ✨ Sync sliders with default values
             LineOpacitySlider.Value = LineOpacity;
@@ -356,6 +356,8 @@ namespace QASmartTouch.Forms
             // Áp dụng mẫu nền (overlay)
             if (!string.IsNullOrEmpty(SelectedPattern))
             {
+                PreviewPattern.SnapsToDevicePixels = true;
+                RenderOptions.SetEdgeMode(PreviewPattern, EdgeMode.Aliased);
                 PreviewPattern.Fill = CreatePatternBrush(SelectedPattern);
             }
             else
@@ -467,6 +469,9 @@ namespace QASmartTouch.Forms
             var drawingBrush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
+                Viewbox = new Rect(0, 0, LineSpacing, LineSpacing),
+                ViewboxUnits = BrushMappingMode.Absolute,
+                Stretch = Stretch.None,
                 Viewport = new Rect(0, 0, LineSpacing, LineSpacing), // Dynamic spacing
                 ViewportUnits = BrushMappingMode.Absolute
             };
@@ -476,18 +481,19 @@ namespace QASmartTouch.Forms
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(LineOpacity * 255 / 100);
             
+            RenderOptions.SetEdgeMode(drawingGroup, EdgeMode.Aliased);
             // Vertical line
             drawingGroup.Children.Add(new GeometryDrawing
             {
                 Pen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1),
-                Geometry = new LineGeometry(new Point(0, 0), new Point(0, LineSpacing))
+                Geometry = new LineGeometry(new Point(0.5, 0), new Point(0.5, LineSpacing))
             });
             
             // Horizontal line
             drawingGroup.Children.Add(new GeometryDrawing
             {
                 Pen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1),
-                Geometry = new LineGeometry(new Point(0, 0), new Point(LineSpacing, 0))
+                Geometry = new LineGeometry(new Point(0, 0.5), new Point(LineSpacing, 0.5))
             });
 
             drawingBrush.Drawing = drawingGroup;
@@ -529,6 +535,8 @@ namespace QASmartTouch.Forms
             var brush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
+                Viewbox = new Rect(0, 0, 1, LineSpacing),
+                ViewboxUnits = BrushMappingMode.Absolute,
                 Viewport = new Rect(0, 0, 1, LineSpacing), // Dynamic spacing
                 ViewportUnits = BrushMappingMode.Absolute,
                 Stretch = Stretch.None
@@ -536,6 +544,7 @@ namespace QASmartTouch.Forms
 
             // Create drawing group
             var group = new DrawingGroup();
+            RenderOptions.SetEdgeMode(group, EdgeMode.Aliased);
             
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(LineOpacity * 255 / 100);
@@ -547,7 +556,7 @@ namespace QASmartTouch.Forms
             group.Children.Add(new GeometryDrawing
             {
                 Pen = linePen,
-                Geometry = new LineGeometry(new Point(0, 0), new Point(1, 0))
+                Geometry = new LineGeometry(new Point(0, 0.5), new Point(1, 0.5))
             });
 
             brush.Drawing = group;

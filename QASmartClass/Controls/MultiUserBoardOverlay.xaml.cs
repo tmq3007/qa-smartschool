@@ -70,6 +70,7 @@ namespace QASmartTouch.Controls
         private void DisableStylusDelays(UIElement element)
         {
             Stylus.SetIsPressAndHoldEnabled(element, false);
+            Stylus.SetIsFlicksEnabled(element, false);
             Stylus.SetIsTapFeedbackEnabled(element, false);
             Stylus.SetIsTouchFeedbackEnabled(element, false);
         }
@@ -235,7 +236,7 @@ namespace QASmartTouch.Controls
         // Mouse Support for Left Canvas
         private void CanvasLeft_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.StylusDevice != null) return; // Chặn Touch promoted
+            if (e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Touch) return; // Chặn Touch promoted (cho phép Stylus bảng vẽ điện tử)
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 Point pos = ClampPoint(e.GetPosition(canvasLeft), canvasLeft);
@@ -257,7 +258,7 @@ namespace QASmartTouch.Controls
 
         private void CanvasLeft_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.StylusDevice != null) return;
+            if (e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Touch) return;
             Point pos = ClampPoint(e.GetPosition(canvasLeft), canvasLeft);
 
             if (_isLeftEraser && e.LeftButton == MouseButtonState.Pressed)
@@ -358,7 +359,7 @@ namespace QASmartTouch.Controls
         // Mouse Support for Right Canvas
         private void CanvasRight_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.StylusDevice != null) return;
+            if (e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Touch) return;
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 Point pos = ClampPoint(e.GetPosition(canvasRight), canvasRight);
@@ -380,7 +381,7 @@ namespace QASmartTouch.Controls
 
         private void CanvasRight_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.StylusDevice != null) return;
+            if (e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Touch) return;
             Point pos = ClampPoint(e.GetPosition(canvasRight), canvasRight);
 
             if (_isRightEraser && e.LeftButton == MouseButtonState.Pressed)

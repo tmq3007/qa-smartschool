@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -50,6 +50,7 @@ namespace QASmartTouch.Controls
             try
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+#if !SMARTTOUCH_STANDALONE
                 string litPath = Path.Combine(baseDir, "Resources", "LiteratureData", "Phase4_Data");
                 string exPath = Path.Combine(baseDir, "Resources", "LiteratureData", "exercises_by_topic");
 
@@ -58,6 +59,16 @@ namespace QASmartTouch.Controls
 
                 txtResIcon.Text = (litCount > 0) ? "🟢" : "🟡";
                 txtResStatus.Text = $"Học liệu văn bản Ngữ Văn: {litCount} tệp tin JSON | Kho bài tập luyện tập: {exCount} chủ đề.";
+#else
+                string ptPath = Path.Combine(baseDir, "PeriodicTable", "Data");
+                string booksPath = Path.Combine(baseDir, "Modules", "InteractiveBooks", "Data", "books.json");
+
+                int ptCount = Directory.Exists(ptPath) ? Directory.GetFiles(ptPath, "*.json").Length : 0;
+                bool hasBooks = File.Exists(booksPath);
+
+                txtResIcon.Text = (ptCount > 0 && hasBooks) ? "🟢" : "🟡";
+                txtResStatus.Text = $"Dữ liệu Bảng tuần hoàn: {ptCount} tệp JSON | Sách điện tử: {(hasBooks ? "Sẵn sàng" : "Chưa có dữ liệu")}.";
+#endif
             }
             catch (Exception ex)
             {

@@ -95,6 +95,10 @@
                          SizeChanged="MainScrollViewer_SizeChanged"
                          PreviewMouseDown="MainScrollViewer_PreviewMouseDown"
                          PreviewTouchDown="MainScrollViewer_PreviewTouchDown"
+                         Stylus.IsPressAndHoldEnabled="False"
+                         Stylus.IsFlicksEnabled="False"
+                         Stylus.IsTapFeedbackEnabled="False"
+                         Stylus.IsTouchFeedbackEnabled="False"
                          PreviewStylusDown="MainScrollViewer_PreviewStylusDown">
 
                 <!-- Main Interactive Board (Canvas) -->
@@ -136,6 +140,10 @@
                         MouseLeave="MainInteractiveBoard_MouseLeave"
 
                         MouseEnter="MainInteractiveBoard_MouseEnter"
+                        Stylus.IsPressAndHoldEnabled="False"
+                        Stylus.IsFlicksEnabled="False"
+                        Stylus.IsTapFeedbackEnabled="False"
+                        Stylus.IsTouchFeedbackEnabled="False"
                         MouseWheel="MainInteractiveBoard_MouseWheel">
 
                     <!-- ✨ GIAI ĐOẠN 3: LỚP MỰC VẼ TĂNG TỐC PHẦN CỨNG NATIVE DIRECTX (MILCORE) -->

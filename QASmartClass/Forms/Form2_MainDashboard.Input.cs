@@ -372,6 +372,14 @@ namespace QASmartTouch.Forms
 
         private void MainInteractiveBoard_PreviewStylusDown(object? sender, StylusDownEventArgs e)
         {
+            if (!_isTableDrawingMode && !_shapeDrawingEnabled && !_objectSelectionMode)
+            {
+                EnsurePassthroughFocusAndPenMode(e.OriginalSource);
+                AutoDismissKeyboardIfNeeded(e.OriginalSource);
+                TryHandleDirectStylusDown(e);
+                return;
+            }
+
             // QC_4.2_TABLE_DRAWING: Xử lý trực tiếp bút stylus kéo vẽ bảng
             if (_isTableDrawingMode)
             {
@@ -897,6 +905,52 @@ namespace QASmartTouch.Forms
 
         #endregion
 
+        private bool IsTouchPromotedMouseEvent(MouseEventArgs e)
+        {
+            if (_touchHandler?.HasActiveTouches == true)
+                return true;
+
+            if (e.StylusDevice != null)
+            {
+                return true;
+            }
+
+            if (_isStylusInkingSession)
+            {
+                if (!MainInteractiveBoard.IsStylusCaptured)
+                {
+                    _isStylusInkingSession = false;
+                    return false;
+                }
+                return true;
+            }
+
+            if (e.StylusDevice != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsPrimaryPenOrMousePressed(MouseEventArgs e) => !IsTouchPromotedMouseEvent(e) && IsRawMouseOrStylusPressed(e);
+
+        private static bool IsRawMouseOrStylusPressed(MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+                return true;
+
+            if (e.StylusDevice != null &&
+                e.StylusDevice.TabletDevice?.Type == TabletDeviceType.Stylus &&
+                !e.StylusDevice.InAir &&
+                false) // Stylus được xử lý trực tiếp tại PreviewStylusDown/Move/Up
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         private void MainInteractiveBoard_MouseDown(object sender, MouseButtonEventArgs e)
         {
             // Tự động kích hoạt lại Focus cho MainDashboard nếu đang bị trình duyệt nhúng chiếm Focus
@@ -945,7 +999,7 @@ namespace QASmartTouch.Forms
             // Guard 1: e.StylusDevice != null → standard WPF stylus→mouse promotion
             // Guard 2: _touchHandler.HasActiveTouches → IR/HID screens send mouse WITHOUT StylusDevice
             // Drag eraser được phép qua vì TouchHandler đã return sớm cho Drag mode (L203)
-            if ((_drawingEnabled || _eraserEnabled) && (e.StylusDevice != null || (_touchHandler?.HasActiveTouches == true)))
+            if ((_drawingEnabled || _eraserEnabled) && IsTouchPromotedMouseEvent(e))
                 return;
 
             // Hide welcome state when user starts interacting with canvas
@@ -1224,11 +1278,12 @@ namespace QASmartTouch.Forms
                 MainInteractiveBoard.CaptureMouse();
             }
             // Eraser mode
-            else if (_eraserEnabled && e.LeftButton == MouseButtonState.Pressed)
+            else if (_eraserEnabled && IsPrimaryPenOrMousePressed(e))
             {
                 Point clickPoint = e.GetPosition(MainInteractiveBoard);
                 _isDrawing = true;
                 _lastMouseEraserPoint = clickPoint;
+                UpdateEraserCursorPreview(clickPoint);
                 MainInteractiveBoard.CaptureMouse();
                 _eraserEngine?.StartMouseSession();
                 _whiteboardManager?.ToolManager.EraserTool.StartSession("mouse");
@@ -1243,7 +1298,7 @@ namespace QASmartTouch.Forms
                 }
             }
             // Drawing mode
-            else if (_drawingEnabled && e.LeftButton == MouseButtonState.Pressed)
+            else if (_drawingEnabled && IsPrimaryPenOrMousePressed(e))
             {
                 _objectSelectionMode = false;
                 _isDraggingElement = false;
@@ -1382,7 +1437,7 @@ namespace QASmartTouch.Forms
                 UpdateShapePreview(_previewShape, _shapeStartPoint, currentPoint);
             }
             // Eraser mode: erase while mouse is held & dragged
-            else if (_eraserEnabled && _isDrawing && e.LeftButton == MouseButtonState.Pressed)
+            else if (_eraserEnabled && _isDrawing && IsPrimaryPenOrMousePressed(e))
             {
                 UpdateEraserCursorPreview(currentPoint);
 
@@ -1397,7 +1452,7 @@ namespace QASmartTouch.Forms
                 }
             }
             // Continue drawing if mouse is pressed and drawing is enabled
-            else if (_isDrawing && e.LeftButton == MouseButtonState.Pressed && _currentStroke != null)
+            else if (_isDrawing && IsPrimaryPenOrMousePressed(e) && _currentStroke != null)
             {
                 // âœ¨ OPTIMIZATION: Use StrokeOptimizer to filter points
                 // Only add point if it's far enough from last point (reduces jitter)
@@ -1428,7 +1483,7 @@ namespace QASmartTouch.Forms
         {
             // QC_4.2_TOUCH_ERASER_FIX: Thống nhất guard với MouseDown
             // Chặn touch-promoted mouse events cho CẢ drawing VÀ eraser (Stroke mode)
-            if ((_drawingEnabled || _eraserEnabled) && (e.StylusDevice != null || (_touchHandler?.HasActiveTouches == true)))
+            if ((_drawingEnabled || _eraserEnabled) && IsTouchPromotedMouseEvent(e))
                 return;
 
             // Middle Mouse Pan mode - finish panning
@@ -1603,6 +1658,600 @@ namespace QASmartTouch.Forms
         /// Chuyển đổi nét vẽ tự do chuột (Polyline) thành Native Inking Stroke (WPF System.Windows.Ink.Stroke)
         /// giải phóng Polyline tạm khỏi visual tree và nạp vào MainInkPresenter để tăng tốc phần cứng 60 FPS.
         /// </summary>
+        #region Direct Hardware Stylus Pipeline (TabletDeviceType.Stylus — Bảng vẽ điện tử)
+
+        private bool _isStylusInkingSession = false;
+        private StylusPointCollection? _activeStylusPoints = null;
+
+        private float NormalizeStylusPressure(float rawPressure)
+        {
+            if (_currentBrushType == "Calligraphy" || _currentBrushType == "Hoc")
+            {
+                return Math.Clamp(0.35f + rawPressure * 0.45f, 0.35f, 0.80f);
+            }
+            return 0.5f;
+        }
+
+        private bool TryHandleFloatingPickerOrMenuClick(Point clickPoint, out bool markHandled)
+        {
+            markHandled = false;
+            bool shouldClosePickerAndReturn = false;
+
+            if (_colorPicker != null && _colorPicker.Visibility == Visibility.Visible)
+            {
+                Rect pickerBounds = new Rect(
+                    Canvas.GetLeft(_colorPicker),
+                    Canvas.GetTop(_colorPicker),
+                    _colorPicker.ActualWidth,
+                    _colorPicker.ActualHeight);
+
+                if (pickerBounds.Contains(clickPoint))
+                {
+                    return true;
+                }
+                _colorPicker.Hide();
+                shouldClosePickerAndReturn = true;
+            }
+
+            if (_thicknessPicker != null && _thicknessPicker.Visibility == Visibility.Visible)
+            {
+                Rect pickerBounds = new Rect(
+                    Canvas.GetLeft(_thicknessPicker),
+                    Canvas.GetTop(_thicknessPicker),
+                    _thicknessPicker.ActualWidth,
+                    _thicknessPicker.ActualHeight);
+
+                if (pickerBounds.Contains(clickPoint))
+                {
+                    return true;
+                }
+                _thicknessPicker.Hide();
+                shouldClosePickerAndReturn = true;
+            }
+
+            if (_moreMenu != null && _moreMenu.Visibility == Visibility.Visible)
+            {
+                Rect menuBounds = new Rect(
+                    Canvas.GetLeft(_moreMenu),
+                    Canvas.GetTop(_moreMenu),
+                    _moreMenu.ActualWidth,
+                    _moreMenu.ActualHeight);
+
+                if (menuBounds.Contains(clickPoint))
+                {
+                    return true;
+                }
+                _moreMenu.Hide();
+                shouldClosePickerAndReturn = true;
+            }
+
+            if (shouldClosePickerAndReturn)
+            {
+                markHandled = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        private void TryHandleDirectStylusDown(StylusDownEventArgs e)
+        {
+            if (e.StylusDevice == null ||
+                e.StylusDevice.TabletDevice?.Type != TabletDeviceType.Stylus ||
+                e.InAir ||
+                _isSpacebarDown)
+            {
+                return;
+            }
+
+            if (!this.IsActive)
+            {
+                this.Activate();
+                this.Focus();
+            }
+
+            if (_isPointerModeActive)
+            {
+                UpdatePointerPosition(e.GetPosition(MainInteractiveBoard));
+                e.Handled = true;
+                return;
+            }
+
+            if (IsDragHandleOrEmbeddedWidget(e.OriginalSource))
+            {
+                _isDrawing = false;
+                _isStylusInkingSession = false;
+                _currentStroke = null;
+                return;
+            }
+
+            if (!_eraserEnabled && QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(e.OriginalSource, MainInteractiveBoard))
+            {
+                return;
+            }
+
+            if (_activeSubMenu != null)
+            {
+                CloseAllSubmenus();
+            }
+
+            if (_selectionManager != null && _selectionManager.AllObjects.Count == 0 && MainInteractiveBoard.Children.Count > 0)
+            {
+                RefreshSelectableObjects();
+            }
+
+            Point stylusPos = e.GetPosition(MainInteractiveBoard);
+            if (TryHandleFloatingPickerOrMenuClick(stylusPos, out bool markPickerHandled))
+            {
+                if (markPickerHandled)
+                {
+                    e.Handled = true;
+                }
+                return;
+            }
+
+            if (_eraserEnabled)
+            {
+                HideWelcomeState();
+                _isDrawing = true;
+                _isStylusInkingSession = true;
+                _lastMouseEraserPoint = stylusPos;
+                UpdateEraserCursorPreview(stylusPos);
+                _eraserEngine?.StartMouseSession();
+                _whiteboardManager?.ToolManager.EraserTool.StartSession("mouse");
+
+                var rawEraserPoints = e.GetStylusPoints(MainInteractiveBoard);
+                if (rawEraserPoints != null && rawEraserPoints.Count > 0)
+                {
+                    foreach (var sp in rawEraserPoints)
+                    {
+                        Point pt = new Point(sp.X, sp.Y);
+                        if (_eraserMode == "Point" || _eraserMode == "Drag")
+                        {
+                            EraseByPointAt(pt, _lastMouseEraserPoint);
+                        }
+                        else
+                        {
+                            EraseStrokeAt(pt);
+                        }
+                        _lastMouseEraserPoint = pt;
+                    }
+                }
+                else
+                {
+                    if (_eraserMode == "Point" || _eraserMode == "Drag")
+                    {
+                        EraseByPointAt(stylusPos, null);
+                    }
+                    else
+                    {
+                        EraseStrokeAt(stylusPos);
+                    }
+                }
+
+                e.StylusDevice.Capture(MainInteractiveBoard);
+                e.Handled = true;
+                return;
+            }
+
+            if (_drawingEnabled)
+            {
+                HideWelcomeState();
+                _objectSelectionMode = false;
+                _isDraggingElement = false;
+                _draggedSelectionObject = null;
+                if (_selectionManager?.SelectedObjects.Count > 0)
+                {
+                    _selectionManager.DeselectAll();
+                }
+
+                Color drawingColor = _currentPenColor;
+                StudentProfile? assignedStudent = null;
+                if (_isMultiUserModeActive)
+                {
+                    assignedStudent = GetStudentByPosition(stylusPos);
+                    if (_zoneIsolationEnabled && assignedStudent == null)
+                    {
+                        return;
+                    }
+                    if (assignedStudent != null)
+                    {
+                        drawingColor = assignedStudent.Color;
+                    }
+                }
+
+                _isDrawing = true;
+                _isStylusInkingSession = true;
+                _activeStylusPoints = new StylusPointCollection();
+                _tempStrokePoints.Clear();
+
+                _currentStroke = CreateStrokeByBrushType();
+                if (_isMultiUserModeActive && assignedStudent != null)
+                {
+                    _currentStroke.Stroke = new SolidColorBrush(drawingColor);
+                }
+
+                var rawPoints = e.GetStylusPoints(MainInteractiveBoard);
+                if (rawPoints != null && rawPoints.Count > 0)
+                {
+                    foreach (var sp in rawPoints)
+                    {
+                        Point pt = new Point(sp.X, sp.Y);
+                        if (_activeStylusPoints.Count == 0 || (pt - _lastPoint).Length >= 0.35)
+                        {
+                            _activeStylusPoints.Add(new StylusPoint(sp.X, sp.Y, NormalizeStylusPressure(sp.PressureFactor)));
+                            _currentStroke.Points.Add(pt);
+                            _tempStrokePoints.Add(pt);
+                            _lastPoint = pt;
+                        }
+                    }
+                }
+                else
+                {
+                    _activeStylusPoints.Add(new StylusPoint(stylusPos.X, stylusPos.Y, 0.5f));
+                    _currentStroke.Points.Add(stylusPos);
+                    _tempStrokePoints.Add(stylusPos);
+                    _lastPoint = stylusPos;
+                }
+
+                if (_currentStroke.Points.Count == 1)
+                {
+                    _currentStroke.Points.Add(new Point(_lastPoint.X + 0.01, _lastPoint.Y));
+                }
+
+                MainInteractiveBoard.Children.Add(_currentStroke);
+                Panel.SetZIndex(_currentStroke, ZIndexConstants.ActiveStrokeLayer);
+                e.StylusDevice.Capture(MainInteractiveBoard);
+                e.Handled = true;
+            }
+        }
+
+        private void MainInteractiveBoard_PreviewStylusInAirMove(object? sender, StylusEventArgs e)
+        {
+            if (e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus)
+            {
+                Point currentPos = e.GetPosition(MainInteractiveBoard);
+                if (_eraserEnabled)
+                {
+                    UpdateEraserCursorPreview(currentPos);
+                }
+                else if (_isPointerModeActive)
+                {
+                    UpdatePointerPosition(currentPos);
+                }
+            }
+        }
+
+        private void MainInteractiveBoard_DirectStylusMove(object? sender, StylusEventArgs e)
+        {
+            MainInteractiveBoard_PreviewStylusMove(sender, e);
+            if (e.Handled) return;
+
+            if (e.StylusDevice == null || e.StylusDevice.TabletDevice?.Type != TabletDeviceType.Stylus)
+                return;
+
+            Point currentPos = e.GetPosition(MainInteractiveBoard);
+
+            if (_isPointerModeActive)
+            {
+                UpdatePointerPosition(currentPos);
+                return;
+            }
+
+            if (_eraserEnabled)
+            {
+                UpdateEraserCursorPreview(currentPos);
+
+                if (_isDrawing && _isStylusInkingSession && !e.InAir)
+                {
+                    var rawEraserPoints = e.GetStylusPoints(MainInteractiveBoard);
+                    if (rawEraserPoints != null && rawEraserPoints.Count > 0)
+                    {
+                        foreach (var sp in rawEraserPoints)
+                        {
+                            Point pt = new Point(sp.X, sp.Y);
+                            if (_lastMouseEraserPoint.HasValue && (pt - _lastMouseEraserPoint.Value).Length < 1.5)
+                                continue;
+
+                            if (_eraserMode == "Point" || _eraserMode == "Drag")
+                            {
+                                EraseByPointAt(pt, _lastMouseEraserPoint);
+                            }
+                            else
+                            {
+                                EraseStrokeAt(pt);
+                            }
+                            _lastMouseEraserPoint = pt;
+                        }
+                    }
+                    else
+                    {
+                        if (_eraserMode == "Point" || _eraserMode == "Drag")
+                        {
+                            EraseByPointAt(currentPos, _lastMouseEraserPoint);
+                        }
+                        else
+                        {
+                            EraseStrokeAt(currentPos);
+                        }
+                        _lastMouseEraserPoint = currentPos;
+                    }
+                    e.Handled = true;
+                }
+                return;
+            }
+
+            if (_drawingEnabled && _isDrawing && _isStylusInkingSession && _currentStroke != null && !e.InAir)
+            {
+                var rawPoints = e.GetStylusPoints(MainInteractiveBoard);
+                if (rawPoints != null && rawPoints.Count > 0)
+                {
+                    foreach (var sp in rawPoints)
+                    {
+                        Point pt = new Point(sp.X, sp.Y);
+                        if ((pt - _lastPoint).Length >= 0.35)
+                        {
+                            if (_tempStrokePoints.Count == 1 && _currentStroke.Points.Count == 2)
+                            {
+                                _currentStroke.Points[1] = pt;
+                            }
+                            else
+                            {
+                                _currentStroke.Points.Add(pt);
+                            }
+
+                            _activeStylusPoints?.Add(new StylusPoint(sp.X, sp.Y, NormalizeStylusPressure(sp.PressureFactor)));
+                            _tempStrokePoints.Add(pt);
+                            _lastPoint = pt;
+                        }
+                    }
+                }
+                e.Handled = true;
+            }
+        }
+
+        private void MainInteractiveBoard_DirectStylusUp(object? sender, StylusEventArgs e)
+        {
+            MainInteractiveBoard_PreviewStylusUp(sender, e);
+            if (e.Handled) return;
+
+            if (_isStylusInkingSession ||
+                (e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus && _isDrawing && (_drawingEnabled || _eraserEnabled)))
+            {
+                if (_drawingEnabled && _currentStroke != null && e.StylusDevice != null)
+                {
+                    // Thu thập nốt các gói tin phần cứng cuối cùng trong sự kiện StylusUp
+                    // (Đảm bảo các nét phẩy/hất cực nhanh 10-15ms như dấu sắc, dấu huyền, dấu mũ không bị mất điểm đuôi)
+                    var tailPoints = e.GetStylusPoints(MainInteractiveBoard);
+                    if (tailPoints != null && tailPoints.Count > 0)
+                    {
+                        foreach (var sp in tailPoints)
+                        {
+                            Point pt = new Point(sp.X, sp.Y);
+                            if ((pt - _lastPoint).Length >= 0.35)
+                            {
+                                if (_tempStrokePoints.Count == 1 && _currentStroke.Points.Count == 2)
+                                {
+                                    _currentStroke.Points[1] = pt;
+                                }
+                                else
+                                {
+                                    _currentStroke.Points.Add(pt);
+                                }
+
+                                _activeStylusPoints?.Add(new StylusPoint(sp.X, sp.Y, NormalizeStylusPressure(sp.PressureFactor)));
+                                _tempStrokePoints.Add(pt);
+                                _lastPoint = pt;
+                            }
+                        }
+                    }
+                }
+
+                FinalizeDirectStylusSession(e.StylusDevice);
+                e.Handled = true;
+            }
+        }
+
+        private void MainInteractiveBoard_DirectLostStylusCapture(object? sender, StylusEventArgs e)
+        {
+            MainInteractiveBoard_LostStylusCapture(sender, e);
+            if (_isStylusInkingSession)
+            {
+                FinalizeDirectStylusSession(e.StylusDevice);
+            }
+        }
+
+        private void FinalizeDirectStylusSession(StylusDevice? stylusDevice)
+        {
+            if (_eraserEnabled && _isDrawing)
+            {
+                _isDrawing = false;
+                _isStylusInkingSession = false;
+                _lastMouseEraserPoint = null;
+
+                if (stylusDevice?.Captured == MainInteractiveBoard || MainInteractiveBoard.IsStylusCaptured)
+                {
+                    MainInteractiveBoard.ReleaseStylusCapture();
+                }
+
+                var session = _eraserEngine?.EndMouseSession();
+                FinalizeEraseSession(session, "Stylus erase");
+
+                var nativeSession = _whiteboardManager?.ToolManager.EraserTool.EndSession("mouse");
+                FinalizeNativeEraseSession(nativeSession, "Stylus erase");
+                return;
+            }
+
+            if (_isDrawing && _currentStroke != null)
+            {
+                if (_currentStroke.Points.Count == 1)
+                {
+                    Point pt = _currentStroke.Points[0];
+                    _currentStroke.Points.Add(new Point(pt.X + 0.01, pt.Y));
+                }
+
+                if (_currentBrushType == "Laser")
+                {
+                    AnimateAndRemoveLaserStroke(_currentStroke);
+                }
+                else if (_currentBrushType == "Shape")
+                {
+                    var recognizedShape = ShapeRecognizer.TryRecognizeShape(_currentStroke, _currentPenColor, _currentPenSize);
+                    if (recognizedShape != null)
+                    {
+                        MainInteractiveBoard.Children.Remove(_currentStroke);
+                        Panel.SetZIndex(recognizedShape, _currentInkingZIndex);
+                        MainInteractiveBoard.Children.Add(recognizedShape);
+                        RecordAddAction(recognizedShape, "Recognized Shape");
+                        RegisterNewObjectWithSelectionManager(recognizedShape);
+                    }
+                    else
+                    {
+                        FinalizeNativeStylusStroke(_currentStroke, _activeStylusPoints);
+                    }
+                }
+                else
+                {
+                    FinalizeNativeStylusStroke(_currentStroke, _activeStylusPoints);
+                }
+            }
+
+            _isDrawing = false;
+            _isStylusInkingSession = false;
+            _currentStroke = null;
+            _activeStylusPoints = null;
+            _tempStrokePoints.Clear();
+
+            if (stylusDevice?.Captured == MainInteractiveBoard || MainInteractiveBoard.IsStylusCaptured)
+            {
+                MainInteractiveBoard.ReleaseStylusCapture();
+            }
+        }
+
+        /// <summary>
+        /// Làm mượt vi mô bảo toàn góc nhọn (Corner-Preserving Cusp Pinning) cho tập điểm Stylus tần số cao (133Hz-266Hz):
+        /// - Giữ nguyên tuyệt đối các đỉnh nhọn (góc cua > 42°, như đỉnh dấu mũ '^', góc chữ 'B', '1', 'T') và ghim đỉnh (cusp pin)
+        ///   để thuật toán Bezier FitToCurve của WPF không làm bẹt đỉnh dấu mũ.
+        /// - Làm mượt nhẹ (15%) trên các đoạn cong liên tục ('o', 'a', 'c') giúp chữ viết tay tròn trịa, tự nhiên.
+        /// </summary>
+        private static StylusPointCollection BuildHighFidelityStylusPoints(StylusPointCollection rawPoints)
+        {
+            var result = new StylusPointCollection();
+            if (rawPoints == null || rawPoints.Count == 0)
+                return result;
+
+            if (rawPoints.Count == 1)
+            {
+                var p0 = rawPoints[0];
+                result.Add(p0);
+                result.Add(new StylusPoint(p0.X + 0.01, p0.Y, p0.PressureFactor));
+                return result;
+            }
+
+            if (rawPoints.Count == 2)
+            {
+                result.Add(rawPoints[0]);
+                result.Add(rawPoints[1]);
+                return result;
+            }
+
+            result.Add(rawPoints[0]);
+
+            for (int i = 1; i < rawPoints.Count - 1; i++)
+            {
+                var prev = rawPoints[i - 1];
+                var curr = rawPoints[i];
+                var next = rawPoints[i + 1];
+
+                double ux = curr.X - prev.X;
+                double uy = curr.Y - prev.Y;
+                double vx = next.X - curr.X;
+                double vy = next.Y - curr.Y;
+
+                double lenU = Math.Sqrt(ux * ux + uy * uy);
+                double lenV = Math.Sqrt(vx * vx + vy * vy);
+
+                bool isSharpCorner = false;
+                if (lenU > 0.25 && lenV > 0.25)
+                {
+                    double cosTheta = (ux * vx + uy * vy) / (lenU * lenV);
+                    if (cosTheta < 0.74) // Góc chuyển hướng > ~42 độ (như đỉnh dấu '^', góc chữ 'B', '1', 'a')
+                    {
+                        isSharpCorner = true;
+                    }
+                }
+
+                if (isSharpCorner)
+                {
+                    // Bảo toàn tọa độ đỉnh nhọn 100% và ghim Cusp để FitToCurve không bo bẹt đỉnh dấu '^'
+                    result.Add(curr);
+                    result.Add(new StylusPoint(curr.X + 0.005, curr.Y, curr.PressureFactor));
+                }
+                else
+                {
+                    double smoothX = 0.15 * prev.X + 0.70 * curr.X + 0.15 * next.X;
+                    double smoothY = 0.15 * prev.Y + 0.70 * curr.Y + 0.15 * next.Y;
+                    result.Add(new StylusPoint(smoothX, smoothY, curr.PressureFactor));
+                }
+            }
+
+            result.Add(rawPoints[rawPoints.Count - 1]);
+            return result;
+        }
+
+        private void FinalizeNativeStylusStroke(Polyline polyline, StylusPointCollection? stylusPoints)
+        {
+            if (polyline == null) return;
+
+            Color strokeColor = (polyline.Stroke as SolidColorBrush)?.Color ?? _currentPenColor;
+
+            if (MainInteractiveBoard.Children.Contains(polyline))
+            {
+                MainInteractiveBoard.Children.Remove(polyline);
+            }
+
+            if (MainInkPresenter?.Strokes != null && stylusPoints != null && stylusPoints.Count > 0)
+            {
+                var refinedPoints = BuildHighFidelityStylusPoints(stylusPoints);
+                var penTool = _whiteboardManager?.ToolManager.PenTool;
+                Stroke nativeStroke;
+                if (penTool != null)
+                {
+                    nativeStroke = penTool.CreateStroke(refinedPoints, strokeColor);
+                }
+                else
+                {
+                    var da = new DrawingAttributes
+                    {
+                        Color = strokeColor,
+                        Width = polyline.StrokeThickness,
+                        Height = polyline.StrokeThickness,
+                        FitToCurve = true
+                    };
+                    nativeStroke = new Stroke(refinedPoints, da);
+                }
+
+                // Với các nét phẩy ngắn (dấu sắc, dấu huyền <= 4 điểm), tắt FitToCurve để giữ nét thẳng sắc gọn
+                if (stylusPoints.Count <= 4)
+                {
+                    nativeStroke.DrawingAttributes.FitToCurve = false;
+                }
+
+                if (!TryRouteNativeStrokeToContainer(nativeStroke))
+                {
+                    MainInkPresenter.Strokes.Add(nativeStroke);
+                    RecordAddStrokeAction(nativeStroke, "Draw stroke", MainInkPresenter);
+                    RegisterNewStrokeWithSelectionManager(nativeStroke);
+                }
+            }
+            else
+            {
+                FinalizeNativeMouseStroke(polyline);
+            }
+        }
+
+        #endregion
+
         private void FinalizeNativeMouseStroke(Polyline polyline)
         {
             if (polyline == null) return;
@@ -1786,6 +2435,9 @@ namespace QASmartTouch.Forms
                 MainInteractiveBoard.ReleaseMouseCapture();
 
             // Dọn dẹp trạng thái vẽ dở dang từ chế độ trước
+            _isDrawing = false;
+            _isStylusInkingSession = false;
+            _activeStylusPoints = null;
             _isDrawing = false;
             _currentStroke = null;
 

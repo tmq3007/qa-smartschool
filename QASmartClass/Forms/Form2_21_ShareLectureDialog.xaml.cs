@@ -146,7 +146,10 @@ namespace QASmartTouch.Forms
             {
                 var exportDialog = new Form2_20_ExportLectureDialog(_mainDashboard);
                 WindowHelper.ShowChildDialog(exportDialog);
-                _mainDashboard.Activate();
+                if (!exportDialog.OpenedExternalViewer)
+                {
+                    _mainDashboard.Activate();
+                }
             }
         }
 

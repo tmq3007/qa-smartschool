@@ -37,7 +37,7 @@ namespace QASmartTouch.Forms
         /// <summary>
         /// Apply background to MainInteractiveBoard (âœ¨ Updated to support color + pattern combination + dynamic spacing)
         /// </summary>
-        public void ApplyCanvasBackground(string? color, string? pattern, int lineSpacing = 40, int lineOpacity = 10)
+        public void ApplyCanvasBackground(string? color, string? pattern, int lineSpacing = 40, int lineOpacity = 25)
         {
             try
             {
@@ -48,7 +48,7 @@ namespace QASmartTouch.Forms
                 _currentBackgroundColor = color ?? "#3D6D64";
                 _currentBackgroundPattern = hasPattern ? pattern : null;
                 _currentLineSpacing = lineSpacing > 0 ? lineSpacing : 40;
-                _currentLineOpacity = lineOpacity > 0 ? lineOpacity : 10;
+                _currentLineOpacity = lineOpacity > 0 ? lineOpacity : 25;
                 
                 // Cập nhật ngay lập tức vào CurrentBoard của BoardManager nếu có
                 if (_boardManager?.CurrentBoard != null)
@@ -137,6 +137,8 @@ namespace QASmartTouch.Forms
                     Canvas.SetLeft(patternRect, -alignedOffset);
                     Canvas.SetTop(patternRect, -alignedOffset);
                     MainInteractiveBoard.Children.Insert(1, patternRect);
+                    patternRect.SnapsToDevicePixels = true;
+                    RenderOptions.SetEdgeMode(patternRect, EdgeMode.Aliased);
                     Panel.SetZIndex(patternRect, ZIndexConstants.GridOverlay);
                 }
 
@@ -279,7 +281,9 @@ namespace QASmartTouch.Forms
                         // ✅ QC_4.2_GRID_PROTECT (G-2): Pin tại (0,0) tránh NaN position
                         Canvas.SetLeft(patternRect, 0);
                         Canvas.SetTop(patternRect, 0);
-                        Panel.SetZIndex(patternRect, ZIndexConstants.GridOverlay);
+                        patternRect.SnapsToDevicePixels = true;
+                    RenderOptions.SetEdgeMode(patternRect, EdgeMode.Aliased);
+                    Panel.SetZIndex(patternRect, ZIndexConstants.GridOverlay);
                     }
 
                     // Set canvas background to transparent
@@ -321,11 +325,15 @@ namespace QASmartTouch.Forms
             var drawingBrush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
+                Viewbox = new Rect(0, 0, _currentLineSpacing, _currentLineSpacing),
+                ViewboxUnits = BrushMappingMode.Absolute,
+                Stretch = Stretch.None,
                 Viewport = new Rect(0, 0, _currentLineSpacing, _currentLineSpacing), // Dynamic spacing
                 ViewportUnits = BrushMappingMode.Absolute
             };
 
             var drawingGroup = new DrawingGroup();
+            RenderOptions.SetEdgeMode(drawingGroup, EdgeMode.Aliased);
             
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(_currentLineOpacity * 255 / 100);
@@ -334,14 +342,14 @@ namespace QASmartTouch.Forms
             drawingGroup.Children.Add(new GeometryDrawing
             {
                 Pen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1),
-                Geometry = new LineGeometry(new Point(0, 0), new Point(0, _currentLineSpacing))
+                Geometry = new LineGeometry(new Point(0.5, 0), new Point(0.5, _currentLineSpacing))
             });
             
             // Horizontal line
             drawingGroup.Children.Add(new GeometryDrawing
             {
                 Pen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1),
-                Geometry = new LineGeometry(new Point(0, 0), new Point(_currentLineSpacing, 0))
+                Geometry = new LineGeometry(new Point(0, 0.5), new Point(_currentLineSpacing, 0.5))
             });
 
             drawingBrush.Drawing = drawingGroup;
@@ -358,6 +366,7 @@ namespace QASmartTouch.Forms
             };
 
             var drawingGroup = new DrawingGroup();
+            RenderOptions.SetEdgeMode(drawingGroup, EdgeMode.Aliased);
             
             // Dot
             drawingGroup.Children.Add(new GeometryDrawing
@@ -379,6 +388,8 @@ namespace QASmartTouch.Forms
             var brush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
+                Viewbox = new Rect(0, 0, 1, _currentLineSpacing),
+                ViewboxUnits = BrushMappingMode.Absolute,
                 Viewport = new Rect(0, 0, 1, _currentLineSpacing), // Dynamic spacing
                 ViewportUnits = BrushMappingMode.Absolute,
                 Stretch = Stretch.None
@@ -386,6 +397,7 @@ namespace QASmartTouch.Forms
 
             // Create drawing group
             var group = new DrawingGroup();
+            RenderOptions.SetEdgeMode(group, EdgeMode.Aliased);
             
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(_currentLineOpacity * 255 / 100);
@@ -397,7 +409,7 @@ namespace QASmartTouch.Forms
             group.Children.Add(new GeometryDrawing
             {
                 Pen = linePen,
-                Geometry = new LineGeometry(new Point(0, 0), new Point(1, 0))
+                Geometry = new LineGeometry(new Point(0, 0.5), new Point(1, 0.5))
             });
 
             brush.Drawing = group;
@@ -419,6 +431,7 @@ namespace QASmartTouch.Forms
             };
 
             var drawingGroup = new DrawingGroup();
+            RenderOptions.SetEdgeMode(drawingGroup, EdgeMode.Aliased);
             
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(_currentLineOpacity * 255 / 100);
@@ -910,7 +923,7 @@ namespace QASmartTouch.Forms
                         newBoard.BackgroundImagePath = null; // Sạch sẽ, không dính ảnh SGK/tài liệu bài cũ
                         newBoard.BackgroundPattern = "none";  // Phẳng, không kẻ ô rối nét viết của học sinh
                         newBoard.LineSpacing = 40;
-                        newBoard.LineOpacity = 10;
+                        newBoard.LineOpacity = 25;
 
                         ShowSmartStatusBadge($"💾 Đã lưu bài làm thành Trang {_boardManager.Boards.Count}: {newBoard.Name}");
 
@@ -1065,7 +1078,7 @@ namespace QASmartTouch.Forms
                                 e.NewBoard.BackgroundColorHex ?? "#3D6D64",
                                 e.NewBoard.BackgroundPattern,
                                 e.NewBoard.LineSpacing > 0 ? e.NewBoard.LineSpacing : 40,
-                                e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 10
+                                e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 25
                             );
                         }
                     }
@@ -1075,7 +1088,7 @@ namespace QASmartTouch.Forms
                             e.NewBoard.BackgroundColorHex ?? "#3D6D64",
                             e.NewBoard.BackgroundPattern,
                             e.NewBoard.LineSpacing > 0 ? e.NewBoard.LineSpacing : 40,
-                            e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 10
+                            e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 25
                         );
                     }
                 }

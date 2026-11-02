@@ -1801,6 +1801,15 @@ namespace QASmartTouch.Forms
                     RecordModifyAction(obj.Element, oldThickness, thickness, $"Change Thickness {oldThickness:F0}→{thickness:F0}px");
                     System.Diagnostics.Debug.WriteLine($"   ✓ Border thickness changed: {oldThickness:F0}px → {thickness:F0}px");
                 }
+                else if (obj.Element is Canvas shapeCanvas)
+                {
+                    foreach (var childShape in shapeCanvas.Children.OfType<System.Windows.Shapes.Shape>())
+                    {
+                        childShape.StrokeThickness = thickness;
+                    }
+                    RecordModifyAction(obj.Element, oldThickness, thickness, $"Change 3D Shape Thickness {oldThickness:F0}→{thickness:F0}px");
+                    System.Diagnostics.Debug.WriteLine($"   ✓ 3D Shape Canvas thickness changed: {oldThickness:F0}px → {thickness:F0}px");
+                }
             }
             
             _selectionBox?.UpdatePosition();
@@ -1852,6 +1861,19 @@ namespace QASmartTouch.Forms
                     border.BorderBrush = new SolidColorBrush(color);
                     RecordModifyAction(obj.Element, oldColor, color, $"Change Color {oldColor} → {color}");
                     System.Diagnostics.Debug.WriteLine($"   ✓ Border color changed: {oldColor} → {color}");
+                }
+                else if (obj.Element is Canvas shapeCanvas)
+                {
+                    var brush = new SolidColorBrush(color);
+                    foreach (var childShape in shapeCanvas.Children.OfType<System.Windows.Shapes.Shape>())
+                    {
+                        if (childShape.Stroke != null)
+                            childShape.Stroke = brush;
+                        if (childShape.Fill != null && childShape.Fill != Brushes.Transparent)
+                            childShape.Fill = brush;
+                    }
+                    RecordModifyAction(obj.Element, oldColor, color, $"Change 3D Shape Color {oldColor} → {color}");
+                    System.Diagnostics.Debug.WriteLine($"   ✓ 3D Shape Canvas color changed: {oldColor} → {color}");
                 }
             }
 

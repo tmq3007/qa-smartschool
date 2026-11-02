@@ -1138,6 +1138,17 @@ namespace QASmartTouch.Forms
                 {
                     border.BorderBrush = new SolidColorBrush(color);
                 }
+                else if (element is Canvas shapeCanvas)
+                {
+                    var brush = new SolidColorBrush(color);
+                    foreach (var childShape in shapeCanvas.Children.OfType<System.Windows.Shapes.Shape>())
+                    {
+                        if (childShape.Stroke != null)
+                            childShape.Stroke = brush;
+                        if (childShape.Fill != null && childShape.Fill != Brushes.Transparent)
+                            childShape.Fill = brush;
+                    }
+                }
                 _contextToolbar?.UpdateColorPreview(color);
                 return;
             }
@@ -1153,6 +1164,13 @@ namespace QASmartTouch.Forms
                 else if (element is Border border)
                 {
                     border.BorderThickness = new Thickness(dVal);
+                }
+                else if (element is Canvas shapeCanvas)
+                {
+                    foreach (var childShape in shapeCanvas.Children.OfType<System.Windows.Shapes.Shape>())
+                    {
+                        childShape.StrokeThickness = dVal;
+                    }
                 }
                 return;
             }
