@@ -1,78 +1,46 @@
 ---
 name: git-workflow
 description: >-
-  Quy chuẩn tạo nhánh (Git Branch) và viết Commit Message cho dự án QA SmartSchool.
+  Quy chuẩn tạo nhánh (Git Branch) và viết Commit Message cho dự án QASmartTouch.
   Kích hoạt skill này khi người dùng yêu cầu tạo branch mới, gợi ý tên branch, hoặc soạn commit message theo chuẩn dự án.
 ---
 
-# Quy chuẩn Git Branch & Commit Message - QA SmartSchool
+# Quy chuẩn Git Branch & Commit Message — `QASmartTouch`
 
-Tài liệu hướng dẫn và ràng buộc quy chuẩn khi thực hiện các thao tác Git (tạo branch, viết commit message) trong dự án.
+Tài liệu hướng dẫn quy chuẩn khi thực hiện các thao tác Git (tạo branch, soạn commit message) trong dự án `QASmartTouch`.
 
-> **🚨 RÀNG BUỘC QUAN TRỌNG:** KHÔNG ĐƯỢC tự động thực thi các lệnh thay đổi hệ thống, mã nguồn hoặc các lệnh Git (như `git checkout`, `git commit`, `git push`...). Bạn PHẢI trình bày câu lệnh/phương án dự kiến và yêu cầu người dùng REVIEW, cho phép trước khi thực sự chạy lệnh hoặc áp dụng thay đổi.
+> **🚨 RÀNG BUỘC QUAN TRỌNG:** KHÔNG ĐƯỢC tự động thực thi các lệnh Git làm thay đổi lịch sử/nhánh (`git checkout`, `git commit`, `git push`, `git reset`...) khi chưa được người dùng yêu cầu rõ hoặc xác nhận. Luôn trình bày tên branch / commit message dự kiến để người dùng duyệt trước.
 
 ---
 
 ## 1. QUY ƯỚC ĐẶT TÊN BRANCH NGẮN HẠN
 
-Mọi nhánh làm việc cá nhân bắt buộc tuân theo format:
-`<type>/<short-description>`
+Mọi nhánh làm việc bắt buộc tuân theo format:
+`<type>/<short-description>` (tiếng Anh, viết thường toàn bộ, phân cách bằng dấu gạch ngang `-`, không gắn tên cá nhân).
 
-### 1.1. Phân loại Branch Type
-
-| Loại Branch | Định dạng | Ví dụ chuẩn | Trường hợp sử dụng |
+| Loại Branch | Định dạng | Ví dụ chuẩn cho `QASmartTouch` | Trường hợp sử dụng |
 | :--- | :--- | :--- | :--- |
-| **Feature** | `feature/<name>` | `feature/login`, `feature/agent-integration` | Phát triển tính năng mới |
-| **Bugfix** | `bugfix/<name>` | `bugfix/login-error` | Sửa lỗi trong giai đoạn phát triển/test |
-| **Hotfix** | `hotfix/<name>` | `hotfix/payment-crash` | Sửa lỗi khẩn cấp trên Production |
-| **Refactor** | `refactor/<name>` | `refactor/user-service` | Tối ưu hóa, cải tiến cấu trúc code |
-| **Docs** | `docs/<name>` | `docs/api-documentation` | Cập nhật tài liệu kỹ thuật |
-
-### 1.2. Tiêu chuẩn so sánh đặt tên Branch
-
-| Tiêu chuẩn | KHÔNG NÊN (Không đạt) | NÊN (Đạt chuẩn) | Lý do |
-| :--- | :--- | :--- | :--- |
-| **Ký tự & Định dạng** | `Feature/Login`, `fix_bug` | `feature/login`, `bugfix/payment` | Dùng tiếng Anh, viết thường, phân cách bằng `-` |
-| **Nội dung** | `test`, `abc`, `branch1`, `mybranch` | `feature/order-management` | Rõ nghĩa, mô tả đúng nghiệp vụ |
-| **Tên cá nhân** | `nam/login`, `huy/fix-db` | `feature/customer-reservation` | Không dùng tên riêng, quản lý theo module |
+| **Feature** | `feature/<name>` | `feature/lasso-multi-group`, `feature/3d-cone-tool` | Phát triển tính năng mới |
+| **Bugfix** | `bugfix/<name>` | `bugfix/touch-eraser-freeze`, `bugfix/undo-3d-color` | Sửa lỗi trong giai đoạn phát triển/test |
+| **Hotfix** | `hotfix/<name>` | `hotfix/export-pdf-blank-ink` | Sửa lỗi khẩn cấp cho bản phát hành |
+| **Refactor** | `refactor/<name>` | `refactor/extract-touch-gesture` | Tái cấu trúc, làm sạch code (không đổi hành vi) |
+| **Docs** | `docs/<name>` | `docs/update-agent-rules` | Cập nhật tài liệu kỹ thuật / Rules & Skills |
 
 ---
 
-## 2. QUY CHUẨN COMMIT MESSAGE
+## 2. QUY CHUẨN COMMIT MESSAGE (CONVENTIONAL COMMITS)
 
-Format bắt buộc của Commit Message:
+Format bắt buộc:
 `<type>: <description>`
 
-### 2.1. Phân loại Commit Type
-
-| Type | Ý nghĩa | Ví dụ mẫu |
+| Type | Ý nghĩa | Ví dụ mẫu cho `QASmartTouch` |
 | :--- | :--- | :--- |
-| **feat** | Thêm tính năng mới | `feat: add user registration`, `feat: add agent skill` |
-| **fix** | Sửa lỗi code | `fix: resolve duplicate order creation` |
-| **refactor** | Tái cấu trúc code (không đổi logic/UI) | `refactor: simplify authentication service` |
-| **perf** | Tối ưu hiệu năng | `perf: optimize order query` |
-| **test** | Thêm hoặc sửa Unit/Integration Test | `test: add unit tests for order service` |
-| **docs** | Thay đổi tài liệu | `docs: update API documentation` |
-| **style** | Format code (khoảng trắng, dấu chấm phẩy) | `style: format java user controller` |
-| **chore** | Cập nhật config, dependencies | `chore: update dependencies` |
-| **build** | Thay đổi hệ thống build (Gradle, Maven, MSBuild) | `build: update gradle configuration` |
-| **ci** | Thay đổi tệp tin cấu hình CI/CD | `ci: update deployment workflow` |
-
----
-
-## 3. CÁCH ỨNG DỤNG CHO CÁC TÁC VỤ THƯỜNG GẶP
-
-### 3.1. Khi tạo Branch cho tính năng mới (ví dụ: Thêm Agent)
-```bash
-# Tạo và chuyển sang branch mới
-git checkout -b feature/agent-integration
-
-# Hoặc dùng lệnh git switch
-git switch -c feature/agent-integration
-```
-
-### 3.2. Khi Commit thay đổi
-```bash
-git add .
-git commit -m "feat: add git workflow agent skill"
-```
+| **feat** | Thêm tính năng mới | `feat: add magic wand color tolerance indicator` |
+| **fix** | Sửa lỗi code | `fix: rebuild quadtree after undo transform on 3d shapes` |
+| **refactor** | Tái cấu trúc code (không đổi logic/UI) | `refactor: extract stroke slicing helper from input partial` |
+| **perf** | Tối ưu hiệu năng / cảm ứng | `perf: throttle multi-touch erase hit-test on 86-inch display` |
+| **test** | Thêm hoặc sửa Unit Test | `test: add regression tests for selection transform undo` |
+| **docs** | Thay đổi tài liệu / `.agents` | `docs: standardize qasmarttouch agent rules and skills` |
+| **style** | Chỉnh format XAML / C# thuần túy | `style: clean up indentation in SubMenuPen xaml` |
+| **build** | Thay đổi cấu hình MSBuild / `.csproj` | `build: link new helper file in QASmartTouch.csproj` |
+| **chore** | Cập nhật config, packages | `chore: update WebView2 package reference` |
