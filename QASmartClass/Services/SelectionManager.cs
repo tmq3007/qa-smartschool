@@ -11,6 +11,7 @@ using QASmartTouch.Controls;
 using CanvasControl = System.Windows.Controls.Canvas;
 using System.Windows.Media;
 using System.Windows.Ink;
+using QASmartTouch.Services.Tools;
 
 namespace QASmartTouch.Services
 {
@@ -1210,22 +1211,83 @@ namespace QASmartTouch.Services
             {
                 var newBorder = new System.Windows.Controls.Border
                 {
-                    Width = border.Width, Height = border.Height,
-                    Background = border.Background, BorderBrush = border.BorderBrush,
+                    Width = border.Width,
+                    Height = border.Height,
+                    Background = border.Background?.Clone(),
+                    BorderBrush = border.BorderBrush?.Clone(),
                     BorderThickness = border.BorderThickness,
                     CornerRadius = border.CornerRadius,
-                    Padding = border.Padding, Opacity = border.Opacity
+                    Padding = border.Padding,
+                    Opacity = border.Opacity,
+                    Effect = border.Effect?.Clone(),
+                    Tag = border.Tag
                 };
-                if (border.Child is System.Windows.Controls.TextBlock childText)
+
+                if (border.Child is System.Windows.Controls.Image childImg)
+                {
+                    var newImg = new System.Windows.Controls.Image
+                    {
+                        Source = childImg.Source,
+                        Stretch = childImg.Stretch,
+                        HorizontalAlignment = childImg.HorizontalAlignment,
+                        VerticalAlignment = childImg.VerticalAlignment
+                    };
+                    RenderOptions.SetBitmapScalingMode(newImg, BitmapScalingMode.HighQuality);
+                    newBorder.Child = newImg;
+                }
+                else if (border.Child is System.Windows.Controls.TextBlock childText)
                 {
                     newBorder.Child = new System.Windows.Controls.TextBlock
                     {
-                        Text = childText.Text, FontFamily = childText.FontFamily,
-                        FontSize = childText.FontSize, FontWeight = childText.FontWeight,
-                        Foreground = childText.Foreground,
+                        Text = childText.Text,
+                        FontFamily = childText.FontFamily,
+                        FontSize = childText.FontSize,
+                        FontWeight = childText.FontWeight,
+                        Foreground = childText.Foreground?.Clone(),
                         TextAlignment = childText.TextAlignment
                     };
                 }
+                else if (border.Child is StackPanel childStack)
+                {
+                    var newStack = new StackPanel
+                    {
+                        Orientation = childStack.Orientation,
+                        HorizontalAlignment = childStack.HorizontalAlignment,
+                        VerticalAlignment = childStack.VerticalAlignment
+                    };
+                    foreach (var stackChild in childStack.Children)
+                    {
+                        if (stackChild is TextBlock tb)
+                        {
+                            newStack.Children.Add(new TextBlock
+                            {
+                                Text = tb.Text,
+                                FontFamily = tb.FontFamily,
+                                FontSize = tb.FontSize,
+                                FontWeight = tb.FontWeight,
+                                Foreground = tb.Foreground?.Clone(),
+                                HorizontalAlignment = tb.HorizontalAlignment,
+                                TextAlignment = tb.TextAlignment,
+                                Margin = tb.Margin
+                            });
+                        }
+                    }
+                    newBorder.Child = newStack;
+                }
+
+                // Gán lại sự kiện chạm/click để bản sao cũng tự động phát âm tiếng Anh
+                if (border.Tag is EnglishCardData enData)
+                {
+                    newBorder.MouseLeftButtonDown += (s, e) =>
+                    {
+                        SubjectShapeGeometryService.SpeakWord(enData.Word);
+                    };
+                    newBorder.PreviewTouchDown += (s, e) =>
+                    {
+                        SubjectShapeGeometryService.SpeakWord(enData.Word);
+                    };
+                }
+
                 return newBorder;
             }
             else if (original.Element is System.Windows.Shapes.Path path && path.Data != null)

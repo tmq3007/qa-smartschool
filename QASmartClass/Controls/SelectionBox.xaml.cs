@@ -195,6 +195,7 @@ namespace QASmartTouch.Controls
             // Đề phòng Windows "nuốt" mất MouseUp trên màn hình cảm ứng hồng ngoại
             SelectionBorder.TouchUp += (s, e) => ResetMoveState();
             SelectionBorder.StylusUp += (s, e) => ResetMoveState();
+            SelectionBorder.TouchDown += SelectionBorder_TouchDown;
         }
 
         private DateTime _lastClickTime = DateTime.MinValue;
@@ -204,8 +205,8 @@ namespace QASmartTouch.Controls
             var now = DateTime.Now;
             if ((now - _lastClickTime).TotalMilliseconds <= 350)
             {
-                // Double-click detected — kiểm tra nếu đối tượng đang chọn là TextBlock
-                if (_attachedObject?.Element is TextBlock)
+                // Double-click detected — chỉ kích hoạt cho TextBlock của Text Tool, không kích hoạt cho MathCard/Calculator
+                if (_attachedObject?.Element is TextBlock tb && tb.Tag?.ToString() != "CalculatorMathCard" && tb.Tag?.ToString() != "CalculatorResult")
                 {
                     TextEditRequested?.Invoke(this, _attachedObject);
                     e.Handled = true;
@@ -224,6 +225,23 @@ namespace QASmartTouch.Controls
                 SelectionBorder.CaptureMouse();
                 e.Handled = true; // Ngăn sự kiện lọt xuống Canvas nền
             }
+        }
+
+        private DateTime _lastTouchTime = DateTime.MinValue;
+        private void SelectionBorder_TouchDown(object? sender, TouchEventArgs e)
+        {
+            var now = DateTime.Now;
+            if ((now - _lastTouchTime).TotalMilliseconds <= 350)
+            {
+                if (_attachedObject?.Element is TextBlock tb && tb.Tag?.ToString() != "CalculatorMathCard" && tb.Tag?.ToString() != "CalculatorResult")
+                {
+                    TextEditRequested?.Invoke(this, _attachedObject);
+                    e.Handled = true;
+                    _lastTouchTime = DateTime.MinValue;
+                    return;
+                }
+            }
+            _lastTouchTime = now;
         }
 
         /// <summary>

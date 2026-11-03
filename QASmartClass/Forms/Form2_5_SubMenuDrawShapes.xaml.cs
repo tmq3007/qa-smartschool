@@ -7,6 +7,7 @@ using System.Windows.Shapes;
 using Path = System.Windows.Shapes.Path;
 using QASmartTouch.Services.VersionManagement;
 using QASmartTouch.Helpers;
+using QASmartTouch.Services.Tools;
 
 namespace QASmartTouch.Forms
 {
@@ -80,11 +81,17 @@ namespace QASmartTouch.Forms
             // Subscribe to feature changes
             FeatureManager.Instance.FeaturesChanged += OnFeaturesChanged;
             
-            if (btn2D != null) WireTouchActivation(btn2D, btnCategory_Click);
-            if (btn3D != null) WireTouchActivation(btn3D, btnCategory_Click);
+            if (btnMath != null) WireTouchActivation(btnMath, btnSubject_Click);
+            if (btnPhysics != null) WireTouchActivation(btnPhysics, btnSubject_Click);
+            if (btnChem != null) WireTouchActivation(btnChem, btnSubject_Click);
+            if (btnBio != null) WireTouchActivation(btnBio, btnSubject_Click);
+            if (btnEng != null) WireTouchActivation(btnEng, btnSubject_Click);
 
-            // Load default category (2D)
-            UpdateShapeGallery("2D");
+            // Mặc định chọn môn Toán học khi mở
+            if (btnMath != null)
+            {
+                btnSubject_Click(btnMath, new RoutedEventArgs());
+            }
         }
 
         private void OnFeaturesChanged(object? sender, EventArgs e)
@@ -102,21 +109,331 @@ namespace QASmartTouch.Forms
             this.Close();
         }
 
-        private void btnCategory_Click(object sender, RoutedEventArgs e)
+                private void ResetCategoryTabStyles()
         {
-        if (sender is Button button && button.Tag is string category)
-        {
-            SelectedCategory = category;
-            _currentCategory = category; // Track current category
-            UpdateShapeGallery(category);
-            
-            // Highlight selected category
-            btn2D.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E3F2FD"));
-            btn3D.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F3E5F5"));
-            
-            button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#64B5F6"));
+            var inactiveBg = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6"));
+            var inactiveFg = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2F3542"));
+
+            if (btnMath != null) { btnMath.Background = inactiveBg; btnMath.Foreground = inactiveFg; }
+            if (btnPhysics != null) { btnPhysics.Background = inactiveBg; btnPhysics.Foreground = inactiveFg; }
+            if (btnChem != null) { btnChem.Background = inactiveBg; btnChem.Foreground = inactiveFg; }
+            if (btnBio != null) { btnBio.Background = inactiveBg; btnBio.Foreground = inactiveFg; }
+            if (btnEng != null) { btnEng.Background = inactiveBg; btnEng.Foreground = inactiveFg; }
         }
-    }        private void UpdateShapeGallery(string category)
+
+        private void btnSubject_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string subjectId)
+            {
+                ResetCategoryTabStyles();
+
+                switch (subjectId)
+                {
+                    case "math":
+                        btnMath.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#81C784"));
+                        btnMath.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1B5E20"));
+                        break;
+                    case "physics":
+                        btnPhysics.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFB74D"));
+                        btnPhysics.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E65100"));
+                        break;
+                    case "chem":
+                        btnChem.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4DD0E1"));
+                        btnChem.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#006064"));
+                        break;
+                    case "bio":
+                        btnBio.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F48FB1"));
+                        btnBio.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#880E4F"));
+                        break;
+                    case "eng":
+                        btnEng.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CE93D8"));
+                        btnEng.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4A148C"));
+                        break;
+                }
+
+                UpdateSubjectSubcategories(subjectId);
+            }
+        }
+
+        private void UpdateSubjectSubcategories(string subjectId)
+        {
+            if (SubCategoryTabBar == null || SubCategoryScrollViewer == null) return;
+            SubCategoryTabBar.Children.Clear();
+            SubCategoryScrollViewer.Visibility = Visibility.Visible;
+
+            var subject = SubjectShapeGeometryService.Subjects.FirstOrDefault(s => s.Id.Equals(subjectId, StringComparison.OrdinalIgnoreCase));
+            if (subject == null || subject.Categories.Count == 0) return;
+
+            Button? firstBtn = null;
+            foreach (var cat in subject.Categories)
+            {
+                var catBtn = new Button
+                {
+                    Style = TryFindResource("SubCategoryTabButtonStyle") as Style,
+                    Content = cat.Name,
+                    Tag = cat,
+                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6")),
+                    BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA")),
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#57606F"))
+                };
+                catBtn.Click += SubCategoryButton_Click;
+                WireTouchActivation(catBtn, SubCategoryButton_Click);
+                SubCategoryTabBar.Children.Add(catBtn);
+
+                if (firstBtn == null) firstBtn = catBtn;
+            }
+
+            if (firstBtn != null)
+            {
+                ActivateSubCategoryButton(firstBtn);
+            }
+        }
+
+        private void SubCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                ActivateSubCategoryButton(btn);
+            }
+        }
+
+        private void ActivateSubCategoryButton(Button activeBtn)
+        {
+            if (SubCategoryTabBar == null) return;
+
+            foreach (var child in SubCategoryTabBar.Children)
+            {
+                if (child is Button b)
+                {
+                    b.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6"));
+                    b.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA"));
+                    b.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#57606F"));
+                    b.FontWeight = FontWeights.Medium;
+                }
+            }
+
+            activeBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E86DE"));
+            activeBtn.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E86DE"));
+            activeBtn.Foreground = Brushes.White;
+            activeBtn.FontWeight = FontWeights.SemiBold;
+
+            if (activeBtn.Tag is CategoryDefinition cat)
+            {
+                _currentCategory = cat.Id;
+                SelectedCategory = cat.Id;
+                UpdateSubjectShapeGallery(cat);
+            }
+        }
+
+        private void UpdateSubjectShapeGallery(CategoryDefinition cat)
+        {
+            ShapeGallery.Children.Clear();
+            if (cat.SubjectId == "eng")
+            {
+                if (SubjectShapeGeometryService.EnglishCards.TryGetValue(cat.Id, out var cards))
+                {
+                    foreach (var card in cards)
+                    {
+                        var btn = CreateEnglishCardButton(card);
+                        ShapeGallery.Children.Add(btn);
+                    }
+                }
+                return;
+            }
+
+            foreach (var shapeDef in cat.Shapes)
+            {
+                var btn = CreateSubjectShapeButton(shapeDef);
+                ShapeGallery.Children.Add(btn);
+            }
+        }
+
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, System.Windows.Media.Imaging.BitmapImage> _cardThumbnailCache = new(StringComparer.OrdinalIgnoreCase);
+
+        private static string? GetCardImagePath(string word)
+        {
+            string safeName = word.Replace(' ', '_') + ".png";
+            // 1. Thư mục chạy output thực tế
+            string p1 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p1)) return p1;
+
+            // 2. Thư mục mã nguồn QASmartClass nếu đang build/debug
+            string p2 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartClass", "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p2)) return p2;
+
+            string p3 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p3)) return p3;
+
+            return null;
+        }
+
+        private Button CreateEnglishCardButton(EnglishCardDefinition card)
+        {
+            var shapeStyle = TryFindResource("ShapeItemButtonStyle") as Style;
+            var button = new Button
+            {
+                Style = shapeStyle,
+                Tag = card,
+                Width = 98,
+                Height = 114,
+                Margin = new Thickness(4),
+                ToolTip = $"{card.Word} — {card.Meaning} (Bấm để nghe đọc và chèn lên bảng)"
+            };
+
+            string? imgPath = GetCardImagePath(card.Word);
+            if (!string.IsNullOrEmpty(imgPath))
+            {
+                try
+                {
+                    if (!_cardThumbnailCache.TryGetValue(imgPath, out var bitmap))
+                    {
+                        bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.UriSource = new Uri(imgPath, UriKind.Absolute);
+                        bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                        bitmap.DecodePixelWidth = 190;
+                        bitmap.EndInit();
+                        bitmap.Freeze();
+                        _cardThumbnailCache[imgPath] = bitmap;
+                    }
+
+                    var img = new Image
+                    {
+                        Source = bitmap,
+                        Stretch = Stretch.Uniform,
+                        Width = 88,
+                        Height = 104,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.HighQuality);
+                    button.Content = img;
+                    button.Click += EnglishCardButton_Click;
+                    WireTouchActivation(button, EnglishCardButton_Click);
+                    return button;
+                }
+                catch { }
+            }
+
+            var stackPanel = new StackPanel { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Center };
+            
+            var emojiBlock = new TextBlock
+            {
+                Text = card.Emoji,
+                FontSize = 34,
+                FontFamily = new FontFamily("Segoe UI Emoji, Noto Color Emoji, Arial"),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 2, 0, 1)
+            };
+            stackPanel.Children.Add(emojiBlock);
+
+            var wordBlock = new TextBlock
+            {
+                Text = card.Word,
+                FontSize = 11.5,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1F3A5A")),
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 88
+            };
+            stackPanel.Children.Add(wordBlock);
+
+            var meaningBlock = new TextBlock
+            {
+                Text = card.Meaning,
+                FontSize = 10,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7F8C8D")),
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 88,
+                Margin = new Thickness(0, 1, 0, 0)
+            };
+            stackPanel.Children.Add(meaningBlock);
+
+            button.Content = stackPanel;
+            button.Click += EnglishCardButton_Click;
+            WireTouchActivation(button, EnglishCardButton_Click);
+            return button;
+        }
+
+        private void EnglishCardButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is EnglishCardDefinition card)
+            {
+                // Phát âm tiếng Anh
+                SubjectShapeGeometryService.SpeakWord(card.Word);
+
+                // Chèn thẻ từ vựng lên bảng viết (truyền ảnh màu nếu có)
+                string? imgPath = GetCardImagePath(card.Word);
+                _mainDashboard?.InsertEnglishWordCard(card.Emoji, card.Word, card.Meaning, imgPath);
+
+                // Đóng menu để giáo viên nhìn thấy thẻ trên bảng
+                try { _mainDashboard?.Activate(); } catch { }
+                this.Close();
+            }
+        }
+
+        private Button CreateSubjectShapeButton(SubjectShapeDefinition shapeDef)
+        {
+            var shapeStyle = TryFindResource("ShapeItemButtonStyle") as Style;
+            var button = new Button
+            {
+                Style = shapeStyle,
+                Tag = shapeDef.Id,
+                Width = 92,
+                Height = 92,
+                Margin = new Thickness(4)
+            };
+
+            var canvas = new Canvas
+            {
+                Width = 50,
+                Height = 50,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var geom = SubjectShapeGeometryService.GenerateGeometry(shapeDef.Id, new Rect(3, 3, 44, 44));
+            if (geom != null)
+            {
+                var path = new Path
+                {
+                    Data = geom,
+                    Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E86DE")),
+                    StrokeThickness = 1.8,
+                    Fill = null,
+                    StrokeLineJoin = PenLineJoin.Round,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round
+                };
+                canvas.Children.Add(path);
+            }
+
+            var stackPanel = new StackPanel { Orientation = Orientation.Vertical };
+            stackPanel.Children.Add(canvas);
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = shapeDef.Name,
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2F3542")),
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 84,
+                Margin = new Thickness(0, 3, 0, 0)
+            });
+
+            button.Content = stackPanel;
+            button.Click += ShapeButton_Click;
+            WireTouchActivation(button, ShapeButton_Click);
+            return button;
+        }
+
+        private void UpdateShapeGallery(string category)
         {
             ShapeGallery.Children.Clear();
             
@@ -1047,6 +1364,9 @@ namespace QASmartTouch.Forms
 
     private string GetVietnameseName(string shapeName)
     {
+        if (SubjectShapeGeometryService.IsSubjectShape(shapeName))
+            return SubjectShapeGeometryService.GetShapeDefinition(shapeName)?.Name ?? shapeName;
+
         return shapeName switch
         {
             // PHASE 1: Lines (5)

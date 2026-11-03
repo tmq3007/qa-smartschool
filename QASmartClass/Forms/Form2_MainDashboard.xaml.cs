@@ -2100,9 +2100,9 @@ namespace QASmartTouch.Forms
             {
                 RegisterLineWithBounds(line);
             }
-            // BUG-1603: Register Text objects (Border containing TextBlock/TextBox)
+            // Register Border objects (Text objects, English flashcards, containers)
             // Phải đặt TRƯỚC nhánh Shape vì Border không phải Shape.
-            else if (element is Border border && (border.Child is TextBlock || border.Child is TextBox))
+            else if (element is Border border)
             {
                 RegisterTextElement(border);
             }
@@ -2335,10 +2335,11 @@ namespace QASmartTouch.Forms
                 }
 
                 var bounds = new Rect(left, top, width, height);
+                var objType = (textElement is Border bImg && bImg.Child is Image) ? ObjectType.Image : ObjectType.Text;
                 var selectableObj = new SelectableObject
                 {
                     Element = textElement,
-                    Type = ObjectType.Text,
+                    Type = objType,
                     Bounds = bounds,
                     Position = new Point(left, top),
                     Size = new Size(width, height),

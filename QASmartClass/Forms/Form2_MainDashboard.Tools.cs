@@ -2980,5 +2980,86 @@ namespace QASmartTouch.Forms
         }
 
         #endregion
+
+        #region QA Calculator Integration
+
+        /// <summary>
+        /// Chèn kết quả tính toán từ QA Calculator lên bảng vẽ dưới dạng khối văn bản toán học tương tác
+        /// Cho phép chạm đúp (Double-Tap) để sửa chữ trực tiếp hoặc xóa bằng Eraser / Selection
+        /// </summary>
+        public void InsertCalculatorResult(string resultText)
+        {
+            if (string.IsNullOrWhiteSpace(resultText)) return;
+
+            // Ẩn bàn phím nổi nếu đang hiện
+            _floatingTouchKeyboard?.HideKeyboard();
+
+            // 1. Xác định vị trí chèn (ở giữa màn hình hoặc lệch nhẹ so với tâm để không đè)
+            double posX = Math.Max(50, (MainInteractiveBoard.ActualWidth - 420) / 2);
+            double posY = Math.Max(50, (MainInteractiveBoard.ActualHeight - 200) / 2);
+
+            var selectedObjects = _selectionManager?.SelectedObjects;
+            if (selectedObjects != null && selectedObjects.Count > 0)
+            {
+                var first = selectedObjects[0];
+                posX = first.Position.X + 40;
+                posY = first.Position.Y + 40;
+            }
+
+            // 2. Tạo giao diện Thẻ Toán Học (Math Card)
+            var cardBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(245, 255, 255, 255)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(22, 139, 130)), // #168b82 màu máy tính Casio QA
+                BorderThickness = new Thickness(2),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(14, 10, 14, 10),
+                MinWidth = 180,
+                MaxWidth = 700,
+                Tag = "CalculatorMathCard",
+                Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    Direction = 270,
+                    ShadowDepth = 3,
+                    BlurRadius = 10,
+                    Opacity = 0.25
+                }
+            };
+
+            var textBlock = new TextBlock
+            {
+                Text = resultText,
+                FontFamily = new System.Windows.Media.FontFamily("Cambria Math, Segoe UI, Consolas, sans-serif"),
+                FontSize = 24,
+                FontWeight = FontWeights.Medium,
+                Foreground = new SolidColorBrush(Color.FromRgb(20, 50, 60)),
+                TextWrapping = TextWrapping.Wrap,
+                LineHeight = 32
+            };
+
+            cardBorder.Child = textBlock;
+
+            // 3. Đặt vị trí và thêm vào MainInteractiveBoard (Hiển thị tĩnh, không mở bàn phím sửa)
+            Canvas.SetLeft(cardBorder, posX);
+            Canvas.SetTop(cardBorder, posY);
+            Canvas.SetZIndex(cardBorder, 1000);
+
+            MainInteractiveBoard.Children.Add(cardBorder);
+
+            // 4. Đăng ký với SelectionManager & QuadTree & Undo/Redo (hỗ trợ di chuyển, phóng to/thu nhỏ, xóa)
+            try
+            {
+                RegisterNewObjectWithSelectionManager(cardBorder);
+            }
+            catch { }
+
+            RecordAddAction(cardBorder, "CalculatorResult");
+            RefreshSelectableObjects();
+
+            ShowSmartStatusBadge("📐 Đã chèn kết quả QA Calculator lên bảng!");
+        }
+
+        #endregion
     }
 }

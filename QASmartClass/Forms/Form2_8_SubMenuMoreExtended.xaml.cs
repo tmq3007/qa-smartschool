@@ -429,9 +429,13 @@ namespace QASmartTouch.Forms
             // Close this menu first
             this.Close();
             
-            // Open Calculator window
-            var calculator = new CalculatorWindow();
-            WindowHelper.ShowChildDialog(calculator);
+            // Open QA Calculator window (Reused Modeless Floating Tool - Instant 0ms)
+            var mainWindow = GetMainDashboard();
+            var calculator = CalculatorWindow.GetOrCreateInstance(mainWindow);
+            calculator.Owner = mainWindow ?? Application.Current.MainWindow;
+            calculator.Show();
+            calculator.WindowState = WindowState.Normal;
+            try { calculator.Activate(); } catch { }
         }
 
         private void btnHelp_Click(object sender, RoutedEventArgs e)

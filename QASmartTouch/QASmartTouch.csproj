@@ -266,9 +266,20 @@
   </ItemGroup>
 
   <ItemGroup>
+        <None Include="..\QASmartClass\Assets\Calculator\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Assets\Calculator\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
     <None Include="..\QASmartClass\Assets\Simulations\Physics\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Assets\Simulations\Physics\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\QASmartClass\Assets\EnglishCards\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Assets\EnglishCards\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
   </ItemGroup>
 
