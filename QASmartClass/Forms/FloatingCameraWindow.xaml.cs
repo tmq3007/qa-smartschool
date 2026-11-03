@@ -19,7 +19,11 @@ namespace QASmartTouch.Forms
         private int _sizeMode = 1;  // 0 = S (180px), 1 = M (240px), 2 = L (320px)
         private bool _isFlipped = false;
         private bool _isClosingOnError = false;
+        private bool _cameraClosedRaised = false;
         private string _targetCameraId = "0";
+
+        public bool ClosedByHardwareError => _isClosingOnError;
+        public int CurrentShapeMode => _shapeMode;
 
         public event Action? CameraClosed;
 
@@ -142,11 +146,7 @@ namespace QASmartTouch.Forms
                     catch { }
                 }
 
-                try
-                {
-                    CameraClosed?.Invoke();
-                }
-                catch { }
+                RaiseCameraClosedOnce();
 
                 try
                 {
@@ -154,6 +154,17 @@ namespace QASmartTouch.Forms
                 }
                 catch { }
             });
+        }
+
+        private void RaiseCameraClosedOnce()
+        {
+            if (_cameraClosedRaised) return;
+            _cameraClosedRaised = true;
+            try
+            {
+                CameraClosed?.Invoke();
+            }
+            catch { }
         }
 
         private void FloatingCameraWindow_Unloaded(object sender, RoutedEventArgs e)
@@ -294,8 +305,22 @@ namespace QASmartTouch.Forms
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            CameraClosed?.Invoke();
+            if (_currentInstance == this)
+            {
+                _currentInstance = null;
+            }
+            RaiseCameraClosedOnce();
             Close();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            if (_currentInstance == this)
+            {
+                _currentInstance = null;
+            }
+            RaiseCameraClosedOnce();
+            base.OnClosed(e);
         }
     }
 }

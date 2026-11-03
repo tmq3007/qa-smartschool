@@ -228,6 +228,7 @@
 
   <!-- Tài nguyên Fonts & Hình ảnh giao diện nhúng (Chỉ nhúng đúng tài nguyên thực sự dùng trong Bảng viết & Bảng tuần hoàn) -->
   <ItemGroup>
+    <Resource Include="..\QASmartClass\QA-file-goc-2-03.ico" Link="QA-file-goc-2-03.ico" />
     <Resource Include="..\QASmartClass\Resources\Fonts\*.ttf" Link="Resources\Fonts\%(Filename)%(Extension)" />
     <Resource Include="..\QASmartClass\Resources\Images\periodic_table_overview.png" Link="Resources\Images\periodic_table_overview.png" />
   </ItemGroup>

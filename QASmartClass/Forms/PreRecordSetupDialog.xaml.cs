@@ -44,6 +44,7 @@ namespace QASmartTouch.Forms
         private bool _hasMicHardware = false;
         private bool _hasCameraHardware = false;
         private bool _isScanningCameras = true;
+        private Task? _cameraScanTask;
         private bool _isSuppressingCameraSelectionChanged = false;
         private bool _isStartingRecording = false;
         private bool _isCancelledOrClosed = false;
@@ -77,7 +78,7 @@ namespace QASmartTouch.Forms
             StartRealMicMonitor();
             UpdateMicrophoneUiState();
 
-            _ = LoadCameraDevicesAsync();
+            _cameraScanTask = LoadCameraDevicesAsync();
             _meterTimer.Start();
 
             EnsureWindowWithinWorkArea();
@@ -811,6 +812,15 @@ namespace QASmartTouch.Forms
             if (btnCancel != null) btnCancel.IsEnabled = false;
             if (btnClose != null) btnClose.IsEnabled = false;
 
+            if (_isScanningCameras && _cameraScanTask != null)
+            {
+                try
+                {
+                    await _cameraScanTask;
+                }
+                catch { }
+            }
+
             bool enableMic = chkMicrophone.IsChecked == true && _hasMicHardware;
             // Khi có Mic thật thì đồng bộ thu âm hệ thống theo công tắc; khi máy không có Mic vẫn giữ thu âm hệ thống (nếu có loa)
             bool enableSystemAudio = _hasMicHardware ? enableMic : true;
@@ -819,7 +829,8 @@ namespace QASmartTouch.Forms
             if (string.IsNullOrWhiteSpace(selectedMicId)) selectedMicId = null;
 
             string? selectedCameraId = _hasCameraHardware ? (cboCamera.SelectedItem as CameraDeviceItem)?.DeviceId : null;
-            bool enableCamera = chkCamera.IsChecked == true && _hasCameraHardware && !string.IsNullOrWhiteSpace(selectedCameraId);
+            bool hasCameraHardware = _hasCameraHardware && !string.IsNullOrWhiteSpace(selectedCameraId);
+            bool enableCamera = chkCamera.IsChecked == true && hasCameraHardware;
             int shapeMode = rbCircle.IsChecked == true ? 0 : 2; // 0 = Tròn, 2 = Chữ nhật
 
             var qualityPreset = rbQuality720p?.IsChecked == true
@@ -845,8 +856,16 @@ namespace QASmartTouch.Forms
                         FloatingCameraWindow.OpenOrActivate(selectedCameraId, shapeMode);
                     }
 
-                    // 2. Mở thanh ghi hình nổi và bắt đầu quay
-                    FloatingRecorderBar.OpenOrActivate(enableMic, enableSystemAudio, selectedMicId, qualityPreset, enableCamera);
+                    // 2. Mở thanh ghi hình nổi và bắt đầu quay (vẫn truyền thông tin phần cứng Camera để có thể bật/tắt giữa chừng)
+                    FloatingRecorderBar.OpenOrActivate(
+                        enableMic,
+                        enableSystemAudio,
+                        selectedMicId,
+                        qualityPreset,
+                        enableCamera,
+                        hasCameraHardware,
+                        selectedCameraId,
+                        shapeMode);
                 },
                 onCancel: () =>
                 {
