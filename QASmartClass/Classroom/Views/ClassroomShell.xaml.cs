@@ -272,7 +272,20 @@ namespace QASmartClass.Classroom.Views
 
 					string className = QASmartClass.Classroom.Services.RosterHelper.GetActiveRosterName();
 
-
+					if (ClassroomAppContext.Session != null)
+					{
+						if (string.IsNullOrWhiteSpace(ClassroomAppContext.Session.ClassCode))
+						{
+							ClassroomAppContext.Session.RegenerateClassCode();
+						}
+						ClassroomAppContext.Session.PropertyChanged += (sSess, eSess) =>
+						{
+							if (eSess.PropertyName == nameof(QASmartClass.Classroom.Services.ClassroomSessionService.ClassCode))
+							{
+								Dispatcher.Invoke(UpdateClassCodeUI);
+							}
+						};
+					}
 
 					await net.StartAsync(className, teacherName);
 
@@ -281,6 +294,7 @@ namespace QASmartClass.Classroom.Views
 					// Update UI
 
 					UpdateSessionInfo(className, net.ConnectedCount);
+					UpdateClassCodeUI();
 
 
 
@@ -329,27 +343,46 @@ namespace QASmartClass.Classroom.Views
 					// ═══ Global notification: student questions, hand raises, chat ═══
 
 					net.MessageReceived += (s, args) =>
-
 					{
+						if (string.IsNullOrEmpty(args.Message) || args.Message.StartsWith("SCREENSHOT|"))
+							return; // Bỏ qua SCREENSHOT| tại ClassroomShell để không khóa UI Thread (MonitorPage đã xử lý trên ThreadPool)
 
 						Dispatcher.Invoke(() =>
-
 						{
-
 							var msg = args.Message;
 
-
+							if (msg.StartsWith("HOMEWORK_SUBMIT|"))
+							{
+								try
+								{
+									var hwParts = msg.Split('|', 4);
+									string hwId = hwParts.Length > 1 ? hwParts[1] : "0";
+									string hwAnswer = hwParts.Length > 2 ? hwParts[2] : "";
+									ClassroomAppContext.Db?.EventLogs.Add(new QASmartClass.Data.EventLog
+									{
+										EventType = "HOMEWORK_SUBMIT",
+										Actor = args.StudentCode,
+										Details = $"HwId:{hwId} | Code:{args.StudentCode} | Content:{hwAnswer}",
+										Timestamp = DateTime.Now
+									});
+									ClassroomAppContext.Db?.SaveChanges();
+									if (ClassroomAppContext.Network != null)
+									{
+										_ = ClassroomAppContext.Network.SendToStudentAsync(args.StudentCode, "CMD|HOMEWORK_ACK|Đã nộp bài thành công");
+									}
+									Log.Information("[Homework] Student {Code} submitted homework #{Id}", args.StudentCode, hwId);
+								}
+								catch (Exception exHw)
+								{
+									Log.Warning("[Homework] Save submission error: {Err}", exHw.Message);
+								}
+								return;
+							}
 
 							if (msg == "CMD|GET_BROADCAST_STATUS")
-
 							{
-
 								try
-
 								{
-
-									// app → ClassroomAppContext (refactored)
-
 									var state = QASmartClass.Services.BroadcastStateService.Instance;
 									var lessonState = ClassroomAppContext.LessonState;
 									if (lessonState != null && lessonState.IsLessonActive && ClassroomAppContext.Network != null)
@@ -365,48 +398,50 @@ namespace QASmartClass.Classroom.Views
 									}
 
 									if (state != null && state.IsScreenBroadcastActive && ClassroomAppContext.Network != null)
-
 									{
-
 										string filePath = state.ScreenCapturePath;
-
 										string token = state.BroadcastToken;
-
 										bool isForce = state.IsForceWatchActive;
-
 										int webPort = 8080;
-
 										if (ClassroomAppContext.Network.WebBridge != null)
-
 										{
-
 											webPort = ClassroomAppContext.Network.WebBridge.WebPort;
-
 										}
-
 										string cmd = $"CMD|SCREEN_BROADCAST_START|{filePath}|{(isForce ? "FORCE_WATCH|" : "")}{webPort}|{token}";
-
 										_ = ClassroomAppContext.Network.SendToStudentAsync(args.StudentCode, cmd);
-
 										Log.Information("[BroadcastPage] Resent broadcast start to reconnected student {Code} (Force: {Force})", args.StudentCode, isForce);
 									}
-									return;
-									if (false)
-									{
 
+									// Đồng bộ bài tập đang mở (nếu có) cho học sinh mới kết nối
+									var latestHw = ClassroomAppContext.Db?.Homeworks
+										.OrderByDescending(h => h.CreatedAt)
+										.FirstOrDefault(h => h.Deadline >= DateTime.Now);
+									if (latestHw != null && ClassroomAppContext.Network != null)
+									{
+										var hwJson = System.Text.Json.JsonSerializer.Serialize(new
+										{
+											id = latestHw.Id,
+											subject = latestHw.Subject ?? "",
+											title = latestHw.Title ?? "",
+											description = latestHw.Description ?? "",
+											deadline = latestHw.Deadline.ToString("dd/MM/yyyy HH:mm")
+										});
+										_ = ClassroomAppContext.Network.SendToStudentAsync(args.StudentCode, $"CMD|HOMEWORK|{hwJson}");
 									}
 
+									// Đồng bộ khảo sát đang mở (nếu có)
+									var activeSurvey = QASmartTouch.App.AssessmentState?.ActiveSurveyQuestion;
+									if (!string.IsNullOrWhiteSpace(activeSurvey) && ClassroomAppContext.Network != null)
+									{
+										_ = ClassroomAppContext.Network.SendToStudentAsync(args.StudentCode, activeSurvey);
+									}
+									return;
 								}
-
 								catch (Exception ex)
-
 								{
-
 									Log.Warning("[BroadcastPage] Resend broadcast on reconnect error: {Err}", ex.Message);
-								return;
-
+									return;
 								}
-
 							}
 
 							
@@ -2257,6 +2292,36 @@ namespace QASmartClass.Classroom.Views
 			_connectedStudentCount = studentCount;
 			txtStudentCount.Text = $"{studentCount} HS online";
 			UpdateOnlineStudentCountUI();
+			UpdateClassCodeUI();
+		}
+
+		public void UpdateClassCodeUI()
+		{
+			if (txtHeaderClassCode == null) return;
+			string code = ClassroomAppContext.Session?.ClassCode ?? string.Empty;
+			txtHeaderClassCode.Text = string.IsNullOrWhiteSpace(code) ? "🔑 Mã lớp: ----" : $"🔑 Mã lớp: {code}";
+		}
+
+		private async void ClassCodeBadge_Click(object sender, MouseButtonEventArgs e)
+		{
+			try
+			{
+				if (ClassroomAppContext.Session == null) return;
+				string oldSalt = QASmartClass.Services.ClassControlService.Instance.SessionSalt;
+				string newCode = ClassroomAppContext.Session.RegenerateClassCode();
+				UpdateClassCodeUI();
+
+				if (ClassroomAppContext.Network != null)
+				{
+					await ClassroomAppContext.Network.SyncActiveClientsToNewSessionAsync(newCode, oldSalt, oldSalt);
+				}
+
+				ShowToast("Mã vào lớp mới", $"🔑 Đã tạo Mã vào lớp mới cho học sinh: {newCode}", "INFO");
+			}
+			catch (Exception ex)
+			{
+				Log.Warning("ClassCodeBadge_Click error: {Err}", ex.Message);
+			}
 		}
 
 

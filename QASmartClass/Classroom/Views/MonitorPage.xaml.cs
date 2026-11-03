@@ -948,163 +948,97 @@ namespace QASmartClass.Classroom.Views
 
 
 
-                // Pre-decode on thread-pool to avoid blocking UI thread
-
-                byte[]? bytes = null;
-
-                try { bytes = Convert.FromBase64String(b64); }
-
-                catch { return; }
-
-
-
-                Dispatcher.BeginInvoke(() =>
-
+                // Giải mã hoàn toàn ảnh JPEG sang mảng pixel BGRA32 trên ThreadPool để không khóa UI Thread khi có 40-50 máy
+                _ = System.Threading.Tasks.Task.Run(() =>
                 {
+                    byte[]? bytes;
+                    try { bytes = Convert.FromBase64String(b64); }
+                    catch { return; }
 
-                    var student = FindStudentByCode(code);
-
-
-
-                    if (student == null)
-
+                    int pixelW = 0, pixelH = 0, stride = 0;
+                    byte[]? bgraPixels = null;
+                    try
                     {
-
-                        student = new ConnectedStudent
-
-                        {
-
-                            Name        = code,
-
-                            PCName      = $"Web-{code}",
-
-                            IPAddress   = "(Web)",
-
-                            StudentCode = code,
-
-                            IsOnline    = true,
-
-                            FocusPct    = 85
-
-                        };
-
-                        _allStudents.Add(student);
-
-                        _webCodeMap[code] = student;
-
-                        Log.Information("MonitorPage: auto-created entry for web student {Code}", code);
-
-                        ApplyFilter();
-
+                        using var ms = new System.IO.MemoryStream(bytes);
+                        var decoder = BitmapDecoder.Create(ms,
+                            BitmapCreateOptions.PreservePixelFormat,
+                            BitmapCacheOption.OnLoad);
+                        var frame = decoder.Frames[0];
+                        var converted = new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0);
+                        pixelW = converted.PixelWidth;
+                        pixelH = converted.PixelHeight;
+                        if (pixelW <= 0 || pixelH <= 0) return;
+                        stride = pixelW * 4;
+                        bgraPixels = new byte[stride * pixelH];
+                        converted.CopyPixels(new System.Windows.Int32Rect(0, 0, pixelW, pixelH), bgraPixels, stride, 0);
                     }
-
-                    if (!student.IsOnline)
+                    catch (Exception exDecode)
                     {
+                        Log.Debug("Background screenshot decode error from {Code}: {Err}", code, exDecode.Message);
                         return;
                     }
 
-                    student.IsOnline = true; // UPGRADE_06: Consolidate status on screenshot receipt
-
-
-
-                    if ((DateTime.Now - student.LastScreenshotTime).TotalMilliseconds < 800)
-
+                    _ = Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                     {
+                        var student = FindStudentByCode(code);
 
-                        return; // Ignore updates if less than 800ms elapsed since last update (Frame Rate Throttle)
-
-                    }
-
-                    student.LastScreenshotTime = DateTime.Now;
-
-
-
-                    try
-
-                    {
-
-                        using var ms = new System.IO.MemoryStream(bytes!);
-
-
-
-                        // Decode to BitmapFrame to get pixel data
-
-                        var decoder = BitmapDecoder.Create(ms,
-
-                            BitmapCreateOptions.PreservePixelFormat,
-
-                            BitmapCacheOption.OnLoad);
-
-                        var frame = decoder.Frames[0];
-
-
-
-                        // ═══ Flicker-free: reuse WriteableBitmap, write pixels in-place ═══
-
-                        if (student.ScreenshotSource is WriteableBitmap wb
-
-                            && wb.PixelWidth  == frame.PixelWidth
-
-                            && wb.PixelHeight == frame.PixelHeight)
-
+                        if (student == null)
                         {
+                            student = new ConnectedStudent
+                            {
+                                Name        = code,
+                                PCName      = $"Web-{code}",
+                                IPAddress   = "(Web)",
+                                StudentCode = code,
+                                IsOnline    = true,
+                                FocusPct    = 85
+                            };
 
-                            // Same size → write pixels directly (no new object, no blank flash)
-
-                            wb.Lock();
-
-                            var converted = new FormatConvertedBitmap(frame,
-
-                                PixelFormats.Bgra32, null, 0);
-
-                            converted.CopyPixels(
-
-                                new System.Windows.Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight),
-
-                                wb.BackBuffer, wb.BackBufferStride * wb.PixelHeight, wb.BackBufferStride);
-
-                            wb.AddDirtyRect(new System.Windows.Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight));
-
-                            wb.Unlock();
-
-                            // Trigger computed-property update without replacing Source object
-
-                            student.OnPropertyChanged(nameof(student.ScreenshotSource));
-
+                            _allStudents.Add(student);
+                            _webCodeMap[code] = student;
+                            Log.Information("MonitorPage: auto-created entry for web student {Code}", code);
+                            ApplyFilter();
                         }
 
-                        else
-
+                        if (!student.IsOnline)
                         {
-
-                            // First frame or size changed → create WriteableBitmap (NOT frozen — WriteableBitmap cannot be frozen)
-
-                            var newWb = new WriteableBitmap(
-
-                                new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0));
-
-                            // NOTE: Must stay on UI thread â€” already in Dispatcher.BeginInvoke
-
-                            student.ScreenshotSource = newWb;
-
+                            return;
                         }
 
+                        student.IsOnline = true; // UPGRADE_06: Consolidate status on screenshot receipt
 
+                        if ((DateTime.Now - student.LastScreenshotTime).TotalMilliseconds < 800)
+                        {
+                            return; // Ignore updates if less than 800ms elapsed since last update (Frame Rate Throttle)
+                        }
 
-                        Log.Debug("Screenshot applied: {Name} ({Code}) {Len}KB",
+                        student.LastScreenshotTime = DateTime.Now;
 
-                            student.Name, code, b64.Length / 1024);
+                        try
+                        {
+                            // ═══ Flicker-free: reuse WriteableBitmap, write pre-decoded BGRA pixels in-place ═══
+                            if (student.ScreenshotSource is WriteableBitmap wb
+                                && wb.PixelWidth  == pixelW
+                                && wb.PixelHeight == pixelH)
+                            {
+                                wb.WritePixels(new System.Windows.Int32Rect(0, 0, pixelW, pixelH), bgraPixels, stride, 0);
+                                student.OnPropertyChanged(nameof(student.ScreenshotSource));
+                            }
+                            else
+                            {
+                                var newWb = new WriteableBitmap(pixelW, pixelH, 96, 96, PixelFormats.Bgra32, null);
+                                newWb.WritePixels(new System.Windows.Int32Rect(0, 0, pixelW, pixelH), bgraPixels, stride, 0);
+                                student.ScreenshotSource = newWb;
+                            }
 
-                    }
-
-                    catch (Exception ex)
-
-                    {
-
-                        Log.Warning("Screenshot decode error from {Code}: {Err}", code, ex.Message);
-
-                    }
-
+                            Log.Debug("Screenshot applied: {Name} ({Code}) {Len}KB",
+                                student.Name, code, b64.Length / 1024);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Warning("Screenshot apply error from {Code}: {Err}", code, ex.Message);
+                        }
+                    }));
                 });
 
             }
@@ -2085,46 +2019,59 @@ namespace QASmartClass.Classroom.Views
             });
         }
 
-        /// <summary>Gửi lệnh REQUEST_SCREENSHOT tới tất cả HS</summary>
+        private int _isScreenshotSweepInProgress = 0;
 
-        private void RequestScreenshots()
-
+        /// <summary>Gửi lệnh REQUEST_SCREENSHOT tới tất cả HS (chia lô lệch pha 8 máy/lần để chống bão mạng LAN khi có 40-50 máy)</summary>
+        private async void RequestScreenshots()
         {
+            if (System.Threading.Interlocked.CompareExchange(ref _isScreenshotSweepInProgress, 1, 0) != 0)
+                return;
 
             try
-
             {
-
-                // app → ClassroomAppContext (refactored)
-
                 var net = ClassroomAppContext.Network;
-
                 if (net?.IsBroadcasting == true)
-
                 {
-
                     // V4.1: Nếu đang phát màn hình bài giảng, tạm dừng quét tự động để tối ưu đường truyền và tránh lặp đệ quy
-
                     if (QASmartClass.Services.BroadcastStateService.Instance.IsScreenBroadcastActive)
-
                     {
-
                         Log.Debug("[MonitorPage] Screen broadcast is active. Postponing automatic screenshot sweep to prioritize stream bandwidth.");
-
                         return;
-
                     }
 
-                    _ = net.SendCommandAsync("CMD|REQUEST_SCREENSHOT");
+                    var onlineCodes = _allStudents
+                        .Where(s => s.IsOnline && !string.IsNullOrWhiteSpace(s.StudentCode))
+                        .Select(s => s.StudentCode)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
 
-                    Log.Debug("Requested screenshots from all students");
-
+                    const int batchSize = 8;
+                    if (onlineCodes.Count <= batchSize)
+                    {
+                        await net.SendCommandAsync("CMD|REQUEST_SCREENSHOT");
+                        Log.Debug("Requested screenshots from all students ({Count} online)", onlineCodes.Count);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < onlineCodes.Count; i += batchSize)
+                        {
+                            if (QASmartClass.Services.BroadcastStateService.Instance.IsScreenBroadcastActive) break;
+                            var batch = onlineCodes.Skip(i).Take(batchSize).ToList();
+                            await net.SendToStudentsAsync(batch, "CMD|REQUEST_SCREENSHOT");
+                            if (i + batchSize < onlineCodes.Count)
+                            {
+                                await System.Threading.Tasks.Task.Delay(220);
+                            }
+                        }
+                        Log.Debug("Requested staggered screenshots in batches of {Batch} for {Total} students", batchSize, onlineCodes.Count);
+                    }
                 }
-
             }
-
             catch (Exception ex) { Log.Warning("RequestScreenshots error: {Err}", ex.Message); }
-
+            finally
+            {
+                System.Threading.Interlocked.Exchange(ref _isScreenshotSweepInProgress, 0);
+            }
         }
 
 

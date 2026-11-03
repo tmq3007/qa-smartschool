@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using QASmartClass.Classroom.Helpers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -650,6 +650,20 @@ namespace QASmartClass.Classroom.ViewModels
                     ClassroomAppContext.Db.Homeworks.Add(newHw);
                     ClassroomAppContext.Db.SaveChanges();
                     hw.EventLogId = newHw.Id; // Sync newly created database ID
+
+                    // Phát thông báo bài tập mới xuống toàn bộ máy học sinh (Windows / Web / Android Tablet)
+                    if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                    {
+                        var hwPayload = System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            id = newHw.Id,
+                            subject = newHw.Subject ?? "",
+                            title = newHw.Title ?? "",
+                            description = newHw.Description ?? "",
+                            deadline = newHw.Deadline.ToString("dd/MM/yyyy HH:mm")
+                        });
+                        _ = ClassroomAppContext.Network.SendCommandAsync($"CMD|HOMEWORK|{hwPayload}");
+                    }
                 }
             }
             catch (Exception ex)

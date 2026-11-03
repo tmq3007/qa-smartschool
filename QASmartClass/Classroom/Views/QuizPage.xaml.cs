@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -253,14 +253,18 @@ namespace QASmartClass.Classroom.Views
 
                     var questionsData = _questions.Select(q => new Dictionary<string, object?>
                     {
+                        { "Id", q.Id },
                         { "Content", q.Content },
                         { "OptionsJson", q.OptionsJson },
+                        { "QuestionType", q.QuestionType },
                         { "Points", q.Points },
                         { "SortOrder", q.SortOrder },
                         { "ImageUrl", q.ImageUrl },
-                        // Lowercase properties for Web App compatibility
+                        // Lowercase properties for Web & Android App compatibility
+                        { "id", q.Id },
                         { "content", q.Content },
                         { "optionsJson", q.OptionsJson },
+                        { "questionType", q.QuestionType },
                         { "points", q.Points },
                         { "sortOrder", q.SortOrder },
                         { "imageUrl", q.ImageUrl },
@@ -749,12 +753,14 @@ namespace QASmartClass.Classroom.Views
 
                 var correctAnswersMap = new Dictionary<string, string>();
 
-                foreach (var q in _questions)
+                for (int qIdx = 0; qIdx < _questions.Count; qIdx++)
                 {
+                    var q = _questions[qIdx];
                     totalPoints += q.Points;
                     correctAnswersMap[q.Id.ToString()] = q.CorrectAnswer ?? string.Empty;
 
-                    var detail = details.FirstOrDefault(d => d.QuestionId == q.Id);
+                    var detail = details.FirstOrDefault(d => d.QuestionId == q.Id)
+                        ?? details.FirstOrDefault(d => d.QuestionId == (qIdx + 1));
                     if (detail != null)
                     {
                         bool correct = QASmartClass.Helpers.QuizAnswerParser.GradeAnswer(detail.Answer, q.CorrectAnswer, q.QuestionType, subject);

@@ -9153,41 +9153,24 @@ namespace QASmartClass.StudentClient.Views
 					Log.Information("[StudentShell] Chế độ HTTP_PULL được yêu cầu. Bỏ qua khởi động bộ nhận UDP.");
 				}
 
-				_lastUdpFrameTime = DateTime.MinValue;
+				// Khởi động cửa sổ chờ 3 giây cho UDP Multicast trước khi fallback sang HTTP/TCP
+				_lastUdpFrameTime = _currentBroadcastProtocol != "HTTP_PULL" ? DateTime.UtcNow : DateTime.MinValue;
 
 				_lastHttpPullTime = DateTime.MinValue;
 
 				if (!File.Exists(imagePath))
 				{
-					var config = LoadKioskConfig();
-					bool allowFallback = config.StreamFallbackMode == "AutoFallback" || config.StreamFallbackMode == "HttpOnly";
-					double elapsedUdp = (DateTime.UtcNow - _lastUdpFrameTime).TotalSeconds;
-
-					if (_currentBroadcastProtocol != "HTTP_PULL" && (!allowFallback || elapsedUdp <= 3.0))
-					{
-						return; // Bỏ qua kéo HTTP để tránh quá tải CPU/Mạng khi đang dùng UDP
-					}
-
 					string teacherIP = (((App)Application.Current)?.StudentNetwork)?.ServerIP;
 
 					if (!string.IsNullOrEmpty(teacherIP))
-
 					{
-
 						imagePath = $"http://{teacherIP}:{_currentTeacherWebPort}/api/broadcast_image?t={DateTime.Now.Ticks}" + (!string.IsNullOrEmpty(_currentBroadcastToken) ? $"&token={_currentBroadcastToken}" : "");
-
 					}
-
-					else
-
+					else if (_currentBroadcastProtocol == "HTTP_PULL")
 					{
-
 						Log.Warning("Screen broadcast image not found and no teacher IP: {Path}", imagePath);
-
 						return;
-
 					}
-
 				}
 
 				if (_broadcastOverlay != null)
@@ -10099,12 +10082,12 @@ namespace QASmartClass.StudentClient.Views
 				if (!File.Exists(imagePath))
 				{
 					var config = LoadKioskConfig();
-					bool allowFallback = config.StreamFallbackMode == "AutoFallback" || config.StreamFallbackMode == "HttpOnly";
+					bool allowFallback = !string.Equals(config?.StreamFallbackMode, "UdpOnly", StringComparison.OrdinalIgnoreCase);
 					double elapsedUdp = (DateTime.UtcNow - _lastUdpFrameTime).TotalSeconds;
 
 					if (_currentBroadcastProtocol != "HTTP_PULL" && (!allowFallback || elapsedUdp <= 3.0))
 					{
-						return; // Bỏ qua kéo HTTP để tránh quá tải CPU/Mạng khi đang dùng UDP
+						return; // Bỏ qua kéo HTTP trong 3s đầu để ưu tiên UDP Multicast; sau 3s nếu mất UDP tự fallback sang HTTP/TCP
 					}
 
 					string teacherIP = (((App)Application.Current)?.StudentNetwork)?.ServerIP;

@@ -436,12 +436,22 @@ namespace QASmartClass.StudentClient.Services
                     _ = ReceiveLoopAsync(ct);
                     _ = HeartbeatLoopAsync(ct);
                 }
+                else if (ack.StartsWith("ERR|"))
+                {
+                    var parts = ack.Split('|');
+                    string friendlyErr = parts.Length >= 3 ? parts[2].Trim() : "Không thể đăng nhập vào lớp học. Vui lòng kiểm tra lại Mã học sinh và Mật khẩu!";
+                    Log.Warning("Server rejected login: {Ack}", ack);
+                    ConnectionState = StudentConnectionState.ConnectionFailed;
+                    LastErrorMessage = friendlyErr;
+                    LastErrorReason = friendlyErr;
+                    _tcpClient?.Close();
+                }
                 else
                 {
                     Log.Warning("Unexpected ACK: {Ack}", ack);
                     ConnectionState = StudentConnectionState.ConnectionFailed;
-                    LastErrorMessage = $"Phản hồi không hợp lệ từ máy chủ: {ack}";
-                    LastErrorReason = "Máy chủ phản hồi sai giao thức bắt tay (Handshake ACK không hợp lệ).";
+                    LastErrorMessage = "Không thể xác thực kết nối với máy Giáo viên. Vui lòng kiểm tra lại thông tin tài khoản và thử lại.";
+                    LastErrorReason = LastErrorMessage;
                     _tcpClient?.Close();
                 }
             }
@@ -452,7 +462,6 @@ namespace QASmartClass.StudentClient.Services
                 ConnectionState = StudentConnectionState.ConnectionFailed;
                 IsHandRaised = false;
 
-                LastErrorMessage = ex.Message;
                 Exception rootEx = ex;
                 while (rootEx.InnerException != null) rootEx = rootEx.InnerException;
 
@@ -460,17 +469,18 @@ namespace QASmartClass.StudentClient.Services
                 {
                     LastErrorReason = sockEx.SocketErrorCode switch
                     {
-                        SocketError.ConnectionRefused => "Máy Giáo viên từ chối kết nối (Giáo viên chưa mở phần mềm hoặc tường lửa cổng 29877 đang chặn).",
-                        SocketError.TimedOut => $"Hết thời gian chờ phản hồi từ {ip}:{port}. Vui lòng kiểm tra xem hai máy có cùng mạng LAN/Wi-Fi không.",
-                        SocketError.HostUnreachable or SocketError.NetworkUnreachable => $"Không thể định tuyến đến địa chỉ IP {ip}. Kiểm tra lại địa chỉ mạng.",
-                        SocketError.AccessDenied => "Hệ thống từ chối quyền truy cập Socket mạng.",
-                        _ => $"Lỗi mạng Socket ({sockEx.SocketErrorCode}): {sockEx.Message}"
+                        SocketError.ConnectionRefused => "Chưa kết nối được với máy Giáo viên. Có thể Thầy/Cô chưa mở lớp học hoặc tường lửa đang chặn kết nối.",
+                        SocketError.TimedOut => "Không tìm thấy phản hồi từ máy Giáo viên. Vui lòng kiểm tra hai máy đã kết nối cùng mạng LAN/Wi-Fi phòng học chưa.",
+                        SocketError.HostUnreachable or SocketError.NetworkUnreachable => "Thiết bị chưa kết nối mạng phòng học hoặc địa chỉ máy Giáo viên không hợp lệ.",
+                        SocketError.AccessDenied => "Hệ thống chặn quyền truy cập mạng. Vui lòng kiểm tra cài đặt tường lửa.",
+                        _ => "Kết nối mạng tới máy Giáo viên bị gián đoạn. Vui lòng kiểm tra lại dây mạng hoặc Wi-Fi phòng học."
                     };
                 }
                 else
                 {
-                    LastErrorReason = $"Lỗi kết nối ({ex.GetType().Name}): {ex.Message}";
+                    LastErrorReason = "Chưa thể kết nối vào lớp học lúc này. Vui lòng kiểm tra lại mạng phòng học hoặc nhờ Giáo viên hỗ trợ.";
                 }
+                LastErrorMessage = LastErrorReason;
 
                 Disconnected?.Invoke(this, EventArgs.Empty);
             }

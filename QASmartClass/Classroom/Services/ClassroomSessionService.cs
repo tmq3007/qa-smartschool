@@ -44,11 +44,45 @@ namespace QASmartClass.Classroom.Services
         {
             _networkService = networkService;
             _db = db;
+            _classCode = GenerateClassCode();
 
             _networkService.StudentConnected += OnStudentConnected;
             _networkService.StudentDisconnected += OnStudentDisconnected;
             _networkService.CommandAckReceived += OnCommandAckReceived;
             _networkService.MessageReceived += OnNetworkMessageReceived;
+        }
+
+        /// <summary>
+        /// Tạo mới một mã vào lớp ngẫu nhiên (4 chữ số dễ nhập trên màn hình cảm ứng/máy tính bảng)
+        /// đảm bảo mỗi lần mở lớp hoặc bấm tạo mã mới sẽ có một mã khác nhau.
+        /// </summary>
+        public string RegenerateClassCode()
+        {
+            string nextCode = GenerateClassCode(ClassCode);
+            ClassCode = nextCode;
+            return nextCode;
+        }
+
+        /// <summary>
+        /// Kiểm tra mã vào lớp do học sinh nhập có khớp với mã lớp hiện tại của giáo viên hay không
+        /// </summary>
+        public static bool IsClassCodeValid(string? submittedCode, string? activeCode)
+        {
+            if (string.IsNullOrWhiteSpace(activeCode)) return true;
+            if (string.IsNullOrWhiteSpace(submittedCode)) return false;
+
+            string cleanSub = submittedCode.Trim().Replace(" ", "").Replace("-", "");
+            string cleanAct = activeCode.Trim().Replace(" ", "").Replace("-", "");
+
+            if (cleanSub.Equals(cleanAct, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Cho phép nhập 4 số cuối nếu mã có tiền tố QA-
+            if (cleanAct.Length >= 4 && cleanSub.Length == 4 &&
+                cleanAct.EndsWith(cleanSub, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return false;
         }
 
         /// <summary>
@@ -63,7 +97,7 @@ namespace QASmartClass.Classroom.Services
             QASmartClass.Services.ClassControlService.Instance.InitializeNewSession();
             CurrentClassName = className;
             TeacherName = teacherName;
-            ClassCode = GenerateClassCode();
+            RegenerateClassCode();
             IsSessionActive = true;
             SessionStartTime = DateTime.Now;
 
@@ -251,6 +285,7 @@ namespace QASmartClass.Classroom.Services
             ConnectedStudents.Clear();
             OnlineCount = 0;
             IsSessionActive = false;
+            RegenerateClassCode();
 
             Log.Information("Session ended: {Class}", CurrentClassName);
         }
@@ -495,9 +530,17 @@ namespace QASmartClass.Classroom.Services
             }
         }
 
-        private static string GenerateClassCode()
+        private static string GenerateClassCode(string? previousCode = null)
         {
-            return $"QA-{DateTime.Now:MMdd}-{new Random().Next(1000, 9999)}";
+            string code;
+            int guard = 0;
+            do
+            {
+                code = Random.Shared.Next(1000, 10000).ToString();
+                guard++;
+            } while (!string.IsNullOrEmpty(previousCode) && code == previousCode && guard < 20);
+
+            return code;
         }
     }
 

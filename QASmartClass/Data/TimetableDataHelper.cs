@@ -162,7 +162,7 @@ namespace QASmartClass.Data
         /// <summary>
         /// Đồng bộ và đảm bảo mỗi lớp trong cơ sở dữ liệu đều có TKB riêng biệt
         /// </summary>
-        public static void EnsureDistinctTimetables(AppDbContext db, bool forceUpdate = true)
+        public static void EnsureDistinctTimetables(AppDbContext db, bool forceUpdate = false)
         {
             try
             {
@@ -213,7 +213,7 @@ namespace QASmartClass.Data
                             Timestamp = DateTime.Now
                         });
 
-                        // Đồng bộ vào bảng Lessons để dữ liệu nhất quán toàn diện
+                        // Đồng bộ vào bảng Lessons để dữ liệu nhất quán toàn diện (merge an toàn, không xóa bài giảng)
                         SyncLessonsForClass(db, cls, slots);
                     }
                 }
@@ -232,11 +232,7 @@ namespace QASmartClass.Data
             try
             {
                 string[] dayStrings = { "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7" };
-                var oldLessons = db.Lessons.Where(l => l.ClassName == className).ToList();
-                if (oldLessons.Any())
-                {
-                    db.Lessons.RemoveRange(oldLessons);
-                }
+                var existingLessons = db.Lessons.Where(l => l.ClassName == className).ToList();
 
                 string grade = className.Length >= 2 && char.IsDigit(className[0]) && char.IsDigit(className[1])
                     ? className.Substring(0, 2)
@@ -245,24 +241,46 @@ namespace QASmartClass.Data
                 foreach (var s in slots)
                 {
                     if (s.DayOfWeek < 0 || s.DayOfWeek >= dayStrings.Length) continue;
-                    db.Lessons.Add(new Lesson
+                    string day = dayStrings[s.DayOfWeek];
+                    int period = s.Period + 1; // 1-based
+
+                    // Kiểm tra xem đã có bài giảng/tiết học nào thuộc tiết này chưa
+                    var existing = existingLessons.FirstOrDefault(l => l.DayOfWeek == day && l.Period == period);
+
+                    if (existing == null)
                     {
-                        ClassName = className,
-                        Grade = grade,
-                        Subject = s.Subject,
-                        TeacherName = s.Teacher,
-                        DayOfWeek = dayStrings[s.DayOfWeek],
-                        Period = s.Period + 1, // 1-based
-                        Title = $"Tiết {s.Period + 1}: {s.Subject} ({className})",
-                        Description = $"Phòng: {s.Room} - GV: {s.Teacher}",
-                        WeekNumber = 40,
-                        Semester = "HK2",
-                        Status = "Scheduled",
-                        CreatedAt = DateTime.Now
-                    });
+                        // Chưa có bài giảng nào trong tiết này -> Thêm mới tiết theo Thời khóa biểu
+                        db.Lessons.Add(new Lesson
+                        {
+                            ClassName = className,
+                            Grade = grade,
+                            Subject = s.Subject,
+                            TeacherName = s.Teacher,
+                            DayOfWeek = day,
+                            Period = period,
+                            Title = $"Tiết {period}: {s.Subject} ({className})",
+                            Description = $"Phòng: {s.Room} - GV: {s.Teacher}",
+                            WeekNumber = 40,
+                            Semester = "HK2",
+                            Status = "Scheduled",
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+                    else if (existing.Status == "Scheduled")
+                    {
+                        // Nếu là tiết TKB tự động tạo trước đó (chưa có nội dung hay trạng thái Approved/Taught/Draft),
+                        // chỉ cập nhật thông tin môn/phòng/giáo viên nếu có thay đổi, tuyệt đối không xóa bài giảng
+                        existing.Subject = s.Subject;
+                        existing.TeacherName = s.Teacher;
+                        existing.Description = $"Phòng: {s.Room} - GV: {s.Teacher}";
+                    }
+                    // Nếu existing.Status != "Scheduled" (Draft, Approved, Taught, hoặc đã có nội dung) -> Giữ nguyên 100%!
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Log.Warning("[TimetableDataHelper] Lỗi SyncLessonsForClass: {Err}", ex.Message);
+            }
         }
     }
 }

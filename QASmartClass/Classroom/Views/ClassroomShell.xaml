@@ -687,6 +687,16 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Mã vào lớp hiện tại (Bấm để tạo mã mới) -->
+                        <Border x:Name="brdClassCodeBadge" Background="#FFF8E1" BorderBrush="#FFE082" BorderThickness="1"
+                                CornerRadius="6" Padding="10,5" Margin="0,0,8,0" Cursor="Hand"
+                                MouseLeftButtonDown="ClassCodeBadge_Click"
+                                ToolTip="Mã vào lớp dành cho học sinh (Bấm để tạo mã mới)">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock x:Name="txtHeaderClassCode" Text="🔑 Mã lớp: ----" FontSize="12" Foreground="#E65100" FontWeight="Bold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
                         <Border Background="#E3F2FD" CornerRadius="6" Padding="10,5" Margin="0,0,8,0" Cursor="Hand"
                                 MouseLeftButtonDown="GoToMonitor_Click">
                             <TextBlock x:Name="txtOnlineStudentCount" Text="🟢 0 HS" FontSize="11" Foreground="#1565C0" FontWeight="SemiBold"/>

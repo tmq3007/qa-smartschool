@@ -224,7 +224,7 @@ namespace QASmartClass.Classroom.Services
                     return;
                 }
 
-                // JOIN|name|code|pcName|version|pubKeyBase64|macAddress|password
+                // JOIN|name|code|pcName|version|pubKeyBase64|macAddress|password|classCode
                 var p = msg.Split('|');
                 string studentName = p.Length > 1 ? p[1] : "Unknown";
                 string studentCode = p.Length > 2 ? p[2] : "???";
@@ -233,6 +233,40 @@ namespace QASmartClass.Classroom.Services
                 string studentPubKeyStr = p.Length > 5 ? p[5] : "";
                 string macAddress = p.Length > 6 ? p[6] : "00:00:00:00:00:00";
                 string password = p.Length > 7 ? p[7] : "";
+                string submittedClassCode = p.Length > 8 ? p[8].Trim() : "";
+
+                // ── Kiểm tra Mã vào lớp (Class Code) của phiên học hiện tại ──
+                string activeClassCode = QASmartClass.Classroom.Helpers.ClassroomAppContext.Session?.ClassCode ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(activeClassCode) && QASmartClass.Classroom.Helpers.ClassroomAppContext.Session != null)
+                {
+                    activeClassCode = QASmartClass.Classroom.Helpers.ClassroomAppContext.Session.RegenerateClassCode();
+                }
+
+                // Nếu thiết bị học sinh gửi trường Mã vào lớp (hoặc là Android Tablet), bắt buộc khớp với Mã vào lớp hiện tại
+                if (!string.IsNullOrWhiteSpace(activeClassCode) &&
+                    (p.Length > 8 || pcName.Contains("Android", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (string.IsNullOrWhiteSpace(submittedClassCode))
+                    {
+                        Log.Warning("[Auth] Từ chối kết nối từ {IP}: HS '{Code}' chưa nhập Mã vào lớp.", remoteIP, studentCode);
+                        byte[] errBytes = Encoding.UTF8.GetBytes("ERR|CLASS_CODE_REQUIRED|Vui lòng nhập Mã vào lớp do Giáo viên cung cấp trên bảng!\n");
+                        await stream.WriteAsync(errBytes, ct);
+                        await stream.FlushAsync(ct);
+                        tcp.Close();
+                        return;
+                    }
+
+                    if (!ClassroomSessionService.IsClassCodeValid(submittedClassCode, activeClassCode))
+                    {
+                        Log.Warning("[Auth] Từ chối kết nối từ {IP}: HS '{Code}' nhập sai Mã vào lớp ('{Submitted}' != '{Active}').",
+                            remoteIP, studentCode, submittedClassCode, activeClassCode);
+                        byte[] errBytes = Encoding.UTF8.GetBytes("ERR|INVALID_CLASS_CODE|Mã vào lớp chưa đúng. Em hãy nhìn lên màn hình Giáo viên để nhập đúng Mã vào lớp nhé!\n");
+                        await stream.WriteAsync(errBytes, ct);
+                        await stream.FlushAsync(ct);
+                        tcp.Close();
+                        return;
+                    }
+                }
 
                 // ── Kiểm tra tài khoản & mật khẩu học sinh đối với CSDL ──
                 try
@@ -365,14 +399,16 @@ namespace QASmartClass.Classroom.Services
                     }
                 }
 
-                string classCode = string.Empty;
-                if (System.Windows.Application.Current is QASmartTouch.App appInstance)
+                string classCode = !string.IsNullOrWhiteSpace(activeClassCode)
+                    ? activeClassCode
+                    : (QASmartClass.Classroom.Helpers.ClassroomAppContext.Session?.ClassCode ?? string.Empty);
+                if (string.IsNullOrEmpty(classCode) && System.Windows.Application.Current is QASmartTouch.App appInstance)
                 {
                     classCode = appInstance.ClassroomSession?.ClassCode ?? string.Empty;
                 }
                 string sessionSalt = QASmartClass.Services.ClassControlService.Instance.SessionSalt;
                 long serverTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                var ack = $"OK|{Guid.NewGuid():N}|{serverTimestamp}|{encryptedSessionKeyBase64}|{classCode}|{sessionSalt}";
+                var ack = $"OK|{Guid.NewGuid():N}|{serverTimestamp}|{encryptedSessionKeyBase64}|{classCode}|{sessionSalt}|{studentName}|{studentCode}\n";
                 await stream.WriteAsync(Encoding.UTF8.GetBytes(ack), ct);
 
                 Log.Information("Student joined: {Name} ({Code}) @ {IP}", info.Name, info.Code, remoteIP);
@@ -1020,6 +1056,15 @@ namespace QASmartClass.Classroom.Services
                     }
                     catch (Exception ex) { Log.Warning("SendToStudents {Code} failed: {Err}", client.Code, ex.Message); }
                 }
+                else if (_wsBridge?.IsRunning == true && !string.IsNullOrEmpty(code))
+                {
+                    try
+                    {
+                        await _wsBridge.SendToWebClient(code, signedMessage);
+                        sent++;
+                    }
+                    catch { }
+                }
             }
 
             // Local bus relay
@@ -1030,7 +1075,10 @@ namespace QASmartClass.Classroom.Services
             }
             catch { }
 
-            Log.Information("Group msg sent to {Sent} students: {Msg}", sent, message);
+            if (message.StartsWith("CMD|REQUEST_SCREENSHOT") || message.StartsWith("CMD|SCREEN_BROADCAST_UPDATE"))
+                Log.Debug("Group msg sent to {Sent} students: {Msg}", sent, message);
+            else
+                Log.Information("Group msg sent to {Sent} students: {Msg}", sent, message);
         }
 
         // ═══ LESSON SYNC COMMANDS ═══

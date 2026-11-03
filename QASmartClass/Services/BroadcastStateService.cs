@@ -31,10 +31,16 @@ namespace QASmartClass.Services
             set { lock (_lock) _screenCapturePath = value; }
         }
         private byte[] _screenCaptureBytes = Array.Empty<byte>();
+        private long _frameVersion;
+        public long FrameVersion => System.Threading.Interlocked.Read(ref _frameVersion);
         public byte[] ScreenCaptureBytes
         {
             get { lock (_lock) return _screenCaptureBytes; }
-            set { lock (_lock) _screenCaptureBytes = value; }
+            set
+            {
+                lock (_lock) _screenCaptureBytes = value;
+                System.Threading.Interlocked.Increment(ref _frameVersion);
+            }
         }
         private DateTime _screenCaptureTime = DateTime.MinValue;
         public DateTime ScreenCaptureTime

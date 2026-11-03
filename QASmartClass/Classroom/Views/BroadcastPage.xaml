@@ -298,7 +298,17 @@
                     <StackPanel>
                         <TextBlock Text="Nguồn phát" FontSize="16" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,0,10"/>
                         <!-- Hộp chọn nguồn chiếu kiểu Google Meet (màn hình / cửa sổ có ảnh xem trước) -->
-                        <Button x:Name="btnPickSource" Content="🖥️ Chọn màn hình để chiếu…" FontSize="14" FontWeight="SemiBold" MinHeight="44" Padding="12,8" Margin="0,0,0,6" HorizontalContentAlignment="Left" Background="#E3F2FD" Foreground="#1565C0" BorderThickness="0" Cursor="Hand" Click="PickSource_Click" Template="{StaticResource RoundBtn}" ToolTip="Chọn màn hình muốn chiếu (có ảnh xem trước). Có thể đổi màn hình ngay khi đang chiếu."/>
+                        <Button x:Name="btnPickSource" Content="🖥️ Chọn màn hình / nguồn chiếu…" FontSize="14" FontWeight="SemiBold" MinHeight="44" Padding="12,8" Margin="0,0,0,6" HorizontalContentAlignment="Left" Background="#E3F2FD" Foreground="#1565C0" BorderThickness="0" Cursor="Hand" Click="PickSource_Click" Template="{StaticResource RoundBtn}" ToolTip="Chọn màn hình, vùng màn hình hoặc trang trong QA SmartClass để chiếu. Có thể đổi nguồn ngay khi đang chiếu."/>
+                        <Grid Margin="0,0,0,6">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="6"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="btnPickRegion" Grid.Column="0" Content="✂️ Chọn phần màn hình" FontSize="12.5" FontWeight="SemiBold" MinHeight="40" Padding="10,6" Background="#E0F2FE" Foreground="#0369A1" BorderThickness="0" Cursor="Hand" Click="PickRegion_Click" Template="{StaticResource RoundBtn}" ToolTip="Kéo chọn một khu vực bất kỳ trên màn hình để chiếu cho học sinh"/>
+                            <Button x:Name="btnPickQaPage" Grid.Column="2" Content="📑 Trang QA SmartClass" FontSize="12.5" FontWeight="SemiBold" MinHeight="40" Padding="10,6" Background="#EDE9FE" Foreground="#6D28D9" BorderThickness="0" Cursor="Hand" Click="PickQaPage_Click" Template="{StaticResource RoundBtn}" ToolTip="Chọn chiếu trực tiếp một trang bài giảng / SMART TOUCH / Công cụ học tập trong QA SmartClass"/>
+                        </Grid>
+                        <Button x:Name="btnOpenSharedQaPage" Visibility="Collapsed" Content="🚀 Mở trang đang chọn để thao tác" FontSize="12.5" FontWeight="SemiBold" MinHeight="38" Padding="10,6" Margin="0,0,0,6" Background="#DCFCE7" Foreground="#15803D" BorderThickness="0" Cursor="Hand" Click="OpenSharedQaPage_Click" Template="{StaticResource RoundBtn}" ToolTip="Chuyển sang trang QA SmartClass đang được chọn để thao tác trực tiếp"/>
                         <TextBlock x:Name="txtPickedSource" Text="Nguồn hiện tại: Toàn màn hình (màn hình chính)" FontSize="12" Foreground="#546E7A" TextWrapping="Wrap" Margin="0,0,0,10"/>
                         <RadioButton x:Name="rbFullScreen" Content="Toàn màn hình" IsChecked="True" FontSize="14" Margin="0,0,0,6"
                                      GroupName="Source" Checked="SourceChanged"

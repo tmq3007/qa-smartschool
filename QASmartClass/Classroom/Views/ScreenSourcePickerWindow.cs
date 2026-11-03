@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,8 +10,12 @@ using QASmartClass.Classroom.Services;
 namespace QASmartClass.Classroom.Views
 {
     /// <summary>
-    /// Hộp chọn nguồn chiếu kiểu Google Meet: tab "Màn hình" / "Cửa sổ", mỗi nguồn là một thẻ có ảnh xem trước.
-    /// Dùng được bằng chuột, bàn phím (Tab/Enter/Esc) và cảm ứng (thẻ lớn, cuộn bằng ngón tay).
+    /// Hộp chọn nguồn chiếu nâng cao:
+    /// 1. Toàn màn hình
+    /// 2. Chọn vùng màn hình (Kéo chọn khu vực bất kỳ hoặc chọn vùng dựng sẵn)
+    /// 3. Trang bên trong QA SmartClass (Chiếu trực tiếp trang bài học / SMART TOUCH / Công cụ STEM...)
+    /// 4. Cửa sổ ứng dụng
+    /// Dùng được bằng chuột, bàn phím (Tab/Enter/Esc) và màn hình cảm ứng phòng học.
     /// </summary>
     public sealed class ScreenSourcePickerWindow : Window
     {
@@ -22,10 +25,24 @@ namespace QASmartClass.Classroom.Views
 
         private readonly IntPtr _excludeHwnd;
         private readonly Func<ScreenSourceInfo, bool> _isCurrent;
+        private readonly StackPanel _topExtraPanel = new() { Margin = new Thickness(6, 4, 6, 8), Visibility = Visibility.Collapsed };
         private readonly WrapPanel _cards = new() { Margin = new Thickness(4) };
-        private readonly Button _btnShare = new() { Content = "Chia sẻ", IsEnabled = false };
+        private readonly Button _btnShare = new() { Content = "Chia sẻ nguồn này", IsEnabled = false };
+        private readonly CheckBox _chkAutoOpenQaPage = new()
+        {
+            Content = "Tự động mở trang này trên màn hình Giáo viên để thao tác ngay",
+            IsChecked = true,
+            FontSize = 13.5,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x1E, 0x29, 0x3B)),
+            Margin = new Thickness(4, 2, 4, 6),
+            Visibility = Visibility.Collapsed
+        };
         private readonly TextBlock _empty = new() { Foreground = Brushes.Gray, FontSize = 14, Margin = new Thickness(12), Visibility = Visibility.Collapsed };
+
         private readonly ToggleButton_ _tabScreen = new("🖥️ Toàn màn hình");
+        private readonly ToggleButton_ _tabRegion = new("✂️ Chọn vùng màn hình");
+        private readonly ToggleButton_ _tabQaPage = new("📑 Trang trong QA SmartClass");
         private readonly ToggleButton_ _tabWindow = new("🪟 Cửa sổ ứng dụng");
 
         private ScreenSourceKind _tab = ScreenSourceKind.Screen;
@@ -35,13 +52,17 @@ namespace QASmartClass.Classroom.Views
         /// <summary>Nguồn được chọn (null nếu hủy).</summary>
         public ScreenSourceInfo? Selected { get; private set; }
 
-        public ScreenSourcePickerWindow(IntPtr excludeHwnd, Func<ScreenSourceInfo, bool> isCurrent)
+        public ScreenSourcePickerWindow(
+            IntPtr excludeHwnd,
+            Func<ScreenSourceInfo, bool> isCurrent,
+            ScreenSourceKind initialTab = ScreenSourceKind.Screen)
         {
             _excludeHwnd = excludeHwnd;
             _isCurrent = isCurrent;
+            _tab = initialTab;
 
-            Title = "Chọn màn hình để chiếu";
-            Width = 900; Height = 640; MinWidth = 520; MinHeight = 420;
+            Title = "Chọn nguồn chiếu màn hình & trang bài giảng";
+            Width = 980; Height = 680; MinWidth = 560; MinHeight = 460;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             Background = Brushes.White;
             FontFamily = new FontFamily("Segoe UI");
@@ -53,16 +74,33 @@ namespace QASmartClass.Classroom.Views
             root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            var title = new TextBlock { Text = "Chọn màn hình để chiếu", FontSize = 20, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(Color.FromRgb(0x21, 0x21, 0x21)) };
-            Grid.SetRow(title, 0);
-            root.Children.Add(title);
+            var headerStack = new StackPanel { Orientation = Orientation.Vertical };
+            headerStack.Children.Add(new TextBlock
+            {
+                Text = "Chọn nội dung trình chiếu tới Học sinh",
+                FontSize = 20,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x0F, 0x17, 0x2A))
+            });
+            headerStack.Children.Add(new TextBlock
+            {
+                Text = "Bạn có thể chiếu toàn màn hình, kéo chọn một vùng bất kỳ, hoặc chiếu riêng một trang trong QA SmartClass.",
+                FontSize = 13,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B)),
+                Margin = new Thickness(0, 2, 0, 0)
+            });
+            Grid.SetRow(headerStack, 0);
+            root.Children.Add(headerStack);
 
-            var tabs = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 10) };
+            var tabs = new WrapPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 10) };
             _tabScreen.Click += (_, _) => SwitchTab(ScreenSourceKind.Screen);
+            _tabRegion.Click += (_, _) => SwitchTab(ScreenSourceKind.Region);
+            _tabQaPage.Click += (_, _) => SwitchTab(ScreenSourceKind.QaClassPage);
             _tabWindow.Click += (_, _) => SwitchTab(ScreenSourceKind.Window);
             tabs.Children.Add(_tabScreen);
+            tabs.Children.Add(_tabRegion);
+            tabs.Children.Add(_tabQaPage);
             tabs.Children.Add(_tabWindow);
-            tabs.Visibility = Visibility.Collapsed; // chỉ chọn màn hình, không chọn cửa sổ
             Grid.SetRow(tabs, 1);
             root.Children.Add(tabs);
 
@@ -71,25 +109,52 @@ namespace QASmartClass.Classroom.Views
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
                 PanningMode = PanningMode.VerticalOnly,
-                Content = new StackPanel { Children = { _empty, _cards } }
+                Content = new StackPanel { Children = { _topExtraPanel, _empty, _cards } }
             };
-            var frame = new Border { BorderBrush = Line, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Child = scroll };
+            var frame = new Border
+            {
+                BorderBrush = Line,
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(10),
+                Background = new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC)),
+                Padding = new Thickness(6),
+                Child = scroll
+            };
             Grid.SetRow(frame, 2);
             root.Children.Add(frame);
 
-            var footer = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 14, 0, 0) };
+            var footerGrid = new Grid { Margin = new Thickness(0, 14, 0, 0) };
+            footerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            footerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            Grid.SetColumn(_chkAutoOpenQaPage, 0);
+            footerGrid.Children.Add(_chkAutoOpenQaPage);
+
+            var footerBtns = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+            var btnCustomRegion = MakeButton("✂️ Kéo chọn vùng màn hình…", false);
+            btnCustomRegion.Background = new SolidColorBrush(Color.FromRgb(0xE0, 0xF2, 0xFE));
+            btnCustomRegion.Foreground = new SolidColorBrush(Color.FromRgb(0x03, 0x69, 0xA1));
+            btnCustomRegion.Click += (_, _) => LaunchInteractiveRegionSelector();
+
             var btnRefresh = MakeButton("↻ Làm mới", false);
-            btnRefresh.ToolTip = "Quét lại danh sách (khi bạn vừa mở thêm ứng dụng)";
+            btnRefresh.ToolTip = "Quét lại danh sách màn hình và cửa sổ";
             btnRefresh.Click += (_, _) => SwitchTab(_tab);
+
             var btnCancel = MakeButton("Hủy", false);
             btnCancel.Click += (_, _) => { Selected = null; DialogResult = false; };
+
             StyleButton(_btnShare, true);
             _btnShare.Click += (_, _) => Confirm();
-            footer.Children.Add(btnRefresh);
-            footer.Children.Add(btnCancel);
-            footer.Children.Add(_btnShare);
-            Grid.SetRow(footer, 3);
-            root.Children.Add(footer);
+
+            footerBtns.Children.Add(btnCustomRegion);
+            footerBtns.Children.Add(btnRefresh);
+            footerBtns.Children.Add(btnCancel);
+            footerBtns.Children.Add(_btnShare);
+            Grid.SetColumn(footerBtns, 1);
+            footerGrid.Children.Add(footerBtns);
+
+            Grid.SetRow(footerGrid, 3);
+            root.Children.Add(footerGrid);
 
             Content = root;
             PreviewKeyDown += (_, e) =>
@@ -97,13 +162,40 @@ namespace QASmartClass.Classroom.Views
                 if (e.Key == Key.Escape) { Selected = null; DialogResult = false; e.Handled = true; }
                 else if (e.Key == Key.Enter && _btnShare.IsEnabled) { Confirm(); e.Handled = true; }
             };
-            Loaded += (_, _) => SwitchTab(ScreenSourceKind.Screen);
+            Loaded += (_, _) => SwitchTab(_tab);
+        }
+
+        private void LaunchInteractiveRegionSelector()
+        {
+            Visibility = Visibility.Hidden;
+            try
+            {
+                var selector = new ScreenRegionSelectorWindow();
+                if (selector.ShowDialog() == true && selector.SelectedRegion != null)
+                {
+                    Selected = selector.SelectedRegion;
+                    DialogResult = true;
+                    return;
+                }
+            }
+            finally
+            {
+                if (DialogResult != true)
+                {
+                    Visibility = Visibility.Visible;
+                    Activate();
+                }
+            }
         }
 
         private void Confirm()
         {
             if (_selectedCard?.Tag is ScreenSourceInfo info)
             {
+                if (info.Kind == ScreenSourceKind.QaClassPage)
+                {
+                    info.AutoNavigateToPage = _chkAutoOpenQaPage.IsChecked == true;
+                }
                 Selected = info;
                 DialogResult = true;
             }
@@ -113,20 +205,79 @@ namespace QASmartClass.Classroom.Views
         {
             _tab = kind;
             _tabScreen.IsChecked = kind == ScreenSourceKind.Screen;
+            _tabRegion.IsChecked = kind == ScreenSourceKind.Region;
+            _tabQaPage.IsChecked = kind == ScreenSourceKind.QaClassPage;
             _tabWindow.IsChecked = kind == ScreenSourceKind.Window;
+
+            _chkAutoOpenQaPage.Visibility = kind == ScreenSourceKind.QaClassPage ? Visibility.Visible : Visibility.Collapsed;
+            _topExtraPanel.Children.Clear();
+            _topExtraPanel.Visibility = Visibility.Collapsed;
+
             _selectedCard = null;
             _btnShare.IsEnabled = false;
             _cards.Children.Clear();
             _empty.Visibility = Visibility.Collapsed;
 
             int version = ++_loadVersion;
-            List<ScreenSourceInfo> items = kind == ScreenSourceKind.Screen
-                ? ScreenSourceEnumerator.GetScreens()
-                : ScreenSourceEnumerator.GetWindows(_excludeHwnd);
+            var dpi = VisualTreeHelper.GetDpi(this);
+
+            if (kind == ScreenSourceKind.Region)
+            {
+                // Banner nút to để kéo vẽ vùng chọn trực tiếp trên màn hình
+                var drawBanner = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(0xEF, 0xF6, 0xFF)),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD)),
+                    BorderThickness = new Thickness(1.5),
+                    CornerRadius = new CornerRadius(10),
+                    Padding = new Thickness(16, 12, 16, 12)
+                };
+                var bannerGrid = new Grid();
+                bannerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                bannerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                var txtStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                txtStack.Children.Add(new TextBlock
+                {
+                    Text = "✂️ Kéo chọn vùng bất kỳ trên màn hình (Hỗ trợ chuột & cảm ứng)",
+                    FontSize = 15,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x1E, 0x3A, 0x8A))
+                });
+                txtStack.Children.Add(new TextBlock
+                {
+                    Text = "Bấm nút bên phải để vẽ khung hình chữ nhật quanh phần màn hình, bài giảng hoặc video bạn muốn học sinh nhìn thấy.",
+                    FontSize = 12.5,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69)),
+                    Margin = new Thickness(0, 2, 0, 0),
+                    TextWrapping = TextWrapping.Wrap
+                });
+                Grid.SetColumn(txtStack, 0);
+                bannerGrid.Children.Add(txtStack);
+
+                var btnDrawNow = MakeButton("✂️ Kéo chọn vùng ngay", true);
+                btnDrawNow.Click += (_, _) => LaunchInteractiveRegionSelector();
+                Grid.SetColumn(btnDrawNow, 1);
+                bannerGrid.Children.Add(btnDrawNow);
+
+                drawBanner.Child = bannerGrid;
+                _topExtraPanel.Children.Add(drawBanner);
+                _topExtraPanel.Visibility = Visibility.Visible;
+            }
+
+            List<ScreenSourceInfo> items = kind switch
+            {
+                ScreenSourceKind.Screen => ScreenSourceEnumerator.GetScreens(),
+                ScreenSourceKind.Region => ScreenSourceEnumerator.GetRegionPresets(dpi.DpiScaleX, dpi.DpiScaleY),
+                ScreenSourceKind.QaClassPage => ScreenSourceEnumerator.GetQaClassPages(),
+                _ => ScreenSourceEnumerator.GetWindows(_excludeHwnd)
+            };
 
             if (items.Count == 0)
             {
-                _empty.Text = kind == ScreenSourceKind.Screen ? "Không tìm thấy màn hình nào." : "Không có cửa sổ ứng dụng nào đang mở để chiếu.";
+                _empty.Text = kind == ScreenSourceKind.Screen
+                    ? "Không tìm thấy màn hình nào."
+                    : "Không có nguồn nào khả dụng trong mục này.";
                 _empty.Visibility = Visibility.Visible;
                 return;
             }
@@ -137,35 +288,125 @@ namespace QASmartClass.Classroom.Views
                 string label = it.Kind == ScreenSourceKind.Screen
                     ? $"Màn hình {++screenNo}{(it.IsPrimary ? " (chính)" : "")} — {it.Width}×{it.Height}"
                     : it.Title;
-                var thumb = new Image { Stretch = Stretch.Uniform, Height = 130, Margin = new Thickness(0, 0, 0, 6) };
+
+                var hold = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(0x0D, 0x1B, 0x2A)),
+                    CornerRadius = new CornerRadius(8),
+                    Height = 128,
+                    Margin = new Thickness(0, 0, 0, 8)
+                };
+
+                var thumb = new Image { Stretch = Stretch.Uniform };
                 RenderOptions.SetBitmapScalingMode(thumb, BitmapScalingMode.HighQuality);
-                var hold = new Border { Background = new SolidColorBrush(Color.FromRgb(0x0D, 0x1B, 0x2A)), CornerRadius = new CornerRadius(6), Height = 130, Child = thumb };
-                var name = new TextBlock { Text = label, FontSize = 13, TextTrimming = TextTrimming.CharacterEllipsis, ToolTip = label, FontWeight = FontWeights.SemiBold };
+
+                if (it.Kind == ScreenSourceKind.QaClassPage)
+                {
+                    // Tạo giao diện thẻ trang QA SmartClass trực quan kèm ảnh chụp trực tiếp nếu trang đã mở
+                    var overlayGrid = new Grid();
+                    var iconBadge = new StackPanel
+                    {
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    iconBadge.Children.Add(new TextBlock
+                    {
+                        Text = it.IconGlyph,
+                        FontSize = 36,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    });
+                    iconBadge.Children.Add(new TextBlock
+                    {
+                        Text = it.PageFormId == "CURRENT" ? "TỰ ĐỘNG THEO TAB" : $"TRANG QA SMARTCLASS",
+                        FontSize = 10.5,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD)),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 4, 0, 0)
+                    });
+                    overlayGrid.Children.Add(iconBadge);
+                    overlayGrid.Children.Add(thumb);
+                    hold.Child = overlayGrid;
+
+                    // Nếu ClassroomShell đang mở, thử lấy ảnh xem trước của trang đó
+                    if (Application.Current?.MainWindow is ClassroomShell shell || Owner is ClassroomShell)
+                    {
+                        var targetShell = (Owner as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                        if (targetShell != null)
+                        {
+                            var pageBmp = targetShell.TryGetQaPagePreviewBitmap(it.PageFormId, 320);
+                            if (pageBmp != null)
+                            {
+                                thumb.Source = pageBmp;
+                                iconBadge.Visibility = Visibility.Collapsed;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    hold.Child = thumb;
+                    var captured = it;
+                    Task.Run(() =>
+                    {
+                        var bmp = ScreenSourceEnumerator.CaptureThumbnail(captured);
+                        if (bmp == null) return;
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            if (version == _loadVersion) thumb.Source = bmp;
+                        }));
+                    });
+                }
+
+                var name = new TextBlock
+                {
+                    Text = label,
+                    FontSize = 13.5,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    ToolTip = label,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x0F, 0x17, 0x2A))
+                };
+
+                var cardStack = new StackPanel { Children = { hold, name } };
+                if (!string.IsNullOrWhiteSpace(it.Subtitle))
+                {
+                    cardStack.Children.Add(new TextBlock
+                    {
+                        Text = it.Subtitle,
+                        FontSize = 11.5,
+                        Foreground = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B)),
+                        TextWrapping = TextWrapping.Wrap,
+                        MaxHeight = 34,
+                        TextTrimming = TextTrimming.CharacterEllipsis,
+                        Margin = new Thickness(0, 3, 0, 0)
+                    });
+                }
 
                 var card = new Border
                 {
-                    Width = 230, MinHeight = 44, Margin = new Thickness(6),
-                    Padding = new Thickness(8), CornerRadius = new CornerRadius(10),
-                    BorderThickness = new Thickness(2), BorderBrush = Line, Background = Brushes.White,
-                    Cursor = Cursors.Hand, Focusable = true, Tag = it,
-                    Child = new StackPanel { Children = { hold, name } }
+                    Width = 282,
+                    MinHeight = 48,
+                    Margin = new Thickness(6),
+                    Padding = new Thickness(10),
+                    CornerRadius = new CornerRadius(10),
+                    BorderThickness = new Thickness(2),
+                    BorderBrush = Line,
+                    Background = Brushes.White,
+                    Cursor = Cursors.Hand,
+                    Focusable = true,
+                    Tag = it,
+                    Child = cardStack
                 };
-                if (_isCurrent(it)) name.Text += "  ● đang chiếu";
+                if (_isCurrent(it))
+                {
+                    name.Text += "  ● đang chọn";
+                    SelectCard(card);
+                }
                 card.MouseLeftButtonUp += (_, e) => { SelectCard(card); if (e.ClickCount >= 2) Confirm(); };
                 card.TouchUp += (_, _) => SelectCard(card);
                 card.KeyDown += (_, e) => { if (e.Key == Key.Space) { SelectCard(card); e.Handled = true; } };
                 _cards.Children.Add(card);
-
-                var captured = it;
-                Task.Run(() =>
-                {
-                    var bmp = ScreenSourceEnumerator.CaptureThumbnail(captured);
-                    if (bmp == null) return;
-                    Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        if (version == _loadVersion) thumb.Source = bmp;
-                    }));
-                });
             }
         }
 
@@ -188,22 +429,22 @@ namespace QASmartClass.Classroom.Views
 
         private static void StyleButton(Button b, bool primary)
         {
-            b.MinWidth = 110; b.MinHeight = 44; b.Padding = new Thickness(18, 8, 18, 8);
-            b.Margin = new Thickness(8, 0, 0, 0); b.FontSize = 14; b.FontWeight = FontWeights.SemiBold;
+            b.MinWidth = 110; b.MinHeight = 44; b.Padding = new Thickness(16, 8, 16, 8);
+            b.Margin = new Thickness(8, 0, 0, 0); b.FontSize = 13.5; b.FontWeight = FontWeights.SemiBold;
             b.Cursor = Cursors.Hand;
             b.Background = primary ? Accent : new SolidColorBrush(Color.FromRgb(0xEC, 0xEF, 0xF1));
             b.Foreground = primary ? Brushes.White : new SolidColorBrush(Color.FromRgb(0x37, 0x47, 0x4F));
             b.BorderThickness = new Thickness(0);
         }
 
-        /// <summary>Tab dạng nút chọn, đủ lớn để chạm.</summary>
+        /// <summary>Tab dạng nút chọn, đủ lớn để chạm trên màn hình tương tác.</summary>
         private sealed class ToggleButton_ : System.Windows.Controls.Primitives.ToggleButton
         {
             public ToggleButton_(string text)
             {
-                Content = text; MinHeight = 44; Padding = new Thickness(18, 8, 18, 8);
-                Margin = new Thickness(0, 0, 8, 0); FontSize = 14; FontWeight = FontWeights.SemiBold; Cursor = Cursors.Hand;
-                BorderThickness = new Thickness(1);
+                Content = text; MinHeight = 44; Padding = new Thickness(16, 8, 16, 8);
+                Margin = new Thickness(0, 0, 8, 6); FontSize = 13.5; FontWeight = FontWeights.SemiBold; Cursor = Cursors.Hand;
+                BorderThickness = new Thickness(1.5);
                 BorderBrush = Line;
                 Checked += (_, _) => { Background = AccentBg; Foreground = Accent; BorderBrush = Accent; };
                 Unchecked += (_, _) => { Background = Brushes.White; Foreground = Brushes.Black; BorderBrush = Line; };

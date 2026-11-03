@@ -351,31 +351,52 @@ namespace QASmartClass.Classroom.Services
                 response.Headers.Add("Access-Control-Allow-Origin", "*");
 
                 var output = response.OutputStream;
-                byte[]? last = null;
+                long lastVersion = -1;
                 var header = new byte[4];
                 var idleSince = DateTime.UtcNow;
+                var lastSentUtc = DateTime.MinValue;
+                int minIntervalMs = 45; // ~22 FPS max cap per Wi-Fi client
 
                 while (true)
                 {
-                    var frame = QASmartClass.Services.BroadcastStateService.Instance.ScreenCaptureBytes;
-                    if (frame != null && frame.Length > 0 && !ReferenceEquals(frame, last))
+                    var state = QASmartClass.Services.BroadcastStateService.Instance;
+                    long currentVersion = state.FrameVersion;
+                    var now = DateTime.UtcNow;
+                    double sinceLastSentMs = (now - lastSentUtc).TotalMilliseconds;
+
+                    // Gửi khung mới hoặc gửi lại định kỳ mỗi 4s (keep-alive chống readTimeout 15s trên Android khi màn hình tĩnh)
+                    bool hasNewFrame = currentVersion != lastVersion && sinceLastSentMs >= minIntervalMs;
+                    bool needKeepAlive = state.IsScreenBroadcastActive && sinceLastSentMs >= 4000;
+
+                    if (hasNewFrame || needKeepAlive)
                     {
-                        last = frame;
-                        idleSince = DateTime.UtcNow;
-                        header[0] = (byte)(frame.Length >> 24);
-                        header[1] = (byte)(frame.Length >> 16);
-                        header[2] = (byte)(frame.Length >> 8);
-                        header[3] = (byte)frame.Length;
-                        output.Write(header, 0, 4);
-                        output.Write(frame, 0, frame.Length);
-                        output.Flush();
+                        var frame = state.ScreenCaptureBytes;
+                        if (frame != null && frame.Length > 0)
+                        {
+                            lastVersion = currentVersion;
+                            idleSince = now;
+                            var writeStart = DateTime.UtcNow;
+
+                            header[0] = (byte)(frame.Length >> 24);
+                            header[1] = (byte)(frame.Length >> 16);
+                            header[2] = (byte)(frame.Length >> 8);
+                            header[3] = (byte)frame.Length;
+                            output.Write(header, 0, 4);
+                            output.Write(frame, 0, frame.Length);
+                            output.Flush();
+
+                            lastSentUtc = DateTime.UtcNow;
+                            double writeMs = (lastSentUtc - writeStart).TotalMilliseconds;
+                            // Backpressure adaptation: nếu ghi socket chậm (>120ms do nghẽn Wi-Fi), giãn nhịp gửi để xả bộ đệm TCP
+                            minIntervalMs = writeMs > 120 ? 110 : 45;
+                            continue;
+                        }
                     }
-                    else
-                    {
-                        // Không còn khung mới trong 20s (đã dừng phát) -> đóng luồng
-                        if ((DateTime.UtcNow - idleSince).TotalSeconds > 20) break;
-                        Thread.Sleep(10);
-                    }
+
+                    // Không còn phát và không có khung mới trong 20s -> đóng luồng
+                    if (!state.IsScreenBroadcastActive && (now - idleSince).TotalSeconds > 5) break;
+                    if ((now - idleSince).TotalSeconds > 20) break;
+                    Thread.Sleep(15);
                 }
             }
             catch (Exception ex)

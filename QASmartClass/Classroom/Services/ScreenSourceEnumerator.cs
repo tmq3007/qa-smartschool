@@ -4,30 +4,48 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace QASmartClass.Classroom.Services
 {
-    public enum ScreenSourceKind { Screen, Window }
+    public enum ScreenSourceKind
+    {
+        Screen,
+        Window,
+        Region,
+        QaClassPage
+    }
 
-    /// <summary>Một nguồn chiếu có thể chọn: một màn hình hoặc một cửa sổ ứng dụng.</summary>
+    /// <summary>Một nguồn chiếu có thể chọn: màn hình, cửa sổ ứng dụng, vùng màn hình tùy chọn, hoặc trang bên trong QA SmartClass.</summary>
     public sealed class ScreenSourceInfo
     {
         public ScreenSourceKind Kind { get; init; }
         public string Title { get; init; } = "";
+        public string Subtitle { get; init; } = "";
+        public string IconGlyph { get; init; } = "🖥️";
         public IntPtr Hwnd { get; init; }
-        /// <summary>Vùng màn hình theo pixel vật lý (dùng cho Kind = Screen).</summary>
+        /// <summary>Mã trang nội bộ trong QA SmartClass (dùng khi Kind = QaClassPage, vd: "CURRENT", "SMART_TOUCH", "F2", "F20", "F32"...).</summary>
+        public string PageFormId { get; init; } = "";
+        /// <summary>Tự động điều hướng tới trang QA SmartClass khi chọn nguồn này.</summary>
+        public bool AutoNavigateToPage { get; set; }
+        /// <summary>Vùng màn hình theo pixel vật lý (dùng cho Kind = Screen hoặc Region).</summary>
         public int X { get; init; }
         public int Y { get; init; }
         public int Width { get; init; }
         public int Height { get; init; }
+        /// <summary>Tọa độ DIP của WPF (dùng để vẽ khung viền vùng chọn trên màn hình).</summary>
+        public double DipLeft { get; init; }
+        public double DipTop { get; init; }
+        public double DipWidth { get; init; }
+        public double DipHeight { get; init; }
         public bool IsPrimary { get; init; }
         public BitmapSource? Thumbnail { get; set; }
     }
 
     /// <summary>
-    /// Liệt kê màn hình + cửa sổ ứng dụng và tạo ảnh xem trước (kiểu hộp chọn của Google Meet).
-    /// Không phụ thuộc WinForms; chỉ dùng Win32.
+    /// Liệt kê màn hình + vùng màn hình + trang bên trong QA SmartClass + cửa sổ ứng dụng và tạo ảnh xem trước.
+    /// Không phụ thuộc WinForms; chỉ dùng Win32 + WPF Visual.
     /// </summary>
     public static class ScreenSourceEnumerator
     {
@@ -94,6 +112,7 @@ namespace QASmartClass.Classroom.Services
                     list.Add(new ScreenSourceInfo
                     {
                         Kind = ScreenSourceKind.Screen,
+                        IconGlyph = "🖥️",
                         X = mi.rcMonitor.Left,
                         Y = mi.rcMonitor.Top,
                         Width = mi.rcMonitor.Right - mi.rcMonitor.Left,
@@ -115,6 +134,210 @@ namespace QASmartClass.Classroom.Services
                 if (s.X == x && s.Y == y && s.Width == w && s.Height == h) return s;
             var all = GetScreens();
             return all.Count > 0 ? all[0] : null;
+        }
+
+        /// <summary>Danh sách các trang / phân hệ bên trong QA SmartClass có thể chiếu trực tiếp cho học sinh.</summary>
+        public static List<ScreenSourceInfo> GetQaClassPages()
+        {
+            return new List<ScreenSourceInfo>
+            {
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "CURRENT",
+                    IconGlyph = "✨",
+                    Title = "Trang đang mở trên SMART CLASS (Tự động)",
+                    Subtitle = "Tự động chiếu trang bài học bạn mở (ẩn thanh menu trái & thanh công cụ của GV)"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "SMART_TOUCH",
+                    IconGlyph = "🎨",
+                    Title = "Bảng trắng tương tác SMART TOUCH",
+                    Subtitle = "Chiếu trực tiếp bảng viết phấn / bút cảm ứng SMART TOUCH"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F_RUNNER",
+                    IconGlyph = "▶️",
+                    Title = "Tiết học đang trình chiếu (Lesson Runner)",
+                    Subtitle = "Chiếu tiến trình 6 giai đoạn giảng dạy của tiết học đang mở"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F2",
+                    IconGlyph = "📚",
+                    Title = "Trang Bài giảng & Giáo án",
+                    Subtitle = "Danh sách bài giảng, giáo án điện tử và trình xem tài liệu"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F20",
+                    IconGlyph = "🖌️",
+                    Title = "Trang Bảng vẽ Bài giảng (Canvas)",
+                    Subtitle = "Bảng vẽ minh họa nhanh tích hợp trong SMART CLASS"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F32",
+                    IconGlyph = "🧪",
+                    Title = "Trang Công cụ Học tập & Mô phỏng",
+                    Subtitle = "Bảng tuần hoàn hóa học, công cụ Toán - Lý - Hóa - Sinh trực quan"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F31",
+                    IconGlyph = "🔬",
+                    Title = "Trang Công cụ STEM & Thí nghiệm ảo",
+                    Subtitle = "Mô phỏng thí nghiệm khoa học và hoạt động STEM"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F34",
+                    IconGlyph = "🌍",
+                    Title = "Trang Ứng dụng Thực tế",
+                    Subtitle = "Hình ảnh trực quan và bài học gắn liền thực tiễn"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F6",
+                    IconGlyph = "📝",
+                    Title = "Trang Kiểm tra & Đánh giá (Quiz)",
+                    Subtitle = "Chiếu đề kiểm tra và bảng thống kê kết quả làm bài"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F18",
+                    IconGlyph = "📊",
+                    Title = "Trang Khảo sát nhanh (Survey)",
+                    Subtitle = "Chiếu biểu đồ kết quả thăm dò ý kiến trực tiếp"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F23",
+                    IconGlyph = "🎡",
+                    Title = "Trang Vòng quay Gọi tên Ngẫu nhiên",
+                    Subtitle = "Chiếu vòng quay may mắn khi gọi học sinh trả lời"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F22",
+                    IconGlyph = "⏱️",
+                    Title = "Trang Đồng hồ Bấm giờ (Timer)",
+                    Subtitle = "Chiếu đồng hồ đếm ngược thời gian thảo luận nhóm / làm bài"
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.QaClassPage,
+                    PageFormId = "F21",
+                    IconGlyph = "📈",
+                    Title = "Trang Biểu đồ & Thống kê Lớp học",
+                    Subtitle = "Chiếu biểu đồ phân tích học tập và thi đua"
+                }
+            };
+        }
+
+        /// <summary>Danh sách các mẫu vùng màn hình dựng sẵn (Presets) để chọn nhanh 1 chạm.</summary>
+        public static List<ScreenSourceInfo> GetRegionPresets(double dpiScaleX = 1.0, double dpiScaleY = 1.0)
+        {
+            var screens = GetScreens();
+            var primary = screens.Count > 0 ? screens[0] : new ScreenSourceInfo { Kind = ScreenSourceKind.Screen, X = 0, Y = 0, Width = 1920, Height = 1080, IsPrimary = true };
+            int sw = Math.Max(800, primary.Width);
+            int sh = Math.Max(600, primary.Height);
+            double sx = dpiScaleX > 0 ? dpiScaleX : 1.0;
+            double sy = dpiScaleY > 0 ? dpiScaleY : 1.0;
+
+            // Vùng nội dung bài học trong ClassroomShell (bỏ thanh menu trái ~250dp và thanh top ~64dp)
+            int sidePx = (int)(250 * sx);
+            int topPx = (int)(64 * sy);
+            int contentW = Math.Max(400, sw - sidePx);
+            int contentH = Math.Max(300, sh - topPx);
+
+            // Vùng 16:9 chính giữa màn hình (75% diện tích)
+            int centerW = (int)(sw * 0.75);
+            int centerH = (int)(centerW * 9.0 / 16.0);
+            if (centerH > (int)(sh * 0.8))
+            {
+                centerH = (int)(sh * 0.8);
+                centerW = (int)(centerH * 16.0 / 9.0);
+            }
+            int centerX = primary.X + (sw - centerW) / 2;
+            int centerY = primary.Y + (sh - centerH) / 2;
+
+            return new List<ScreenSourceInfo>
+            {
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.Region,
+                    IconGlyph = "📐",
+                    Title = "Khung nội dung SMART CLASS (Ẩn menu trái & thanh trên)",
+                    Subtitle = $"{contentW}×{contentH} px — Chỉ chiếu phần trang nội dung bên phải",
+                    X = primary.X + sidePx,
+                    Y = primary.Y + topPx,
+                    Width = contentW,
+                    Height = contentH,
+                    DipLeft = (primary.X + sidePx) / sx,
+                    DipTop = (primary.Y + topPx) / sy,
+                    DipWidth = contentW / sx,
+                    DipHeight = contentH / sy
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.Region,
+                    IconGlyph = "🎯",
+                    Title = "Vùng trung tâm 16:9 (75% màn hình)",
+                    Subtitle = $"{centerW}×{centerH} px — Tập trung vào giữa màn hình",
+                    X = centerX,
+                    Y = centerY,
+                    Width = centerW,
+                    Height = centerH,
+                    DipLeft = centerX / sx,
+                    DipTop = centerY / sy,
+                    DipWidth = centerW / sx,
+                    DipHeight = centerH / sy
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.Region,
+                    IconGlyph = "◧",
+                    Title = "Nửa trái màn hình (Split-Screen Trái)",
+                    Subtitle = $"{sw / 2}×{sh} px — Chiếu nửa màn hình bên trái",
+                    X = primary.X,
+                    Y = primary.Y,
+                    Width = sw / 2,
+                    Height = sh,
+                    DipLeft = primary.X / sx,
+                    DipTop = primary.Y / sy,
+                    DipWidth = (sw / 2) / sx,
+                    DipHeight = sh / sy
+                },
+                new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.Region,
+                    IconGlyph = "◨",
+                    Title = "Nửa phải màn hình (Split-Screen Phải)",
+                    Subtitle = $"{sw / 2}×{sh} px — Chiếu nửa màn hình bên phải",
+                    X = primary.X + sw / 2,
+                    Y = primary.Y,
+                    Width = sw / 2,
+                    Height = sh,
+                    DipLeft = (primary.X + sw / 2) / sx,
+                    DipTop = primary.Y / sy,
+                    DipWidth = (sw / 2) / sx,
+                    DipHeight = sh / sy
+                }
+            };
         }
 
         /// <summary>Danh sách cửa sổ ứng dụng cấp cao nhất có thể chiếu.</summary>
@@ -144,6 +367,7 @@ namespace QASmartClass.Classroom.Services
                     list.Add(new ScreenSourceInfo
                     {
                         Kind = ScreenSourceKind.Window,
+                        IconGlyph = "🪟",
                         Title = title,
                         Hwnd = hWnd,
                         X = rc.Left, Y = rc.Top, Width = w, Height = h
@@ -155,9 +379,57 @@ namespace QASmartClass.Classroom.Services
             return list;
         }
 
+        /// <summary>Chụp một FrameworkElement của WPF thành BitmapSource (phải gọi trên luồng UI).</summary>
+        public static BitmapSource? RenderElementToBitmap(FrameworkElement? element, int targetWidth = 1280)
+        {
+            if (element == null) return null;
+            try
+            {
+                double actualW = element.ActualWidth;
+                double actualH = element.ActualHeight;
+                if (actualW < 10 || actualH < 10)
+                {
+                    actualW = element.Width > 10 ? element.Width : 1280;
+                    actualH = element.Height > 10 ? element.Height : 720;
+                    element.Measure(new Size(actualW, actualH));
+                    element.Arrange(new Rect(0, 0, actualW, actualH));
+                    element.UpdateLayout();
+                }
+
+                int renderW = Math.Max(64, targetWidth);
+                int renderH = Math.Max(64, (int)Math.Round(actualH * (renderW / actualW)));
+                double dpiX = 96.0 * (renderW / actualW);
+                double dpiY = 96.0 * (renderH / actualH);
+
+                var rtb = new RenderTargetBitmap(renderW, renderH, dpiX, dpiY, PixelFormats.Pbgra32);
+                var dv = new DrawingVisual();
+                using (var dc = dv.RenderOpen())
+                {
+                    dc.DrawRectangle(Brushes.White, null, new Rect(0, 0, actualW, actualH));
+                    var vb = new VisualBrush(element)
+                    {
+                        Stretch = Stretch.Fill,
+                        AlignmentX = AlignmentX.Left,
+                        AlignmentY = AlignmentY.Top
+                    };
+                    dc.DrawRectangle(vb, null, new Rect(0, 0, actualW, actualH));
+                }
+                rtb.Render(dv);
+                rtb.Freeze();
+                return rtb;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         /// <summary>Tạo ảnh xem trước (đã Freeze, dùng được từ mọi luồng). Trả null nếu không chụp được.</summary>
         public static BitmapSource? CaptureThumbnail(ScreenSourceInfo src)
         {
+            if (src.Thumbnail != null) return src.Thumbnail;
+            if (src.Kind == ScreenSourceKind.QaClassPage) return null;
+
             IntPtr hdcScreen = IntPtr.Zero, hdcFull = IntPtr.Zero, hbmFull = IntPtr.Zero, hOldFull = IntPtr.Zero;
             IntPtr hdcThumb = IntPtr.Zero, hbmThumb = IntPtr.Zero, hOldThumb = IntPtr.Zero;
             try
@@ -173,7 +445,7 @@ namespace QASmartClass.Classroom.Services
                 hOldThumb = SelectObject(hdcThumb, hbmThumb);
                 SetStretchBltMode(hdcThumb, HALFTONE);
 
-                if (src.Kind == ScreenSourceKind.Screen)
+                if (src.Kind == ScreenSourceKind.Screen || src.Kind == ScreenSourceKind.Region)
                 {
                     StretchBlt(hdcThumb, 0, 0, tw, th, hdcScreen, src.X, src.Y, w, h, SRCCOPY);
                 }
@@ -183,9 +455,15 @@ namespace QASmartClass.Classroom.Services
                     hdcFull = CreateCompatibleDC(hdcScreen);
                     hbmFull = CreateCompatibleBitmap(hdcScreen, w, h);
                     hOldFull = SelectObject(hdcFull, hbmFull);
-                    if (!PrintWindow(src.Hwnd, hdcFull, PW_RENDERFULLCONTENT)) return null;
-                    SetStretchBltMode(hdcThumb, HALFTONE);
-                    StretchBlt(hdcThumb, 0, 0, tw, th, hdcFull, 0, 0, w, h, SRCCOPY);
+                    if (!PrintWindow(src.Hwnd, hdcFull, PW_RENDERFULLCONTENT))
+                    {
+                        StretchBlt(hdcThumb, 0, 0, tw, th, hdcScreen, src.X, src.Y, w, h, SRCCOPY);
+                    }
+                    else
+                    {
+                        SetStretchBltMode(hdcThumb, HALFTONE);
+                        StretchBlt(hdcThumb, 0, 0, tw, th, hdcFull, 0, 0, w, h, SRCCOPY);
+                    }
                 }
 
                 SelectObject(hdcThumb, hOldThumb); hOldThumb = IntPtr.Zero;

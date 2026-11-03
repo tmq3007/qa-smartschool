@@ -77,11 +77,15 @@ namespace QASmartClass.Classroom.Views
                 {
                     Log.Warning("Không thể đăng ký NetworkAddressChanged: {Err}", ex.Message);
                 }
+
+                _sessionService.PropertyChanged -= OnSessionPropertyChanged;
+                _sessionService.PropertyChanged += OnSessionPropertyChanged;
             };
 
             Unloaded += (_, _) =>
             {
                 StopLocalTimer();
+                _sessionService.PropertyChanged -= OnSessionPropertyChanged;
                 try
                 {
                     // app → ClassroomAppContext (refactored)
@@ -94,6 +98,18 @@ namespace QASmartClass.Classroom.Views
                 }
                 catch { }
             };
+        }
+
+        private void OnSessionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(QASmartClass.Classroom.Services.ClassroomSessionService.ClassCode))
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    if (txtSessionCode != null)
+                        txtSessionCode.Text = string.IsNullOrEmpty(_sessionService.ClassCode) ? "🔑 Mã vào lớp: ----" : $"🔑 Mã vào lớp: {_sessionService.ClassCode}";
+                });
+            }
         }
 
         private void OnNetworkAddressChanged(object? sender, EventArgs e)
@@ -194,7 +210,7 @@ namespace QASmartClass.Classroom.Views
 
                 if (txtSessionName != null) txtSessionName.Text = $" {rosterName}";
                 if (txtSessionIP != null) txtSessionIP.Text = $"IP: {ClassroomAppContext.Network.ServerIP}";
-                if (txtSessionCode != null) txtSessionCode.Text = "Mã lớp: --";
+                if (txtSessionCode != null) txtSessionCode.Text = string.IsNullOrEmpty(_sessionService.ClassCode) ? "🔑 Mã vào lớp: ----" : $"🔑 Mã vào lớp: {_sessionService.ClassCode}";
                 
                 UpdateStudentCount();
                 Log.Information("ClassroomPage loaded {Count} offline roster students (Batch O(1))", _sessionService.ConnectedStudents.Count);
@@ -219,7 +235,7 @@ namespace QASmartClass.Classroom.Views
 
             // app → ClassroomAppContext (refactored)
             if (txtSessionIP != null) txtSessionIP.Text = $"IP: {ClassroomAppContext.Network.ServerIP}";
-            if (txtSessionCode != null) txtSessionCode.Text = string.IsNullOrEmpty(_sessionService.ClassCode) ? "Mã lớp: --" : $"Mã lớp: {_sessionService.ClassCode}";
+            if (txtSessionCode != null) txtSessionCode.Text = string.IsNullOrEmpty(_sessionService.ClassCode) ? "🔑 Mã vào lớp: ----" : $"🔑 Mã vào lớp: {_sessionService.ClassCode}";
 
             UpdateStudentCount();
 
@@ -327,11 +343,11 @@ namespace QASmartClass.Classroom.Views
                     if (Window.GetWindow(this) is ClassroomShell shell)
                     {
                         shell.UpdateSessionInfo(rosterName, _sessionService.ConnectedStudents.Count(s => s.IsOnline));
-                        shell.ShowToast("Bắt đầu lớp học", $"✅ Lớp {rosterName} đã bắt đầu thành công!", "SUCCESS");
+                        shell.ShowToast("Bắt đầu lớp học", $"✅ Lớp {rosterName} đã bắt đầu! Mã vào lớp: {_sessionService.ClassCode}", "SUCCESS");
                     }
                     else
                     {
-                        ClassroomDialog.Info($"✅ Lớp học đã bắt đầu!\n\n👥 {_sessionService.ConnectedStudents.Count} HS trong danh sách lớp.\n📡 Đang khám phá các thiết bị kết nối dưới mạng LAN...", "Bắt đầu lớp học");
+                        ClassroomDialog.Info($"✅ Lớp học đã bắt đầu!\n\n🔑 Mã vào lớp: {_sessionService.ClassCode}\n👥 {_sessionService.ConnectedStudents.Count} HS trong danh sách lớp.\n📡 Đang khám phá các thiết bị kết nối dưới mạng LAN...", "Bắt đầu lớp học");
                     }
 
                     Log.Information("Classroom session started successfully.");
@@ -365,6 +381,31 @@ namespace QASmartClass.Classroom.Views
             finally
             {
                 btnStartSession.IsEnabled = true;
+            }
+        }
+
+        private async void RegenerateClassCode_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            try
+            {
+                string oldSalt = QASmartClass.Services.ClassControlService.Instance.SessionSalt;
+                string newCode = _sessionService.RegenerateClassCode();
+                UpdateClassroomUI();
+
+                if (ClassroomAppContext.Network != null)
+                {
+                    await ClassroomAppContext.Network.SyncActiveClientsToNewSessionAsync(newCode, oldSalt, oldSalt);
+                }
+
+                if (Window.GetWindow(this) is ClassroomShell shell)
+                {
+                    shell.UpdateClassCodeUI();
+                    shell.ShowToast("Mã vào lớp mới", $"🔑 Đã tạo Mã vào lớp mới cho học sinh: {newCode}", "INFO");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("RegenerateClassCode_Click error: {Err}", ex.Message);
             }
         }
 
