@@ -248,6 +248,29 @@ namespace QASmartTouch.Forms
             }
         }
 
+        // THÍ NGHIỆM VẬT LÝ & STEM (46 Mô phỏng Offline)
+        private void btnPhysicsLab_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                this.Hide();
+                var labWindow = new Form2_23_PhysicsLabWindow();
+                if (_mainDashboard != null)
+                {
+                    labWindow.SetMainDashboard(_mainDashboard);
+                }
+                WindowHelper.ShowChildDialog(labWindow, _mainDashboard);
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                this.Show();
+                MessageBox.Show($"Lỗi mở Phòng Thí Nghiệm Vật Lý: {ex.Message}", "Lỗi",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Diagnostics.Debug.WriteLine($"❌ Physics lab error: {ex.Message}");
+            }
+        }
+
         // TAB 3: TEXT
         private void btnInsertText_Click(object sender, RoutedEventArgs e)
         {

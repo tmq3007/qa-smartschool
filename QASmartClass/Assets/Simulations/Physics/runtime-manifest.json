@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "modules": 46,
+  "coreModules": 36,
+  "standaloneModules": 10,
+  "threeModules": 18,
+  "sourceFiles": 42,
+  "inputs": {
+    "physics/src/bridge.ts": "fd985a39a5724ef4d83de7af83568d03be93d068991a37eef5a832abeb4a9c46",
+    "physics/src/player.css": "3eb2aee762a71efa374fb6b4ba3010a96d1b0df56a64c2f09f025de5437c4422",
+    "physics/src/player.tsx": "6391dbb53cf48448760097e2a0f5a8e19d6ce07f170345c980c33772d0166c62",
+    "physics/src/question.tsx": "a2c86cad67505fb99cd65518268530e8e6e36fe7f50a01b9ba74aceec7c7204c",
+    "physics/components/ForceVectorSimulation.tsx": "b140451260c96b902e30a5fe2126d9812766a5fc300cbbf6a28716fed4876c1a",
+    "physics/components/InclinedPlaneSimulation.tsx": "f44e02c152623b5cd7ab88d6302a1638297ea5670dff172bc2682abfe536769c",
+    "physics/components/TwoOscillationsSimulation.tsx": "262fa680f7f90d3cce529156bbce951ec793efb54465feba7872be6b8aa146ad",
+    "physics/vendor/simulations/AcGeneratorSimulation.tsx": "4a80c93e1ab4046e9b220e9ab7a87a19e0624d8345b7a78dd9411ecb9f44a637",
+    "physics/vendor/simulations/canvasUtil.ts": "c9a33778719a24735e4011cf20091b3ea8f9b85176d1ef9412a27bc17f8a0c56",
+    "physics/vendor/simulations/CircuitSimulation.tsx": "2d38f4bd1ba480c3422ef83ffafe2af70033c23b1570c1bef217c3219be658c3",
+    "physics/vendor/simulations/CircularMotionSimulation.tsx": "4451c47dbffbe31bbe43bae39d3bb6578545ed7650756765510e4cecda524852",
+    "physics/vendor/simulations/CollisionSimulation.tsx": "1ea8ed4b4986986299f0a7d681b1789a019afbc04dade227ef86001419d0b739",
+    "physics/vendor/simulations/CoulombForceSimulation.tsx": "f5d5995f37d233dbd28dce9e6713d708a31b7b7277c00c4cc0526e23a1b7a0cf",
+    "physics/vendor/simulations/DisplacementTimeSimulation.tsx": "3603ca975f1045c176ac1cb1748adbc1c0659aad1721a990fcaf9814ab9281a9",
+    "physics/vendor/simulations/DrivenResonanceSimulation.tsx": "a13d20fab244ee6ac82f807984d7418ff81ef611b6bb3da4113cbea0d5723382",
+    "physics/vendor/simulations/ElectricFieldSimulation.tsx": "568135a2ed1935bec1bf93463f4341deec7ad369d5149eaec11828f8030a61df",
+    "physics/vendor/simulations/EMFMeasurementSimulation.tsx": "e09f1c11589812e0a4a7826ac60365b5d472aad459fb4d03285ffc44c60fbae9",
+    "physics/vendor/simulations/EMInductionSimulation.tsx": "79ca54621cbfecb7c978fb8024e7e8371af2a99f9333c7fda467c42a8be22c4f",
+    "physics/vendor/simulations/EnergyOscillationSimulation.tsx": "47788fa46935f105a46659f38ad522251f83867d22787cd10d4a82211746f52c",
+    "physics/vendor/simulations/ForceVectorSimulation.tsx": "6b39426b09f08e28222aab541ff222fdcff1d34f11110c09f7a0ca8db8595b6d",
+    "physics/vendor/simulations/FreeFall3DSimulation.tsx": "5b6de1b763fd4fcb47eea84610faa838a35e9cf1fc0c3dbf0c34e092c39c65d9",
+    "physics/vendor/simulations/GasLawSimulation.tsx": "8c6c618abc7eb054d670121ae81f5d90790197f0aa72539ecffade471e898dee",
+    "physics/vendor/simulations/GasParticleSimulation.tsx": "d9918ee5195246ba2ee6c973d53ec358453fbc95d144962e6224a05f1599950a",
+    "physics/vendor/simulations/GeoGebraSimulation.tsx": "83c20fd11bc6ae2977ade30026f4bebde542ffe49a0f2982cd8017e659efc977",
+    "physics/vendor/simulations/HeatingCurveSimulation.tsx": "9c2518505fab0a4330bbc78a4163892b03ec7cca7d8867b4cc1f40830634a4d9",
+    "physics/vendor/simulations/HookeSpringSimulation.tsx": "1bde5c14decd904282ea9504f5fa2a2d3fc61b9890fcfc59e418def668b20ce0",
+    "physics/vendor/simulations/InclinedPlaneSimulation.tsx": "d830d13ea389987f2dcdbc96e68e93af0acaab920108de9ddf750e9d16c74d1d",
+    "physics/vendor/simulations/index.ts": "059cec2a2c1a0d8b2ffd337e2f1cd9bd905ece8dca7142f8ce76347deb125a7a",
+    "physics/vendor/simulations/InteractiveOscillation.tsx": "3e3a5a3a312f7afb4a646cefbb9acdae0a770ad86ea060e434ea78095d03363c",
+    "physics/vendor/simulations/InteractiveVTGraph.tsx": "b537ef9399d2ba25ed76013a4410672bf0f5549d5d517bf9c122110f3a636754",
+    "physics/vendor/simulations/MagneticFieldSimulation.tsx": "c810173bd0fd9ddc919d783c9bf4dd4fc8db99756099e0dd32720b6ccf26077e",
+    "physics/vendor/simulations/MagneticForceSimulation.tsx": "6e3517afe4d37388dc7d3b2ae713d6e12d94b6385fc50a47cdaf8c0abf309b55",
+    "physics/vendor/simulations/MotionGraphsSimulation.tsx": "cd47a15cd5466f2ad9429c559ae25afbf4fc881f38960fa884ea307ac1596fa9",
+    "physics/vendor/simulations/NuclearReactionSimulation.tsx": "1036c332dbcf09e932088cd7d73b534db370a76e6cf04fa3f5f9f10a3843e488",
+    "physics/vendor/simulations/NucleusStructureSimulation.tsx": "e361094148bb9d12562c3cfd2cc2b0cd5ce1181299d54fafc144856cc8320163",
+    "physics/vendor/simulations/PhaseChangeSimulation.tsx": "19acd7ce5df3986f00170b31c363204e71b99ee8f253aa4ec1588fea5f194474",
+    "physics/vendor/simulations/ProjectileMotionSimulation.tsx": "dea0f564a3510fd08d843a2bac09abdb5ec12e6da5ebab23c8f5a2de111c1c09",
+    "physics/vendor/simulations/RadioactiveDecaySimulation.tsx": "5a5be2214f484e890d1d7fffa41aa4181cda622ae100f993420ff93be15006cb",
+    "physics/vendor/simulations/README.md": "454c4549bf8dc3c750b84e7a482d7292f5ecbf4796c362afe8fb5099c29c46d5",
+    "physics/vendor/simulations/ResistanceOhmSimulation.tsx": "523d47046e8e2cc91ae800dae9238463fb6a2952ea170470caf410e97350df07",
+    "physics/vendor/simulations/SimplePendulumSimulation.tsx": "41406a76e57088289ae809ce8fc9fb2b9e8699d54366aa57b4977c713f29e405",
+    "physics/vendor/simulations/SpecificHeatSimulation.tsx": "a888a18d796d4ed6e6990448778aa85fbb555b458e0153ecae46a880d0dc858a",
+    "physics/vendor/simulations/SpringOscillatorSimulation.tsx": "e54d8672cb41718fe459ae712ebc66d8a6bed1b1e619213a8d8676f432080027",
+    "physics/vendor/simulations/StandingWaveSimulation.tsx": "6a49b49eea449b012717ffc4fc76c4dbf9b4ad87c6a06392a341f6fd321a5ed1",
+    "physics/vendor/simulations/TwoOscillationsSimulation.tsx": "ae3a2211b51b4b74abce83987117c70d3dddde260540c6d6d840ba5135c73186",
+    "physics/vendor/simulations/VaporizationSimulation.tsx": "23dceb37c92f0295724ace9bec74497fcc8b83f620f4894a76c1a5d6269dc980",
+    "physics/vendor/simulations/VideoSimulation.tsx": "4b110e166dd2897e1062cb0bfdfd8ca1519a0cd6ab131e8292dc76fc618ee115",
+    "physics/vendor/simulations/WaveInterferenceSimulation.tsx": "47a9db10f01fa8bc3e24f8737c28c34f15dddf8b52e7ac9477fefd1945742f0e",
+    "physics/vendor/simulations/WavePropagationSimulation.tsx": "d9c6e490c4022bd6bfd782178830989bb8ad200fa90223211180bca76f6027c9",
+    "math/physics-catalog.js": "e1aa2b58ebe566d93386f904f1fbc801fc1cd9e2d9961115a3cd0b739d62ef19",
+    "physics/schema.json": "08e295226fda1cd2032020a81f0aed801b8073813cf4b2ec908c3dd7b2dd5a77",
+    "physics/package.json": "72c6d63c3efd3ffab928b8cba554b31eb850bdef48dd3cda0e579ba9d96c284a",
+    "physics/scripts/prepare-runtime.cjs": "6c71d65f9575b7cf2b5aa22e6ed83566410ee3e4bdad7cfcb2a77e66705b9208",
+    "physics/scripts/layout-adapter.cjs": "95f180109a0aff7343b6a13a59b2d4ed7cdd8e13ead550345b3c4dae28d72166"
+  },
+  "files": {
+    "flat.js": {
+      "sha256": "86537d1d600d8097f17704b677a7ddca3659a81fb541b3a38cbf97edb821d834",
+      "bytes": 683895
+    },
+    "space.js": {
+      "sha256": "4d13d39e1da4532e068b19ce04a4505fa16d3fb6804c0a2abd584b87ea532707",
+      "bytes": 2118257
+    },
+    "player.css": {
+      "sha256": "b050a8b908c808c63119636eb2a35d8993a2fdda57f4218108beb0219cf27682",
+      "bytes": 32760
+    },
+    "player.html": {
+      "sha256": "80eb00384e499033f579f4b83f667edd3befc0f37292f36d2a78a30bc925150a",
+      "bytes": 401
+    },
+    "loader.js": {
+      "sha256": "2945d98dedf0a856cf6a45a385c2f1ec47387ab86f13c43cd6d004d74fb3fc5a",
+      "bytes": 772
+    },
+    "THIRD-PARTY.txt": {
+      "sha256": "f18bff995395d1b69a9e91fab0796be0199f22f0fedb4334c0c297afc6017752",
+      "bytes": 45806
+    }
+  }
+}

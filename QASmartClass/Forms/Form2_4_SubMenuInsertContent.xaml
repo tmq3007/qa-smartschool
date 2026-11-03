@@ -935,6 +935,19 @@
 
 
 
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnPhysicsLab_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Fill="#00897B" 
+                                      Data="M7,2H17A1,1 0 0,1 18,3V6C18,6.5 17.7,7 17.4,7.4L13.8,11H13V15.2L16.2,18.4C16.8,19 16.5,20 15.6,20H8.4C7.5,20 7.2,19 7.8,18.4L11,15.2V11H10.2L6.6,7.4C6.3,7 6,6.5 6,6V3A1,1 0 0,1 7,2M8,4V6.1L11.5,9.6L12,10.1L12.5,9.6L16,6.1V4H8Z"
+                                      Width="24" Height="24"
+                                      Margin="0,0,12,0"/>
+                                <StackPanel>
+                                    <TextBlock Text="Thí nghiệm Vật lý (STEM)" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+                                    <TextBlock Text="46 mô phỏng 3D &amp; tương tác (Offline)" FontSize="11" Foreground="#00796B"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+
                         <!-- ── SEPARATOR: SẮP RA MẮT ── -->
 
                         <Border Margin="0,15,0,12" Padding="10,6" 

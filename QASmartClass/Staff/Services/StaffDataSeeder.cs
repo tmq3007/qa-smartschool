@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using QASmartClass.Data;
 
@@ -59,7 +59,14 @@ namespace QASmartClass.Staff.Services
                 SeedBackupLogs(db);
                 SeedAuditLogs(db);
                 SeedUsageLogs(db);
-                SeedLibraryBooks(db);
+                try
+                {
+                    SeedLibraryBooks(db);
+                }
+                catch (Exception libEx)
+                {
+                    Serilog.Log.Warning("[StaffDataSeeder] SeedLibraryBooks error handled: {Err}", libEx.Message);
+                }
 
                 // Mark seed version complete
                 if (versionSetting == null)

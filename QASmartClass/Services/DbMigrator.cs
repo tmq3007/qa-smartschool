@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 using System.IO;
 
@@ -301,6 +301,8 @@ namespace QASmartClass.Services
                 {
 
                     Log.Information("[DbMigrator] Database is up-to-date (v{Ver})", targetVersion);
+                    RunSafeSql(db, "ALTER TABLE LibraryBooks ADD COLUMN RepairCount INTEGER NOT NULL DEFAULT 0;");
+                    RunSafeSql(db, "ALTER TABLE Students ADD COLUMN ConsecutiveSuccessfulPickups INTEGER NOT NULL DEFAULT 0;");
 
                     SeedMasterSettings(db);
 

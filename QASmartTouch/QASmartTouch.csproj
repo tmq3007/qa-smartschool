@@ -264,4 +264,11 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\QASmartClass\Assets\Simulations\Physics\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Assets\Simulations\Physics\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
 </Project>
