@@ -21,7 +21,10 @@ namespace QASmartTouch.Forms
         private readonly DispatcherTimer _durationTimer;
         private bool _isClosing = false;
         private bool _suppressCompletionPrompt = false;
-        private bool _hasSessionCamera = false;
+        private bool _hasCameraHardware = false;
+        private string? _sessionCameraId = null;
+        private int _sessionCameraShapeMode = 0;
+        private bool _cameraHardwareDisconnected = false;
         private FloatingCameraWindow? _trackedCameraWindow = null;
 
         [DllImport("user32.dll")]
@@ -89,7 +92,10 @@ namespace QASmartTouch.Forms
             bool enableSystemAudio = true,
             string? selectedMicId = null,
             RecordingQualityPreset qualityPreset = RecordingQualityPreset.Standard1080p,
-            bool hasCamera = false)
+            bool hasCamera = false,
+            bool hasCameraHardware = false,
+            string? selectedCameraId = null,
+            int cameraShapeMode = 0)
         {
             var existing = System.Linq.Enumerable.FirstOrDefault(Application.Current.Windows.OfType<FloatingRecorderBar>());
             if (existing != null)
@@ -100,7 +106,15 @@ namespace QASmartTouch.Forms
             }
 
             var recorderBar = new FloatingRecorderBar();
-            recorderBar.StartNewRecording(enableMic, enableSystemAudio, selectedMicId, qualityPreset, hasCamera);
+            recorderBar.StartNewRecording(
+                enableMic,
+                enableSystemAudio,
+                selectedMicId,
+                qualityPreset,
+                hasCamera,
+                hasCameraHardware,
+                selectedCameraId,
+                cameraShapeMode);
         }
 
         public void StartNewRecording(
@@ -108,11 +122,19 @@ namespace QASmartTouch.Forms
             bool enableSystemAudio = true,
             string? selectedMicId = null,
             RecordingQualityPreset qualityPreset = RecordingQualityPreset.Standard1080p,
-            bool hasCamera = false)
+            bool hasCamera = false,
+            bool hasCameraHardware = false,
+            string? selectedCameraId = null,
+            int cameraShapeMode = 0)
         {
             try
             {
-                AttachSessionCamera(hasCamera);
+                _hasCameraHardware = hasCameraHardware || hasCamera || !string.IsNullOrWhiteSpace(selectedCameraId);
+                _sessionCameraId = !string.IsNullOrWhiteSpace(selectedCameraId) ? selectedCameraId : "0";
+                _sessionCameraShapeMode = cameraShapeMode;
+                _cameraHardwareDisconnected = false;
+
+                AttachSessionCamera();
                 _recorderService.StartRecording(
                     enableMic,
                     enableSystemAudio,
@@ -133,19 +155,14 @@ namespace QASmartTouch.Forms
             }
         }
 
-        private void AttachSessionCamera(bool hasCamera)
+        private void AttachSessionCamera()
         {
             DetachSessionCamera();
             var cam = FloatingCameraWindow.CurrentInstance;
-            if (hasCamera && cam != null)
+            if (cam != null)
             {
-                _hasSessionCamera = true;
                 _trackedCameraWindow = cam;
                 _trackedCameraWindow.CameraClosed += OnFloatingCameraClosed;
-            }
-            else
-            {
-                _hasSessionCamera = false;
             }
         }
 
@@ -160,11 +177,18 @@ namespace QASmartTouch.Forms
 
         private void OnFloatingCameraClosed()
         {
+            var closedWindow = _trackedCameraWindow;
+            bool wasHardwareError = closedWindow?.ClosedByHardwareError == true;
+            if (closedWindow != null)
+            {
+                _sessionCameraShapeMode = closedWindow.CurrentShapeMode;
+            }
+
             Dispatcher.InvokeAsync(() =>
             {
                 DetachSessionCamera();
-                _hasSessionCamera = false;
-                UpdateCamButtonVisual(cameraDisconnected: true);
+                _cameraHardwareDisconnected = wasHardwareError;
+                UpdateCamButtonVisual();
             });
         }
 
@@ -188,29 +212,42 @@ namespace QASmartTouch.Forms
             btnToggleMic.ToolTip = isMuted ? "Bật thu âm" : "Tắt thu âm";
         }
 
-        private void UpdateCamButtonVisual(bool cameraDisconnected = false)
+        private void UpdateCamButtonVisual()
         {
-            var cam = FloatingCameraWindow.CurrentInstance;
-            if (!_hasSessionCamera || cam == null)
+            if (!_hasCameraHardware)
             {
                 btnToggleCam.IsEnabled = false;
                 btnToggleCam.Opacity = 0.45;
                 iconCam.Data = Geometry.Parse(CamOffPathData);
-                iconCam.Fill = cameraDisconnected
-                    ? new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B))
-                    : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
-                btnToggleCam.ToolTip = cameraDisconnected
-                    ? "Camera đã đóng hoặc mất kết nối"
-                    : "Phiên ghi hình không bật Camera";
+                iconCam.Fill = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
+                btnToggleCam.ToolTip = "Không tìm thấy thiết bị Camera";
                 return;
             }
 
             btnToggleCam.IsEnabled = true;
             btnToggleCam.Opacity = 1.0;
-            bool isVisible = cam.Visibility == Visibility.Visible;
-            iconCam.Data = Geometry.Parse(isVisible ? CamOnPathData : CamOffPathData);
-            iconCam.Fill = isVisible ? new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC)) : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
-            btnToggleCam.ToolTip = isVisible ? "Ẩn Camera" : "Hiện Camera";
+
+            var cam = FloatingCameraWindow.CurrentInstance;
+            bool isVisible = cam != null && cam.Visibility == Visibility.Visible;
+
+            if (isVisible)
+            {
+                iconCam.Data = Geometry.Parse(CamOnPathData);
+                iconCam.Fill = new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC));
+                btnToggleCam.ToolTip = "Ẩn Camera";
+            }
+            else if (_cameraHardwareDisconnected)
+            {
+                iconCam.Data = Geometry.Parse(CamOffPathData);
+                iconCam.Fill = new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B));
+                btnToggleCam.ToolTip = "Camera mất kết nối (Nhấn để thử bật lại)";
+            }
+            else
+            {
+                iconCam.Data = Geometry.Parse(CamOffPathData);
+                iconCam.Fill = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
+                btnToggleCam.ToolTip = "Hiện Camera";
+            }
         }
 
         private void btnToggleMic_Click(object sender, RoutedEventArgs e)
@@ -222,29 +259,36 @@ namespace QASmartTouch.Forms
 
         private void btnToggleCam_Click(object sender, RoutedEventArgs e)
         {
-            if (!_hasSessionCamera || FloatingCameraWindow.CurrentInstance == null)
+            if (!_hasCameraHardware)
             {
-                _hasSessionCamera = false;
                 UpdateCamButtonVisual();
                 return;
             }
 
+            var cam = FloatingCameraWindow.CurrentInstance;
+            if (cam == null)
+            {
+                _cameraHardwareDisconnected = false;
+                FloatingCameraWindow.OpenOrActivate(_sessionCameraId ?? "0", _sessionCameraShapeMode);
+                AttachSessionCamera();
+                UpdateCamButtonVisual();
+                return;
+            }
+
+            _sessionCameraShapeMode = cam.CurrentShapeMode;
             FloatingCameraWindow.ToggleVisibility();
             UpdateCamButtonVisual();
         }
 
         private void DurationTimer_Tick(object? sender, EventArgs e)
         {
-            if (_recorderService.IsRecording)
+            if (_recorderService.IsRecording && !_recorderService.IsPaused)
             {
                 var duration = _recorderService.RecordingDuration;
                 txtDuration.Text = $"{duration:hh\\:mm\\:ss}";
 
                 // Nhấp nháy đèn REC nếu không bị tạm dừng
-                if (!_recorderService.IsPaused)
-                {
-                    recDot.Opacity = recDot.Opacity > 0.5 ? 0.2 : 1.0;
-                }
+                recDot.Opacity = recDot.Opacity > 0.5 ? 0.2 : 1.0;
             }
         }
 

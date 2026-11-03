@@ -20,7 +20,7 @@ namespace QASmartTouch.Services
         private bool _discardCurrentRecording;
         private TaskCompletionSource<(string? FilePath, string? Error)>? _sessionCompletionTcs;
         private Task? _pendingDisposeTask;
-        private DateTime _recordingStartTime;
+        private readonly System.Diagnostics.Stopwatch _recordingStopwatch = new System.Diagnostics.Stopwatch();
         private RecordingFormat _recordingFormat = RecordingFormat.GIF; // Legacy
         private RecordingQualityPreset _qualityPreset = RecordingQualityPreset.Standard1080p;
 
@@ -32,7 +32,7 @@ namespace QASmartTouch.Services
         public bool IsSessionActive => _isRecording || _isFinalizing;
         public bool IsPaused => _isPaused;
         public string DefaultSavePath => _defaultSavePath;
-        public TimeSpan RecordingDuration => _isRecording ? DateTime.Now - _recordingStartTime : TimeSpan.Zero;
+        public TimeSpan RecordingDuration => _isRecording ? _recordingStopwatch.Elapsed : TimeSpan.Zero;
         public RecordingFormat CurrentFormat => _recordingFormat;
         public RecordingQualityPreset CurrentQualityPreset
         {
@@ -148,6 +148,7 @@ namespace QASmartTouch.Services
                 try
                 {
                     _recorder?.Pause();
+                    _recordingStopwatch.Stop();
                     _isPaused = true;
                     System.Diagnostics.Debug.WriteLine("⏸️ Recording Paused");
                 }
@@ -165,6 +166,7 @@ namespace QASmartTouch.Services
                 try
                 {
                     _recorder?.Resume();
+                    _recordingStopwatch.Start();
                     _isPaused = false;
                     System.Diagnostics.Debug.WriteLine("▶️ Recording Resumed");
                 }
@@ -451,11 +453,12 @@ namespace QASmartTouch.Services
             try
             {
                 _recorder.Record(_currentRecordingPath);
-                _recordingStartTime = DateTime.Now;
+                _recordingStopwatch.Restart();
                 _isRecording = true;
             }
             catch
             {
+                _recordingStopwatch.Reset();
                 _isRecording = false;
                 _isFinalizing = false;
                 _sessionCompletionTcs = null;
@@ -491,12 +494,24 @@ namespace QASmartTouch.Services
                 // Khi cần giữ lại video, đảm bảo tối thiểu 1.2s để tránh lỗi thiếu frame của bộ mã hóa
                 if (!_discardCurrentRecording)
                 {
-                    var elapsed = DateTime.Now - _recordingStartTime;
+                    var elapsed = _recordingStopwatch.Elapsed;
                     if (elapsed.TotalMilliseconds < 1200)
                     {
+                        if (_isPaused)
+                        {
+                            try
+                            {
+                                _recorder?.Resume();
+                                _recordingStopwatch.Start();
+                                _isPaused = false;
+                            }
+                            catch { }
+                        }
                         await Task.Delay(1200 - (int)elapsed.TotalMilliseconds);
                     }
                 }
+
+                _recordingStopwatch.Stop();
 
                 try
                 {

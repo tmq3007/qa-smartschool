@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
@@ -7,13 +8,14 @@ namespace QASmartTouch.Forms
 {
     /// <summary>
     /// About Dialog — Giới thiệu QA SmartTouch
-    /// Hiển thị version, platform, tính năng, thông tin liên hệ
+    /// Hiển thị version, platform, thông tin nhà phát triển ngắn gọn
     /// </summary>
     public partial class AboutDialog : Window
     {
         public AboutDialog()
         {
             InitializeComponent();
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
             LoadVersionInfo();
         }
 
@@ -29,7 +31,6 @@ namespace QASmartTouch.Forms
                 tbVersion.Text = "1.0.0";
             }
 
-            // Build date: ngày ghi của tệp thực thi (không dùng DateTime.Now vì sẽ luôn hiện tháng hiện tại)
             try
             {
                 string asmPath = Assembly.GetExecutingAssembly().Location;
@@ -42,17 +43,25 @@ namespace QASmartTouch.Forms
                 tbBuildDate.Text = "—";
             }
 
-            // Runtime thực tế
-            tbPlatform.Text = $"WPF / .NET {Environment.Version.Major}.{Environment.Version.Minor}";
+            tbPlatform.Text = $"WPF / .NET {Environment.Version.Major}.{Environment.Version.Minor} (x64)";
 
-            // OS info
-            tbOS.Text = $"Windows {Environment.OSVersion.Version.Major}";
+            int build = Environment.OSVersion.Version.Build;
+            tbOS.Text = build >= 22000 ? "Windows 11 (64-bit)" : $"Windows {Environment.OSVersion.Version.Major} (64-bit)";
         }
 
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
                 DragMove();
+        }
+
+        private void Website_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo("https://qatmc.com") { UseShellExecute = true });
+            }
+            catch { }
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)

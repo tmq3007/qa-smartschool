@@ -567,17 +567,54 @@ namespace QASmartTouch.Forms
 
         #region Clear All
 
+        /// <summary>
+        /// Kiểm tra phần tử hệ thống trên DrawingCanvas (vòng tròn preview tẩy, Toast thông báo, ảnh nền)
+        /// để không xóa nhầm hoặc đưa nhầm vào lịch sử Undo/Redo.
+        /// </summary>
+        private bool IsOverlaySystemElement(UIElement element)
+        {
+            if (ReferenceEquals(element, _eraserPreview))
+                return true;
+
+            if (element is FrameworkElement fe)
+            {
+                string? tag = fe.Tag as string;
+                if (tag == "ToastNotification" || tag == "BackgroundImage")
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Kiểm tra trên màn hình hiện có còn nét vẽ / hình học chú thích nào của người dùng hay không
+        /// </summary>
+        public bool HasAnnotations
+        {
+            get
+            {
+                foreach (UIElement child in DrawingCanvas.Children)
+                {
+                    if (!IsOverlaySystemElement(child))
+                        return true;
+                }
+                return false;
+            }
+        }
+
         public void ClearAll()
         {
-            var count = DrawingCanvas.Children.Count;
-            if (count > 0)
+            var elements = new List<UIElement>();
+            foreach (UIElement child in DrawingCanvas.Children)
             {
-                var elements = new List<UIElement>();
-                foreach (UIElement child in DrawingCanvas.Children)
+                if (!IsOverlaySystemElement(child))
                 {
                     elements.Add(child);
                 }
-                
+            }
+
+            if (elements.Count > 0)
+            {
                 var batchActions = new List<Managers.UndoRedoAction>();
                 foreach (var el in elements)
                 {
@@ -588,15 +625,43 @@ namespace QASmartTouch.Forms
                         Parent = DrawingCanvas,
                         Description = "Clear All Element"
                     });
+                    DrawingCanvas.Children.Remove(el);
                 }
-                
+
                 _undoRedoManager?.RecordBatchAction(batchActions, "Xóa sạch bảng");
-                
-                DrawingCanvas.Children.Clear();
                 _strokes.Clear();
             }
-            
-            System.Diagnostics.Debug.WriteLine($"🧹 Cleared all ({count} elements)");
+
+            System.Diagnostics.Debug.WriteLine($"🧹 Cleared all ({elements.Count} annotation elements)");
+        }
+
+        /// <summary>
+        /// Xóa toàn bộ nét vẽ chú thích và làm sạch lịch sử Undo/Redo
+        /// (Dùng khi chuyển từ Bút về Chuột ở chế độ DESKTOP để trả lại màn hình sạch hoàn toàn).
+        /// </summary>
+        public void ClearAllAndResetHistory()
+        {
+            var elements = new List<UIElement>();
+            foreach (UIElement child in DrawingCanvas.Children)
+            {
+                if (!IsOverlaySystemElement(child))
+                {
+                    elements.Add(child);
+                }
+            }
+
+            foreach (var el in elements)
+            {
+                DrawingCanvas.Children.Remove(el);
+            }
+
+            _strokes.Clear();
+            _currentEraseSessionElements.Clear();
+            _currentStroke = null;
+            _isDrawing = false;
+            _undoRedoManager?.ClearHistory();
+
+            System.Diagnostics.Debug.WriteLine($"🧹 Cleared {elements.Count} annotations and reset history for Mouse Mode");
         }
 
         /// <summary>
@@ -1090,6 +1155,7 @@ namespace QASmartTouch.Forms
                 {
                     Background = new System.Windows.Media.SolidColorBrush(
                         (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colorHex)),
+                    Tag = "ToastNotification",
                     CornerRadius = new CornerRadius(6),
                     Padding = new Thickness(16, 8, 16, 8),
                     Opacity = 0.92

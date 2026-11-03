@@ -1477,8 +1477,9 @@ namespace QASmartTouch.Forms
                 System.Diagnostics.Debug.WriteLine($"👆 You can now drag canvas to pan (Press 1x to reset)");
             }
 
-            // Đồng bộ hiển thị % Zoom lên HUD
+            // Đồng bộ hiển thị % Zoom lên HUD và làm mới độ dày đường kẻ nền theo mức Zoom
             UpdateZoomHudDisplay();
+            RefreshBackgroundPatternForZoom();
         }
 
         #region Zoom Indicator HUD Event Handlers

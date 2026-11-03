@@ -105,9 +105,9 @@ namespace QASmartTouch.Forms
                 else if (pattern == "MusicStaff") spacing = Math.Max(10, _currentLineSpacing) * 4;
                 else spacing = Math.Max(10, _currentLineSpacing);
 
-                const double VIRTUAL_OFFSET = 50000.0;
+                const double VIRTUAL_OFFSET = 10000.0;
                 double alignedOffset = Math.Ceiling(VIRTUAL_OFFSET / spacing) * spacing;
-                double virtualSize = alignedOffset * 2 + 20000.0;
+                double virtualSize = alignedOffset * 2 + 8000.0;
 
                 // Tạo Rectangle màu nền bao phủ toàn bộ không gian
                 var bgRect = new Rectangle
@@ -137,8 +137,7 @@ namespace QASmartTouch.Forms
                     Canvas.SetLeft(patternRect, -alignedOffset);
                     Canvas.SetTop(patternRect, -alignedOffset);
                     MainInteractiveBoard.Children.Insert(1, patternRect);
-                    patternRect.SnapsToDevicePixels = true;
-                    RenderOptions.SetEdgeMode(patternRect, EdgeMode.Aliased);
+                    RenderOptions.SetBitmapScalingMode(patternRect, BitmapScalingMode.HighQuality);
                     Panel.SetZIndex(patternRect, ZIndexConstants.GridOverlay);
                 }
 
@@ -281,9 +280,8 @@ namespace QASmartTouch.Forms
                         // ✅ QC_4.2_GRID_PROTECT (G-2): Pin tại (0,0) tránh NaN position
                         Canvas.SetLeft(patternRect, 0);
                         Canvas.SetTop(patternRect, 0);
-                        patternRect.SnapsToDevicePixels = true;
-                    RenderOptions.SetEdgeMode(patternRect, EdgeMode.Aliased);
-                    Panel.SetZIndex(patternRect, ZIndexConstants.GridOverlay);
+                        RenderOptions.SetBitmapScalingMode(patternRect, BitmapScalingMode.HighQuality);
+                        Panel.SetZIndex(patternRect, ZIndexConstants.GridOverlay);
                     }
 
                     // Set canvas background to transparent
@@ -320,62 +318,103 @@ namespace QASmartTouch.Forms
             }
         }
 
+        /// <summary>
+        /// Làm mới mẫu đường kẻ nền theo tỉ lệ Zoom hiện tại (Chuẩn i-Pro: bù độ dày nét khi thu nhỏ dưới 100%
+        /// để đường kẻ luôn đạt tối thiểu ~1.2 pixel vật lý trên màn hình và không bao giờ bị biến mất ở 50%).
+        /// </summary>
+        public void RefreshBackgroundPatternForZoom()
+        {
+            if (string.IsNullOrEmpty(_currentBackgroundPattern) || _currentBackgroundPattern == "None")
+                return;
+
+            var newBrush = CreatePatternBrushByName(_currentBackgroundPattern);
+            if (newBrush == null)
+                return;
+
+            foreach (var rect in MainInteractiveBoard.Children.OfType<Rectangle>())
+            {
+                if (rect.Tag?.ToString() == "BackgroundLayer" && Panel.GetZIndex(rect) == ZIndexConstants.GridOverlay)
+                {
+                    rect.Fill = newBrush;
+                }
+            }
+        }
+
+        private double GetZoomCompensatedPatternThickness(double baseThickness = 1.2)
+        {
+            double zoom = _currentZoomLevel > 0.05 ? _currentZoomLevel : 1.0;
+            // Khi thu nhỏ bảng (< 1.0x), nhân bù độ dày theo 1/zoom để trên màn hình vật lý nét kẻ không bị mảnh dưới 1px
+            double scaleCompensation = zoom < 1.0 ? (1.0 / zoom) : 1.0;
+            return baseThickness * scaleCompensation;
+        }
+
         private Brush CreateGridPattern()
         {
+            int spacing = Math.Max(10, _currentLineSpacing);
+            double thickness = GetZoomCompensatedPatternThickness(1.2);
+            double linePos = Math.Max(1.0, thickness / 2.0 + 0.5);
+
             var drawingBrush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
-                Viewbox = new Rect(0, 0, _currentLineSpacing, _currentLineSpacing),
+                Viewbox = new Rect(0, 0, spacing, spacing),
                 ViewboxUnits = BrushMappingMode.Absolute,
                 Stretch = Stretch.None,
-                Viewport = new Rect(0, 0, _currentLineSpacing, _currentLineSpacing), // Dynamic spacing
+                Viewport = new Rect(0, 0, spacing, spacing), // Dynamic spacing
                 ViewportUnits = BrushMappingMode.Absolute
             };
 
             var drawingGroup = new DrawingGroup();
-            RenderOptions.SetEdgeMode(drawingGroup, EdgeMode.Aliased);
-            
+
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(_currentLineOpacity * 255 / 100);
-            
+            var linePen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), thickness);
+            linePen.Freeze();
+
             // Vertical line
             drawingGroup.Children.Add(new GeometryDrawing
             {
-                Pen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1),
-                Geometry = new LineGeometry(new Point(0.5, 0), new Point(0.5, _currentLineSpacing))
+                Pen = linePen,
+                Geometry = new LineGeometry(new Point(linePos, 0), new Point(linePos, spacing))
             });
-            
+
             // Horizontal line
             drawingGroup.Children.Add(new GeometryDrawing
             {
-                Pen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1),
-                Geometry = new LineGeometry(new Point(0, 0.5), new Point(_currentLineSpacing, 0.5))
+                Pen = linePen,
+                Geometry = new LineGeometry(new Point(0, linePos), new Point(spacing, linePos))
             });
 
             drawingBrush.Drawing = drawingGroup;
+            drawingBrush.Freeze();
             return drawingBrush;
         }
 
         private Brush CreateDotsPattern()
         {
+            double radius = GetZoomCompensatedPatternThickness(0.8);
+
             var drawingBrush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
+                Viewbox = new Rect(0, 0, 30, 30),
+                ViewboxUnits = BrushMappingMode.Absolute,
+                Stretch = Stretch.None,
                 Viewport = new Rect(0, 0, 30, 30),
                 ViewportUnits = BrushMappingMode.Absolute
             };
 
             var drawingGroup = new DrawingGroup();
-            RenderOptions.SetEdgeMode(drawingGroup, EdgeMode.Aliased);
-            
+
             // Dot
             drawingGroup.Children.Add(new GeometryDrawing
             {
                 Brush = new SolidColorBrush(Color.FromArgb(40, 0, 0, 0)),
-                Geometry = new EllipseGeometry(new Point(15, 15), 0.5, 0.5)
+                Geometry = new EllipseGeometry(new Point(15, 15), radius, radius)
             });
 
             drawingBrush.Drawing = drawingGroup;
+            drawingBrush.Freeze();
             return drawingBrush;
         }
 
@@ -384,45 +423,50 @@ namespace QASmartTouch.Forms
         /// </summary>
         private Brush CreateLinesPattern()
         {
-            // Create drawing brush with dynamic spacing
+            int spacing = Math.Max(10, _currentLineSpacing);
+            double thickness = GetZoomCompensatedPatternThickness(1.2);
+            double linePos = Math.Max(1.0, thickness / 2.0 + 0.5);
+
+            // Create drawing brush with square tile width (tránh tile rộng 1px bị co thành 0.5px khi zoom 50%)
             var brush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
-                Viewbox = new Rect(0, 0, 1, _currentLineSpacing),
+                Viewbox = new Rect(0, 0, spacing, spacing),
                 ViewboxUnits = BrushMappingMode.Absolute,
-                Viewport = new Rect(0, 0, 1, _currentLineSpacing), // Dynamic spacing
+                Viewport = new Rect(0, 0, spacing, spacing), // Dynamic spacing
                 ViewportUnits = BrushMappingMode.Absolute,
                 Stretch = Stretch.None
             };
 
             // Create drawing group
             var group = new DrawingGroup();
-            RenderOptions.SetEdgeMode(group, EdgeMode.Aliased);
-            
+
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(_currentLineOpacity * 255 / 100);
-            
-            // Draw a single horizontal line at the top of the tile
-            var linePen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1);
+
+            // Draw a single horizontal line compensated for zoom
+            var linePen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), thickness);
             linePen.Freeze(); // Freeze for performance
-            
+
             group.Children.Add(new GeometryDrawing
             {
                 Pen = linePen,
-                Geometry = new LineGeometry(new Point(0, 0.5), new Point(1, 0.5))
+                Geometry = new LineGeometry(new Point(0, linePos), new Point(spacing, linePos))
             });
 
             brush.Drawing = group;
             brush.Freeze(); // Freeze for performance
-            
+
             return brush;
         }
 
         private Brush CreateMusicStaffPattern()
         {
             // Calculate total height for 5 lines with dynamic spacing
-            int totalHeight = _currentLineSpacing * 4; // 4 gaps between 5 lines
-            
+            int spacing = Math.Max(10, _currentLineSpacing);
+            int totalHeight = spacing * 4; // 4 gaps between 5 lines
+            double thickness = GetZoomCompensatedPatternThickness(1.2);
+
             var drawingBrush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
@@ -431,22 +475,24 @@ namespace QASmartTouch.Forms
             };
 
             var drawingGroup = new DrawingGroup();
-            RenderOptions.SetEdgeMode(drawingGroup, EdgeMode.Aliased);
-            
+
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(_currentLineOpacity * 255 / 100);
-            
+            var linePen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), thickness);
+            linePen.Freeze();
+
             // 5 lines for music staff with dynamic spacing
             for (int i = 0; i < 5; i++)
             {
                 drawingGroup.Children.Add(new GeometryDrawing
                 {
-                    Pen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1),
-                    Geometry = new LineGeometry(new Point(0, i * _currentLineSpacing), new Point(100, i * _currentLineSpacing))
+                    Pen = linePen,
+                    Geometry = new LineGeometry(new Point(0, i * spacing), new Point(100, i * spacing))
                 });
             }
 
             drawingBrush.Drawing = drawingGroup;
+            drawingBrush.Freeze();
             return drawingBrush;
         }
 

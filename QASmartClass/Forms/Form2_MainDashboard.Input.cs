@@ -751,6 +751,7 @@ namespace QASmartTouch.Forms
             _currentZoomLevel = newZoom;
 
             UpdateZoomHudDisplay();
+            RefreshBackgroundPatternForZoom();
             System.Diagnostics.Debug.WriteLine($"🔍 Zoom to Cursor: {oldZoom}x → {newZoom}x at ({mousePos.X:F0}, {mousePos.Y:F0})");
         }
 
@@ -843,6 +844,7 @@ namespace QASmartTouch.Forms
             {
                 _lastReportedHudZoom = newZoom;
                 UpdateZoomHudDisplay();
+                RefreshBackgroundPatternForZoom();
             }
         }
 
@@ -866,6 +868,7 @@ namespace QASmartTouch.Forms
                     _panTransform.Y *= factor;
                 }
                 UpdateZoomHudDisplay();
+                RefreshBackgroundPatternForZoom();
             }
             System.Diagnostics.Debug.WriteLine($"✌️ Two-finger gesture ended at zoom={_currentZoomLevel:F2}x");
         }

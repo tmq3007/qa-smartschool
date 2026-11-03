@@ -109,6 +109,10 @@ namespace QASmartTouch.Controllers
                 // Hiển thị 4 nút Quick Dock Tabs ở các vị trí mép/góc màn hình
                 CreateAndShowDockTabs();
 
+                // Khởi tạo mặc định ở chế độ Chuột (đồng bộ với trạng thái click-through ban đầu của overlay)
+                _isMouseMode = true;
+                _toolbar.SetActiveToolButton("mouse");
+
                 _isWindowModeActive = true;
                 
                 System.Diagnostics.Debug.WriteLine("✅ Entered Window Mode - Ready for screenshot");
@@ -136,8 +140,8 @@ namespace QASmartTouch.Controllers
 
             try
             {
-                // Hỏi lưu nháp nếu phát hiện có nét vẽ trên bảng
-                if (_overlay != null && _overlay.UndoRedoManager != null && _overlay.UndoRedoManager.CanUndo)
+                // Hỏi lưu nháp nếu phát hiện vẫn còn nét vẽ thực tế trên màn hình
+                if (_overlay != null && _overlay.HasAnnotations)
                 {
                     var confirm = MessageBox.Show(
                         "Bạn có các nét vẽ chưa lưu trên màn hình. Bạn có muốn lưu lại ảnh chụp màn hình kèm chú thích trước khi thoát không?",
@@ -363,25 +367,19 @@ namespace QASmartTouch.Controllers
 
             if (_overlay == null) return;
 
-            if (_isMouseMode)
-            {
-                // Đang ở mouse mode → tắt đi (toggle off)
-                DeactivateAllModes();
-                System.Diagnostics.Debug.WriteLine("🖥️ Mouse mode OFF");
-            }
-            else
-            {
-                // Tắt tất cả các mode khác
-                DeactivateAllModes();
+            // Tắt tất cả các mode khác (Bút / Xóa nét / ColorPicker)
+            DeactivateAllModes();
 
-                // Bật Mouse mode: overlay không chặn click, cho phép tương tác với cửa sổ bên dưới
-                _isMouseMode = true;
-                _overlay.SetMouseMode(true);
+            // Tự động dọn sạch các nét vẽ chú thích cũ để trả lại màn hình DESKTOP trống hoàn toàn
+            _overlay.ClearAllAndResetHistory();
 
-                _toolbar?.SetActiveToolButton("mouse");
-                _overlay?.ShowToast("🖥️ Chế độ chuột – bạn có thể di chuyển và tương tác màn hình", "#388E3C");
-                System.Diagnostics.Debug.WriteLine("🖥️ Mouse mode ON");
-            }
+            // Bật Mouse mode: overlay không chặn click, cho phép tương tác với cửa sổ bên dưới
+            _isMouseMode = true;
+            _overlay.SetMouseMode(true);
+
+            _toolbar?.SetActiveToolButton("mouse");
+            _overlay?.ShowToast("🖥️ Chế độ chuột – bạn có thể di chuyển và tương tác màn hình", "#388E3C");
+            System.Diagnostics.Debug.WriteLine("🖥️ Mouse mode ON (annotations cleared)");
         }
         
         private void OnToolbarRepositionRequested(object? sender, Forms.ToolbarSideEventArgs e)
