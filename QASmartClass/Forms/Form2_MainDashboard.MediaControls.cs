@@ -57,7 +57,7 @@ namespace QASmartTouch.Forms
                 defaultTitle: "Mô phỏng Tương tác PhET",
                 customTitle: title,
                 containerTag: "PhETSimulation",
-                fallbackBackUrl: string.IsNullOrWhiteSpace(returnBrowseUrl) ? "https://phet.colorado.edu/vi/simulations/browse?type=html" : returnBrowseUrl,
+                fallbackBackUrl: returnBrowseUrl,
                 isYooBook: false);
         }
 
@@ -253,11 +253,35 @@ namespace QASmartTouch.Forms
 
                 // Nút Tải lại (↻)
                 // Nút Quay lại (←) để chọn thí nghiệm khác ngay trên bảng
-                var btnBack = CreateHeaderButton("←", "Quay lại trang trước / danh sách thí nghiệm", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                var btnBack = CreateHeaderButton("←", "Quay lại danh mục học liệu / trang trước", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
                 btnBack.Click += (s, e) =>
                 {
                     try
                     {
+                        if (containerTag == "PhETSimulation")
+                        {
+                            var phetWindow = new Form2_24_PhETCatalogWindow();
+                            phetWindow.SetMainDashboard(this);
+                            phetWindow.SetTargetWidget((newUrl, newTitle) =>
+                            {
+                                if (webView.CoreWebView2 != null)
+                                {
+                                    webView.CoreWebView2.Navigate(newUrl);
+                                }
+                                else
+                                {
+                                    webView.Source = new Uri(newUrl);
+                                }
+                                if (titleBlock != null && !string.IsNullOrWhiteSpace(newTitle))
+                                {
+                                    titleBlock.Text = newTitle;
+                                    titleBlock.ToolTip = newTitle;
+                                }
+                            });
+                            WindowHelper.ShowChildDialog(phetWindow, this);
+                            return;
+                        }
+
                         if (webView.CoreWebView2 != null)
                         {
                             if (webView.CanGoBack)
@@ -274,7 +298,10 @@ namespace QASmartTouch.Forms
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[WidgetUnified] Back error: {ex.Message}");
+                    }
                 };
                 actionPanel.Children.Add(btnBack);
 

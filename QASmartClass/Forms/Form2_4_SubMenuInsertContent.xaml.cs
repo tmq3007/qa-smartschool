@@ -1075,8 +1075,26 @@ namespace QASmartTouch.Forms
 
         private void btnPhETBrowseAll_Click(object sender, RoutedEventArgs e)
         {
-            OpenPhETBrowser("https://phet.colorado.edu/vi/simulations/browse?type=html");
+            try
+            {
+                this.Hide();
+                var phetWindow = new Form2_24_PhETCatalogWindow();
+                if (_mainDashboard != null)
+                {
+                    phetWindow.SetMainDashboard(_mainDashboard);
+                }
+                WindowHelper.ShowChildDialog(phetWindow, _mainDashboard);
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                this.Show();
+                MessageBox.Show($"Lỗi mở Thư viện Học liệu PhET: {ex.Message}", "Lỗi",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Diagnostics.Debug.WriteLine($"❌ PhET catalog error: {ex.Message}");
+            }
         }
+
 
         /// <summary>
         /// Open PhET Simulation Browser with specified URL
