@@ -1093,6 +1093,35 @@ namespace QASmartTouch.Forms
         }
 
         // TAB 12: GOOGLE MAPS
+        // KHO HỌC LIỆU 3D YOOBOOK (yoobook.vn/explore)
+        private void btnYooBook_Click(object sender, RoutedEventArgs e)
+        {
+            OpenYooBookBrowser("https://yoobook.vn/explore");
+        }
+
+        /// <summary>
+        /// Mở cửa sổ Kho học liệu 3D &amp; Phòng thí nghiệm ảo K12 YooBook (Explore-only + Auto-Login)
+        /// </summary>
+        private void OpenYooBookBrowser(string url)
+        {
+            try
+            {
+                this.Hide();
+                var yooBookBrowser = new Form2_26_YooBookBrowser(url);
+                yooBookBrowser.SetMainDashboard(_mainDashboard);
+                yooBookBrowser.Owner = this.Owner;
+                yooBookBrowser.ShowDialog();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                this.Show();
+                MessageBox.Show($"Lỗi mở Kho học liệu YooBook: {ex.Message}", "Lỗi",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Diagnostics.Debug.WriteLine($"❌ YooBook browser error: {ex.Message}");
+            }
+        }
+
         private void btnGoogleMapsHanoi_Click(object sender, RoutedEventArgs e)
         {
             InsertGoogleMapsLocation("https://www.google.com/maps/@21.0104732,105.8484669,15z");

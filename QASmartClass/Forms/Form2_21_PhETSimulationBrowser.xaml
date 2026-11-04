@@ -236,7 +236,7 @@
 
                            VerticalAlignment="Center">
 
-                    <Button x:Name="btnCapture" 
+                    <Button x:Name="btnCapture" Visibility="Collapsed" IsEnabled="False"
 
                            Width="160" Height="45" Margin="0,0,10,0"
 
