@@ -3161,6 +3161,126 @@ namespace QASmartTouch.Forms
             ShowSmartStatusBadge("📊 Đã chèn Đồ thị hàm số lên bảng!");
         }
 
+        /// <summary>
+        /// Chèn Thẻ Ghi Chú Thông Minh (SmartNoteCard) chuẩn phong cách MathCard lên bảng vẽ
+        /// Hỗ trợ sửa chữ trực tiếp, bàn phím ảo, đa dạng phông chữ viết tay và 8 màu thẻ sinh động
+        /// </summary>
+        public void InsertSmartNoteCardToBoard(QASmartClass.Services.Tools.SmartNoteModel? initialData = null)
+        {
+            // Ẩn bàn phím nổi nếu đang hiện
+            _floatingTouchKeyboard?.HideKeyboard();
+
+            var model = initialData ?? new QASmartClass.Services.Tools.SmartNoteModel();
+
+            // 1. Dựng Thẻ Ghi Chú hoàn chỉnh
+            var cardBorder = QASmartClass.Services.Tools.SmartNoteCardRenderer.CreateNoteCard(
+                model,
+                onRequestEdit: (card) => StartInPlaceSmartNoteEditing(card),
+                onRequestFormat: (card) => OpenSmartNoteFormatDialog(card)
+            );
+
+            // 2. Xác định vị trí chèn (ở giữa màn hình hoặc lệch nhẹ theo đối tượng đang chọn)
+            double posX = Math.Max(50, (MainInteractiveBoard.ActualWidth - (model.Width > 0 ? model.Width : 420)) / 2);
+            double posY = Math.Max(50, (MainInteractiveBoard.ActualHeight - 240) / 2);
+
+            var selectedObjects = _selectionManager?.SelectedObjects;
+            if (selectedObjects != null && selectedObjects.Count > 0)
+            {
+                var first = selectedObjects[0];
+                posX = first.Position.X + 40;
+                posY = first.Position.Y + 40;
+            }
+
+            Canvas.SetLeft(cardBorder, posX);
+            Canvas.SetTop(cardBorder, posY);
+            Canvas.SetZIndex(cardBorder, 1000);
+
+            MainInteractiveBoard.Children.Add(cardBorder);
+
+            // 3. Đăng ký với SelectionManager & QuadTree & Undo/Redo
+            try
+            {
+                RegisterNewObjectWithSelectionManager(cardBorder);
+            }
+            catch { }
+
+            RecordAddAction(cardBorder, "SmartNoteCard");
+            RefreshSelectableObjects();
+
+            // 4. Chuyển sang công cụ Chọn vùng
+            try
+            {
+                if (btn8_Select != null) SelectTool(btn8_Select);
+            }
+            catch { }
+
+            ShowSmartStatusBadge("📌 Đã chèn Thẻ Ghi Chú Thông Minh lên bảng!");
+        }
+
+        /// <summary>
+        /// Kích hoạt chế độ sửa chữ trực tiếp trong Thẻ Ghi Chú và mở bàn phím ảo
+        /// </summary>
+        public void StartInPlaceSmartNoteEditing(Border noteCard)
+        {
+            if (noteCard == null) return;
+
+            var tbDisplay = QASmartClass.Services.Tools.SmartNoteCardRenderer.GetDisplayTextBlock(noteCard);
+            if (tbDisplay == null) return;
+
+            QASmartClass.Services.Tools.SmartNoteCardRenderer.StartEditing(noteCard);
+
+            if (_floatingTouchKeyboard != null)
+            {
+                _editingSmartNoteCard = noteCard;
+            _editingTextBlock = tbDisplay;
+
+                double left = Canvas.GetLeft(noteCard);
+                double top = Canvas.GetTop(noteCard);
+                if (double.IsNaN(left)) left = 100;
+                if (double.IsNaN(top)) top = 100;
+
+                Point pos = new Point(Math.Max(20, left), top + (noteCard.ActualHeight > 0 ? noteCard.ActualHeight : 160) + 12);
+                _floatingTouchKeyboard.ShowWithText(tbDisplay.Text, pos, tbDisplay);
+            }
+        }
+
+        /// <summary>
+        /// Mở hộp thoại tùy chỉnh phông chữ, cỡ chữ, tiêu đề và màu sắc cho Thẻ Ghi Chú
+        /// </summary>
+        public void OpenSmartNoteFormatDialog(Border cardBorder)
+        {
+            if (cardBorder == null || cardBorder.DataContext is not QASmartClass.Services.Tools.SmartNoteModel model) return;
+
+            try
+            {
+                var dlg = new Form2_SmartNoteDialog(model);
+                bool? result = WindowHelper.ShowChildDialog(dlg, this);
+                if (result == true && dlg.IsConfirmed && dlg.Model != null)
+                {
+                    QASmartClass.Services.Tools.SmartNoteCardRenderer.ApplyTitleAndBadge(cardBorder, dlg.Model.Title, dlg.Model.BadgeText);
+                    QASmartClass.Services.Tools.SmartNoteCardRenderer.ApplyTheme(cardBorder, dlg.Model.ThemeType);
+                    QASmartClass.Services.Tools.SmartNoteCardRenderer.ApplyFont(cardBorder, dlg.Model.FontFamily);
+                    QASmartClass.Services.Tools.SmartNoteCardRenderer.ApplyFontSize(cardBorder, dlg.Model.FontSize);
+                    QASmartClass.Services.Tools.SmartNoteCardRenderer.ApplyFontStyle(cardBorder, dlg.Model.IsBold, dlg.Model.IsItalic);
+
+                    QASmartClass.Services.Tools.SmartNoteCardRenderer.FinishEditing(cardBorder, dlg.Model.Content);
+
+                    cardBorder.DataContext = dlg.Model;
+
+                    RecordAddAction(cardBorder, "Format SmartNoteCard");
+                    RefreshSelectableObjects();
+                    _selectionBox?.UpdatePosition();
+                    _selectionManager?.RebuildQuadTree();
+
+                    ShowSmartStatusBadge("🎨 Đã cập nhật định dạng Thẻ Ghi Chú!");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ OpenSmartNoteFormatDialog error: {ex.Message}");
+            }
+        }
+
         #endregion
     }
 }

@@ -468,11 +468,11 @@ namespace QASmartTouch.Forms
             try
             {
                 this.Hide();
-                var textBoxEditor = new Form2_TextBoxEditor();
-                bool? result = WindowHelper.ShowChildDialog(textBoxEditor, _mainDashboard);
-                if (result == true && textBoxEditor.IsConfirmed && textBoxEditor.TextBoxControl != null)
+                var noteDialog = new Form2_SmartNoteDialog();
+                bool? result = WindowHelper.ShowChildDialog(noteDialog, _mainDashboard);
+                if (result == true && noteDialog.IsConfirmed && noteDialog.Model != null)
                 {
-                    _mainDashboard?.InsertTextBoxToCanvas(textBoxEditor.TextBoxControl);
+                    _mainDashboard?.InsertSmartNoteCardToBoard(noteDialog.Model);
                 }
                 this.Close();
             }

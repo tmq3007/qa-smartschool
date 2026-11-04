@@ -1428,10 +1428,24 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                if (_editingSmartNoteCard != null)
+                {
+                    QASmartClass.Services.Tools.SmartNoteCardRenderer.FinishEditing(_editingSmartNoteCard, newText);
+                    RecordAddAction(_editingSmartNoteCard, "Edit SmartNoteCard");
+                    RefreshSelectableObjects();
+                    _selectionBox?.UpdatePosition();
+                    _selectionManager?.RebuildQuadTree();
+                    _editingSmartNoteCard = null;
+                    _editingTextBlock = null;
+                    System.Diagnostics.Debug.WriteLine($"✅ SmartNoteCard text updated directly: '{newText}'");
+                    return;
+                }
+
                 if (_editingTextBlock != null)
                 {
                     _editingTextBlock.Text = newText;
                     var elemToRecord = _editingTextBlock.Parent is Border b ? (UIElement)b : _editingTextBlock;
+
                     RecordAddAction(elemToRecord, "Edit Text");
                     RefreshSelectableObjects();
                     _selectionBox?.UpdatePosition();
@@ -1451,6 +1465,13 @@ namespace QASmartTouch.Forms
             // Tuyệt đối không mở bàn phím nổi cho kết quả từ QA Calculator
             if (obj?.Element is FrameworkElement fe && (fe.Tag?.ToString() == "CalculatorMathCard" || fe.Tag?.ToString() == "CalculatorResult"))
                 return;
+
+            // Kích hoạt sửa chữ trực tiếp cho Thẻ Ghi Chú Thông Minh (SmartNoteCard)
+            if (obj?.Element is Border noteCard && noteCard.Tag?.ToString() == "SmartNoteCard")
+            {
+                StartInPlaceSmartNoteEditing(noteCard);
+                return;
+            }
 
             if (obj?.Element is TextBlock textBlock)
             {

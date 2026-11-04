@@ -816,7 +816,14 @@ namespace QASmartTouch.Services
             // NG-2: Support Border (container with border)
             else if (original.Element is System.Windows.Controls.Border border)
             {
-                var newBorder = new System.Windows.Controls.Border
+                var noteClone = QASmartClass.Services.Tools.SmartNoteCardRenderer.TryCloneNoteCard(border);
+                if (noteClone != null)
+                {
+                    clonedElement = noteClone;
+                }
+                else
+                {
+                    var newBorder = new System.Windows.Controls.Border
                 {
                     Width = border.Width,
                     Height = border.Height,
@@ -846,7 +853,8 @@ namespace QASmartTouch.Services
                     }
                 }
                 
-                clonedElement = newBorder;
+                    clonedElement = newBorder;
+                }
             }
             // NG-2: Support Image (pictures, icons)
             else if (original.Element is System.Windows.Controls.Image image)
@@ -1209,6 +1217,9 @@ namespace QASmartTouch.Services
             }
             else if (original.Element is System.Windows.Controls.Border border)
             {
+                var noteClone = QASmartClass.Services.Tools.SmartNoteCardRenderer.TryCloneNoteCard(border);
+                if (noteClone != null) return noteClone;
+
                 var newBorder = new System.Windows.Controls.Border
                 {
                     Width = border.Width,

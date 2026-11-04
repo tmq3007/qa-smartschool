@@ -273,6 +273,7 @@ namespace QASmartTouch.Forms
         private FloatingTouchKeyboard? _floatingTouchKeyboard;
         private readonly List<UIElement> _systemUIControls = new();
         private TextBlock? _editingTextBlock;
+        private Border? _editingSmartNoteCard;
         private bool _objectSelectionMode = false; // Toggle for object selection mode
         
         // Handwriting Recognition Services
@@ -1447,6 +1448,7 @@ namespace QASmartTouch.Forms
             _colorPicker = new ColorPicker();
             _moreMenu = new MoreMenu();
             _floatingTouchKeyboard = new FloatingTouchKeyboard();
+            _floatingTouchKeyboard.TextConfirmed += OnFloatingKeyboardTextConfirmed;
 
             // Add controls to canvas
             MainInteractiveBoard.Children.Add(_selectionBox);

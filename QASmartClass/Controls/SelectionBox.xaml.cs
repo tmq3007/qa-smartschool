@@ -222,8 +222,11 @@ namespace QASmartTouch.Controls
             var now = DateTime.Now;
             if ((now - _lastClickTime).TotalMilliseconds <= 350)
             {
-                // Double-click detected — chỉ kích hoạt cho TextBlock của Text Tool, không kích hoạt cho MathCard/Calculator
-                if (_attachedObject?.Element is TextBlock tb && tb.Tag?.ToString() != "CalculatorMathCard" && tb.Tag?.ToString() != "CalculatorResult")
+                // Double-click detected — kích hoạt cho TextBlock của Text Tool hoặc SmartNoteCard, không kích hoạt cho MathCard/Calculator
+                bool isEditableTarget = (_attachedObject?.Element is TextBlock tb && tb.Tag?.ToString() != "CalculatorMathCard" && tb.Tag?.ToString() != "CalculatorResult")
+                                     || (_attachedObject?.Element is Border b && b.Tag?.ToString() == "SmartNoteCard");
+
+                if (isEditableTarget)
                 {
                     TextEditRequested?.Invoke(this, _attachedObject);
                     e.Handled = true;
@@ -260,7 +263,10 @@ namespace QASmartTouch.Controls
             var now = DateTime.Now;
             if ((now - _lastTouchTime).TotalMilliseconds <= 350)
             {
-                if (_attachedObject?.Element is TextBlock tb && tb.Tag?.ToString() != "CalculatorMathCard" && tb.Tag?.ToString() != "CalculatorResult")
+                bool isEditableTarget = (_attachedObject?.Element is TextBlock tb && tb.Tag?.ToString() != "CalculatorMathCard" && tb.Tag?.ToString() != "CalculatorResult")
+                                     || (_attachedObject?.Element is Border b && b.Tag?.ToString() == "SmartNoteCard");
+
+                if (isEditableTarget)
                 {
                     TextEditRequested?.Invoke(this, _attachedObject);
                     e.Handled = true;

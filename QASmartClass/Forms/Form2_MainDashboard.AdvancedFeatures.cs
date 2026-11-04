@@ -366,6 +366,12 @@ namespace QASmartTouch.Forms
                     };
                 }
 
+                else if (source is Border border)
+                {
+                    var noteClone = QASmartClass.Services.Tools.SmartNoteCardRenderer.TryCloneNoteCard(border);
+                    if (noteClone != null) return noteClone;
+                }
+
                 // Fallback: use XamlWriter/XamlReader
                 string xaml = System.Windows.Markup.XamlWriter.Save(source);
                 var cloned = System.Windows.Markup.XamlReader.Parse(xaml) as UIElement;
