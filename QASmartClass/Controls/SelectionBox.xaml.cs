@@ -184,6 +184,11 @@ namespace QASmartTouch.Controls
         /// </summary>
         public event EventHandler<SelectableObject>? RotateCompleted;
 
+        /// <summary>
+        /// Sự kiện khi người dùng click hoặc tap nhẹ vào đối tượng đã chọn (không phải thao tác kéo di chuyển hay biến đổi)
+        /// </summary>
+        public event EventHandler<SelectableObject>? ObjectTapped;
+
         #endregion
 
         #region Constructor
@@ -368,9 +373,17 @@ namespace QASmartTouch.Controls
             {
                 _isMoving = false;
 
-                // Cập nhật bounds trong QuadTree
-                _attachedObject?.UpdateBounds();
-                FinishTransformOperation("Move object");
+                Point endPoint = e.GetPosition(this.Parent as UIElement);
+                double dist = (endPoint - _dragStartPoint).Length;
+                if (dist > 3)
+                {
+                    _attachedObject?.UpdateBounds();
+                    FinishTransformOperation("Move object");
+                }
+                else
+                {
+                    RaiseObjectTapped(_attachedObject);
+                }
             }
 
             if (SelectionBorder.IsMouseCaptured)
@@ -1150,17 +1163,34 @@ namespace QASmartTouch.Controls
 
             ScaleTooltip.Visibility = Visibility.Collapsed;
 
-            // Cập nhật bounds cho QuadTree spatial index sau khi di chuyển/zoom bằng touch
-            if (_attachedObject != null)
+            double totalTranslation = e.TotalManipulation.Translation.Length;
+            if (totalTranslation < 8)
             {
+                // Touch tap nhẹ vào đối tượng đã chọn (không di chuyển)
+                RaiseObjectTapped(_attachedObject);
+            }
+            else if (_attachedObject != null)
+            {
+                // Cập nhật bounds cho QuadTree spatial index sau khi di chuyển/zoom bằng touch
                 _attachedObject.UpdateBounds();
                 ObjectTransformed?.Invoke(this, _attachedObject);
+                FinishTransformOperation("Transform object");
             }
 
-            FinishTransformOperation("Transform object");
             ResetMoveState();
 
             e.Handled = true;
+        }
+
+        private DateTime _lastTappedTime = DateTime.MinValue;
+        private void RaiseObjectTapped(SelectableObject? obj)
+        {
+            if (obj == null) return;
+            var now = DateTime.Now;
+            if ((now - _lastTappedTime).TotalMilliseconds < 350)
+                return;
+            _lastTappedTime = now;
+            ObjectTapped?.Invoke(this, obj);
         }
 
         #endregion

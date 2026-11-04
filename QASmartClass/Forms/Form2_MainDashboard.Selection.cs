@@ -1004,6 +1004,12 @@ namespace QASmartTouch.Forms
             }
         }
 
+        private void OnSelectionBoxObjectTapped(object? sender, SelectableObject obj)
+        {
+            // 🔊 Người dùng click/tap vào đối tượng đã được chọn trong SelectionBox -> Phát âm từ vựng tiếng Anh
+            TrySpeakEnglishCard(obj);
+        }
+
         /// <summary>
         /// Called when user transforms object via SelectionBox handles
         /// </summary>

@@ -1493,6 +1493,7 @@ namespace QASmartTouch.Forms
             _selectionBox.TransformCompleted += OnSelectionBoxTransformCompleted;
             _selectionBox.RotateStarted += OnSelectionBoxRotateStarted;
             _selectionBox.RotateCompleted += OnSelectionBoxRotateCompleted;
+            _selectionBox.ObjectTapped += OnSelectionBoxObjectTapped;
             
             // Wire up ContextToolbar events
             _contextToolbar.CopyClicked += OnToolbarCopyClicked;
