@@ -1510,6 +1510,7 @@ namespace QASmartTouch.Forms
             _contextToolbar.DeleteClicked += OnToolbarDeleteClicked;
             _contextToolbar.SpotlightClicked += OnToolbarSpotlightClicked;
             _contextToolbar.MoreClicked += OnToolbarMoreClicked;
+            _contextToolbar.Rotate3DClicked += OnToolbarRotate3DClicked;
             
             // Wire up ThicknessPicker events
             _thicknessPicker.ThicknessChanged += OnThicknessChanged;

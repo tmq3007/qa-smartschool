@@ -1776,7 +1776,7 @@ namespace QASmartTouch.Forms
         private bool Is3DShape(string? shapeName)
         {
             if (string.IsNullOrEmpty(shapeName)) return false;
-            return shapeName is "Cube" or "Sphere" or "Pyramid" or "Tetrahedron" or "Cylinder" or "Cone" or "Prism";
+            return Spatial3DService.Is3DShapeName(shapeName);
         }
 
         /// <summary>
@@ -1791,7 +1791,9 @@ namespace QASmartTouch.Forms
 
             GeometryGroup group = new GeometryGroup();
 
-            switch (_currentShape)
+            string normShape = Spatial3DService.NormalizeShapeType(_currentShape);
+
+            switch (normShape)
             {
                 case "Cube":
                     BuildCubeWireframe(group, left, top, width, height);
@@ -1813,6 +1815,9 @@ namespace QASmartTouch.Forms
                     break;
                 case "Sphere":
                     BuildSphereWireframe(group, left, top, width, height);
+                    break;
+                default:
+                    BuildCubeWireframe(group, left, top, width, height);
                     break;
             }
 
@@ -1857,60 +1862,18 @@ namespace QASmartTouch.Forms
                 Background = Brushes.Transparent // Cho phép bấm chọn/di chuyển dễ dàng trên màn hình tương tác
             };
 
-            GeometryGroup visibleGeo = new GeometryGroup();
-            GeometryGroup hiddenGeo = new GeometryGroup();
-
-            switch (shapeName)
+            string normType = Spatial3DService.NormalizeShapeType(shapeName);
+            var data = new Shape3DData
             {
-                case "Cube":
-                    BuildCubeGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
-                    break;
-                case "Pyramid":
-                    BuildPyramidGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
-                    break;
-                case "Tetrahedron":
-                    BuildTetrahedronGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
-                    break;
-                case "Cylinder":
-                    BuildCylinderGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
-                    break;
-                case "Cone":
-                    BuildConeGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
-                    break;
-                case "Prism":
-                    BuildPrismGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
-                    break;
-                case "Sphere":
-                    BuildSphereGeometry(visibleGeo, hiddenGeo, 0, 0, width, height);
-                    break;
-            }
+                ShapeType = normType,
+                Yaw = normType == "Pyramid" ? 45 : (normType == "Prism" ? -35 : -28),
+                Pitch = 22,
+                StrokeColor = strokeColor,
+                StrokeThickness = thickness
+            };
+            container.Tag = data;
 
-            // Lớp cạnh khuất (Nét đứt SGK)
-            if (hiddenGeo.Children.Count > 0)
-            {
-                Path hiddenPath = new Path
-                {
-                    Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = thickness,
-                    StrokeDashArray = new DoubleCollection { 4, 3 },
-                    Data = hiddenGeo
-                };
-                container.Children.Add(hiddenPath);
-            }
-
-            // Lớp cạnh nhìn thấy (Nét liền)
-            if (visibleGeo.Children.Count > 0)
-            {
-                Path visiblePath = new Path
-                {
-                    Stroke = new SolidColorBrush(strokeColor),
-                    StrokeThickness = thickness,
-                    Data = visibleGeo
-                };
-                container.Children.Add(visiblePath);
-            }
-
-            container.Tag = "3DShape";
+            Spatial3DService.Render3DShape(container, data);
             return container;
         }
 

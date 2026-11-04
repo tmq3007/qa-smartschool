@@ -36,6 +36,7 @@ namespace QASmartTouch.Controls
         public event EventHandler? DeleteClicked;
         public event EventHandler? SpotlightClicked;
         public event EventHandler? MoreClicked;
+        public event EventHandler? Rotate3DClicked;
 
         #endregion
 
@@ -369,6 +370,45 @@ namespace QASmartTouch.Controls
                     new Action(() => _moreBtnProcessing = false),
                     System.Windows.Threading.DispatcherPriority.Input);
             }
+        }
+
+        #endregion
+
+        #region 3D Rotation Controls
+
+        /// <summary>
+        /// Cập nhật hiển thị nút Xoay 3D (chỉ hiện riêng khi chọn hình không gian 3D)
+        /// </summary>
+        public void Update3DControls(bool is3D, bool isRotating)
+        {
+            if (btnRotate3D == null) return;
+            btnRotate3D.Visibility = is3D ? Visibility.Visible : Visibility.Collapsed;
+            if (borderRotate3D != null)
+            {
+                if (isRotating)
+                {
+                    borderRotate3D.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E7E72"));
+                    borderRotate3D.BorderBrush = new SolidColorBrush(Colors.White);
+                    borderRotate3D.BorderThickness = new Thickness(1.5);
+                }
+                else
+                {
+                    borderRotate3D.Background = Brushes.Transparent;
+                    borderRotate3D.BorderBrush = Brushes.Transparent;
+                    borderRotate3D.BorderThickness = new Thickness(0);
+                }
+            }
+        }
+
+        private void btnRotate3D_Click(object sender, RoutedEventArgs e)
+        {
+            Rotate3DClicked?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void btnRotate3D_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            Rotate3DClicked?.Invoke(this, EventArgs.Empty);
+            e.Handled = true;
         }
 
         #endregion

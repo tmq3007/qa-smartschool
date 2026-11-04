@@ -33,6 +33,7 @@ namespace QASmartTouch.Forms
 {
     public partial class Form2_MainDashboard
     {
+        private bool _is3DRotatingSession = false;
         #region Object Selection Event Handlers
 
         /// <summary>
@@ -51,6 +52,12 @@ namespace QASmartTouch.Forms
                 System.Diagnostics.Debug.WriteLine($"   Size: {selectedObject.Size}");
                 System.Diagnostics.Debug.WriteLine($"   Element: {selectedObject.Element?.GetType().Name ?? "null"}");
                 
+                // Tự động nâng cấp Path hình 3D cũ sang Canvas 3D tương tác nếu cần
+                if (selectedObject.Element is Path pathElem && Spatial3DService.Is3DShapeName(pathElem.Tag?.ToString()))
+                {
+                    UpgradePathTo3DShapeContainer(pathElem, selectedObject);
+                }
+
                 // Show selection box
                 if (_selectionBox != null)
                 {
@@ -76,12 +83,19 @@ namespace QASmartTouch.Forms
                 _contextToolbar?.UpdateLockIcon(selectedObject.IsLocked);
                 _contextToolbar?.UpdateColorPreview(selectedObject.StrokeColor);
                 
-                System.Diagnostics.Debug.WriteLine($"✅ Selected: {selectedObject.Id}, Type: {selectedObject.Type}");
+                // 🔄 Hiển thị nút Xoay 3D riêng biệt cho hình không gian 3D
+                bool is3D = selectedObject.Element is FrameworkElement fe3d && Spatial3DService.Is3DShape(fe3d);
+                var shape3D = is3D ? Spatial3DService.GetShape3DData(selectedObject.Element as FrameworkElement) : null;
+                if (shape3D != null) shape3D.IsRotating3D = false;
+                _contextToolbar?.Update3DControls(is3D, false);
+                
+                System.Diagnostics.Debug.WriteLine($"✅ Selected: {selectedObject.Id}, Type: {selectedObject.Type}, is3D: {is3D}");
             }
             else
             {
                 // Hide all selection UI
                 _selectionBox?.Detach();
+                _contextToolbar?.Update3DControls(false, false);
                 _contextToolbar?.Hide();
                 _thicknessPicker?.Hide();
                 _colorPicker?.Hide();
@@ -132,6 +146,11 @@ namespace QASmartTouch.Forms
                         }
                     }
 
+                    if (singleObj.Element is Path pathElemSingle && Spatial3DService.Is3DShapeName(pathElemSingle.Tag?.ToString()))
+                    {
+                        UpgradePathTo3DShapeContainer(pathElemSingle, singleObj);
+                    }
+
                     if (_selectionBox != null)
                     {
                         _selectionBox.AttachTo(singleObj);
@@ -141,6 +160,10 @@ namespace QASmartTouch.Forms
                         var visualBounds = GetSelectionVisualBounds(singleObj);
                         var position = CalculateOptimalToolbarPosition(visualBounds);
                         _contextToolbar.ShowAt(position, singleObj);
+                        bool is3DSingle = singleObj.Element is FrameworkElement fe3 && Spatial3DService.Is3DShape(fe3);
+                        var shape3DSingle = is3DSingle ? Spatial3DService.GetShape3DData(singleObj.Element as FrameworkElement) : null;
+                        if (shape3DSingle != null) shape3DSingle.IsRotating3D = false;
+                        _contextToolbar.Update3DControls(is3DSingle, false);
                     }
                 }
                 else
@@ -191,6 +214,7 @@ namespace QASmartTouch.Forms
                             var position = CalculateOptimalToolbarPosition(visualBounds);
                             _contextToolbar.ShowAt(position, groupContainer);
                             _contextToolbar.UpdateLockIcon(selectedObjects.All(o => o.IsLocked));
+                            _contextToolbar.Update3DControls(false, false);
                         }
                     }
                 }
@@ -638,6 +662,19 @@ namespace QASmartTouch.Forms
             if (_draggedSelectionObject != null)
             {
                 Vector dragVector = currentPoint - _selectionDragStartPoint;
+
+                // 🔄 Chế độ Xoay 3D (Spatial Rotation - Chuẩn NoteBoard)
+                if (_draggedSelectionObject.Element is Canvas canvas3D && Spatial3DService.GetShape3DData(canvas3D) is Shape3DData shape3DData && shape3DData.IsRotating3D)
+                {
+                    if (Math.Abs(dragVector.X) > 1 || Math.Abs(dragVector.Y) > 1)
+                    {
+                        _is3DRotatingSession = true;
+                        Spatial3DService.ApplyRotationDelta(shape3DData, dragVector.X, dragVector.Y);
+                        Spatial3DService.Render3DShape(canvas3D, shape3DData);
+                        _selectionDragStartPoint = currentPoint;
+                    }
+                    return;
+                }
                 if (!_isDraggingSelection && (Math.Abs(dragVector.X) > 3 || Math.Abs(dragVector.Y) > 3))
                 {
                     _isDraggingSelection = true;
@@ -795,7 +832,13 @@ namespace QASmartTouch.Forms
             // 1. Xử lý kết thúc thao tác với đối tượng đã chọn (Kéo di chuyển hoặc Chạm giữ)
             if (_draggedSelectionObject != null)
             {
-                if (_isDraggingSelection)
+                if (_is3DRotatingSession)
+                {
+                    _is3DRotatingSession = false;
+                    _selectionManager?.RebuildQuadTree();
+                    System.Diagnostics.Debug.WriteLine("🌳 3D rotation session ended: Rebuilt QuadTree.");
+                }
+                else if (_isDraggingSelection)
                 {
                     // ✅ Rebuild QuadTree spatial index ngay khi kết thúc kéo di chuyển
                     _selectionManager?.RebuildQuadTree();
@@ -987,6 +1030,100 @@ namespace QASmartTouch.Forms
         }
 
         // ContextToolbar button handlers
+        private void OnToolbarRotate3DClicked(object? sender, EventArgs e)
+        {
+            var selObj = _selectionManager?.SelectedObject;
+            if (selObj?.Element is FrameworkElement fe && Spatial3DService.GetShape3DData(fe) is Shape3DData data)
+            {
+                if (selObj.Element is Path pathElem && Spatial3DService.Is3DShapeName(pathElem.Tag?.ToString()))
+                {
+                    UpgradePathTo3DShapeContainer(pathElem, selObj);
+                    data = Spatial3DService.GetShape3DData(selObj.Element as FrameworkElement)!;
+                }
+
+                data.IsRotating3D = !data.IsRotating3D;
+                if (data.IsRotating3D)
+                {
+                    data.InitialYaw = data.Yaw;
+                    data.InitialPitch = data.Pitch;
+                }
+                _contextToolbar?.Update3DControls(true, data.IsRotating3D);
+                if (data.IsRotating3D)
+                {
+                    ShowSmartStatusBadge("🔄 Chế độ Xoay 3D: Chạm & kéo trên hình để xoay không gian");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Nâng cấp Path hình 3D tĩnh sang Canvas 3D tương tác có gắn Shape3DData
+        /// Cho phép người dùng bấm nút xoay 3D ngay cả với hình đã vẽ từ trước
+        /// </summary>
+        private Canvas? UpgradePathTo3DShapeContainer(Path path, SelectableObject selectedObject)
+        {
+            try
+            {
+                string shapeName = path.Tag?.ToString() ?? "Cube";
+                string normType = Spatial3DService.NormalizeShapeType(shapeName);
+
+                Rect geomBounds = path.Data?.Bounds ?? Rect.Empty;
+                double canvasLeft = Canvas.GetLeft(path);
+                double canvasTop = Canvas.GetTop(path);
+
+                double posX = !double.IsNaN(canvasLeft) && canvasLeft > 0 ? canvasLeft : (geomBounds.Left > 0 ? geomBounds.Left : selectedObject.Position.X);
+                double posY = !double.IsNaN(canvasTop) && canvasTop > 0 ? canvasTop : (geomBounds.Top > 0 ? geomBounds.Top : selectedObject.Position.Y);
+                double width = path.ActualWidth > 0 ? path.ActualWidth : (!double.IsNaN(path.Width) && path.Width > 0 ? path.Width : (geomBounds.Width > 0 ? geomBounds.Width : selectedObject.Size.Width));
+                double height = path.ActualHeight > 0 ? path.ActualHeight : (!double.IsNaN(path.Height) && path.Height > 0 ? path.Height : (geomBounds.Height > 0 ? geomBounds.Height : selectedObject.Size.Height));
+
+                if (width <= 15) width = 250;
+                if (height <= 15) height = 250;
+                if (posX < 0) posX = 100;
+                if (posY < 0) posY = 100;
+
+                Color color = (path.Stroke as SolidColorBrush)?.Color ?? _currentPenColor;
+                double thickness = path.StrokeThickness > 0 ? path.StrokeThickness : 2.0;
+
+                int zIndex = Panel.GetZIndex(path);
+                if (zIndex <= 0) zIndex = _currentInkingZIndex;
+
+                Canvas container = Create3DShapeContainer(normType, width, height, color, thickness);
+                Canvas.SetLeft(container, posX);
+                Canvas.SetTop(container, posY);
+                Panel.SetZIndex(container, zIndex);
+
+                int idx = MainInteractiveBoard.Children.IndexOf(path);
+                if (idx >= 0)
+                {
+                    MainInteractiveBoard.Children.RemoveAt(idx);
+                    MainInteractiveBoard.Children.Insert(idx, container);
+                }
+                else
+                {
+                    MainInteractiveBoard.Children.Remove(path);
+                    MainInteractiveBoard.Children.Add(container);
+                }
+
+                _selectionManager?.RemoveObjectByElement(path);
+                selectedObject.Element = container;
+                selectedObject.Type = ObjectType.Shape;
+                selectedObject.Position = new Point(posX, posY);
+                selectedObject.Size = new Size(width, height);
+                selectedObject.Bounds = new Rect(posX, posY, width, height);
+                selectedObject.UpdateBounds();
+
+                Enable3DShapeDragging(container);
+                _selectionManager?.RebuildQuadTree();
+
+                System.Diagnostics.Debug.WriteLine($"🔄 Upgraded static 3D Path [{shapeName}] to interactive 3D Canvas [{normType}] at ({posX:F0}, {posY:F0}, {width:F0}x{height:F0})");
+                return container;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Upgrade3D] Error: {ex.Message}");
+                return null;
+            }
+        }
+
         private void OnToolbarCopyClicked(object? sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine($"🔍 OnToolbarCopyClicked called (Instant Duplication)");
@@ -1861,6 +1998,10 @@ namespace QASmartTouch.Forms
                     {
                         childShape.StrokeThickness = thickness;
                     }
+                    if (Spatial3DService.GetShape3DData(shapeCanvas) is Shape3DData data3d)
+                    {
+                        data3d.StrokeThickness = thickness;
+                    }
                     RecordModifyAction(obj.Element, oldThickness, thickness, $"Change 3D Shape Thickness {oldThickness:F0}→{thickness:F0}px");
                     System.Diagnostics.Debug.WriteLine($"   ✓ 3D Shape Canvas thickness changed: {oldThickness:F0}px → {thickness:F0}px");
                 }
@@ -1925,6 +2066,10 @@ namespace QASmartTouch.Forms
                             childShape.Stroke = brush;
                         if (childShape.Fill != null && childShape.Fill != Brushes.Transparent)
                             childShape.Fill = brush;
+                    }
+                    if (Spatial3DService.GetShape3DData(shapeCanvas) is Shape3DData data3d)
+                    {
+                        data3d.StrokeColor = color;
                     }
                     RecordModifyAction(obj.Element, oldColor, color, $"Change 3D Shape Color {oldColor} → {color}");
                     System.Diagnostics.Debug.WriteLine($"   ✓ 3D Shape Canvas color changed: {oldColor} → {color}");

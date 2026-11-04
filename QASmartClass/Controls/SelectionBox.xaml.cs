@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using QASmartTouch.Models;
 using QASmartTouch.Services;
+using QASmartTouch.Services.Tools;
 
 namespace QASmartTouch.Controls
 {
@@ -30,6 +31,17 @@ namespace QASmartTouch.Controls
         private bool _isDragging = false;
         private bool _isRotating = false;
         private bool _isMoving = false; // [BUG_DRAG_MOVE] Drag-to-move state
+        private bool _is3DRotating = false; // 🔄 Phiên xoay không gian 3D
+
+        private bool IsAttached3DRotating()
+        {
+            if (_attachedObject?.Element is FrameworkElement fe && Spatial3DService.Is3DShape(fe))
+            {
+                var data = Spatial3DService.GetShape3DData(fe);
+                return data != null && data.IsRotating3D;
+            }
+            return false;
+        }
         private bool _isManipulating = false;
         private int _activeResizeTouchId = -1;
         private int _activeRotateTouchId = -1;
@@ -217,6 +229,16 @@ namespace QASmartTouch.Controls
             // [BUG_DRAG_MOVE] Bắt đầu drag-to-move nếu không phải double-click và không trong phiên resize/rotate chốt
             if (_attachedObject != null && !_attachedObject.IsLocked && !_isDragging && !_isRotating && _activeResizeTouchId == -1 && _activeRotateTouchId == -1)
             {
+                if (IsAttached3DRotating())
+                {
+                    _is3DRotating = true;
+                    _dragStartPoint = e.GetPosition(this.Parent as UIElement);
+                    _lastMovePoint = _dragStartPoint;
+                    SelectionBorder.CaptureMouse();
+                    e.Handled = true;
+                    return;
+                }
+
                 _isMoving = true;
                 _dragStartPoint = e.GetPosition(this.Parent as UIElement);
                 _lastMovePoint = _dragStartPoint;
@@ -249,6 +271,30 @@ namespace QASmartTouch.Controls
         /// </summary>
         private void SelectionBorder_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_is3DRotating && _attachedObject != null)
+            {
+                Point rotatePt = e.GetPosition(this.Parent as UIElement);
+                double deltaX = rotatePt.X - _lastMovePoint.X;
+                double deltaY = rotatePt.Y - _lastMovePoint.Y;
+
+                if (Math.Abs(deltaX) > 0.5 || Math.Abs(deltaY) > 0.5)
+                {
+                    var fe = _attachedObject.Element as FrameworkElement;
+                    var data = Spatial3DService.GetShape3DData(fe);
+                    if (data != null)
+                    {
+                        Spatial3DService.ApplyRotationDelta(data, deltaX, deltaY);
+                        if (fe is Canvas c)
+                        {
+                            Spatial3DService.Render3DShape(c, data);
+                        }
+                    }
+                    _lastMovePoint = rotatePt;
+                }
+                e.Handled = true;
+                return;
+            }
+
             if (!_isMoving || _attachedObject == null || _attachedObject.IsLocked)
                 return;
 
@@ -307,6 +353,17 @@ namespace QASmartTouch.Controls
         /// </summary>
         private void SelectionBorder_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            if (_is3DRotating)
+            {
+                _is3DRotating = false;
+                if (SelectionBorder.IsMouseCaptured)
+                {
+                    SelectionBorder.ReleaseMouseCapture();
+                }
+                e.Handled = true;
+                return;
+            }
+
             if (_isMoving)
             {
                 _isMoving = false;
@@ -377,6 +434,15 @@ namespace QASmartTouch.Controls
                 return;
 
             bool wasRotating = _isRotating;
+            if (_is3DRotating)
+            {
+                _is3DRotating = false;
+                if (SelectionBorder.IsMouseCaptured)
+                {
+                    SelectionBorder.ReleaseMouseCapture();
+                }
+            }
+
             if (_isMoving) FinishTransformOperation("Move object");
             if (_isDragging) FinishTransformOperation("Resize object");
             if (_isRotating) FinishTransformOperation("Rotate object");
@@ -555,6 +621,15 @@ namespace QASmartTouch.Controls
                 return;
 
             // Chủ động dọn dẹp mọi cờ kéo di chuyển cũ bị kẹt do chuột ảo
+            if (_is3DRotating)
+            {
+                _is3DRotating = false;
+                if (SelectionBorder.IsMouseCaptured)
+                {
+                    SelectionBorder.ReleaseMouseCapture();
+                }
+            }
+
             if (_isMoving)
             {
                 _isMoving = false;
@@ -818,6 +893,15 @@ namespace QASmartTouch.Controls
                 return;
 
             // Chủ động dọn dẹp mọi cờ kéo di chuyển cũ bị kẹt do chuột ảo
+            if (_is3DRotating)
+            {
+                _is3DRotating = false;
+                if (SelectionBorder.IsMouseCaptured)
+                {
+                    SelectionBorder.ReleaseMouseCapture();
+                }
+            }
+
             if (_isMoving)
             {
                 _isMoving = false;
@@ -985,6 +1069,28 @@ namespace QASmartTouch.Controls
                 return;
             }
 
+            if (IsAttached3DRotating() && _attachedObject != null)
+            {
+                double rotX = e.DeltaManipulation.Translation.X;
+                double rotY = e.DeltaManipulation.Translation.Y;
+
+                if (Math.Abs(rotX) > 0.5 || Math.Abs(rotY) > 0.5)
+                {
+                    var fe = _attachedObject.Element as FrameworkElement;
+                    var data = Spatial3DService.GetShape3DData(fe);
+                    if (data != null)
+                    {
+                        Spatial3DService.ApplyRotationDelta(data, rotX, rotY);
+                        if (fe is Canvas c)
+                        {
+                            Spatial3DService.Render3DShape(c, data);
+                        }
+                    }
+                }
+                e.Handled = true;
+                return;
+            }
+
             // [BUG_DRAG_MOVE] Handle 1-finger Translation (di chuyển)
             double transX = e.DeltaManipulation.Translation.X;
             double transY = e.DeltaManipulation.Translation.Y;
@@ -1027,6 +1133,13 @@ namespace QASmartTouch.Controls
 
         private void SelectionBorder_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
+            if (IsAttached3DRotating())
+            {
+                _isManipulating = false;
+                e.Handled = true;
+                return;
+            }
+
             // Bỏ qua dọn dẹp nếu phiên kéo chốt vẫn đang diễn ra
             if (_isDragging || _isRotating || _activeResizeTouchId != -1 || _activeRotateTouchId != -1)
             {
