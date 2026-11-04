@@ -146,7 +146,10 @@ namespace QASmartTouch.Forms
                         button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
                         UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                     }
-                    _selectedTool = null;
+                    if (ReferenceEquals(_selectedTool, button))
+                    {
+                        _selectedTool = null;
+                    }
                 }
             };
             
@@ -377,7 +380,10 @@ namespace QASmartTouch.Forms
                         button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
                         UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                     }
-                    _selectedTool = null;
+                    if (ReferenceEquals(_selectedTool, button))
+                    {
+                        _selectedTool = null;
+                    }
                 }
             };
             
@@ -1148,6 +1154,14 @@ namespace QASmartTouch.Forms
                         if (childShape.Fill != null && childShape.Fill != Brushes.Transparent)
                             childShape.Fill = brush;
                     }
+                    foreach (var subCanvas in shapeCanvas.Children.OfType<Canvas>())
+                    {
+                        foreach (var subShape in subCanvas.Children.OfType<System.Windows.Shapes.Shape>())
+                        {
+                            if (subShape.Stroke != null) subShape.Stroke = brush;
+                            if (subShape.Fill != null && subShape.Fill != Brushes.Transparent) subShape.Fill = brush;
+                        }
+                    }
                 }
                 _contextToolbar?.UpdateColorPreview(color);
                 return;
@@ -1169,7 +1183,7 @@ namespace QASmartTouch.Forms
                 {
                     foreach (var childShape in shapeCanvas.Children.OfType<System.Windows.Shapes.Shape>())
                     {
-                        childShape.StrokeThickness = dVal;
+                        if (childShape.Stroke != null) childShape.StrokeThickness = dVal;
                     }
                 }
                 return;
@@ -1267,7 +1281,10 @@ namespace QASmartTouch.Forms
                         button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
                         UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                     }
-                    _selectedTool = null;
+                    if (ReferenceEquals(_selectedTool, button))
+                    {
+                        _selectedTool = null;
+                    }
                 }
             };
             
@@ -1369,7 +1386,10 @@ namespace QASmartTouch.Forms
                         button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
                         UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                     }
-                    _selectedTool = null;
+                    if (ReferenceEquals(_selectedTool, button))
+                    {
+                        _selectedTool = null;
+                    }
                 }
             };
             
@@ -2865,7 +2885,10 @@ namespace QASmartTouch.Forms
                         button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
                         UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                     }
-                    _selectedTool = null;
+                    if (ReferenceEquals(_selectedTool, button))
+                    {
+                        _selectedTool = null;
+                    }
                 }
             };
             
@@ -2965,7 +2988,10 @@ namespace QASmartTouch.Forms
                         button.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
                         UpdateIconColor(button, Color.FromRgb(0x2F, 0x35, 0x42));
                     }
-                    _selectedTool = null;
+                    if (ReferenceEquals(_selectedTool, button))
+                    {
+                        _selectedTool = null;
+                    }
                 }
             };
             
@@ -3103,8 +3129,8 @@ namespace QASmartTouch.Forms
             RecordAddAction(cardBorder, "VariationTable");
             RefreshSelectableObjects();
 
-            // 4. Chuyển sang công cụ Chọn vùng
-            if (btn8_Select != null) SelectTool(btn8_Select);
+            // 4. Kích hoạt đầy đủ chế độ Chọn vùng (đồng bộ UI button + WhiteboardCore FSM + TouchHandler)
+            ActivateRectangleSelectionMode();
 
             ShowSmartStatusBadge("📐 Đã chèn Bảng biến thiên lên bảng!");
         }
@@ -3151,10 +3177,10 @@ namespace QASmartTouch.Forms
             RecordAddAction(cardBorder, "FunctionGraph");
             RefreshSelectableObjects();
 
-            // 4. Chuyển sang công cụ Chọn vùng
+            // 4. Kích hoạt đầy đủ chế độ Chọn vùng (đồng bộ UI button + WhiteboardCore FSM + TouchHandler)
             try
             {
-                if (btn8_Select != null) SelectTool(btn8_Select);
+                ActivateRectangleSelectionMode();
             }
             catch { }
 

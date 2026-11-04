@@ -271,6 +271,255 @@ namespace QASmartTouch.Forms
             }
         }
 
+        // TIẾNG ANH (THẺ TỪ VỰNG & PHÁT ÂM)
+        private bool _isEnglishCategoriesBuilt = false;
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, System.Windows.Media.Imaging.BitmapImage> _englishCardThumbnailCache = new(StringComparer.OrdinalIgnoreCase);
+
+        private void btnEnglishVocab_Click(object sender, RoutedEventArgs e)
+        {
+            if (pnlEnglishCardsPicker == null) return;
+
+            if (pnlEnglishCardsPicker.Visibility == Visibility.Visible)
+            {
+                pnlEnglishCardsPicker.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                pnlEnglishCardsPicker.Visibility = Visibility.Visible;
+                EnsureEnglishCategoriesBuilt();
+            }
+        }
+
+        private void EnsureEnglishCategoriesBuilt()
+        {
+            if (_isEnglishCategoriesBuilt || EnglishCategoryTabBar == null) return;
+
+            EnglishCategoryTabBar.Children.Clear();
+            var subject = System.Linq.Enumerable.FirstOrDefault(
+                QASmartTouch.Services.Tools.SubjectShapeGeometryService.Subjects,
+                s => s.Id.Equals("eng", StringComparison.OrdinalIgnoreCase));
+
+            if (subject == null || subject.Categories.Count == 0) return;
+
+            Button? firstBtn = null;
+            foreach (var cat in subject.Categories)
+            {
+                var catBtn = new Button
+                {
+                    Content = cat.Name,
+                    Tag = cat,
+                    Height = 28,
+                    Margin = new Thickness(2, 1, 2, 1),
+                    Padding = new Thickness(10, 0, 10, 0),
+                    FontSize = 11.5,
+                    FontWeight = FontWeights.Medium,
+                    Cursor = Cursors.Hand,
+                    Focusable = false,
+                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6")),
+                    BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA")),
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#57606F"))
+                };
+                Stylus.SetIsPressAndHoldEnabled(catBtn, false);
+
+                var template = new ControlTemplate(typeof(Button));
+                var borderFactory = new FrameworkElementFactory(typeof(Border));
+                borderFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+                borderFactory.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty));
+                borderFactory.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+                borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(13));
+                borderFactory.SetValue(Border.PaddingProperty, new TemplateBindingExtension(Button.PaddingProperty));
+                var contentFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+                contentFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                contentFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                borderFactory.AppendChild(contentFactory);
+                template.VisualTree = borderFactory;
+                catBtn.Template = template;
+
+                catBtn.Click += EnglishCategoryButton_Click;
+                TouchActivationHelper.WireButton(catBtn);
+                EnglishCategoryTabBar.Children.Add(catBtn);
+
+                if (firstBtn == null) firstBtn = catBtn;
+            }
+
+            _isEnglishCategoriesBuilt = true;
+            if (firstBtn != null)
+            {
+                ActivateEnglishCategoryButton(firstBtn);
+            }
+        }
+
+        private void EnglishCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                ActivateEnglishCategoryButton(btn);
+            }
+        }
+
+        private void ActivateEnglishCategoryButton(Button activeBtn)
+        {
+            if (EnglishCategoryTabBar == null || EnglishCardGallery == null) return;
+
+            foreach (var child in EnglishCategoryTabBar.Children)
+            {
+                if (child is Button b)
+                {
+                    b.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6"));
+                    b.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA"));
+                    b.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#57606F"));
+                    b.FontWeight = FontWeights.Medium;
+                }
+            }
+
+            activeBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E86DE"));
+            activeBtn.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E86DE"));
+            activeBtn.Foreground = Brushes.White;
+            activeBtn.FontWeight = FontWeights.SemiBold;
+
+            EnglishCardGallery.Children.Clear();
+            if (activeBtn.Tag is QASmartTouch.Services.Tools.CategoryDefinition cat &&
+                QASmartTouch.Services.Tools.SubjectShapeGeometryService.EnglishCards.TryGetValue(cat.Id, out var cards))
+            {
+                foreach (var card in cards)
+                {
+                    var cardBtn = CreateEnglishCardButton(card);
+                    EnglishCardGallery.Children.Add(cardBtn);
+                }
+            }
+        }
+
+        private static string? GetEnglishCardImagePath(string word)
+        {
+            string safeName = word.Replace(' ', '_') + ".png";
+            string p1 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p1)) return p1;
+
+            string p2 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartClass", "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p2)) return p2;
+
+            string p3 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p3)) return p3;
+
+            return null;
+        }
+
+        private Button CreateEnglishCardButton(QASmartTouch.Services.Tools.EnglishCardDefinition card)
+        {
+            var button = new Button
+            {
+                Tag = card,
+                Width = 98,
+                Height = 114,
+                Margin = new Thickness(4),
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF")),
+                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E1E8ED")),
+                BorderThickness = new Thickness(1),
+                Cursor = Cursors.Hand,
+                Focusable = false,
+                ToolTip = $"{card.Word} — {card.Meaning} (Bấm để nghe đọc và chèn lên bảng)"
+            };
+            Stylus.SetIsPressAndHoldEnabled(button, false);
+
+            var template = new ControlTemplate(typeof(Button));
+            var borderFactory = new FrameworkElementFactory(typeof(Border));
+            borderFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+            borderFactory.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty));
+            borderFactory.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Button.BorderThicknessProperty));
+            borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(12));
+            borderFactory.SetValue(Border.PaddingProperty, new Thickness(4));
+            var contentFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            borderFactory.AppendChild(contentFactory);
+            template.VisualTree = borderFactory;
+            button.Template = template;
+
+            string? imgPath = GetEnglishCardImagePath(card.Word);
+            if (!string.IsNullOrEmpty(imgPath))
+            {
+                try
+                {
+                    if (!_englishCardThumbnailCache.TryGetValue(imgPath, out var bitmap))
+                    {
+                        bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.UriSource = new Uri(imgPath, UriKind.Absolute);
+                        bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                        bitmap.DecodePixelWidth = 190;
+                        bitmap.EndInit();
+                        bitmap.Freeze();
+                        _englishCardThumbnailCache[imgPath] = bitmap;
+                    }
+
+                    var img = new Image
+                    {
+                        Source = bitmap,
+                        Stretch = Stretch.Uniform,
+                        Width = 88,
+                        Height = 104,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.HighQuality);
+                    button.Content = img;
+                    button.Click += EnglishCardButton_Click;
+                    TouchActivationHelper.WireButton(button);
+                    return button;
+                }
+                catch { }
+            }
+
+            var stackPanel = new StackPanel { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Center };
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = card.Emoji,
+                FontSize = 34,
+                FontFamily = new FontFamily("Segoe UI Emoji, Noto Color Emoji, Arial"),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 2, 0, 1)
+            });
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = card.Word,
+                FontSize = 11.5,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1F3A5A")),
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 88
+            });
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = card.Meaning,
+                FontSize = 10,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7F8C8D")),
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 88,
+                Margin = new Thickness(0, 1, 0, 0)
+            });
+
+            button.Content = stackPanel;
+            button.Click += EnglishCardButton_Click;
+            TouchActivationHelper.WireButton(button);
+            return button;
+        }
+
+        private void EnglishCardButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is QASmartTouch.Services.Tools.EnglishCardDefinition card)
+            {
+                QASmartTouch.Services.Tools.SubjectShapeGeometryService.SpeakWord(card.Word);
+                string? imgPath = GetEnglishCardImagePath(card.Word);
+                _mainDashboard?.InsertEnglishWordCard(card.Emoji, card.Word, card.Meaning, imgPath);
+                try { this.Owner?.Activate(); } catch { }
+                this.Close();
+            }
+        }
+
         // TAB 3: TEXT
         private void btnInsertText_Click(object sender, RoutedEventArgs e)
         {

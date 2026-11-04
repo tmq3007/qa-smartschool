@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -316,6 +316,7 @@ namespace QASmartTouch.Forms
         {
             Point clickPoint = e.GetPosition(MainInteractiveBoard);
             bool isCtrlPressed = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+            if (_activeShapeTouchId != -1 || e.StylusDevice != null) return;
             StartSelectionInteraction(clickPoint, e.OriginalSource, isCtrlPressed);
         }
 
@@ -642,6 +643,7 @@ namespace QASmartTouch.Forms
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 Point currentPoint = e.GetPosition(MainInteractiveBoard);
+                if (_activeShapeTouchId != -1 || e.StylusDevice != null) return;
                 UpdateSelectionInteraction(currentPoint, e.OriginalSource);
             }
         }
@@ -820,6 +822,7 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void MainBoard_SelectionMouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (e != null && (_activeShapeTouchId != -1 || e.StylusDevice != null)) return;
             Point endPoint = e != null ? e.GetPosition(MainInteractiveBoard) : _rectangleSelectionStartPoint;
             EndSelectionInteraction(endPoint);
         }
@@ -1015,8 +1018,9 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void OnObjectTransformed(object? sender, SelectableObject transformedObject)
         {
-            // ✅ Rebuild QuadTree spatial index ngay sau khi transform (kéo di chuyển, resize, rotate)
-            _selectionManager?.RebuildQuadTree();
+            // ✅ Chỉ Rebuild QuadTree khi không còn đang kéo liên tục (khi nhấc tay sẽ được Rebuild tại OnSelectionBoxTransformCompleted)
+            if (_selectionBox == null || !_selectionBox.IsTransforming)
+                _selectionManager?.RebuildQuadTree();
 
             // ✅ Khi đang xoay: Tuyệt đối không hiển thị Toolbar để giữ tầm nhìn thoáng đãng và không che nét vẽ
             if (_selectionBox != null && _selectionBox.IsRotating)
@@ -2023,7 +2027,7 @@ namespace QASmartTouch.Forms
                 {
                     foreach (var childShape in shapeCanvas.Children.OfType<System.Windows.Shapes.Shape>())
                     {
-                        childShape.StrokeThickness = thickness;
+                        if (childShape.Stroke != null) childShape.StrokeThickness = thickness;
                     }
                     if (Spatial3DService.GetShape3DData(shapeCanvas) is Shape3DData data3d)
                     {
@@ -2093,6 +2097,15 @@ namespace QASmartTouch.Forms
                             childShape.Stroke = brush;
                         if (childShape.Fill != null && childShape.Fill != Brushes.Transparent)
                             childShape.Fill = brush;
+                        // Updated childShape.Stroke and childShape.Fill
+                    }
+                    foreach (var subCanvas in shapeCanvas.Children.OfType<Canvas>())
+                    {
+                        foreach (var subShape in subCanvas.Children.OfType<System.Windows.Shapes.Shape>())
+                        {
+                            if (subShape.Stroke != null) subShape.Stroke = brush;
+                            if (subShape.Fill != null && subShape.Fill != Brushes.Transparent) subShape.Fill = brush;
+                        }
                     }
                     if (Spatial3DService.GetShape3DData(shapeCanvas) is Shape3DData data3d)
                     {

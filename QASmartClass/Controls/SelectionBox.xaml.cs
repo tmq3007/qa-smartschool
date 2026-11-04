@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -208,10 +208,10 @@ namespace QASmartTouch.Controls
             SelectionBorder.MouseMove += SelectionBorder_MouseMove;
             SelectionBorder.MouseLeftButtonUp += SelectionBorder_MouseLeftButtonUp;
 
-            // ✅ TOUCH FIX: Bắt thêm sự kiện nhấc bút/ngón tay để dọn dẹp trạng thái
+            // ✅ TOUCH FIX: Bắt thêm sự kiện nhấc bút/ngón tay để dọn dẹp trạng thái khi không dùng Manipulation
             // Đề phòng Windows "nuốt" mất MouseUp trên màn hình cảm ứng hồng ngoại
-            SelectionBorder.TouchUp += (s, e) => ResetMoveState();
-            SelectionBorder.StylusUp += (s, e) => ResetMoveState();
+            SelectionBorder.TouchUp += (s, e) => { if (!_isManipulating) ResetMoveState(); };
+            SelectionBorder.StylusUp += (s, e) => { if (!_isManipulating) ResetMoveState(); };
             SelectionBorder.TouchDown += SelectionBorder_TouchDown;
         }
 
@@ -235,7 +235,7 @@ namespace QASmartTouch.Controls
             _lastClickTime = now;
 
             // [BUG_DRAG_MOVE] Bắt đầu drag-to-move nếu không phải double-click và không trong phiên resize/rotate chốt
-            if (_attachedObject != null && !_attachedObject.IsLocked && !_isDragging && !_isRotating && _activeResizeTouchId == -1 && _activeRotateTouchId == -1)
+            if (_attachedObject != null && !_attachedObject.IsLocked && !_isDragging && !_isRotating && !_isManipulating && e.StylusDevice == null && _activeResizeTouchId == -1 && _activeRotateTouchId == -1)
             {
                 if (IsAttached3DRotating())
                 {
@@ -310,7 +310,7 @@ namespace QASmartTouch.Controls
                 return;
 
             // Nếu đang trong phiên kéo chốt góc bằng Touch/Mouse, lập tức ngắt di chuyển body
-            if (_isDragging || _isRotating || _activeResizeTouchId != -1 || _activeRotateTouchId != -1)
+            if (_isDragging || _isRotating || (e is MouseEventArgs && (_isManipulating || e.StylusDevice != null)) || _activeResizeTouchId != -1 || _activeRotateTouchId != -1)
             {
                 _isMoving = false;
                 if (SelectionBorder.IsMouseCaptured)
@@ -364,6 +364,12 @@ namespace QASmartTouch.Controls
         /// </summary>
         private void SelectionBorder_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            if (_isManipulating || e.StylusDevice != null)
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (_is3DRotating)
             {
                 _is3DRotating = false;
@@ -532,7 +538,7 @@ namespace QASmartTouch.Controls
         private void ResizeHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
             // Bỏ qua sự kiện chuột ảo nếu đang có ngón tay cảm ứng tương tác
-            if (_activeResizeTouchId != -1)
+            if (_activeResizeTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -587,7 +593,7 @@ namespace QASmartTouch.Controls
         private void ResizeHandle_MouseMove(object sender, MouseEventArgs e)
         {
             // Bỏ qua sự kiện chuột ảo nếu đang có ngón tay cảm ứng tương tác
-            if (_activeResizeTouchId != -1)
+            if (_activeResizeTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -607,7 +613,7 @@ namespace QASmartTouch.Controls
 
         private void ResizeHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (_activeResizeTouchId != -1)
+            if (_activeResizeTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -759,7 +765,7 @@ namespace QASmartTouch.Controls
         private void RotateHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
             // Bỏ qua chuột ảo nếu ngón tay cảm ứng đang thao tác
-            if (_activeRotateTouchId != -1)
+            if (_activeRotateTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -816,7 +822,7 @@ namespace QASmartTouch.Controls
         private void RotateHandle_MouseMove(object sender, MouseEventArgs e)
         {
             // Bỏ qua chuột ảo nếu ngón tay cảm ứng đang thao tác
-            if (_activeRotateTouchId != -1)
+            if (_activeRotateTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -875,7 +881,7 @@ namespace QASmartTouch.Controls
 
         private void RotateHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (_activeRotateTouchId != -1)
+            if (_activeRotateTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -1114,7 +1120,7 @@ namespace QASmartTouch.Controls
             double transX = e.DeltaManipulation.Translation.X;
             double transY = e.DeltaManipulation.Translation.Y;
 
-            if (Math.Abs(transX) > 0.5 || Math.Abs(transY) > 0.5)
+            if (transX != 0 || transY != 0)
             {
                 // ✅ QC_4.2_GRID_PROTECT (G-4): Không di chuyển background elements bằng touch manipulation
                 if (QASmartTouch.Services.SelectionManager.IsBackgroundElement(_attachedObject.Element))

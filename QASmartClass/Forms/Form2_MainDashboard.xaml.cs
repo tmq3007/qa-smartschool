@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -2778,6 +2778,11 @@ namespace QASmartTouch.Forms
                 {
                     _activeCompassTool3D.Close();
                     _activeCompassTool3D = null;
+                }
+                if (_activeCircleDrawingTool != null)
+                {
+                    _activeCircleDrawingTool.Close();
+                    _activeCircleDrawingTool = null;
                 }
                 System.Diagnostics.Debug.WriteLine("🔧 CloseAllToolWindows: All tool windows closed.");
             }

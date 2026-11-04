@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Windows;
@@ -434,6 +434,7 @@ namespace QASmartTouch.Forms
 
         private void RayAHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_rayATouchId.HasValue || e.StylusDevice != null) return;
             _isDraggingRayA = true;
             RayAHandle.CaptureMouse();
             e.Handled = true;
@@ -441,6 +442,7 @@ namespace QASmartTouch.Forms
 
         private void RayAHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_rayATouchId.HasValue || e.StylusDevice != null) return;
             _isDraggingRayA = false;
             RayAHandle.ReleaseMouseCapture();
             e.Handled = true;
@@ -448,11 +450,13 @@ namespace QASmartTouch.Forms
 
         private void RayAHandle_LostMouseCapture(object sender, MouseEventArgs e)
         {
-            _isDraggingRayA = false;
+            if (!_rayATouchId.HasValue)
+                _isDraggingRayA = false;
         }
 
         private void RayAHandle_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_rayATouchId.HasValue || e.StylusDevice != null) return;
             if (_isDraggingRayA && RayAHandle.IsMouseCaptured)
             {
                 Point mousePos = e.GetPosition(ProtractorCanvas);
@@ -519,6 +523,7 @@ namespace QASmartTouch.Forms
 
         private void RayBHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_rayBTouchId.HasValue || e.StylusDevice != null) return;
             _isDraggingRayB = true;
             RayBHandle.CaptureMouse();
             e.Handled = true;
@@ -526,6 +531,7 @@ namespace QASmartTouch.Forms
 
         private void RayBHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_rayBTouchId.HasValue || e.StylusDevice != null) return;
             _isDraggingRayB = false;
             RayBHandle.ReleaseMouseCapture();
             e.Handled = true;
@@ -533,11 +539,13 @@ namespace QASmartTouch.Forms
 
         private void RayBHandle_LostMouseCapture(object sender, MouseEventArgs e)
         {
-            _isDraggingRayB = false;
+            if (!_rayBTouchId.HasValue)
+                _isDraggingRayB = false;
         }
 
         private void RayBHandle_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_rayBTouchId.HasValue || e.StylusDevice != null) return;
             if (_isDraggingRayB && RayBHandle.IsMouseCaptured)
             {
                 Point mousePos = e.GetPosition(ProtractorCanvas);
@@ -651,6 +659,7 @@ namespace QASmartTouch.Forms
 
         private void btnMove_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_protractorTouchId.HasValue || e.StylusDevice != null) return;
             if (e.ChangedButton == MouseButton.Left || e.LeftButton == MouseButtonState.Pressed)
             {
                 _isDragging = true;
@@ -666,6 +675,7 @@ namespace QASmartTouch.Forms
 
         private void btnMove_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_protractorTouchId.HasValue || e.StylusDevice != null) return;
             if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
             {
                 var currentScreenPoint = GetScreenPoint(e);
@@ -681,6 +691,7 @@ namespace QASmartTouch.Forms
 
         private void btnMove_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_protractorTouchId.HasValue || e.StylusDevice != null) return;
             if (_isDragging)
             {
                 _isDragging = false;

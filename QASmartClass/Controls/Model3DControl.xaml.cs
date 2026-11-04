@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -218,8 +218,8 @@ namespace QASmartTouch.Controls
 
         private void TitleBar_PreviewStylusDown(object sender, StylusDownEventArgs e)
         {
+            if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || _activeDragTouchId != -1) return;
             if (IsHeaderButtonSource(e.OriginalSource)) return;
-            if (_activeDragTouchId != -1) return;
             if (this.Parent is not UIElement parent) return;
 
             BeginHeaderDrag(e.GetPosition(parent));
@@ -229,7 +229,7 @@ namespace QASmartTouch.Controls
 
         private void TitleBar_PreviewStylusMove(object sender, StylusEventArgs e)
         {
-            if (!_isDragging || _activeDragTouchId != -1) return;
+            if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || !_isDragging || _activeDragTouchId != -1) return;
             if (this.Parent is not UIElement parent) return;
 
             UpdateHeaderDrag(e.GetPosition(parent));
@@ -238,7 +238,7 @@ namespace QASmartTouch.Controls
 
         private void TitleBar_PreviewStylusUp(object sender, StylusEventArgs e)
         {
-            if (!_isDragging || _activeDragTouchId != -1) return;
+            if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || !_isDragging || _activeDragTouchId != -1) return;
 
             Stylus.Capture(null);
             EndHeaderDrag();
@@ -247,6 +247,7 @@ namespace QASmartTouch.Controls
 
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (_activeDragTouchId != -1 || e.StylusDevice != null) return;
             if (IsHeaderButtonSource(e.OriginalSource)) return;
             if (_isDragging) return;
             if (this.Parent is not UIElement parent) return;
@@ -258,7 +259,7 @@ namespace QASmartTouch.Controls
 
         private void TitleBar_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!_isDragging || _activeDragTouchId != -1) return;
+            if (!_isDragging || _activeDragTouchId != -1 || e.StylusDevice != null) return;
             if (e.LeftButton != MouseButtonState.Pressed) return;
             if (this.Parent is not UIElement parent) return;
 
@@ -268,6 +269,7 @@ namespace QASmartTouch.Controls
 
         private void TitleBar_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            if (_activeDragTouchId != -1 || e.StylusDevice != null) return;
             if (_isDragging)
             {
                 titleBar.ReleaseMouseCapture();
@@ -387,7 +389,7 @@ namespace QASmartTouch.Controls
 
         private void Viewport_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (_activeViewportTouches.Count > 0) return;
+            if (_activeViewportTouches.Count > 0 || e.StylusDevice != null) return;
 
             BringToFrontRequested?.Invoke(this, EventArgs.Empty);
             _isRotating = true;
@@ -398,7 +400,7 @@ namespace QASmartTouch.Controls
 
         private void Viewport_MouseMove(object sender, MouseEventArgs e)
         {
-            if (_activeViewportTouches.Count > 0) return;
+            if (_activeViewportTouches.Count > 0 || e.StylusDevice != null) return;
 
             if (_isRotating && e.LeftButton == MouseButtonState.Pressed)
             {
@@ -414,6 +416,7 @@ namespace QASmartTouch.Controls
 
         private void Viewport_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            if (_activeViewportTouches.Count > 0 || e.StylusDevice != null) return;
             if (_isRotating)
             {
                 _isRotating = false;

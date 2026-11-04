@@ -63,6 +63,12 @@ namespace QASmartTouch.Forms
                 btnTabGraph.Foreground = Brushes.White;
                 btnTabBBT.Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)); // #E2E8F0
                 btnTabBBT.Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)); // #475569
+
+                if (btnInsertToBoard != null)
+                {
+                    btnInsertToBoard.Content = "↗ Đưa Đồ thị lên bảng";
+                    btnInsertToBoard.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235)); // #2563EB
+                }
             }
             else
             {
@@ -70,6 +76,12 @@ namespace QASmartTouch.Forms
                 btnTabBBT.Foreground = Brushes.White;
                 btnTabGraph.Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)); // #E2E8F0
                 btnTabGraph.Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)); // #475569
+
+                if (btnInsertToBoard != null)
+                {
+                    btnInsertToBoard.Content = "↗ Đưa Bảng biến thiên lên bảng";
+                    btnInsertToBoard.Background = new SolidColorBrush(Color.FromRgb(22, 139, 130)); // #168B82
+                }
             }
         }
 
@@ -250,7 +262,18 @@ namespace QASmartTouch.Forms
             {
                 if (_mainDashboard != null)
                 {
-                    _mainDashboard.InsertVariationTableToBoard(_currentModel);
+                    if (_isGraphPreviewMode)
+                    {
+                        string expr = txtExpression.Text.Trim();
+                        if (!string.IsNullOrWhiteSpace(expr))
+                        {
+                            _mainDashboard.InsertFunctionGraphToBoard(expr, _currentModel);
+                        }
+                    }
+                    else
+                    {
+                        _mainDashboard.InsertVariationTableToBoard(_currentModel);
+                    }
                 }
                 Close();
             }

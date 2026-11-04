@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -381,6 +381,13 @@ namespace QASmartTouch.Forms
                 return;
             }
 
+            if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || _activeShapeTouchId != -1)
+            {
+                EnsurePassthroughFocusAndPenMode(e.OriginalSource);
+                AutoDismissKeyboardIfNeeded(e.OriginalSource);
+                return;
+            }
+
             // QC_4.2_TABLE_DRAWING: Xử lý trực tiếp bút stylus kéo vẽ bảng
             if (_isTableDrawingMode)
             {
@@ -458,7 +465,7 @@ namespace QASmartTouch.Forms
 
             if (_objectSelectionMode)
             {
-                if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
+                if (e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus && _activeShapeTouchId == -1 && (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null))
                 {
                     Point currentPos = e.GetPosition(MainInteractiveBoard);
                     UpdateSelectionInteraction(currentPos, e.OriginalSource);
@@ -494,7 +501,7 @@ namespace QASmartTouch.Forms
 
             if (_objectSelectionMode)
             {
-                if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
+                if (e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus && _activeShapeTouchId == -1 && (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null))
                 {
                     Point endPos = e.GetPosition(MainInteractiveBoard);
                     EndSelectionInteraction(endPos);
@@ -6743,8 +6750,13 @@ namespace QASmartTouch.Forms
                     Background = new SolidColorBrush(Color.FromRgb(41, 128, 185)),
                     CornerRadius = new CornerRadius(6, 6, 0, 0),
                     Cursor = Cursors.SizeAll,
+                    Tag = "DragHandle",
                     ToolTip = is3D ? "Nhấn giữ để di chuyển Đồ thị 3D" : "Nhấn giữ để di chuyển Đồ thị 2D"
                 };
+                Stylus.SetIsPressAndHoldEnabled(dragHandleBar, false);
+                Stylus.SetIsFlicksEnabled(dragHandleBar, false);
+                Stylus.SetIsTapFeedbackEnabled(dragHandleBar, false);
+                Stylus.SetIsTouchFeedbackEnabled(dragHandleBar, false);
 
                 var dragGrid = new Grid();
                 var titleText = new TextBlock
@@ -6815,17 +6827,21 @@ namespace QASmartTouch.Forms
                 btnDelete.Click += (s, e) => DeleteGraph(finalGraphContainer);
                 buttonPanel.Children.Add(btnDelete);
 
-                // Enable Drag-to-Move on dragHandleBar
-                bool isDragging = false;
+                // Enable Drag-to-Move on dragHandleBar (Touch & Mouse strictly isolated)
+                bool isMouseDragging = false;
+                int? activeTouchId = null;
                 Point dragStartPoint = new Point();
 
                 dragHandleBar.MouseLeftButtonDown += (s, e) =>
                 {
-                    if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar) ||
+                    if (activeTouchId.HasValue || e.StylusDevice != null ||
+                        QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar) ||
                         (e.OriginalSource is DependencyObject dep && IsDescendantOf(dep, buttonPanel)))
                         return;
 
-                    isDragging = true;
+                    _isDrawing = false;
+                    _currentStroke = null;
+                    isMouseDragging = true;
                     dragStartPoint = e.GetPosition(MainInteractiveBoard);
                     dragHandleBar.CaptureMouse();
                     e.Handled = true;
@@ -6833,7 +6849,7 @@ namespace QASmartTouch.Forms
 
                 dragHandleBar.MouseMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                     {
                         Point currentPoint = e.GetPosition(MainInteractiveBoard);
                         double left = Canvas.GetLeft(finalGraphContainer) + (currentPoint.X - dragStartPoint.X);
@@ -6845,15 +6861,18 @@ namespace QASmartTouch.Forms
                         Canvas.SetLeft(finalGraphContainer, left);
                         Canvas.SetTop(finalGraphContainer, top);
                         dragStartPoint = currentPoint;
+                        e.Handled = true;
                     }
                 };
 
                 dragHandleBar.MouseLeftButtonUp += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                     {
-                        isDragging = false;
+                        isMouseDragging = false;
                         dragHandleBar.ReleaseMouseCapture();
+                        RefreshSelectableObjects();
+                        e.Handled = true;
                     }
                 };
 
@@ -6862,16 +6881,20 @@ namespace QASmartTouch.Forms
                     if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar) ||
                         (e.OriginalSource is DependencyObject dep && IsDescendantOf(dep, buttonPanel)))
                         return;
+                    if (activeTouchId.HasValue && activeTouchId.Value != e.TouchDevice.Id)
+                        return;
 
-                    isDragging = true;
+                    _isDrawing = false;
+                    _currentStroke = null;
+                    activeTouchId = e.TouchDevice.Id;
                     dragStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
                     dragHandleBar.CaptureTouch(e.TouchDevice);
                     e.Handled = true;
                 };
 
-                dragHandleBar.TouchMove += (s, e) =>
+                dragHandleBar.PreviewTouchMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (activeTouchId.HasValue && activeTouchId.Value == e.TouchDevice.Id)
                     {
                         Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
                         double left = Canvas.GetLeft(finalGraphContainer) + (currentPoint.X - dragStartPoint.X);
@@ -6887,13 +6910,23 @@ namespace QASmartTouch.Forms
                     }
                 };
 
-                dragHandleBar.TouchUp += (s, e) =>
+                dragHandleBar.PreviewTouchUp += (s, e) =>
                 {
-                    if (isDragging)
+                    if (activeTouchId.HasValue && activeTouchId.Value == e.TouchDevice.Id)
                     {
-                        isDragging = false;
+                        activeTouchId = null;
                         dragHandleBar.ReleaseTouchCapture(e.TouchDevice);
+                        RefreshSelectableObjects();
                         e.Handled = true;
+                    }
+                };
+
+                dragHandleBar.LostTouchCapture += (s, e) =>
+                {
+                    if (activeTouchId.HasValue && activeTouchId.Value == e.TouchDevice.Id)
+                    {
+                        activeTouchId = null;
+                        RefreshSelectableObjects();
                     }
                 };
 
@@ -7862,12 +7895,14 @@ namespace QASmartTouch.Forms
 
                 // ============================================================
                 // Hook Move Events on btnMove & dragHandleBar
-                // QC_4.2_TABLE_MOVE_FIX_V2: Sửa toàn diện theo kết quả Review
+                // QC_4.2_TABLE_MOVE_FIX_V2: Tách biệt độc lập Touch và Mouse
                 // ============================================================
+                int? activeTableTouchId = null;
 
                 // --- btnMove: Mouse events ---
                 btnMove.MouseLeftButtonDown += (s, e) =>
                 {
+                    if (activeTableTouchId.HasValue || e.StylusDevice != null) return;
                     startMove(e.GetPosition(MainInteractiveBoard));
                     btnMove.CaptureMouse();
                     e.Handled = true;
@@ -7875,7 +7910,7 @@ namespace QASmartTouch.Forms
 
                 btnMove.MouseMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isDragging && !activeTableTouchId.HasValue && e.StylusDevice == null)
                     {
                         processMove(e.GetPosition(MainInteractiveBoard));
                         e.Handled = true; // ✅ Issue #5: Chặn event bubble khi đang kéo
@@ -7884,6 +7919,7 @@ namespace QASmartTouch.Forms
 
                 btnMove.MouseLeftButtonUp += (s, e) =>
                 {
+                    if (activeTableTouchId.HasValue || e.StylusDevice != null) return;
                     // ✅ Issue #2: Luôn giải phóng capture bất kể isDragging
                     endMove();
                     if (btnMove.IsMouseCaptured)
@@ -7894,44 +7930,56 @@ namespace QASmartTouch.Forms
                 // ✅ Issue #2: Xử lý mất capture bất ngờ (Alt+Tab, cửa sổ hệ thống)
                 btnMove.LostMouseCapture += (s, e) =>
                 {
-                    endMove();
+                    if (!activeTableTouchId.HasValue)
+                        endMove();
                 };
 
                 // --- btnMove: Touch events ---
                 btnMove.PreviewTouchDown += (s, e) =>
                 {
+                    if (activeTableTouchId.HasValue && activeTableTouchId.Value != e.TouchDevice.Id) return;
+                    activeTableTouchId = e.TouchDevice.Id;
                     startMove(e.GetTouchPoint(MainInteractiveBoard).Position);
                     btnMove.CaptureTouch(e.TouchDevice);
                     e.Handled = true;
                 };
 
-                btnMove.TouchMove += (s, e) =>
+                btnMove.PreviewTouchMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isDragging && activeTableTouchId == e.TouchDevice.Id)
                     {
                         processMove(e.GetTouchPoint(MainInteractiveBoard).Position);
                         e.Handled = true;
                     }
                 };
 
-                btnMove.TouchUp += (s, e) =>
+                btnMove.PreviewTouchUp += (s, e) =>
                 {
-                    // ✅ Issue #2: Luôn giải phóng capture bất kể isDragging
-                    endMove();
-                    if (e.TouchDevice.Captured == btnMove)
-                        btnMove.ReleaseTouchCapture(e.TouchDevice);
-                    e.Handled = true;
+                    if (activeTableTouchId == e.TouchDevice.Id)
+                    {
+                        activeTableTouchId = null;
+                        // ✅ Issue #2: Luôn giải phóng capture bất kể isDragging
+                        endMove();
+                        if (e.TouchDevice.Captured == btnMove)
+                            btnMove.ReleaseTouchCapture(e.TouchDevice);
+                        e.Handled = true;
+                    }
                 };
 
                 // ✅ Issue #2: Xử lý mất touch capture bất ngờ
                 btnMove.LostTouchCapture += (s, e) =>
                 {
-                    endMove();
+                    if (activeTableTouchId == e.TouchDevice.Id)
+                    {
+                        activeTableTouchId = null;
+                        endMove();
+                    }
                 };
 
                 // --- dragHandleBar: Mouse events ---
                 dragHandleBar.MouseLeftButtonDown += (s, e) =>
                 {
+                    if (activeTableTouchId.HasValue || e.StylusDevice != null) return;
                     if (e.OriginalSource is DependencyObject depObj && IsDescendantOf(depObj, buttonPanel)) return;
                     startMove(e.GetPosition(MainInteractiveBoard));
                     dragHandleBar.CaptureMouse();
@@ -7940,7 +7988,7 @@ namespace QASmartTouch.Forms
 
                 dragHandleBar.MouseMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isDragging && !activeTableTouchId.HasValue && e.StylusDevice == null)
                     {
                         processMove(e.GetPosition(MainInteractiveBoard));
                         e.Handled = true; // ✅ Issue #5: Chặn event bubble khi đang kéo
@@ -7949,6 +7997,7 @@ namespace QASmartTouch.Forms
 
                 dragHandleBar.MouseLeftButtonUp += (s, e) =>
                 {
+                    if (activeTableTouchId.HasValue || e.StylusDevice != null) return;
                     // ✅ Issue #2 & #6: Luôn giải phóng capture + e.Handled
                     endMove();
                     if (dragHandleBar.IsMouseCaptured)
@@ -7959,39 +8008,50 @@ namespace QASmartTouch.Forms
                 // ✅ Issue #2: Xử lý mất capture bất ngờ
                 dragHandleBar.LostMouseCapture += (s, e) =>
                 {
-                    endMove();
+                    if (!activeTableTouchId.HasValue)
+                        endMove();
                 };
 
                 // --- dragHandleBar: Touch events --- (✅ Issue #4: Bổ sung Touch cho dragHandleBar)
                 dragHandleBar.PreviewTouchDown += (s, e) =>
                 {
                     if (e.OriginalSource is DependencyObject depObj && IsDescendantOf(depObj, buttonPanel)) return;
+                    if (activeTableTouchId.HasValue && activeTableTouchId.Value != e.TouchDevice.Id) return;
+                    activeTableTouchId = e.TouchDevice.Id;
                     startMove(e.GetTouchPoint(MainInteractiveBoard).Position);
                     dragHandleBar.CaptureTouch(e.TouchDevice);
                     e.Handled = true;
                 };
 
-                dragHandleBar.TouchMove += (s, e) =>
+                dragHandleBar.PreviewTouchMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isDragging && activeTableTouchId == e.TouchDevice.Id)
                     {
                         processMove(e.GetTouchPoint(MainInteractiveBoard).Position);
                         e.Handled = true;
                     }
                 };
 
-                dragHandleBar.TouchUp += (s, e) =>
+                dragHandleBar.PreviewTouchUp += (s, e) =>
                 {
-                    endMove();
-                    if (e.TouchDevice.Captured == dragHandleBar)
-                        dragHandleBar.ReleaseTouchCapture(e.TouchDevice);
-                    e.Handled = true;
+                    if (activeTableTouchId == e.TouchDevice.Id)
+                    {
+                        activeTableTouchId = null;
+                        endMove();
+                        if (e.TouchDevice.Captured == dragHandleBar)
+                            dragHandleBar.ReleaseTouchCapture(e.TouchDevice);
+                        e.Handled = true;
+                    }
                 };
 
                 // ✅ Issue #2: Xử lý mất touch capture bất ngờ
                 dragHandleBar.LostTouchCapture += (s, e) =>
                 {
-                    endMove();
+                    if (activeTableTouchId == e.TouchDevice.Id)
+                    {
+                        activeTableTouchId = null;
+                        endMove();
+                    }
                 };
 
                 // Position at specified position or center of canvas
@@ -9596,8 +9656,9 @@ namespace QASmartTouch.Forms
                 btnDelete.PreviewTouchUp += (s, e) => { e.Handled = true; Dispatcher.BeginInvoke(new Action(() => DeleteTextBox(container))); };
                 container.Children.Add(btnDelete);
 
-                // Enable dragging
+                // Enable dragging (Touch & Mouse strictly isolated)
                 bool isDragging = false;
+                int? activeTextTouchId = null;
                 Point dragStartPoint = new Point();
 
                 Action endMove = () =>
@@ -9619,6 +9680,7 @@ namespace QASmartTouch.Forms
 
                 dragHandle.MouseLeftButtonDown += (s, e) =>
                 {
+                    if (activeTextTouchId.HasValue || e.StylusDevice != null) return;
                     startMove(e.GetPosition(MainInteractiveBoard));
                     dragHandle.CaptureMouse();
                     e.Handled = true;
@@ -9626,7 +9688,7 @@ namespace QASmartTouch.Forms
 
                 dragHandle.MouseMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isDragging && !activeTextTouchId.HasValue && e.StylusDevice == null)
                     {
                         Point currentPoint = e.GetPosition(MainInteractiveBoard);
                         double oldLeft = Canvas.GetLeft(container);
@@ -9649,6 +9711,7 @@ namespace QASmartTouch.Forms
 
                 dragHandle.MouseLeftButtonUp += (s, e) =>
                 {
+                    if (activeTextTouchId.HasValue || e.StylusDevice != null) return;
                     // ✅ QC_4.2_CAPTURE_FIX: Luôn giải phóng capture bất kể isDragging
                     endMove();
                     if (dragHandle.IsMouseCaptured)
@@ -9659,20 +9722,23 @@ namespace QASmartTouch.Forms
                 // ✅ QC_4.2: Xử lý mất mouse capture bất ngờ (Alt+Tab, OS dialog)
                 dragHandle.LostMouseCapture += (s, e) =>
                 {
-                    endMove();
+                    if (!activeTextTouchId.HasValue)
+                        endMove();
                 };
 
                 // Add Touch support for kiosk touch displays
                 dragHandle.PreviewTouchDown += (s, e) =>
                 {
+                    if (activeTextTouchId.HasValue && activeTextTouchId.Value != e.TouchDevice.Id) return;
+                    activeTextTouchId = e.TouchDevice.Id;
                     startMove(e.GetTouchPoint(MainInteractiveBoard).Position);
                     dragHandle.CaptureTouch(e.TouchDevice);
                     e.Handled = true;
                 };
 
-                dragHandle.TouchMove += (s, e) =>
+                dragHandle.PreviewTouchMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isDragging && activeTextTouchId == e.TouchDevice.Id)
                     {
                         Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
                         double oldLeft = Canvas.GetLeft(container);
@@ -9692,19 +9758,27 @@ namespace QASmartTouch.Forms
                     }
                 };
 
-                dragHandle.TouchUp += (s, e) =>
+                dragHandle.PreviewTouchUp += (s, e) =>
                 {
-                    // ✅ QC_4.2_CAPTURE_FIX: Luôn giải phóng touch capture bất kể isDragging
-                    endMove();
-                    if (e.TouchDevice.Captured == dragHandle)
-                        dragHandle.ReleaseTouchCapture(e.TouchDevice);
-                    e.Handled = true;
+                    if (activeTextTouchId == e.TouchDevice.Id)
+                    {
+                        activeTextTouchId = null;
+                        // ✅ QC_4.2_CAPTURE_FIX: Luôn giải phóng touch capture bất kể isDragging
+                        endMove();
+                        if (e.TouchDevice.Captured == dragHandle)
+                            dragHandle.ReleaseTouchCapture(e.TouchDevice);
+                        e.Handled = true;
+                    }
                 };
 
                 // ✅ QC_4.2: Xử lý mất touch capture bất ngờ
                 dragHandle.LostTouchCapture += (s, e) =>
                 {
-                    endMove();
+                    if (activeTextTouchId == e.TouchDevice.Id)
+                    {
+                        activeTextTouchId = null;
+                        endMove();
+                    }
                 };
 
                 // Position at center of canvas

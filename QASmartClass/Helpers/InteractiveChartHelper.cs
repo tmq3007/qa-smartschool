@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -174,7 +174,7 @@ namespace QASmartTouch.Helpers
                 Background = new SolidColorBrush(Color.FromRgb(30, 39, 46)), // Slate Dark hiện đại
                 CornerRadius = new CornerRadius(8, 8, 0, 0),
                 Cursor = Cursors.SizeAll,
-                ToolTip = "Nhấn giữ thanh này để di chuyển biểu đồ",
+                ToolTip = "Nhấn giữ thanh này để di chuyển biểu đồ", Tag = "DragHandle",
                 Effect = new DropShadowEffect
                 {
                     Color = Colors.Black,
@@ -348,7 +348,15 @@ namespace QASmartTouch.Helpers
         /// </summary>
         private static void EnableHeaderDrag(Border headerBar, Grid rootContainer, Canvas? mainCanvas)
         {
-            bool isDragging = false;
+            headerBar.Tag ??= "DragHandle";
+            Stylus.SetIsPressAndHoldEnabled(headerBar, false);
+            Stylus.SetIsFlicksEnabled(headerBar, false);
+            Stylus.SetIsTapFeedbackEnabled(headerBar, false);
+            Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
+
+            bool isMouseDragging = false;
+            int? activeTouchId = null;
+            bool isStylusDragging = false;
             Point dragStartPoint = new Point();
             double originalLeft = 0;
             double originalTop = 0;
@@ -366,14 +374,85 @@ namespace QASmartTouch.Helpers
                 return false;
             }
 
-            // === 1. XỬ LÝ CHUỘT (DESKTOP) ===
-            headerBar.MouseLeftButtonDown += (s, e) =>
+            void ApplyDragToPosition(Canvas canvas, Point currentPoint)
+            {
+                double deltaX = currentPoint.X - dragStartPoint.X;
+                double deltaY = currentPoint.Y - dragStartPoint.Y;
+
+                double newLeft = originalLeft + deltaX;
+                double newTop = originalTop + deltaY;
+
+                newLeft = Math.Max(0, Math.Min(newLeft, canvas.ActualWidth - rootContainer.ActualWidth));
+                newTop = Math.Max(0, Math.Min(newTop, canvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
+
+                Canvas.SetLeft(rootContainer, newLeft);
+                Canvas.SetTop(rootContainer, newTop);
+            }
+
+            // === 1. XỬ LÝ CẢM ỨNG (TOUCH / IFP) ===
+            headerBar.PreviewTouchDown += (s, e) =>
             {
                 if (IsHitOnButton(e.OriginalSource)) return;
                 var canvas = GetCanvas();
                 if (canvas == null) return;
 
-                isDragging = true;
+                if (!activeTouchId.HasValue)
+                {
+                    activeTouchId = e.TouchDevice.Id;
+                    isMouseDragging = false;
+                    isStylusDragging = false;
+                    dragStartPoint = e.GetTouchPoint(canvas).Position;
+                    originalLeft = Canvas.GetLeft(rootContainer);
+                    originalTop = Canvas.GetTop(rootContainer);
+                    if (double.IsNaN(originalLeft)) originalLeft = 0;
+                    if (double.IsNaN(originalTop)) originalTop = 0;
+
+                    headerBar.CaptureTouch(e.TouchDevice);
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewTouchMove += (s, e) =>
+            {
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+                {
+                    var canvas = GetCanvas();
+                    if (canvas == null) return;
+
+                    ApplyDragToPosition(canvas, e.GetTouchPoint(canvas).Position);
+                    e.Handled = true;
+                }
+            };
+
+            EventHandler<TouchEventArgs> endTouch = (s, e) =>
+            {
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+                {
+                    activeTouchId = null;
+                    try { headerBar.ReleaseTouchCapture(e.TouchDevice); } catch { }
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewTouchUp += endTouch;
+            headerBar.TouchUp += endTouch;
+            headerBar.LostTouchCapture += (s, e) =>
+            {
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+                {
+                    activeTouchId = null;
+                }
+            };
+
+            // === 2. XỬ LÝ CHUỘT (DESKTOP - Chặn tuyệt đối chuột ảo từ cảm ứng) ===
+            headerBar.MouseLeftButtonDown += (s, e) =>
+            {
+                if (activeTouchId.HasValue || isStylusDragging || e.StylusDevice != null) return;
+                if (IsHitOnButton(e.OriginalSource)) return;
+                var canvas = GetCanvas();
+                if (canvas == null) return;
+
+                isMouseDragging = true;
                 dragStartPoint = e.GetPosition(canvas);
                 originalLeft = Canvas.GetLeft(rootContainer);
                 originalTop = Canvas.GetTop(rootContainer);
@@ -386,33 +465,23 @@ namespace QASmartTouch.Helpers
 
             headerBar.MouseMove += (s, e) =>
             {
-                if (isDragging && headerBar.IsMouseCaptured)
+                if (activeTouchId.HasValue || isStylusDragging || e.StylusDevice != null) return;
+                if (isMouseDragging && headerBar.IsMouseCaptured)
                 {
                     var canvas = GetCanvas();
                     if (canvas == null) return;
 
-                    Point currentPoint = e.GetPosition(canvas);
-                    double deltaX = currentPoint.X - dragStartPoint.X;
-                    double deltaY = currentPoint.Y - dragStartPoint.Y;
-
-                    double newLeft = originalLeft + deltaX;
-                    double newTop = originalTop + deltaY;
-
-                    // Giới hạn trong Canvas
-                    newLeft = Math.Max(0, Math.Min(newLeft, canvas.ActualWidth - rootContainer.ActualWidth));
-                    newTop = Math.Max(0, Math.Min(newTop, canvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
-
-                    Canvas.SetLeft(rootContainer, newLeft);
-                    Canvas.SetTop(rootContainer, newTop);
+                    ApplyDragToPosition(canvas, e.GetPosition(canvas));
                     e.Handled = true;
                 }
             };
 
             headerBar.MouseLeftButtonUp += (s, e) =>
             {
-                if (isDragging)
+                if (activeTouchId.HasValue || isStylusDragging || e.StylusDevice != null) return;
+                if (isMouseDragging)
                 {
-                    isDragging = false;
+                    isMouseDragging = false;
                     headerBar.ReleaseMouseCapture();
                     e.Handled = true;
                 }
@@ -420,68 +489,18 @@ namespace QASmartTouch.Helpers
 
             headerBar.LostMouseCapture += (s, e) =>
             {
-                isDragging = false;
+                isMouseDragging = false;
             };
 
-            // === 2. XỬ LÝ CẢM ỨNG (TOUCH / IFP) ===
-            headerBar.PreviewTouchDown += (s, e) =>
-            {
-                if (IsHitOnButton(e.OriginalSource)) return;
-                var canvas = GetCanvas();
-                if (canvas == null) return;
-
-                isDragging = true;
-                dragStartPoint = e.GetTouchPoint(canvas).Position;
-                originalLeft = Canvas.GetLeft(rootContainer);
-                originalTop = Canvas.GetTop(rootContainer);
-                if (double.IsNaN(originalLeft)) originalLeft = 0;
-                if (double.IsNaN(originalTop)) originalTop = 0;
-
-                headerBar.CaptureTouch(e.TouchDevice);
-                e.Handled = true;
-            };
-
-            headerBar.TouchMove += (s, e) =>
-            {
-                if (isDragging)
-                {
-                    var canvas = GetCanvas();
-                    if (canvas == null) return;
-
-                    Point currentPoint = e.GetTouchPoint(canvas).Position;
-                    double deltaX = currentPoint.X - dragStartPoint.X;
-                    double deltaY = currentPoint.Y - dragStartPoint.Y;
-
-                    double newLeft = originalLeft + deltaX;
-                    double newTop = originalTop + deltaY;
-
-                    newLeft = Math.Max(0, Math.Min(newLeft, canvas.ActualWidth - rootContainer.ActualWidth));
-                    newTop = Math.Max(0, Math.Min(newTop, canvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
-
-                    Canvas.SetLeft(rootContainer, newLeft);
-                    Canvas.SetTop(rootContainer, newTop);
-                    e.Handled = true;
-                }
-            };
-
-            headerBar.TouchUp += (s, e) =>
-            {
-                if (isDragging)
-                {
-                    isDragging = false;
-                    headerBar.ReleaseTouchCapture(e.TouchDevice);
-                    e.Handled = true;
-                }
-            };
-
-            // === 3. XỬ LÝ BÚT CẢM ỨNG (STYLUS) ===
+            // === 3. XỬ LÝ BÚT CẢM ỨNG THẬT (STYLUS - Không bắt nhầm ngón tay Touch) ===
             headerBar.PreviewStylusDown += (s, e) =>
             {
+                if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || activeTouchId.HasValue) return;
                 if (IsHitOnButton(e.OriginalSource)) return;
                 var canvas = GetCanvas();
                 if (canvas == null) return;
 
-                isDragging = true;
+                isStylusDragging = true;
                 dragStartPoint = e.GetPosition(canvas);
                 originalLeft = Canvas.GetLeft(rootContainer);
                 originalTop = Canvas.GetTop(rootContainer);
@@ -494,35 +513,30 @@ namespace QASmartTouch.Helpers
 
             headerBar.StylusMove += (s, e) =>
             {
-                if (isDragging)
+                if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || activeTouchId.HasValue) return;
+                if (isStylusDragging)
                 {
                     var canvas = GetCanvas();
                     if (canvas == null) return;
 
-                    Point currentPoint = e.GetPosition(canvas);
-                    double deltaX = currentPoint.X - dragStartPoint.X;
-                    double deltaY = currentPoint.Y - dragStartPoint.Y;
-
-                    double newLeft = originalLeft + deltaX;
-                    double newTop = originalTop + deltaY;
-
-                    newLeft = Math.Max(0, Math.Min(newLeft, canvas.ActualWidth - rootContainer.ActualWidth));
-                    newTop = Math.Max(0, Math.Min(newTop, canvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
-
-                    Canvas.SetLeft(rootContainer, newLeft);
-                    Canvas.SetTop(rootContainer, newTop);
+                    ApplyDragToPosition(canvas, e.GetPosition(canvas));
                     e.Handled = true;
                 }
             };
 
             headerBar.StylusUp += (s, e) =>
             {
-                if (isDragging)
+                if (isStylusDragging)
                 {
-                    isDragging = false;
+                    isStylusDragging = false;
                     headerBar.ReleaseStylusCapture();
                     e.Handled = true;
                 }
+            };
+
+            headerBar.LostStylusCapture += (s, e) =>
+            {
+                isStylusDragging = false;
             };
         }
 

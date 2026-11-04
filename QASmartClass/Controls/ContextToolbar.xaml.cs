@@ -113,7 +113,10 @@ namespace QASmartTouch.Controls
             applyBoundsClamping();
 
             // Sau khi layout pass hoàn thành, tái định vị chính xác với ActualWidth/ActualHeight thực tế
-            this.Dispatcher.BeginInvoke(applyBoundsClamping, System.Windows.Threading.DispatcherPriority.Loaded);
+            if (this.ActualWidth <= 0)
+            {
+                this.Dispatcher.BeginInvoke(applyBoundsClamping, System.Windows.Threading.DispatcherPriority.Loaded);
+            }
         }
 
         /// <summary>

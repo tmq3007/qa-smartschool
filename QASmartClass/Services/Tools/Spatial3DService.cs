@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -135,9 +135,12 @@ namespace QASmartTouch.Services.Tools
 
             Point startMouse = new Point();
             bool isMouseRotating = false;
+            Point startTouch = new Point();
+            int activeTouchId = -1;
 
             container.PreviewMouseLeftButtonDown += (s, e) =>
             {
+                if (activeTouchId != -1 || e.StylusDevice != null) return;
                 var data = GetShape3DData(container);
                 if (data != null && data.IsRotating3D)
                 {
@@ -150,6 +153,7 @@ namespace QASmartTouch.Services.Tools
 
             container.PreviewMouseMove += (s, e) =>
             {
+                if (activeTouchId != -1 || e.StylusDevice != null) return;
                 if (isMouseRotating)
                 {
                     var data = GetShape3DData(container);
@@ -171,6 +175,7 @@ namespace QASmartTouch.Services.Tools
 
             container.PreviewMouseLeftButtonUp += (s, e) =>
             {
+                if (activeTouchId != -1 || e.StylusDevice != null) return;
                 if (isMouseRotating)
                 {
                     isMouseRotating = false;
@@ -180,9 +185,6 @@ namespace QASmartTouch.Services.Tools
             };
 
             // Touch events cho màn hình cảm ứng tương tác phòng học 86"
-            Point startTouch = new Point();
-            int activeTouchId = -1;
-
             container.PreviewTouchDown += (s, e) =>
             {
                 var data = GetShape3DData(container);

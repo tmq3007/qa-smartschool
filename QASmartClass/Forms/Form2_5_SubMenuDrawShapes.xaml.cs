@@ -85,7 +85,6 @@ namespace QASmartTouch.Forms
             if (btnPhysics != null) WireTouchActivation(btnPhysics, btnSubject_Click);
             if (btnChem != null) WireTouchActivation(btnChem, btnSubject_Click);
             if (btnBio != null) WireTouchActivation(btnBio, btnSubject_Click);
-            if (btnEng != null) WireTouchActivation(btnEng, btnSubject_Click);
 
             // Mặc định chọn môn Toán học khi mở
             if (btnMath != null)
@@ -118,7 +117,6 @@ namespace QASmartTouch.Forms
             if (btnPhysics != null) { btnPhysics.Background = inactiveBg; btnPhysics.Foreground = inactiveFg; }
             if (btnChem != null) { btnChem.Background = inactiveBg; btnChem.Foreground = inactiveFg; }
             if (btnBio != null) { btnBio.Background = inactiveBg; btnBio.Foreground = inactiveFg; }
-            if (btnEng != null) { btnEng.Background = inactiveBg; btnEng.Foreground = inactiveFg; }
         }
 
         private void btnSubject_Click(object sender, RoutedEventArgs e)
@@ -144,10 +142,6 @@ namespace QASmartTouch.Forms
                     case "bio":
                         btnBio.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F48FB1"));
                         btnBio.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#880E4F"));
-                        break;
-                    case "eng":
-                        btnEng.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#CE93D8"));
-                        btnEng.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4A148C"));
                         break;
                 }
 

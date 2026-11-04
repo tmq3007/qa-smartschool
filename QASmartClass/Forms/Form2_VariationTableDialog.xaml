@@ -238,6 +238,7 @@
                     </Button>
 
                     <Button x:Name="btnInsertGraphToBoard" Content="📊 Đưa đồ thị lên bảng" Click="BtnInsertGraphToBoard_Click"
+                            Visibility="Collapsed"
                             Height="40" Padding="14,0" Background="#2563EB" Foreground="White" FontSize="15" FontWeight="Bold"
                             Margin="0,0,10,0" Cursor="Hand" BorderThickness="0">
                         <Button.Template>
@@ -249,12 +250,12 @@
                         </Button.Template>
                     </Button>
 
-                    <Button x:Name="btnInsertToBoard" Content="↗ Đưa lên bảng" Click="BtnInsertToBoard_Click"
-                            Width="160" Height="40" Background="#168B82" Foreground="White" FontSize="15" FontWeight="Bold"
+                    <Button x:Name="btnInsertToBoard" Content="↗ Đưa Bảng biến thiên lên bảng" Click="BtnInsertToBoard_Click"
+                            Height="40" Padding="18,0" Background="#168B82" Foreground="White" FontSize="15" FontWeight="Bold"
                             Cursor="Hand" BorderThickness="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                             </ControlTemplate>

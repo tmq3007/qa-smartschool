@@ -144,8 +144,8 @@
 
             <!-- CATEGORIES: Danh mục chính 2 cấp (Touch Friendly) -->
             <StackPanel Grid.Row="1" Margin="0,0,0,8">
-                <!-- Hàng 1: Tabs Chính 5 Môn học dàn đều 100% không cuộn -->
-                <UniformGrid x:Name="SubjectTabBar" Rows="1" Columns="5" Margin="0,0,0,6">
+                <!-- Hàng 1: Tabs Chính 4 Môn học dàn đều 100% không cuộn -->
+                <UniformGrid x:Name="SubjectTabBar" Rows="1" Columns="4" Margin="0,0,0,6">
                     <Button x:Name="btnMath" Content="📐 Toán" 
                             Style="{StaticResource CategoryTabButtonStyle}"
                             Background="#81C784" Foreground="#1B5E20"
@@ -162,10 +162,6 @@
                             Style="{StaticResource CategoryTabButtonStyle}"
                             Background="#F1F2F6" Foreground="#2F3542"
                             Click="btnSubject_Click" Tag="bio"/>
-                    <Button x:Name="btnEng" Content="🔤 T. Anh" 
-                            Style="{StaticResource CategoryTabButtonStyle}"
-                            Background="#F1F2F6" Foreground="#2F3542"
-                            Click="btnSubject_Click" Tag="eng"/>
                 </UniformGrid>
 
                 <!-- Hàng 2: Danh mục Chuyên đề con (Segment control style chuẩn NoteBoard) -->

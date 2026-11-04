@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Media;
 using System.Windows;
 using System.Windows.Controls;
@@ -717,6 +717,7 @@ namespace QASmartTouch.Forms
 
         private void btnMove_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_setSquareTouchId.HasValue || e.StylusDevice != null) return;
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 _isDragging = true;
@@ -734,6 +735,7 @@ namespace QASmartTouch.Forms
 
         private void btnMove_PreviewMouseMove(object sender, MouseEventArgs e)
         {
+            if (_setSquareTouchId.HasValue || e.StylusDevice != null) return;
             if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
             {
                 var currentScreenPoint = GetScreenPoint(e);
@@ -750,6 +752,7 @@ namespace QASmartTouch.Forms
 
         private void btnMove_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_setSquareTouchId.HasValue || e.StylusDevice != null) return;
             if (_isDragging)
             {
                 _isDragging = false;

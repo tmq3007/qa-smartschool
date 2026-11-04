@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -1702,7 +1702,7 @@ namespace QASmartTouch.Forms
 
             {
 
-                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                if (activeTouchId.HasValue || e.StylusDevice != null || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
 
                     return;
 
@@ -1740,7 +1740,7 @@ namespace QASmartTouch.Forms
 
             {
 
-                if (isMouseDragging && !activeTouchId.HasValue)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
 
                 {
 
@@ -1776,7 +1776,7 @@ namespace QASmartTouch.Forms
 
             {
 
-                if (isMouseDragging)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
 
                 {
 
@@ -2183,7 +2183,7 @@ namespace QASmartTouch.Forms
 
             headerBar.PreviewMouseLeftButtonDown += (s, e) =>
             {
-                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                if (activeTouchId.HasValue || e.StylusDevice != null || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
                     return;
 
                 _isDrawing = false;
@@ -2202,7 +2202,7 @@ namespace QASmartTouch.Forms
 
             headerBar.MouseMove += (s, e) =>
             {
-                if (isMouseDragging && !activeTouchId.HasValue)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                 {
                     Point currentPoint = e.GetPosition(MainInteractiveBoard);
                     double offsetX = currentPoint.X - mouseStartPoint.X;
@@ -2220,7 +2220,7 @@ namespace QASmartTouch.Forms
 
             MouseButtonEventHandler endMouse = (s, e) =>
             {
-                if (isMouseDragging)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                 {
                     isMouseDragging = false;
                     try { headerBar.ReleaseMouseCapture(); } catch { }
@@ -2249,7 +2249,7 @@ namespace QASmartTouch.Forms
 
             headerBar.PreviewStylusDown += (s, e) =>
             {
-                if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
                     return;
 
                 _isDrawing = false;
@@ -2268,7 +2268,7 @@ namespace QASmartTouch.Forms
 
             headerBar.PreviewStylusMove += (s, e) =>
             {
-                if (isStylusDragging)
+                if (isStylusDragging && !activeTouchId.HasValue && e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus)
                 {
                     Point currentPoint = e.GetPosition(MainInteractiveBoard);
                     double offsetX = currentPoint.X - stylusStartPoint.X;
@@ -2286,7 +2286,7 @@ namespace QASmartTouch.Forms
 
             StylusEventHandler endStylus = (s, e) =>
             {
-                if (isStylusDragging)
+                if (isStylusDragging && e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus)
                 {
                     isStylusDragging = false;
                     try { headerBar.ReleaseStylusCapture(); } catch { }
@@ -2820,8 +2820,13 @@ namespace QASmartTouch.Forms
                     Background = new SolidColorBrush(Color.FromRgb(41, 128, 185)),
                     CornerRadius = new CornerRadius(6, 6, 0, 0),
                     Cursor = Cursors.SizeAll,
+                    Tag = "DragHandle",
                     ToolTip = "Nhấn giữ để di chuyển Đồ thị 3D trên màn hình"
                 };
+                Stylus.SetIsPressAndHoldEnabled(dragHandleBar, false);
+                Stylus.SetIsFlicksEnabled(dragHandleBar, false);
+                Stylus.SetIsTapFeedbackEnabled(dragHandleBar, false);
+                Stylus.SetIsTouchFeedbackEnabled(dragHandleBar, false);
 
                 var titleText = new TextBlock
                 {
@@ -2878,16 +2883,19 @@ namespace QASmartTouch.Forms
                     RecordRemoveAction(main3DContainer, "Inserted Graph 3D Graph");
                 };
 
-                // Enable Drag-to-Move on dragHandleBar (Mouse, Touch, Stylus)
-                bool isDragging = false;
+                // Enable Drag-to-Move on dragHandleBar (Mouse, Touch, Stylus isolated)
+                bool isMouseDragging = false;
+                int? activeTouchId = null;
                 Point dragStartPoint = new Point();
 
                 dragHandleBar.MouseLeftButtonDown += (s, e) =>
                 {
-                    if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar))
+                    if (activeTouchId.HasValue || e.StylusDevice != null || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar))
                         return;
 
-                    isDragging = true;
+                    _isDrawing = false;
+                    _currentStroke = null;
+                    isMouseDragging = true;
                     dragStartPoint = e.GetPosition(MainInteractiveBoard);
                     dragHandleBar.CaptureMouse();
                     e.Handled = true;
@@ -2895,7 +2903,7 @@ namespace QASmartTouch.Forms
 
                 dragHandleBar.MouseMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                     {
                         Point currentPoint = e.GetPosition(MainInteractiveBoard);
                         double left = Canvas.GetLeft(main3DContainer) + (currentPoint.X - dragStartPoint.X);
@@ -2910,15 +2918,18 @@ namespace QASmartTouch.Forms
                         Canvas.SetLeft(main3DContainer, left);
                         Canvas.SetTop(main3DContainer, top);
                         dragStartPoint = currentPoint;
+                        e.Handled = true;
                     }
                 };
 
                 dragHandleBar.MouseLeftButtonUp += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                     {
-                        isDragging = false;
+                        isMouseDragging = false;
                         dragHandleBar.ReleaseMouseCapture();
+                        RefreshSelectableObjects();
+                        e.Handled = true;
                     }
                 };
 
@@ -2926,16 +2937,20 @@ namespace QASmartTouch.Forms
                 {
                     if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar))
                         return;
+                    if (activeTouchId.HasValue && activeTouchId.Value != e.TouchDevice.Id)
+                        return;
 
-                    isDragging = true;
+                    _isDrawing = false;
+                    _currentStroke = null;
+                    activeTouchId = e.TouchDevice.Id;
                     dragStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
                     dragHandleBar.CaptureTouch(e.TouchDevice);
                     e.Handled = true;
                 };
 
-                dragHandleBar.TouchMove += (s, e) =>
+                dragHandleBar.PreviewTouchMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (activeTouchId.HasValue && activeTouchId.Value == e.TouchDevice.Id)
                     {
                         Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
                         double left = Canvas.GetLeft(main3DContainer) + (currentPoint.X - dragStartPoint.X);
@@ -2954,13 +2969,23 @@ namespace QASmartTouch.Forms
                     }
                 };
 
-                dragHandleBar.TouchUp += (s, e) =>
+                dragHandleBar.PreviewTouchUp += (s, e) =>
                 {
-                    if (isDragging)
+                    if (activeTouchId.HasValue && activeTouchId.Value == e.TouchDevice.Id)
                     {
-                        isDragging = false;
+                        activeTouchId = null;
                         dragHandleBar.ReleaseTouchCapture(e.TouchDevice);
+                        RefreshSelectableObjects();
                         e.Handled = true;
+                    }
+                };
+
+                dragHandleBar.LostTouchCapture += (s, e) =>
+                {
+                    if (activeTouchId.HasValue && activeTouchId.Value == e.TouchDevice.Id)
+                    {
+                        activeTouchId = null;
+                        RefreshSelectableObjects();
                     }
                 };
 
@@ -3396,7 +3421,7 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
 
             headerBar.PreviewMouseLeftButtonDown += (s, e) =>
             {
-                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                if (activeTouchId.HasValue || e.StylusDevice != null || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
                     return;
 
                 _isDrawing = false;
@@ -3415,7 +3440,7 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
 
             headerBar.MouseMove += (s, e) =>
             {
-                if (isMouseDragging && !activeTouchId.HasValue)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                 {
                     Point currentPoint = e.GetPosition(MainInteractiveBoard);
                     double offsetX = currentPoint.X - mouseStartPoint.X;
@@ -3433,7 +3458,7 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
 
             MouseButtonEventHandler endMouse = (s, e) =>
             {
-                if (isMouseDragging)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                 {
                     isMouseDragging = false;
                     try { headerBar.ReleaseMouseCapture(); } catch { }
@@ -3460,7 +3485,7 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
 
             headerBar.PreviewStylusDown += (s, e) =>
             {
-                if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
                     return;
 
                 _isDrawing = false;
@@ -3479,7 +3504,7 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
 
             headerBar.PreviewStylusMove += (s, e) =>
             {
-                if (isStylusDragging)
+                if (isStylusDragging && !activeTouchId.HasValue && e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus)
                 {
                     Point currentPoint = e.GetPosition(MainInteractiveBoard);
                     double offsetX = currentPoint.X - stylusStartPoint.X;
@@ -3497,7 +3522,7 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
 
             StylusEventHandler endStylus = (s, e) =>
             {
-                if (isStylusDragging)
+                if (isStylusDragging && e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus)
                 {
                     isStylusDragging = false;
                     try { headerBar.ReleaseStylusCapture(); } catch { }
@@ -4548,7 +4573,7 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
 
             headerBar.PreviewMouseLeftButtonDown += (s, e) =>
             {
-                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                if (activeTouchId.HasValue || e.StylusDevice != null || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
                     return;
 
                 _isDrawing = false;
@@ -4567,7 +4592,7 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
 
             headerBar.MouseMove += (s, e) =>
             {
-                if (isMouseDragging && !activeTouchId.HasValue)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                 {
                     Point currentPoint = e.GetPosition(MainInteractiveBoard);
                     double offsetX = currentPoint.X - mouseStartPoint.X;
@@ -4585,7 +4610,7 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
 
             MouseButtonEventHandler endMouse = (s, e) =>
             {
-                if (isMouseDragging)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                 {
                     isMouseDragging = false;
                     try { headerBar.ReleaseMouseCapture(); } catch { }
