@@ -1810,6 +1810,9 @@ namespace QASmartTouch.Forms
                 case "Cone":
                     BuildConeWireframe(group, left, top, width, height);
                     break;
+                case "Frustum":
+                    BuildFrustumWireframe(group, left, top, width, height);
+                    break;
                 case "Prism":
                     BuildPrismWireframe(group, left, top, width, height);
                     break;
@@ -2037,6 +2040,54 @@ namespace QASmartTouch.Forms
             wireframe.Children.Add(new LineGeometry(s, new Point(x, y + h - ry)));
             wireframe.Children.Add(new LineGeometry(s, new Point(x + w, y + h - ry)));
             wireframe.Children.Add(new EllipseGeometry(new Point(x + rx, y + h - ry), rx, ry));
+        }
+
+        private void BuildFrustumGeometry(GeometryGroup visible, GeometryGroup hidden, double x, double y, double w, double h)
+        {
+            double botRx = w / 2.0;
+            double botRy = Math.Min(h * 0.15, w * 0.25);
+            double topRx = botRx * 0.58;
+            double topRy = botRy * 0.58;
+
+            Point topCenter = new Point(x + botRx, y + topRy);
+            Point botCenter = new Point(x + botRx, y + h - botRy);
+
+            // Đáy trên: Toàn bộ nét liền
+            visible.Children.Add(new EllipseGeometry(topCenter, topRx, topRy));
+
+            // Hai đường sinh biên nghiêng
+            visible.Children.Add(new LineGeometry(new Point(x + botRx - topRx, y + topRy), new Point(x, y + h - botRy)));
+            visible.Children.Add(new LineGeometry(new Point(x + botRx + topRx, y + topRy), new Point(x + w, y + h - botRy)));
+
+            // Đáy dưới: Cung trước nét liền
+            PathGeometry frontArc = new PathGeometry();
+            PathFigure frontFig = new PathFigure { StartPoint = new Point(x, y + h - botRy), IsClosed = false };
+            frontFig.Segments.Add(new ArcSegment(new Point(x + w, y + h - botRy), new Size(botRx, botRy), 0, false, SweepDirection.Counterclockwise, true));
+            frontArc.Figures.Add(frontFig);
+            visible.Children.Add(frontArc);
+
+            // Đáy dưới: Cung sau nét đứt
+            PathGeometry backArc = new PathGeometry();
+            PathFigure backFig = new PathFigure { StartPoint = new Point(x + w, y + h - botRy), IsClosed = false };
+            backFig.Segments.Add(new ArcSegment(new Point(x, y + h - botRy), new Size(botRx, botRy), 0, false, SweepDirection.Counterclockwise, true));
+            backArc.Figures.Add(backFig);
+            hidden.Children.Add(backArc);
+        }
+
+        private void BuildFrustumWireframe(GeometryGroup wireframe, double x, double y, double w, double h)
+        {
+            double botRx = w / 2.0;
+            double botRy = Math.Min(h * 0.15, w * 0.25);
+            double topRx = botRx * 0.58;
+            double topRy = botRy * 0.58;
+
+            Point topCenter = new Point(x + botRx, y + topRy);
+            Point botCenter = new Point(x + botRx, y + h - botRy);
+
+            wireframe.Children.Add(new EllipseGeometry(topCenter, topRx, topRy));
+            wireframe.Children.Add(new EllipseGeometry(botCenter, botRx, botRy));
+            wireframe.Children.Add(new LineGeometry(new Point(x + botRx - topRx, y + topRy), new Point(x, y + h - botRy)));
+            wireframe.Children.Add(new LineGeometry(new Point(x + botRx + topRx, y + topRy), new Point(x + w, y + h - botRy)));
         }
 
         private void BuildPrismGeometry(GeometryGroup visible, GeometryGroup hidden, double x, double y, double w, double h)

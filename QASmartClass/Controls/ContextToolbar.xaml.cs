@@ -385,17 +385,23 @@ namespace QASmartTouch.Controls
             btnRotate3D.Visibility = is3D ? Visibility.Visible : Visibility.Collapsed;
             if (borderRotate3D != null)
             {
+                borderRotate3D.Background = Brushes.Transparent;
+                borderRotate3D.BorderBrush = Brushes.Transparent;
+                borderRotate3D.BorderThickness = new Thickness(0);
+            }
+            if (txtRotate3DIcon != null)
+            {
                 if (isRotating)
                 {
-                    borderRotate3D.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E7E72"));
-                    borderRotate3D.BorderBrush = new SolidColorBrush(Colors.White);
-                    borderRotate3D.BorderThickness = new Thickness(1.5);
+                    txtRotate3DIcon.FontWeight = FontWeights.Black;
+                    txtRotate3DIcon.FontSize = 24;
+                    txtRotate3DIcon.Foreground = Brushes.White;
                 }
                 else
                 {
-                    borderRotate3D.Background = Brushes.Transparent;
-                    borderRotate3D.BorderBrush = Brushes.Transparent;
-                    borderRotate3D.BorderThickness = new Thickness(0);
+                    txtRotate3DIcon.FontWeight = FontWeights.Normal;
+                    txtRotate3DIcon.FontSize = 18;
+                    txtRotate3DIcon.Foreground = new SolidColorBrush(Color.FromArgb(210, 255, 255, 255));
                 }
             }
         }

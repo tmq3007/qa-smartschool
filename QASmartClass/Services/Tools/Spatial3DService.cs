@@ -54,7 +54,8 @@ namespace QASmartTouch.Services.Tools
             if (string.IsNullOrWhiteSpace(name)) return false;
             string n = name.Trim().ToLowerInvariant();
             return n is "cube" or "sphere" or "pyramid" or "tetrahedron" or "cylinder" or "cone" or "prism"
-                or "mcube" or "mpyramid" or "mtetra" or "mprism" or "mprism4" or "mcylinder" or "mcone" or "mfrustum" or "msphere";
+                or "mcube" or "mpyramid" or "mtetra" or "mprism" or "mprism4" or "mcylinder" or "mcone" or "mfrustum" or "msphere"
+                or "frustum" or "truncatedcone";
         }
 
         public static string NormalizeShapeType(string? shapeName)
@@ -68,7 +69,8 @@ namespace QASmartTouch.Services.Tools
                 "mtetra" or "tetrahedron" => "Tetrahedron",
                 "mprism" or "mprism4" or "prism" => "Prism",
                 "mcylinder" or "cylinder" => "Cylinder",
-                "mcone" or "mfrustum" or "cone" => "Cone",
+                "mcone" or "cone" => "Cone",
+                "mfrustum" or "frustum" or "truncatedcone" => "Frustum",
                 "msphere" or "sphere" => "Sphere",
                 _ => "Cube"
             };
@@ -324,6 +326,9 @@ namespace QASmartTouch.Services.Tools
                 case "cone":
                     BuildConeGeometry(yawDeg, pitchDeg, w, h, visible, hidden);
                     break;
+                case "frustum":
+                    BuildFrustumGeometry(yawDeg, pitchDeg, w, h, visible, hidden);
+                    break;
                 case "sphere":
                     BuildSphereGeometry(yawDeg, pitchDeg, w, h, visible, hidden);
                     break;
@@ -354,12 +359,12 @@ namespace QASmartTouch.Services.Tools
             };
             int[][] f = new int[][]
             {
-                new int[] { 0, 3, 2, 1 }, // Bottom (y = -1)
-                new int[] { 4, 5, 6, 7 }, // Top    (y =  1)
-                new int[] { 0, 1, 5, 4 }, // Front  (z = -1)
-                new int[] { 1, 2, 6, 5 }, // Right  (x =  1)
-                new int[] { 2, 3, 7, 6 }, // Back   (z =  1)
-                new int[] { 3, 0, 4, 7 }  // Left   (x = -1)
+                new int[] { 0, 1, 2, 3 }, // Bottom
+                new int[] { 4, 5, 6, 7 }, // Top
+                new int[] { 0, 1, 5, 4 },
+                new int[] { 1, 2, 6, 5 },
+                new int[] { 2, 3, 7, 6 },
+                new int[] { 3, 0, 4, 7 }
             };
             return new PolyhedronModel { Vertices = v, Faces = f };
         }
@@ -376,7 +381,7 @@ namespace QASmartTouch.Services.Tools
             };
             int[][] f = new int[][]
             {
-                new int[] { 0, 3, 2, 1 }, // Bottom
+                new int[] { 0, 1, 2, 3 }, // Bottom
                 new int[] { 0, 1, 4 },    // Face SAB
                 new int[] { 1, 2, 4 },    // Face SBC
                 new int[] { 2, 3, 4 },    // Face SCD
@@ -397,7 +402,7 @@ namespace QASmartTouch.Services.Tools
             };
             int[][] f = new int[][]
             {
-                new int[] { 0, 2, 1 },
+                new int[] { 0, 1, 2 },
                 new int[] { 0, 1, 3 },
                 new int[] { 1, 2, 3 },
                 new int[] { 2, 0, 3 }
@@ -418,7 +423,7 @@ namespace QASmartTouch.Services.Tools
             }
             int[][] f = new int[][]
             {
-                new int[] { 0, 2, 1 },       // Bottom
+                new int[] { 0, 1, 2 },       // Bottom
                 new int[] { 3, 4, 5 },       // Top
                 new int[] { 0, 1, 4, 3 },    // Side 1
                 new int[] { 1, 2, 5, 4 },    // Side 2
@@ -455,7 +460,19 @@ namespace QASmartTouch.Services.Tools
                 p2d[i] = new Point(centerX + camX * scale, centerY - camY * scale);
             }
 
-            // Tính pháp tuyến và hướng nhìn của từng mặt
+            // 1. Trọng tâm toàn bộ khối đa diện
+            double cx = 0, cy0 = 0, cz = 0;
+            for (int i = 0; i < model.Vertices.Length; i++)
+            {
+                cx += model.Vertices[i][0];
+                cy0 += model.Vertices[i][1];
+                cz += model.Vertices[i][2];
+            }
+            cx /= model.Vertices.Length;
+            cy0 /= model.Vertices.Length;
+            cz /= model.Vertices.Length;
+
+            // 2. Tính pháp tuyến và hướng nhìn của từng mặt (chuẩn hóa luôn hướng ra ngoài như NoteBoard)
             bool[] isFaceFront = new bool[model.Faces.Length];
             for (int fi = 0; fi < model.Faces.Length; fi++)
             {
@@ -473,8 +490,38 @@ namespace QASmartTouch.Services.Tools
                 double ny = v1z * v2x - v1x * v2z;
                 double nz = v1x * v2y - v1y * v2x;
 
+                // Chuẩn hóa độ dài vector pháp tuyến
+                double len = Math.Sqrt(nx * nx + ny * ny + nz * nz);
+                if (len > 1e-9)
+                {
+                    nx /= len;
+                    ny /= len;
+                    nz /= len;
+                }
+
+                // Trọng tâm mặt fi
+                double fcx = 0, fcy = 0, fcz = 0;
+                for (int j = 0; j < face.Length; j++)
+                {
+                    fcx += model.Vertices[face[j]][0];
+                    fcy += model.Vertices[face[j]][1];
+                    fcz += model.Vertices[face[j]][2];
+                }
+                fcx /= face.Length;
+                fcy /= face.Length;
+                fcz /= face.Length;
+
+                // Chuẩn NoteBoard: Nếu pháp tuyến trỏ vào tâm khối (tích vô hướng < 0), đảo chiều để luôn hướng ra ngoài
+                if ((nx * (fcx - cx) + ny * (fcy - cy0) + nz * (fcz - cz)) < 0)
+                {
+                    nx = -nx;
+                    ny = -ny;
+                    nz = -nz;
+                }
+
+                // Mặt hướng về phía camera khi dot(normal, view) >= -1e-5
                 double dot = nx * view[0] + ny * view[1] + nz * view[2];
-                isFaceFront[fi] = dot > 1e-5;
+                isFaceFront[fi] = dot >= -1e-5;
             }
 
             // Tập hợp tất cả các cạnh và danh sách các mặt liền kề
@@ -536,33 +583,52 @@ namespace QASmartTouch.Services.Tools
             double cx = w / 2.0;
             double cy = h / 2.0;
             double rx = Math.Min(w, h) * 0.35;
-            double ry = Math.Max(12, rx * Math.Abs(sp) * 0.85);
+            double ry = Math.Max(10, rx * Math.Abs(sp) * 0.85);
             double halfH = Math.Min(w, h) * 0.30;
 
             double topCy = cy - halfH * cp;
             double botCy = cy + halfH * cp;
 
-            // Đáy trên: Elip
-            visible.Children.Add(new EllipseGeometry(new Point(cx, topCy), rx, ry));
-
             // Hai đường sinh biên trái phải
             visible.Children.Add(new LineGeometry(new Point(cx - rx, topCy), new Point(cx - rx, botCy)));
             visible.Children.Add(new LineGeometry(new Point(cx + rx, topCy), new Point(cx + rx, botCy)));
 
-            // Đáy dưới: Cung trước (nhìn thấy, nét liền) và cung sau (khuất, nét đứt)
-            // Nửa dưới (nhìn thấy)
-            var visibleArc = new PathGeometry();
-            var vFig = new PathFigure { StartPoint = new Point(cx - rx, botCy), IsFilled = false };
-            vFig.Segments.Add(new ArcSegment(new Point(cx + rx, botCy), new Size(rx, ry), 0, false, SweepDirection.Counterclockwise, true));
-            visibleArc.Figures.Add(vFig);
-            visible.Children.Add(visibleArc);
+            if (pitchDeg >= 0)
+            {
+                // Nhìn từ trên xuống: Đáy trên thấy toàn bộ (Elip)
+                visible.Children.Add(new EllipseGeometry(new Point(cx, topCy), rx, ry));
 
-            // Nửa trên của đáy dưới (khuất nét đứt nếu nhìn từ trên xuống)
-            var hiddenArc = new PathGeometry();
-            var hFig = new PathFigure { StartPoint = new Point(cx - rx, botCy), IsFilled = false };
-            hFig.Segments.Add(new ArcSegment(new Point(cx + rx, botCy), new Size(rx, ry), 0, false, SweepDirection.Clockwise, true));
-            hiddenArc.Figures.Add(hFig);
-            hidden.Children.Add(hiddenArc);
+                // Đáy dưới: Cung trước (nửa dưới, nhìn thấy) và cung sau (nửa trên, khuất)
+                var visibleArc = new PathGeometry();
+                var vFig = new PathFigure { StartPoint = new Point(cx - rx, botCy), IsFilled = false };
+                vFig.Segments.Add(new ArcSegment(new Point(cx + rx, botCy), new Size(rx, ry), 0, false, SweepDirection.Counterclockwise, true));
+                visibleArc.Figures.Add(vFig);
+                visible.Children.Add(visibleArc);
+
+                var hiddenArc = new PathGeometry();
+                var hFig = new PathFigure { StartPoint = new Point(cx - rx, botCy), IsFilled = false };
+                hFig.Segments.Add(new ArcSegment(new Point(cx + rx, botCy), new Size(rx, ry), 0, false, SweepDirection.Clockwise, true));
+                hiddenArc.Figures.Add(hFig);
+                hidden.Children.Add(hiddenArc);
+            }
+            else
+            {
+                // Nhìn từ dưới lên: Đáy dưới thấy toàn bộ (Elip)
+                visible.Children.Add(new EllipseGeometry(new Point(cx, botCy), rx, ry));
+
+                // Đáy trên: Cung trước (nửa trên, nhìn thấy) và cung sau (nửa dưới, khuất)
+                var visibleArc = new PathGeometry();
+                var vFig = new PathFigure { StartPoint = new Point(cx - rx, topCy), IsFilled = false };
+                vFig.Segments.Add(new ArcSegment(new Point(cx + rx, topCy), new Size(rx, ry), 0, false, SweepDirection.Clockwise, true));
+                visibleArc.Figures.Add(vFig);
+                visible.Children.Add(visibleArc);
+
+                var hiddenArc = new PathGeometry();
+                var hFig = new PathFigure { StartPoint = new Point(cx - rx, topCy), IsFilled = false };
+                hFig.Segments.Add(new ArcSegment(new Point(cx + rx, topCy), new Size(rx, ry), 0, false, SweepDirection.Counterclockwise, true));
+                hiddenArc.Figures.Add(hFig);
+                hidden.Children.Add(hiddenArc);
+            }
         }
 
         private static void BuildConeGeometry(double yawDeg, double pitchDeg, double w, double h,
@@ -600,6 +666,69 @@ namespace QASmartTouch.Services.Tools
             hidden.Children.Add(hiddenArc);
         }
 
+        private static void BuildFrustumGeometry(double yawDeg, double pitchDeg, double w, double h,
+            GeometryGroup visible, GeometryGroup hidden)
+        {
+            double pitchRad = pitchDeg * Math.PI / 180.0;
+            double sp = Math.Sin(pitchRad);
+            double cp = Math.Cos(pitchRad);
+
+            double cx = w / 2.0;
+            double cy = h / 2.0;
+
+            // Bán kính đáy dưới (lớn hơn) và đáy trên (nhỏ hơn)
+            double botRx = Math.Min(w, h) * 0.38;
+            double botRy = Math.Max(10, botRx * Math.Abs(sp) * 0.85);
+
+            double topRx = botRx * 0.58;
+            double topRy = Math.Max(6, topRx * Math.Abs(sp) * 0.85);
+
+            double halfH = Math.Min(w, h) * 0.30;
+            double topCy = cy - halfH * cp;
+            double botCy = cy + halfH * cp;
+
+            // Hai đường sinh biên trái phải nối từ viền đáy trên xuống viền đáy dưới
+            visible.Children.Add(new LineGeometry(new Point(cx - topRx, topCy), new Point(cx - botRx, botCy)));
+            visible.Children.Add(new LineGeometry(new Point(cx + topRx, topCy), new Point(cx + botRx, botCy)));
+
+            if (pitchDeg >= 0)
+            {
+                // Nhìn từ trên xuống: Đáy trên thấy toàn bộ (Elip)
+                visible.Children.Add(new EllipseGeometry(new Point(cx, topCy), topRx, topRy));
+
+                // Đáy dưới: Cung trước (nửa dưới, nhìn thấy) và cung sau (nửa trên, khuất nét đứt)
+                var visibleArc = new PathGeometry();
+                var vFig = new PathFigure { StartPoint = new Point(cx - botRx, botCy), IsFilled = false };
+                vFig.Segments.Add(new ArcSegment(new Point(cx + botRx, botCy), new Size(botRx, botRy), 0, false, SweepDirection.Counterclockwise, true));
+                visibleArc.Figures.Add(vFig);
+                visible.Children.Add(visibleArc);
+
+                var hiddenArc = new PathGeometry();
+                var hFig = new PathFigure { StartPoint = new Point(cx - botRx, botCy), IsFilled = false };
+                hFig.Segments.Add(new ArcSegment(new Point(cx + botRx, botCy), new Size(botRx, botRy), 0, false, SweepDirection.Clockwise, true));
+                hiddenArc.Figures.Add(hFig);
+                hidden.Children.Add(hiddenArc);
+            }
+            else
+            {
+                // Nhìn từ dưới lên: Đáy dưới thấy toàn bộ (Elip)
+                visible.Children.Add(new EllipseGeometry(new Point(cx, botCy), botRx, botRy));
+
+                // Đáy trên: Cung trước (nửa trên, nhìn thấy) và cung sau (nửa dưới, khuất nét đứt)
+                var visibleArc = new PathGeometry();
+                var vFig = new PathFigure { StartPoint = new Point(cx - topRx, topCy), IsFilled = false };
+                vFig.Segments.Add(new ArcSegment(new Point(cx + topRx, topCy), new Size(topRx, topRy), 0, false, SweepDirection.Clockwise, true));
+                visibleArc.Figures.Add(vFig);
+                visible.Children.Add(visibleArc);
+
+                var hiddenArc = new PathGeometry();
+                var hFig = new PathFigure { StartPoint = new Point(cx - topRx, topCy), IsFilled = false };
+                hFig.Segments.Add(new ArcSegment(new Point(cx + topRx, topCy), new Size(topRx, topRy), 0, false, SweepDirection.Counterclockwise, true));
+                hiddenArc.Figures.Add(hFig);
+                hidden.Children.Add(hiddenArc);
+            }
+        }
+
         private static void BuildSphereGeometry(double yawDeg, double pitchDeg, double w, double h,
             GeometryGroup visible, GeometryGroup hidden)
         {
@@ -614,19 +743,24 @@ namespace QASmartTouch.Services.Tools
             // Vòng tròn đường bao ngoài (luôn nhìn thấy)
             visible.Children.Add(new EllipseGeometry(new Point(cx, cy), r, r));
 
-            // Vòng xích đạo: Cung trước (nhìn thấy)
-            var visibleArc = new PathGeometry();
-            var vFig = new PathFigure { StartPoint = new Point(cx - r, cy), IsFilled = false };
-            vFig.Segments.Add(new ArcSegment(new Point(cx + r, cy), new Size(r, ry), 0, false, SweepDirection.Counterclockwise, true));
-            visibleArc.Figures.Add(vFig);
-            visible.Children.Add(visibleArc);
+            if (ry > 1)
+            {
+                // Vòng xích đạo: Cung trước (nhìn thấy)
+                var visibleArc = new PathGeometry();
+                var vFig = new PathFigure { StartPoint = new Point(cx - r, cy), IsFilled = false };
+                vFig.Segments.Add(new ArcSegment(new Point(cx + r, cy), new Size(r, ry), 0, false,
+                    pitchDeg >= 0 ? SweepDirection.Counterclockwise : SweepDirection.Clockwise, true));
+                visibleArc.Figures.Add(vFig);
+                visible.Children.Add(visibleArc);
 
-            // Vòng xích đạo: Cung sau (khuất nét đứt)
-            var hiddenArc = new PathGeometry();
-            var hFig = new PathFigure { StartPoint = new Point(cx - r, cy), IsFilled = false };
-            hFig.Segments.Add(new ArcSegment(new Point(cx + r, cy), new Size(r, ry), 0, false, SweepDirection.Clockwise, true));
-            hiddenArc.Figures.Add(hFig);
-            hidden.Children.Add(hiddenArc);
+                // Vòng xích đạo: Cung sau (khuất nét đứt)
+                var hiddenArc = new PathGeometry();
+                var hFig = new PathFigure { StartPoint = new Point(cx - r, cy), IsFilled = false };
+                hFig.Segments.Add(new ArcSegment(new Point(cx + r, cy), new Size(r, ry), 0, false,
+                    pitchDeg >= 0 ? SweepDirection.Clockwise : SweepDirection.Counterclockwise, true));
+                hiddenArc.Figures.Add(hFig);
+                hidden.Children.Add(hiddenArc);
+            }
         }
 
         #endregion
