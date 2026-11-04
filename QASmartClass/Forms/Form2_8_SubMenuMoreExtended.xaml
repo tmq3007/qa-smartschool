@@ -501,6 +501,29 @@
                                 </Grid>
                             </Button>
 
+                            <Button x:Name="btnVariationTable" 
+                                    Style="{StaticResource ExtendedMenuItemButton}"
+                                    Click="btnVariationTable_Click"
+                                    ToolTip="Bảng biến thiên &amp; Khảo sát hàm số (giải tích ký hiệu chuẩn SGK, chèn kết quả lên bảng)">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Viewbox Grid.Column="0" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Fill="#168B82" 
+                                                  Data="M3,3V21H21V19H5V3H3M7,17L11,10L14,15L20,5L21.4,6.4L14,18L11,13L8.4,17.6L7,17Z"/>
+                                        </Canvas>
+                                    </Viewbox>
+                                    <TextBlock Grid.Column="1" Text="Bảng biến thiên" 
+                                               FontSize="13"
+                                               FontWeight="Bold"
+                                               Foreground="#2F3542"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </Button>
+
                             <Button x:Name="btnCalculator" 
                                     Style="{StaticResource ExtendedMenuItemButton}"
                                     Click="btnCalculator_Click"

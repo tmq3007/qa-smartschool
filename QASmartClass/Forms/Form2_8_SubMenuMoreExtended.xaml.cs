@@ -424,6 +424,15 @@ namespace QASmartTouch.Forms
             WindowHelper.ShowChildWindow(countdownTimer);
         }
 
+        private void btnVariationTable_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+            var mainWindow = GetMainDashboard();
+            var dialog = new Form2_VariationTableDialog(mainWindow);
+            dialog.Owner = mainWindow ?? Application.Current.MainWindow;
+            dialog.ShowDialog();
+        }
+
         private void btnCalculator_Click(object sender, RoutedEventArgs e)
         {
             // Close this menu first

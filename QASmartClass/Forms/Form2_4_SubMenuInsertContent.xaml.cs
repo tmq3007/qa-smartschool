@@ -793,6 +793,23 @@ namespace QASmartTouch.Forms
                           "Công thức toán", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        private void btnVariationTable_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                this.Hide();
+                var dialog = new Form2_VariationTableDialog(_mainDashboard);
+                dialog.Owner = _mainDashboard ?? Application.Current.MainWindow;
+                dialog.ShowDialog();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                this.Show();
+                MessageBox.Show($"Lỗi mở bảng biến thiên: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void btnMathGraph_Click(object sender, RoutedEventArgs e)
         {
             try

@@ -3060,6 +3060,54 @@ namespace QASmartTouch.Forms
             ShowSmartStatusBadge("📐 Đã chèn kết quả QA Calculator lên bảng!");
         }
 
+
+        /// <summary>
+        /// Chèn Bảng Biến Thiên tương tác lên bảng vẽ (tương tự như Thẻ Toán Học QA Calculator)
+        /// Tự động đăng ký SelectionManager, QuadTree và ghi nhận Undo/Redo
+        /// </summary>
+        public void InsertVariationTableToBoard(QASmartClass.Services.Tools.VariationModel model)
+        {
+            if (model == null) return;
+
+            // Ẩn bàn phím nổi nếu đang hiện
+            _floatingTouchKeyboard?.HideKeyboard();
+
+            // 1. Dựng Thẻ Bảng Biến Thiên hoàn chỉnh
+            var cardBorder = QASmartClass.Services.Tools.VariationCardRenderer.CreateVariationCard(model);
+
+            // 2. Xác định vị trí chèn (ở giữa màn hình hoặc lệch nhẹ theo đối tượng đang chọn)
+            double posX = Math.Max(50, (MainInteractiveBoard.ActualWidth - 650) / 2);
+            double posY = Math.Max(50, (MainInteractiveBoard.ActualHeight - 380) / 2);
+
+            var selectedObjects = _selectionManager?.SelectedObjects;
+            if (selectedObjects != null && selectedObjects.Count > 0)
+            {
+                var first = selectedObjects[0];
+                posX = first.Position.X + 40;
+                posY = first.Position.Y + 40;
+            }
+
+            Canvas.SetLeft(cardBorder, posX);
+            Canvas.SetTop(cardBorder, posY);
+            Canvas.SetZIndex(cardBorder, 1000);
+
+            MainInteractiveBoard.Children.Add(cardBorder);
+
+            // 3. Đăng ký với SelectionManager & QuadTree & Undo/Redo
+            try
+            {
+                RegisterNewObjectWithSelectionManager(cardBorder);
+            }
+            catch { }
+
+            RecordAddAction(cardBorder, "VariationTable");
+            RefreshSelectableObjects();
+
+            // 4. Chuyển sang công cụ Chọn vùng\r\n            try\r\n            {\r\n                SelectTool(WhiteboardCore.ToolMode.Select);\r\n            }\r\n            catch { }
+
+            ShowSmartStatusBadge("📐 Đã chèn Bảng biến thiên lên bảng!");
+        }
+
         #endregion
     }
 }

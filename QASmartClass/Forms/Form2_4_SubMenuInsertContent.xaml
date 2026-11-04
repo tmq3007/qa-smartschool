@@ -783,6 +783,19 @@
 
 
 
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnVariationTable_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Fill="#168B82" 
+                                     Data="M3,3V21H21V19H5V3H3M7,17L11,10L14,15L20,5L21.4,6.4L14,18L11,13L8.4,17.6L7,17Z"
+                                     Width="24" Height="24"
+                                     Margin="0,0,12,0"/>
+                                <StackPanel>
+                                    <TextBlock Text="Bảng biến thiên" FontSize="13" FontWeight="SemiBold" Foreground="#2F3542"/>
+                                    <TextBlock Text="Phân tích hàm số &amp; BBT" FontSize="11" Foreground="#57606F"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+
                         <Button Style="{StaticResource ContentButtonStyle}" Click="btnMathGraph_Click">
 
                             <StackPanel Orientation="Horizontal">

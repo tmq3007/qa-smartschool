@@ -140,7 +140,12 @@ html, body {
  </div>
  <div id="calcKeys" class="nbc-keys"></div>
  <div id="nbcOverlay" class="nbc-overlay" hidden></div>
- <div class="calc-footer"><button type="button" id="insertResult">Đưa lên bảng ↗</button></div>
+ <div class="calc-footer" style="display:flex;gap:8px;">
+  <button type="button" id="insertResult" style="flex:1;">Đưa lên bảng ↗</button>
+  <button type="button" id="btnCalcVariation" title="Mở bảng biến thiên &amp; đồ thị từ biểu thức đang tính" style="flex:1;background:linear-gradient(180deg,#2563eb 0%,#1d4ed8 100%);color:#fff;border:1px solid #60a5fa;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;">
+    <span>📈 Bảng biến thiên</span>
+  </button>
+</div>
 </section>
 <div id="toast"></div>
 
@@ -1809,6 +1814,54 @@ function init(){
  ['#nbcT0','#nbcT1','#nbcTs'].forEach(id=>qs(id).addEventListener('input',scheduleSaveCalc));
  qs('#nbcTabBtn').onclick=buildTable;
  qs('#insertResult').onclick=insertToBoard;
+ qs('#btnCalcVariation').onclick=function(){
+   let expr = '';
+   try {
+     if (S.mode === 'eq') {
+       const T = EQ_TYPES[S.eqType];
+       if (T && T.d) {
+         // Đọc trực tiếp các hệ số a, b, c... từ S.eq[S.eqType] hoặc lưới input
+         const cols = T.d + 1;
+         const vals = S.eq[S.eqType] || [];
+         const gridInputs = qs('#nbcEqGrid') ? [...qs('#nbcEqGrid').querySelectorAll('input')] : [];
+         const nums = [...Array(cols)].map((_, i) => {
+           let s = (gridInputs[i] ? gridInputs[i].value : (vals[i] ?? '')).trim();
+           if (!s) return 0;
+           try { return check(ev(parseLinear(s, {}), ctx())); } catch(_) { return parseFloat(s) || 0; }
+         });
+         const d = T.d;
+         const terms = [];
+         for (let i = 0; i <= d; i++) {
+           const c = nums[i];
+           if (c === 0 && terms.length > 0 && i < d) continue;
+           const p = d - i;
+           let termStr = '';
+           if (p === 0) {
+             termStr = (c >= 0 && terms.length > 0 ? ' + ' : c < 0 ? ' - ' : '') + Math.abs(c);
+           } else if (p === 1) {
+             const absC = Math.abs(c) === 1 ? '' : Math.abs(c);
+             termStr = (c >= 0 && terms.length > 0 ? ' + ' : c < 0 ? ' - ' : '') + absC + 'x';
+           } else {
+             const absC = Math.abs(c) === 1 ? '' : Math.abs(c);
+             termStr = (c >= 0 && terms.length > 0 ? ' + ' : c < 0 ? ' - ' : '') + absC + 'x^' + p;
+           }
+           terms.push(termStr);
+         }
+         expr = terms.join('').trim();
+       }
+     } else if (S.mode === 'table' && !fEd.isEmpty()) {
+       expr = rowText(fEd.root);
+     } else if (S.mode === 'calc' && !mainEd.isEmpty()) {
+       expr = rowText(mainEd.root);
+     }
+   } catch(e){
+     console.error('Error extracting calc expression:', e);
+   }
+
+   if (window.chrome && window.chrome.webview) {
+     window.chrome.webview.postMessage(JSON.stringify({ action: 'openVariation', expression: expr }));
+   }
+ };
  qs('#nbcPlot').onclick=plotGraph;
  qs('#calcBtn').onclick=()=>{const el=qs('#calculator');el.hidden=!el.hidden;if(!el.hidden){clampCalculator();setCalcMode(S.mode);}else cancelPrompt();};
  qs('#calcClose').onclick=hideCalc;

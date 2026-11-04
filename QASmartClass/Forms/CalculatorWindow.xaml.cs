@@ -132,6 +132,20 @@ namespace QASmartTouch.Forms
                     });
                 }
             }
+            else if (action == "openVariation")
+            {
+                string expr = root.TryGetProperty("expression", out var exprProp) ? exprProp.GetString() ?? "" : "";
+                Dispatcher.Invoke(() =>
+                {
+                    var dlg = new Form2_VariationTableDialog(_mainDashboard);
+                    dlg.Owner = this;
+                    if (!string.IsNullOrWhiteSpace(expr))
+                    {
+                        dlg.SetExpression(expr);
+                    }
+                    dlg.ShowDialog();
+                });
+            }
             else if (action == "close")
             {
                 Dispatcher.Invoke(this.Hide);
