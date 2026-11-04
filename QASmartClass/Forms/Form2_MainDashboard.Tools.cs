@@ -3103,9 +3103,62 @@ namespace QASmartTouch.Forms
             RecordAddAction(cardBorder, "VariationTable");
             RefreshSelectableObjects();
 
-            // 4. Chuyển sang công cụ Chọn vùng\r\n            try\r\n            {\r\n                SelectTool(WhiteboardCore.ToolMode.Select);\r\n            }\r\n            catch { }
+            // 4. Chuyển sang công cụ Chọn vùng
+            if (btn8_Select != null) SelectTool(btn8_Select);
 
             ShowSmartStatusBadge("📐 Đã chèn Bảng biến thiên lên bảng!");
+        }
+
+        /// <summary>
+        /// Chèn Đồ Thị Hàm Số Oxy độc lập tương tác lên bảng vẽ (Thẻ Toán Học)
+        /// Tự động đăng ký SelectionManager, QuadTree và ghi nhận Undo/Redo
+        /// </summary>
+        public void InsertFunctionGraphToBoard(string expression, QASmartClass.Services.Tools.VariationModel? model = null)
+        {
+            if (string.IsNullOrWhiteSpace(expression)) return;
+
+            // Ẩn bàn phím nổi nếu đang hiện
+            _floatingTouchKeyboard?.HideKeyboard();
+
+            // 1. Dựng Thẻ Đồ Thị Hàm Số hoàn chỉnh
+            var cardBorder = QASmartClass.Services.Tools.FunctionGraphCardRenderer.CreateGraphCard(expression, model);
+
+            // 2. Xác định vị trí chèn (ở giữa màn hình hoặc lệch nhẹ theo đối tượng đang chọn)
+            double posX = Math.Max(50, (MainInteractiveBoard.ActualWidth - 620) / 2);
+            double posY = Math.Max(50, (MainInteractiveBoard.ActualHeight - 440) / 2);
+
+            var selectedObjects = _selectionManager?.SelectedObjects;
+            if (selectedObjects != null && selectedObjects.Count > 0)
+            {
+                var first = selectedObjects[0];
+                posX = first.Position.X + 40;
+                posY = first.Position.Y + 40;
+            }
+
+            Canvas.SetLeft(cardBorder, posX);
+            Canvas.SetTop(cardBorder, posY);
+            Canvas.SetZIndex(cardBorder, 1000);
+
+            MainInteractiveBoard.Children.Add(cardBorder);
+
+            // 3. Đăng ký với SelectionManager & QuadTree & Undo/Redo
+            try
+            {
+                RegisterNewObjectWithSelectionManager(cardBorder);
+            }
+            catch { }
+
+            RecordAddAction(cardBorder, "FunctionGraph");
+            RefreshSelectableObjects();
+
+            // 4. Chuyển sang công cụ Chọn vùng
+            try
+            {
+                if (btn8_Select != null) SelectTool(btn8_Select);
+            }
+            catch { }
+
+            ShowSmartStatusBadge("📊 Đã chèn Đồ thị hàm số lên bảng!");
         }
 
         #endregion

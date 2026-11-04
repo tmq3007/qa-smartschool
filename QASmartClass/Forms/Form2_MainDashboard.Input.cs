@@ -9763,6 +9763,34 @@ namespace QASmartTouch.Forms
 
         private Shape? CreateShapePreview(string shapeName)
         {
+            if (shapeName == "mLine")
+            {
+                var line = new Line
+                {
+                    Stroke = new SolidColorBrush(_currentPenColor),
+                    StrokeThickness = _currentPenSize,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round,
+                    Tag = "mLine"
+                };
+                Panel.SetZIndex(line, _currentInkingZIndex);
+                return line;
+            }
+            if (shapeName == "mDashedLine")
+            {
+                var dashedLine = new Line
+                {
+                    Stroke = new SolidColorBrush(_currentPenColor),
+                    StrokeThickness = _currentPenSize,
+                    StrokeDashArray = new DoubleCollection { 8, 4 },
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round,
+                    Tag = "mDashedLine"
+                };
+                Panel.SetZIndex(dashedLine, _currentInkingZIndex);
+                return dashedLine;
+            }
+
             if (SubjectShapeGeometryService.IsSubjectShape(shapeName))
             {
                 var subjShape = new System.Windows.Shapes.Path

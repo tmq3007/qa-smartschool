@@ -167,6 +167,8 @@ namespace QASmartTouch.Services.Tools
             var math = new SubjectDefinition { Id = "math", Name = "Toán học", Icon = "📐" };
             
             var mPlane = new CategoryDefinition { Id = "mPlane", Name = "Hình phẳng", SubjectId = "math" };
+            AddShape(mPlane, "mLine", "Đường thẳng");
+            AddShape(mPlane, "mDashedLine", "Nét đứt");
             AddShape(mPlane, "mTriRight", "Tam giác vuông");
             AddShape(mPlane, "mTriangle", "Tam giác ABC");
             AddShape(mPlane, "mIsosceles", "Tam giác cân");
@@ -908,6 +910,12 @@ namespace QASmartTouch.Services.Tools
             switch (kind)
             {
                 // TOÁN: HÌNH PHẲNG
+                case "mLine":
+                    Line(0.08, 0.5, 0.92, 0.5);
+                    break;
+                case "mDashedLine":
+                    DashLine(0.08, 0.5, 0.92, 0.5);
+                    break;
                 case "mTriRight":
                     Closed(B(0.12, 0.9), B(0.12, 0.1), B(0.9, 0.9));
                     RightMark(0.12, 0.9, 1, -1);

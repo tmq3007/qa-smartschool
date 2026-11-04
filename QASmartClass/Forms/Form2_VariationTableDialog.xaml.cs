@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using QASmartClass.Services.Tools;
 
 namespace QASmartTouch.Forms
@@ -21,11 +22,13 @@ namespace QASmartTouch.Forms
             Loaded += Form2_VariationTableDialog_Loaded;
         }
 
-        public Form2_VariationTableDialog(Form2_MainDashboard? mainDashboard) : this()
+        public Form2_VariationTableDialog(Form2_MainDashboard? mainDashboard, bool defaultToGraph = false) : this()
         {
             _mainDashboard = mainDashboard;
+            _isGraphPreviewMode = defaultToGraph;
         }
 
+        private bool _isGraphPreviewMode = false;
         private bool _hasCustomExpression = false;
 
         public void SetExpression(string expr)
@@ -41,6 +44,7 @@ namespace QASmartTouch.Forms
 
         private void Form2_VariationTableDialog_Loaded(object sender, RoutedEventArgs e)
         {
+            UpdateTabStyles();
             // Nếu chưa có biểu thức từ bên ngoài nạp vào, mới chạy biểu thức mặc định
             if (!_hasCustomExpression)
             {
@@ -48,6 +52,58 @@ namespace QASmartTouch.Forms
             }
             txtExpression.Focus();
             txtExpression.SelectAll();
+        }
+
+        private void UpdateTabStyles()
+        {
+            if (btnTabBBT == null || btnTabGraph == null) return;
+            if (_isGraphPreviewMode)
+            {
+                btnTabGraph.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235)); // #2563EB
+                btnTabGraph.Foreground = Brushes.White;
+                btnTabBBT.Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)); // #E2E8F0
+                btnTabBBT.Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)); // #475569
+            }
+            else
+            {
+                btnTabBBT.Background = new SolidColorBrush(Color.FromRgb(22, 139, 130)); // #168B82
+                btnTabBBT.Foreground = Brushes.White;
+                btnTabGraph.Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)); // #E2E8F0
+                btnTabGraph.Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)); // #475569
+            }
+        }
+
+        private void BtnTabBBT_Click(object sender, RoutedEventArgs e)
+        {
+            _isGraphPreviewMode = false;
+            UpdateTabStyles();
+            RenderPreview();
+        }
+
+        private void BtnTabGraph_Click(object sender, RoutedEventArgs e)
+        {
+            _isGraphPreviewMode = true;
+            UpdateTabStyles();
+            RenderPreview();
+        }
+
+        private void RenderPreview()
+        {
+            if (pnlPreviewContainer == null) return;
+            pnlPreviewContainer.Children.Clear();
+            if (_currentModel == null) return;
+
+            string expr = txtExpression.Text.Trim();
+            if (_isGraphPreviewMode)
+            {
+                var card = FunctionGraphCardRenderer.CreateGraphCard(expr, _currentModel);
+                pnlPreviewContainer.Children.Add(card);
+            }
+            else
+            {
+                var card = VariationCardRenderer.CreateVariationCard(_currentModel);
+                pnlPreviewContainer.Children.Add(card);
+            }
         }
 
         private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -150,12 +206,11 @@ namespace QASmartTouch.Forms
 
                 _currentModel = VariationAnalysisEngine.Analyze(expr);
 
-                // Dựng card preview
-                var card = VariationCardRenderer.CreateVariationCard(_currentModel);
-                pnlPreviewContainer.Children.Clear();
-                pnlPreviewContainer.Children.Add(card);
+                // Dựng card preview theo tab hiện tại (BBT hoặc Đồ thị)
+                RenderPreview();
 
                 btnInsertToBoard.IsEnabled = true;
+                btnInsertGraphToBoard.IsEnabled = true;
             }
             catch (Exception ex)
             {
@@ -164,6 +219,26 @@ namespace QASmartTouch.Forms
                 lblErrorMessage.Text = $"Lỗi phân tích: {ex.Message}";
                 lblErrorMessage.Visibility = Visibility.Visible;
                 btnInsertToBoard.IsEnabled = false;
+                btnInsertGraphToBoard.IsEnabled = false;
+            }
+        }
+
+        private void BtnInsertGraphToBoard_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string expr = txtExpression.Text.Trim();
+                if (string.IsNullOrWhiteSpace(expr)) return;
+
+                if (_mainDashboard != null)
+                {
+                    _mainDashboard.InsertFunctionGraphToBoard(expr, _currentModel);
+                }
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Không thể đưa đồ thị lên bảng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

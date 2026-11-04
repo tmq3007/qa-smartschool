@@ -172,14 +172,47 @@
                 <TextBlock x:Name="lblErrorMessage" Foreground="#DC2626" FontSize="13" Margin="0,6,0,0" Visibility="Collapsed"/>
             </StackPanel>
 
-            <!-- 3. VÙNG XEM TRƯỚC (PREVIEW KHỐI BẢNG BIẾN THIÊN) -->
-            <Border Grid.Row="2" Margin="20,4,20,10" Background="White" BorderBrush="#E2E8F0" BorderThickness="1.5" CornerRadius="10">
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="14">
-                    <Grid x:Name="pnlPreviewContainer" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <!-- Nội dung preview sẽ được add động bằng VariationCardRenderer -->
-                    </Grid>
-                </ScrollViewer>
-            </Border>
+            <!-- 3. VÙNG XEM TRƯỚC (PREVIEW KHỐI BẢNG BIẾN THIÊN HOẶC ĐỒ THỊ) -->
+            <Grid Grid.Row="2" Margin="20,4,20,10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Tabs: Bảng biến thiên vs Đồ thị hàm số -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="btnTabBBT" Content="📈 Bảng biến thiên" Click="BtnTabBBT_Click"
+                            Height="32" Padding="14,0" Background="#168B82" Foreground="White"
+                            FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="btnTabGraph" Content="📊 Đồ thị hàm số 2D" Click="BtnTabGraph_Click"
+                            Height="32" Padding="14,0" Background="#E2E8F0" Foreground="#475569"
+                            FontSize="13" FontWeight="SemiBold" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+
+                <Border Grid.Row="1" Background="White" BorderBrush="#E2E8F0" BorderThickness="1.5" CornerRadius="10">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="14">
+                        <Grid x:Name="pnlPreviewContainer" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <!-- Nội dung preview sẽ được add động bằng VariationCardRenderer hoặc FunctionGraphCardRenderer -->
+                        </Grid>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
 
             <!-- 4. FOOTER: CÁC NÚT HÀNH ĐỘNG -->
             <Grid Grid.Row="3" Background="#F1F5F9">
@@ -194,6 +227,18 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
                     <Button x:Name="btnCancel" Content="Đóng" Click="BtnClose_Click"
                             Width="90" Height="40" Background="#E2E8F0" Foreground="#475569" FontSize="14" FontWeight="SemiBold"
+                            Margin="0,0,10,0" Cursor="Hand" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <Button x:Name="btnInsertGraphToBoard" Content="📊 Đưa đồ thị lên bảng" Click="BtnInsertGraphToBoard_Click"
+                            Height="40" Padding="14,0" Background="#2563EB" Foreground="White" FontSize="15" FontWeight="Bold"
                             Margin="0,0,10,0" Cursor="Hand" BorderThickness="0">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">

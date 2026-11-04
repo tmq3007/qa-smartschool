@@ -814,18 +814,11 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                // Ẩn menu trước khi mở đồ thị hàm số
+                // Ẩn menu trước khi mở đồ thị hàm số 2D (Dùng công cụ Đồ thị & BBT mới offline 100%)
                 this.Hide();
-                var graphEditor = new Form2_GraphEditorUnified(); // 🆕 Unified 2D+3D editor
-                bool? result = WindowHelper.ShowChildDialog(graphEditor, _mainDashboard);
-                
-                if (result == true && graphEditor.ExportedGraphImage != null)
-                {
-                    // Insert graph image to canvas with config
-                    _mainDashboard?.InsertGraphToCanvas(graphEditor.ExportedGraphImage, graphEditor.ExportedConfig);
-                    System.Diagnostics.Debug.WriteLine("✅ Graph (2D/3D) inserted to canvas");
-                }
-                
+                var dialog = new Form2_VariationTableDialog(_mainDashboard, defaultToGraph: true);
+                dialog.Owner = _mainDashboard ?? Application.Current.MainWindow;
+                dialog.ShowDialog();
                 this.Close(); // Đóng menu sau khi đóng form đồ thị
             }
             catch (Exception ex)

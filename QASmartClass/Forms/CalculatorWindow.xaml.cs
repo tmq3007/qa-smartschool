@@ -146,6 +146,17 @@ namespace QASmartTouch.Forms
                     dlg.ShowDialog();
                 });
             }
+            else if (action == "insertGraph")
+            {
+                string expr = root.TryGetProperty("expression", out var exprProp) ? exprProp.GetString() ?? "" : "";
+                Dispatcher.Invoke(() =>
+                {
+                    if (_mainDashboard != null && !string.IsNullOrWhiteSpace(expr))
+                    {
+                        _mainDashboard.InsertFunctionGraphToBoard(expr);
+                    }
+                });
+            }
             else if (action == "close")
             {
                 Dispatcher.Invoke(this.Hide);

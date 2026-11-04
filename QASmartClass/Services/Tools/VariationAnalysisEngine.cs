@@ -126,14 +126,43 @@ namespace QASmartClass.Services.Tools
             string s = expr.Trim();
             // Bỏ tiền tố y = hoặc f(x) =
             s = Regex.Replace(s, @"^\s*(?:[a-zA-Z]\s*\(\s*x\s*\)|y)\s*=\s*", "");
+            // Bỏ hậu tố = 0 hoặc = 0.0 nếu có (phương trình giải nghiệm)
+            s = Regex.Replace(s, @"\s*=\s*0(?:\.0+)?\s*$", "");
+            // Nếu phương trình vẫn còn dấu =, chuyển thành LHS - (RHS)
+            if (s.Contains('='))
+            {
+                var eqParts = s.Split('=');
+                if (eqParts.Length == 2 && !string.IsNullOrWhiteSpace(eqParts[0]) && !string.IsNullOrWhiteSpace(eqParts[1]))
+                {
+                    s = $"({eqParts[0].Trim()})-({eqParts[1].Trim()})";
+                }
+            }
             s = s.Replace("−", "-").Replace("–", "-");
             s = s.Replace("×", "*").Replace("·", "*").Replace("÷", "/");
             s = s.Replace("²", "^2").Replace("³", "^3").Replace("⁴", "^4");
             s = Regex.Replace(s, @"\s+", "");
+
+            // Gỡ các cặp ngoặc bọc ngoài cùng không cần thiết
+            string prev;
+            do
+            {
+                prev = s;
+                s = StripOuterParens(s);
+            } while (s != prev && s.Length > 0);
+
+            // Bóc ngoặc bọc biến và hằng: (x) -> x, (2) -> 2
+            s = Regex.Replace(s, @"\(([a-zA-Z0-9_.]+)\)", "$1");
+            // (x)^2 -> x^2
+            s = Regex.Replace(s, @"\(([a-zA-Z])\)\^", "$1^");
+            // Gỡ ngoặc đơn giản nhân: (c*x) -> c*x
+            s = Regex.Replace(s, @"\(([0-9.]+\*[a-zA-Z])\)", "$1");
+            // Gỡ dấu nhân giữa số và biến: 2*x -> 2x
+            s = Regex.Replace(s, @"([0-9.]+)\*([a-zA-Z])", "$1$2");
+
             return s;
         }
 
-        private static Tuple<string, string>? SplitFraction(string expr)
+        public static Tuple<string, string>? SplitFraction(string expr)
         {
             int slashIdx = -1;
             int depth = 0;
@@ -840,6 +869,178 @@ namespace QASmartClass.Services.Tools
         }
 
         #endregion
+    
+        #region General Math Expression Evaluator Fallback
+
+        public static double? EvaluateMath(string expr, double x)
+        {
+            return SimpleMathEvaluator.Evaluate(expr, x);
+        }
+
+        public static class SimpleMathEvaluator
+        {
+            public static double? Evaluate(string expression, double xValue)
+            {
+                try
+                {
+                    var parser = new Parser(expression, xValue);
+                    double res = parser.ParseExpression();
+                    if (double.IsNaN(res) || double.IsInfinity(res)) return null;
+                    return res;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            private class Parser
+            {
+                private readonly string _s;
+                private int _pos;
+                private readonly double _x;
+
+                public Parser(string s, double x)
+                {
+                    _s = s.Replace(" ", "");
+                    _pos = 0;
+                    _x = x;
+                }
+
+                public double ParseExpression()
+                {
+                    double res = ParseTerm();
+                    while (_pos < _s.Length)
+                    {
+                        char op = _s[_pos];
+                        if (op == '+' || op == '-')
+                        {
+                            _pos++;
+                            double rhs = ParseTerm();
+                            res = op == '+' ? res + rhs : res - rhs;
+                        }
+                        else break;
+                    }
+                    return res;
+                }
+
+                private double ParseTerm()
+                {
+                    double res = ParsePower();
+                    while (_pos < _s.Length)
+                    {
+                        char op = _s[_pos];
+                        if (op == '*' || op == '/')
+                        {
+                            _pos++;
+                            double rhs = ParsePower();
+                            if (op == '/')
+                            {
+                                if (Math.Abs(rhs) < 1e-12) throw new DivideByZeroException();
+                                res /= rhs;
+                            }
+                            else res *= rhs;
+                        }
+                        else if (_pos < _s.Length && (_s[_pos] == '(' || char.IsLetter(_s[_pos])))
+                        {
+                            double rhs = ParsePower();
+                            res *= rhs;
+                        }
+                        else break;
+                    }
+                    return res;
+                }
+
+                private double ParsePower()
+                {
+                    double res = ParseFactor();
+                    if (_pos < _s.Length && _s[_pos] == '^')
+                    {
+                        _pos++;
+                        double exponent = ParsePower();
+                        res = Math.Pow(res, exponent);
+                    }
+                    return res;
+                }
+
+                private double ParseFactor()
+                {
+                    if (_pos >= _s.Length) return 0;
+
+                    if (_s[_pos] == '+')
+                    {
+                        _pos++;
+                        return ParseFactor();
+                    }
+                    if (_s[_pos] == '-')
+                    {
+                        _pos++;
+                        return -ParseFactor();
+                    }
+
+                    if (_s[_pos] == '(')
+                    {
+                        _pos++;
+                        double res = ParseExpression();
+                        if (_pos < _s.Length && _s[_pos] == ')') _pos++;
+                        return res;
+                    }
+
+                    if (_pos < _s.Length && (_s[_pos] == 'x' || _s[_pos] == 'X'))
+                    {
+                        _pos++;
+                        return _x;
+                    }
+
+                    if (char.IsLetter(_s[_pos]))
+                    {
+                        int start = _pos;
+                        while (_pos < _s.Length && char.IsLetter(_s[_pos])) _pos++;
+                        string id = _s.Substring(start, _pos - start).ToLowerInvariant();
+
+                        if (id == "pi") return Math.PI;
+                        if (id == "e") return Math.E;
+
+                        if (_pos < _s.Length && _s[_pos] == '(')
+                        {
+                            _pos++;
+                            double arg = ParseExpression();
+                            if (_pos < _s.Length && _s[_pos] == ')') _pos++;
+
+                            return id switch
+                            {
+                                "sqrt" => arg < 0 ? double.NaN : Math.Sqrt(arg),
+                                "abs" => Math.Abs(arg),
+                                "sin" => Math.Sin(arg),
+                                "cos" => Math.Cos(arg),
+                                "tan" => Math.Tan(arg),
+                                "ln" => arg <= 0 ? double.NaN : Math.Log(arg),
+                                "log" or "lg" => arg <= 0 ? double.NaN : Math.Log10(arg),
+                                _ => arg
+                            };
+                        }
+                        return _x;
+                    }
+
+                    int numStart = _pos;
+                    while (_pos < _s.Length && (char.IsDigit(_s[_pos]) || _s[_pos] == '.'))
+                    {
+                        _pos++;
+                    }
+                    if (_pos > numStart)
+                    {
+                        string numStr = _s.Substring(numStart, _pos - numStart);
+                        if (double.TryParse(numStr, NumberStyles.Any, CultureInfo.InvariantCulture, out double val))
+                        {
+                            return val;
+                        }
+                    }
+
+                    return 0;
+                }
+            }
+        }
+
+        #endregion
     }
 }
-
