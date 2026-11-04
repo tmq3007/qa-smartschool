@@ -14,6 +14,7 @@ namespace QASmartTouch.Forms
     {
         private Form2_MainDashboard _mainDashboard;
         private bool _isWebViewInitialized = false;
+        private string _lastBrowseUrl = "https://phet.colorado.edu/vi/simulations/browse?type=html";
         
         public Form2_21_PhETSimulationBrowser(string initialUrl = null)
         {
@@ -22,6 +23,7 @@ namespace QASmartTouch.Forms
             
             // Set default URL if not provided
             string targetUrl = initialUrl ?? "https://phet.colorado.edu/vi/simulations/browse?type=html";
+            _lastBrowseUrl = targetUrl;
             
             // Initialize WebView2 asynchronously
             this.Loaded += async (s, e) => await InitializeWebViewAsync(targetUrl);
@@ -96,6 +98,12 @@ namespace QASmartTouch.Forms
             
             if (e.IsSuccess)
             {
+                string current = webView.Source?.ToString() ?? string.Empty;
+                if (current.IndexOf("/simulations/browse", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    current.IndexOf("/simulations/filter", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    _lastBrowseUrl = current;
+                }
                 System.Diagnostics.Debug.WriteLine($"✅ Navigation completed successfully");
             }
             else
@@ -132,6 +140,12 @@ namespace QASmartTouch.Forms
         /// Capture screenshot of current simulation
         /// </summary>
         private async void btnCapture_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.CompletedTask;
+            return; // Tính năng chụp ảnh đã được bỏ theo yêu cầu
+        }
+
+        private async void btnCapture_Click_Disabled(object sender, RoutedEventArgs e)
         {
             if (!_isWebViewInitialized)
             {
@@ -226,7 +240,8 @@ namespace QASmartTouch.Forms
                 {
                     if (_mainDashboard != null)
                     {
-                        _mainDashboard.InsertPhETSimulation(currentUrl);
+                        string simTitle = webView.CoreWebView2?.DocumentTitle;
+                        _mainDashboard.InsertPhETSimulation(currentUrl, simTitle, _lastBrowseUrl);
                         System.Diagnostics.Debug.WriteLine($"✅ PhET simulation embedded: {currentUrl}");
                         this.Close();
                     }

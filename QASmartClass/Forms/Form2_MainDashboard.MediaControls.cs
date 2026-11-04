@@ -32,216 +32,405 @@ namespace QASmartTouch.Forms
 {
     public partial class Form2_MainDashboard
     {
-        #region PhET Simulation Integration
+        #region PhET & YooBook Simulation Integration
 
         /// <summary>
-        /// Insert PhET simulation into canvas as embedded WebView2 with drag handles and control buttons
+        /// QC_4.2_PHET_UMIND_WIDGET: Chèn mô phỏng PhET vào Canvas theo kiến trúc Unified Container (UMind Style) đồng bộ,
+        /// loại bỏ hoàn toàn 4 dải viền xanh rời rạc bao quanh. Tích hợp Header Bar kéo thả chuẩn kép (Touch + Mouse + Stylus)
+        /// và các nút thao tác nhanh (Tải lại, Thu nhỏ, Phóng to, Đóng/Xóa).
         /// </summary>
-        public void InsertPhETSimulation(string simulationUrl)
+        public void InsertPhETSimulation(string simulationUrl, string? title = null, string? returnBrowseUrl = null)
+        {
+            bool isYooBook = !string.IsNullOrWhiteSpace(simulationUrl) &&
+                             simulationUrl.IndexOf("yoobook.vn", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (isYooBook)
+            {
+                InsertYooBookSimulation(simulationUrl, title, returnBrowseUrl);
+                return;
+            }
+
+            InsertEmbeddedWebWidgetUnified(
+                url: simulationUrl,
+                badgeText: "⚛️ PhET",
+                badgeColor: Color.FromRgb(0, 137, 123), // Teal #00897B
+                defaultTitle: "Mô phỏng Tương tác PhET",
+                customTitle: title,
+                containerTag: "PhETSimulation",
+                fallbackBackUrl: string.IsNullOrWhiteSpace(returnBrowseUrl) ? "https://phet.colorado.edu/vi/simulations/browse?type=html" : returnBrowseUrl,
+                isYooBook: false);
+        }
+
+        /// <summary>
+        /// QC_4.2_YOOBOOK_UMIND_WIDGET: Chèn học liệu 3D & Phòng thí nghiệm ảo YooBook vào Canvas theo kiến trúc Unified Container (UMind Style).
+        /// Tự động dùng chung phiên đăng nhập WebView2 và ẩn sạch Header/Footer của trang web yoobook.vn.
+        /// </summary>
+        public void InsertYooBookSimulation(string simulationUrl, string? title = null, string? returnBrowseUrl = null)
+        {
+            InsertEmbeddedWebWidgetUnified(
+                url: simulationUrl,
+                badgeText: "🧊 YOOBOOK 3D",
+                badgeColor: Color.FromRgb(13, 148, 136), // Emerald/Teal #0D9488
+                defaultTitle: "Học liệu 3D & Phòng thí nghiệm ảo YooBook",
+                customTitle: title,
+                containerTag: "YooBookSimulation",
+                fallbackBackUrl: string.IsNullOrWhiteSpace(returnBrowseUrl) ? "https://yoobook.vn/explore" : returnBrowseUrl,
+                isYooBook: true);
+        }
+
+        private void InsertEmbeddedWebWidgetUnified(
+            string url,
+            string badgeText,
+            Color badgeColor,
+            string defaultTitle,
+            string? customTitle,
+            string containerTag,
+            bool isYooBook,
+            string? fallbackBackUrl = null)
         {
             try
             {
-                // Create WebView2 control for embedded simulation
+                const double initialWidth = 800;
+                const double headerHeight = 40;
+                const double borderThickness = 2;
+                double innerWidth = initialWidth - (borderThickness * 2);
+                double contentHeight = Math.Round(innerWidth * 3.0 / 4.0); // Chuẩn tỉ lệ 4:3 (597px)
+                double totalHeight = contentHeight + headerHeight + (borderThickness * 2);
+
+                // 1. Tạo WebView2 Stretch tự động lọt lòng container
                 var webView = new Microsoft.Web.WebView2.Wpf.WebView2
                 {
-                    Width = 800,
-                    Height = 600
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch
                 };
 
-                // Initialize and navigate
-                _ = InitializePhETWebView(webView, simulationUrl);
-
-                // Set WebView size
-                webView.Width = 800;
-                webView.Height = 600;
-
-                // Helper method to create drag handle (positioned on canvas, outside border)
-                Func<string, int, Border> createDragHandle = (pattern, fontSize) =>
+                // 2. Tạo Unified Container (Border ngoài cùng đồng bộ với YouTube / Vật lý / Ảnh / Video, bỏ 4 viền xanh rời)
+                var container = new Border
                 {
-                    var handle = new Border
+                    Width = initialWidth,
+                    Height = totalHeight,
+                    Background = new SolidColorBrush(Color.FromRgb(24, 24, 27)), // #18181B
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(51, 65, 85)), // Viền tối Slate #334155 đồng bộ, không bị viền xanh sáng
+                    BorderThickness = new Thickness(borderThickness),
+                    CornerRadius = new CornerRadius(10, 10, 0, 0),
+                    ClipToBounds = true,
+                    Tag = containerTag,
+                    Effect = new System.Windows.Media.Effects.DropShadowEffect
                     {
-                        Background = new SolidColorBrush(Color.FromArgb(50, 0, 188, 212)), // #00BCD4 with 20% opacity
-                        BorderBrush = new SolidColorBrush(Color.FromArgb(80, 0, 188, 212)),
-                        BorderThickness = new Thickness(1),
-                        Cursor = Cursors.SizeAll,
-                        Tag = "DragHandle"
+                        Color = Colors.Black,
+                        BlurRadius = 16,
+                        ShadowDepth = 4,
+                        Opacity = 0.45
+                    }
+                };
+
+                // 3. Grid 2 hàng: Hàng 0 = Header Bar; Hàng 1 = WebView2
+                var mainGrid = new Grid();
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(headerHeight) });
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+                // 4. Header Bar (UMind Style)
+                var headerBar = new Border
+                {
+                    Height = headerHeight,
+                    Background = new SolidColorBrush(Color.FromRgb(28, 28, 30)), // Dark Slate #1C1C1E
+                    BorderBrush = new SolidColorBrush(Color.FromArgb(50, 255, 255, 255)),
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    CornerRadius = new CornerRadius(8, 8, 0, 0),
+                    Cursor = Cursors.SizeAll,
+                    Tag = "DragHandle"
+                };
+                Grid.SetRow(headerBar, 0);
+
+                Stylus.SetIsPressAndHoldEnabled(headerBar, false);
+                Stylus.SetIsFlicksEnabled(headerBar, false);
+                Stylus.SetIsTapFeedbackEnabled(headerBar, false);
+                Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
+
+                var headerGrid = new Grid();
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                // Cột trái: Biểu tượng kéo (⠿) + Badge + Tiêu đề
+                var leftPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(8, 0, 8, 0),
+                    IsHitTestVisible = false
+                };
+                Grid.SetColumn(leftPanel, 0);
+
+                var gripText = new TextBlock
+                {
+                    Text = "⠿",
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(156, 163, 175)),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(4, 0, 8, 0)
+                };
+                leftPanel.Children.Add(gripText);
+
+                var badgeBorder = new Border
+                {
+                    Background = new SolidColorBrush(badgeColor),
+                    CornerRadius = new CornerRadius(3),
+                    Padding = new Thickness(6, 2, 6, 2),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                badgeBorder.Child = new TextBlock
+                {
+                    Text = badgeText,
+                    FontSize = 10,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.White
+                };
+                leftPanel.Children.Add(badgeBorder);
+
+                string displayTitle = string.IsNullOrWhiteSpace(customTitle) ? defaultTitle : customTitle!.Trim();
+                var titleBlock = new TextBlock
+                {
+                    Text = displayTitle,
+                    Foreground = Brushes.White,
+                    FontSize = 13,
+                    FontWeight = FontWeights.SemiBold,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    ToolTip = url
+                };
+                leftPanel.Children.Add(titleBlock);
+                headerGrid.Children.Add(leftPanel);
+
+                // Cột phải: Các nút điều khiển (Tải lại ↻, Thu nhỏ －, Phóng to ＋, Đóng ✕)
+                var actionPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                Grid.SetColumn(actionPanel, 1);
+
+                Button CreateHeaderButton(string text, string tooltip, Color normalColor, Color hoverColor)
+                {
+                    var btn = new Button
+                    {
+                        Content = text,
+                        Width = 34,
+                        Height = 28,
+                        Margin = new Thickness(4, 0, 0, 0),
+                        Background = new SolidColorBrush(normalColor),
+                        Foreground = Brushes.White,
+                        FontSize = 13,
+                        FontWeight = FontWeights.Bold,
+                        BorderThickness = new Thickness(0),
+                        Cursor = Cursors.Hand,
+                        ToolTip = tooltip
                     };
 
-                    var patternText = new TextBlock
+                    var template = new ControlTemplate(typeof(Button));
+                    var borderFactory = new FrameworkElementFactory(typeof(Border));
+                    borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(5));
+                    borderFactory.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Button.Background))
                     {
-                        Text = pattern,
-                        FontSize = fontSize,
-                        Foreground = new SolidColorBrush(Color.FromArgb(150, 0, 188, 212)),
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        IsHitTestVisible = false,
-                        TextAlignment = TextAlignment.Center,
-                        FontWeight = FontWeights.Bold
-                    };
-                    handle.Child = patternText;
+                        RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+                    });
+                    var presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+                    presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                    presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                    borderFactory.AppendChild(presenterFactory);
+                    template.VisualTree = borderFactory;
+                    btn.Template = template;
 
-                    // Hover effects
-                    handle.MouseEnter += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(100, 0, 188, 212)); // 40% opacity
-                    handle.MouseLeave += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(50, 0, 188, 212)); // 20% opacity
+                    btn.MouseEnter += (s, e) => btn.Background = new SolidColorBrush(hoverColor);
+                    btn.MouseLeave += (s, e) => btn.Background = new SolidColorBrush(normalColor);
 
-                    return handle;
-                };
+                    TouchActivationHelper.WireButton(btn);
+                    return btn;
+                }
 
-                // Create all 4 drag handles (15px, positioned on canvas)
-                var topDragHandle = createDragHandle("═══", 10);
-                topDragHandle.Width = 800;
-                topDragHandle.Height = 15;
-
-                var bottomDragHandle = createDragHandle("═══", 10);
-                bottomDragHandle.Width = 800;
-                bottomDragHandle.Height = 15;
-
-                var leftDragHandle = createDragHandle("║\n║", 10);
-                leftDragHandle.Width = 15;
-                leftDragHandle.Height = 600;
-
-                var rightDragHandle = createDragHandle("║\n║", 10);
-                rightDragHandle.Width = 15;
-                rightDragHandle.Height = 600;
-
-                // Wrap WebView in Border for styling (NO drag handles inside)
-                var border = new Border
+                // Nút Tải lại (↻)
+                // Nút Quay lại (←) để chọn thí nghiệm khác ngay trên bảng
+                var btnBack = CreateHeaderButton("←", "Quay lại trang trước / danh sách thí nghiệm", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnBack.Click += (s, e) =>
                 {
-                    Child = webView,
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(0, 188, 212)), // #00BCD4
-                    BorderThickness = new Thickness(3),
-                    CornerRadius = new CornerRadius(8),
-                    Background = Brushes.White,
-                    Tag = "PhETSimulation", // Tag for identification
-                    Width = 800,
-                    Height = 600
+                    try
+                    {
+                        if (webView.CoreWebView2 != null)
+                        {
+                            if (webView.CanGoBack)
+                            {
+                                webView.GoBack();
+                            }
+                            else if (!string.IsNullOrWhiteSpace(fallbackBackUrl))
+                            {
+                                string current = webView.Source?.ToString() ?? string.Empty;
+                                if (!string.Equals(current, fallbackBackUrl, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    webView.CoreWebView2.Navigate(fallbackBackUrl);
+                                }
+                            }
+                        }
+                    }
+                    catch { }
                 };
+                actionPanel.Children.Add(btnBack);
 
-                // Position at center of visible canvas area
-                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - 400;
-                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - 300;
+                var btnReload = CreateHeaderButton("↻", "Tải lại nội dung", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnReload.Click += (s, e) =>
+                {
+                    try { webView.CoreWebView2?.Reload(); } catch { }
+                };
+                actionPanel.Children.Add(btnReload);
+
+                // Nút Thu nhỏ (－)
+                var btnZoomOut = CreateHeaderButton("－", "Thu nhỏ khung (Zoom -)", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnZoomOut.Click += (s, e) => ZoomPhysicsContainer(container, webView, 1.0 / 1.15);
+                actionPanel.Children.Add(btnZoomOut);
+
+                // Nút Phóng to (＋)
+                var btnZoomIn = CreateHeaderButton("＋", "Phóng to khung (Zoom +)", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnZoomIn.Click += (s, e) => ZoomPhysicsContainer(container, webView, 1.15);
+                actionPanel.Children.Add(btnZoomIn);
+
+                // Nút Đóng / Xóa (✕)
+                var btnDelete = CreateHeaderButton("✕", "Đóng và xóa khỏi bảng", Color.FromRgb(220, 38, 38), Color.FromRgb(239, 68, 68));
+                btnDelete.Click += (s, e) => DeletePhysicsContainer(container);
+                actionPanel.Children.Add(btnDelete);
+
+                headerGrid.Children.Add(actionPanel);
+                headerBar.Child = headerGrid;
+                mainGrid.Children.Add(headerBar);
+
+                // Đặt WebView2 vào hàng 1
+                Grid.SetRow(webView, 1);
+                mainGrid.Children.Add(webView);
+
+                container.Child = mainGrid;
+
+                // 5. Gắn cơ chế Kéo Di Chuyển Chuẩn Kép (Touch + Mouse + Stylus)
+                EnablePhysicsUnifiedDrag(container, headerBar);
+
+                // 6. Khởi tạo WebView2 và cập nhật tiêu đề trang tự động khi tải xong
+                _ = InitializeEmbeddedWebViewAsync(webView, url, isYooBook, docTitle =>
+                {
+                    if (!string.IsNullOrWhiteSpace(docTitle))
+                    {
+                        Dispatcher.Invoke(() => titleBlock.Text = docTitle);
+                    }
+                });
+
+                // 7. Căn giữa khung nhìn hiện tại của bảng
+                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - (initialWidth / 2);
+                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - (totalHeight / 2);
                 double borderLeft = Math.Max(0, centerX);
                 double borderTop = Math.Max(0, centerY);
 
-                Canvas.SetLeft(border, borderLeft);
-                Canvas.SetTop(border, borderTop);
+                Canvas.SetLeft(container, borderLeft);
+                Canvas.SetTop(container, borderTop);
 
-                // Add border to canvas FIRST (QC_4.2_MILESTONE_ZINDEX: Nổi lên trên nét vẽ cũ)
                 int mediaZ = AllocateMediaWidgetZIndex();
-                Panel.SetZIndex(border, mediaZ);
-                MainInteractiveBoard.Children.Add(border);
+                Panel.SetZIndex(container, mediaZ);
+                MainInteractiveBoard.Children.Add(container);
 
-                // Now add drag handles SEPARATELY on canvas (outside border)
-                // Top drag handle
-                Canvas.SetLeft(topDragHandle, borderLeft);
-                Canvas.SetTop(topDragHandle, borderTop - 15);
-                MainInteractiveBoard.Children.Add(topDragHandle);
+                RecordAddAction(container, $"{defaultTitle}: {url}");
+                RefreshSelectableObjects();
 
-                // Bottom drag handle
-                Canvas.SetLeft(bottomDragHandle, borderLeft);
-                Canvas.SetTop(bottomDragHandle, borderTop + 600);
-                MainInteractiveBoard.Children.Add(bottomDragHandle);
-
-                // Left drag handle
-                Canvas.SetLeft(leftDragHandle, borderLeft - 15);
-                Canvas.SetTop(leftDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(leftDragHandle);
-
-                // Right drag handle
-                Canvas.SetLeft(rightDragHandle, borderLeft + 800);
-                Canvas.SetTop(rightDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(rightDragHandle);
-
-                // Create control buttons panel (positioned outside, top-right)
-                var controlPanel = CreatePhETControlPanel();
-                
-                // Position control panel at top-right corner of the border (OUTSIDE)
-                Canvas.SetLeft(controlPanel, borderLeft + 800 + 8); // 8px gap from border
-                Canvas.SetTop(controlPanel, borderTop);
-
-                // Hide control panel by default
-                controlPanel.Visibility = Visibility.Collapsed;
-
-                // Store references to drag handles and control panel in border's Tag
-                var simData = new
-                {
-                    TopDragHandle = topDragHandle,
-                    BottomDragHandle = bottomDragHandle,
-                    LeftDragHandle = leftDragHandle,
-                    RightDragHandle = rightDragHandle,
-                    ControlPanel = controlPanel
-                };
-                border.Tag = simData;
-
-                // Also store border reference in control panel's Tag for backward compatibility
-                controlPanel.Tag = border;
-
-                // Add control panel to canvas
-                MainInteractiveBoard.Children.Add(controlPanel);
-
-                // Show control panel when clicking on drag handles or border
-                MouseButtonEventHandler showControlPanel = (s, e) =>
-                {
-                    controlPanel.Visibility = Visibility.Visible;
-                    System.Diagnostics.Debug.WriteLine("🎛️ Control panel shown");
-                };
-
-                // Attach to all drag handles and border
-                topDragHandle.MouseLeftButtonDown += showControlPanel;
-                bottomDragHandle.MouseLeftButtonDown += showControlPanel;
-                leftDragHandle.MouseLeftButtonDown += showControlPanel;
-                rightDragHandle.MouseLeftButtonDown += showControlPanel;
-                border.MouseLeftButtonDown += showControlPanel;
-
-                // Hide control panel when clicking outside (on canvas)
-                MainInteractiveBoard.PreviewMouseLeftButtonDown += (s, e) =>
-                {
-                    // Check if click is outside the simulation area
-                    var clickedElement = e.OriginalSource as DependencyObject;
-                    
-                    // If clicked element is not part of this simulation, hide control panel
-                    bool isPartOfSimulation = false;
-                    while (clickedElement != null)
-                    {
-                        if (clickedElement == border || 
-                            clickedElement == topDragHandle || 
-                            clickedElement == bottomDragHandle || 
-                            clickedElement == leftDragHandle || 
-                            clickedElement == rightDragHandle ||
-                            clickedElement == controlPanel)
-                        {
-                            isPartOfSimulation = true;
-                            break;
-                        }
-                        // Safe: ContentElement dùng LogicalTreeHelper
-                        clickedElement = (clickedElement is System.Windows.Media.Visual || clickedElement is System.Windows.Media.Media3D.Visual3D)
-                            ? System.Windows.Media.VisualTreeHelper.GetParent(clickedElement)
-                            : LogicalTreeHelper.GetParent(clickedElement);
-                    }
-                    
-                    if (!isPartOfSimulation && controlPanel.Visibility == Visibility.Visible)
-                    {
-                        controlPanel.Visibility = Visibility.Collapsed;
-                        System.Diagnostics.Debug.WriteLine("🎛️ Control panel hidden (clicked outside)");
-                    }
-                };
-
-                // Enable drag-to-move functionality (all 4 drag handles)
-                EnablePhETDragToMove(border, controlPanel, topDragHandle, leftDragHandle, rightDragHandle, bottomDragHandle);
-
-                // Register with selection manager
-                RegisterNewObjectWithSelectionManager(border);
-
-                // Record undo action
-                RecordAddAction(border, $"PhET Simulation: {simulationUrl}");
-
-                System.Diagnostics.Debug.WriteLine($"✅ PhET Simulation inserted with drag handles and external controls: {simulationUrl}");
+                System.Diagnostics.Debug.WriteLine($"✅ {defaultTitle} inserted (UMind Unified Container): {url}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Insert PhET Simulation error: {ex.Message}");
-                MessageBox.Show($"Lỗi chèn mô phỏng PhET:\n{ex.Message}", "Lỗi",
+                System.Diagnostics.Debug.WriteLine($"❌ Insert {defaultTitle} error: {ex.Message}");
+                MessageBox.Show($"Lỗi chèn {defaultTitle}:\n{ex.Message}", "Lỗi",
                               MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Khởi tạo WebView2 cho PhET / YooBook / Google Maps nhúng trên bảng viết.
+        /// Nếu là YooBook thì chia sẻ chung Environment đăng nhập và tiêm CSS ẩn Header/Footer của web.
+        /// </summary>
+        private async Task InitializeEmbeddedWebViewAsync(
+            Microsoft.Web.WebView2.Wpf.WebView2 webView,
+            string url,
+            bool isYooBook,
+            Action<string>? onTitleUpdated = null)
+        {
+            try
+            {
+                if (isYooBook)
+                {
+                    WebView2Helper.InitializeEnvironment();
+                    await WebView2Helper.EnsureInitializedAsync(webView);
+                }
+                else
+                {
+                    await webView.EnsureCoreWebView2Async(null);
+                }
+
+                var core = webView.CoreWebView2;
+                if (core == null) return;
+
+                core.Settings.IsScriptEnabled = true;
+                core.Settings.IsWebMessageEnabled = true;
+                core.Settings.AreDefaultContextMenusEnabled = false;
+                core.Settings.AreDevToolsEnabled = false;
+
+                if (isYooBook)
+                {
+                    const string cleanExploreCssScript = @"
+(function() {
+    function injectStyle() {
+        if (document.getElementById('qa-smarttouch-yoobook-embed-style')) return;
+        var style = document.createElement('style');
+        style.id = 'qa-smarttouch-yoobook-embed-style';
+        style.textContent = `
+            header.yb-app, header.yb-glass-nav, body > div > header, body > div > header + div.h-16,
+            footer, body > div > footer {
+                display: none !important;
+                height: 0 !important;
+                overflow: hidden !important;
+            }
+            main { padding-top: 0 !important; margin-top: 0 !important; }
+        `;
+        (document.head || document.documentElement).appendChild(style);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectStyle);
+    else injectStyle();
+    new MutationObserver(injectStyle).observe(document.documentElement, { childList: true, subtree: true });
+})();";
+                    await core.AddScriptToExecuteOnDocumentCreatedAsync(cleanExploreCssScript);
+                }
+
+                core.NewWindowRequested += (s, e) =>
+                {
+                    e.Handled = true;
+                    if (!string.IsNullOrWhiteSpace(e.Uri))
+                    {
+                        core.Navigate(e.Uri);
+                    }
+                };
+
+                core.NavigationCompleted += (s, e) =>
+                {
+                    try
+                    {
+                        if (e.IsSuccess && !string.IsNullOrWhiteSpace(core.DocumentTitle))
+                        {
+                            onTitleUpdated?.Invoke(core.DocumentTitle);
+                        }
+                    }
+                    catch { }
+                };
+
+                core.Navigate(url);
+                System.Diagnostics.Debug.WriteLine($"✅ Embedded WebView initialized: {url}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Embedded WebView init error: {ex.Message}");
             }
         }
 
@@ -2566,214 +2755,20 @@ namespace QASmartTouch.Forms
         #region Google Maps Integration
 
         /// <summary>
-        /// Insert Google Maps at center of canvas with drag handles and control panel
+        /// QC_4.2_MAPS_UMIND_WIDGET: Chèn bản đồ Google Maps vào Canvas theo kiến trúc Unified Container (UMind Style) đồng bộ,
+        /// loại bỏ hoàn toàn 4 dải viền xanh rời rạc bao quanh. Tích hợp Header Bar kéo thả chuẩn kép (Touch + Mouse + Stylus)
+        /// và các nút thao tác nhanh (Tải lại, Thu nhỏ, Phóng to, Đóng/Xóa).
         /// </summary>
-        public void InsertGoogleMaps(string mapsUrl)
+        public void InsertGoogleMaps(string mapsUrl, string? title = null)
         {
-            try
-            {
-                // Create WebView2 control for embedded Google Maps
-                var webView = new Microsoft.Web.WebView2.Wpf.WebView2
-                {
-                    Width = 800,
-                    Height = 600
-                };
-
-                // Initialize and navigate
-                _ = InitializeGoogleMapsWebView(webView, mapsUrl);
-
-                // Set WebView size
-                webView.Width = 800;
-                webView.Height = 600;
-
-                // Helper method to create drag handle (positioned on canvas, outside border)
-                Func<string, int, Border> createDragHandle = (pattern, fontSize) =>
-                {
-                    var handle = new Border
-                    {
-                        Background = new SolidColorBrush(Color.FromArgb(51, 66, 133, 244)), // #4285F4 with 20% opacity
-                        BorderBrush = new SolidColorBrush(Color.FromArgb(204, 66, 133, 244)), // #4285F4 with 80% opacity
-                        BorderThickness = new Thickness(1),
-                        Cursor = Cursors.SizeAll,
-                        Tag = "DragHandle"
-                    };
-
-                    var patternText = new TextBlock
-                    {
-                        Text = pattern,
-                        FontSize = fontSize,
-                        Foreground = new SolidColorBrush(Color.FromArgb(150, 66, 133, 244)), // #4285F4
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        IsHitTestVisible = false,
-                        TextAlignment = TextAlignment.Center,
-                        FontWeight = FontWeights.Bold
-                    };
-                    handle.Child = patternText;
-
-                    // Hover effects
-                    handle.MouseEnter += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(102, 66, 133, 244)); // 40% opacity
-                    handle.MouseLeave += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(51, 66, 133, 244)); // 20% opacity
-
-                    return handle;
-                };
-
-                // Create all 4 drag handles (15px, positioned on canvas)
-                var topDragHandle = createDragHandle("═══", 10);
-                topDragHandle.Width = 800;
-                topDragHandle.Height = 15;
-
-                var bottomDragHandle = createDragHandle("═══", 10);
-                bottomDragHandle.Width = 800;
-                bottomDragHandle.Height = 15;
-
-                var leftDragHandle = createDragHandle("║\n║", 10);
-                leftDragHandle.Width = 15;
-                leftDragHandle.Height = 600;
-
-                var rightDragHandle = createDragHandle("║\n║", 10);
-                rightDragHandle.Width = 15;
-                rightDragHandle.Height = 600;
-
-                // Wrap WebView in Border for styling (NO drag handles inside)
-                var border = new Border
-                {
-                    Child = webView,
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(66, 133, 244)), // #4285F4 (Google Blue)
-                    BorderThickness = new Thickness(3),
-                    CornerRadius = new CornerRadius(8),
-                    Background = Brushes.White,
-                    Tag = "GoogleMaps", // Tag for identification
-                    Width = 800,
-                    Height = 600
-                };
-
-                // Position at center of visible canvas area
-                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - 400;
-                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - 300;
-                double borderLeft = Math.Max(0, centerX);
-                double borderTop = Math.Max(0, centerY);
-
-                Canvas.SetLeft(border, borderLeft);
-                Canvas.SetTop(border, borderTop);
-
-                // Add border to canvas FIRST (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
-                int mediaZ = AllocateMediaWidgetZIndex();
-                Panel.SetZIndex(border, mediaZ);
-                MainInteractiveBoard.Children.Add(border);
-
-                // Now add drag handles SEPARATELY on canvas (outside border)
-                // Top drag handle
-                Canvas.SetLeft(topDragHandle, borderLeft);
-                Canvas.SetTop(topDragHandle, borderTop - 15);
-                MainInteractiveBoard.Children.Add(topDragHandle);
-
-                // Bottom drag handle
-                Canvas.SetLeft(bottomDragHandle, borderLeft);
-                Canvas.SetTop(bottomDragHandle, borderTop + 600);
-                MainInteractiveBoard.Children.Add(bottomDragHandle);
-
-                // Left drag handle
-                Canvas.SetLeft(leftDragHandle, borderLeft - 15);
-                Canvas.SetTop(leftDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(leftDragHandle);
-
-                // Right drag handle
-                Canvas.SetLeft(rightDragHandle, borderLeft + 800);
-                Canvas.SetTop(rightDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(rightDragHandle);
-
-                // Create control buttons panel (positioned outside, top-right)
-                var controlPanel = CreateGoogleMapsControlPanel();
-                
-                // Position control panel at top-right corner of the border (OUTSIDE)
-                Canvas.SetLeft(controlPanel, borderLeft + 800 + 8); // 8px gap from border
-                Canvas.SetTop(controlPanel, borderTop);
-
-                // Hide control panel by default
-                controlPanel.Visibility = Visibility.Collapsed;
-
-                // Store references to drag handles and control panel in border's Tag
-                var simData = new
-                {
-                    TopDragHandle = topDragHandle,
-                    BottomDragHandle = bottomDragHandle,
-                    LeftDragHandle = leftDragHandle,
-                    RightDragHandle = rightDragHandle,
-                    ControlPanel = controlPanel
-                };
-                border.Tag = simData;
-
-                // Also store border reference in control panel's Tag for backward compatibility
-                controlPanel.Tag = border;
-
-                // Add control panel to canvas
-                MainInteractiveBoard.Children.Add(controlPanel);
-
-                // Show control panel when clicking on drag handles or border
-                MouseButtonEventHandler showControlPanel = (s, e) =>
-                {
-                    controlPanel.Visibility = Visibility.Visible;
-                    System.Diagnostics.Debug.WriteLine("🎛️ Google Maps control panel shown");
-                };
-
-                // Attach to all drag handles and border
-                topDragHandle.MouseLeftButtonDown += showControlPanel;
-                bottomDragHandle.MouseLeftButtonDown += showControlPanel;
-                leftDragHandle.MouseLeftButtonDown += showControlPanel;
-                rightDragHandle.MouseLeftButtonDown += showControlPanel;
-                border.MouseLeftButtonDown += showControlPanel;
-
-                // Hide control panel when clicking outside (on canvas)
-                MainInteractiveBoard.PreviewMouseLeftButtonDown += (s, e) =>
-                {
-                    // Check if click is outside the simulation area
-                    var clickedElement = e.OriginalSource as DependencyObject;
-                    
-                    // If clicked element is not part of this simulation, hide control panel
-                    bool isPartOfSimulation = false;
-                    while (clickedElement != null)
-                    {
-                        if (clickedElement == border || 
-                            clickedElement == topDragHandle || 
-                            clickedElement == bottomDragHandle || 
-                            clickedElement == leftDragHandle || 
-                            clickedElement == rightDragHandle ||
-                            clickedElement == controlPanel)
-                        {
-                            isPartOfSimulation = true;
-                            break;
-                        }
-                        // Safe: ContentElement dùng LogicalTreeHelper
-                        clickedElement = (clickedElement is System.Windows.Media.Visual || clickedElement is System.Windows.Media.Media3D.Visual3D)
-                            ? System.Windows.Media.VisualTreeHelper.GetParent(clickedElement)
-                            : LogicalTreeHelper.GetParent(clickedElement);
-                    }
-                    
-                    if (!isPartOfSimulation && controlPanel.Visibility == Visibility.Visible)
-                    {
-                        controlPanel.Visibility = Visibility.Collapsed;
-                        System.Diagnostics.Debug.WriteLine("🎛️ Google Maps control panel hidden (clicked outside)");
-                    }
-                };
-
-                // Enable drag-to-move functionality (all 4 drag handles)
-                EnableGoogleMapsDragToMove(border, controlPanel, topDragHandle, leftDragHandle, rightDragHandle, bottomDragHandle);
-
-                // Register with selection manager for selection/deselection
-                RegisterNewObjectWithSelectionManager(border);
-
-                // Record undo action
-                RecordAddAction(border, "Inserted Google Maps");
-
-                System.Diagnostics.Debug.WriteLine($"🗺️ Google Maps inserted at ({borderLeft}, {borderTop}): {mapsUrl}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Google Maps insert error: {ex.Message}");
-                MessageBox.Show($"Lỗi khi chèn Google Maps: {ex.Message}", "Lỗi", 
-                               MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            InsertEmbeddedWebWidgetUnified(
+                url: mapsUrl,
+                badgeText: "🗺️ MAPS",
+                badgeColor: Color.FromRgb(37, 99, 235), // Blue #2563EB
+                defaultTitle: "Bản đồ Google Maps",
+                customTitle: title,
+                containerTag: "InteractiveGoogleMaps",
+                isYooBook: false);
         }
 
         /// <summary>

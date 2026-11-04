@@ -1908,20 +1908,24 @@ namespace QASmartTouch.Forms
                 {
                     double left = Canvas.GetLeft(border);
                     double top = Canvas.GetTop(border);
-                    double width = border.ActualWidth;
-                    double height = border.ActualHeight;
+                    double width = border.ActualWidth > 0 ? border.ActualWidth : border.Width;
+                    double height = border.ActualHeight > 0 ? border.ActualHeight : border.Height;
 
                     // Handle NaN values
                     if (double.IsNaN(left)) left = 0;
                     if (double.IsNaN(top)) top = 0;
                     
                     // Skip if no valid size
-                    if (width <= 0 || height <= 0)
+                    if (double.IsNaN(width) || double.IsNaN(height) || width <= 0 || height <= 0)
                         continue;
 
-                    // ✅ GĐ1-FIX: Skip large background borders (ngoại trừ các widget tương tác như YouTube, Google Maps, Image, Local Video)
+                    // ✅ GĐ1-FIX: Skip large background borders (ngoại trừ các widget tương tác như YouTube, Google Maps, PhET, YooBook, Vật lý, Image, Local Video)
                     bool isInteractiveWidget = (border.Tag as string == "InteractiveYouTubeVideo") ||
                                               (border.Tag as string == "InteractiveGoogleMaps") ||
+                                              (border.Tag as string == "GoogleMaps") ||
+                                              (border.Tag as string == "PhETSimulation") ||
+                                              (border.Tag as string == "YooBookSimulation") ||
+                                              (border.Tag as string == "PhysicsSimulation") ||
                                               (border.Tag as string == "InteractiveImage") ||
                                               (border.Tag as string == "InteractiveLocalVideo") ||
                                               (border.Tag != null && (border.Tag.ToString().Contains("InteractiveYouTubeVideo") || border.Tag.ToString().Contains("InteractiveImage") || border.Tag.ToString().Contains("InteractiveLocalVideo")));
@@ -1985,6 +1989,35 @@ namespace QASmartTouch.Forms
                             selectableObj.StrokeThickness = firstChildShape.StrokeThickness;
                         }
                         System.Diagnostics.Debug.WriteLine($"🎲 Registered 3D Shape / Canvas Container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
+                    }
+                }
+                else if (child is Controls.Model3DControl model3DCtrl)
+                {
+                    double left = Canvas.GetLeft(model3DCtrl);
+                    double top = Canvas.GetTop(model3DCtrl);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = model3DCtrl.ActualWidth > 0 ? model3DCtrl.ActualWidth : model3DCtrl.Width;
+                    double height = model3DCtrl.ActualHeight > 0 ? model3DCtrl.ActualHeight : model3DCtrl.Height;
+                    if (double.IsNaN(width) || width <= 0) width = 720;
+                    if (double.IsNaN(height) || height <= 0) height = 500;
+
+                    var bounds = new Rect(left, top, width, height);
+                    var selectableObj = new SelectableObject
+                    {
+                        Element = model3DCtrl,
+                        Type = ObjectType.Other,
+                        Bounds = bounds,
+                        Position = new Point(left, top),
+                        Size = new Size(width, height),
+                        ZIndex = Panel.GetZIndex(model3DCtrl)
+                    };
+                    _selectionManager.AddObject(selectableObj);
+                    registeredCount++;
+                    System.Diagnostics.Debug.WriteLine($"🎲 Registered Model3DControl: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
+                }
+                {
+                    {
                     }
                 }
             }
@@ -2269,6 +2302,30 @@ namespace QASmartTouch.Forms
                 };
                 _selectionManager?.AddObject(selectableObj);
                 System.Diagnostics.Debug.WriteLine($"📊 Auto-registered Grid container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
+            }
+            else if (element is Controls.Model3DControl model3DElement)
+            {
+                double left = Canvas.GetLeft(model3DElement);
+                double top = Canvas.GetTop(model3DElement);
+                double width = model3DElement.ActualWidth > 0 ? model3DElement.ActualWidth : model3DElement.Width;
+                double height = model3DElement.ActualHeight > 0 ? model3DElement.ActualHeight : model3DElement.Height;
+                if (double.IsNaN(left)) left = 0;
+                if (double.IsNaN(top)) top = 0;
+                if (double.IsNaN(width) || width <= 0) width = 720;
+                if (double.IsNaN(height) || height <= 0) height = 500;
+
+                var bounds = new Rect(left, top, width, height);
+                var selectableObj = new SelectableObject
+                {
+                    Element = model3DElement,
+                    Type = ObjectType.Other,
+                    Bounds = bounds,
+                    Position = new Point(left, top),
+                    Size = new Size(width, height),
+                    ZIndex = Panel.GetZIndex(model3DElement)
+                };
+                _selectionManager?.AddObject(selectableObj);
+                System.Diagnostics.Debug.WriteLine($"🎲 Auto-registered Model3DControl: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
             }
         }
 

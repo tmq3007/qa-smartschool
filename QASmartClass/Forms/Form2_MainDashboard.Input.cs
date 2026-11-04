@@ -48,7 +48,7 @@ namespace QASmartTouch.Forms
                 {
                     if (fe.Tag is string tag)
                     {
-                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "InteractiveLocalVideo" || tag == "LocalVideoContainer" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel" || tag == "VideoControlPanel")
+                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "Interactive3DModel" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "InteractiveLocalVideo" || tag == "LocalVideoContainer" || tag == "PhETSimulation" || tag == "YooBookSimulation" || tag == "PhysicsSimulation" || tag == "InteractiveImage" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel" || tag == "VideoControlPanel")
                         {
                             return true;
                         }
@@ -65,7 +65,7 @@ namespace QASmartTouch.Forms
                         return true;
                     }
                 }
-                if (element is System.Windows.Controls.Primitives.ButtonBase || element is System.Windows.Controls.TextBox || element is System.Windows.Controls.Slider || element is System.Windows.Controls.Primitives.Thumb)
+                if (element is System.Windows.Controls.Primitives.ButtonBase || element is System.Windows.Controls.TextBox || element is System.Windows.Controls.Slider || element is System.Windows.Controls.Primitives.Thumb || element is Controls.Model3DControl)
                 {
                     return true;
                 }
