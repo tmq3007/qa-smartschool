@@ -26,19 +26,26 @@ namespace QASmartTouch.Forms
             _mainDashboard = mainDashboard;
         }
 
+        private bool _hasCustomExpression = false;
+
         public void SetExpression(string expr)
         {
             if (!string.IsNullOrWhiteSpace(expr))
             {
+                _hasCustomExpression = true;
                 txtExpression.Text = expr;
                 txtExpression.CaretIndex = txtExpression.Text.Length;
+                AnalyzeCurrentExpression();
             }
         }
 
         private void Form2_VariationTableDialog_Loaded(object sender, RoutedEventArgs e)
         {
-            // Tự động phân tích biểu thức mặc định ban đầu
-            AnalyzeCurrentExpression();
+            // Nếu chưa có biểu thức từ bên ngoài nạp vào, mới chạy biểu thức mặc định
+            if (!_hasCustomExpression)
+            {
+                AnalyzeCurrentExpression();
+            }
             txtExpression.Focus();
             txtExpression.SelectAll();
         }

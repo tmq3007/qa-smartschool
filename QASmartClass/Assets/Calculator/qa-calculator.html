@@ -1833,21 +1833,22 @@ function init(){
          const terms = [];
          for (let i = 0; i <= d; i++) {
            const c = nums[i];
-           if (c === 0 && terms.length > 0 && i < d) continue;
+           if (c === 0) continue;
            const p = d - i;
            let termStr = '';
+           const sign = c > 0 ? (terms.length > 0 ? ' + ' : '') : (terms.length > 0 ? ' - ' : '-');
+           const absC = Math.abs(c);
+           const cText = (absC === 1 && p > 0) ? '' : absC;
            if (p === 0) {
-             termStr = (c >= 0 && terms.length > 0 ? ' + ' : c < 0 ? ' - ' : '') + Math.abs(c);
+             termStr = sign + absC;
            } else if (p === 1) {
-             const absC = Math.abs(c) === 1 ? '' : Math.abs(c);
-             termStr = (c >= 0 && terms.length > 0 ? ' + ' : c < 0 ? ' - ' : '') + absC + 'x';
+             termStr = sign + cText + 'x';
            } else {
-             const absC = Math.abs(c) === 1 ? '' : Math.abs(c);
-             termStr = (c >= 0 && terms.length > 0 ? ' + ' : c < 0 ? ' - ' : '') + absC + 'x^' + p;
+             termStr = sign + cText + 'x^' + p;
            }
            terms.push(termStr);
          }
-         expr = terms.join('').trim();
+         expr = terms.length > 0 ? terms.join('').trim() : '0';
        }
      } else if (S.mode === 'table' && !fEd.isEmpty()) {
        expr = rowText(fEd.root);
