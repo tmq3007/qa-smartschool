@@ -218,23 +218,46 @@ namespace QASmartTouch.Controls
         private DateTime _lastClickTime = DateTime.MinValue;
         private void SelectionBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            // Phát hiện Double-Click thủ công (interval ≤ 350ms)
-            var now = DateTime.Now;
-            if ((now - _lastClickTime).TotalMilliseconds <= 350)
+            if (e.StylusDevice != null)
             {
-                // Double-click detected — kích hoạt cho TextBlock của Text Tool hoặc SmartNoteCard, không kích hoạt cho MathCard/Calculator
+                return;
+            }
+
+            if (_attachedObject?.Element is Border noteCard && noteCard.Tag?.ToString() == "SmartNoteCard")
+            {
+                Point ptInCard = e.GetPosition(noteCard);
+                if (QASmartClass.Services.Tools.SmartNoteCardRenderer.TryInvokeHeaderFormatIfHit(noteCard, ptInCard, card =>
+                {
+                    if (Application.Current.MainWindow is QASmartTouch.Forms.Form2_MainDashboard md)
+                    {
+                        md.OpenSmartNoteFormatDialog(card);
+                    }
+                }))
+                {
+                    e.Handled = true;
+                    return;
+                }
+            }
+
+            // PhÃ¡t hiá»‡n Double-Click thá»§ cÃ´ng (interval 60ms..400ms Ä‘á»ƒ lá»c nhiá»…u sá»± kiá»‡n trÃ¹ng láº·p < 60ms)
+            var now = DateTime.Now;
+            double elapsedClick = (now - _lastClickTime).TotalMilliseconds;
+            if (elapsedClick >= 60 && elapsedClick <= 400)
+            {
                 bool isEditableTarget = (_attachedObject?.Element is TextBlock tb && tb.Tag?.ToString() != "CalculatorMathCard" && tb.Tag?.ToString() != "CalculatorResult")
                                      || (_attachedObject?.Element is Border b && b.Tag?.ToString() == "SmartNoteCard");
 
                 if (isEditableTarget)
                 {
-                    TextEditRequested?.Invoke(this, _attachedObject);
+                    _lastClickTime = DateTime.MinValue;
+                    TextEditRequested?.Invoke(this, _attachedObject!);
                     e.Handled = true;
+                    return;
                 }
             }
             _lastClickTime = now;
 
-            // [BUG_DRAG_MOVE] Bắt đầu drag-to-move nếu không phải double-click và không trong phiên resize/rotate chốt
+            // [BUG_DRAG_MOVE] Báº¯t Ä‘áº§u drag-to-move náº¿u khÃ´ng pháº£i double-click vÃ  khÃ´ng trong phiÃªn resize/rotate chá»‘t
             if (_attachedObject != null && !_attachedObject.IsLocked && !_isDragging && !_isRotating && !_isManipulating && e.StylusDevice == null && _activeResizeTouchId == -1 && _activeRotateTouchId == -1)
             {
                 if (IsAttached3DRotating())
@@ -253,28 +276,45 @@ namespace QASmartTouch.Controls
                 _originalPosition = _attachedObject.Position;
                 _activeTransformInitialStates = CaptureCurrentTransformStates();
                 SelectionBorder.CaptureMouse();
-                e.Handled = true; // Ngăn sự kiện lọt xuống Canvas nền
+                e.Handled = true; // NgÄƒn sá»± kiá»‡n lá»t xuá»‘ng Canvas ná»n
             }
         }
 
         private DateTime _lastTouchTime = DateTime.MinValue;
         private void SelectionBorder_TouchDown(object? sender, TouchEventArgs e)
         {
+            if (_attachedObject?.Element is Border noteCard && noteCard.Tag?.ToString() == "SmartNoteCard")
+            {
+                Point ptInCard = e.GetTouchPoint(noteCard).Position;
+                if (QASmartClass.Services.Tools.SmartNoteCardRenderer.TryInvokeHeaderFormatIfHit(noteCard, ptInCard, card =>
+                {
+                    if (Application.Current.MainWindow is QASmartTouch.Forms.Form2_MainDashboard md)
+                    {
+                        md.OpenSmartNoteFormatDialog(card);
+                    }
+                }))
+                {
+                    e.Handled = true;
+                    return;
+                }
+            }
+
             var now = DateTime.Now;
-            if ((now - _lastTouchTime).TotalMilliseconds <= 350)
+            double elapsedTouch = (now - _lastTouchTime).TotalMilliseconds;
+            if (elapsedTouch >= 60 && elapsedTouch <= 400)
             {
                 bool isEditableTarget = (_attachedObject?.Element is TextBlock tb && tb.Tag?.ToString() != "CalculatorMathCard" && tb.Tag?.ToString() != "CalculatorResult")
                                      || (_attachedObject?.Element is Border b && b.Tag?.ToString() == "SmartNoteCard");
 
                 if (isEditableTarget)
                 {
-                    TextEditRequested?.Invoke(this, _attachedObject);
-                    e.Handled = true;
                     _lastTouchTime = DateTime.MinValue;
+                    TextEditRequested?.Invoke(this, _attachedObject!);
+                    e.Handled = true;
                     return;
                 }
             }
-            _lastTouchTime = now;
+                        _lastTouchTime = now;
         }
 
         /// <summary>
@@ -418,6 +458,8 @@ namespace QASmartTouch.Controls
         public void AttachTo(SelectableObject obj)
         {
             _attachedObject = obj;
+            _lastClickTime = DateTime.Now;
+            _lastTouchTime = DateTime.Now;
             // ✅ REVIEW-FIX #2: Khởi tạo _originalSize khi attach để Pinch-to-Zoom
             // không bị Infinity% nếu giáo viên Pinch trước khi kéo chốt góc
             _originalSize = obj.Size;

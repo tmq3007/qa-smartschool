@@ -1805,6 +1805,30 @@ namespace QASmartTouch.Forms
                 // Register Shape (Rectangle, Ellipse - NOT Path/Line/Polyline)
                 else if (child is System.Windows.Shapes.Shape shape && !(shape is Polyline) && !(shape is System.Windows.Shapes.Path) && !(shape is System.Windows.Shapes.Line))
                 {
+                    if (shape is Polygon)
+                    {
+                        var polyBounds = QASmartTouch.Helpers.BoundsHelper.GetAbsoluteBounds(shape, MainInteractiveBoard);
+                        if (polyBounds.IsEmpty || polyBounds.Width <= 0 || polyBounds.Height <= 0)
+                            continue;
+
+                        var polyObj = new SelectableObject
+                        {
+                            Element = shape,
+                            Type = ObjectType.Shape,
+                            Bounds = polyBounds,
+                            Position = new Point(polyBounds.Left, polyBounds.Top),
+                            Size = new Size(polyBounds.Width, polyBounds.Height),
+                            ZIndex = Panel.GetZIndex(shape),
+                            StrokeColor = (shape.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
+                            StrokeThickness = shape.StrokeThickness,
+                            FillColor = (shape.Fill as SolidColorBrush)?.Color ?? Colors.Transparent
+                        };
+
+                        _selectionManager.AddObject(polyObj);
+                        registeredCount++;
+                        continue;
+                    }
+
                     double left = Canvas.GetLeft(shape);
                     double top = Canvas.GetTop(shape);
                     double width = shape.ActualWidth;
@@ -1917,6 +1941,15 @@ namespace QASmartTouch.Forms
                     if (double.IsNaN(left)) left = 0;
                     if (double.IsNaN(top)) top = 0;
                     
+                    if (double.IsNaN(width) || width <= 0 || double.IsNaN(height) || height <= 0)
+                    {
+                        border.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                        if (double.IsNaN(width) || width <= 0)
+                            width = border.DesiredSize.Width;
+                        if (double.IsNaN(height) || height <= 0)
+                            height = border.DesiredSize.Height;
+                    }
+
                     // Skip if no valid size
                     if (double.IsNaN(width) || double.IsNaN(height) || width <= 0 || height <= 0)
                         continue;
@@ -2641,6 +2674,12 @@ namespace QASmartTouch.Forms
 
             // Reset drawing state
             _isDrawing = false;
+            _activeShapeTouchId = -1;
+            if (_previewShape != null)
+            {
+                MainInteractiveBoard?.Children.Remove(_previewShape);
+                _previewShape = null;
+            }
             
             // Disable all tool modes
             _drawingEnabled = false;
@@ -2669,6 +2708,7 @@ namespace QASmartTouch.Forms
             _selectionBox?.Detach();
             _contextToolbar?.Hide();
             _floatingTouchKeyboard?.HideKeyboard();
+            CompleteInPlaceSmartNoteEditing();
 
             // Clean up rectangle selection preview if dangling
             if (_rectangleSelectionPreview != null)
@@ -2873,6 +2913,7 @@ namespace QASmartTouch.Forms
                 _selectionManager?.DeselectAll();
                 _selectionBox?.Detach();
                 _contextToolbar?.Hide();
+                CompleteInPlaceSmartNoteEditing();
 
                 // 2. Dọn dẹp trạng thái chọn vùng hình chữ nhật / Lasso
                 if (_isRectangleSelecting && _rectangleSelectionPreview != null)
@@ -2880,11 +2921,13 @@ namespace QASmartTouch.Forms
                     MainInteractiveBoard?.Children.Remove(_rectangleSelectionPreview);
                     _rectangleSelectionPreview = null;
                 }
+                _isPreparingRectangleSelection = false;
                 _isRectangleSelecting = false;
                 _isLassoMode = false;
                 _isDraggingSelection = false;
                 _draggedSelectionObject = null;
                 _pendingHitObject = null;
+                _activeShapeTouchId = -1;
 
                 // 3. Rebuild lại chỉ mục QuadTree để đồng bộ không gian
                 _selectionManager?.RebuildQuadTree();

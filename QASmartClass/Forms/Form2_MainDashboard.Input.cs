@@ -176,6 +176,7 @@ namespace QASmartTouch.Forms
 
         private void MainInteractiveBoard_PreviewTouchDown(object? sender, TouchEventArgs e)
         {
+            AutoDismissKeyboardIfNeeded(e.OriginalSource);
             // QC_4.2_TABLE_DRAWING: Xử lý trực tiếp cảm ứng kéo vẽ bảng từ phần cứng (Zero 2nd tap)
             if (_isTableDrawingMode)
             {
@@ -302,11 +303,14 @@ namespace QASmartTouch.Forms
 
         private void MainInteractiveBoard_PreviewTouchUp(object? sender, TouchEventArgs e)
         {
-            if (_isTableDrawingMode && _isDrawingTable)
+            if (_isTableDrawingMode)
             {
                 if (_activeShapeTouchId == -1 || e.TouchDevice.Id == _activeShapeTouchId)
                 {
-                    FinalizeTableDrawing();
+                    if (_isDrawingTable)
+                    {
+                        FinalizeTableDrawing();
+                    }
                     _activeShapeTouchId = -1;
                     if (e.TouchDevice.Captured == MainInteractiveBoard)
                     {
@@ -317,11 +321,19 @@ namespace QASmartTouch.Forms
                 }
             }
 
-            if (_shapeDrawingEnabled && _isDrawing && _previewShape != null)
+            if (_shapeDrawingEnabled)
             {
                 if (_activeShapeTouchId == -1 || e.TouchDevice.Id == _activeShapeTouchId)
                 {
-                    FinalizeShapeDrawing();
+                    if (_isDrawing && _previewShape != null)
+                    {
+                        FinalizeShapeDrawing();
+                    }
+                    else
+                    {
+                        _isDrawing = false;
+                        _previewShape = null;
+                    }
                     _activeShapeTouchId = -1;
                     if (e.TouchDevice.Captured == MainInteractiveBoard)
                     {
@@ -352,6 +364,11 @@ namespace QASmartTouch.Forms
                 }
             }
 
+            if (_activeShapeTouchId != -1 && e.TouchDevice.Id == _activeShapeTouchId)
+            {
+                _activeShapeTouchId = -1;
+            }
+
             // ✅ TOUCH-FIX SAFETY NET: Tránh trường hợp màn hình kẹt trạng thái kéo đối tượng.
             // Giải phóng trạng thái di chuyển của SelectionBox (nếu có kẹt do nuốt MouseUp)
             if (_selectionBox != null)
@@ -373,6 +390,7 @@ namespace QASmartTouch.Forms
 
         private void MainInteractiveBoard_PreviewStylusDown(object? sender, StylusDownEventArgs e)
         {
+            AutoDismissKeyboardIfNeeded(e.OriginalSource);
             if (!_isTableDrawingMode && !_shapeDrawingEnabled && !_objectSelectionMode)
             {
                 EnsurePassthroughFocusAndPenMode(e.OriginalSource);
@@ -447,6 +465,11 @@ namespace QASmartTouch.Forms
 
         private void MainInteractiveBoard_PreviewStylusMove(object? sender, StylusEventArgs e)
         {
+            if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || _activeShapeTouchId != -1)
+            {
+                return;
+            }
+
             if (_isTableDrawingMode && _isDrawingTable && _tablePreviewBorder != null)
             {
                 Point currentPos = e.GetPosition(MainInteractiveBoard);
@@ -465,7 +488,7 @@ namespace QASmartTouch.Forms
 
             if (_objectSelectionMode)
             {
-                if (e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus && _activeShapeTouchId == -1 && (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null))
+                if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
                 {
                     Point currentPos = e.GetPosition(MainInteractiveBoard);
                     UpdateSelectionInteraction(currentPos, e.OriginalSource);
@@ -477,6 +500,11 @@ namespace QASmartTouch.Forms
 
         private void MainInteractiveBoard_PreviewStylusUp(object? sender, StylusEventArgs e)
         {
+            if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || _activeShapeTouchId != -1)
+            {
+                return;
+            }
+
             if (_isTableDrawingMode && _isDrawingTable)
             {
                 FinalizeTableDrawing();
@@ -501,7 +529,7 @@ namespace QASmartTouch.Forms
 
             if (_objectSelectionMode)
             {
-                if (e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus && _activeShapeTouchId == -1 && (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null))
+                if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
                 {
                     Point endPos = e.GetPosition(MainInteractiveBoard);
                     EndSelectionInteraction(endPos);
@@ -532,6 +560,11 @@ namespace QASmartTouch.Forms
             if (_objectSelectionMode && (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null))
             {
                 EndSelectionInteraction(_rectangleSelectionStartPoint);
+                _activeShapeTouchId = -1;
+            }
+
+            if (_activeShapeTouchId != -1 && (e.TouchDevice == null || e.TouchDevice.Id == _activeShapeTouchId))
+            {
                 _activeShapeTouchId = -1;
             }
         }
@@ -613,6 +646,7 @@ namespace QASmartTouch.Forms
             
             _isDrawing = false;
             _previewShape = null;
+            _activeShapeTouchId = -1;
             if (MainInteractiveBoard.IsMouseCaptured)
             {
                 MainInteractiveBoard.ReleaseMouseCapture();
@@ -625,6 +659,17 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void AutoDismissKeyboardIfNeeded(object originalSource)
         {
+            if (_editingSmartNoteCard != null)
+            {
+                var srcDep = originalSource as DependencyObject;
+                if (srcDep == null || !IsDescendantOf(srcDep, _editingSmartNoteCard))
+                {
+                    CompleteInPlaceSmartNoteEditing();
+                    Keyboard.ClearFocus();
+                    MainInteractiveBoard?.Focus();
+                }
+            }
+
             if (_floatingTouchKeyboard == null || !_floatingTouchKeyboard.IsKeyboardVisible)
                 return;
 
@@ -2676,6 +2721,7 @@ namespace QASmartTouch.Forms
             // Dọn dẹp trạng thái vẽ dở dang
             _isDrawing = false;
             _currentStroke = null;
+            _activeShapeTouchId = -1;
 
             // Store shape settings
             _currentShape = shapeName;
@@ -9122,6 +9168,7 @@ namespace QASmartTouch.Forms
         {
             DeactivateAllTools();
             _isTableDrawingMode = true;
+            _activeShapeTouchId = -1;
             _drawingEnabled = false;
             _isDrawing = false;
             _currentStroke = null;
@@ -9312,6 +9359,7 @@ namespace QASmartTouch.Forms
         private void FinalizeTableDrawing()
         {
             _isDrawingTable = false;
+            _activeShapeTouchId = -1;
             if (_tablePreviewBorder != null)
             {
                 double left = Canvas.GetLeft(_tablePreviewBorder);

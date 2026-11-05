@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -102,6 +102,7 @@ namespace QASmartClass.Services.Tools
                 e.Handled = true;
                 onRequestFormat?.Invoke(cardBorder);
             };
+            QASmartTouch.Helpers.TouchActivationHelper.WireButton(formatBtn);
             Grid.SetColumn(formatBtn, 1);
             headerGrid.Children.Add(formatBtn);
 
@@ -125,6 +126,18 @@ namespace QASmartClass.Services.Tools
                 Foreground = theme.BadgeFg
             };
             badgeBorder.Child = badgeText;
+            badgeBorder.Tag = "DragHandle";
+            badgeBorder.MouseLeftButtonDown += (s, e) =>
+            {
+                if (e.StylusDevice != null) return;
+                e.Handled = true;
+                onRequestFormat?.Invoke(cardBorder);
+            };
+            badgeBorder.TouchDown += (s, e) =>
+            {
+                e.Handled = true;
+                onRequestFormat?.Invoke(cardBorder);
+            };
             Grid.SetColumn(badgeBorder, 2);
             headerGrid.Children.Add(badgeBorder);
 
@@ -191,6 +204,22 @@ namespace QASmartClass.Services.Tools
                 }
             };
 
+            txtEditor.PreviewMouseLeftButtonDown += (s, e) =>
+            {
+                if (txtEditor.Visibility == Visibility.Visible)
+                {
+                    QASmartTouch.Helpers.TouchKeyboardHelper.ShowTouchKeyboard();
+                }
+            };
+
+            txtEditor.PreviewTouchDown += (s, e) =>
+            {
+                if (txtEditor.Visibility == Visibility.Visible)
+                {
+                    QASmartTouch.Helpers.TouchKeyboardHelper.ShowTouchKeyboard();
+                }
+            };
+
             txtEditor.LostFocus += (s, e) =>
             {
                 FinishEditing(cardBorder);
@@ -213,31 +242,18 @@ namespace QASmartClass.Services.Tools
 
             cardBorder.Child = mainGrid;
 
-            // Xử lý chạm/click đúp để sửa chữ
+            // Xá»­ lÃ½ cháº¡m/click Ä‘Ãºp Ä‘á»ƒ sá»­a chá»¯ (chá»‰ gáº¯n trÃªn cardBorder Ä‘á»ƒ trÃ¡nh ná»•i bá»t kÃ©p 0ms tá»« tbDisplay)
             DateTime lastClickTime = DateTime.MinValue;
             cardBorder.MouseLeftButtonDown += (s, e) =>
             {
-                var now = DateTime.Now;
-                if ((now - lastClickTime).TotalMilliseconds <= 350)
-                {
-                    if (onRequestEdit != null)
-                    {
-                        onRequestEdit(cardBorder);
-                    }
-                    else
-                    {
-                        StartEditing(cardBorder);
-                    }
-                    e.Handled = true;
-                }
-                lastClickTime = now;
-            };
+                if (e.StylusDevice != null) return;
+                if (IsFromHeaderOrEditor(e.OriginalSource as DependencyObject, cardBorder)) return;
 
-            tbDisplay.MouseLeftButtonDown += (s, e) =>
-            {
                 var now = DateTime.Now;
-                if ((now - lastClickTime).TotalMilliseconds <= 350)
+                double elapsed = (now - lastClickTime).TotalMilliseconds;
+                if (elapsed >= 60 && elapsed <= 400)
                 {
+                    lastClickTime = DateTime.MinValue;
                     if (onRequestEdit != null)
                     {
                         onRequestEdit(cardBorder);
@@ -247,6 +263,7 @@ namespace QASmartClass.Services.Tools
                         StartEditing(cardBorder);
                     }
                     e.Handled = true;
+                    return;
                 }
                 lastClickTime = now;
             };
@@ -254,27 +271,13 @@ namespace QASmartClass.Services.Tools
             DateTime lastTouchTime = DateTime.MinValue;
             cardBorder.TouchDown += (s, e) =>
             {
-                var now = DateTime.Now;
-                if ((now - lastTouchTime).TotalMilliseconds <= 350)
-                {
-                    if (onRequestEdit != null)
-                    {
-                        onRequestEdit(cardBorder);
-                    }
-                    else
-                    {
-                        StartEditing(cardBorder);
-                    }
-                    e.Handled = true;
-                }
-                lastTouchTime = now;
-            };
+                if (IsFromHeaderOrEditor(e.OriginalSource as DependencyObject, cardBorder)) return;
 
-            tbDisplay.TouchDown += (s, e) =>
-            {
                 var now = DateTime.Now;
-                if ((now - lastTouchTime).TotalMilliseconds <= 350)
+                double elapsed = (now - lastTouchTime).TotalMilliseconds;
+                if (elapsed >= 60 && elapsed <= 400)
                 {
+                    lastTouchTime = DateTime.MinValue;
                     if (onRequestEdit != null)
                     {
                         onRequestEdit(cardBorder);
@@ -284,11 +287,61 @@ namespace QASmartClass.Services.Tools
                         StartEditing(cardBorder);
                     }
                     e.Handled = true;
+                    return;
                 }
                 lastTouchTime = now;
             };
 
             return cardBorder;
+        }
+
+        private static bool IsFromHeaderOrEditor(DependencyObject? source, Border cardBorder)
+        {
+            var current = source;
+            while (current != null && current != cardBorder)
+            {
+                if (current is System.Windows.Controls.Primitives.ButtonBase || current is TextBox)
+                    return true;
+                if (current is FrameworkElement fe && fe.Name == "badgeBorder")
+                    return true;
+                current = VisualTreeHelper.GetParent(current);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Kiá»ƒm tra xem Ä‘iá»ƒm cháº¡m trÃªn tháº» (ká»ƒ cáº£ khi Ä‘ang cÃ³ lá»›p phá»§ SelectionBox Ä‘Ã¨ lÃªn)
+        /// cÃ³ rÆ¡i vÃ o nÃºt Ä‘á»•i Ä‘á»‹nh dáº¡ng (ðŸŽ¨) hoáº·c nhÃ£n (badgeBorder) hay khÃ´ng.
+        /// </summary>
+        public static bool TryInvokeHeaderFormatIfHit(Border cardBorder, Point pointInCard, Action<Border>? onFormat)
+        {
+            if (cardBorder == null || cardBorder.Child is not Grid mainGrid || mainGrid.Children.Count == 0)
+                return false;
+
+            if (mainGrid.Children[0] is Grid headerGrid)
+            {
+                foreach (UIElement child in headerGrid.Children)
+                {
+                    if (child is FrameworkElement fe && (fe.Name == "btnFormatNote" || fe.Name == "badgeBorder"))
+                    {
+                        if (fe.ActualWidth > 0 && fe.ActualHeight > 0)
+                        {
+                            try
+                            {
+                                Point topLeft = fe.TranslatePoint(new Point(0, 0), cardBorder);
+                                Rect hitRect = new Rect(topLeft.X - 6, topLeft.Y - 6, fe.ActualWidth + 12, fe.ActualHeight + 12);
+                                if (hitRect.Contains(pointInCard))
+                                {
+                                    onFormat?.Invoke(cardBorder);
+                                    return true;
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -344,7 +397,20 @@ namespace QASmartClass.Services.Tools
                 tbDisplay.Visibility = Visibility.Collapsed;
                 txtEditor.Visibility = Visibility.Visible;
                 txtEditor.Focus();
-                txtEditor.SelectAll();
+                Keyboard.Focus(txtEditor);
+                txtEditor.CaretIndex = txtEditor.Text.Length;
+                QASmartTouch.Helpers.TouchKeyboardHelper.ShowTouchKeyboard();
+
+                cardBorder.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (txtEditor.Visibility == Visibility.Visible)
+                    {
+                        txtEditor.Focus();
+                        Keyboard.Focus(txtEditor);
+                        txtEditor.CaretIndex = txtEditor.Text.Length;
+                        QASmartTouch.Helpers.TouchKeyboardHelper.ShowTouchKeyboard();
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Input);
             }
         }
 
@@ -352,6 +418,7 @@ namespace QASmartClass.Services.Tools
         {
             if (FindElements(cardBorder, out _, out _, out var tbDisplay, out var txtEditor))
             {
+                bool wasEditing = txtEditor.Visibility == Visibility.Visible;
                 string textToApply = explicitText ?? txtEditor.Text;
                 tbDisplay.Text = textToApply;
                 txtEditor.Text = textToApply;
@@ -361,6 +428,11 @@ namespace QASmartClass.Services.Tools
                 }
                 txtEditor.Visibility = Visibility.Collapsed;
                 tbDisplay.Visibility = Visibility.Visible;
+
+                if (wasEditing)
+                {
+                    QASmartTouch.Helpers.TouchKeyboardHelper.HideTouchKeyboard();
+                }
             }
         }
 
@@ -368,9 +440,15 @@ namespace QASmartClass.Services.Tools
         {
             if (FindElements(cardBorder, out _, out _, out var tbDisplay, out var txtEditor))
             {
+                bool wasEditing = txtEditor.Visibility == Visibility.Visible;
                 txtEditor.Text = tbDisplay.Text;
                 txtEditor.Visibility = Visibility.Collapsed;
                 tbDisplay.Visibility = Visibility.Visible;
+
+                if (wasEditing)
+                {
+                    QASmartTouch.Helpers.TouchKeyboardHelper.HideTouchKeyboard();
+                }
             }
         }
 

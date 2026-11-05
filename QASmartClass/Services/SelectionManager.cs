@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -1757,21 +1757,29 @@ namespace QASmartTouch.Services
 
                     if (obj == null && element is FrameworkElement fe)
                     {
-                        double left = System.Windows.Controls.Canvas.GetLeft(fe);
-                        double top = System.Windows.Controls.Canvas.GetTop(fe);
-                        if (double.IsNaN(left)) left = 0;
-                        if (double.IsNaN(top)) top = 0;
-                        double w = fe.ActualWidth > 0 ? fe.ActualWidth : fe.Width;
-                        double h = fe.ActualHeight > 0 ? fe.ActualHeight : fe.Height;
-                        if (double.IsNaN(w) || w <= 0) w = fe.RenderSize.Width > 0 ? fe.RenderSize.Width : 20;
-                        if (double.IsNaN(h) || h <= 0) h = fe.RenderSize.Height > 0 ? fe.RenderSize.Height : 20;
+                        Rect bounds = _canvas != null
+                            ? QASmartTouch.Helpers.BoundsHelper.GetAbsoluteBounds(fe, _canvas)
+                            : Rect.Empty;
+                        if (bounds.IsEmpty || bounds.Width <= 0 || bounds.Height <= 0)
+                        {
+                            double left = System.Windows.Controls.Canvas.GetLeft(fe);
+                            double top = System.Windows.Controls.Canvas.GetTop(fe);
+                            if (double.IsNaN(left)) left = 0;
+                            if (double.IsNaN(top)) top = 0;
+                            double w = fe.ActualWidth > 0 ? fe.ActualWidth : fe.Width;
+                            double h = fe.ActualHeight > 0 ? fe.ActualHeight : fe.Height;
+                            if (double.IsNaN(w) || w <= 0) w = fe.RenderSize.Width > 0 ? fe.RenderSize.Width : 20;
+                            if (double.IsNaN(h) || h <= 0) h = fe.RenderSize.Height > 0 ? fe.RenderSize.Height : 20;
+                            bounds = new Rect(left, top, w, h);
+                        }
 
                         obj = new SelectableObject
                         {
                             Element = fe,
-                            Type = ObjectType.Shape,
-                            Position = new Point(left, top),
-                            Size = new Size(w, h)
+                            Type = fe is System.Windows.Shapes.Path ? ObjectType.Drawing : ObjectType.Shape,
+                            Bounds = bounds,
+                            Position = new Point(bounds.Left, bounds.Top),
+                            Size = new Size(bounds.Width, bounds.Height)
                         };
                         AddObject(obj);
                         // ✅ BUG-FIX: Nếu AddObject reject (ví dụ Background element), bỏ qua không cho vào selection

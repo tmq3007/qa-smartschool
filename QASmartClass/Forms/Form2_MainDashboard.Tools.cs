@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -3101,7 +3101,7 @@ namespace QASmartTouch.Forms
             // 1. Dựng Thẻ Bảng Biến Thiên hoàn chỉnh
             var cardBorder = QASmartClass.Services.Tools.VariationCardRenderer.CreateVariationCard(model);
 
-            // 2. Xác định vị trí chèn (ở giữa màn hình hoặc lệch nhẹ theo đối tượng đang chọn)
+            // 2. XÃ¡c Ä‘á»‹nh vá»‹ trÃ­ chÃ¨n (á»Ÿ giá»¯a mÃ n hÃ¬nh hoáº·c lá»‡ch nháº¹ theo Ä‘á»‘i tÆ°á»£ng Ä‘ang chá»n)
             double posX = Math.Max(50, (MainInteractiveBoard.ActualWidth - 650) / 2);
             double posY = Math.Max(50, (MainInteractiveBoard.ActualHeight - 380) / 2);
 
@@ -3119,7 +3119,7 @@ namespace QASmartTouch.Forms
 
             MainInteractiveBoard.Children.Add(cardBorder);
 
-            // 3. Đăng ký với SelectionManager & QuadTree & Undo/Redo
+            // 3. ÄÄƒng kÃ½ vá»›i SelectionManager & QuadTree & Undo/Redo
             try
             {
                 RegisterNewObjectWithSelectionManager(cardBorder);
@@ -3129,27 +3129,27 @@ namespace QASmartTouch.Forms
             RecordAddAction(cardBorder, "VariationTable");
             RefreshSelectableObjects();
 
-            // 4. Kích hoạt đầy đủ chế độ Chọn vùng (đồng bộ UI button + WhiteboardCore FSM + TouchHandler)
+            // 4. KÃ­ch hoáº¡t Ä‘áº§y Ä‘á»§ cháº¿ Ä‘á»™ Chá»n vÃ¹ng (Ä‘á»“ng bá»™ UI button + WhiteboardCore FSM + TouchHandler)
             ActivateRectangleSelectionMode();
 
-            ShowSmartStatusBadge("📐 Đã chèn Bảng biến thiên lên bảng!");
+            ShowSmartStatusBadge("ðŸ“ ÄÃ£ chÃ¨n Báº£ng biáº¿n thiÃªn lÃªn báº£ng!");
         }
 
         /// <summary>
-        /// Chèn Đồ Thị Hàm Số Oxy độc lập tương tác lên bảng vẽ (Thẻ Toán Học)
-        /// Tự động đăng ký SelectionManager, QuadTree và ghi nhận Undo/Redo
+        /// ChÃ¨n Äá»“ Thá»‹ HÃ m Sá»‘ Oxy Ä‘á»™c láº­p tÆ°Æ¡ng tÃ¡c lÃªn báº£ng váº½ (Tháº» ToÃ¡n Há»c)
+        /// Tá»± Ä‘á»™ng Ä‘Äƒng kÃ½ SelectionManager, QuadTree vÃ  ghi nháº­n Undo/Redo
         /// </summary>
         public void InsertFunctionGraphToBoard(string expression, QASmartClass.Services.Tools.VariationModel? model = null)
         {
             if (string.IsNullOrWhiteSpace(expression)) return;
 
-            // Ẩn bàn phím nổi nếu đang hiện
+            // áº¨n bÃ n phÃ­m ná»•i náº¿u Ä‘ang hiá»‡n
             _floatingTouchKeyboard?.HideKeyboard();
 
-            // 1. Dựng Thẻ Đồ Thị Hàm Số hoàn chỉnh
+            // 1. Dá»±ng Tháº» Äá»“ Thá»‹ HÃ m Sá»‘ hoÃ n chá»‰nh
             var cardBorder = QASmartClass.Services.Tools.FunctionGraphCardRenderer.CreateGraphCard(expression, model);
 
-            // 2. Xác định vị trí chèn (ở giữa màn hình hoặc lệch nhẹ theo đối tượng đang chọn)
+            // 2. XÃ¡c Ä‘á»‹nh vá»‹ trÃ­ chÃ¨n (á»Ÿ giá»¯a mÃ n hÃ¬nh hoáº·c lá»‡ch nháº¹ theo Ä‘á»‘i tÆ°á»£ng Ä‘ang chá»n)
             double posX = Math.Max(50, (MainInteractiveBoard.ActualWidth - 620) / 2);
             double posY = Math.Max(50, (MainInteractiveBoard.ActualHeight - 440) / 2);
 
@@ -3167,7 +3167,7 @@ namespace QASmartTouch.Forms
 
             MainInteractiveBoard.Children.Add(cardBorder);
 
-            // 3. Đăng ký với SelectionManager & QuadTree & Undo/Redo
+            // 3. ÄÄƒng kÃ½ vá»›i SelectionManager & QuadTree & Undo/Redo
             try
             {
                 RegisterNewObjectWithSelectionManager(cardBorder);
@@ -3177,35 +3177,35 @@ namespace QASmartTouch.Forms
             RecordAddAction(cardBorder, "FunctionGraph");
             RefreshSelectableObjects();
 
-            // 4. Kích hoạt đầy đủ chế độ Chọn vùng (đồng bộ UI button + WhiteboardCore FSM + TouchHandler)
+            // 4. KÃ­ch hoáº¡t Ä‘áº§y Ä‘á»§ cháº¿ Ä‘á»™ Chá»n vÃ¹ng (Ä‘á»“ng bá»™ UI button + WhiteboardCore FSM + TouchHandler)
             try
             {
                 ActivateRectangleSelectionMode();
             }
             catch { }
 
-            ShowSmartStatusBadge("📊 Đã chèn Đồ thị hàm số lên bảng!");
+            ShowSmartStatusBadge("ðŸ“Š ÄÃ£ chÃ¨n Äá»“ thá»‹ hÃ m sá»‘ lÃªn báº£ng!");
         }
 
         /// <summary>
-        /// Chèn Thẻ Ghi Chú Thông Minh (SmartNoteCard) chuẩn phong cách MathCard lên bảng vẽ
-        /// Hỗ trợ sửa chữ trực tiếp, bàn phím ảo, đa dạng phông chữ viết tay và 8 màu thẻ sinh động
+        /// ChÃ¨n Tháº» Ghi ChÃº ThÃ´ng Minh (SmartNoteCard) chuáº©n phong cÃ¡ch MathCard lÃªn báº£ng váº½
+        /// Há»— trá»£ sá»­a chá»¯ trá»±c tiáº¿p, bÃ n phÃ­m áº£o, Ä‘a dáº¡ng phÃ´ng chá»¯ viáº¿t tay vÃ  8 mÃ u tháº» sinh Ä‘á»™ng
         /// </summary>
         public void InsertSmartNoteCardToBoard(QASmartClass.Services.Tools.SmartNoteModel? initialData = null)
         {
-            // Ẩn bàn phím nổi nếu đang hiện
+            // áº¨n bÃ n phÃ­m ná»•i náº¿u Ä‘ang hiá»‡n
             _floatingTouchKeyboard?.HideKeyboard();
 
             var model = initialData ?? new QASmartClass.Services.Tools.SmartNoteModel();
 
-            // 1. Dựng Thẻ Ghi Chú hoàn chỉnh
+            // 1. Dá»±ng Tháº» Ghi ChÃº hoÃ n chá»‰nh
             var cardBorder = QASmartClass.Services.Tools.SmartNoteCardRenderer.CreateNoteCard(
                 model,
                 onRequestEdit: (card) => StartInPlaceSmartNoteEditing(card),
                 onRequestFormat: (card) => OpenSmartNoteFormatDialog(card)
             );
 
-            // 2. Xác định vị trí chèn (ở giữa màn hình hoặc lệch nhẹ theo đối tượng đang chọn)
+            // 2. XÃ¡c Ä‘á»‹nh vá»‹ trÃ­ chÃ¨n (á»Ÿ giá»¯a mÃ n hÃ¬nh hoáº·c lá»‡ch nháº¹ theo Ä‘á»‘i tÆ°á»£ng Ä‘ang chá»n)
             double posX = Math.Max(50, (MainInteractiveBoard.ActualWidth - (model.Width > 0 ? model.Width : 420)) / 2);
             double posY = Math.Max(50, (MainInteractiveBoard.ActualHeight - 240) / 2);
 
@@ -3222,8 +3222,9 @@ namespace QASmartTouch.Forms
             Canvas.SetZIndex(cardBorder, 1000);
 
             MainInteractiveBoard.Children.Add(cardBorder);
+            MainInteractiveBoard.UpdateLayout();
 
-            // 3. Đăng ký với SelectionManager & QuadTree & Undo/Redo
+            // 3. ÄÄƒng kÃ½ vá»›i SelectionManager & QuadTree & Undo/Redo
             try
             {
                 RegisterNewObjectWithSelectionManager(cardBorder);
@@ -3233,18 +3234,18 @@ namespace QASmartTouch.Forms
             RecordAddAction(cardBorder, "SmartNoteCard");
             RefreshSelectableObjects();
 
-            // 4. Chuyển sang công cụ Chọn vùng
+            // 4. KÃ­ch hoáº¡t Ä‘áº§y Ä‘á»§ cháº¿ Ä‘á»™ Chá»n vÃ¹ng (Ä‘á»“ng bá»™ UI button + WhiteboardCore FSM + TouchHandler)
             try
             {
-                if (btn8_Select != null) SelectTool(btn8_Select);
+                ActivateRectangleSelectionMode();
             }
             catch { }
 
-            ShowSmartStatusBadge("📌 Đã chèn Thẻ Ghi Chú Thông Minh lên bảng!");
+            ShowSmartStatusBadge("ðŸ“Œ ÄÃ£ chÃ¨n Tháº» Ghi ChÃº ThÃ´ng Minh lÃªn báº£ng!");
         }
 
         /// <summary>
-        /// Kích hoạt chế độ sửa chữ trực tiếp trong Thẻ Ghi Chú và mở bàn phím ảo
+        /// KÃ­ch hoáº¡t cháº¿ Ä‘á»™ sá»­a chá»¯ trá»±c tiáº¿p trong Tháº» Ghi ChÃº vÃ  má»Ÿ bÃ n phÃ­m áº£o há»‡ thá»‘ng chuáº©n (TouchKeyboardHelper)
         /// </summary>
         public void StartInPlaceSmartNoteEditing(Border noteCard)
         {
@@ -3253,25 +3254,64 @@ namespace QASmartTouch.Forms
             var tbDisplay = QASmartClass.Services.Tools.SmartNoteCardRenderer.GetDisplayTextBlock(noteCard);
             if (tbDisplay == null) return;
 
-            QASmartClass.Services.Tools.SmartNoteCardRenderer.StartEditing(noteCard);
+            // Tuyá»‡t Ä‘á»‘i khÃ´ng má»Ÿ bÃ n phÃ­m ná»•i tá»± cháº¿ cÅ© (_floatingTouchKeyboard) cho SmartNoteCard
+            _floatingTouchKeyboard?.HideKeyboard();
 
-            if (_floatingTouchKeyboard != null)
+            // Táº¡m tÃ¡ch SelectionBox & ContextToolbar Ä‘á»ƒ khÃ´ng Ä‘Ã¨ lÃªn vÃ¹ng soáº¡n tháº£o txtEditor
+            _selectionBox?.Detach();
+            _contextToolbar?.Hide();
+
+            _editingSmartNoteCard = noteCard;
+            _editingTextBlock = null;
+
+            var txtEditor = QASmartClass.Services.Tools.SmartNoteCardRenderer.GetEditorTextBox(noteCard);
+            if (txtEditor != null)
             {
-                _editingSmartNoteCard = noteCard;
-            _editingTextBlock = tbDisplay;
+                txtEditor.LostFocus -= OnSmartNoteEditorLostFocus;
+                txtEditor.LostFocus += OnSmartNoteEditorLostFocus;
+            }
 
-                double left = Canvas.GetLeft(noteCard);
-                double top = Canvas.GetTop(noteCard);
-                if (double.IsNaN(left)) left = 100;
-                if (double.IsNaN(top)) top = 100;
+            QASmartClass.Services.Tools.SmartNoteCardRenderer.StartEditing(noteCard);
+        }
 
-                Point pos = new Point(Math.Max(20, left), top + (noteCard.ActualHeight > 0 ? noteCard.ActualHeight : 160) + 12);
-                _floatingTouchKeyboard.ShowWithText(tbDisplay.Text, pos, tbDisplay);
+        private void OnSmartNoteEditorLostFocus(object sender, RoutedEventArgs e)
+        {
+            CompleteInPlaceSmartNoteEditing();
+        }
+
+        /// <summary>
+        /// HoÃ n táº¥t chá»‰nh sá»­a trá»±c tiáº¿p trÃªn Tháº» Ghi ChÃº, Ä‘Ã³ng bÃ n phÃ­m áº£o há»‡ thá»‘ng vÃ  Ä‘á»“ng bá»™ láº¡i QuadTree/Selection
+        /// </summary>
+        public void CompleteInPlaceSmartNoteEditing()
+        {
+            if (_editingSmartNoteCard == null) return;
+
+            var card = _editingSmartNoteCard;
+            _editingSmartNoteCard = null;
+            _editingTextBlock = null;
+
+            try
+            {
+                var txtEditor = QASmartClass.Services.Tools.SmartNoteCardRenderer.GetEditorTextBox(card);
+                if (txtEditor != null)
+                {
+                    txtEditor.LostFocus -= OnSmartNoteEditorLostFocus;
+                }
+
+                QASmartClass.Services.Tools.SmartNoteCardRenderer.FinishEditing(card);
+                card.UpdateLayout();
+                RefreshSelectableObjects();
+                _selectionBox?.UpdatePosition();
+                _selectionManager?.RebuildQuadTree();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"CompleteInPlaceSmartNoteEditing error: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Mở hộp thoại tùy chỉnh phông chữ, cỡ chữ, tiêu đề và màu sắc cho Thẻ Ghi Chú
+        /// Má»Ÿ há»™p thoáº¡i tÃ¹y chá»‰nh phÃ´ng chá»¯, cá»¡ chá»¯, tiÃªu Ä‘á» vÃ  mÃ u sáº¯c cho Tháº» Ghi ChÃº
         /// </summary>
         public void OpenSmartNoteFormatDialog(Border cardBorder)
         {
