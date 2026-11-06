@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -203,6 +203,7 @@ namespace QASmartTouch.Forms
                     return;
                 }
 
+                DiscardStaleShapePreview();
                 _activeShapeTouchId = e.TouchDevice.Id;
                 _shapeStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
                 _isDrawing = true;
@@ -425,6 +426,7 @@ namespace QASmartTouch.Forms
                     return;
                 }
 
+                DiscardStaleShapePreview();
                 _shapeStartPoint = e.GetPosition(MainInteractiveBoard);
                 _isDrawing = true;
 
@@ -585,6 +587,19 @@ namespace QASmartTouch.Forms
             {
                 EndSelectionInteraction(_rectangleSelectionStartPoint);
             }
+        }
+
+        /// <summary>
+        /// QC_4.2_TOUCH_SHAPE_DIRECT: Gỡ khung xem trước (preview) còn sót của phiên vẽ hình trước đó
+        /// (tránh "hình bóng ma" bị bỏ rơi trên bảng khi Touch/Stylus/Mouse cùng khởi tạo preview).
+        /// </summary>
+        private void DiscardStaleShapePreview()
+        {
+            if (_previewShape != null && MainInteractiveBoard.Children.Contains(_previewShape))
+            {
+                MainInteractiveBoard.Children.Remove(_previewShape);
+            }
+            _previewShape = null;
         }
 
         /// <summary>
@@ -1319,6 +1334,14 @@ namespace QASmartTouch.Forms
             // Shape drawing mode
             else if (_shapeDrawingEnabled && e.LeftButton == MouseButtonState.Pressed)
             {
+                // QC_4.2_TOUCH_SHAPE_DIRECT: Phiên vẽ hình đã do Touch/Stylus khởi tạo (chuột ảo promote đến sau)
+                // → KHÔNG tạo đè preview thứ 2, KHÔNG reset điểm gốc, KHÔNG CaptureMouse tranh chấp TouchCapture.
+                if (_activeShapeTouchId != -1 || (_isDrawing && _previewShape != null))
+                {
+                    return;
+                }
+
+                DiscardStaleShapePreview();
                 _shapeStartPoint = e.GetPosition(MainInteractiveBoard);
                 _isDrawing = true;
                 
@@ -10234,7 +10257,7 @@ namespace QASmartTouch.Forms
             }
             else if (shape is System.Windows.Shapes.Path path)
             {
-                if (SubjectShapeGeometryService.IsSubjectShape(_currentShape))
+                if (!Is3DShape(_currentShape) && SubjectShapeGeometryService.IsSubjectShape(_currentShape))
                 {
                     double left   = Math.Min(startPoint.X, currentPoint.X);
                     double top    = Math.Min(startPoint.Y, currentPoint.Y);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -48,6 +48,7 @@ namespace QASmartClass.Services.Tools
                 MinWidth = 550,
                 MaxWidth = 850,
                 Tag = "CalculatorMathCard",
+                DataContext = Tuple.Create(expression, model),
                 Effect = new DropShadowEffect
                 {
                     Color = Colors.Black,
@@ -145,6 +146,33 @@ namespace QASmartClass.Services.Tools
 
             cardBorder.Child = mainStack;
             return cardBorder;
+        }
+
+        /// <summary>
+        /// Nhân bản (Clone) toàn diện Thẻ Đồ Thị Hàm Số kèm hệ trục Oxy, đường cong và thuộc tính khung
+        /// </summary>
+        public static Border? TryCloneGraphCard(Border sourceBorder)
+        {
+            if (sourceBorder == null) return null;
+            if (sourceBorder.DataContext is not Tuple<string, VariationModel> graphData) return null;
+
+            var cloned = CreateGraphCard(graphData.Item1, graphData.Item2);
+            cloned.Width = sourceBorder.Width;
+            cloned.Height = sourceBorder.Height;
+            cloned.MinWidth = sourceBorder.MinWidth;
+            cloned.MaxWidth = sourceBorder.MaxWidth;
+            cloned.Background = sourceBorder.Background?.Clone() ?? cloned.Background;
+            cloned.BorderBrush = sourceBorder.BorderBrush?.Clone() ?? cloned.BorderBrush;
+            cloned.BorderThickness = sourceBorder.BorderThickness;
+            cloned.CornerRadius = sourceBorder.CornerRadius;
+            cloned.Padding = sourceBorder.Padding;
+            cloned.Opacity = sourceBorder.Opacity;
+            if (sourceBorder.RenderTransform != null && sourceBorder.RenderTransform != Transform.Identity)
+            {
+                cloned.RenderTransform = sourceBorder.RenderTransform.Clone();
+                cloned.RenderTransformOrigin = sourceBorder.RenderTransformOrigin;
+            }
+            return cloned;
         }
 
         /// <summary>

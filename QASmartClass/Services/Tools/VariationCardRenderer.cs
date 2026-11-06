@@ -1,4 +1,4 @@
-using WpfCanvas = System.Windows.Controls.Canvas;
+﻿using WpfCanvas = System.Windows.Controls.Canvas;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -38,6 +38,7 @@ namespace QASmartClass.Services.Tools
                 MinWidth = 550,
                 MaxWidth = 950,
                 Tag = "CalculatorMathCard", // Đánh dấu cùng loại thẻ với QA Calculator
+                DataContext = model,
                 Effect = new DropShadowEffect
                 {
                     Color = Colors.Black,
@@ -129,6 +130,33 @@ namespace QASmartClass.Services.Tools
 
             cardBorder.Child = mainStack;
             return cardBorder;
+        }
+
+        /// <summary>
+        /// Nhân bản (Clone) toàn diện Thẻ Bảng Biến Thiên kèm đầy đủ lưới vector, mũi tên, nhãn và thuộc tính khung
+        /// </summary>
+        public static Border? TryCloneVariationCard(Border sourceBorder)
+        {
+            if (sourceBorder == null) return null;
+            if (sourceBorder.DataContext is not VariationModel model) return null;
+
+            var cloned = CreateVariationCard(model);
+            cloned.Width = sourceBorder.Width;
+            cloned.Height = sourceBorder.Height;
+            cloned.MinWidth = sourceBorder.MinWidth;
+            cloned.MaxWidth = sourceBorder.MaxWidth;
+            cloned.Background = sourceBorder.Background?.Clone() ?? cloned.Background;
+            cloned.BorderBrush = sourceBorder.BorderBrush?.Clone() ?? cloned.BorderBrush;
+            cloned.BorderThickness = sourceBorder.BorderThickness;
+            cloned.CornerRadius = sourceBorder.CornerRadius;
+            cloned.Padding = sourceBorder.Padding;
+            cloned.Opacity = sourceBorder.Opacity;
+            if (sourceBorder.RenderTransform != null && sourceBorder.RenderTransform != Transform.Identity)
+            {
+                cloned.RenderTransform = sourceBorder.RenderTransform.Clone();
+                cloned.RenderTransformOrigin = sourceBorder.RenderTransformOrigin;
+            }
+            return cloned;
         }
 
         /// <summary>

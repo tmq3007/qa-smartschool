@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -85,6 +85,64 @@ namespace QASmartTouch.Services.Tools
             return false;
         }
 
+        public static (double Yaw, double Pitch) GetDefaultAngles(string? shapeType)
+        {
+            string norm = NormalizeShapeType(shapeType);
+            return norm switch
+            {
+                "Pyramid" => (25.0, 18.0),      // Chóp tứ giác chuẩn SGK: tách rõ đỉnh khuất sau-trái (3 nét đứt) và cạnh trước
+                "Tetrahedron" => (166.0, 16.0), // Chóp tam giác chuẩn SGK: 1 cạnh đáy sau nét đứt, đỉnh đáy trước nhô xuống cân đối
+                "Prism" => (-15.0, 18.0),       // Lăng trụ tam giác chuẩn SGK: 1 cạnh đứng sau + 2 cạnh đáy sau nét đứt, 3 cạnh đứng thoáng đều
+                _ => (-28.0, 22.0)
+            };
+        }
+
+        /// <summary>
+        /// Tạo Geometry xem trước (Preview) khi đang kéo vẽ hình 3D trên bảng,
+        /// dùng chung đúng hệ chiếu 3D và góc nhìn (Yaw/Pitch) với hình hoàn thiện để không bị lệch góc khi nhả tay.
+        /// </summary>
+        public static Rect CalculateDragBounds(string? shapeType, Point startPoint, Point currentPoint)
+        {
+            double rawDx = currentPoint.X - startPoint.X;
+            double rawDy = currentPoint.Y - startPoint.Y;
+            double absDx = Math.Abs(rawDx);
+            double absDy = Math.Abs(rawDy);
+
+            string norm = NormalizeShapeType(shapeType);
+            double width, height;
+
+            if (norm is "Cube" or "Sphere")
+            {
+                double size = Math.Max(5.0, Math.Max(absDx, absDy));
+                width = size;
+                height = size;
+            }
+            else
+            {
+                width = Math.Max(5.0, Math.Max(absDx, absDy * 0.68));
+                height = Math.Max(5.0, Math.Max(absDy, absDx * 0.68));
+            }
+
+            double left = rawDx >= 0 ? startPoint.X : startPoint.X - Math.Min(width, -rawDx);
+            double top = rawDy >= 0 ? startPoint.Y : startPoint.Y - Math.Min(height, -rawDy);
+
+            return new Rect(left, top, width, height);
+        }
+
+        public static GeometryGroup BuildPreviewGeometry(string? shapeType, double width, double height)
+        {
+            string norm = NormalizeShapeType(shapeType);
+            var (yaw, pitch) = GetDefaultAngles(norm);
+            GeometryGroup visible = new GeometryGroup();
+            GeometryGroup hidden = new GeometryGroup();
+            Build3DGeometry(norm, yaw, pitch, width, height, visible, hidden);
+
+            GeometryGroup combined = new GeometryGroup();
+            foreach (var g in visible.Children) combined.Children.Add(g);
+            foreach (var g in hidden.Children) combined.Children.Add(g);
+            return combined;
+        }
+
         public static Shape3DData? GetShape3DData(FrameworkElement? element)
         {
             if (element == null) return null;
@@ -98,11 +156,12 @@ namespace QASmartTouch.Services.Tools
             if (element.Tag is string tagStr && Is3DShapeName(tagStr))
             {
                 string norm = NormalizeShapeType(tagStr);
+                var (yaw, pitch) = GetDefaultAngles(norm);
                 var newData = new Shape3DData
                 {
                     ShapeType = norm,
-                    Yaw = norm == "Pyramid" ? 45 : (norm == "Prism" ? -35 : -28),
-                    Pitch = 22
+                    Yaw = yaw,
+                    Pitch = pitch
                 };
                 element.Tag = newData;
                 return newData;
@@ -250,6 +309,7 @@ namespace QASmartTouch.Services.Tools
             // Tìm hoặc tạo Path nét đứt (cạnh khuất) và Path nét liền (cạnh nhìn thấy)
             Path? hiddenPath = null;
             Path? visiblePath = null;
+            List<Path>? orphanPaths = null;
 
             foreach (var child in container.Children)
             {
@@ -257,12 +317,26 @@ namespace QASmartTouch.Services.Tools
                 {
                     if (p.StrokeDashArray != null && p.StrokeDashArray.Count > 0)
                     {
-                        hiddenPath = p;
+                        if (hiddenPath == null)
+                            hiddenPath = p;
+                        else
+                            (orphanPaths ??= new List<Path>()).Add(p);
                     }
                     else
                     {
-                        visiblePath = p;
+                        if (visiblePath == null)
+                            visiblePath = p;
+                        else
+                            (orphanPaths ??= new List<Path>()).Add(p);
                     }
+                }
+            }
+
+            if (orphanPaths != null)
+            {
+                foreach (var orphan in orphanPaths)
+                {
+                    container.Children.Remove(orphan);
                 }
             }
 
@@ -394,13 +468,13 @@ namespace QASmartTouch.Services.Tools
 
         private static PolyhedronModel GetTetrahedronModel()
         {
-            double r = 1.2;
+            double r = 1.28;
             double[][] v = new double[][]
             {
-                new double[] {  r * Math.Cos(-Math.PI/2), -0.8, r * Math.Sin(-Math.PI/2) },
-                new double[] {  r * Math.Cos(-Math.PI/2 + 2*Math.PI/3), -0.8, r * Math.Sin(-Math.PI/2 + 2*Math.PI/3) },
-                new double[] {  r * Math.Cos(-Math.PI/2 + 4*Math.PI/3), -0.8, r * Math.Sin(-Math.PI/2 + 4*Math.PI/3) },
-                new double[] {  0, 1.2, 0 } // Apex S
+                new double[] {  r * Math.Cos(-Math.PI/2), -0.95, r * Math.Sin(-Math.PI/2) },
+                new double[] {  r * Math.Cos(-Math.PI/2 + 2*Math.PI/3), -0.95, r * Math.Sin(-Math.PI/2 + 2*Math.PI/3) },
+                new double[] {  r * Math.Cos(-Math.PI/2 + 4*Math.PI/3), -0.95, r * Math.Sin(-Math.PI/2 + 4*Math.PI/3) },
+                new double[] {  0, 1.15, 0 } // Apex S
             };
             int[][] f = new int[][]
             {
@@ -414,8 +488,8 @@ namespace QASmartTouch.Services.Tools
 
         private static PolyhedronModel GetPrismModel()
         {
-            double r = 1.1;
-            double h = 1.1;
+            double r = 1.18;
+            double h = 1.0;
             double[][] v = new double[6][];
             for (int i = 0; i < 3; i++)
             {
@@ -448,7 +522,8 @@ namespace QASmartTouch.Services.Tools
             double[] right = new double[] { cy, 0, -sy };
             double[] up = new double[] { -sy * sp, cp, -cy * sp };
 
-            double scale = Math.Min(w, h) * 0.38;
+            double scaleX = w * 0.34;
+            double scaleY = h * 0.34;
             double centerX = w / 2.0;
             double centerY = h / 2.0;
 
@@ -459,7 +534,7 @@ namespace QASmartTouch.Services.Tools
                 double[] pt = model.Vertices[i];
                 double camX = pt[0] * right[0] + pt[1] * right[1] + pt[2] * right[2];
                 double camY = pt[0] * up[0] + pt[1] * up[1] + pt[2] * up[2];
-                p2d[i] = new Point(centerX + camX * scale, centerY - camY * scale);
+                p2d[i] = new Point(centerX + camX * scaleX, centerY - camY * scaleY);
             }
 
             // 1. Trọng tâm toàn bộ khối đa diện
@@ -584,9 +659,9 @@ namespace QASmartTouch.Services.Tools
 
             double cx = w / 2.0;
             double cy = h / 2.0;
-            double rx = Math.Min(w, h) * 0.35;
-            double ry = Math.Max(10, rx * Math.Abs(sp) * 0.85);
-            double halfH = Math.Min(w, h) * 0.30;
+            double rx = w * 0.35;
+            double ry = Math.Min(h * 0.18, Math.Max(8, rx * Math.Abs(sp) * 0.78));
+            double halfH = h * 0.30;
 
             double topCy = cy - halfH * cp;
             double botCy = cy + halfH * cp;
@@ -642,9 +717,9 @@ namespace QASmartTouch.Services.Tools
 
             double cx = w / 2.0;
             double cy = h / 2.0;
-            double rx = Math.Min(w, h) * 0.36;
-            double ry = Math.Max(12, rx * Math.Abs(sp) * 0.85);
-            double halfH = Math.Min(w, h) * 0.34;
+            double rx = w * 0.36;
+            double ry = Math.Min(h * 0.18, Math.Max(8, rx * Math.Abs(sp) * 0.78));
+            double halfH = h * 0.34;
 
             Point apex = new Point(cx, cy - halfH);
             double botCy = cy + halfH * 0.6;
@@ -679,13 +754,13 @@ namespace QASmartTouch.Services.Tools
             double cy = h / 2.0;
 
             // Bán kính đáy dưới (lớn hơn) và đáy trên (nhỏ hơn)
-            double botRx = Math.Min(w, h) * 0.38;
-            double botRy = Math.Max(10, botRx * Math.Abs(sp) * 0.85);
+            double botRx = w * 0.38;
+            double botRy = Math.Min(h * 0.18, Math.Max(8, botRx * Math.Abs(sp) * 0.78));
 
             double topRx = botRx * 0.58;
-            double topRy = Math.Max(6, topRx * Math.Abs(sp) * 0.85);
+            double topRy = Math.Min(h * 0.12, Math.Max(5, topRx * Math.Abs(sp) * 0.78));
 
-            double halfH = Math.Min(w, h) * 0.30;
+            double halfH = h * 0.30;
             double topCy = cy - halfH * cp;
             double botCy = cy + halfH * cp;
 

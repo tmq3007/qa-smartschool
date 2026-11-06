@@ -171,9 +171,10 @@
                     </StackPanel>
                 </Button>
 
-                <!-- 5. Chụp vùng màn hình -->
+                <!-- 5. Chụp vùng màn hình (Đã ẩn theo yêu cầu đóng gói bộ cài) -->
                 <Button x:Name="btnScreenshot" 
                         Style="{StaticResource BoardToolButtonStyle}"
+                        Visibility="Collapsed"
                         Click="btnScreenshot_Click"
                         ToolTip="Chụp một vùng trên bảng vẽ">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">

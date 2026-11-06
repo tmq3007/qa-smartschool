@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -537,19 +537,9 @@ namespace QASmartTouch.Forms
                     Point oldPoint = polyline.Points[i];
                     polyline.Points[i] = new Point(oldPoint.X + dragVector.X, oldPoint.Y + dragVector.Y);
                 }
-                // Recalculate bounds
-                if (polyline.Points.Count > 0)
-                {
-                    double minX = double.MaxValue, minY = double.MaxValue;
-                    double maxX = double.MinValue, maxY = double.MinValue;
-                    foreach (var p in polyline.Points)
-                    {
-                        minX = Math.Min(minX, p.X); minY = Math.Min(minY, p.Y);
-                        maxX = Math.Max(maxX, p.X); maxY = Math.Max(maxY, p.Y);
-                    }
-                    obj.Position = new Point(minX, minY);
-                    obj.Size = new Size(maxX - minX, maxY - minY);
-                }
+                if (!double.IsNaN(Canvas.GetLeft(polyline))) Canvas.SetLeft(polyline, double.NaN);
+                if (!double.IsNaN(Canvas.GetTop(polyline))) Canvas.SetTop(polyline, double.NaN);
+                obj.Position = new Point(obj.Position.X + dragVector.X, obj.Position.Y + dragVector.Y);
             }
             else if (obj.Element is Polygon polygon)
             {
@@ -560,19 +550,9 @@ namespace QASmartTouch.Forms
                         Point oldPoint = polygon.Points[i];
                         polygon.Points[i] = new Point(oldPoint.X + dragVector.X, oldPoint.Y + dragVector.Y);
                     }
-                    double minX = double.MaxValue, minY = double.MaxValue;
-                    double maxX = double.MinValue, maxY = double.MinValue;
-                    foreach (var p in polygon.Points)
-                    {
-                        minX = Math.Min(minX, p.X); minY = Math.Min(minY, p.Y);
-                        maxX = Math.Max(maxX, p.X); maxY = Math.Max(maxY, p.Y);
-                    }
                     if (!double.IsNaN(Canvas.GetLeft(polygon))) Canvas.SetLeft(polygon, double.NaN);
                     if (!double.IsNaN(Canvas.GetTop(polygon))) Canvas.SetTop(polygon, double.NaN);
-
-                    obj.Position = new Point(minX, minY);
-                    obj.Size = new Size(maxX - minX, maxY - minY);
-                    obj.Bounds = new Rect(minX, minY, maxX - minX, maxY - minY);
+                    obj.Position = new Point(obj.Position.X + dragVector.X, obj.Position.Y + dragVector.Y);
                 }
             }
             else if (obj.Element is System.Windows.Shapes.Line line)
@@ -594,7 +574,7 @@ namespace QASmartTouch.Forms
             }
             else if (obj.Element is System.Windows.Shapes.Path path && path.Data != null)
             {
-                // ✅ QC_4.2_TOUCH_MOVE_FIX: Di chuyển TranslateTransform cho Path
+                // ✅ QC_4.2_TOUCH_MOVE_FIX: Di chuyển TranslateTransform và đồng bộ tâm xoay RotateTransform cho Path
                 if (path.RenderTransform is TransformGroup tg)
                 {
                     var tt = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
@@ -605,11 +585,40 @@ namespace QASmartTouch.Forms
                     }
                     tt.X += dragVector.X;
                     tt.Y += dragVector.Y;
+
+                    bool afterTranslate = false;
+                    foreach (var child in tg.Children)
+                    {
+                        if (ReferenceEquals(child, tt))
+                        {
+                            afterTranslate = true;
+                            continue;
+                        }
+                        if (child is RotateTransform rt)
+                        {
+                            rt.CenterX += dragVector.X;
+                            rt.CenterY += dragVector.Y;
+                        }
+                        else if (afterTranslate && child is ScaleTransform st)
+                        {
+                            st.CenterX += dragVector.X;
+                            st.CenterY += dragVector.Y;
+                        }
+                    }
                 }
                 else if (path.RenderTransform is TranslateTransform tt)
                 {
                     tt.X += dragVector.X;
                     tt.Y += dragVector.Y;
+                }
+                else if (path.RenderTransform is RotateTransform rt)
+                {
+                    var tgNew = new TransformGroup();
+                    tgNew.Children.Add(new TranslateTransform(dragVector.X, dragVector.Y));
+                    rt.CenterX += dragVector.X;
+                    rt.CenterY += dragVector.Y;
+                    tgNew.Children.Add(rt);
+                    path.RenderTransform = tgNew;
                 }
                 else
                 {
@@ -1655,9 +1664,9 @@ namespace QASmartTouch.Forms
             var initialStates = CaptureTargetTransformStates(targetObj);
             _transformService.RotateInPlace(targetObj, 90);
 
-            // Cập nhật SelectionBox và Toolbar vị trí mới
+            // Cập nhật SelectionBox, QuadTree và Toolbar vị trí mới
             if (_selectionBox != null) _selectionBox.AttachTo(targetObj);
-            RefreshSelectableObjects();
+            _selectionManager?.RebuildQuadTree();
 
             if (_contextToolbar != null)
             {
@@ -1682,7 +1691,7 @@ namespace QASmartTouch.Forms
             _transformService.FlipHorizontal(targetObj);
 
             if (_selectionBox != null) _selectionBox.AttachTo(targetObj);
-            RefreshSelectableObjects();
+            _selectionManager?.RebuildQuadTree();
 
             if (_contextToolbar != null)
             {
@@ -1707,7 +1716,7 @@ namespace QASmartTouch.Forms
             _transformService.FlipVertical(targetObj);
 
             if (_selectionBox != null) _selectionBox.AttachTo(targetObj);
-            RefreshSelectableObjects();
+            _selectionManager?.RebuildQuadTree();
 
             if (_contextToolbar != null)
             {
@@ -2125,44 +2134,12 @@ namespace QASmartTouch.Forms
         // MoreMenu handlers (stub implementations - will be completed in Sprint 2-5)
         private void OnMoreMenuFlipHorizontal(object? sender, EventArgs e)
         {
-            if (_selectionManager?.SelectedObject != null && _transformService != null)
-            {
-                var obj = _selectionManager.SelectedObject;
-                var initialStates = CaptureTargetTransformStates(obj);
-                
-                // Apply flip
-                _transformService.FlipHorizontal(obj);
-                _selectionBox?.UpdatePosition();
-                
-                var finalStates = CaptureTargetTransformStates(obj);
-                RecordTransformAction(initialStates, finalStates, "Flip Horizontal");
-                
-                // Visual feedback
-                AnimateFlip(obj.Element, true);
-                
-                System.Diagnostics.Debug.WriteLine("↔️ Flipped horizontally & recorded Undo");
-            }
+            OnToolbarFlipHorizontalClicked(sender, e);
         }
 
         private void OnMoreMenuFlipVertical(object? sender, EventArgs e)
         {
-            if (_selectionManager?.SelectedObject != null && _transformService != null)
-            {
-                var obj = _selectionManager.SelectedObject;
-                var initialStates = CaptureTargetTransformStates(obj);
-                
-                // Apply flip
-                _transformService.FlipVertical(obj);
-                _selectionBox?.UpdatePosition();
-                
-                var finalStates = CaptureTargetTransformStates(obj);
-                RecordTransformAction(initialStates, finalStates, "Flip Vertical");
-                
-                // Visual feedback
-                AnimateFlip(obj.Element, false);
-                
-                System.Diagnostics.Debug.WriteLine("↕️ Flipped vertically & recorded Undo");
-            }
+            OnToolbarFlipVerticalClicked(sender, e);
         }
 
         private void OnMoreMenuRotate180(object? sender, EventArgs e)
@@ -2177,7 +2154,7 @@ namespace QASmartTouch.Forms
                 _transformService.RotateInPlace(targetObj, 180);
                 
                 if (_selectionBox != null) _selectionBox.AttachTo(targetObj);
-                RefreshSelectableObjects();
+                _selectionManager?.RebuildQuadTree();
 
                 if (_contextToolbar != null)
                 {
@@ -2203,7 +2180,7 @@ namespace QASmartTouch.Forms
                 _transformService.RotateInPlace(targetObj, -90);
                 
                 if (_selectionBox != null) _selectionBox.AttachTo(targetObj);
-                RefreshSelectableObjects();
+                _selectionManager?.RebuildQuadTree();
 
                 if (_contextToolbar != null)
                 {
@@ -2312,7 +2289,7 @@ namespace QASmartTouch.Forms
                     double delta = newAngle - oldAngle;
                     _transformService.RotateInPlace(obj, delta);
                     if (_selectionBox != null) _selectionBox.AttachTo(obj);
-                    RefreshSelectableObjects();
+                    _selectionManager?.RebuildQuadTree();
 
                     if (_contextToolbar != null)
                     {

@@ -309,7 +309,7 @@
 
                             <Button x:Name="btnPrintBoard" 
                                     Style="{StaticResource ExtendedMenuItemButton}"
-                                    Click="btnPrintBoard_Click"
+                                    Click="btnPrintBoard_Click" Visibility="Collapsed"
                                     ToolTip="In trực tiếp nội dung bảng trắng ra máy in">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
