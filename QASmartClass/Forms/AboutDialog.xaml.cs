@@ -34,6 +34,8 @@ namespace QASmartTouch.Forms
             try
             {
                 string asmPath = Assembly.GetExecutingAssembly().Location;
+                if (string.IsNullOrEmpty(asmPath))
+                    asmPath = Environment.ProcessPath ?? string.Empty;
                 tbBuildDate.Text = !string.IsNullOrEmpty(asmPath) && System.IO.File.Exists(asmPath)
                     ? System.IO.File.GetLastWriteTime(asmPath).ToString("MM/yyyy")
                     : "—";

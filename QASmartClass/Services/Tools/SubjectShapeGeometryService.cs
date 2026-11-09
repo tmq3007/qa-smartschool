@@ -194,7 +194,6 @@ namespace QASmartTouch.Services.Tools
             AddShape(mSpace, "mPyramid", "Hình chóp tứ giác");
             AddShape(mSpace, "mTetra", "Hình chóp tam giác");
             AddShape(mSpace, "mPrism", "Lăng trụ tam giác");
-            AddShape(mSpace, "mPrism4", "Lăng trụ tứ giác");
             AddShape(mSpace, "mCylinder", "Hình trụ");
             AddShape(mSpace, "mCone", "Hình nón");
             AddShape(mSpace, "mFrustum", "Hình nón cụt");

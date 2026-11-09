@@ -486,3 +486,6 @@ $RECYCLE.BIN/
 # Installer directory
 [Ii]nstaller/
 Installer/
+
+# Local build/obfuscation tools
+.tools/

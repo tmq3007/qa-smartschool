@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -1634,6 +1634,15 @@ namespace QASmartTouch.Forms
             if (_selectionManager == null)
                 return;
 
+            var previousByElement = new Dictionary<UIElement, SelectableObject>();
+            foreach (var existing in _selectionManager.GetAllObjects())
+            {
+                if (existing?.Element != null && !previousByElement.ContainsKey(existing.Element))
+                {
+                    previousByElement[existing.Element] = existing;
+                }
+            }
+
             // ✅ FIX: Clear stale registrations trước khi re-scan
             // (Không dùng ClearAllObjects vì nó xóa cả Canvas.Children)
             _selectionManager.ClearRegistrations();
@@ -1709,34 +1718,53 @@ namespace QASmartTouch.Forms
                         StrokeThickness = polyline.StrokeThickness
                     };
 
+                    if (previousByElement.TryGetValue(polyline, out var prevPoly))
+                    {
+                        selectableObj.IsLocked = prevPoly.IsLocked;
+                        selectableObj.GroupId = prevPoly.GroupId;
+                        if (prevPoly.RotationAngle != 0 && prevPoly.Size.Width > 0 && prevPoly.Size.Height > 0)
+                        {
+                            selectableObj.RotationAngle = prevPoly.RotationAngle;
+                            selectableObj.Position = prevPoly.Position;
+                            selectableObj.Size = prevPoly.Size;
+                        }
+                    }
+
                     _selectionManager.AddObject(selectableObj);
                     registeredCount++;
                     
                     System.Diagnostics.Debug.WriteLine($"📝 Registered Polyline: Bounds=({bounds.Left:F0},{bounds.Top:F0},{bounds.Width:F0},{bounds.Height:F0})");
                 }
-                // Register Path (smooth Bezier strokes)
+                // Register Path (smooth Bezier strokes & 2D shapes)
                 else if (child is System.Windows.Shapes.Path path && path.Data != null)
                 {
-                    // ✅ QC_4.2_SELECTION_BOUNDS_FIX: Dùng BoundsHelper.GetAbsoluteBounds để lấy chính xác tuyệt đối tọa độ Canvas
-                    var dataBounds = QASmartTouch.Helpers.BoundsHelper.GetAbsoluteBounds(path, MainInteractiveBoard);
-                    if (dataBounds.IsEmpty || dataBounds.Width <= 0 || dataBounds.Height <= 0)
+                    // ✅ QC_4.2_SELECTION_BOUNDS_FIX: Tách biệt chuẩn OBB (unrotated Position/Size + RotationAngle) và AABB (Bounds)
+                    SelectableObject.ExtractPathGeometryMetrics(path, out Point unrotatedPos, out Size unrotatedSize, out double extractedAngle, out Rect pathWorldBounds);
+                    if (pathWorldBounds.IsEmpty || pathWorldBounds.Width <= 0 || pathWorldBounds.Height <= 0)
                         continue;
 
                     var selectableObj = new SelectableObject
                     {
                         Element = path,
                         Type = ObjectType.Drawing,
-                        Bounds = dataBounds,
-                        Position = new Point(dataBounds.Left, dataBounds.Top),
-                        Size = new Size(dataBounds.Width, dataBounds.Height),
+                        Bounds = pathWorldBounds,
+                        Position = unrotatedPos,
+                        Size = unrotatedSize,
+                        RotationAngle = extractedAngle,
                         ZIndex = Panel.GetZIndex(path),
                         StrokeColor = (path.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
                         StrokeThickness = path.StrokeThickness
                     };
 
+                    if (previousByElement.TryGetValue(path, out var prevPath))
+                    {
+                        selectableObj.IsLocked = prevPath.IsLocked;
+                        selectableObj.GroupId = prevPath.GroupId;
+                    }
+
                     _selectionManager.AddObject(selectableObj);
                     registeredCount++;
-                    System.Diagnostics.Debug.WriteLine($"🖊️ Registered Path: Bounds=({dataBounds.Left:F0},{dataBounds.Top:F0},{dataBounds.Width:F0},{dataBounds.Height:F0})");
+                    System.Diagnostics.Debug.WriteLine($"🖊️ Registered Path: Bounds=({pathWorldBounds.Left:F0},{pathWorldBounds.Top:F0},{pathWorldBounds.Width:F0},{pathWorldBounds.Height:F0}), Angle={extractedAngle:F1}°");
                 }
                 // Register Line (ruler/protractor/tool lines)
                 // ✅ GĐ1-FIX: Bỏ qua grid/guide lines kéo dài toàn canvas
@@ -1795,8 +1823,15 @@ namespace QASmartTouch.Forms
                         Bounds = new Rect(imgL, imgT, imgW, imgH),
                         Position = new Point(imgL, imgT),
                         Size = new Size(imgW, imgH),
+                        RotationAngle = SelectableObject.ExtractElementRotationAngle(image),
                         ZIndex = Panel.GetZIndex(image)
                     };
+                    if (previousByElement.TryGetValue(image, out var prevImg))
+                    {
+                        selectableObj.IsLocked = prevImg.IsLocked;
+                        selectableObj.GroupId = prevImg.GroupId;
+                    }
+                    selectableObj.UpdateBounds();
 
                     _selectionManager.AddObject(selectableObj);
                     registeredCount++;
@@ -1823,6 +1858,18 @@ namespace QASmartTouch.Forms
                             StrokeThickness = shape.StrokeThickness,
                             FillColor = (shape.Fill as SolidColorBrush)?.Color ?? Colors.Transparent
                         };
+
+                        if (previousByElement.TryGetValue(shape, out var prevPolygon))
+                        {
+                            polyObj.IsLocked = prevPolygon.IsLocked;
+                            polyObj.GroupId = prevPolygon.GroupId;
+                            if (prevPolygon.RotationAngle != 0 && prevPolygon.Size.Width > 0 && prevPolygon.Size.Height > 0)
+                            {
+                                polyObj.RotationAngle = prevPolygon.RotationAngle;
+                                polyObj.Position = prevPolygon.Position;
+                                polyObj.Size = prevPolygon.Size;
+                            }
+                        }
 
                         _selectionManager.AddObject(polyObj);
                         registeredCount++;
@@ -1858,11 +1905,18 @@ namespace QASmartTouch.Forms
                         Bounds = bounds,
                         Position = new Point(left, top),
                         Size = new Size(width, height),
+                        RotationAngle = SelectableObject.ExtractElementRotationAngle(shape),
                         ZIndex = Panel.GetZIndex(shape),
                         StrokeColor = (shape.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
                         StrokeThickness = shape.StrokeThickness,
                         FillColor = (shape.Fill as SolidColorBrush)?.Color ?? Colors.Transparent
                     };
+                    if (previousByElement.TryGetValue(shape, out var prevShape))
+                    {
+                        selectableObj.IsLocked = prevShape.IsLocked;
+                        selectableObj.GroupId = prevShape.GroupId;
+                    }
+                    selectableObj.UpdateBounds();
 
                     _selectionManager.AddObject(selectableObj);
                     registeredCount++;
@@ -1979,11 +2033,18 @@ namespace QASmartTouch.Forms
                         Bounds = bounds,
                         Position = new Point(left, top),
                         Size = new Size(width, height),
+                        RotationAngle = SelectableObject.ExtractElementRotationAngle(border),
                         ZIndex = Panel.GetZIndex(border),
                         StrokeColor = (border.BorderBrush as SolidColorBrush)?.Color ?? Colors.Black,
                         StrokeThickness = border.BorderThickness.Left, // Use Left thickness as representative
                         FillColor = (border.Background as SolidColorBrush)?.Color ?? Colors.Transparent
                     };
+                    if (previousByElement.TryGetValue(border, out var prevBorder))
+                    {
+                        selectableObj.IsLocked = prevBorder.IsLocked;
+                        selectableObj.GroupId = prevBorder.GroupId;
+                    }
+                    selectableObj.UpdateBounds();
 
                     _selectionManager.AddObject(selectableObj);
                     registeredCount++;
@@ -2013,8 +2074,16 @@ namespace QASmartTouch.Forms
                             Bounds = bounds,
                             Position = new Point(left, top),
                             Size = new Size(width, height),
+                            RotationAngle = SelectableObject.ExtractElementRotationAngle(shapeCanvas),
                             ZIndex = Panel.GetZIndex(shapeCanvas)
                         };
+                        if (previousByElement.TryGetValue(shapeCanvas, out var prevCanvas))
+                        {
+                            selectableObj.IsLocked = prevCanvas.IsLocked;
+                            selectableObj.GroupId = prevCanvas.GroupId;
+                        }
+                        selectableObj.UpdateBounds();
+
                         _selectionManager.AddObject(selectableObj);
                         registeredCount++;
                         var firstChildShape = shapeCanvas.Children.OfType<System.Windows.Shapes.Shape>().FirstOrDefault();
@@ -2237,26 +2306,28 @@ namespace QASmartTouch.Forms
                     };
                 }
             }
-            // Register Path (smooth Bezier strokes after ConvertToSmoothPath)
+            // Register Path (smooth Bezier strokes & 2D shapes)
             else if (element is System.Windows.Shapes.Path path && path.Data != null)
             {
                 var dataBounds = path.Data.Bounds;
-                if (dataBounds.Width > 0 && dataBounds.Height > 0)
+                if (!dataBounds.IsEmpty && (dataBounds.Width > 0 || dataBounds.Height > 0))
                 {
+                    SelectableObject.ExtractPathGeometryMetrics(path, out Point unrotatedPos, out Size unrotatedSize, out double extractedAngle, out Rect pathWorldBounds);
                     var selectableObj = new SelectableObject
                     {
                         Element = path,
                         Type = ObjectType.Drawing,
-                        Bounds = dataBounds,
-                        Position = new Point(dataBounds.Left, dataBounds.Top),
-                        Size = new Size(dataBounds.Width, dataBounds.Height),
+                        Bounds = pathWorldBounds,
+                        Position = unrotatedPos,
+                        Size = unrotatedSize,
+                        RotationAngle = extractedAngle,
                         ZIndex = Panel.GetZIndex(path),
                         StrokeColor = (path.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
                         StrokeThickness = path.StrokeThickness
                     };
 
                     _selectionManager.AddObject(selectableObj);
-                    System.Diagnostics.Debug.WriteLine($"✅ Auto-registered Path (Bezier): Bounds=({dataBounds.Left:F0},{dataBounds.Top:F0},{dataBounds.Width:F0},{dataBounds.Height:F0})");
+                    System.Diagnostics.Debug.WriteLine($"✅ Auto-registered Path (Bezier): Bounds=({pathWorldBounds.Left:F0},{pathWorldBounds.Top:F0},{pathWorldBounds.Width:F0},{pathWorldBounds.Height:F0})");
                 }
                 else
                 {
@@ -2264,15 +2335,17 @@ namespace QASmartTouch.Forms
                     path.Loaded += (s, ev) =>
                     {
                         var b = path.Data?.Bounds ?? Rect.Empty;
-                        if (b.Width > 0 && b.Height > 0)
+                        if (!b.IsEmpty && (b.Width > 0 || b.Height > 0))
                         {
+                            SelectableObject.ExtractPathGeometryMetrics(path, out Point unrotatedPos, out Size unrotatedSize, out double extractedAngle, out Rect pathWorldBounds);
                             var obj = new SelectableObject
                             {
                                 Element = path,
                                 Type = ObjectType.Drawing,
-                                Bounds = b,
-                                Position = new Point(b.Left, b.Top),
-                                Size = new Size(b.Width, b.Height),
+                                Bounds = pathWorldBounds,
+                                Position = unrotatedPos,
+                                Size = unrotatedSize,
+                                RotationAngle = extractedAngle,
                                 ZIndex = Panel.GetZIndex(path),
                                 StrokeColor = (path.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
                                 StrokeThickness = path.StrokeThickness

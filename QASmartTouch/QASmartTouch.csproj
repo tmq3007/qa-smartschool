@@ -38,6 +38,18 @@
     <DefineConstants>SMARTTOUCH_STANDALONE;NO_SMARTSCHOOL</DefineConstants>
   </PropertyGroup>
 
+  <!-- Cấu hình Bảo vệ Mã nguồn & Chống Dịch ngược (Release / Publish) -->
+  <PropertyGroup>
+    <_RequiresILLinkPack>false</_RequiresILLinkPack>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
   <!-- Thư viện phụ thuộc cho Bảng vẽ, STEM Tools, Đồ thị, 3D, Âm thanh & Nhận dạng AI (KHÔNG CÓ EF CORE & SQLITE) -->
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.1.1" />
@@ -282,5 +294,10 @@
       <Link>Assets\EnglishCards\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
   </ItemGroup>
+
+  <!-- Tự động chạy Obfuscar làm rối mã IL & mã hóa chuỗi trước khi đóng gói Single-File ở chế độ Release -->
+  <Target Name="ObfuscateReleaseAssembly" AfterTargets="CopyFilesToOutputDirectory" BeforeTargets="PrepareForPublish;_ComputeFilesToBundle" Condition="'$(Configuration)' == 'Release' and Exists('$(MSBuildThisFileDirectory)..\.tools\obfuscar.console.exe')">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)obfuscate.ps1&quot; -TargetDllPath &quot;@(IntermediateAssembly)&quot; -ReferenceDir &quot;$(TargetDir).&quot; -SecondaryTargetDllPath &quot;$(TargetPath)&quot;" />
+  </Target>
 
 </Project>

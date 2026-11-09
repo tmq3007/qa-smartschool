@@ -822,7 +822,7 @@
 
 
 
-                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnMath3DGraph_Click">
+                        <Button Style="{StaticResource ContentButtonStyle}" Click="btnMath3DGraph_Click" Visibility="Collapsed">
 
                             <StackPanel Orientation="Horizontal">
 

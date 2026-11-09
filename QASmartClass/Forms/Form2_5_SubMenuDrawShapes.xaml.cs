@@ -1988,6 +1988,7 @@ namespace QASmartTouch.Forms
     {
         if (sender is Button button && button.Tag is string shapeName)
         {
+            if (UserSelected) return; // Chống kích hoạt kép (Stylus + Touch + Click)
             SelectedShape = shapeName;
             UserSelected = true;  // ✅ User selected a shape
             
@@ -2001,7 +2002,12 @@ namespace QASmartTouch.Forms
             }
             catch { }
             
-            this.Close();
+            // QC_4.2_TOUCH_PIPELINE: Đóng SubMenu SAU KHI chu kỳ nhấc tay (StylusUp/TouchUp) kết thúc trọn vẹn,
+            // tránh làm hỏng phiên cảm ứng kế tiếp trên bảng chính (lần kéo hình đầu tiên).
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try { this.Close(); } catch (InvalidOperationException) { }
+            }), System.Windows.Threading.DispatcherPriority.Input);
         }
     }
 

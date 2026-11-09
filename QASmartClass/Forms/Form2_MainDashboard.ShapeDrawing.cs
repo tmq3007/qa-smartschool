@@ -1780,69 +1780,64 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// Cập nhật khung dây xem trước (Wireframe Preview) thời gian thực 60fps khi kéo chuột/cảm ứng
+        /// Cập nhật khung dây xem trước (Wireframe Preview) thời gian thực 60fps khi kéo chuột/cảm ứng.
+        /// Dùng chung bộ chiếu 3D (Spatial3DService) để góc nhìn lúc kéo và lúc nhả tay khớp nhau 100%.
         /// </summary>
         private void Update3DShapePreview(Path path, Point startPoint, Point currentPoint)
         {
-            double left = Math.Min(startPoint.X, currentPoint.X);
-            double top = Math.Min(startPoint.Y, currentPoint.Y);
-            double width = Math.Max(5, Math.Abs(currentPoint.X - startPoint.X));
-            double height = Math.Max(5, Math.Abs(currentPoint.Y - startPoint.Y));
-
-            GeometryGroup group = new GeometryGroup();
-
-            string normShape = Spatial3DService.NormalizeShapeType(_currentShape);
-
-            switch (normShape)
+            // Vùng chết 4px: chưa kéo thực sự thì chưa vẽ khung dây (tránh chấm hình 3D li ti tại điểm đặt tay)
+            if (Math.Abs(currentPoint.X - startPoint.X) < 4 && Math.Abs(currentPoint.Y - startPoint.Y) < 4)
             {
-                case "Cube":
-                    BuildCubeWireframe(group, left, top, width, height);
-                    break;
-                case "Pyramid":
-                    BuildPyramidWireframe(group, left, top, width, height);
-                    break;
-                case "Tetrahedron":
-                    BuildTetrahedronWireframe(group, left, top, width, height);
-                    break;
-                case "Cylinder":
-                    BuildCylinderWireframe(group, left, top, width, height);
-                    break;
-                case "Cone":
-                    BuildConeWireframe(group, left, top, width, height);
-                    break;
-                case "Frustum":
-                    BuildFrustumWireframe(group, left, top, width, height);
-                    break;
-                case "Prism":
-                    BuildPrismWireframe(group, left, top, width, height);
-                    break;
-                case "Sphere":
-                    BuildSphereWireframe(group, left, top, width, height);
-                    break;
-                default:
-                    BuildCubeWireframe(group, left, top, width, height);
-                    break;
+                path.Data = null;
+                path.Tag = null;
+                return;
             }
 
-            path.Data = group;
+            Rect dragRect = Spatial3DService.CalculateDragBounds(_currentShape, startPoint, currentPoint);
+            double left = dragRect.Left;
+            double top = dragRect.Top;
+            double width = dragRect.Width;
+            double height = dragRect.Height;
+
+            Canvas.SetLeft(path, left);
+            Canvas.SetTop(path, top);
+            path.Tag = new Rect(left, top, width, height);
+
+            path.Data = Spatial3DService.BuildPreviewGeometry(_currentShape, width, height);
         }
 
         /// <summary>
         /// </summary>
         private void Finalize3DShapeDrawing(Path previewPath, string shapeName)
         {
-            var bounds = previewPath.Data?.Bounds ?? Rect.Empty;
+            double left, top, width, height;
+            if (previewPath.Tag is Rect dragRect && dragRect.Width > 0 && dragRect.Height > 0)
+            {
+                left = dragRect.Left;
+                top = dragRect.Top;
+                width = dragRect.Width;
+                height = dragRect.Height;
+            }
+            else
+            {
+                var bounds = previewPath.Data?.Bounds ?? Rect.Empty;
+                left = bounds.Left;
+                top = bounds.Top;
+                width = bounds.Width;
+                height = bounds.Height;
+            }
+
             MainInteractiveBoard.Children.Remove(previewPath);
 
-            if (bounds.Width < 15 || bounds.Height < 15)
+            if (width < 15 || height < 15)
             {
-                System.Diagnostics.Debug.WriteLine($"🧹 Discarded micro 3D shape ({bounds.Width:F0}x{bounds.Height:F0})");
+                System.Diagnostics.Debug.WriteLine($"🧹 Discarded micro 3D shape ({width:F0}x{height:F0})");
                 return;
             }
 
-            Canvas shapeContainer = Create3DShapeContainer(shapeName, bounds.Width, bounds.Height, _currentPenColor, Math.Max(1.5, _currentPenSize));
-            Canvas.SetLeft(shapeContainer, bounds.Left);
-            Canvas.SetTop(shapeContainer, bounds.Top);
+            Canvas shapeContainer = Create3DShapeContainer(shapeName, width, height, _currentPenColor, Math.Max(1.5, _currentPenSize));
+            Canvas.SetLeft(shapeContainer, left);
+            Canvas.SetTop(shapeContainer, top);
             Panel.SetZIndex(shapeContainer, _currentInkingZIndex);
 
             MainInteractiveBoard.Children.Add(shapeContainer);
@@ -1866,11 +1861,12 @@ namespace QASmartTouch.Forms
             };
 
             string normType = Spatial3DService.NormalizeShapeType(shapeName);
+            var (defaultYaw, defaultPitch) = Spatial3DService.GetDefaultAngles(normType);
             var data = new Shape3DData
             {
                 ShapeType = normType,
-                Yaw = normType == "Pyramid" ? 45 : (normType == "Prism" ? -35 : -28),
-                Pitch = 22,
+                Yaw = defaultYaw,
+                Pitch = defaultPitch,
                 StrokeColor = strokeColor,
                 StrokeThickness = thickness
             };
