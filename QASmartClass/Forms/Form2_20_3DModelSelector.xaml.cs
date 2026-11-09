@@ -6,6 +6,7 @@ using System.Windows.Media.Media3D;
 using System.Windows.Media.Animation; // For smooth transitions
 using Microsoft.Win32;
 using QASmartTouch.Services;
+using QASmartTouch.Services.Tools;
 using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
@@ -30,8 +31,10 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             _importer = new Model3DImporter();
             InitializeAutoRotate();
+            InitializeBuiltInSamples();
             ApplyGraphicsSettings();
         }
 
@@ -49,7 +52,164 @@ namespace QASmartTouch.Forms
             }
         }
         
-        private void btnSelectFile_Click(object sender, RoutedEventArgs e)
+        private void btnSelectFile_Click(object sender, RoutedEventArgs e) => OpenExternalModelFileDialog();
+
+        private readonly System.Collections.Generic.List<System.Windows.Controls.Border> _sampleCards = new();
+
+        private void InitializeBuiltInSamples()
+        {
+            if (builtInSamplesPanel == null) return;
+            builtInSamplesPanel.Children.Clear();
+            _sampleCards.Clear();
+
+            var catalog = BuiltIn3DModelLibrary.GetCatalog();
+            System.Windows.Controls.Border? firstCard = null;
+            BuiltIn3DModelItem? firstItem = null;
+
+            foreach (var item in catalog)
+            {
+                var card = new System.Windows.Controls.Border
+                {
+                    Background = System.Windows.Media.Brushes.White,
+                    BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(203, 213, 225)),
+                    BorderThickness = new Thickness(1.5),
+                    CornerRadius = new CornerRadius(8),
+                    Padding = new Thickness(10, 6, 12, 6),
+                    Margin = new Thickness(0, 0, 8, 6),
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    ToolTip = $"{item.Title} ({item.SubjectTag}) — Chạm để xem 3D, chạm đúp để chèn ngay vào bảng"
+                };
+
+                var row = new System.Windows.Controls.StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal };
+                row.Children.Add(new System.Windows.Controls.TextBlock
+                {
+                    Text = item.Icon,
+                    FontSize = 18,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 8, 0)
+                });
+
+                var textCol = new System.Windows.Controls.StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                textCol.Children.Add(new System.Windows.Controls.TextBlock
+                {
+                    Text = item.Title,
+                    FontSize = 12,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 41, 59))
+                });
+                textCol.Children.Add(new System.Windows.Controls.TextBlock
+                {
+                    Text = item.SubjectTag,
+                    FontSize = 10,
+                    Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(100, 116, 139))
+                });
+                row.Children.Add(textCol);
+                card.Child = row;
+
+                var capturedItem = item;
+                var capturedCard = card;
+                DateTime lastTap = DateTime.MinValue;
+
+                void ActivateSample()
+                {
+                    var now = DateTime.Now;
+                    bool isDoubleTap = (now - lastTap).TotalMilliseconds < 400;
+                    lastTap = now;
+
+                    LoadBuiltInSample(capturedItem, capturedCard);
+                    if (isDoubleTap && _loadedModel != null)
+                    {
+                        DialogResult = true;
+                        Close();
+                    }
+                }
+
+                card.MouseLeftButtonDown += (s, e) =>
+                {
+                    ActivateSample();
+                    e.Handled = true;
+                };
+                card.PreviewTouchDown += (s, e) =>
+                {
+                    ActivateSample();
+                    e.Handled = true;
+                };
+
+                _sampleCards.Add(card);
+                builtInSamplesPanel.Children.Add(card);
+
+                if (firstCard == null)
+                {
+                    firstCard = card;
+                    firstItem = item;
+                }
+            }
+
+            if (firstItem != null && firstCard != null)
+            {
+                this.Loaded += (s, e) =>
+                {
+                    if (_loadedModel == null)
+                    {
+                        LoadBuiltInSample(firstItem, firstCard);
+                    }
+                };
+            }
+        }
+
+        private void UpdateBuiltInCardSelection(System.Windows.Controls.Border? activeCard)
+        {
+            foreach (var card in _sampleCards)
+            {
+                if (card == activeCard)
+                {
+                    card.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 92, 246)); // #8B5CF6
+                    card.BorderThickness = new Thickness(2);
+                    card.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 243, 255)); // #F5F3FF
+                }
+                else
+                {
+                    card.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(203, 213, 225));
+                    card.BorderThickness = new Thickness(1.5);
+                    card.Background = System.Windows.Media.Brushes.White;
+                }
+            }
+        }
+
+        private void LoadBuiltInSample(BuiltIn3DModelItem item, System.Windows.Controls.Border? selectedCard)
+        {
+            try
+            {
+                UpdateBuiltInCardSelection(selectedCard);
+
+                _loadedModel = item.Builder();
+                previewModel.Content = _loadedModel;
+
+                placeholderPanel.Visibility = Visibility.Collapsed;
+                loadingPanel.Visibility = Visibility.Collapsed;
+                previewViewport.Visibility = Visibility.Visible;
+                modelInfoPanel.Visibility = Visibility.Visible;
+                cameraPresetsPanel.Visibility = Visibility.Visible;
+
+                txtFileName.Text = $"{item.Icon} {item.Title}";
+                txtFileSize.Text = $"📚 Chủ đề: {item.SubjectTag}";
+                txtVertexCount.Text = $"🔺 {CountVertices(_loadedModel)} đỉnh 3D";
+
+                SelectedModelPath = item.Title;
+                btnInsert.IsEnabled = true;
+                btnExportPNG.IsEnabled = true;
+
+                SetupCustomLighting();
+                previewViewport.ZoomExtents();
+                UpdateCamera();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[3DModelSelector] Error loading built-in sample {item.Id}: {ex.Message}");
+            }
+        }
+
+        private void OpenExternalModelFileDialog()
         {
             var dialog = new OpenFileDialog
             {
@@ -79,6 +239,7 @@ namespace QASmartTouch.Forms
                 btnInsert.IsEnabled = false;
                 
                 // Load model on UI thread (WPF 3D objects must be created on UI thread)
+                UpdateBuiltInCardSelection(null);
                 _loadedModel = _importer.LoadModel(filePath);
                 
                 if (_loadedModel != null)
@@ -608,6 +769,7 @@ namespace QASmartTouch.Forms
             lightGroup.Children.Add(_fillLight);
             
             // Add to viewport
+            if (_customLightingVisual != null) previewViewport.Children.Remove(_customLightingVisual);
             _customLightingVisual = new ModelVisual3D { Content = lightGroup };
             previewViewport.Children.Add(_customLightingVisual);
             

@@ -56,7 +56,8 @@ namespace QASmartClass.WhiteboardCore.Managers
         public WhiteboardManager(IWhiteboardContext context) : this()
         {
             Context = context;
-            System.Diagnostics.Debug.WriteLine("✅ WhiteboardManager: Context bound to Form2");
+            History = new UndoRedoManager(context.MainCanvas, context.MainInkPresenter);
+            System.Diagnostics.Debug.WriteLine("✅ WhiteboardManager: Context bound to Form2 & History initialized with Native Inking");
         }
 
         #endregion

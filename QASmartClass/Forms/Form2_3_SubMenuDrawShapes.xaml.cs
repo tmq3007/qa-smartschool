@@ -1,3 +1,10 @@
+// ===========================================================================================
+// ⚠️ [ORPHAN CODE - DEPRECATED / MÃ MỒ CÔI KHÔNG SỬ DỤNG]
+// Tệp này là phiên bản thử nghiệm cũ của Menu Chèn hình (có Biểu đồ & Flashcard dở dang).
+// Runtime thực tế của Toolbar chính đang gọi: Form2_5_SubMenuDrawShapes (Tools.cs:L949).
+// Vui lòng KHÔNG sửa đổi, không đọc nhầm tính năng từ tệp này vào ứng dụng chính.
+// ===========================================================================================
+
 using System;
 using System.Windows;
 using System.Windows.Controls;

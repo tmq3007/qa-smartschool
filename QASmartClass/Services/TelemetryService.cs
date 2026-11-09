@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+#if !SMARTTOUCH_STANDALONE
 using QASmartClass.Data;
+#endif
 
 namespace QASmartClass.Services
 {
@@ -61,6 +63,7 @@ namespace QASmartClass.Services
                     else dataStr = JsonSerializer.Serialize(eventData);
                 }
 
+#if !SMARTTOUCH_STANDALONE
                 var log = new UsageLog
                 {
                     EventType = eventType,
@@ -81,6 +84,10 @@ namespace QASmartClass.Services
                 {
                     _dbSemaphore.Release();
                 }
+#else
+                Serilog.Log.Information("[Telemetry] {EventType} ({DurationMs}ms): {Data}", eventType, durationMs, dataStr);
+                await Task.CompletedTask;
+#endif
             }
             catch (Exception ex)
             {

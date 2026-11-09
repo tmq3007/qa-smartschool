@@ -453,8 +453,8 @@
 
                                         <!-- Vertex Labels Option -->
                                         <CheckBox x:Name="chkShowVertexLabels" 
-                                                  Content="Hiển thị nhãn đỉnh (A, B, C, A', B'...)" 
-                                                  IsChecked="True" 
+                                                  Content="Hiển thị đỉnh và nhãn (A, B, C, A', B'...)" 
+                                                  IsChecked="False" 
                                                   FontSize="12"
                                                   Foreground="#424242"
                                                   Margin="0,0,0,8"
@@ -543,7 +543,7 @@
                                                       Grid.Column="0"
                                                       Height="34" 
                                                       FontSize="12"
-                                                      SelectedIndex="0"
+                                                      SelectedIndex="1"
                                                       SelectionChanged="OnEdgeColorChanged">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
@@ -568,7 +568,7 @@
 
                                             <Border Grid.Column="1" 
                                                     x:Name="EdgeColorPreview"
-                                                    Background="Black" 
+                                                    Background="White" 
                                                     CornerRadius="4" 
                                                     Margin="8,0,0,0"
                                                     BorderBrush="#CCCCCC"

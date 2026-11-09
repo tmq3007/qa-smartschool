@@ -26,6 +26,8 @@ namespace QASmartTouch.Forms
         public QuickDockTabWindow(DockPosition position, IntPtr targetMonitor = default)
         {
             InitializeComponent();
+            QASmartTouch.Helpers.TouchActivationHelper.Apply(this);
+            System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(this, false);
             _position = position;
             _targetMonitor = targetMonitor;
 

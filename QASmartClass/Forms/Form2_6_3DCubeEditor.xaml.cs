@@ -29,8 +29,8 @@ namespace QASmartTouch.Forms
         // Tùy chọn vẽ nét đứt cho cạnh khuất (Phương án 2)
         public bool ShowHiddenEdges { get; private set; } = true;
 
-        // Tùy chọn hiển thị nhãn đỉnh
-        public bool ShowVertexLabels { get; private set; } = true;
+        // Tùy chọn hiển thị đỉnh và nhãn đỉnh
+        public bool ShowVertexLabels { get; private set; } = false;
 
         // Màu cho các mặt của Cube (mặc định: màu xanh lá đơn sắc cho tất cả các mặt)
         public Color FaceColor { get; private set; }
@@ -44,10 +44,11 @@ namespace QASmartTouch.Forms
         private Point _lastInteractionPoint;
         private int? _activeTouchId = null;
 
-        public Form2_6_3DCubeEditor()
+        public Form2_6_3DCubeEditor(Color? initialEdgeColor = null)
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             InitializeAutoRotateTimer();
             
             // Khởi tạo giá trị mặc định - Khối lập phương đứng thẳng
@@ -56,12 +57,31 @@ namespace QASmartTouch.Forms
             RotationZ = 0;      // Không xoay trục Z
             CubeSize = 150;
             DrawMode = "Wireframe"; // Mặc định là Khung dây
-            EdgeColor = Colors.Black;
+            EdgeColor = initialEdgeColor ?? Colors.White; // QC_4.2: Đồng bộ màu nét vẽ với bút viết (mặc định Trắng)
             FaceColor = Colors.Transparent; // Mặc định không màu
             IsConfirmed = false;
 
-            // Vẽ lần đầu
-            Loaded += (s, e) => DrawCube();
+            // Đồng bộ UI và vẽ lần đầu
+            Loaded += (s, e) =>
+            {
+                if (EdgeColorComboBox != null)
+                {
+                    if (EdgeColor == Colors.White) EdgeColorComboBox.SelectedIndex = 1;
+                    else if (EdgeColor == Colors.Black) EdgeColorComboBox.SelectedIndex = 0;
+                    else if (EdgeColor.R > 200 && EdgeColor.G < 100 && EdgeColor.B < 100) EdgeColorComboBox.SelectedIndex = 2; // Đỏ
+                    else if (EdgeColor.R < 100 && EdgeColor.G > 180 && EdgeColor.B < 100) EdgeColorComboBox.SelectedIndex = 3; // Xanh lá
+                    else if (EdgeColor.R < 100 && EdgeColor.G < 180 && EdgeColor.B > 180) EdgeColorComboBox.SelectedIndex = 4; // Xanh dương
+                    else if (EdgeColor.R > 200 && EdgeColor.G > 200 && EdgeColor.B < 100) EdgeColorComboBox.SelectedIndex = 5; // Vàng
+                    else if (EdgeColor.R > 120 && EdgeColor.G < 100 && EdgeColor.B > 150) EdgeColorComboBox.SelectedIndex = 6; // Tím
+                    else if (EdgeColor.R > 200 && EdgeColor.G > 120 && EdgeColor.B < 50) EdgeColorComboBox.SelectedIndex = 7; // Cam
+                    else
+                    {
+                        if (EdgeColorPreview != null)
+                            EdgeColorPreview.Background = new SolidColorBrush(EdgeColor);
+                    }
+                }
+                DrawCube();
+            };
         }
 
         #region Event Handlers
@@ -718,28 +738,28 @@ namespace QASmartTouch.Forms
                 CubeCanvas.Children.Add(line);
             }
 
-            // Vẽ các đỉnh và nhãn đỉnh
-            string[] vertexNames = { "A", "B", "C", "D", "A'", "B'", "C'", "D'" };
-            for (int i = 0; i < 8; i++)
+            // Vẽ các đỉnh và nhãn đỉnh (chỉ vẽ khi người dùng bật ShowVertexLabels)
+            if (ShowVertexLabels)
             {
-                var point = projected2D[i];
-
-                if (DrawMode == "Wireframe" || DrawMode == "Both")
+                string[] vertexNames = { "A", "B", "C", "D", "A'", "B'", "C'", "D'" };
+                for (int i = 0; i < 8; i++)
                 {
-                    Ellipse dot = new Ellipse
+                    var point = projected2D[i];
+
+                    if (DrawMode == "Wireframe" || DrawMode == "Both")
                     {
-                        Width = 6,
-                        Height = 6,
-                        Fill = new SolidColorBrush(EdgeColor)
-                    };
-                    Canvas.SetLeft(dot, point.X - 3);
-                    Canvas.SetTop(dot, point.Y - 3);
-                    CubeCanvas.Children.Add(dot);
-                }
+                        Ellipse dot = new Ellipse
+                        {
+                            Width = 6,
+                            Height = 6,
+                            Fill = new SolidColorBrush(EdgeColor)
+                        };
+                        Canvas.SetLeft(dot, point.X - 3);
+                        Canvas.SetTop(dot, point.Y - 3);
+                        CubeCanvas.Children.Add(dot);
+                    }
 
-                // Nhãn chữ tên đỉnh
-                if (ShowVertexLabels)
-                {
+                    // Nhãn chữ tên đỉnh
                     TextBlock label = new TextBlock
                     {
                         Text = vertexNames[i],

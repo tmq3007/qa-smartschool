@@ -21,6 +21,9 @@ namespace QASmartTouch.Forms
             InitializeComponent();
             _mainDashboard = mainDashboard;
 
+            // QC_4.2_TOUCH_SCROLL: Kích hoạt vuốt cuộn cảm ứng và kéo thả mượt mà trên IFP
+            TouchScrollHelper.AttachToAllScrollViewers(this);
+
             // QC_4.2_SUBMENU_CLOSE_TOUCH_FIX: Dam bao nut X mau do dong SubMenu 100% tuc thi voi chuot, ngon tay va put Stylus
             if (btnClose != null)
             {
@@ -144,20 +147,54 @@ namespace QASmartTouch.Forms
         // TAB 1: DRAWING TOOLS
         private void btnInsertRuler_Click(object sender, RoutedEventArgs e)
         {
+            if (_mainDashboard != null)
+            {
+                _mainDashboard.RegisterRecentTool(
+                    "stem:Ruler",
+                    "Thước kẻ",
+                    QASmartTouch.Services.Tools.RecentToolsManager.RulerIconPath,
+                    Color.FromRgb(0xFF, 0x98, 0x00),
+                    () => _mainDashboard.OpenRulerTool(),
+                    "Dùng lại: Thước kẻ đo chiều dài");
+            }
             SelectedInsertType = "Ruler";
             this.Close();
+        }
+
+        private void OpenCircleCompassHelper()
+        {
+            var circleTool = new Form2_19_CircleDrawingTool();
+            circleTool.Owner = this.Owner ?? _mainDashboard;
+            circleTool.SetMainDashboard(_mainDashboard);
+            if (_mainDashboard != null)
+            {
+                _mainDashboard.ActiveCircleDrawingTool = circleTool;
+                circleTool.Closed += (s, args) =>
+                {
+                    if (_mainDashboard != null && ReferenceEquals(_mainDashboard.ActiveCircleDrawingTool, circleTool))
+                    {
+                        _mainDashboard.ActiveCircleDrawingTool = null;
+                    }
+                };
+            }
+            circleTool.Show();
         }
 
         private void btnInsertCompass_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "stem:CircleCompass",
+                    "Compa",
+                    QASmartTouch.Services.Tools.RecentToolsManager.CompassIconPath,
+                    Color.FromRgb(0xE9, 0x1E, 0x63),
+                    () => OpenCircleCompassHelper(),
+                    "Dùng lại: Compa vẽ đường tròn");
+
                 // Ẩn menu trước khi mở công cụ con
                 this.Hide();
-                var circleTool = new Form2_19_CircleDrawingTool();
-                circleTool.Owner = this.Owner ?? _mainDashboard; // Set owner để tránh rò rỉ cửa sổ con
-                circleTool.SetMainDashboard(_mainDashboard);
-                circleTool.Show(); // Show (not ShowDialog) để không block
+                OpenCircleCompassHelper();
                 this.Close(); // Đóng menu
                 try { this.Owner?.Activate(); } catch { }
             }
@@ -171,36 +208,67 @@ namespace QASmartTouch.Forms
 
         private void btnInsertTriangle_Click(object sender, RoutedEventArgs e)
         {
+            if (_mainDashboard != null)
+            {
+                _mainDashboard.RegisterRecentTool(
+                    "stem:SetSquare",
+                    "Thước Ê-ke",
+                    QASmartTouch.Services.Tools.RecentToolsManager.TriangleToolIconPath,
+                    Color.FromRgb(0x4C, 0xAF, 0x50),
+                    () => _mainDashboard.OpenSetSquareTool(),
+                    "Dùng lại: Thước Ê-ke vuông góc");
+            }
             SelectedInsertType = "Triangle";
             this.Close();
         }
 
         private void btnInsertProtractor_Click(object sender, RoutedEventArgs e)
         {
+            if (_mainDashboard != null)
+            {
+                _mainDashboard.RegisterRecentTool(
+                    "stem:Protractor",
+                    "Đo độ",
+                    QASmartTouch.Services.Tools.RecentToolsManager.ProtractorIconPath,
+                    Color.FromRgb(0x9C, 0x27, 0xB0),
+                    () => _mainDashboard.OpenProtractorTool(),
+                    "Dùng lại: Thước đo góc (Đo độ)");
+            }
             SelectedInsertType = "Protractor";
             this.Close();
+        }
+
+        private static void LaunchOnScreenKeyboard()
+        {
+            string windir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            string oskPath = System.IO.Path.Combine(windir, "sysnative", "osk.exe");
+            if (!System.IO.File.Exists(oskPath))
+            {
+                oskPath = System.IO.Path.Combine(windir, "System32", "osk.exe");
+            }
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = oskPath,
+                UseShellExecute = true
+            });
         }
 
         private void btnInsertKeyboard_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Xử lý bypass WOW64 File Redirection cho OSK trên hệ thống 64-bit khi chạy app 32-bit
-                string windir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-                string oskPath = System.IO.Path.Combine(windir, "sysnative", "osk.exe");
-                
-                if (!System.IO.File.Exists(oskPath))
-                {
-                    oskPath = System.IO.Path.Combine(windir, "System32", "osk.exe");
-                }
-                
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = oskPath,
-                    UseShellExecute = true
-                });
-                
-                System.Diagnostics.Debug.WriteLine($"✅ On-Screen Keyboard launched via: {oskPath}");
+                _mainDashboard?.RegisterRecentTool(
+                    "stem:Keyboard",
+                    "Bàn phím ảo",
+                    QASmartTouch.Services.Tools.RecentToolsManager.KeyboardIconPath,
+                    Color.FromRgb(0x60, 0x7D, 0x8B),
+                    () =>
+                    {
+                        try { LaunchOnScreenKeyboard(); } catch { }
+                    },
+                    "Dùng lại: Mở bàn phím ảo Windows");
+
+                LaunchOnScreenKeyboard();
                 this.Close();
             }
             catch (Exception ex)
@@ -218,6 +286,18 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:Book",
+                    "Sách GK",
+                    QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
+                    Color.FromRgb(0x79, 0x55, 0x48),
+                    () =>
+                    {
+                        var bm = new Form2_20_SubMenuBooks { Owner = _mainDashboard };
+                        bm.ShowDialog();
+                    },
+                    "Dùng lại: Sách giáo khoa điện tử");
+
                 // Ẩn menu trước khi mở dialog con
                 this.Hide();
                 var booksMenu = new Form2_20_SubMenuBooks();
@@ -234,18 +314,482 @@ namespace QASmartTouch.Forms
             }
         }
 
-        // TAB 3: TEXT
-        private void btnInsertText_Click(object sender, RoutedEventArgs e)
-        {
-            SelectedInsertType = "Text";
-            this.Close();
-        }
-
-        private void btnInsertTable_Click(object sender, RoutedEventArgs e)
+        // THÍ NGHIỆM VẬT LÝ & STEM (46 Mô phỏng Offline)
+        private void btnPhysicsLab_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Ẩn menu trước khi mở dialog con để không bị chồng cửa sổ
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:PhysicsLab",
+                    "TN Vật lý",
+                    QASmartTouch.Services.Tools.RecentToolsManager.PhysicsLabIconPath,
+                    Color.FromRgb(0x09, 0x84, 0xE3),
+                    () =>
+                    {
+                        var lab = new Form2_23_PhysicsLabWindow();
+                        lab.SetMainDashboard(_mainDashboard);
+                        WindowHelper.ShowChildDialog(lab, _mainDashboard);
+                    },
+                    "Dùng lại: Phòng Thí Nghiệm Vật Lý & STEM");
+
+                this.Hide();
+                var labWindow = new Form2_23_PhysicsLabWindow();
+                if (_mainDashboard != null)
+                {
+                    labWindow.SetMainDashboard(_mainDashboard);
+                }
+                WindowHelper.ShowChildDialog(labWindow, _mainDashboard);
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                this.Show();
+                MessageBox.Show($"Lỗi mở Phòng Thí Nghiệm Vật Lý: {ex.Message}", "Lỗi",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Diagnostics.Debug.WriteLine($"❌ Physics lab error: {ex.Message}");
+            }
+        }
+
+        // TIẾNG ANH (THẺ TỪ VỰNG & PHÁT ÂM)
+        private bool _isEnglishCategoriesBuilt = false;
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, System.Windows.Media.Imaging.BitmapImage> _englishCardThumbnailCache = new(StringComparer.OrdinalIgnoreCase);
+
+        private void btnEnglishVocab_Click(object sender, RoutedEventArgs e)
+        {
+            if (pnlEnglishCardsPicker == null) return;
+
+            if (pnlEnglishCardsPicker.Visibility == Visibility.Visible)
+            {
+                pnlEnglishCardsPicker.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                pnlEnglishCardsPicker.Visibility = Visibility.Visible;
+                EnsureEnglishCategoriesBuilt();
+            }
+        }
+
+        private void EnsureEnglishCategoriesBuilt()
+        {
+            if (_isEnglishCategoriesBuilt || EnglishCategoryTabBar == null) return;
+
+            EnglishCategoryTabBar.Children.Clear();
+            var subject = System.Linq.Enumerable.FirstOrDefault(
+                QASmartTouch.Services.Tools.SubjectShapeGeometryService.Subjects,
+                s => s.Id.Equals("eng", StringComparison.OrdinalIgnoreCase));
+
+            if (subject == null || subject.Categories.Count == 0) return;
+
+            Button? firstBtn = null;
+            foreach (var cat in subject.Categories)
+            {
+                var catBtn = new Button
+                {
+                    Content = cat.Name,
+                    Tag = cat,
+                    Height = 28,
+                    Margin = new Thickness(2, 1, 2, 1),
+                    Padding = new Thickness(10, 0, 10, 0),
+                    FontSize = 11.5,
+                    FontWeight = FontWeights.Medium,
+                    Cursor = Cursors.Hand,
+                    Focusable = false,
+                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6")),
+                    BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA")),
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#57606F"))
+                };
+                Stylus.SetIsPressAndHoldEnabled(catBtn, false);
+
+                var template = new ControlTemplate(typeof(Button));
+                var borderFactory = new FrameworkElementFactory(typeof(Border));
+                borderFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+                borderFactory.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty));
+                borderFactory.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+                borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(13));
+                borderFactory.SetValue(Border.PaddingProperty, new TemplateBindingExtension(Button.PaddingProperty));
+                var contentFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+                contentFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                contentFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                borderFactory.AppendChild(contentFactory);
+                template.VisualTree = borderFactory;
+                catBtn.Template = template;
+
+                catBtn.Click += EnglishCategoryButton_Click;
+                TouchActivationHelper.WireButton(catBtn);
+                EnglishCategoryTabBar.Children.Add(catBtn);
+
+                if (firstBtn == null) firstBtn = catBtn;
+            }
+
+            _isEnglishCategoriesBuilt = true;
+            if (firstBtn != null)
+            {
+                ActivateEnglishCategoryButton(firstBtn);
+            }
+        }
+
+        private void EnglishCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                ActivateEnglishCategoryButton(btn);
+            }
+        }
+
+        private void ActivateEnglishCategoryButton(Button activeBtn)
+        {
+            if (EnglishCategoryTabBar == null || EnglishCardGallery == null) return;
+
+            foreach (var child in EnglishCategoryTabBar.Children)
+            {
+                if (child is Button b)
+                {
+                    b.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6"));
+                    b.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA"));
+                    b.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#57606F"));
+                    b.FontWeight = FontWeights.Medium;
+                }
+            }
+
+            activeBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E86DE"));
+            activeBtn.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E86DE"));
+            activeBtn.Foreground = Brushes.White;
+            activeBtn.FontWeight = FontWeights.SemiBold;
+
+            EnglishCardGallery.Children.Clear();
+            if (activeBtn.Tag is QASmartTouch.Services.Tools.CategoryDefinition cat &&
+                QASmartTouch.Services.Tools.SubjectShapeGeometryService.EnglishCards.TryGetValue(cat.Id, out var cards))
+            {
+                foreach (var card in cards)
+                {
+                    var cardBtn = CreateEnglishCardButton(card);
+                    EnglishCardGallery.Children.Add(cardBtn);
+                }
+            }
+        }
+
+        private static string? GetEnglishCardImagePath(string word)
+        {
+            string safeName = word.Replace(' ', '_') + ".png";
+            string p1 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p1)) return p1;
+
+            string p2 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartClass", "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p2)) return p2;
+
+            string p3 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p3)) return p3;
+
+            return null;
+        }
+
+        private Button CreateEnglishCardButton(QASmartTouch.Services.Tools.EnglishCardDefinition card)
+        {
+            var button = new Button
+            {
+                Tag = card,
+                Width = 98,
+                Height = 114,
+                Margin = new Thickness(4),
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF")),
+                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E1E8ED")),
+                BorderThickness = new Thickness(1),
+                Cursor = Cursors.Hand,
+                Focusable = false,
+                ToolTip = $"{card.Word} — {card.Meaning} (Bấm để nghe đọc và chèn lên bảng)"
+            };
+            Stylus.SetIsPressAndHoldEnabled(button, false);
+
+            var template = new ControlTemplate(typeof(Button));
+            var borderFactory = new FrameworkElementFactory(typeof(Border));
+            borderFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+            borderFactory.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty));
+            borderFactory.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Button.BorderThicknessProperty));
+            borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(12));
+            borderFactory.SetValue(Border.PaddingProperty, new Thickness(4));
+            var contentFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            borderFactory.AppendChild(contentFactory);
+            template.VisualTree = borderFactory;
+            button.Template = template;
+
+            string? imgPath = GetEnglishCardImagePath(card.Word);
+            if (!string.IsNullOrEmpty(imgPath))
+            {
+                try
+                {
+                    if (!_englishCardThumbnailCache.TryGetValue(imgPath, out var bitmap))
+                    {
+                        bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.UriSource = new Uri(imgPath, UriKind.Absolute);
+                        bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                        bitmap.DecodePixelWidth = 190;
+                        bitmap.EndInit();
+                        bitmap.Freeze();
+                        _englishCardThumbnailCache[imgPath] = bitmap;
+                    }
+
+                    var img = new Image
+                    {
+                        Source = bitmap,
+                        Stretch = Stretch.Uniform,
+                        Width = 88,
+                        Height = 104,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.HighQuality);
+                    button.Content = img;
+                    button.Click += EnglishCardButton_Click;
+                    TouchActivationHelper.WireButton(button);
+                    return button;
+                }
+                catch { }
+            }
+
+            var stackPanel = new StackPanel { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Center };
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = card.Emoji,
+                FontSize = 34,
+                FontFamily = new FontFamily("Segoe UI Emoji, Noto Color Emoji, Arial"),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 2, 0, 1)
+            });
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = card.Word,
+                FontSize = 11.5,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1F3A5A")),
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 88
+            });
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = card.Meaning,
+                FontSize = 10,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7F8C8D")),
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 88,
+                Margin = new Thickness(0, 1, 0, 0)
+            });
+
+            button.Content = stackPanel;
+            button.Click += EnglishCardButton_Click;
+            TouchActivationHelper.WireButton(button);
+            return button;
+        }
+
+        private void EnglishCardButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is QASmartTouch.Services.Tools.EnglishCardDefinition card)
+            {
+                var capturedCard = card;
+                string? imgPath = GetEnglishCardImagePath(capturedCard.Word);
+                _mainDashboard?.RegisterRecentTool(
+                    $"eng:{capturedCard.Word}",
+                    $"Từ: {capturedCard.Word}",
+                    QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
+                    Color.FromRgb(0x8E, 0x24, 0xAA),
+                    () =>
+                    {
+                        QASmartTouch.Services.Tools.SubjectShapeGeometryService.SpeakWord(capturedCard.Word);
+                        _mainDashboard?.InsertEnglishWordCard(capturedCard.Emoji, capturedCard.Word, capturedCard.Meaning, imgPath);
+                    },
+                    $"Dùng lại thẻ từ vựng: {capturedCard.Word} ({capturedCard.Meaning})");
+
+                QASmartTouch.Services.Tools.SubjectShapeGeometryService.SpeakWord(card.Word);
+                _mainDashboard?.InsertEnglishWordCard(card.Emoji, card.Word, card.Meaning, imgPath);
+                try { this.Owner?.Activate(); } catch { }
+                this.Close();
+            }
+        }
+
+        // TAB 3: TEXT
+        private void btnInsertText_Click(object sender, RoutedEventArgs e)
+        {
+            btnInsertTextBox_Click(sender, e);
+        }
+
+        private const int MATRIX_ROWS = 6;
+        private const int MATRIX_COLS = 8;
+        private Border[,] _matrixCells = new Border[MATRIX_ROWS, MATRIX_COLS];
+        private bool _isMatrixBuilt = false;
+        private int _selectedMatrixRows = 3;
+        private int _selectedMatrixCols = 3;
+
+        private void btnInsertTable_Click(object sender, RoutedEventArgs e)
+        {
+            if (pnlTableQuickPicker.Visibility == Visibility.Visible)
+            {
+                pnlTableQuickPicker.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                pnlTableQuickPicker.Visibility = Visibility.Visible;
+                EnsureTableMatrixBuilt();
+                HighlightMatrix(3, 3);
+            }
+        }
+
+        private void EnsureTableMatrixBuilt()
+        {
+            if (_isMatrixBuilt) return;
+
+            gridTableMatrix.RowDefinitions.Clear();
+            gridTableMatrix.ColumnDefinitions.Clear();
+            gridTableMatrix.Children.Clear();
+
+            for (int r = 0; r < MATRIX_ROWS; r++)
+            {
+                gridTableMatrix.RowDefinitions.Add(new RowDefinition { Height = new GridLength(28) });
+            }
+            for (int c = 0; c < MATRIX_COLS; c++)
+            {
+                gridTableMatrix.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30) });
+            }
+
+            for (int r = 0; r < MATRIX_ROWS; r++)
+            {
+                for (int c = 0; c < MATRIX_COLS; c++)
+                {
+                    int row = r + 1;
+                    int col = c + 1;
+
+                    var cell = new Border
+                    {
+                        Width = 26,
+                        Height = 24,
+                        Margin = new Thickness(2),
+                        Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+                        BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                        BorderThickness = new Thickness(1),
+                        CornerRadius = new CornerRadius(3),
+                        Cursor = Cursors.Hand,
+                        Tag = new Point(row, col)
+                    };
+
+                    cell.MouseEnter += (s, e) =>
+                    {
+                        HighlightMatrix(row, col);
+                    };
+
+                    cell.MouseLeftButtonUp += (s, e) =>
+                    {
+                        InsertTableWithSize(row, col);
+                    };
+
+                    cell.PreviewTouchDown += (s, e) =>
+                    {
+                        HighlightMatrix(row, col);
+                    };
+
+                    cell.PreviewTouchUp += (s, e) =>
+                    {
+                        InsertTableWithSize(row, col);
+                    };
+
+                    Grid.SetRow(cell, r);
+                    Grid.SetColumn(cell, c);
+                    gridTableMatrix.Children.Add(cell);
+                    _matrixCells[r, c] = cell;
+                }
+            }
+
+            _isMatrixBuilt = true;
+        }
+
+        private void HighlightMatrix(int targetRows, int targetCols)
+        {
+            _selectedMatrixRows = Math.Max(1, Math.Min(MATRIX_ROWS, targetRows));
+            _selectedMatrixCols = Math.Max(1, Math.Min(MATRIX_COLS, targetCols));
+
+            txtTableMatrixLabel.Text = $" ({_selectedMatrixRows} hàng x {_selectedMatrixCols} cột)";
+
+            var activeBg = new SolidColorBrush(Color.FromRgb(59, 130, 246)); // #3B82F6 Blue
+            var activeBorder = new SolidColorBrush(Color.FromRgb(29, 78, 216)); // #1D4ED8
+            var inactiveBg = new SolidColorBrush(Color.FromRgb(241, 245, 249)); // #F1F5F9
+            var inactiveBorder = new SolidColorBrush(Color.FromRgb(203, 213, 225)); // #CBD5E1
+
+            for (int r = 0; r < MATRIX_ROWS; r++)
+            {
+                for (int c = 0; c < MATRIX_COLS; c++)
+                {
+                    if (_matrixCells[r, c] != null)
+                    {
+                        if (r < _selectedMatrixRows && c < _selectedMatrixCols)
+                        {
+                            _matrixCells[r, c].Background = activeBg;
+                            _matrixCells[r, c].BorderBrush = activeBorder;
+                        }
+                        else
+                        {
+                            _matrixCells[r, c].Background = inactiveBg;
+                            _matrixCells[r, c].BorderBrush = inactiveBorder;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void InsertTableWithSize(int rows, int cols)
+        {
+            try
+            {
+                int r = rows;
+                int c = cols;
+                _mainDashboard?.RegisterRecentTool(
+                    $"insert:Table:{r}x{c}",
+                    $"Bảng {r}x{c}",
+                    QASmartTouch.Services.Tools.RecentToolsManager.TableIconPath,
+                    Color.FromRgb(0x9C, 0x27, 0xB0),
+                    () => _mainDashboard?.InsertTableToCanvas(new QASmartTouch.Models.TableData(r, c)),
+                    $"Dùng lại: Chèn bảng {r} hàng x {c} cột");
+
+                var tableData = new QASmartTouch.Models.TableData(rows, cols);
+                _mainDashboard?.InsertTableToCanvas(tableData);
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi tạo bảng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void btnCloseTableQuickPicker_Click(object sender, RoutedEventArgs e)
+        {
+            pnlTableQuickPicker.Visibility = Visibility.Collapsed;
+        }
+
+        private void BtnTablePreset_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string tagStr)
+            {
+                var parts = tagStr.Split(',');
+                if (parts.Length == 2 && int.TryParse(parts[0], out int r) && int.TryParse(parts[1], out int c))
+                {
+                    InsertTableWithSize(r, c);
+                }
+            }
+        }
+
+        private void BtnTableDragToDraw_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+            _mainDashboard?.EnableTableDrawingMode();
+        }
+
+        private void BtnTableAdvanced_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
                 this.Hide();
                 var tableDialog = new Form2_TableEditorDialog();
                 if (_mainDashboard != null)
@@ -253,25 +797,20 @@ namespace QASmartTouch.Forms
                     tableDialog.Owner = _mainDashboard;
                 }
                 bool? result = tableDialog.ShowDialog();
-                
                 if (result == true && tableDialog.ResultTableData != null)
                 {
-                    // Insert table to canvas
                     _mainDashboard?.InsertTableToCanvas(tableDialog.ResultTableData);
-                    System.Diagnostics.Debug.WriteLine("✅ Table inserted to canvas");
-                    this.Close(); // Đóng menu sau khi chèn thành công
+                    this.Close();
                 }
                 else
                 {
-                    this.Show(); // Hiện lại menu nếu người dùng hủy
+                    this.Show();
                 }
             }
             catch (Exception ex)
             {
                 this.Show();
-                MessageBox.Show($"Lỗi mở trình chỉnh sửa bảng: {ex.Message}", "Lỗi", 
-                              MessageBoxButton.OK, MessageBoxImage.Error);
-                System.Diagnostics.Debug.WriteLine($"❌ Table editor error: {ex.Message}");
+                MessageBox.Show($"Lỗi mở tùy chỉnh bảng: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -279,29 +818,34 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                // Ẩn menu trước khi mở dialog con để không bị chồng cửa sổ
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:SmartNote",
+                    "Thẻ ghi chú",
+                    QASmartTouch.Services.Tools.RecentToolsManager.NoteIconPath,
+                    Color.FromRgb(0xF5, 0x9E, 0x0B),
+                    () =>
+                    {
+                        var dlg = new Form2_SmartNoteDialog();
+                        if (WindowHelper.ShowChildDialog(dlg, _mainDashboard) == true && dlg.IsConfirmed && dlg.Model != null)
+                        {
+                            _mainDashboard?.InsertSmartNoteCardToBoard(dlg.Model);
+                        }
+                    },
+                    "Dùng lại: Thêm Thẻ ghi chú / Hộp văn bản");
+
                 this.Hide();
-                var textBoxEditor = new Form2_TextBoxEditor();
-                bool? result = textBoxEditor.ShowDialog();
-                
-                if (result == true && textBoxEditor.IsConfirmed && textBoxEditor.TextBoxControl != null)
+                var noteDialog = new Form2_SmartNoteDialog();
+                bool? result = WindowHelper.ShowChildDialog(noteDialog, _mainDashboard);
+                if (result == true && noteDialog.IsConfirmed && noteDialog.Model != null)
                 {
-                    // Insert text box to canvas
-                    _mainDashboard?.InsertTextBoxToCanvas(textBoxEditor.TextBoxControl);
-                    System.Diagnostics.Debug.WriteLine("✅ Text box inserted to canvas");
-                    this.Close(); // Đóng menu sau khi chèn thành công
+                    _mainDashboard?.InsertSmartNoteCardToBoard(noteDialog.Model);
                 }
-                else
-                {
-                    this.Show(); // Hiện lại menu nếu người dùng hủy
-                }
+                this.Close();
             }
             catch (Exception ex)
             {
                 this.Show();
-                MessageBox.Show($"Lỗi mở trình chỉnh sửa hộp văn bản: {ex.Message}", "Lỗi", 
-                              MessageBoxButton.OK, MessageBoxImage.Error);
-                System.Diagnostics.Debug.WriteLine($"❌ Text box editor error: {ex.Message}");
+                MessageBox.Show($"Lỗi mở hộp thoại văn bản: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -334,6 +878,21 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:3DModel",
+                    "Mô hình 3D",
+                    QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                    Color.FromRgb(0x00, 0xBC, 0xD4),
+                    () =>
+                    {
+                        var ms = new Form2_20_3DModelSelector { Owner = _mainDashboard };
+                        if (ms.ShowDialog() == true && !string.IsNullOrEmpty(ms.SelectedModelPath) && ms.SelectedModel != null)
+                        {
+                            _mainDashboard?.Insert3DModelToCanvas(ms.SelectedModelPath, ms.SelectedModel);
+                        }
+                    },
+                    "Dùng lại: Chèn Mô hình 3D (OBJ/STL)");
+
                 // Ẩn menu trước khi mở dialog con để không bị chồng cửa sổ
                 this.Hide();
                 var modelSelector = new Form2_20_3DModelSelector();
@@ -360,8 +919,21 @@ namespace QASmartTouch.Forms
 
         private void btnOpenYouTube_Click(object sender, RoutedEventArgs e)
         {
+            if (!this.IsVisible) return;
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:YouTube",
+                    "YouTube",
+                    QASmartTouch.Services.Tools.RecentToolsManager.VideoIconPath,
+                    Color.FromRgb(0xFF, 0x00, 0x00),
+                    () =>
+                    {
+                        var yt = new Form2_23_YouTubeBrowser { Topmost = true };
+                        yt.Show();
+                    },
+                    "Dùng lại: Mở YouTube giáo dục");
+
                 // Ẩn menu trước khi mở YouTube browser
                 this.Hide();
                 var youtubeBrowser = new Form2_23_YouTubeBrowser();
@@ -373,7 +945,7 @@ namespace QASmartTouch.Forms
             }
             catch (Exception ex)
             {
-                this.Show();
+                try { this.Show(); } catch { }
                 MessageBox.Show($"Lỗi khi mở YouTube:\n{ex.Message}", 
                               "Lỗi", 
                               MessageBoxButton.OK, 
@@ -384,8 +956,21 @@ namespace QASmartTouch.Forms
 
         private void btnWikipedia_Click(object sender, RoutedEventArgs e)
         {
+            if (!this.IsVisible) return;
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:Wikipedia",
+                    "Wikipedia",
+                    QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
+                    Color.FromRgb(0x2F, 0x35, 0x42),
+                    () =>
+                    {
+                        var wk = new Form2_25_WikipediaBrowser { Topmost = true };
+                        wk.Show();
+                    },
+                    "Dùng lại: Mở Bách khoa toàn thư Wikipedia");
+
                 // Ẩn menu trước khi mở Wikipedia
                 this.Hide();
                 var wikipediaBrowser = new Form2_25_WikipediaBrowser();
@@ -397,7 +982,7 @@ namespace QASmartTouch.Forms
             }
             catch (Exception ex)
             {
-                this.Show();
+                try { this.Show(); } catch { }
                 MessageBox.Show($"Lỗi khi mở Wikipedia:\n{ex.Message}", 
                               "Lỗi", 
                               MessageBoxButton.OK, 
@@ -408,8 +993,21 @@ namespace QASmartTouch.Forms
 
         private void btnGoogleSearch_Click(object sender, RoutedEventArgs e)
         {
+            if (!this.IsVisible) return;
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:GoogleSearch",
+                    "Tìm Google",
+                    QASmartTouch.Services.Tools.RecentToolsManager.OcrIconPath,
+                    Color.FromRgb(0x42, 0x85, 0xF4),
+                    () =>
+                    {
+                        var gs = new Form2_26_GoogleSearchBrowser { Topmost = true };
+                        gs.Show();
+                    },
+                    "Dùng lại: Mở Tìm kiếm Google");
+
                 // Ẩn menu trước khi mở Google Search
                 this.Hide();
                 var googleSearchBrowser = new Form2_26_GoogleSearchBrowser();
@@ -421,7 +1019,7 @@ namespace QASmartTouch.Forms
             }
             catch (Exception ex)
             {
-                this.Show();
+                try { this.Show(); } catch { }
                 MessageBox.Show($"Lỗi khi mở Google Search:\n{ex.Message}", 
                               "Lỗi", 
                               MessageBoxButton.OK, 
@@ -432,6 +1030,7 @@ namespace QASmartTouch.Forms
 
         private void btnBingTranslator_Click(object sender, RoutedEventArgs e)
         {
+            if (!this.IsVisible) return;
             try
             {
                 // Ẩn menu trước khi mở Bing Translator
@@ -506,6 +1105,7 @@ namespace QASmartTouch.Forms
             this.Close();
         }
 
+
         private void btnInsertYouTube_Click(object sender, RoutedEventArgs e)
         {
             SelectedInsertType = "YouTube";
@@ -517,6 +1117,14 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "chart:Bar",
+                    "Biểu đồ cột",
+                    QASmartTouch.Services.Tools.RecentToolsManager.BarChartIconPath,
+                    Color.FromRgb(0x21, 0x96, 0xF3),
+                    () => WindowHelper.ShowChildDialog(new Form2_8_BarChartEditor(_mainDashboard), _mainDashboard),
+                    "Dùng lại: Biểu đồ cột (Bar Chart)");
+
                 // Ẩn menu trước khi mở biểu đồ cột
                 this.Hide();
                 var chartEditor = new Form2_8_BarChartEditor(_mainDashboard);
@@ -535,6 +1143,14 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "chart:Line",
+                    "Biểu đồ đường",
+                    QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                    Color.FromRgb(0x4C, 0xAF, 0x50),
+                    () => WindowHelper.ShowChildDialog(new Form2_9_LineChartEditor(_mainDashboard), _mainDashboard),
+                    "Dùng lại: Biểu đồ đường (Line Chart)");
+
                 // Ẩn menu trước khi mở biểu đồ đường
                 this.Hide();
                 var chartEditor = new Form2_9_LineChartEditor(_mainDashboard);
@@ -553,6 +1169,14 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "chart:Pie",
+                    "Biểu đồ tròn",
+                    QASmartTouch.Services.Tools.RecentToolsManager.PieChartIconPath,
+                    Color.FromRgb(0xFF, 0x98, 0x00),
+                    () => WindowHelper.ShowChildDialog(new Form2_10_PieChartEditor(_mainDashboard), _mainDashboard),
+                    "Dùng lại: Biểu đồ tròn (Pie Chart)");
+
                 // Ẩn menu trước khi mở biểu đồ tròn
                 this.Hide();
                 var chartEditor = new Form2_10_PieChartEditor(_mainDashboard);
@@ -571,6 +1195,14 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "chart:Area",
+                    "Biểu đồ vùng",
+                    QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                    Color.FromRgb(0x9C, 0x27, 0xB0),
+                    () => WindowHelper.ShowChildDialog(new Form2_12_AreaChartEditor(_mainDashboard), _mainDashboard),
+                    "Dùng lại: Biểu đồ vùng (Area Chart)");
+
                 // Ẩn menu trước khi mở biểu đồ vùng
                 this.Hide();
                 var chartEditor = new Form2_12_AreaChartEditor(_mainDashboard);
@@ -589,6 +1221,14 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "chart:Scatter",
+                    "Biểu đồ điểm",
+                    QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                    Color.FromRgb(0xFF, 0x57, 0x22),
+                    () => WindowHelper.ShowChildDialog(new Form2_13_ScatterChartEditor(_mainDashboard), _mainDashboard),
+                    "Dùng lại: Biểu đồ phân tán (Scatter Chart)");
+
                 // Ẩn menu trước khi mở biểu đồ phân tán
                 this.Hide();
                 var chartEditor = new Form2_13_ScatterChartEditor(_mainDashboard);
@@ -610,22 +1250,58 @@ namespace QASmartTouch.Forms
                           "Công thức toán", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        private void btnVariationTable_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:VariationTable",
+                    "Bảng biến thiên",
+                    QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                    Color.FromRgb(0x6C, 0x5C, 0xE7),
+                    () =>
+                    {
+                        var dlg = new Form2_VariationTableDialog(_mainDashboard);
+                        dlg.Owner = _mainDashboard ?? Application.Current.MainWindow;
+                        dlg.ShowDialog();
+                    },
+                    "Dùng lại: Bảng biến thiên & Khảo sát hàm số");
+
+                this.Hide();
+                var dialog = new Form2_VariationTableDialog(_mainDashboard);
+                dialog.Owner = _mainDashboard ?? Application.Current.MainWindow;
+                dialog.ShowDialog();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                this.Show();
+                MessageBox.Show($"Lỗi mở bảng biến thiên: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void btnMathGraph_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Ẩn menu trước khi mở đồ thị hàm số
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:MathGraph2D",
+                    "Đồ thị 2D",
+                    QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                    Color.FromRgb(0x00, 0xB8, 0x94),
+                    () =>
+                    {
+                        var dlg = new Form2_VariationTableDialog(_mainDashboard, defaultToGraph: true);
+                        dlg.Owner = _mainDashboard ?? Application.Current.MainWindow;
+                        dlg.ShowDialog();
+                    },
+                    "Dùng lại: Vẽ Đồ thị hàm số 2D");
+
+                // Ẩn menu trước khi mở đồ thị hàm số 2D (Dùng công cụ Đồ thị & BBT mới offline 100%)
                 this.Hide();
-                var graphEditor = new Form2_GraphEditorUnified(); // 🆕 Unified 2D+3D editor
-                bool? result = WindowHelper.ShowChildDialog(graphEditor, _mainDashboard);
-                
-                if (result == true && graphEditor.ExportedGraphImage != null)
-                {
-                    // Insert graph image to canvas with config
-                    _mainDashboard?.InsertGraphToCanvas(graphEditor.ExportedGraphImage, graphEditor.ExportedConfig);
-                    System.Diagnostics.Debug.WriteLine("✅ Graph (2D/3D) inserted to canvas");
-                }
-                
+                var dialog = new Form2_VariationTableDialog(_mainDashboard, defaultToGraph: true);
+                dialog.Owner = _mainDashboard ?? Application.Current.MainWindow;
+                dialog.ShowDialog();
                 this.Close(); // Đóng menu sau khi đóng form đồ thị
             }
             catch (Exception ex)
@@ -641,6 +1317,21 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:Graph3D",
+                    "Desmos 3D",
+                    QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                    Color.FromRgb(0xE9, 0x1E, 0x63),
+                    () =>
+                    {
+                        var dlg = new Form2_22_Graph3D();
+                        if (WindowHelper.ShowChildDialog(dlg, _mainDashboard) == true && dlg.WasInserted && !string.IsNullOrEmpty(dlg.GraphUrl))
+                        {
+                            _mainDashboard?.InsertGraph3DToCanvas(dlg.GraphUrl);
+                        }
+                    },
+                    "Dùng lại: Đồ thị 3D tương tác (Desmos 3D)");
+
                 // Ẩn menu trước khi mở Graph 3D
                 this.Hide();
                 var Graph3DDialog = new Form2_22_Graph3D();
@@ -668,6 +1359,21 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:Math3DGraph",
+                    "Đồ thị 3D",
+                    QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                    Color.FromRgb(0xE9, 0x1E, 0x63),
+                    () =>
+                    {
+                        var ed = new Form2_Graph3DEditor();
+                        if (WindowHelper.ShowChildDialog(ed, _mainDashboard) == true && ed.ExportedGraphImage != null)
+                        {
+                            _mainDashboard?.InsertGraphToCanvas(ed.ExportedGraphImage, ed.ExportedConfig);
+                        }
+                    },
+                    "Dùng lại: Vẽ Đồ thị 3D z = f(x,y)");
+
                 // Ẩn menu trước khi mở đồ thị 3D
                 this.Hide();
                 var graph3DEditor = new Form2_Graph3DEditor();
@@ -675,8 +1381,8 @@ namespace QASmartTouch.Forms
                 
                 if (result == true && graph3DEditor.ExportedGraphImage != null)
                 {
-                    // Insert 3D graph image to canvas (config not supported yet for old 3D editor)
-                    _mainDashboard?.InsertGraphToCanvas(graph3DEditor.ExportedGraphImage, null);
+                    // Insert 3D graph image to canvas with configuration
+                    _mainDashboard?.InsertGraphToCanvas(graph3DEditor.ExportedGraphImage, graph3DEditor.ExportedConfig);
                     System.Diagnostics.Debug.WriteLine("✅ 3D Graph inserted to canvas");
                 }
                 
@@ -721,6 +1427,18 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:PeriodicTable",
+                    "Bảng tuần hoàn",
+                    QASmartTouch.Services.Tools.RecentToolsManager.PeriodicTableIconPath,
+                    Color.FromRgb(0xE1, 0x70, 0x55),
+                    () =>
+                    {
+                        var ptWin = new PeriodicTable.Views.MainWindow { Topmost = true };
+                        ptWin.Show();
+                    },
+                    "Dùng lại: Bảng tuần hoàn Hóa học");
+
                 // Ẩn menu trước khi mở Bảng tuần hoàn
                 this.Hide();
                 var periodicTableWindow = new PeriodicTable.Views.MainWindow();
@@ -744,6 +1462,7 @@ namespace QASmartTouch.Forms
             {
                 // Ẩn menu trước khi mở AI Copilot
                 this.Hide();
+#if !SMARTTOUCH_STANDALONE
                 var db = QASmartClass.Services.AppServices.Database ?? QASmartClass.Services.AppServices.CreateDb();
                 var copilot = new QASmartClass.TeacherHub.Views.AiCopilotWindow(db);
                 copilot.Owner = this.Owner ?? _mainDashboard;
@@ -797,6 +1516,10 @@ namespace QASmartTouch.Forms
                 {
                     this.Show(); // Re-show menu if user cancelled
                 }
+#else
+                MessageBox.Show("Tính năng AI Copilot tự động tạo câu hỏi yêu cầu phân hệ QA SmartClass.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                this.Show();
+#endif
             }
             catch (Exception ex)
             {
@@ -877,8 +1600,39 @@ namespace QASmartTouch.Forms
 
         private void btnPhETBrowseAll_Click(object sender, RoutedEventArgs e)
         {
-            OpenPhETBrowser("https://phet.colorado.edu/vi/simulations/browse?type=html");
+            try
+            {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:PhET",
+                    "Mô phỏng PhET",
+                    QASmartTouch.Services.Tools.RecentToolsManager.PhysicsLabIconPath,
+                    Color.FromRgb(0x4C, 0xAF, 0x50),
+                    () =>
+                    {
+                        var pw = new Form2_24_PhETCatalogWindow();
+                        pw.SetMainDashboard(_mainDashboard);
+                        WindowHelper.ShowChildDialog(pw, _mainDashboard);
+                    },
+                    "Dùng lại: Thư viện Mô phỏng PhET (Toán, Lý, Hóa, Sinh)");
+
+                this.Hide();
+                var phetWindow = new Form2_24_PhETCatalogWindow();
+                if (_mainDashboard != null)
+                {
+                    phetWindow.SetMainDashboard(_mainDashboard);
+                }
+                WindowHelper.ShowChildDialog(phetWindow, _mainDashboard);
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                this.Show();
+                MessageBox.Show($"Lỗi mở Thư viện Học liệu PhET: {ex.Message}", "Lỗi",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Diagnostics.Debug.WriteLine($"❌ PhET catalog error: {ex.Message}");
+            }
         }
+
 
         /// <summary>
         /// Open PhET Simulation Browser with specified URL
@@ -905,6 +1659,48 @@ namespace QASmartTouch.Forms
         }
 
         // TAB 12: GOOGLE MAPS
+        // KHO HỌC LIỆU 3D YOOBOOK (yoobook.vn/explore)
+        private void btnYooBook_Click(object sender, RoutedEventArgs e)
+        {
+            _mainDashboard?.RegisterRecentTool(
+                "insert:YooBook",
+                "YooBook 3D",
+                QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                Color.FromRgb(0x0F, 0x6B, 0x5D),
+                () =>
+                {
+                    var yb = new Form2_26_YooBookBrowser("https://yoobook.vn/explore");
+                    yb.SetMainDashboard(_mainDashboard);
+                    yb.Owner = _mainDashboard;
+                    yb.ShowDialog();
+                },
+                "Dùng lại: Kho học liệu 3D YooBook");
+            OpenYooBookBrowser("https://yoobook.vn/explore");
+        }
+
+        /// <summary>
+        /// Mở cửa sổ Kho học liệu 3D &amp; Phòng thí nghiệm ảo K12 YooBook (Explore-only + Auto-Login)
+        /// </summary>
+        private void OpenYooBookBrowser(string url)
+        {
+            try
+            {
+                this.Hide();
+                var yooBookBrowser = new Form2_26_YooBookBrowser(url);
+                yooBookBrowser.SetMainDashboard(_mainDashboard);
+                yooBookBrowser.Owner = this.Owner;
+                yooBookBrowser.ShowDialog();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                this.Show();
+                MessageBox.Show($"Lỗi mở Kho học liệu YooBook: {ex.Message}", "Lỗi",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Diagnostics.Debug.WriteLine($"❌ YooBook browser error: {ex.Message}");
+            }
+        }
+
         private void btnGoogleMapsHanoi_Click(object sender, RoutedEventArgs e)
         {
             InsertGoogleMapsLocation("https://www.google.com/maps/@21.0104732,105.8484669,15z");
@@ -1171,102 +1967,12 @@ namespace QASmartTouch.Forms
 
                 if (child is Button button && button != btnClose)
                 {
-                    WireTouchActivationButton(button);
+                    TouchActivationHelper.WireButton(button);
                 }
 
                 // Recurse vào con
                 WireAllInteractiveControls(child);
             }
-        }
-
-        /// <summary>
-        /// QC_4.2_TOUCH_PIPELINE: Wire touch activation cho Button.
-        /// Bắt trực tiếp PreviewTouchDown/Up để đảm bảo Zero 2nd tap.
-        /// Phân biệt tap (< 15px) vs drag scroll (> 15px) để giữ ScrollViewer hoạt động.
-        /// </summary>
-        private void WireTouchActivationButton(Button button)
-        {
-            if (button == null) return;
-            button.Focusable = false;
-            Stylus.SetIsPressAndHoldEnabled(button, false);
-
-            Point? touchStart = null;
-
-            button.PreviewTouchDown += (s, e) =>
-            {
-                touchStart = e.GetTouchPoint(button).Position;
-                e.TouchDevice.Capture(button);
-                e.Handled = true;
-            };
-
-            button.PreviewTouchUp += (s, e) =>
-            {
-                if (e.TouchDevice.Captured == button)
-                {
-                    button.ReleaseTouchCapture(e.TouchDevice);
-                    try
-                    {
-                        var pos = e.GetTouchPoint(button).Position;
-                        double dist = touchStart.HasValue
-                            ? Math.Sqrt(Math.Pow(pos.X - touchStart.Value.X, 2) + Math.Pow(pos.Y - touchStart.Value.Y, 2))
-                            : 0;
-
-                        // Tap (< 15px) → kích hoạt Click; Drag (>= 15px) → nhường cho ScrollViewer
-                        if (dist < 15 &&
-                            pos.X >= 0 && pos.X <= button.ActualWidth &&
-                            pos.Y >= 0 && pos.Y <= button.ActualHeight)
-                        {
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
-                            }), System.Windows.Threading.DispatcherPriority.Normal);
-                        }
-                    }
-                    catch
-                    {
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
-                        }), System.Windows.Threading.DispatcherPriority.Normal);
-                    }
-                }
-                touchStart = null;
-                e.Handled = true;
-            };
-
-            button.PreviewStylusDown += (s, e) =>
-            {
-                e.StylusDevice.Capture(button);
-                e.Handled = true;
-            };
-
-            button.PreviewStylusUp += (s, e) =>
-            {
-                if (e.StylusDevice.Captured == button)
-                {
-                    button.ReleaseStylusCapture();
-                    try
-                    {
-                        var pos = e.GetPosition(button);
-                        if (pos.X >= 0 && pos.X <= button.ActualWidth &&
-                            pos.Y >= 0 && pos.Y <= button.ActualHeight)
-                        {
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
-                            }), System.Windows.Threading.DispatcherPriority.Normal);
-                        }
-                    }
-                    catch
-                    {
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));
-                        }), System.Windows.Threading.DispatcherPriority.Normal);
-                    }
-                }
-                e.Handled = true;
-            };
         }
 
         /// <summary>

@@ -1,3 +1,4 @@
+
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -13,10 +14,17 @@ namespace QASmartTouch.Forms
         private readonly Form2_MainDashboard? _mainDashboard;
         private string? _exportedFilePath;
 
+        /// <summary>
+        /// Đánh dấu người dùng vừa chọn Mở tệp ngay hoặc Mở thư mục bên ngoài,
+        /// giúp cửa sổ bảng chính không tự gọi Activate() đè lên ứng dụng vừa mở.
+        /// </summary>
+        public bool OpenedExternalViewer { get; private set; } = false;
+
         public Form2_20_ExportLectureDialog(Form2_MainDashboard? mainDashboard = null)
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToWindow(this);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             _mainDashboard = mainDashboard ?? Application.Current.MainWindow as Form2_MainDashboard;
             Owner = _mainDashboard;
 
@@ -159,6 +167,9 @@ namespace QASmartTouch.Forms
             pbExport.Minimum = 0;
             pbExport.Maximum = isAllBoards ? totalBoards : 1;
             pbExport.Value = 0;
+            txtProgressStatus.Text = isAllBoards
+                ? $"Đang chuẩn bị xuất dữ liệu... (Trang 1/{totalBoards})"
+                : "Đang chuẩn bị xuất dữ liệu trang hiện tại...";
 
             // Chạy xuất dữ liệu
             Dispatcher.BeginInvoke(new Action(() =>
@@ -181,12 +192,14 @@ namespace QASmartTouch.Forms
                                 {
                                     pbExport.Value = current;
                                     txtProgressStatus.Text = $"Đang xuất bài giảng... (Trang {current}/{total})";
+                                    Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
                                 });
                         }
                         else
                         {
                             pbExport.Value = 1;
                             txtProgressStatus.Text = "Đang kết xuất PDF trang hiện tại...";
+                            Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
                             success = CanvasExportService.ExportToPdf(
                                 _mainDashboard.MainInteractiveBoard,
                                 targetPath,
@@ -220,6 +233,7 @@ namespace QASmartTouch.Forms
                                 {
                                     pbExport.Value = current;
                                     txtProgressStatus.Text = $"Đang lưu hình ảnh... (Trang {current}/{total})";
+                                    Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
                                 });
 
                             targetPath = Path.Combine(outDir, $"{baseName}_Trang_1.{format}");
@@ -228,6 +242,7 @@ namespace QASmartTouch.Forms
                         {
                             pbExport.Value = 1;
                             txtProgressStatus.Text = "Đang lưu hình ảnh trang hiện tại...";
+                            Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
                             success = CanvasExportService.ExportSingleBoardToImage(
                                 _mainDashboard.MainInteractiveBoard,
                                 targetPath,
@@ -279,15 +294,19 @@ namespace QASmartTouch.Forms
             {
                 try
                 {
+                    this.Topmost = false;
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = _exportedFilePath,
                         UseShellExecute = true
                     });
+                    OpenedExternalViewer = true;
+                    this.Close();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Không thể mở tệp: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Topmost = true;
+                    MessageBox.Show(this, $"Không thể mở tệp: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -298,6 +317,9 @@ namespace QASmartTouch.Forms
             {
                 try
                 {
+                    bool launched = false;
+                    this.Topmost = false;
+
                     if (File.Exists(_exportedFilePath))
                     {
                         Process.Start(new ProcessStartInfo
@@ -306,6 +328,7 @@ namespace QASmartTouch.Forms
                             Arguments = $"/select,\"{_exportedFilePath}\"",
                             UseShellExecute = true
                         });
+                        launched = true;
                     }
                     else
                     {
@@ -317,12 +340,24 @@ namespace QASmartTouch.Forms
                                 FileName = dir,
                                 UseShellExecute = true
                             });
+                            launched = true;
                         }
+                    }
+
+                    if (launched)
+                    {
+                        OpenedExternalViewer = true;
+                        this.Close();
+                    }
+                    else
+                    {
+                        this.Topmost = true;
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Không thể mở thư mục: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Topmost = true;
+                    MessageBox.Show(this, $"Không thể mở thư mục: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

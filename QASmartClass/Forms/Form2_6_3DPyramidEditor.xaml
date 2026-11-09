@@ -454,8 +454,8 @@
 
                                         <!-- Vertex Labels Option -->
                                         <CheckBox x:Name="chkShowVertexLabels" 
-                                                  Content="Hiển thị nhãn đỉnh (S, A, B, C...)" 
-                                                  IsChecked="True" 
+                                                  Content="Hiển thị đỉnh và nhãn (S, A, B, C...)" 
+                                                  IsChecked="False" 
                                                   FontSize="12"
                                                   Foreground="#424242"
                                                   Margin="0,0,0,8"

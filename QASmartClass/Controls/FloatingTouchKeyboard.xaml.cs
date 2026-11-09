@@ -52,6 +52,14 @@ namespace QASmartTouch.Controls
         {
             InitializeComponent();
             QASmartTouch.Helpers.InputValidationHelper.ApplyTouchIsolation(this);
+            txtInput.KeyDown += (s, e) =>
+            {
+                if (e.Key == System.Windows.Input.Key.Enter)
+                {
+                    btnConfirm_Click(btnConfirm, new RoutedEventArgs());
+                    e.Handled = true;
+                }
+            };
             this.Visibility = Visibility.Collapsed;
         }
 

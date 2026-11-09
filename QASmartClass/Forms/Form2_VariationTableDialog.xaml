@@ -1,0 +1,268 @@
+<Window x:Class="QASmartTouch.Forms.Form2_VariationTableDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Lệnh Đồ Thị &amp; Bảng Biến Thiên"
+        Width="920" Height="680"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResizeWithGrip"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+
+    <Window.Resources>
+        <Style x:Key="MathKeyBtn" TargetType="Button">
+            <Setter Property="Background" Value="#F1F5F9"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontFamily" Value="Cambria Math, Segoe UI, sans-serif"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#E2E8F0"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#94A3B8"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#CBD5E1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SampleFuncBtn" TargetType="Button">
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Foreground" Value="#0F766E"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="3,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#CCFBF1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#E6FFFA"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Khung viền ngoài bóng mờ -->
+    <Border Background="#F8FBFB" BorderBrush="#168B82" BorderThickness="2" CornerRadius="14" Margin="10">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" Direction="270" ShadowDepth="4" BlurRadius="18" Opacity="0.28"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/> <!-- Header -->
+                <RowDefinition Height="Auto"/> <!-- Input & Quick Math Keys -->
+                <RowDefinition Height="*"/> <!-- Preview Card -->
+                <RowDefinition Height="60"/> <!-- Actions Footer -->
+            </Grid.RowDefinitions>
+
+            <!-- 1. HEADER (Kéo di chuyển & Đóng) -->
+            <Grid Grid.Row="0" Background="#168B82" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <TextBlock Text="📐" FontSize="20" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="LỆNH ĐỒ THỊ &amp; BẢNG BIẾN THIÊN" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    <TextBlock Text="· Offline 100%" FontSize="12" Foreground="#CCFBF1" Margin="10,2,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,6,0">
+                    <Button Click="BtnKeyboard_Click" Width="40" Height="40" Background="Transparent" BorderThickness="0" Margin="0,0,4,0" Cursor="Hand" ToolTip="Bật / Ẩn bàn phím ảo (Bàn phím Windows)">
+                        <Viewbox Width="22" Height="22">
+                            <Canvas Width="24" Height="24">
+                                <Path Fill="White" 
+                                      Data="M19,10H17V8H19M19,13H17V11H19M16,10H14V8H16M16,13H14V11H16M16,17H8V15H16M7,10H5V8H7M7,13H5V11H7M8,11H10V13H8M8,8H10V10H8M11,11H13V13H11M11,8H13V10H11M20,5H4C2.89,5 2,5.89 2,7V17A2,2 0 0,0 4,19H20A2,2 0 0,0 22,17V7C22,5.89 21.1,5 20,5Z"/>
+                            </Canvas>
+                        </Viewbox>
+                    </Button>
+                    <Button Click="BtnClose_Click" Width="40" Height="40" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Đóng">
+                        <TextBlock Text="✕" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- 2. INPUT & BÀN PHÍM CẢM ỨNG TOÁN HỌC -->
+            <StackPanel Grid.Row="1" Margin="20,14,20,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Hàm số y =" FontSize="18" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                    <TextBox Grid.Column="1" x:Name="txtExpression" FontSize="20" FontWeight="SemiBold"
+                             FontFamily="Consolas, Cambria Math, Segoe UI"
+                             Padding="10,6" Background="White" BorderBrush="#168B82" BorderThickness="1.8"
+                             Text="x^3 - 3x + 1" KeyDown="TxtExpression_KeyDown" TextChanged="TxtExpression_TextChanged"/>
+
+                    <Button Grid.Column="2" x:Name="btnPreview" Content="🔍 Phân tích" Click="BtnPreview_Click"
+                            Background="#168B82" Foreground="White" FontSize="15" FontWeight="Bold"
+                            Padding="16,6" Margin="10,0,0,0" Cursor="Hand" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+
+                <!-- Các nút toán học nhập nhanh cảm ứng -->
+                <WrapPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <TextBlock Text="Ký hiệu nhanh:" FontSize="12" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <Button Content="x²" Style="{StaticResource MathKeyBtn}" Click="BtnKey_Click" Tag="^2"/>
+                    <Button Content="x³" Style="{StaticResource MathKeyBtn}" Click="BtnKey_Click" Tag="^3"/>
+                    <Button Content="x⁴" Style="{StaticResource MathKeyBtn}" Click="BtnKey_Click" Tag="^4"/>
+                    <Button Content="x" Style="{StaticResource MathKeyBtn}" Click="BtnKey_Click" Tag="x"/>
+                    <Button Content="+" Style="{StaticResource MathKeyBtn}" Click="BtnKey_Click" Tag=" + "/>
+                    <Button Content="-" Style="{StaticResource MathKeyBtn}" Click="BtnKey_Click" Tag=" - "/>
+                    <Button Content="/" Style="{StaticResource MathKeyBtn}" Click="BtnKey_Click" Tag="/"/>
+                    <Button Content="(" Style="{StaticResource MathKeyBtn}" Click="BtnKey_Click" Tag="("/>
+                    <Button Content=")" Style="{StaticResource MathKeyBtn}" Click="BtnKey_Click" Tag=")"/>
+                </WrapPanel>
+
+                <!-- Các hàm mẫu phổ biến -->
+                <WrapPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <TextBlock Text="Mẫu hàm SGK:" FontSize="12" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <Button Content="Bậc 3: x³ - 3x + 1" Style="{StaticResource SampleFuncBtn}" Click="BtnSample_Click" Tag="x^3 - 3x + 1"/>
+                    <Button Content="Phân thức: (2x + 1)/(x - 1)" Style="{StaticResource SampleFuncBtn}" Click="BtnSample_Click" Tag="(2x + 1)/(x - 1)"/>
+                    <Button Content="Trùng phương: -x⁴ + 2x² + 1" Style="{StaticResource SampleFuncBtn}" Click="BtnSample_Click" Tag="-x^4 + 2x^2 + 1"/>
+                    <Button Content="Bậc 2 / Bậc 1: (x² - x + 1)/(x - 1)" Style="{StaticResource SampleFuncBtn}" Click="BtnSample_Click" Tag="(x^2 - x + 1)/(x - 1)"/>
+                    <Button Content="Parabol: x² - 4x + 3" Style="{StaticResource SampleFuncBtn}" Click="BtnSample_Click" Tag="x^2 - 4x + 3"/>
+                </WrapPanel>
+
+                <TextBlock x:Name="lblErrorMessage" Foreground="#DC2626" FontSize="13" Margin="0,6,0,0" Visibility="Collapsed"/>
+            </StackPanel>
+
+            <!-- 3. VÙNG XEM TRƯỚC (PREVIEW KHỐI BẢNG BIẾN THIÊN HOẶC ĐỒ THỊ) -->
+            <Grid Grid.Row="2" Margin="20,4,20,10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Tabs: Bảng biến thiên vs Đồ thị hàm số -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="btnTabBBT" Content="📈 Bảng biến thiên" Click="BtnTabBBT_Click"
+                            Height="32" Padding="14,0" Background="#168B82" Foreground="White"
+                            FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="btnTabGraph" Content="📊 Đồ thị hàm số 2D" Click="BtnTabGraph_Click"
+                            Height="32" Padding="14,0" Background="#E2E8F0" Foreground="#475569"
+                            FontSize="13" FontWeight="SemiBold" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+
+                <Border Grid.Row="1" Background="White" BorderBrush="#E2E8F0" BorderThickness="1.5" CornerRadius="10">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="14">
+                        <Grid x:Name="pnlPreviewContainer" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <!-- Nội dung preview sẽ được add động bằng VariationCardRenderer hoặc FunctionGraphCardRenderer -->
+                        </Grid>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+
+            <!-- 4. FOOTER: CÁC NÚT HÀNH ĐỘNG -->
+            <Grid Grid.Row="3" Background="#F1F5F9">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="💡 Thẻ xuất ra có thể phóng to, thu nhỏ, di chuyển và xóa tương tự thẻ máy tính Casio."
+                           FontSize="12" Foreground="#64748B" VerticalAlignment="Center" Margin="20,0,0,0"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                    <Button x:Name="btnCancel" Content="Đóng" Click="BtnClose_Click"
+                            Width="90" Height="40" Background="#E2E8F0" Foreground="#475569" FontSize="14" FontWeight="SemiBold"
+                            Margin="0,0,10,0" Cursor="Hand" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <Button x:Name="btnInsertGraphToBoard" Content="📊 Đưa đồ thị lên bảng" Click="BtnInsertGraphToBoard_Click"
+                            Visibility="Collapsed"
+                            Height="40" Padding="14,0" Background="#2563EB" Foreground="White" FontSize="15" FontWeight="Bold"
+                            Margin="0,0,10,0" Cursor="Hand" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <Button x:Name="btnInsertToBoard" Content="↗ Đưa Bảng biến thiên lên bảng" Click="BtnInsertToBoard_Click"
+                            Height="40" Padding="18,0" Background="#168B82" Foreground="White" FontSize="15" FontWeight="Bold"
+                            Cursor="Hand" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

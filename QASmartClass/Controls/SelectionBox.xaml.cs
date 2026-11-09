@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using QASmartTouch.Models;
 using QASmartTouch.Services;
+using QASmartTouch.Services.Tools;
 
 namespace QASmartTouch.Controls
 {
@@ -30,6 +31,17 @@ namespace QASmartTouch.Controls
         private bool _isDragging = false;
         private bool _isRotating = false;
         private bool _isMoving = false; // [BUG_DRAG_MOVE] Drag-to-move state
+        private bool _is3DRotating = false; // 🔄 Phiên xoay không gian 3D
+
+        private bool IsAttached3DRotating()
+        {
+            if (_attachedObject?.Element is FrameworkElement fe && Spatial3DService.Is3DShape(fe))
+            {
+                var data = Spatial3DService.GetShape3DData(fe);
+                return data != null && data.IsRotating3D;
+            }
+            return false;
+        }
         private bool _isManipulating = false;
         private int _activeResizeTouchId = -1;
         private int _activeRotateTouchId = -1;
@@ -172,6 +184,11 @@ namespace QASmartTouch.Controls
         /// </summary>
         public event EventHandler<SelectableObject>? RotateCompleted;
 
+        /// <summary>
+        /// Sự kiện khi người dùng click hoặc tap nhẹ vào đối tượng đã chọn (không phải thao tác kéo di chuyển hay biến đổi)
+        /// </summary>
+        public event EventHandler<SelectableObject>? ObjectTapped;
+
         #endregion
 
         #region Constructor
@@ -191,39 +208,113 @@ namespace QASmartTouch.Controls
             SelectionBorder.MouseMove += SelectionBorder_MouseMove;
             SelectionBorder.MouseLeftButtonUp += SelectionBorder_MouseLeftButtonUp;
 
-            // ✅ TOUCH FIX: Bắt thêm sự kiện nhấc bút/ngón tay để dọn dẹp trạng thái
+            // ✅ TOUCH FIX: Bắt thêm sự kiện nhấc bút/ngón tay để dọn dẹp trạng thái khi không dùng Manipulation
             // Đề phòng Windows "nuốt" mất MouseUp trên màn hình cảm ứng hồng ngoại
-            SelectionBorder.TouchUp += (s, e) => ResetMoveState();
-            SelectionBorder.StylusUp += (s, e) => ResetMoveState();
+            SelectionBorder.TouchUp += (s, e) => { if (!_isManipulating) ResetMoveState(); };
+            SelectionBorder.StylusUp += (s, e) => { if (!_isManipulating) ResetMoveState(); };
+            SelectionBorder.TouchDown += SelectionBorder_TouchDown;
         }
 
         private DateTime _lastClickTime = DateTime.MinValue;
         private void SelectionBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            // Phát hiện Double-Click thủ công (interval ≤ 350ms)
-            var now = DateTime.Now;
-            if ((now - _lastClickTime).TotalMilliseconds <= 350)
+            if (e.StylusDevice != null)
             {
-                // Double-click detected — kiểm tra nếu đối tượng đang chọn là TextBlock
-                if (_attachedObject?.Element is TextBlock)
+                return;
+            }
+
+            if (_attachedObject?.Element is Border noteCard && noteCard.Tag?.ToString() == "SmartNoteCard")
+            {
+                Point ptInCard = e.GetPosition(noteCard);
+                if (QASmartClass.Services.Tools.SmartNoteCardRenderer.TryInvokeHeaderFormatIfHit(noteCard, ptInCard, card =>
                 {
-                    TextEditRequested?.Invoke(this, _attachedObject);
+                    if (Application.Current.MainWindow is QASmartTouch.Forms.Form2_MainDashboard md)
+                    {
+                        md.OpenSmartNoteFormatDialog(card);
+                    }
+                }))
+                {
                     e.Handled = true;
+                    return;
+                }
+            }
+
+            // PhÃ¡t hiá»‡n Double-Click thá»§ cÃ´ng (interval 60ms..400ms Ä‘á»ƒ lá»c nhiá»…u sá»± kiá»‡n trÃ¹ng láº·p < 60ms)
+            var now = DateTime.Now;
+            double elapsedClick = (now - _lastClickTime).TotalMilliseconds;
+            if (elapsedClick >= 60 && elapsedClick <= 400)
+            {
+                bool isEditableTarget = (_attachedObject?.Element is TextBlock tb && tb.Tag?.ToString() != "CalculatorMathCard" && tb.Tag?.ToString() != "CalculatorResult")
+                                     || (_attachedObject?.Element is Border b && b.Tag?.ToString() == "SmartNoteCard");
+
+                if (isEditableTarget)
+                {
+                    _lastClickTime = DateTime.MinValue;
+                    TextEditRequested?.Invoke(this, _attachedObject!);
+                    e.Handled = true;
+                    return;
                 }
             }
             _lastClickTime = now;
 
-            // [BUG_DRAG_MOVE] Bắt đầu drag-to-move nếu không phải double-click và không trong phiên resize/rotate chốt
-            if (_attachedObject != null && !_attachedObject.IsLocked && !_isDragging && !_isRotating && _activeResizeTouchId == -1 && _activeRotateTouchId == -1)
+            // [BUG_DRAG_MOVE] Báº¯t Ä‘áº§u drag-to-move náº¿u khÃ´ng pháº£i double-click vÃ  khÃ´ng trong phiÃªn resize/rotate chá»‘t
+            if (_attachedObject != null && !_attachedObject.IsLocked && !_isDragging && !_isRotating && !_isManipulating && e.StylusDevice == null && _activeResizeTouchId == -1 && _activeRotateTouchId == -1)
             {
+                if (IsAttached3DRotating())
+                {
+                    _is3DRotating = true;
+                    _dragStartPoint = e.GetPosition(this.Parent as UIElement);
+                    _lastMovePoint = _dragStartPoint;
+                    SelectionBorder.CaptureMouse();
+                    e.Handled = true;
+                    return;
+                }
+
                 _isMoving = true;
                 _dragStartPoint = e.GetPosition(this.Parent as UIElement);
                 _lastMovePoint = _dragStartPoint;
                 _originalPosition = _attachedObject.Position;
                 _activeTransformInitialStates = CaptureCurrentTransformStates();
                 SelectionBorder.CaptureMouse();
-                e.Handled = true; // Ngăn sự kiện lọt xuống Canvas nền
+                e.Handled = true; // NgÄƒn sá»± kiá»‡n lá»t xuá»‘ng Canvas ná»n
             }
+        }
+
+        private DateTime _lastTouchTime = DateTime.MinValue;
+        private void SelectionBorder_TouchDown(object? sender, TouchEventArgs e)
+        {
+            if (_attachedObject?.Element is Border noteCard && noteCard.Tag?.ToString() == "SmartNoteCard")
+            {
+                Point ptInCard = e.GetTouchPoint(noteCard).Position;
+                if (QASmartClass.Services.Tools.SmartNoteCardRenderer.TryInvokeHeaderFormatIfHit(noteCard, ptInCard, card =>
+                {
+                    if (Application.Current.MainWindow is QASmartTouch.Forms.Form2_MainDashboard md)
+                    {
+                        md.OpenSmartNoteFormatDialog(card);
+                    }
+                }))
+                {
+                    e.Handled = true;
+                    return;
+                }
+            }
+
+            var now = DateTime.Now;
+            double elapsedTouch = (now - _lastTouchTime).TotalMilliseconds;
+            if (elapsedTouch >= 60 && elapsedTouch <= 400)
+            {
+                bool isEditableTarget = (_attachedObject?.Element is TextBlock tb && tb.Tag?.ToString() != "CalculatorMathCard" && tb.Tag?.ToString() != "CalculatorResult")
+                                     || (_attachedObject?.Element is Border b && b.Tag?.ToString() == "SmartNoteCard");
+
+                if (isEditableTarget)
+                {
+                    _lastTouchTime = DateTime.MinValue;
+                    TextEditRequested?.Invoke(this, _attachedObject!);
+                    e.Handled = true;
+                    return;
+                }
+            }
+                        _lastTouchTime = now;
         }
 
         /// <summary>
@@ -231,11 +322,35 @@ namespace QASmartTouch.Controls
         /// </summary>
         private void SelectionBorder_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_is3DRotating && _attachedObject != null)
+            {
+                Point rotatePt = e.GetPosition(this.Parent as UIElement);
+                double deltaX = rotatePt.X - _lastMovePoint.X;
+                double deltaY = rotatePt.Y - _lastMovePoint.Y;
+
+                if (Math.Abs(deltaX) > 0.5 || Math.Abs(deltaY) > 0.5)
+                {
+                    var fe = _attachedObject.Element as FrameworkElement;
+                    var data = Spatial3DService.GetShape3DData(fe);
+                    if (data != null)
+                    {
+                        Spatial3DService.ApplyRotationDelta(data, deltaX, deltaY);
+                        if (fe is Canvas c)
+                        {
+                            Spatial3DService.Render3DShape(c, data);
+                        }
+                    }
+                    _lastMovePoint = rotatePt;
+                }
+                e.Handled = true;
+                return;
+            }
+
             if (!_isMoving || _attachedObject == null || _attachedObject.IsLocked)
                 return;
 
             // Nếu đang trong phiên kéo chốt góc bằng Touch/Mouse, lập tức ngắt di chuyển body
-            if (_isDragging || _isRotating || _activeResizeTouchId != -1 || _activeRotateTouchId != -1)
+            if (_isDragging || _isRotating || (e is MouseEventArgs && (_isManipulating || e.StylusDevice != null)) || _activeResizeTouchId != -1 || _activeRotateTouchId != -1)
             {
                 _isMoving = false;
                 if (SelectionBorder.IsMouseCaptured)
@@ -289,13 +404,38 @@ namespace QASmartTouch.Controls
         /// </summary>
         private void SelectionBorder_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            if (_isManipulating || e.StylusDevice != null)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            if (_is3DRotating)
+            {
+                _is3DRotating = false;
+                if (SelectionBorder.IsMouseCaptured)
+                {
+                    SelectionBorder.ReleaseMouseCapture();
+                }
+                e.Handled = true;
+                return;
+            }
+
             if (_isMoving)
             {
                 _isMoving = false;
 
-                // Cập nhật bounds trong QuadTree
-                _attachedObject?.UpdateBounds();
-                FinishTransformOperation("Move object");
+                Point endPoint = e.GetPosition(this.Parent as UIElement);
+                double dist = (endPoint - _dragStartPoint).Length;
+                if (dist > 3)
+                {
+                    _attachedObject?.UpdateBounds();
+                    FinishTransformOperation("Move object");
+                }
+                else
+                {
+                    RaiseObjectTapped(_attachedObject);
+                }
             }
 
             if (SelectionBorder.IsMouseCaptured)
@@ -318,6 +458,8 @@ namespace QASmartTouch.Controls
         public void AttachTo(SelectableObject obj)
         {
             _attachedObject = obj;
+            _lastClickTime = DateTime.Now;
+            _lastTouchTime = DateTime.Now;
             // ✅ REVIEW-FIX #2: Khởi tạo _originalSize khi attach để Pinch-to-Zoom
             // không bị Infinity% nếu giáo viên Pinch trước khi kéo chốt góc
             _originalSize = obj.Size;
@@ -359,6 +501,15 @@ namespace QASmartTouch.Controls
                 return;
 
             bool wasRotating = _isRotating;
+            if (_is3DRotating)
+            {
+                _is3DRotating = false;
+                if (SelectionBorder.IsMouseCaptured)
+                {
+                    SelectionBorder.ReleaseMouseCapture();
+                }
+            }
+
             if (_isMoving) FinishTransformOperation("Move object");
             if (_isDragging) FinishTransformOperation("Resize object");
             if (_isRotating) FinishTransformOperation("Rotate object");
@@ -429,7 +580,7 @@ namespace QASmartTouch.Controls
         private void ResizeHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
             // Bỏ qua sự kiện chuột ảo nếu đang có ngón tay cảm ứng tương tác
-            if (_activeResizeTouchId != -1)
+            if (_activeResizeTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -484,7 +635,7 @@ namespace QASmartTouch.Controls
         private void ResizeHandle_MouseMove(object sender, MouseEventArgs e)
         {
             // Bỏ qua sự kiện chuột ảo nếu đang có ngón tay cảm ứng tương tác
-            if (_activeResizeTouchId != -1)
+            if (_activeResizeTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -504,7 +655,7 @@ namespace QASmartTouch.Controls
 
         private void ResizeHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (_activeResizeTouchId != -1)
+            if (_activeResizeTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -537,6 +688,15 @@ namespace QASmartTouch.Controls
                 return;
 
             // Chủ động dọn dẹp mọi cờ kéo di chuyển cũ bị kẹt do chuột ảo
+            if (_is3DRotating)
+            {
+                _is3DRotating = false;
+                if (SelectionBorder.IsMouseCaptured)
+                {
+                    SelectionBorder.ReleaseMouseCapture();
+                }
+            }
+
             if (_isMoving)
             {
                 _isMoving = false;
@@ -647,7 +807,7 @@ namespace QASmartTouch.Controls
         private void RotateHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
             // Bỏ qua chuột ảo nếu ngón tay cảm ứng đang thao tác
-            if (_activeRotateTouchId != -1)
+            if (_activeRotateTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -704,7 +864,7 @@ namespace QASmartTouch.Controls
         private void RotateHandle_MouseMove(object sender, MouseEventArgs e)
         {
             // Bỏ qua chuột ảo nếu ngón tay cảm ứng đang thao tác
-            if (_activeRotateTouchId != -1)
+            if (_activeRotateTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -763,7 +923,7 @@ namespace QASmartTouch.Controls
 
         private void RotateHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (_activeRotateTouchId != -1)
+            if (_activeRotateTouchId != -1 || (e is MouseEventArgs && e.StylusDevice != null))
             {
                 e.Handled = true;
                 return;
@@ -800,6 +960,15 @@ namespace QASmartTouch.Controls
                 return;
 
             // Chủ động dọn dẹp mọi cờ kéo di chuyển cũ bị kẹt do chuột ảo
+            if (_is3DRotating)
+            {
+                _is3DRotating = false;
+                if (SelectionBorder.IsMouseCaptured)
+                {
+                    SelectionBorder.ReleaseMouseCapture();
+                }
+            }
+
             if (_isMoving)
             {
                 _isMoving = false;
@@ -967,11 +1136,33 @@ namespace QASmartTouch.Controls
                 return;
             }
 
+            if (IsAttached3DRotating() && _attachedObject != null)
+            {
+                double rotX = e.DeltaManipulation.Translation.X;
+                double rotY = e.DeltaManipulation.Translation.Y;
+
+                if (Math.Abs(rotX) > 0.5 || Math.Abs(rotY) > 0.5)
+                {
+                    var fe = _attachedObject.Element as FrameworkElement;
+                    var data = Spatial3DService.GetShape3DData(fe);
+                    if (data != null)
+                    {
+                        Spatial3DService.ApplyRotationDelta(data, rotX, rotY);
+                        if (fe is Canvas c)
+                        {
+                            Spatial3DService.Render3DShape(c, data);
+                        }
+                    }
+                }
+                e.Handled = true;
+                return;
+            }
+
             // [BUG_DRAG_MOVE] Handle 1-finger Translation (di chuyển)
             double transX = e.DeltaManipulation.Translation.X;
             double transY = e.DeltaManipulation.Translation.Y;
 
-            if (Math.Abs(transX) > 0.5 || Math.Abs(transY) > 0.5)
+            if (transX != 0 || transY != 0)
             {
                 // ✅ QC_4.2_GRID_PROTECT (G-4): Không di chuyển background elements bằng touch manipulation
                 if (QASmartTouch.Services.SelectionManager.IsBackgroundElement(_attachedObject.Element))
@@ -1009,6 +1200,13 @@ namespace QASmartTouch.Controls
 
         private void SelectionBorder_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
+            if (IsAttached3DRotating())
+            {
+                _isManipulating = false;
+                e.Handled = true;
+                return;
+            }
+
             // Bỏ qua dọn dẹp nếu phiên kéo chốt vẫn đang diễn ra
             if (_isDragging || _isRotating || _activeResizeTouchId != -1 || _activeRotateTouchId != -1)
             {
@@ -1019,17 +1217,34 @@ namespace QASmartTouch.Controls
 
             ScaleTooltip.Visibility = Visibility.Collapsed;
 
-            // Cập nhật bounds cho QuadTree spatial index sau khi di chuyển/zoom bằng touch
-            if (_attachedObject != null)
+            double totalTranslation = e.TotalManipulation.Translation.Length;
+            if (totalTranslation < 8)
             {
+                // Touch tap nhẹ vào đối tượng đã chọn (không di chuyển)
+                RaiseObjectTapped(_attachedObject);
+            }
+            else if (_attachedObject != null)
+            {
+                // Cập nhật bounds cho QuadTree spatial index sau khi di chuyển/zoom bằng touch
                 _attachedObject.UpdateBounds();
                 ObjectTransformed?.Invoke(this, _attachedObject);
+                FinishTransformOperation("Transform object");
             }
 
-            FinishTransformOperation("Transform object");
             ResetMoveState();
 
             e.Handled = true;
+        }
+
+        private DateTime _lastTappedTime = DateTime.MinValue;
+        private void RaiseObjectTapped(SelectableObject? obj)
+        {
+            if (obj == null) return;
+            var now = DateTime.Now;
+            if ((now - _lastTappedTime).TotalMilliseconds < 350)
+                return;
+            _lastTappedTime = now;
+            ObjectTapped?.Invoke(this, obj);
         }
 
         #endregion

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -32,214 +32,432 @@ namespace QASmartTouch.Forms
 {
     public partial class Form2_MainDashboard
     {
-        #region PhET Simulation Integration
+        #region PhET & YooBook Simulation Integration
 
         /// <summary>
-        /// Insert PhET simulation into canvas as embedded WebView2 with drag handles and control buttons
+        /// QC_4.2_PHET_UMIND_WIDGET: Chèn mô phỏng PhET vào Canvas theo kiến trúc Unified Container (UMind Style) đồng bộ,
+        /// loại bỏ hoàn toàn 4 dải viền xanh rời rạc bao quanh. Tích hợp Header Bar kéo thả chuẩn kép (Touch + Mouse + Stylus)
+        /// và các nút thao tác nhanh (Tải lại, Thu nhỏ, Phóng to, Đóng/Xóa).
         /// </summary>
-        public void InsertPhETSimulation(string simulationUrl)
+        public void InsertPhETSimulation(string simulationUrl, string? title = null, string? returnBrowseUrl = null)
+        {
+            bool isYooBook = !string.IsNullOrWhiteSpace(simulationUrl) &&
+                             simulationUrl.IndexOf("yoobook.vn", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (isYooBook)
+            {
+                InsertYooBookSimulation(simulationUrl, title, returnBrowseUrl);
+                return;
+            }
+
+            InsertEmbeddedWebWidgetUnified(
+                url: simulationUrl,
+                badgeText: "⚛️ PhET",
+                badgeColor: Color.FromRgb(0, 137, 123), // Teal #00897B
+                defaultTitle: "Mô phỏng Tương tác PhET",
+                customTitle: title,
+                containerTag: "PhETSimulation",
+                fallbackBackUrl: returnBrowseUrl,
+                isYooBook: false);
+        }
+
+        /// <summary>
+        /// QC_4.2_YOOBOOK_UMIND_WIDGET: Chèn học liệu 3D & Phòng thí nghiệm ảo YooBook vào Canvas theo kiến trúc Unified Container (UMind Style).
+        /// Tự động dùng chung phiên đăng nhập WebView2 và ẩn sạch Header/Footer của trang web yoobook.vn.
+        /// </summary>
+        public void InsertYooBookSimulation(string simulationUrl, string? title = null, string? returnBrowseUrl = null)
+        {
+            InsertEmbeddedWebWidgetUnified(
+                url: simulationUrl,
+                badgeText: "🧊 YOOBOOK 3D",
+                badgeColor: Color.FromRgb(13, 148, 136), // Emerald/Teal #0D9488
+                defaultTitle: "Học liệu 3D & Phòng thí nghiệm ảo YooBook",
+                customTitle: title,
+                containerTag: "YooBookSimulation",
+                fallbackBackUrl: string.IsNullOrWhiteSpace(returnBrowseUrl) ? "https://yoobook.vn/explore" : returnBrowseUrl,
+                isYooBook: true);
+        }
+
+        private void InsertEmbeddedWebWidgetUnified(
+            string url,
+            string badgeText,
+            Color badgeColor,
+            string defaultTitle,
+            string? customTitle,
+            string containerTag,
+            bool isYooBook,
+            string? fallbackBackUrl = null)
         {
             try
             {
-                // Create WebView2 control for embedded simulation
+                const double initialWidth = 800;
+                const double headerHeight = 40;
+                const double borderThickness = 2;
+                double innerWidth = initialWidth - (borderThickness * 2);
+                double contentHeight = Math.Round(innerWidth * 3.0 / 4.0); // Chuẩn tỉ lệ 4:3 (597px)
+                double totalHeight = contentHeight + headerHeight + (borderThickness * 2);
+
+                // 1. Tạo WebView2 Stretch tự động lọt lòng container
                 var webView = new Microsoft.Web.WebView2.Wpf.WebView2
                 {
-                    Width = 800,
-                    Height = 600
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch
                 };
 
-                // Initialize and navigate
-                _ = InitializePhETWebView(webView, simulationUrl);
-
-                // Set WebView size
-                webView.Width = 800;
-                webView.Height = 600;
-
-                // Helper method to create drag handle (positioned on canvas, outside border)
-                Func<string, int, Border> createDragHandle = (pattern, fontSize) =>
+                // 2. Tạo Unified Container (Border ngoài cùng đồng bộ với YouTube / Vật lý / Ảnh / Video, bỏ 4 viền xanh rời)
+                var container = new Border
                 {
-                    var handle = new Border
+                    Width = initialWidth,
+                    Height = totalHeight,
+                    Background = new SolidColorBrush(Color.FromRgb(24, 24, 27)), // #18181B
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(51, 65, 85)), // Viền tối Slate #334155 đồng bộ, không bị viền xanh sáng
+                    BorderThickness = new Thickness(borderThickness),
+                    CornerRadius = new CornerRadius(10, 10, 0, 0),
+                    ClipToBounds = true,
+                    Tag = containerTag,
+                    Effect = new System.Windows.Media.Effects.DropShadowEffect
                     {
-                        Background = new SolidColorBrush(Color.FromArgb(50, 0, 188, 212)), // #00BCD4 with 20% opacity
-                        BorderBrush = new SolidColorBrush(Color.FromArgb(80, 0, 188, 212)),
-                        BorderThickness = new Thickness(1),
-                        Cursor = Cursors.SizeAll,
-                        Tag = "DragHandle"
+                        Color = Colors.Black,
+                        BlurRadius = 16,
+                        ShadowDepth = 4,
+                        Opacity = 0.45
+                    }
+                };
+
+                // 3. Grid 2 hàng: Hàng 0 = Header Bar; Hàng 1 = WebView2
+                var mainGrid = new Grid();
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(headerHeight) });
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+                // 4. Header Bar (UMind Style)
+                var headerBar = new Border
+                {
+                    Height = headerHeight,
+                    Background = new SolidColorBrush(Color.FromRgb(28, 28, 30)), // Dark Slate #1C1C1E
+                    BorderBrush = new SolidColorBrush(Color.FromArgb(50, 255, 255, 255)),
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    CornerRadius = new CornerRadius(8, 8, 0, 0),
+                    Cursor = Cursors.SizeAll,
+                    Tag = "DragHandle"
+                };
+                Grid.SetRow(headerBar, 0);
+
+                Stylus.SetIsPressAndHoldEnabled(headerBar, false);
+                Stylus.SetIsFlicksEnabled(headerBar, false);
+                Stylus.SetIsTapFeedbackEnabled(headerBar, false);
+                Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
+
+                var headerGrid = new Grid();
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                // Cột trái: Biểu tượng kéo (⠿) + Badge + Tiêu đề
+                var leftPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(8, 0, 8, 0),
+                    IsHitTestVisible = false
+                };
+                Grid.SetColumn(leftPanel, 0);
+
+                var gripText = new TextBlock
+                {
+                    Text = "⠿",
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(156, 163, 175)),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(4, 0, 8, 0)
+                };
+                leftPanel.Children.Add(gripText);
+
+                var badgeBorder = new Border
+                {
+                    Background = new SolidColorBrush(badgeColor),
+                    CornerRadius = new CornerRadius(3),
+                    Padding = new Thickness(6, 2, 6, 2),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                badgeBorder.Child = new TextBlock
+                {
+                    Text = badgeText,
+                    FontSize = 10,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.White
+                };
+                leftPanel.Children.Add(badgeBorder);
+
+                string displayTitle = string.IsNullOrWhiteSpace(customTitle) ? defaultTitle : customTitle!.Trim();
+                var titleBlock = new TextBlock
+                {
+                    Text = displayTitle,
+                    Foreground = Brushes.White,
+                    FontSize = 13,
+                    FontWeight = FontWeights.SemiBold,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    ToolTip = url
+                };
+                leftPanel.Children.Add(titleBlock);
+                headerGrid.Children.Add(leftPanel);
+
+                // Cột phải: Các nút điều khiển (Tải lại ↻, Thu nhỏ －, Phóng to ＋, Đóng ✕)
+                var actionPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                Grid.SetColumn(actionPanel, 1);
+
+                Button CreateHeaderButton(string text, string tooltip, Color normalColor, Color hoverColor)
+                {
+                    var btn = new Button
+                    {
+                        Content = text,
+                        Width = 34,
+                        Height = 28,
+                        Margin = new Thickness(4, 0, 0, 0),
+                        Background = new SolidColorBrush(normalColor),
+                        Foreground = Brushes.White,
+                        FontSize = 13,
+                        FontWeight = FontWeights.Bold,
+                        BorderThickness = new Thickness(0),
+                        Cursor = Cursors.Hand,
+                        ToolTip = tooltip
                     };
 
-                    var patternText = new TextBlock
+                    var template = new ControlTemplate(typeof(Button));
+                    var borderFactory = new FrameworkElementFactory(typeof(Border));
+                    borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(5));
+                    borderFactory.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Button.Background))
                     {
-                        Text = pattern,
-                        FontSize = fontSize,
-                        Foreground = new SolidColorBrush(Color.FromArgb(150, 0, 188, 212)),
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        IsHitTestVisible = false,
-                        TextAlignment = TextAlignment.Center,
-                        FontWeight = FontWeights.Bold
-                    };
-                    handle.Child = patternText;
+                        RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+                    });
+                    var presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+                    presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                    presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                    borderFactory.AppendChild(presenterFactory);
+                    template.VisualTree = borderFactory;
+                    btn.Template = template;
 
-                    // Hover effects
-                    handle.MouseEnter += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(100, 0, 188, 212)); // 40% opacity
-                    handle.MouseLeave += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(50, 0, 188, 212)); // 20% opacity
+                    btn.MouseEnter += (s, e) => btn.Background = new SolidColorBrush(hoverColor);
+                    btn.MouseLeave += (s, e) => btn.Background = new SolidColorBrush(normalColor);
 
-                    return handle;
-                };
+                    TouchActivationHelper.WireButton(btn);
+                    return btn;
+                }
 
-                // Create all 4 drag handles (15px, positioned on canvas)
-                var topDragHandle = createDragHandle("═══", 10);
-                topDragHandle.Width = 800;
-                topDragHandle.Height = 15;
-
-                var bottomDragHandle = createDragHandle("═══", 10);
-                bottomDragHandle.Width = 800;
-                bottomDragHandle.Height = 15;
-
-                var leftDragHandle = createDragHandle("║\n║", 10);
-                leftDragHandle.Width = 15;
-                leftDragHandle.Height = 600;
-
-                var rightDragHandle = createDragHandle("║\n║", 10);
-                rightDragHandle.Width = 15;
-                rightDragHandle.Height = 600;
-
-                // Wrap WebView in Border for styling (NO drag handles inside)
-                var border = new Border
+                // Nút Tải lại (↻)
+                // Nút Quay lại (←) để chọn thí nghiệm khác ngay trên bảng
+                var btnBack = CreateHeaderButton("←", "Quay lại danh mục học liệu / trang trước", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnBack.Click += (s, e) =>
                 {
-                    Child = webView,
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(0, 188, 212)), // #00BCD4
-                    BorderThickness = new Thickness(3),
-                    CornerRadius = new CornerRadius(8),
-                    Background = Brushes.White,
-                    Tag = "PhETSimulation", // Tag for identification
-                    Width = 800,
-                    Height = 600
-                };
+                    try
+                    {
+                        if (containerTag == "PhETSimulation")
+                        {
+                            var phetWindow = new Form2_24_PhETCatalogWindow();
+                            phetWindow.SetMainDashboard(this);
+                            phetWindow.SetTargetWidget((newUrl, newTitle) =>
+                            {
+                                if (webView.CoreWebView2 != null)
+                                {
+                                    webView.CoreWebView2.Navigate(newUrl);
+                                }
+                                else
+                                {
+                                    webView.Source = new Uri(newUrl);
+                                }
+                                if (titleBlock != null && !string.IsNullOrWhiteSpace(newTitle))
+                                {
+                                    titleBlock.Text = newTitle;
+                                    titleBlock.ToolTip = newTitle;
+                                }
+                            });
+                            WindowHelper.ShowChildDialog(phetWindow, this);
+                            return;
+                        }
 
-                // Position at center of visible canvas area
-                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - 400;
-                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - 300;
+                        if (webView.CoreWebView2 != null)
+                        {
+                            if (webView.CanGoBack)
+                            {
+                                webView.GoBack();
+                            }
+                            else if (!string.IsNullOrWhiteSpace(fallbackBackUrl))
+                            {
+                                string current = webView.Source?.ToString() ?? string.Empty;
+                                if (!string.Equals(current, fallbackBackUrl, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    webView.CoreWebView2.Navigate(fallbackBackUrl);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[WidgetUnified] Back error: {ex.Message}");
+                    }
+                };
+                actionPanel.Children.Add(btnBack);
+
+                var btnReload = CreateHeaderButton("↻", "Tải lại nội dung", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnReload.Click += (s, e) =>
+                {
+                    try { webView.CoreWebView2?.Reload(); } catch { }
+                };
+                actionPanel.Children.Add(btnReload);
+
+                // Nút Thu nhỏ (－)
+                var btnZoomOut = CreateHeaderButton("－", "Thu nhỏ khung (Zoom -)", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnZoomOut.Click += (s, e) => ZoomPhysicsContainer(container, webView, 1.0 / 1.15);
+                actionPanel.Children.Add(btnZoomOut);
+
+                // Nút Phóng to (＋)
+                var btnZoomIn = CreateHeaderButton("＋", "Phóng to khung (Zoom +)", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnZoomIn.Click += (s, e) => ZoomPhysicsContainer(container, webView, 1.15);
+                actionPanel.Children.Add(btnZoomIn);
+
+                // Nút Đóng / Xóa (✕)
+                var btnDelete = CreateHeaderButton("✕", "Đóng và xóa khỏi bảng", Color.FromRgb(220, 38, 38), Color.FromRgb(239, 68, 68));
+                btnDelete.Click += (s, e) => DeletePhysicsContainer(container);
+                actionPanel.Children.Add(btnDelete);
+
+                headerGrid.Children.Add(actionPanel);
+                headerBar.Child = headerGrid;
+                mainGrid.Children.Add(headerBar);
+
+                // Đặt WebView2 vào hàng 1
+                Grid.SetRow(webView, 1);
+                mainGrid.Children.Add(webView);
+
+                container.Child = mainGrid;
+
+                // 5. Gắn cơ chế Kéo Di Chuyển Chuẩn Kép (Touch + Mouse + Stylus)
+                EnablePhysicsUnifiedDrag(container, headerBar);
+
+                // 6. Khởi tạo WebView2 và cập nhật tiêu đề trang tự động khi tải xong
+                _ = InitializeEmbeddedWebViewAsync(webView, url, isYooBook, docTitle =>
+                {
+                    if (!string.IsNullOrWhiteSpace(docTitle))
+                    {
+                        Dispatcher.Invoke(() => titleBlock.Text = docTitle);
+                    }
+                });
+
+                // 7. Căn giữa khung nhìn hiện tại của bảng
+                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - (initialWidth / 2);
+                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - (totalHeight / 2);
                 double borderLeft = Math.Max(0, centerX);
                 double borderTop = Math.Max(0, centerY);
 
-                Canvas.SetLeft(border, borderLeft);
-                Canvas.SetTop(border, borderTop);
+                Canvas.SetLeft(container, borderLeft);
+                Canvas.SetTop(container, borderTop);
 
-                // Add border to canvas FIRST
-                MainInteractiveBoard.Children.Add(border);
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(container, mediaZ);
+                MainInteractiveBoard.Children.Add(container);
 
-                // Now add drag handles SEPARATELY on canvas (outside border)
-                // Top drag handle
-                Canvas.SetLeft(topDragHandle, borderLeft);
-                Canvas.SetTop(topDragHandle, borderTop - 15);
-                MainInteractiveBoard.Children.Add(topDragHandle);
+                RecordAddAction(container, $"{defaultTitle}: {url}");
+                RefreshSelectableObjects();
 
-                // Bottom drag handle
-                Canvas.SetLeft(bottomDragHandle, borderLeft);
-                Canvas.SetTop(bottomDragHandle, borderTop + 600);
-                MainInteractiveBoard.Children.Add(bottomDragHandle);
-
-                // Left drag handle
-                Canvas.SetLeft(leftDragHandle, borderLeft - 15);
-                Canvas.SetTop(leftDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(leftDragHandle);
-
-                // Right drag handle
-                Canvas.SetLeft(rightDragHandle, borderLeft + 800);
-                Canvas.SetTop(rightDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(rightDragHandle);
-
-                // Create control buttons panel (positioned outside, top-right)
-                var controlPanel = CreatePhETControlPanel();
-                
-                // Position control panel at top-right corner of the border (OUTSIDE)
-                Canvas.SetLeft(controlPanel, borderLeft + 800 + 8); // 8px gap from border
-                Canvas.SetTop(controlPanel, borderTop);
-
-                // Hide control panel by default
-                controlPanel.Visibility = Visibility.Collapsed;
-
-                // Store references to drag handles and control panel in border's Tag
-                var simData = new
-                {
-                    TopDragHandle = topDragHandle,
-                    BottomDragHandle = bottomDragHandle,
-                    LeftDragHandle = leftDragHandle,
-                    RightDragHandle = rightDragHandle,
-                    ControlPanel = controlPanel
-                };
-                border.Tag = simData;
-
-                // Also store border reference in control panel's Tag for backward compatibility
-                controlPanel.Tag = border;
-
-                // Add control panel to canvas
-                MainInteractiveBoard.Children.Add(controlPanel);
-
-                // Show control panel when clicking on drag handles or border
-                MouseButtonEventHandler showControlPanel = (s, e) =>
-                {
-                    controlPanel.Visibility = Visibility.Visible;
-                    System.Diagnostics.Debug.WriteLine("🎛️ Control panel shown");
-                };
-
-                // Attach to all drag handles and border
-                topDragHandle.MouseLeftButtonDown += showControlPanel;
-                bottomDragHandle.MouseLeftButtonDown += showControlPanel;
-                leftDragHandle.MouseLeftButtonDown += showControlPanel;
-                rightDragHandle.MouseLeftButtonDown += showControlPanel;
-                border.MouseLeftButtonDown += showControlPanel;
-
-                // Hide control panel when clicking outside (on canvas)
-                MainInteractiveBoard.PreviewMouseLeftButtonDown += (s, e) =>
-                {
-                    // Check if click is outside the simulation area
-                    var clickedElement = e.OriginalSource as DependencyObject;
-                    
-                    // If clicked element is not part of this simulation, hide control panel
-                    bool isPartOfSimulation = false;
-                    while (clickedElement != null)
-                    {
-                        if (clickedElement == border || 
-                            clickedElement == topDragHandle || 
-                            clickedElement == bottomDragHandle || 
-                            clickedElement == leftDragHandle || 
-                            clickedElement == rightDragHandle ||
-                            clickedElement == controlPanel)
-                        {
-                            isPartOfSimulation = true;
-                            break;
-                        }
-                        // Safe: ContentElement dùng LogicalTreeHelper
-                        clickedElement = (clickedElement is System.Windows.Media.Visual || clickedElement is System.Windows.Media.Media3D.Visual3D)
-                            ? System.Windows.Media.VisualTreeHelper.GetParent(clickedElement)
-                            : LogicalTreeHelper.GetParent(clickedElement);
-                    }
-                    
-                    if (!isPartOfSimulation && controlPanel.Visibility == Visibility.Visible)
-                    {
-                        controlPanel.Visibility = Visibility.Collapsed;
-                        System.Diagnostics.Debug.WriteLine("🎛️ Control panel hidden (clicked outside)");
-                    }
-                };
-
-                // Enable drag-to-move functionality (all 4 drag handles)
-                EnablePhETDragToMove(border, controlPanel, topDragHandle, leftDragHandle, rightDragHandle, bottomDragHandle);
-
-                // Register with selection manager
-                RegisterNewObjectWithSelectionManager(border);
-
-                // Record undo action
-                RecordAddAction(border, $"PhET Simulation: {simulationUrl}");
-
-                System.Diagnostics.Debug.WriteLine($"✅ PhET Simulation inserted with drag handles and external controls: {simulationUrl}");
+                System.Diagnostics.Debug.WriteLine($"✅ {defaultTitle} inserted (UMind Unified Container): {url}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Insert PhET Simulation error: {ex.Message}");
-                MessageBox.Show($"Lỗi chèn mô phỏng PhET:\n{ex.Message}", "Lỗi",
+                System.Diagnostics.Debug.WriteLine($"❌ Insert {defaultTitle} error: {ex.Message}");
+                MessageBox.Show($"Lỗi chèn {defaultTitle}:\n{ex.Message}", "Lỗi",
                               MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Khởi tạo WebView2 cho PhET / YooBook / Google Maps nhúng trên bảng viết.
+        /// Nếu là YooBook thì chia sẻ chung Environment đăng nhập và tiêm CSS ẩn Header/Footer của web.
+        /// </summary>
+        private async Task InitializeEmbeddedWebViewAsync(
+            Microsoft.Web.WebView2.Wpf.WebView2 webView,
+            string url,
+            bool isYooBook,
+            Action<string>? onTitleUpdated = null)
+        {
+            try
+            {
+                if (isYooBook)
+                {
+                    WebView2Helper.InitializeEnvironment();
+                    await WebView2Helper.EnsureInitializedAsync(webView);
+                }
+                else
+                {
+                    await webView.EnsureCoreWebView2Async(null);
+                }
+
+                var core = webView.CoreWebView2;
+                if (core == null) return;
+
+                core.Settings.IsScriptEnabled = true;
+                core.Settings.IsWebMessageEnabled = true;
+                core.Settings.AreDefaultContextMenusEnabled = false;
+                core.Settings.AreDevToolsEnabled = false;
+
+                if (isYooBook)
+                {
+                    const string cleanExploreCssScript = @"
+(function() {
+    function injectStyle() {
+        if (document.getElementById('qa-smarttouch-yoobook-embed-style')) return;
+        var style = document.createElement('style');
+        style.id = 'qa-smarttouch-yoobook-embed-style';
+        style.textContent = `
+            header.yb-app, header.yb-glass-nav, body > div > header, body > div > header + div.h-16,
+            footer, body > div > footer {
+                display: none !important;
+                height: 0 !important;
+                overflow: hidden !important;
+            }
+            main { padding-top: 0 !important; margin-top: 0 !important; }
+        `;
+        (document.head || document.documentElement).appendChild(style);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectStyle);
+    else injectStyle();
+    new MutationObserver(injectStyle).observe(document.documentElement, { childList: true, subtree: true });
+})();";
+                    await core.AddScriptToExecuteOnDocumentCreatedAsync(cleanExploreCssScript);
+                }
+
+                core.NewWindowRequested += (s, e) =>
+                {
+                    e.Handled = true;
+                    if (!string.IsNullOrWhiteSpace(e.Uri))
+                    {
+                        core.Navigate(e.Uri);
+                    }
+                };
+
+                core.NavigationCompleted += (s, e) =>
+                {
+                    try
+                    {
+                        if (e.IsSuccess && !string.IsNullOrWhiteSpace(core.DocumentTitle))
+                        {
+                            onTitleUpdated?.Invoke(core.DocumentTitle);
+                        }
+                    }
+                    catch { }
+                };
+
+                core.Navigate(url);
+                System.Diagnostics.Debug.WriteLine($"✅ Embedded WebView initialized: {url}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Embedded WebView init error: {ex.Message}");
             }
         }
 
@@ -806,15 +1024,21 @@ namespace QASmartTouch.Forms
 
 
 
-                // Tối ưu cảm ứng: Tắt press-and-hold delay và gestures của Windows trên thanh kéo
-
+                // Tối ưu cảm ứng: Tắt press-and-hold delay và gestures của Windows trên thanh kéo và thân ảnh
                 Stylus.SetIsPressAndHoldEnabled(headerBar, false);
-
                 Stylus.SetIsFlicksEnabled(headerBar, false);
-
                 Stylus.SetIsTapFeedbackEnabled(headerBar, false);
-
                 Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
+
+                Stylus.SetIsPressAndHoldEnabled(container, false);
+                Stylus.SetIsFlicksEnabled(container, false);
+                Stylus.SetIsTapFeedbackEnabled(container, false);
+                Stylus.SetIsTouchFeedbackEnabled(container, false);
+
+                Stylus.SetIsPressAndHoldEnabled(imageControl, false);
+                Stylus.SetIsFlicksEnabled(imageControl, false);
+                Stylus.SetIsTapFeedbackEnabled(imageControl, false);
+                Stylus.SetIsTouchFeedbackEnabled(imageControl, false);
 
 
 
@@ -1092,6 +1316,15 @@ namespace QASmartTouch.Forms
 
                 mainGrid.Children.Add(imageControl);
 
+                // ✨ CONTAINER-OWNED INKING: Lớp mực vẽ chuyên dụng nổi trên ảnh, tự động di chuyển theo ảnh
+                var imageInkPresenter = new InkPresenter
+                {
+                    IsHitTestVisible = false,
+                    Tag = "ImageInkPresenter"
+                };
+                Grid.SetRow(imageInkPresenter, 1);
+                mainGrid.Children.Add(imageInkPresenter);
+
 
 
                 container.Child = mainGrid;
@@ -1144,8 +1377,9 @@ namespace QASmartTouch.Forms
 
 
 
-                // 8. Đưa Container vào bảng và ghi nhận Undo
-
+                // 8. Đưa Container vào bảng và ghi nhận Undo (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(container, mediaZ);
                 MainInteractiveBoard.Children.Add(container);
 
                 RecordAddAction(container, $"Interactive Image: {sourceUrl}");
@@ -1468,7 +1702,7 @@ namespace QASmartTouch.Forms
 
             {
 
-                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                if (activeTouchId.HasValue || e.StylusDevice != null || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
 
                     return;
 
@@ -1506,7 +1740,7 @@ namespace QASmartTouch.Forms
 
             {
 
-                if (isMouseDragging && !activeTouchId.HasValue)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
 
                 {
 
@@ -1542,7 +1776,7 @@ namespace QASmartTouch.Forms
 
             {
 
-                if (isMouseDragging)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
 
                 {
 
@@ -1789,7 +2023,8 @@ namespace QASmartTouch.Forms
                 Canvas.SetLeft(container, borderLeft);
                 Canvas.SetTop(container, borderTop);
 
-                // Thêm duy nhất 1 container vào bảng (Kiến trúc đơn lẻ, không còn 6 phần tử rời rạc)
+                // Thêm duy nhất 1 container vào bảng (QC_4.2_YOUTUBE_ZINDEX: YouTube mang ZIndex EmbeddedBrowser = 1100, luôn nổi trên toàn bộ nét chữ dù viết trước hay sau)
+                Panel.SetZIndex(container, QASmartTouch.Helpers.ZIndexConstants.EmbeddedBrowser);
                 MainInteractiveBoard.Children.Add(container);
 
                 // Ghi nhận Undo/Redo
@@ -1948,7 +2183,7 @@ namespace QASmartTouch.Forms
 
             headerBar.PreviewMouseLeftButtonDown += (s, e) =>
             {
-                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                if (activeTouchId.HasValue || e.StylusDevice != null || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
                     return;
 
                 _isDrawing = false;
@@ -1967,7 +2202,7 @@ namespace QASmartTouch.Forms
 
             headerBar.MouseMove += (s, e) =>
             {
-                if (isMouseDragging && !activeTouchId.HasValue)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                 {
                     Point currentPoint = e.GetPosition(MainInteractiveBoard);
                     double offsetX = currentPoint.X - mouseStartPoint.X;
@@ -1985,7 +2220,7 @@ namespace QASmartTouch.Forms
 
             MouseButtonEventHandler endMouse = (s, e) =>
             {
-                if (isMouseDragging)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                 {
                     isMouseDragging = false;
                     try { headerBar.ReleaseMouseCapture(); } catch { }
@@ -2014,7 +2249,7 @@ namespace QASmartTouch.Forms
 
             headerBar.PreviewStylusDown += (s, e) =>
             {
-                if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
                     return;
 
                 _isDrawing = false;
@@ -2033,7 +2268,7 @@ namespace QASmartTouch.Forms
 
             headerBar.PreviewStylusMove += (s, e) =>
             {
-                if (isStylusDragging)
+                if (isStylusDragging && !activeTouchId.HasValue && e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus)
                 {
                     Point currentPoint = e.GetPosition(MainInteractiveBoard);
                     double offsetX = currentPoint.X - stylusStartPoint.X;
@@ -2051,7 +2286,7 @@ namespace QASmartTouch.Forms
 
             StylusEventHandler endStylus = (s, e) =>
             {
-                if (isStylusDragging)
+                if (isStylusDragging && e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus)
                 {
                     isStylusDragging = false;
                     try { headerBar.ReleaseStylusCapture(); } catch { }
@@ -2547,212 +2782,20 @@ namespace QASmartTouch.Forms
         #region Google Maps Integration
 
         /// <summary>
-        /// Insert Google Maps at center of canvas with drag handles and control panel
+        /// QC_4.2_MAPS_UMIND_WIDGET: Chèn bản đồ Google Maps vào Canvas theo kiến trúc Unified Container (UMind Style) đồng bộ,
+        /// loại bỏ hoàn toàn 4 dải viền xanh rời rạc bao quanh. Tích hợp Header Bar kéo thả chuẩn kép (Touch + Mouse + Stylus)
+        /// và các nút thao tác nhanh (Tải lại, Thu nhỏ, Phóng to, Đóng/Xóa).
         /// </summary>
-        public void InsertGoogleMaps(string mapsUrl)
+        public void InsertGoogleMaps(string mapsUrl, string? title = null)
         {
-            try
-            {
-                // Create WebView2 control for embedded Google Maps
-                var webView = new Microsoft.Web.WebView2.Wpf.WebView2
-                {
-                    Width = 800,
-                    Height = 600
-                };
-
-                // Initialize and navigate
-                _ = InitializeGoogleMapsWebView(webView, mapsUrl);
-
-                // Set WebView size
-                webView.Width = 800;
-                webView.Height = 600;
-
-                // Helper method to create drag handle (positioned on canvas, outside border)
-                Func<string, int, Border> createDragHandle = (pattern, fontSize) =>
-                {
-                    var handle = new Border
-                    {
-                        Background = new SolidColorBrush(Color.FromArgb(51, 66, 133, 244)), // #4285F4 with 20% opacity
-                        BorderBrush = new SolidColorBrush(Color.FromArgb(204, 66, 133, 244)), // #4285F4 with 80% opacity
-                        BorderThickness = new Thickness(1),
-                        Cursor = Cursors.SizeAll,
-                        Tag = "DragHandle"
-                    };
-
-                    var patternText = new TextBlock
-                    {
-                        Text = pattern,
-                        FontSize = fontSize,
-                        Foreground = new SolidColorBrush(Color.FromArgb(150, 66, 133, 244)), // #4285F4
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        IsHitTestVisible = false,
-                        TextAlignment = TextAlignment.Center,
-                        FontWeight = FontWeights.Bold
-                    };
-                    handle.Child = patternText;
-
-                    // Hover effects
-                    handle.MouseEnter += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(102, 66, 133, 244)); // 40% opacity
-                    handle.MouseLeave += (s, e) => handle.Background = new SolidColorBrush(Color.FromArgb(51, 66, 133, 244)); // 20% opacity
-
-                    return handle;
-                };
-
-                // Create all 4 drag handles (15px, positioned on canvas)
-                var topDragHandle = createDragHandle("═══", 10);
-                topDragHandle.Width = 800;
-                topDragHandle.Height = 15;
-
-                var bottomDragHandle = createDragHandle("═══", 10);
-                bottomDragHandle.Width = 800;
-                bottomDragHandle.Height = 15;
-
-                var leftDragHandle = createDragHandle("║\n║", 10);
-                leftDragHandle.Width = 15;
-                leftDragHandle.Height = 600;
-
-                var rightDragHandle = createDragHandle("║\n║", 10);
-                rightDragHandle.Width = 15;
-                rightDragHandle.Height = 600;
-
-                // Wrap WebView in Border for styling (NO drag handles inside)
-                var border = new Border
-                {
-                    Child = webView,
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(66, 133, 244)), // #4285F4 (Google Blue)
-                    BorderThickness = new Thickness(3),
-                    CornerRadius = new CornerRadius(8),
-                    Background = Brushes.White,
-                    Tag = "GoogleMaps", // Tag for identification
-                    Width = 800,
-                    Height = 600
-                };
-
-                // Position at center of visible canvas area
-                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - 400;
-                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - 300;
-                double borderLeft = Math.Max(0, centerX);
-                double borderTop = Math.Max(0, centerY);
-
-                Canvas.SetLeft(border, borderLeft);
-                Canvas.SetTop(border, borderTop);
-
-                // Add border to canvas FIRST
-                MainInteractiveBoard.Children.Add(border);
-
-                // Now add drag handles SEPARATELY on canvas (outside border)
-                // Top drag handle
-                Canvas.SetLeft(topDragHandle, borderLeft);
-                Canvas.SetTop(topDragHandle, borderTop - 15);
-                MainInteractiveBoard.Children.Add(topDragHandle);
-
-                // Bottom drag handle
-                Canvas.SetLeft(bottomDragHandle, borderLeft);
-                Canvas.SetTop(bottomDragHandle, borderTop + 600);
-                MainInteractiveBoard.Children.Add(bottomDragHandle);
-
-                // Left drag handle
-                Canvas.SetLeft(leftDragHandle, borderLeft - 15);
-                Canvas.SetTop(leftDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(leftDragHandle);
-
-                // Right drag handle
-                Canvas.SetLeft(rightDragHandle, borderLeft + 800);
-                Canvas.SetTop(rightDragHandle, borderTop);
-                MainInteractiveBoard.Children.Add(rightDragHandle);
-
-                // Create control buttons panel (positioned outside, top-right)
-                var controlPanel = CreateGoogleMapsControlPanel();
-                
-                // Position control panel at top-right corner of the border (OUTSIDE)
-                Canvas.SetLeft(controlPanel, borderLeft + 800 + 8); // 8px gap from border
-                Canvas.SetTop(controlPanel, borderTop);
-
-                // Hide control panel by default
-                controlPanel.Visibility = Visibility.Collapsed;
-
-                // Store references to drag handles and control panel in border's Tag
-                var simData = new
-                {
-                    TopDragHandle = topDragHandle,
-                    BottomDragHandle = bottomDragHandle,
-                    LeftDragHandle = leftDragHandle,
-                    RightDragHandle = rightDragHandle,
-                    ControlPanel = controlPanel
-                };
-                border.Tag = simData;
-
-                // Also store border reference in control panel's Tag for backward compatibility
-                controlPanel.Tag = border;
-
-                // Add control panel to canvas
-                MainInteractiveBoard.Children.Add(controlPanel);
-
-                // Show control panel when clicking on drag handles or border
-                MouseButtonEventHandler showControlPanel = (s, e) =>
-                {
-                    controlPanel.Visibility = Visibility.Visible;
-                    System.Diagnostics.Debug.WriteLine("🎛️ Google Maps control panel shown");
-                };
-
-                // Attach to all drag handles and border
-                topDragHandle.MouseLeftButtonDown += showControlPanel;
-                bottomDragHandle.MouseLeftButtonDown += showControlPanel;
-                leftDragHandle.MouseLeftButtonDown += showControlPanel;
-                rightDragHandle.MouseLeftButtonDown += showControlPanel;
-                border.MouseLeftButtonDown += showControlPanel;
-
-                // Hide control panel when clicking outside (on canvas)
-                MainInteractiveBoard.PreviewMouseLeftButtonDown += (s, e) =>
-                {
-                    // Check if click is outside the simulation area
-                    var clickedElement = e.OriginalSource as DependencyObject;
-                    
-                    // If clicked element is not part of this simulation, hide control panel
-                    bool isPartOfSimulation = false;
-                    while (clickedElement != null)
-                    {
-                        if (clickedElement == border || 
-                            clickedElement == topDragHandle || 
-                            clickedElement == bottomDragHandle || 
-                            clickedElement == leftDragHandle || 
-                            clickedElement == rightDragHandle ||
-                            clickedElement == controlPanel)
-                        {
-                            isPartOfSimulation = true;
-                            break;
-                        }
-                        // Safe: ContentElement dùng LogicalTreeHelper
-                        clickedElement = (clickedElement is System.Windows.Media.Visual || clickedElement is System.Windows.Media.Media3D.Visual3D)
-                            ? System.Windows.Media.VisualTreeHelper.GetParent(clickedElement)
-                            : LogicalTreeHelper.GetParent(clickedElement);
-                    }
-                    
-                    if (!isPartOfSimulation && controlPanel.Visibility == Visibility.Visible)
-                    {
-                        controlPanel.Visibility = Visibility.Collapsed;
-                        System.Diagnostics.Debug.WriteLine("🎛️ Google Maps control panel hidden (clicked outside)");
-                    }
-                };
-
-                // Enable drag-to-move functionality (all 4 drag handles)
-                EnableGoogleMapsDragToMove(border, controlPanel, topDragHandle, leftDragHandle, rightDragHandle, bottomDragHandle);
-
-                // Register with selection manager for selection/deselection
-                RegisterNewObjectWithSelectionManager(border);
-
-                // Record undo action
-                RecordAddAction(border, "Inserted Google Maps");
-
-                System.Diagnostics.Debug.WriteLine($"🗺️ Google Maps inserted at ({borderLeft}, {borderTop}): {mapsUrl}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Google Maps insert error: {ex.Message}");
-                MessageBox.Show($"Lỗi khi chèn Google Maps: {ex.Message}", "Lỗi", 
-                               MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            InsertEmbeddedWebWidgetUnified(
+                url: mapsUrl,
+                badgeText: "🗺️ MAPS",
+                badgeColor: Color.FromRgb(37, 99, 235), // Blue #2563EB
+                defaultTitle: "Bản đồ Google Maps",
+                customTitle: title,
+                containerTag: "InteractiveGoogleMaps",
+                isYooBook: false);
         }
 
         /// <summary>
@@ -2766,7 +2809,8 @@ namespace QASmartTouch.Forms
                 var Graph3DControl = new QASmartTouch.Controls.Graph3DControl(graphUrl)
                 {
                     Width = 600,
-                    Height = 450
+                    Height = 450,
+                    ShowInternalTitleBar = false
                 };
 
                 // Create Top Drag Handle Bar for 3D Graph
@@ -2776,8 +2820,13 @@ namespace QASmartTouch.Forms
                     Background = new SolidColorBrush(Color.FromRgb(41, 128, 185)),
                     CornerRadius = new CornerRadius(6, 6, 0, 0),
                     Cursor = Cursors.SizeAll,
+                    Tag = "DragHandle",
                     ToolTip = "Nhấn giữ để di chuyển Đồ thị 3D trên màn hình"
                 };
+                Stylus.SetIsPressAndHoldEnabled(dragHandleBar, false);
+                Stylus.SetIsFlicksEnabled(dragHandleBar, false);
+                Stylus.SetIsTapFeedbackEnabled(dragHandleBar, false);
+                Stylus.SetIsTouchFeedbackEnabled(dragHandleBar, false);
 
                 var titleText = new TextBlock
                 {
@@ -2804,6 +2853,7 @@ namespace QASmartTouch.Forms
                     Cursor = Cursors.Hand,
                     ToolTip = "Xóa đồ thị 3D"
                 };
+                TouchActivationHelper.WireButton(btnDelete);
 
                 var dragGrid = new Grid();
                 dragGrid.Children.Add(titleText);
@@ -2818,19 +2868,34 @@ namespace QASmartTouch.Forms
                 main3DContainer.Children.Add(dragHandleBar);
                 main3DContainer.Children.Add(Graph3DControl);
 
+                // Auto-sync container width when user resizes Graph3DControl
+                Graph3DControl.SizeChanged += (s, e) =>
+                {
+                    if (Graph3DControl.ActualWidth > 0)
+                    {
+                        main3DContainer.Width = Graph3DControl.ActualWidth;
+                    }
+                };
+
                 btnDelete.Click += (s, e) =>
                 {
                     MainInteractiveBoard.Children.Remove(main3DContainer);
                     RecordRemoveAction(main3DContainer, "Inserted Graph 3D Graph");
                 };
 
-                // Enable Drag-to-Move on dragHandleBar
-                bool isDragging = false;
+                // Enable Drag-to-Move on dragHandleBar (Mouse, Touch, Stylus isolated)
+                bool isMouseDragging = false;
+                int? activeTouchId = null;
                 Point dragStartPoint = new Point();
 
                 dragHandleBar.MouseLeftButtonDown += (s, e) =>
                 {
-                    isDragging = true;
+                    if (activeTouchId.HasValue || e.StylusDevice != null || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar))
+                        return;
+
+                    _isDrawing = false;
+                    _currentStroke = null;
+                    isMouseDragging = true;
                     dragStartPoint = e.GetPosition(MainInteractiveBoard);
                     dragHandleBar.CaptureMouse();
                     e.Handled = true;
@@ -2838,27 +2903,89 @@ namespace QASmartTouch.Forms
 
                 dragHandleBar.MouseMove += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                     {
                         Point currentPoint = e.GetPosition(MainInteractiveBoard);
                         double left = Canvas.GetLeft(main3DContainer) + (currentPoint.X - dragStartPoint.X);
                         double top = Canvas.GetTop(main3DContainer) + (currentPoint.Y - dragStartPoint.Y);
 
-                        left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - 600));
-                        top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - 484));
+                        double cWidth = main3DContainer.ActualWidth > 0 ? main3DContainer.ActualWidth : 600;
+                        double cHeight = main3DContainer.ActualHeight > 0 ? main3DContainer.ActualHeight : 484;
+
+                        left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - cWidth));
+                        top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - cHeight));
 
                         Canvas.SetLeft(main3DContainer, left);
                         Canvas.SetTop(main3DContainer, top);
                         dragStartPoint = currentPoint;
+                        e.Handled = true;
                     }
                 };
 
                 dragHandleBar.MouseLeftButtonUp += (s, e) =>
                 {
-                    if (isDragging)
+                    if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                     {
-                        isDragging = false;
+                        isMouseDragging = false;
                         dragHandleBar.ReleaseMouseCapture();
+                        RefreshSelectableObjects();
+                        e.Handled = true;
+                    }
+                };
+
+                dragHandleBar.PreviewTouchDown += (s, e) =>
+                {
+                    if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, dragHandleBar))
+                        return;
+                    if (activeTouchId.HasValue && activeTouchId.Value != e.TouchDevice.Id)
+                        return;
+
+                    _isDrawing = false;
+                    _currentStroke = null;
+                    activeTouchId = e.TouchDevice.Id;
+                    dragStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                    dragHandleBar.CaptureTouch(e.TouchDevice);
+                    e.Handled = true;
+                };
+
+                dragHandleBar.PreviewTouchMove += (s, e) =>
+                {
+                    if (activeTouchId.HasValue && activeTouchId.Value == e.TouchDevice.Id)
+                    {
+                        Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                        double left = Canvas.GetLeft(main3DContainer) + (currentPoint.X - dragStartPoint.X);
+                        double top = Canvas.GetTop(main3DContainer) + (currentPoint.Y - dragStartPoint.Y);
+
+                        double cWidth = main3DContainer.ActualWidth > 0 ? main3DContainer.ActualWidth : 600;
+                        double cHeight = main3DContainer.ActualHeight > 0 ? main3DContainer.ActualHeight : 484;
+
+                        left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - cWidth));
+                        top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - cHeight));
+
+                        Canvas.SetLeft(main3DContainer, left);
+                        Canvas.SetTop(main3DContainer, top);
+                        dragStartPoint = currentPoint;
+                        e.Handled = true;
+                    }
+                };
+
+                dragHandleBar.PreviewTouchUp += (s, e) =>
+                {
+                    if (activeTouchId.HasValue && activeTouchId.Value == e.TouchDevice.Id)
+                    {
+                        activeTouchId = null;
+                        dragHandleBar.ReleaseTouchCapture(e.TouchDevice);
+                        RefreshSelectableObjects();
+                        e.Handled = true;
+                    }
+                };
+
+                dragHandleBar.LostTouchCapture += (s, e) =>
+                {
+                    if (activeTouchId.HasValue && activeTouchId.Value == e.TouchDevice.Id)
+                    {
+                        activeTouchId = null;
+                        RefreshSelectableObjects();
                     }
                 };
 
@@ -2871,7 +2998,9 @@ namespace QASmartTouch.Forms
                 Canvas.SetLeft(main3DContainer, left);
                 Canvas.SetTop(main3DContainer, top);
 
-                // Add to canvas
+                // Add to canvas (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(main3DContainer, mediaZ);
                 MainInteractiveBoard.Children.Add(main3DContainer);
 
                 // Record undo action
@@ -2887,6 +3016,613 @@ namespace QASmartTouch.Forms
                                MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        /// <summary>
+        /// Chèn mô phỏng Thí nghiệm Vật lý / STEM (46 mô phỏng offline) lên bảng vẽ
+        /// </summary>
+public void InsertPhysicsSimulation(string simulationUrl, string title)
+        {
+            try
+            {
+                const double initialWidth = 800;
+                const double headerHeight = 40;
+                const double borderThickness = 2;
+                double innerWidth = initialWidth - (borderThickness * 2);
+                double simContentHeight = Math.Round(innerWidth * 3.0 / 4.0); // Chuẩn 4:3 cho thí nghiệm (597px)
+                double totalHeight = simContentHeight + headerHeight + (borderThickness * 2);
+
+                // 1. Tạo WebView2 cho Mô phỏng (Stretch vừa khít cell Grid)
+                var webView = new Microsoft.Web.WebView2.Wpf.WebView2
+                {
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch
+                };
+
+                // 2. Tạo Container thống nhất (Border ngoài cùng)
+                var container = new Border
+                {
+                    Width = initialWidth,
+                    Height = totalHeight,
+                    Background = Brushes.Black,
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(0, 137, 123)), // Xanh Teal (#00897B) thương hiệu thí nghiệm
+                    BorderThickness = new Thickness(borderThickness),
+                    CornerRadius = new CornerRadius(10, 10, 0, 0),
+                    ClipToBounds = true,
+                    Tag = "PhysicsSimulation",
+                    Effect = new System.Windows.Media.Effects.DropShadowEffect
+                    {
+                        Color = Colors.Black,
+                        BlurRadius = 16,
+                        ShadowDepth = 4,
+                        Opacity = 0.45
+                    }
+                };
+
+                // 3. Grid 2 hàng: Hàng 0 = Header Bar; Hàng 1 = WebView2
+                var mainGrid = new Grid();
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(headerHeight) });
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+                // 4. Header Bar
+                var headerBar = new Border
+                {
+                    Height = headerHeight,
+                    Background = new SolidColorBrush(Color.FromRgb(28, 28, 30)), // Dark Slate
+                    BorderBrush = new SolidColorBrush(Color.FromArgb(50, 255, 255, 255)),
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    CornerRadius = new CornerRadius(8, 8, 0, 0),
+                    Cursor = Cursors.SizeAll,
+                    Tag = "DragHandle"
+                };
+                Grid.SetRow(headerBar, 0);
+
+                Stylus.SetIsPressAndHoldEnabled(headerBar, false);
+                Stylus.SetIsFlicksEnabled(headerBar, false);
+                Stylus.SetIsTapFeedbackEnabled(headerBar, false);
+                Stylus.SetIsTouchFeedbackEnabled(headerBar, false);
+
+                var headerGrid = new Grid();
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                headerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                // Cột trái: Grip ⠿ + Badge Thí nghiệm + Tiêu đề
+                var leftPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(8, 0, 8, 0),
+                    IsHitTestVisible = false
+                };
+                Grid.SetColumn(leftPanel, 0);
+
+                var gripText = new TextBlock
+                {
+                    Text = "⠿",
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(156, 163, 175)),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(4, 0, 8, 0)
+                };
+                leftPanel.Children.Add(gripText);
+
+                var badgeBorder = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(0, 137, 123)),
+                    CornerRadius = new CornerRadius(3),
+                    Padding = new Thickness(5, 2, 5, 2),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                badgeBorder.Child = new TextBlock
+                {
+                    Text = "🔬 VẬT LÝ",
+                    FontSize = 10,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = Brushes.White
+                };
+                leftPanel.Children.Add(badgeBorder);
+
+                var titleBlock = new TextBlock
+                {
+                    Text = string.IsNullOrWhiteSpace(title) ? "Mô phỏng Thí nghiệm" : title,
+                    Foreground = Brushes.White,
+                    FontSize = 13,
+                    FontWeight = FontWeights.SemiBold,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    ToolTip = title
+                };
+                leftPanel.Children.Add(titleBlock);
+                headerGrid.Children.Add(leftPanel);
+
+                // Cột phải: Các nút điều khiển
+                var actionPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                Grid.SetColumn(actionPanel, 1);
+
+                Button CreateHeaderButton(string text, string tooltip, Color normalColor, Color hoverColor)
+                {
+                    var btn = new Button
+                    {
+                        Content = text,
+                        Width = 34,
+                        Height = 28,
+                        Margin = new Thickness(4, 0, 0, 0),
+                        Background = new SolidColorBrush(normalColor),
+                        Foreground = Brushes.White,
+                        FontSize = 13,
+                        FontWeight = FontWeights.Bold,
+                        BorderThickness = new Thickness(0),
+                        Cursor = Cursors.Hand,
+                        ToolTip = tooltip
+                    };
+
+                    var template = new ControlTemplate(typeof(Button));
+                    var borderFactory = new FrameworkElementFactory(typeof(Border));
+                    borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(5));
+                    borderFactory.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding(nameof(Button.Background))
+                    {
+                        RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
+                    });
+                    var presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+                    presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                    presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                    borderFactory.AppendChild(presenterFactory);
+                    template.VisualTree = borderFactory;
+                    btn.Template = template;
+
+                    btn.MouseEnter += (s, e) => btn.Background = new SolidColorBrush(hoverColor);
+                    btn.MouseLeave += (s, e) => btn.Background = new SolidColorBrush(normalColor);
+
+                    TouchActivationHelper.WireButton(btn);
+                    return btn;
+                }
+
+                // Nút Bắt đầu / Tạm dừng (▶ / ⏸)
+                bool isPlaying = false;
+                var btnPlayPause = CreateHeaderButton("▶", "Bắt đầu chạy mô phỏng", Color.FromRgb(46, 125, 50), Color.FromRgb(56, 142, 60));
+
+                void SetPlayPauseState(bool running)
+                {
+                    isPlaying = running;
+                    btnPlayPause.Content = isPlaying ? "⏸" : "▶";
+                    btnPlayPause.ToolTip = isPlaying ? "Tạm dừng mô phỏng" : "Bắt đầu chạy mô phỏng";
+                    btnPlayPause.Background = isPlaying
+                        ? new SolidColorBrush(Color.FromRgb(230, 81, 0)) // Cam #E65100
+                        : new SolidColorBrush(Color.FromRgb(46, 125, 50)); // Xanh lá #2E7D32
+                }
+
+                btnPlayPause.Click += async (s, e) =>
+                {
+                    if (webView.CoreWebView2 == null) return;
+                    bool targetState = !isPlaying;
+                    SetPlayPauseState(targetState);
+
+                    string cmd = targetState ? "play" : "pause";
+                    string script = $@"
+                        try {{
+                            window.postMessage({{
+                                nbPhysics: 1,
+                                token: '0123456789abcdef0123456789abcdef',
+                                type: '{cmd}'
+                            }}, '*');
+                            var nativeBtn = document.querySelector('button[data-nb-play]');
+                            if (nativeBtn) {{
+                                var pressed = nativeBtn.getAttribute('aria-pressed') === 'true';
+                                if (({targetState.ToString().ToLower()}) !== pressed) {{
+                                    nativeBtn.click();
+                                }}
+                            }}
+                        }} catch(e) {{}}
+                    ";
+                    await webView.CoreWebView2.ExecuteScriptAsync(script);
+                };
+                actionPanel.Children.Add(btnPlayPause);
+
+                // Nút Đặt lại (↺)
+                var btnReset = CreateHeaderButton("↺", "Đặt lại mô phỏng ban đầu", Color.FromRgb(0, 121, 107), Color.FromRgb(0, 137, 123));
+                btnReset.Click += async (s, e) =>
+                {
+                    if (webView.CoreWebView2 == null) return;
+                    SetPlayPauseState(false);
+                    string script = @"
+                        try {
+                            window.postMessage({
+                                nbPhysics: 1,
+                                token: '0123456789abcdef0123456789abcdef',
+                                type: 'reset'
+                            }, '*');
+                        } catch(e) {}
+                    ";
+                    await webView.CoreWebView2.ExecuteScriptAsync(script);
+                };
+                actionPanel.Children.Add(btnReset);
+
+                // Nút Thu nhỏ (－)
+                var btnZoomOut = CreateHeaderButton("－", "Thu nhỏ mô phỏng (Zoom -)", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnZoomOut.Click += (s, e) => ZoomPhysicsContainer(container, webView, 1.0 / 1.15);
+                actionPanel.Children.Add(btnZoomOut);
+
+                // Nút Phóng to (＋)
+                var btnZoomIn = CreateHeaderButton("＋", "Phóng to mô phỏng (Zoom +)", Color.FromArgb(180, 55, 65, 81), Color.FromArgb(230, 75, 85, 99));
+                btnZoomIn.Click += (s, e) => ZoomPhysicsContainer(container, webView, 1.15);
+                actionPanel.Children.Add(btnZoomIn);
+
+                // Nút Đóng / Xóa (✕)
+                var btnDelete = CreateHeaderButton("✕", "Đóng mô phỏng", Color.FromRgb(220, 38, 38), Color.FromRgb(239, 68, 68));
+                btnDelete.Click += (s, e) => DeletePhysicsContainer(container);
+                actionPanel.Children.Add(btnDelete);
+
+                headerGrid.Children.Add(actionPanel);
+                headerBar.Child = headerGrid;
+                mainGrid.Children.Add(headerBar);
+
+                // Đặt WebView2 vào hàng 1
+                Grid.SetRow(webView, 1);
+                mainGrid.Children.Add(webView);
+
+                container.Child = mainGrid;
+
+                // Gắn cơ chế kéo di chuyển chuẩn kép (Touch + Mouse + Stylus)
+                EnablePhysicsUnifiedDrag(container, headerBar);
+
+                // Khởi tạo WebView2
+                _ = InitializePhysicsWebView(webView, simulationUrl, running =>
+                {
+                    Dispatcher.Invoke(() => SetPlayPauseState(running));
+                });
+
+                // Căn giữa viewport
+                double centerX = MainScrollViewer.HorizontalOffset + (MainScrollViewer.ViewportWidth / 2) - (initialWidth / 2);
+                double centerY = MainScrollViewer.VerticalOffset + (MainScrollViewer.ViewportHeight / 2) - (totalHeight / 2);
+                double borderLeft = Math.Max(0, centerX);
+                double borderTop = Math.Max(0, centerY);
+
+                Canvas.SetLeft(container, borderLeft);
+                Canvas.SetTop(container, borderTop);
+
+                // ZIndex EmbeddedBrowser = 1100
+                Panel.SetZIndex(container, QASmartTouch.Helpers.ZIndexConstants.EmbeddedBrowser);
+                MainInteractiveBoard.Children.Add(container);
+
+                RecordAddAction(container, $"Physics Simulation: {title}");
+                RefreshSelectableObjects();
+
+                System.Diagnostics.Debug.WriteLine($"🔬 Physics Simulation inserted (UMind Unified Container): {title}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Insert Physics Simulation error: {ex.Message}");
+                MessageBox.Show($"Lỗi chèn mô phỏng thí nghiệm:\n{ex.Message}", "Lỗi",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ZoomPhysicsContainer(Border container, Microsoft.Web.WebView2.Wpf.WebView2 webView, double factor)
+        {
+            if (container == null || webView == null) return;
+
+            double currentWidth = container.Width;
+            if (double.IsNaN(currentWidth) || currentWidth <= 0) currentWidth = 800;
+
+            double newWidth = Math.Round(currentWidth * factor);
+
+            // Giới hạn chiều rộng từ 460px đến 1600px
+            if (newWidth < 460 || newWidth > 1600) return;
+
+            const double headerHeight = 40;
+            const double borderThickness = 2;
+            double innerWidth = newWidth - (borderThickness * 2);
+            double newSimHeight = Math.Round(innerWidth * 3.0 / 4.0); // Tỉ lệ 4:3
+            double newTotalHeight = newSimHeight + headerHeight + (borderThickness * 2);
+
+            container.Width = newWidth;
+            container.Height = newTotalHeight;
+
+            webView.ClearValue(FrameworkElement.WidthProperty);
+            webView.ClearValue(FrameworkElement.HeightProperty);
+
+            RefreshSelectableObjects();
+            System.Diagnostics.Debug.WriteLine($"🔍 Physics Simulation Zoomed: {newWidth:F0}x{newTotalHeight:F0}");
+        }
+
+        private void DeletePhysicsContainer(Border container)
+        {
+            if (container == null) return;
+
+            CleanupWebView2Media(container);
+            MainInteractiveBoard.Children.Remove(container);
+            RecordRemoveAction(container, "Deleted Physics Simulation");
+            RefreshSelectableObjects();
+
+            System.Diagnostics.Debug.WriteLine("🗑️ Physics Simulation deleted (Unified Container)");
+        }
+
+        private void EnablePhysicsUnifiedDrag(Border container, Border headerBar)
+        {
+            // 1. TOUCH PIPELINE
+            int? activeTouchId = null;
+            Point touchStartPoint = new Point();
+            double touchStartLeft = 0;
+            double touchStartTop = 0;
+
+            headerBar.PreviewTouchDown += (s, e) =>
+            {
+                if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                    return;
+
+                _isDrawing = false;
+                _currentStroke = null;
+
+                if (!activeTouchId.HasValue)
+                {
+                    activeTouchId = e.TouchDevice.Id;
+                    touchStartPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                    touchStartLeft = Canvas.GetLeft(container);
+                    if (double.IsNaN(touchStartLeft)) touchStartLeft = 0;
+                    touchStartTop = Canvas.GetTop(container);
+                    if (double.IsNaN(touchStartTop)) touchStartTop = 0;
+
+                    headerBar.CaptureTouch(e.TouchDevice);
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewTouchMove += (s, e) =>
+            {
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+                {
+                    Point currentPoint = e.GetTouchPoint(MainInteractiveBoard).Position;
+                    double offsetX = currentPoint.X - touchStartPoint.X;
+                    double offsetY = currentPoint.Y - touchStartPoint.Y;
+
+                    double newLeft = Math.Max(0, touchStartLeft + offsetX);
+                    double newTop = Math.Max(0, touchStartTop + offsetY);
+
+                    Canvas.SetLeft(container, newLeft);
+                    Canvas.SetTop(container, newTop);
+
+                    e.Handled = true;
+                }
+            };
+
+            EventHandler<TouchEventArgs> endTouch = (s, e) =>
+            {
+                if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
+                {
+                    activeTouchId = null;
+                    try { headerBar.ReleaseTouchCapture(e.TouchDevice); } catch { }
+                    RefreshSelectableObjects();
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewTouchUp += endTouch;
+            headerBar.LostTouchCapture += (s, e) =>
+            {
+                if (activeTouchId.HasValue)
+                {
+                    activeTouchId = null;
+                    RefreshSelectableObjects();
+                }
+            };
+
+            // 2. MOUSE PIPELINE
+            bool isMouseDragging = false;
+            Point mouseStartPoint = new Point();
+            double mouseStartLeft = 0;
+            double mouseStartTop = 0;
+
+            headerBar.PreviewMouseLeftButtonDown += (s, e) =>
+            {
+                if (activeTouchId.HasValue || e.StylusDevice != null || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                    return;
+
+                _isDrawing = false;
+                _currentStroke = null;
+
+                isMouseDragging = true;
+                mouseStartPoint = e.GetPosition(MainInteractiveBoard);
+                mouseStartLeft = Canvas.GetLeft(container);
+                if (double.IsNaN(mouseStartLeft)) mouseStartLeft = 0;
+                mouseStartTop = Canvas.GetTop(container);
+                if (double.IsNaN(mouseStartTop)) mouseStartTop = 0;
+
+                headerBar.CaptureMouse();
+                e.Handled = true;
+            };
+
+            headerBar.MouseMove += (s, e) =>
+            {
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
+                {
+                    Point currentPoint = e.GetPosition(MainInteractiveBoard);
+                    double offsetX = currentPoint.X - mouseStartPoint.X;
+                    double offsetY = currentPoint.Y - mouseStartPoint.Y;
+
+                    double newLeft = Math.Max(0, mouseStartLeft + offsetX);
+                    double newTop = Math.Max(0, mouseStartTop + offsetY);
+
+                    Canvas.SetLeft(container, newLeft);
+                    Canvas.SetTop(container, newTop);
+
+                    e.Handled = true;
+                }
+            };
+
+            MouseButtonEventHandler endMouse = (s, e) =>
+            {
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
+                {
+                    isMouseDragging = false;
+                    try { headerBar.ReleaseMouseCapture(); } catch { }
+                    RefreshSelectableObjects();
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewMouseLeftButtonUp += endMouse;
+            headerBar.LostMouseCapture += (s, e) =>
+            {
+                if (isMouseDragging)
+                {
+                    isMouseDragging = false;
+                    RefreshSelectableObjects();
+                }
+            };
+
+            // 3. STYLUS PIPELINE
+            bool isStylusDragging = false;
+            Point stylusStartPoint = new Point();
+            double stylusStartLeft = 0;
+            double stylusStartTop = 0;
+
+            headerBar.PreviewStylusDown += (s, e) =>
+            {
+                if (e.StylusDevice?.TabletDevice?.Type != TabletDeviceType.Stylus || activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                    return;
+
+                _isDrawing = false;
+                _currentStroke = null;
+
+                isStylusDragging = true;
+                stylusStartPoint = e.GetPosition(MainInteractiveBoard);
+                stylusStartLeft = Canvas.GetLeft(container);
+                if (double.IsNaN(stylusStartLeft)) stylusStartLeft = 0;
+                stylusStartTop = Canvas.GetTop(container);
+                if (double.IsNaN(stylusStartTop)) stylusStartTop = 0;
+
+                headerBar.CaptureStylus();
+                e.Handled = true;
+            };
+
+            headerBar.PreviewStylusMove += (s, e) =>
+            {
+                if (isStylusDragging && !activeTouchId.HasValue && e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus)
+                {
+                    Point currentPoint = e.GetPosition(MainInteractiveBoard);
+                    double offsetX = currentPoint.X - stylusStartPoint.X;
+                    double offsetY = currentPoint.Y - stylusStartPoint.Y;
+
+                    double newLeft = Math.Max(0, stylusStartLeft + offsetX);
+                    double newTop = Math.Max(0, stylusStartTop + offsetY);
+
+                    Canvas.SetLeft(container, newLeft);
+                    Canvas.SetTop(container, newTop);
+
+                    e.Handled = true;
+                }
+            };
+
+            StylusEventHandler endStylus = (s, e) =>
+            {
+                if (isStylusDragging && e.StylusDevice?.TabletDevice?.Type == TabletDeviceType.Stylus)
+                {
+                    isStylusDragging = false;
+                    try { headerBar.ReleaseStylusCapture(); } catch { }
+                    RefreshSelectableObjects();
+                    e.Handled = true;
+                }
+            };
+
+            headerBar.PreviewStylusUp += endStylus;
+            headerBar.LostStylusCapture += (s, e) =>
+            {
+                if (isStylusDragging)
+                {
+                    isStylusDragging = false;
+                    RefreshSelectableObjects();
+                }
+            };
+        }
+
+        private async System.Threading.Tasks.Task InitializePhysicsWebView(Microsoft.Web.WebView2.Wpf.WebView2 webView, string simulationUrl, Action<bool>? onPlaybackChanged)
+        {
+            try
+            {
+                await webView.EnsureCoreWebView2Async(null);
+
+                string p1 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Simulations", "Physics");
+                string p2 = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\QASmartClass\Assets\Simulations\Physics"));
+                string assetsDir = System.IO.Directory.Exists(p1) ? p1 : (System.IO.Directory.Exists(p2) ? p2 : @"D:\Document\_Projects\qa-smartschool\QASmartClass\Assets\Simulations\Physics");
+
+                if (System.IO.Directory.Exists(assetsDir))
+                {
+                    webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                        "physics.local",
+                        assetsDir,
+                        Microsoft.Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+                }
+
+                webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
+                webView.CoreWebView2.Settings.IsScriptEnabled = true;
+                webView.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = true;
+                webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
+
+                webView.CoreWebView2.WebMessageReceived += (s, args) =>
+                {
+                    try
+                    {
+                        string raw = args.TryGetWebMessageAsString();
+                        if (string.IsNullOrEmpty(raw)) raw = args.WebMessageAsJson;
+                        if (string.IsNullOrEmpty(raw)) return;
+
+                        if (raw.Contains("\"playback\"") || raw.Contains("\"running\""))
+                        {
+                            bool running = raw.Contains("\"running\":true") || raw.Contains("\"running\": true");
+                            onPlaybackChanged?.Invoke(running);
+                        }
+                    }
+                    catch { }
+                };
+
+                webView.CoreWebView2.NavigationCompleted += async (s, e) =>
+                {
+                    try
+                    {
+                        string simId = "";
+                        if (!string.IsNullOrEmpty(simulationUrl) && simulationUrl.Contains("#id="))
+                        {
+                            int idx = simulationUrl.IndexOf("#id=") + 4;
+                            int endIdx = simulationUrl.IndexOf('&', idx);
+                            simId = endIdx > idx ? simulationUrl.Substring(idx, endIdx - idx) : simulationUrl.Substring(idx);
+                        }
+
+                        if (!string.IsNullOrEmpty(simId))
+                        {
+                            string script = $@"
+                                window.postMessage({{
+                                    nbPhysics: 1,
+                                    token: '0123456789abcdef0123456789abcdef',
+                                    type: 'init',
+                                    scene: {{ id: '{simId}', states: {{}}, refs: {{}} }}
+                                }}, '*');
+                                var st = document.getElementById('playerStatus');
+                                if (st) st.style.display = 'none';
+                            ";
+                            await webView.CoreWebView2.ExecuteScriptAsync(script);
+                        }
+                    }
+                    catch { }
+                };
+
+                webView.CoreWebView2.Navigate(simulationUrl);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[InitializePhysicsWebView Error] {ex.Message}");
+            }
+        }
+
+
+
+
 
         /// <summary>
         /// Initialize Google Maps WebView2 and navigate to maps URL
@@ -3336,10 +4072,20 @@ namespace QASmartTouch.Forms
                     Stretch = Stretch.Uniform
                 };
 
+                // ✨ CONTAINER-OWNED INKING: Lớp mực vẽ chuyên dụng nổi trên ảnh
+                var imageGrid = new Grid();
+                imageGrid.Children.Add(imageControl);
+                var imgInkPresenter = new InkPresenter
+                {
+                    IsHitTestVisible = false,
+                    Tag = "ImageInkPresenter"
+                };
+                imageGrid.Children.Add(imgInkPresenter);
+
                 // Wrap in Border for styling
                 var border = new Border
                 {
-                    Child = imageControl,
+                    Child = imageGrid,
                     BorderBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243)), // #2196F3
                     BorderThickness = new Thickness(2),
                     CornerRadius = new CornerRadius(4),
@@ -3354,7 +4100,9 @@ namespace QASmartTouch.Forms
                 Canvas.SetLeft(border, Math.Max(0, centerX));
                 Canvas.SetTop(border, Math.Max(0, centerY));
 
-                // Add to canvas
+                // Add to canvas (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(border, mediaZ);
                 MainInteractiveBoard.Children.Add(border);
 
                 // Register with selection manager
@@ -3673,7 +4421,9 @@ namespace QASmartTouch.Forms
                 Canvas.SetLeft(container, borderLeft);
                 Canvas.SetTop(container, borderTop);
 
-                // Thêm vào bảng vẽ
+                // Thêm vào bảng vẽ (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
+                int mediaZ = AllocateMediaWidgetZIndex();
+                Panel.SetZIndex(container, mediaZ);
                 MainInteractiveBoard.Children.Add(container);
 
                 // Bắt đầu phát video
@@ -3823,7 +4573,7 @@ namespace QASmartTouch.Forms
 
             headerBar.PreviewMouseLeftButtonDown += (s, e) =>
             {
-                if (activeTouchId.HasValue || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
+                if (activeTouchId.HasValue || e.StylusDevice != null || QASmartTouch.Utilities.InputValidationHelper.IsEventFromButton(e.OriginalSource, headerBar))
                     return;
 
                 _isDrawing = false;
@@ -3842,7 +4592,7 @@ namespace QASmartTouch.Forms
 
             headerBar.MouseMove += (s, e) =>
             {
-                if (isMouseDragging && !activeTouchId.HasValue)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                 {
                     Point currentPoint = e.GetPosition(MainInteractiveBoard);
                     double offsetX = currentPoint.X - mouseStartPoint.X;
@@ -3860,7 +4610,7 @@ namespace QASmartTouch.Forms
 
             MouseButtonEventHandler endMouse = (s, e) =>
             {
-                if (isMouseDragging)
+                if (isMouseDragging && !activeTouchId.HasValue && e.StylusDevice == null)
                 {
                     isMouseDragging = false;
                     try { headerBar.ReleaseMouseCapture(); } catch { }

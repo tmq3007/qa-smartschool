@@ -8,7 +8,6 @@ using System.Windows.Media;
 using QASmartTouch.Services.Camera;
 using QASmartTouch.Models.Camera;
 using QASmartClass.Data;
-using QASmartClass.Classroom.Services;
 
 namespace QASmartTouch.Forms
 {
@@ -693,9 +692,11 @@ namespace QASmartTouch.Forms
 
         private void LoadStudentsFromDb()
         {
+#if !SMARTTOUCH_STANDALONE
             try
             {
-                var students = RosterHelper.GetStudents();
+                using var db = new QASmartClass.Data.AppDbContext();
+                var students = db.Students.ToList();
                 _studentsList.Clear();
                 foreach (var s in students)
                 {
@@ -713,10 +714,12 @@ namespace QASmartTouch.Forms
             {
                 System.Diagnostics.Debug.WriteLine($"Lỗi tải danh sách học sinh: {ex.Message}");
             }
+#endif
         }
 
         private async void btnConfirmAIAttendance_Click(object sender, RoutedEventArgs e)
         {
+#if !SMARTTOUCH_STANDALONE
             try
             {
                 if (_studentsList.Count == 0)
@@ -762,16 +765,20 @@ namespace QASmartTouch.Forms
                     await db.SaveChangesAsync();
                 }
 
-                MessageBox.Show($"🎉 Đã lưu thành công dữ liệu điểm danh vào CSDL!\\n\\n" +
-                    $"• Sĩ số có mặt: {presentCount}\\n" +
+                MessageBox.Show($"🎉 Đã lưu thành công dữ liệu điểm danh vào CSDL!\n\n" +
+                    $"• Sĩ số có mặt: {presentCount}\n" +
                     $"• Vắng mặt: {absentCount}",
                     "Lưu điểm danh thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi lưu điểm danh vào CSDL:\\n{ex.Message}",
+                MessageBox.Show($"Lỗi khi lưu điểm danh vào CSDL:\n{ex.Message}",
                     "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+#else
+            await Task.CompletedTask;
+            MessageBox.Show("Tính năng lưu điểm danh vào CSDL yêu cầu phân hệ QA SmartClass.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+#endif
         }
     }
 

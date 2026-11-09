@@ -59,7 +59,8 @@
             </Grid>
 
             <!-- CONTENT: FORM OPTIONS -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,16">
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,16"
+                          PanningMode="Both" PanningDeceleration="0.002">
                 <StackPanel x:Name="panelFormOptions">
                     <!-- PHẠM VI XUẤT -->
                     <TextBlock Text="1. Phạm vi xuất" FontSize="13" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,0,8"/>
@@ -132,7 +133,7 @@
             <Grid x:Name="panelProgress" Grid.Row="1" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel HorizontalAlignment="Center">
                     <ProgressBar x:Name="pbExport" Width="300" Height="8" IsIndeterminate="False" Margin="0,0,0,16"/>
-                    <TextBlock x:Name="txtProgressStatus" Text="Đang xử lý xuất dữ liệu... (Trang 1/3)" FontSize="14" FontWeight="SemiBold" Foreground="#1E293B" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="txtProgressStatus" Text="Đang chuẩn bị xuất dữ liệu..." FontSize="14" FontWeight="SemiBold" Foreground="#1E293B" HorizontalAlignment="Center"/>
                     <TextBlock Text="Vui lòng đợi trong giây lát..." FontSize="12" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                 </StackPanel>
             </Grid>
@@ -152,7 +153,7 @@
                         <Button x:Name="btnOpenFile" Height="44" Padding="18,0" Background="#2563EB" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="btnOpenFile_Click">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>
@@ -163,10 +164,10 @@
                             </StackPanel>
                         </Button>
 
-                        <Button x:Name="btnOpenFolder" Height="44" Padding="18,0" Background="#F1F5F9" Foreground="#1E293B" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="btnOpenFolder_Click">
+                        <Button x:Name="btnOpenFolder" Height="44" Padding="18,0" Background="#F1F5F9" Foreground="#1E293B" BorderThickness="0" Cursor="Hand" Click="btnOpenFolder_Click">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>

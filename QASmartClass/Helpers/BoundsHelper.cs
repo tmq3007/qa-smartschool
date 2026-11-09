@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -87,12 +87,22 @@ namespace QASmartTouch.Helpers
                 if (element is Path pathCheck && pathCheck.Data != null)
                 {
                     var dataBounds = pathCheck.Data.Bounds;
-                    if (!dataBounds.IsEmpty && dataBounds.Width > 0 && dataBounds.Height > 0)
+                    if (!dataBounds.IsEmpty && (dataBounds.Width > 0 || dataBounds.Height > 0))
                     {
-                        Rect pathTransformed = transform.TransformBounds(dataBounds);
+                        double pad = Math.Max(pathCheck.StrokeThickness / 2, 2);
+                        Rect localBounds = new Rect(
+                            dataBounds.X,
+                            dataBounds.Y,
+                            Math.Max(dataBounds.Width, 1),
+                            Math.Max(dataBounds.Height, 1));
+                        Rect pathTransformed = transform.TransformBounds(localBounds);
                         if (!pathTransformed.IsEmpty && pathTransformed.Width > 0 && pathTransformed.Height > 0)
                         {
-                            return pathTransformed;
+                            return new Rect(
+                                pathTransformed.X - pad,
+                                pathTransformed.Y - pad,
+                                pathTransformed.Width + pad * 2,
+                                pathTransformed.Height + pad * 2);
                         }
                     }
                 }
@@ -209,13 +219,18 @@ namespace QASmartTouch.Helpers
             if (element is Path path && path.Data != null)
             {
                 var dataBounds = path.Data.Bounds;
-                if (!dataBounds.IsEmpty && dataBounds.Width > 0 && dataBounds.Height > 0)
+                if (!dataBounds.IsEmpty && (dataBounds.Width > 0 || dataBounds.Height > 0))
                 {
+                    double pad = Math.Max(path.StrokeThickness / 2, 2);
                     double cX = Canvas.GetLeft(path);
                     double cY = Canvas.GetTop(path);
                     if (double.IsNaN(cX)) cX = 0;
                     if (double.IsNaN(cY)) cY = 0;
-                    return new Rect(cX + dataBounds.X, cY + dataBounds.Y, dataBounds.Width, dataBounds.Height);
+                    return new Rect(
+                        cX + dataBounds.X - pad,
+                        cY + dataBounds.Y - pad,
+                        Math.Max(dataBounds.Width, 1) + pad * 2,
+                        Math.Max(dataBounds.Height, 1) + pad * 2);
                 }
             }
 

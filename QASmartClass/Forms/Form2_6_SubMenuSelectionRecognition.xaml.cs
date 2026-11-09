@@ -81,6 +81,13 @@ namespace QASmartTouch.Forms
         private void btnSelectRect_Click(object sender, RoutedEventArgs e)
         {
             _mainDashboard.ActivateRectangleSelectionMode();
+            _mainDashboard.RegisterRecentTool(
+                "select:Rectangle",
+                "Chọn vùng",
+                QASmartTouch.Services.Tools.RecentToolsManager.SelectRectIconPath,
+                System.Windows.Media.Color.FromRgb(0x2E, 0x86, 0xDE),
+                () => _mainDashboard.ActivateRectangleSelectionMode(),
+                "Dùng lại: Chọn vùng Chữ nhật");
             try { _mainDashboard?.Activate(); _mainDashboard?.Focus(); } catch { }
             this.Close();
         }

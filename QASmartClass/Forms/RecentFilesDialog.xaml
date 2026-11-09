@@ -1,4 +1,4 @@
-﻿<Window x:Class="QASmartTouch.Forms.RecentFilesDialog"
+<Window x:Class="QASmartTouch.Forms.RecentFilesDialog"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -141,6 +141,10 @@
                          Background="Transparent" BorderThickness="0"
 
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+
+                         ScrollViewer.PanningMode="Both"
+
+                         ScrollViewer.PanningDeceleration="0.002"
 
                          MouseDoubleClick="FileList_MouseDoubleClick"
 

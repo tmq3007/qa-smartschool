@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Globalization;
 using QASmartTouch.Models;
+using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Controls
 {
@@ -56,6 +57,9 @@ namespace QASmartTouch.Controls
             chkAutoHeight.IsChecked = _tableData.AutoExpandRows;
             
             BuildTableUI();
+
+            // QC_4.2_TOUCH_SCROLL: Kích hoạt vuốt cuộn cảm ứng cho bảng
+            TouchScrollHelper.AttachToAllScrollViewers(this);
         }
 
         public TableEditorControl(TableData existingData)
@@ -68,6 +72,9 @@ namespace QASmartTouch.Controls
             chkAutoHeight.IsChecked = _tableData.AutoExpandRows;
             
             BuildTableUI();
+
+            // QC_4.2_TOUCH_SCROLL: Kích hoạt vuốt cuộn cảm ứng cho bảng
+            TouchScrollHelper.AttachToAllScrollViewers(this);
         }
 
         /// <summary>
@@ -671,6 +678,7 @@ namespace QASmartTouch.Controls
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
                 ResizeMode = System.Windows.ResizeMode.NoResize
             };
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(dialog);
 
             var panel = new WrapPanel { Margin = new Thickness(10) };
             string? selectedColor = null;
@@ -685,7 +693,8 @@ namespace QASmartTouch.Controls
                     Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)),
                     BorderThickness = new Thickness(2),
                     BorderBrush = Brushes.Gray,
-                    Tag = color
+                    Tag = color,
+                    Focusable = false
                 };
 
                 btn.Click += (s, e) =>
@@ -695,6 +704,7 @@ namespace QASmartTouch.Controls
                     dialog.Close();
                 };
 
+                QASmartTouch.Helpers.TouchActivationHelper.WireButton(btn);
                 panel.Children.Add(btn);
             }
 

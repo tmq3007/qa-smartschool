@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Ink;
 using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Models
@@ -22,6 +23,11 @@ namespace QASmartTouch.Models
         /// UI Element tương ứng trên canvas
         /// </summary>
         public UIElement? Element { get; set; }
+
+        /// <summary>
+        /// Nét vẽ tự do Native Inking tương ứng (nếu đối tượng là Stroke)
+        /// </summary>
+        public Stroke? Stroke { get; set; }
 
         /// <summary>
         /// Vùng bao quanh đối tượng (bounding box)
@@ -149,6 +155,10 @@ namespace QASmartTouch.Models
         /// </summary>
         public virtual bool HitTest(Point point)
         {
+            if (Stroke != null)
+            {
+                return Stroke.HitTest(point, 10);
+            }
             return Bounds.Contains(point);
         }
 
@@ -158,6 +168,14 @@ namespace QASmartTouch.Models
         /// </summary>
         public virtual void UpdateBounds()
         {
+            if (Stroke != null)
+            {
+                var sb = Stroke.GetBounds();
+                Bounds = sb;
+                Position = new Point(sb.X, sb.Y);
+                Size = new Size(sb.Width, sb.Height);
+                return;
+            }
             // ✅ FIX CẢM ỨNG: Cập nhật bounds cho Virtual Group Container từ các thành viên GroupMembers
             if (IsGroup && GroupMembers != null && GroupMembers.Count > 0)
             {
@@ -253,30 +271,11 @@ namespace QASmartTouch.Models
                 // 4. Path (nét mượt Bezier / Shape Path / ArrowLine)
                 if (Element is System.Windows.Shapes.Path path && path.Data != null)
                 {
-                    var dataBounds = path.Data.Bounds;
-                    Rect transformedBounds = dataBounds;
-                    if (path.RenderTransform != null && path.RenderTransform != Transform.Identity)
-                    {
-                        transformedBounds = path.RenderTransform.TransformBounds(dataBounds);
-                    }
-                    else
-                    {
-                        double left = Canvas.GetLeft(path);
-                        double top = Canvas.GetTop(path);
-                        if (!double.IsNaN(left) && !double.IsNaN(top))
-                        {
-                            transformedBounds = new Rect(left, top, Math.Max(dataBounds.Width, 1), Math.Max(dataBounds.Height, 1));
-                        }
-                    }
-
-                    double pad = Math.Max(path.StrokeThickness / 2.0, 2.0);
-                    var aabb = new Rect(transformedBounds.X - pad, transformedBounds.Y - pad, Math.Max(transformedBounds.Width + pad * 2, 1), Math.Max(transformedBounds.Height + pad * 2, 1));
+                    ExtractPathGeometryMetrics(path, out Point unrotatedPos, out Size unrotatedSize, out double extractedAngle, out Rect aabb);
                     Bounds = aabb;
-                    if (RotationAngle == 0 || Size.Width <= 0 || Size.Height <= 0)
-                    {
-                        Position = new Point(aabb.X, aabb.Y);
-                        Size = new Size(aabb.Width, aabb.Height);
-                    }
+                    Position = unrotatedPos;
+                    Size = unrotatedSize;
+                    RotationAngle = extractedAngle;
                     return;
                 }
 
@@ -318,6 +317,7 @@ namespace QASmartTouch.Models
 
                     Position = new Point(left, top);
                     Size = new Size(Math.Max(w, 1), Math.Max(h, 1));
+                    RotationAngle = ExtractElementRotationAngle(fe);
 
                     var parentCanvas = FindParentCanvas(Element);
                     if (parentCanvas != null)
@@ -356,6 +356,160 @@ namespace QASmartTouch.Models
                 parent = VisualTreeHelper.GetParent(parent);
             }
             return null;
+        }
+
+        /// <summary>
+        /// Chuẩn hóa góc xoay về miền [0, 360)
+        /// </summary>
+        public static double NormalizeAngle(double angle)
+        {
+            if (double.IsNaN(angle) || double.IsInfinity(angle))
+                return 0;
+            double norm = ((angle % 360.0) + 360.0) % 360.0;
+            if (norm < 0.001 || norm > 359.999)
+                return 0;
+            return norm;
+        }
+
+        /// <summary>
+        /// Trích xuất tổng góc xoay tích lũy từ Transform (RotateTransform hoặc TransformGroup)
+        /// </summary>
+        public static double ExtractTransformRotationAngle(Transform? transform)
+        {
+            if (transform == null || transform == Transform.Identity)
+                return 0;
+
+            double totalAngle = 0;
+            AccumulateRotationAngle(transform, ref totalAngle);
+            return NormalizeAngle(totalAngle);
+        }
+
+        private static void AccumulateRotationAngle(Transform transform, ref double totalAngle)
+        {
+            if (transform is RotateTransform rt)
+            {
+                totalAngle += rt.Angle;
+            }
+            else if (transform is TransformGroup tg)
+            {
+                foreach (var child in tg.Children)
+                {
+                    if (child != null)
+                        AccumulateRotationAngle(child, ref totalAngle);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Trích xuất góc xoay từ UIElement.RenderTransform
+        /// </summary>
+        public static double ExtractElementRotationAngle(UIElement? element)
+        {
+            if (element == null)
+                return 0;
+            return ExtractTransformRotationAngle(element.RenderTransform);
+        }
+
+        /// <summary>
+        /// Trích xuất hệ số Scale tích lũy từ Transform (bao gồm dấu âm khi Flip)
+        /// </summary>
+        public static void ExtractTransformScaleFactors(Transform? transform, out double scaleX, out double scaleY)
+        {
+            scaleX = 1.0;
+            scaleY = 1.0;
+            if (transform == null || transform == Transform.Identity)
+                return;
+            AccumulateScaleFactors(transform, ref scaleX, ref scaleY);
+        }
+
+        private static void AccumulateScaleFactors(Transform transform, ref double scaleX, ref double scaleY)
+        {
+            if (transform is ScaleTransform st)
+            {
+                scaleX *= st.ScaleX;
+                scaleY *= st.ScaleY;
+            }
+            else if (transform is TransformGroup tg)
+            {
+                foreach (var child in tg.Children)
+                {
+                    if (child != null)
+                        AccumulateScaleFactors(child, ref scaleX, ref scaleY);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tính toán chính xác thông số hình học của Path theo chuẩn OBB/AABB (UMind / i-Pro):
+        /// Tách biệt kích thước/vị trí gốc chưa xoay (unrotatedPosition, unrotatedSize), góc xoay (rotationAngle) và khung bao va chạm (worldBounds).
+        /// </summary>
+        public static void ExtractPathGeometryMetrics(
+            System.Windows.Shapes.Path path,
+            out Point unrotatedPosition,
+            out Size unrotatedSize,
+            out double rotationAngle,
+            out Rect worldBounds)
+        {
+            var dataBounds = path.Data?.Bounds ?? Rect.Empty;
+            double pad = Math.Max(path.StrokeThickness / 2.0, 2.0);
+
+            if (dataBounds.IsEmpty)
+            {
+                double l = Canvas.GetLeft(path);
+                double t = Canvas.GetTop(path);
+                if (double.IsNaN(l)) l = 0;
+                if (double.IsNaN(t)) t = 0;
+                unrotatedPosition = new Point(l, t);
+                unrotatedSize = new Size(Math.Max(pad * 2, 1), Math.Max(pad * 2, 1));
+                rotationAngle = ExtractElementRotationAngle(path);
+                worldBounds = new Rect(l - pad, t - pad, Math.Max(pad * 2, 1), Math.Max(pad * 2, 1));
+                return;
+            }
+
+            rotationAngle = ExtractElementRotationAngle(path);
+            ExtractTransformScaleFactors(path.RenderTransform, out double rawScaleX, out double rawScaleY);
+            double absScaleX = Math.Abs(rawScaleX) > 1e-6 ? Math.Abs(rawScaleX) : 1.0;
+            double absScaleY = Math.Abs(rawScaleY) > 1e-6 ? Math.Abs(rawScaleY) : 1.0;
+
+            Point dataCenter = new Point(
+                dataBounds.X + dataBounds.Width / 2.0,
+                dataBounds.Y + dataBounds.Height / 2.0);
+
+            Point worldCenter;
+            Rect transformedBounds;
+            if (path.RenderTransform != null && path.RenderTransform != Transform.Identity)
+            {
+                worldCenter = path.RenderTransform.Transform(dataCenter);
+                transformedBounds = path.RenderTransform.TransformBounds(dataBounds);
+            }
+            else
+            {
+                double left = Canvas.GetLeft(path);
+                double top = Canvas.GetTop(path);
+                if (!double.IsNaN(left) && !double.IsNaN(top))
+                {
+                    transformedBounds = new Rect(left, top, Math.Max(dataBounds.Width, 1), Math.Max(dataBounds.Height, 1));
+                    worldCenter = new Point(left + transformedBounds.Width / 2.0, top + transformedBounds.Height / 2.0);
+                }
+                else
+                {
+                    transformedBounds = dataBounds;
+                    worldCenter = dataCenter;
+                }
+            }
+
+            double unrotatedW = dataBounds.Width > 0.05 ? dataBounds.Width * absScaleX : Math.Max(pad * 2, 1);
+            double unrotatedH = dataBounds.Height > 0.05 ? dataBounds.Height * absScaleY : Math.Max(pad * 2, 1);
+            unrotatedW = Math.Max(unrotatedW, 1.0);
+            unrotatedH = Math.Max(unrotatedH, 1.0);
+
+            unrotatedPosition = new Point(worldCenter.X - unrotatedW / 2.0, worldCenter.Y - unrotatedH / 2.0);
+            unrotatedSize = new Size(unrotatedW, unrotatedH);
+            worldBounds = new Rect(
+                transformedBounds.X - pad,
+                transformedBounds.Y - pad,
+                Math.Max(transformedBounds.Width + pad * 2, 1),
+                Math.Max(transformedBounds.Height + pad * 2, 1));
         }
 
         /// <summary>

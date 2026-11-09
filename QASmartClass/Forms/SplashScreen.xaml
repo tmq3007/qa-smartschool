@@ -1,10 +1,10 @@
-﻿<Window x:Class="QASmartTouch.Forms.SplashScreen"
+<Window x:Class="QASmartTouch.Forms.SplashScreen"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 
-        Title="QA SmartTouch"
+        Title="QA SmartBoard"
 
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
 
@@ -80,7 +80,7 @@
 
                     <Run Text="QA " FontSize="30" FontWeight="Light" Foreground="#8E9AAF"/>
 
-                    <Run Text="SmartTouch" FontSize="30" FontWeight="Bold" Foreground="White"/>
+                    <Run Text="SmartBoard" FontSize="30" FontWeight="Bold" Foreground="White"/>
 
                 </TextBlock>
 
@@ -98,7 +98,7 @@
 
             <TextBlock Grid.Row="2" x:Name="tbVersion" 
 
-                       Text="v3.0.0" FontSize="11" Foreground="#4A5568"
+                       Text="v1.0" FontSize="11" Foreground="#4A5568"
 
                        HorizontalAlignment="Center" Margin="0,6,0,20"/>
 

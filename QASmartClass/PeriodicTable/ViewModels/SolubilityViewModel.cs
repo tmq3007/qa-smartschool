@@ -224,7 +224,7 @@ namespace QASmartTouch.PeriodicTable.ViewModels
         {
             try
             {
-                string jsonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PeriodicTable", "Data", "solubility_data.json");
+                string jsonPath = ElementDataManager.ResolveDataPath("solubility_data.json");
                 
                 if (!File.Exists(jsonPath))
                 {

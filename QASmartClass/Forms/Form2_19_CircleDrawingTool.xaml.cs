@@ -22,10 +22,21 @@ namespace QASmartTouch.Forms
         // Conversion: 1cm = 37.795px (96 DPI)
         private const double CM_TO_PX = 37.795;
 
-        // Circle center position
+        // Circle center position (Needle tip A)
         private Point _circleCenter;
 
-        // Preview circle and elements
+        // Current angle of the Compa pencil tip around _circleCenter (in radians, 0 = right)
+        private double _currentAngleRad = 0.0;
+
+        // Live swing-to-draw state
+        private bool _isSwingingPencil = false;
+        private int? _swingTouchId = null;
+        private double _sweepStartAngleRad = 0.0;
+        private double _lastSwingAngleRad = 0.0;
+        private double _sweepAccumulatedRad = 0.0;
+        private Path? _liveSweepPath;
+
+        // Preview circle and guide elements
         private Ellipse? _previewCircle;
         private Ellipse? _centerPoint;
         private Line? _diameterLine;
@@ -34,7 +45,34 @@ namespace QASmartTouch.Forms
         private Border? _sizeLabelBorder;
         private TextBlock? _sizeLabel;
 
-        // Handles
+        // Realistic 2.5D Compa visual elements
+        private Canvas? _compassCanvas;
+        private Line? _bowBarLine;
+        private Line? _bowThreadLine;
+        private Polygon? _bowWheel;
+        private Polygon? _needlePin;
+        private Polygon? _needleChuck;
+        private Polygon? _needleLegBody;
+        private Polygon? _pencilLegBody;
+        private Polygon? _pencilLeadTip;
+        private Polygon? _pencilWoodCone;
+        private Polygon? _pencilBarrel;
+        private Polygon? _pencilColorStripe;
+        private Polygon? _pencilFerrule;
+        private Polygon? _pencilEraser;
+        private Polygon? _pencilClampCollar;
+        private Ellipse? _pencilClampScrew;
+        private Polygon? _topGripPeg;
+        private Ellipse? _topHingeOuter;
+        private Ellipse? _topHingeInner;
+        private Border? _pencilTipBadge;
+
+        // Interactive hit targets on the Compa body
+        private Polygon? _hingeHitPolygon;
+        private Polygon? _pencilHitPolygon;
+        private Ellipse? _bowWheelHitArea;
+
+        // Guide Circle Handles (for adjusting radius)
         private Ellipse? _topHandle;
         private Ellipse? _rightHandle;
         private Ellipse? _bottomHandle;
@@ -44,20 +82,27 @@ namespace QASmartTouch.Forms
         private Border? _controlPanel;
         private TextBox? _radiusInput;
 
-        // Drag states
+        // Radius drag states (Delta-based + Touch-isolated)
         private bool _isDraggingHandle = false;
-        private Ellipse? _activeHandle = null;
-        
+        private int? _resizeTouchId = null;
+        private UIElement? _activeHandle = null;
+        private double _resizeStartRadiusCm = 5.0;
+        private double _resizeStartDistPx = 0.0;
+
+        // Move Compa drag states (Touch-isolated)
         private bool _isDraggingCircle = false;
+        private int? _moveTouchId = null;
         private Point _dragStartPoint;
+        private UIElement? _activeMoveElement = null;
 
         // Control panel drag state
         private bool _isDraggingPanel = false;
         private Point _panelDragStart;
 
-        // Stroke settings
+        // Stroke settings & cached brush
         private Color _strokeColor = Colors.Black;
         private double _strokeThickness = 2.0;
+        private SolidColorBrush _activeStrokeBrush = new SolidColorBrush(Colors.Black);
 
         #endregion
 
@@ -66,7 +111,7 @@ namespace QASmartTouch.Forms
         public Form2_19_CircleDrawingTool()
         {
             InitializeComponent();
-            QASmartTouch.Helpers.TouchActivationHelper.Apply(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
+            QASmartTouch.Helpers.TouchActivationHelper.Apply(this);
         }
 
         #endregion
@@ -77,25 +122,27 @@ namespace QASmartTouch.Forms
         {
             if (_mainDashboard == null) return;
 
-            // ✅ FIX: Ẩn cửa sổ ảo 1x1px bằng cách đặt WindowState = Minimized rồi đóng sau khi tạo UI
-            // Tránh hiện tượng "nháy" màn hình chính khi mở Compa từ menu Chèn nội dung
-            this.WindowState = WindowState.Minimized;
             this.ShowInTaskbar = false;
 
             // Set initial circle center (middle of screen)
             _circleCenter = new Point(
                 _mainDashboard.MainInteractiveBoard.ActualWidth / 2,
-                _mainDashboard.MainInteractiveBoard.ActualHeight / 2
+                _mainDashboard.MainInteractiveBoard.ActualHeight / 2 + 30
             );
 
             // Create all UI on canvas
             CreateUIOnCanvas();
 
-            // ✅ FIX: Đóng cửa sổ ảo ngay sau khi đã nhúng toàn bộ UI lên Canvas của MainDashboard
-            // Giải phóng Window handle, chỉ giữ lại các đối tượng trên Canvas
-            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+            // Collapse host window after embedding UI onto MainInteractiveBoard
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
             {
                 this.Visibility = Visibility.Collapsed;
+                try
+                {
+                    _mainDashboard?.Activate();
+                    _mainDashboard?.Focus();
+                }
+                catch { }
             }));
         }
 
@@ -107,11 +154,26 @@ namespace QASmartTouch.Forms
         {
             if (_mainDashboard == null) return;
 
-            // Create preview circle
+            SyncPenSettingsFromDashboard();
+
+            // Create guide circle + realistic Compa body
             CreatePreviewCircle();
 
-            // Create control panel next to circle
+            // Create control panel below/next to Compa
             CreateControlPanel();
+
+            // Initial geometry layout
+            UpdateCircle();
+        }
+
+        private void SyncPenSettingsFromDashboard()
+        {
+            if (_mainDashboard != null)
+            {
+                _strokeColor = _mainDashboard.CurrentPenColor;
+                _strokeThickness = Math.Max(2.0, _mainDashboard.CurrentPenSize);
+                _activeStrokeBrush = new SolidColorBrush(_strokeColor);
+            }
         }
 
         private void CreatePreviewCircle()
@@ -120,121 +182,361 @@ namespace QASmartTouch.Forms
 
             double radiusPx = _currentRadiusCm * CM_TO_PX;
 
-            // Preview circle
+            // 1. Dashed guide circle
             _previewCircle = new Ellipse
             {
                 Width = radiusPx * 2,
                 Height = radiusPx * 2,
-                Stroke = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-                StrokeThickness = 3,
+                Stroke = new SolidColorBrush(Color.FromArgb(150, 59, 130, 246)),
+                StrokeThickness = 2,
                 Fill = Brushes.Transparent,
-                StrokeDashArray = new DoubleCollection { 5, 3 }
+                StrokeDashArray = new DoubleCollection { 5, 4 },
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
             };
-            Canvas.SetLeft(_previewCircle, _circleCenter.X - radiusPx);
-            Canvas.SetTop(_previewCircle, _circleCenter.Y - radiusPx);
-            Panel.SetZIndex(_previewCircle, 10000); // Luôn ở trên cùng
+            Panel.SetZIndex(_previewCircle, 10000);
             _mainDashboard.MainInteractiveBoard.Children.Add(_previewCircle);
 
-            // Center point (draggable)
-            _centerPoint = new Ellipse
+            // 2. Live ink sweep path (visible while user swings the Compa pencil)
+            _liveSweepPath = new Path
             {
-                Width = 16,
-                Height = 16,
-                Fill = new SolidColorBrush(Color.FromRgb(255, 87, 34)),
-                Stroke = Brushes.White,
-                StrokeThickness = 2,
-                Cursor = Cursors.SizeAll,
-                Tag = "DragHandle" // ✅ FIX: Block drawing mode stroke leakage
+                Stroke = _activeStrokeBrush,
+                StrokeThickness = _strokeThickness,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
+                Fill = Brushes.Transparent,
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
             };
-            Canvas.SetLeft(_centerPoint, _circleCenter.X - 8);
-            Canvas.SetTop(_centerPoint, _circleCenter.Y - 8);
-            Panel.SetZIndex(_centerPoint, 10001); // Cao hơn circle
-            
-            // ✅ Touch/Stylus Fast-Response & Leakage Prevention
-            Stylus.SetIsPressAndHoldEnabled(_centerPoint, false);
-            _centerPoint.MouseLeftButtonDown += CenterPoint_MouseDown;
-            _centerPoint.MouseMove += CenterPoint_MouseMove;
-            _centerPoint.MouseLeftButtonUp += CenterPoint_MouseUp;
-            // ✅ AUD-02 FIX: Chuyển từ anonymous lambda sang named method để có thể unsubscribe
-            _centerPoint.TouchDown += CenterPoint_TouchDown;
-            _centerPoint.TouchMove += CenterPoint_TouchMove;
-            _centerPoint.TouchUp += CenterPoint_TouchUp;
-            _centerPoint.StylusDown += CenterPoint_StylusDown;
-            _centerPoint.StylusMove += CenterPoint_StylusMove;
-            _centerPoint.StylusUp += CenterPoint_StylusUp;
-            
-            _mainDashboard.MainInteractiveBoard.Children.Add(_centerPoint);
+            Panel.SetZIndex(_liveSweepPath, 10000);
+            _mainDashboard.MainInteractiveBoard.Children.Add(_liveSweepPath);
 
-            // Diameter line
+            // 3. Radius vector line (from center O to pencil tip B)
             _diameterLine = new Line
             {
-                X1 = _circleCenter.X - radiusPx,
-                Y1 = _circleCenter.Y,
-                X2 = _circleCenter.X + radiusPx,
-                Y2 = _circleCenter.Y,
-                Stroke = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
+                Stroke = new SolidColorBrush(Color.FromArgb(190, 16, 185, 129)),
                 StrokeThickness = 2,
-                StrokeDashArray = new DoubleCollection { 3, 2 },
-                Tag = "DragHandle" // ✅ FIX: Chặn stroke leakage khi chạm vào nét đứt đường kính
+                StrokeDashArray = new DoubleCollection { 4, 2 },
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
             };
             Panel.SetZIndex(_diameterLine, 10000);
             _mainDashboard.MainInteractiveBoard.Children.Add(_diameterLine);
 
-            // Arrows
+            // Arrows (kept minimal for clean look)
             _leftArrow = new Polygon
             {
-                Fill = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-                Points = new PointCollection
-                {
-                    new Point(_circleCenter.X - radiusPx, _circleCenter.Y),
-                    new Point(_circleCenter.X - radiusPx + 5, _circleCenter.Y - 3),
-                    new Point(_circleCenter.X - radiusPx + 5, _circleCenter.Y + 3)
-                },
-                Tag = "DragHandle" // ✅ FIX: Chặn stroke leakage khi chạm vào mũi tên trái
+                Fill = new SolidColorBrush(Color.FromRgb(16, 185, 129)),
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
             };
             Panel.SetZIndex(_leftArrow, 10000);
             _mainDashboard.MainInteractiveBoard.Children.Add(_leftArrow);
 
             _rightArrow = new Polygon
             {
-                Fill = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-                Points = new PointCollection
-                {
-                    new Point(_circleCenter.X + radiusPx, _circleCenter.Y),
-                    new Point(_circleCenter.X + radiusPx - 5, _circleCenter.Y - 3),
-                    new Point(_circleCenter.X + radiusPx - 5, _circleCenter.Y + 3)
-                },
-                Tag = "DragHandle" // ✅ FIX: Chặn stroke leakage khi chạm vào mũi tên phải
+                Fill = new SolidColorBrush(Color.FromRgb(16, 185, 129)),
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
             };
             Panel.SetZIndex(_rightArrow, 10000);
             _mainDashboard.MainInteractiveBoard.Children.Add(_rightArrow);
 
-            // Size label
+            // 4. Create realistic 2.5D Compa visual canvas
+            CreateCompassVisualElements();
+
+            // 5. Center needle target point (draggable)
+            _centerPoint = new Ellipse
+            {
+                Width = 22,
+                Height = 22,
+                Fill = new SolidColorBrush(Color.FromRgb(239, 68, 68)),
+                Stroke = Brushes.White,
+                StrokeThickness = 2.5,
+                Cursor = Cursors.SizeAll,
+                ToolTip = "Tâm Compa (Kéo để di chuyển Compa)",
+                Tag = "DragHandle"
+            };
+            Panel.SetZIndex(_centerPoint, 10002);
+            WireMoveElementEvents(_centerPoint);
+            _mainDashboard.MainInteractiveBoard.Children.Add(_centerPoint);
+
+            // 6. Live Radius & Angle Badge
             _sizeLabel = new TextBlock
             {
-                Text = $"⌀ {_currentRadiusCm * 2:F1}cm",
+                Text = $"R = {_currentRadiusCm:F1}cm (⌀ {_currentRadiusCm * 2:F1}cm)",
                 FontSize = 12,
                 FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(33, 150, 243))
+                Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59))
             };
 
             _sizeLabelBorder = new Border
             {
-                Background = new SolidColorBrush(Color.FromArgb(224, 255, 255, 255)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(3),
-                Padding = new Thickness(5, 2, 5, 2),
+                Background = new SolidColorBrush(Color.FromArgb(240, 255, 255, 255)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(59, 130, 246)),
+                BorderThickness = new Thickness(1.5),
+                CornerRadius = new CornerRadius(6),
+                Padding = new Thickness(8, 3, 8, 3),
                 Child = _sizeLabel,
+                IsHitTestVisible = false,
                 Tag = "DragHandle"
             };
-            Canvas.SetLeft(_sizeLabelBorder, _circleCenter.X - 30);
-            Canvas.SetTop(_sizeLabelBorder, _circleCenter.Y - radiusPx - 30);
-            Panel.SetZIndex(_sizeLabelBorder, 10001); // Cao hơn circle
+            Panel.SetZIndex(_sizeLabelBorder, 10002);
             _mainDashboard.MainInteractiveBoard.Children.Add(_sizeLabelBorder);
 
-            // Handles
+            // 7. Radius adjustment handles on the guide circle
             CreateHandles(radiusPx);
+        }
+
+        private static Polygon CreatePreallocatedPolygon(int vertexCount, Brush? fill, Brush? stroke, double strokeThickness, bool isHitTestVisible = false)
+        {
+            var pts = new PointCollection(vertexCount);
+            for (int i = 0; i < vertexCount; i++)
+            {
+                pts.Add(new Point());
+            }
+            return new Polygon
+            {
+                Points = pts,
+                Fill = fill,
+                Stroke = stroke,
+                StrokeThickness = strokeThickness,
+                IsHitTestVisible = isHitTestVisible,
+                Tag = "DragHandle"
+            };
+        }
+
+        private static void SetQuadPoints(Polygon? poly, Point p0, Point p1, Point p2, Point p3)
+        {
+            if (poly?.Points == null || poly.Points.Count < 4) return;
+            poly.Points[0] = p0;
+            poly.Points[1] = p1;
+            poly.Points[2] = p2;
+            poly.Points[3] = p3;
+        }
+
+        private static void SetTrianglePoints(Polygon? poly, Point p0, Point p1, Point p2)
+        {
+            if (poly?.Points == null || poly.Points.Count < 3) return;
+            poly.Points[0] = p0;
+            poly.Points[1] = p1;
+            poly.Points[2] = p2;
+        }
+
+        private void CreateCompassVisualElements()
+        {
+            if (_mainDashboard == null) return;
+
+            _compassCanvas = new Canvas
+            {
+                IsHitTestVisible = true,
+                Tag = "DragHandle"
+            };
+            Panel.SetZIndex(_compassCanvas, 10001);
+
+            var steelBrush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 0)
+            };
+            steelBrush.GradientStops.Add(new GradientStop(Color.FromRgb(248, 250, 252), 0.0));
+            steelBrush.GradientStops.Add(new GradientStop(Color.FromRgb(203, 213, 225), 0.55));
+            steelBrush.GradientStops.Add(new GradientStop(Color.FromRgb(100, 116, 139), 1.0));
+
+            var darkMetalBrush = new SolidColorBrush(Color.FromRgb(30, 41, 59));
+            var steelStroke = new SolidColorBrush(Color.FromRgb(51, 65, 85));
+
+            // 1. Middle bow bar & thread
+            _bowBarLine = new Line
+            {
+                Stroke = new SolidColorBrush(Color.FromRgb(148, 163, 184)),
+                StrokeThickness = 5,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
+            };
+            _compassCanvas.Children.Add(_bowBarLine);
+
+            _bowThreadLine = new Line
+            {
+                Stroke = new SolidColorBrush(Color.FromRgb(71, 85, 105)),
+                StrokeThickness = 3,
+                StrokeDashArray = new DoubleCollection { 1.5, 1.5 },
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
+            };
+            _compassCanvas.Children.Add(_bowThreadLine);
+
+            _bowWheel = CreatePreallocatedPolygon(
+                4,
+                new SolidColorBrush(Color.FromRgb(245, 158, 11)),
+                new SolidColorBrush(Color.FromRgb(180, 83, 9)),
+                1.5);
+            _compassCanvas.Children.Add(_bowWheel);
+
+            // 2. Needle Leg (Left/Center Leg)
+            _needlePin = CreatePreallocatedPolygon(
+                3,
+                new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+                steelStroke,
+                1.2);
+            _compassCanvas.Children.Add(_needlePin);
+
+            _needleChuck = CreatePreallocatedPolygon(
+                4,
+                darkMetalBrush,
+                new SolidColorBrush(Color.FromRgb(148, 163, 184)),
+                1.0);
+            _compassCanvas.Children.Add(_needleChuck);
+
+            _needleLegBody = CreatePreallocatedPolygon(4, steelBrush, steelStroke, 1.5);
+            _compassCanvas.Children.Add(_needleLegBody);
+
+            // 3. Pencil Leg (Right/Outer Leg)
+            _pencilLegBody = CreatePreallocatedPolygon(4, steelBrush, steelStroke, 1.5);
+            _compassCanvas.Children.Add(_pencilLegBody);
+
+            // 4. Realistic Pencil (Lead tip -> Wood cone -> Barrel -> Color stripe -> Ferrule -> Eraser)
+            _pencilLeadTip = CreatePreallocatedPolygon(3, _activeStrokeBrush, darkMetalBrush, 0.8);
+            _compassCanvas.Children.Add(_pencilLeadTip);
+
+            _pencilWoodCone = CreatePreallocatedPolygon(
+                4,
+                new SolidColorBrush(Color.FromRgb(253, 230, 138)),
+                new SolidColorBrush(Color.FromRgb(180, 83, 9)),
+                1.2);
+            _compassCanvas.Children.Add(_pencilWoodCone);
+
+            _pencilBarrel = CreatePreallocatedPolygon(
+                4,
+                new SolidColorBrush(Color.FromRgb(245, 158, 11)),
+                new SolidColorBrush(Color.FromRgb(180, 83, 9)),
+                1.2);
+            _compassCanvas.Children.Add(_pencilBarrel);
+
+            _pencilColorStripe = CreatePreallocatedPolygon(4, _activeStrokeBrush, null, 0.0);
+            _compassCanvas.Children.Add(_pencilColorStripe);
+
+            _pencilFerrule = CreatePreallocatedPolygon(
+                4,
+                new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+                new SolidColorBrush(Color.FromRgb(71, 85, 105)),
+                1.2);
+            _compassCanvas.Children.Add(_pencilFerrule);
+
+            _pencilEraser = CreatePreallocatedPolygon(
+                4,
+                new SolidColorBrush(Color.FromRgb(251, 113, 133)),
+                new SolidColorBrush(Color.FromRgb(190, 18, 60)),
+                1.2);
+            _compassCanvas.Children.Add(_pencilEraser);
+
+            // 5. Metal Pencil Clamp Collar & Screw
+            _pencilClampCollar = CreatePreallocatedPolygon(
+                4,
+                darkMetalBrush,
+                new SolidColorBrush(Color.FromRgb(148, 163, 184)),
+                1.3);
+            _compassCanvas.Children.Add(_pencilClampCollar);
+
+            _pencilClampScrew = new Ellipse
+            {
+                Width = 10,
+                Height = 10,
+                Fill = new SolidColorBrush(Color.FromRgb(59, 130, 246)),
+                Stroke = Brushes.White,
+                StrokeThickness = 1.2,
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
+            };
+            _compassCanvas.Children.Add(_pencilClampScrew);
+
+            // 6. Top Grip Peg & Pivot Hinge Yoke
+            _topGripPeg = CreatePreallocatedPolygon(
+                4,
+                darkMetalBrush,
+                new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                1.5);
+            _compassCanvas.Children.Add(_topGripPeg);
+
+            _topHingeOuter = new Ellipse
+            {
+                Width = 28,
+                Height = 28,
+                Fill = new SolidColorBrush(Color.FromRgb(51, 65, 85)),
+                Stroke = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                StrokeThickness = 2.2,
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
+            };
+            _compassCanvas.Children.Add(_topHingeOuter);
+
+            _topHingeInner = new Ellipse
+            {
+                Width = 12,
+                Height = 12,
+                Fill = new SolidColorBrush(Color.FromRgb(59, 130, 246)),
+                Stroke = Brushes.White,
+                StrokeThickness = 1.5,
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
+            };
+            _compassCanvas.Children.Add(_topHingeInner);
+
+            // 7. Visual Swing Hint Badge near Pencil Tip ("↻")
+            _pencilTipBadge = new Border
+            {
+                Width = 26,
+                Height = 26,
+                CornerRadius = new CornerRadius(13),
+                Background = new SolidColorBrush(Color.FromArgb(235, 37, 99, 235)),
+                BorderBrush = Brushes.White,
+                BorderThickness = new Thickness(2),
+                Child = new TextBlock
+                {
+                    Text = "↻",
+                    Foreground = Brushes.White,
+                    FontSize = 14,
+                    FontWeight = FontWeights.Bold,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, -1, 0, 0)
+                },
+                IsHitTestVisible = false,
+                Tag = "DragHandle"
+            };
+            _compassCanvas.Children.Add(_pencilTipBadge);
+
+            // 8. Interactive Hit Zones on the Compa
+            // 8a. Top Hinge & Needle Leg Hit Zone -> Move Compa
+            _hingeHitPolygon = CreatePreallocatedPolygon(6, Brushes.Transparent, null, 0.0, isHitTestVisible: true);
+            _hingeHitPolygon.Cursor = Cursors.SizeAll;
+            _hingeHitPolygon.ToolTip = "Núm cầm đỉnh Compa (Kéo để di chuyển Compa)";
+            WireMoveElementEvents(_hingeHitPolygon);
+            _compassCanvas.Children.Add(_hingeHitPolygon);
+
+            // 8b. Bow Wheel Hit Zone -> Adjust Radius
+            _bowWheelHitArea = new Ellipse
+            {
+                Width = 40,
+                Height = 40,
+                Fill = Brushes.Transparent,
+                Cursor = Cursors.SizeWE,
+                ToolTip = "Bánh xe chỉnh độ mở Compa (Kéo để thay đổi bán kính)",
+                Tag = "DragHandle"
+            };
+            WireRadiusHandleEvents(_bowWheelHitArea);
+            _compassCanvas.Children.Add(_bowWheelHitArea);
+
+            // 8c. Pencil & Pencil Tip Hit Zone -> Swing Compa to Draw Circle/Arc
+            _pencilHitPolygon = CreatePreallocatedPolygon(4, Brushes.Transparent, null, 0.0, isHitTestVisible: true);
+            _pencilHitPolygon.Cursor = Cursors.Hand;
+            _pencilHitPolygon.ToolTip = "Cầm bút chì xoay quanh tâm để vẽ đường tròn / cung tròn";
+            WirePencilSwingEvents(_pencilHitPolygon);
+            _compassCanvas.Children.Add(_pencilHitPolygon);
+
+            _mainDashboard.MainInteractiveBoard.Children.Add(_compassCanvas);
         }
 
         private void CreateHandles(double radiusPx)
@@ -242,27 +544,19 @@ namespace QASmartTouch.Forms
             if (_mainDashboard == null) return;
 
             _topHandle = CreateHandle();
-            Canvas.SetLeft(_topHandle, _circleCenter.X - 8);
-            Canvas.SetTop(_topHandle, _circleCenter.Y - radiusPx - 8);
-            Panel.SetZIndex(_topHandle, 10001);
+            Panel.SetZIndex(_topHandle, 10002);
             _mainDashboard.MainInteractiveBoard.Children.Add(_topHandle);
 
             _rightHandle = CreateHandle();
-            Canvas.SetLeft(_rightHandle, _circleCenter.X + radiusPx - 8);
-            Canvas.SetTop(_rightHandle, _circleCenter.Y - 8);
-            Panel.SetZIndex(_rightHandle, 10001);
+            Panel.SetZIndex(_rightHandle, 10002);
             _mainDashboard.MainInteractiveBoard.Children.Add(_rightHandle);
 
             _bottomHandle = CreateHandle();
-            Canvas.SetLeft(_bottomHandle, _circleCenter.X - 8);
-            Canvas.SetTop(_bottomHandle, _circleCenter.Y + radiusPx - 8);
-            Panel.SetZIndex(_bottomHandle, 10001);
+            Panel.SetZIndex(_bottomHandle, 10002);
             _mainDashboard.MainInteractiveBoard.Children.Add(_bottomHandle);
 
             _leftHandle = CreateHandle();
-            Canvas.SetLeft(_leftHandle, _circleCenter.X - radiusPx - 8);
-            Canvas.SetTop(_leftHandle, _circleCenter.Y - 8);
-            Panel.SetZIndex(_leftHandle, 10001);
+            Panel.SetZIndex(_leftHandle, 10002);
             _mainDashboard.MainInteractiveBoard.Children.Add(_leftHandle);
         }
 
@@ -270,36 +564,99 @@ namespace QASmartTouch.Forms
         {
             var handle = new Ellipse
             {
-                Width = 16,
-                Height = 16,
-                Fill = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+                Width = 14,
+                Height = 14,
+                Fill = new SolidColorBrush(Color.FromRgb(59, 130, 246)),
                 Stroke = Brushes.White,
-                StrokeThickness = 2,
+                StrokeThickness = 2.0,
                 Cursor = Cursors.Hand,
+                ToolTip = "Kéo để mở rộng / thu hẹp bán kính Compa",
                 Tag = "DragHandle"
             };
 
+            WireRadiusHandleEvents(handle);
+            return handle;
+        }
+
+        private void WireMoveElementEvents(UIElement element)
+        {
+            Stylus.SetIsPressAndHoldEnabled(element, false);
+            Stylus.SetIsFlicksEnabled(element, false);
+            element.MouseLeftButtonDown += CenterPoint_MouseDown;
+            element.MouseMove += CenterPoint_MouseMove;
+            element.MouseLeftButtonUp += CenterPoint_MouseUp;
+            element.PreviewTouchDown += CenterPoint_TouchDown;
+            element.TouchMove += CenterPoint_TouchMove;
+            element.TouchUp += CenterPoint_TouchUp;
+            element.LostTouchCapture += CenterPoint_LostTouchCapture;
+        }
+
+        private void UnwireMoveElementEvents(UIElement? element)
+        {
+            if (element == null) return;
+            element.MouseLeftButtonDown -= CenterPoint_MouseDown;
+            element.MouseMove -= CenterPoint_MouseMove;
+            element.MouseLeftButtonUp -= CenterPoint_MouseUp;
+            element.PreviewTouchDown -= CenterPoint_TouchDown;
+            element.TouchMove -= CenterPoint_TouchMove;
+            element.TouchUp -= CenterPoint_TouchUp;
+            element.LostTouchCapture -= CenterPoint_LostTouchCapture;
+        }
+
+        private void WireRadiusHandleEvents(UIElement handle)
+        {
             Stylus.SetIsPressAndHoldEnabled(handle, false);
+            Stylus.SetIsFlicksEnabled(handle, false);
             handle.MouseLeftButtonDown += Handle_MouseDown;
             handle.MouseMove += Handle_MouseMove;
             handle.MouseLeftButtonUp += Handle_MouseUp;
-
-            // ✅ AUD-02 FIX: Chuyển từ anonymous lambda sang named method để có thể unsubscribe
-            handle.TouchDown += Handle_TouchDown;
+            handle.PreviewTouchDown += Handle_TouchDown;
             handle.TouchMove += Handle_TouchMove;
             handle.TouchUp += Handle_TouchUp;
-            handle.StylusDown += Handle_StylusDown;
-            handle.StylusMove += Handle_StylusMove;
-            handle.StylusUp += Handle_StylusUp;
+            handle.LostTouchCapture += Handle_LostTouchCapture;
+        }
 
-            return handle;
+        private void UnwireRadiusHandleEvents(UIElement? handle)
+        {
+            if (handle == null) return;
+            handle.MouseLeftButtonDown -= Handle_MouseDown;
+            handle.MouseMove -= Handle_MouseMove;
+            handle.MouseLeftButtonUp -= Handle_MouseUp;
+            handle.PreviewTouchDown -= Handle_TouchDown;
+            handle.TouchMove -= Handle_TouchMove;
+            handle.TouchUp -= Handle_TouchUp;
+            handle.LostTouchCapture -= Handle_LostTouchCapture;
+        }
+
+        private void WirePencilSwingEvents(UIElement element)
+        {
+            Stylus.SetIsPressAndHoldEnabled(element, false);
+            Stylus.SetIsFlicksEnabled(element, false);
+            element.MouseLeftButtonDown += Pencil_MouseDown;
+            element.MouseMove += Pencil_MouseMove;
+            element.MouseLeftButtonUp += Pencil_MouseUp;
+            element.PreviewTouchDown += Pencil_TouchDown;
+            element.TouchMove += Pencil_TouchMove;
+            element.TouchUp += Pencil_TouchUp;
+            element.LostTouchCapture += Pencil_LostTouchCapture;
+        }
+
+        private void UnwirePencilSwingEvents(UIElement? element)
+        {
+            if (element == null) return;
+            element.MouseLeftButtonDown -= Pencil_MouseDown;
+            element.MouseMove -= Pencil_MouseMove;
+            element.MouseLeftButtonUp -= Pencil_MouseUp;
+            element.PreviewTouchDown -= Pencil_TouchDown;
+            element.TouchMove -= Pencil_TouchMove;
+            element.TouchUp -= Pencil_TouchUp;
+            element.LostTouchCapture -= Pencil_LostTouchCapture;
         }
 
         private void CreateControlPanel()
         {
             if (_mainDashboard == null) return;
 
-            // Main stack panel
             var mainStack = new StackPanel
             {
                 Orientation = Orientation.Vertical,
@@ -313,7 +670,6 @@ namespace QASmartTouch.Forms
                 Margin = new Thickness(10, 10, 10, 5)
             };
 
-            // Radius label
             controlRow.Children.Add(new TextBlock
             {
                 Text = "Bán kính:",
@@ -322,7 +678,6 @@ namespace QASmartTouch.Forms
                 FontSize = 12
             });
 
-            // Radius input
             _radiusInput = new TextBox
             {
                 Text = _currentRadiusCm.ToString("F1"),
@@ -337,7 +692,6 @@ namespace QASmartTouch.Forms
             _radiusInput.GotFocus += (s, e) => _radiusInput.SelectAll();
             controlRow.Children.Add(_radiusInput);
 
-            // cm label
             controlRow.Children.Add(new TextBlock
             {
                 Text = "cm",
@@ -347,32 +701,28 @@ namespace QASmartTouch.Forms
                 FontWeight = FontWeights.Bold
             });
 
-            // Draw button
-            var btnDraw = CreateStandardButton("✓ Vẽ", Color.FromRgb(76, 175, 80), 50);
+            // 1-Tap Draw Full Circle button
+            var btnDraw = CreateStandardButton("✓ Vẽ", Color.FromRgb(16, 185, 129), 54);
+            btnDraw.ToolTip = "Vẽ nhanh đường tròn 360° (Hoặc cầm trực tiếp cây bút chì trên Compa xoay để vẽ)";
             btnDraw.Click += btnDraw_Click;
             btnDraw.Margin = new Thickness(0, 0, 5, 0);
+            QASmartTouch.Helpers.TouchActivationHelper.WireButton(btnDraw);
             controlRow.Children.Add(btnDraw);
 
-            // Move button (chuẩn như thước kẻ Form2_15_RulerTool)
-            var btnMove = CreateStandardButton("✥", Color.FromRgb(102, 126, 234), 32); // #667EEA
-            btnMove.ToolTip = "Di chuyển";
+            // Move button
+            var btnMove = CreateStandardButton("✥", Color.FromRgb(102, 126, 234), 32);
+            btnMove.ToolTip = "Kéo để di chuyển Compa";
             btnMove.FontSize = 14;
             btnMove.FontWeight = FontWeights.Bold;
             btnMove.Cursor = Cursors.SizeAll;
             btnMove.Margin = new Thickness(0, 0, 5, 0);
-            btnMove.Tag = "DragHandle"; // ✅ FIX: Prevent drawing mode stroke leakage when dragging compass
+            btnMove.Tag = "DragHandle";
 
-            // ✅ FIX: Chỉ dùng DUY NHẤT Mouse handler + PointToScreen() (giống Form2_15_RulerTool)
-            // LOẠI BỎ hoàn toàn Touch & Stylus handler thừa trên btnMove.
-            // LÝ DO: Trên màn hình cảm ứng SMART TOUCH, Windows tự động quảng bá (promote)
-            //   Touch → Mouse. Nếu đăng ký cả Touch + Mouse đồng thời, 2 luồng sự kiện
-            //   cùng gọi Panel_MoveDrag với tọa độ lệch nhau → gây Coordinate Feedback Loop
-            //   khiến Compa "nháy nháy" tại chỗ mà không di chuyển được.
             Stylus.SetIsPressAndHoldEnabled(btnMove, false);
+            Stylus.SetIsFlicksEnabled(btnMove, false);
             btnMove.PreviewMouseDown += btnMove_PreviewMouseDown;
             btnMove.PreviewMouseMove += btnMove_PreviewMouseMove;
             btnMove.PreviewMouseUp += btnMove_PreviewMouseUp;
-            // QC_4.2_TOUCH_PIPELINE: Hỗ trợ Touch trực tiếp trên IFP, chặn gesture delay và coordinate loop
             btnMove.PreviewTouchDown += btnMove_PreviewTouchDown;
             btnMove.TouchMove += btnMove_TouchMove;
             btnMove.TouchUp += btnMove_TouchUp;
@@ -381,15 +731,16 @@ namespace QASmartTouch.Forms
             controlRow.Children.Add(btnMove);
 
             // Close button
-            var btnClose = CreateStandardButton("✕", Color.FromRgb(255, 107, 107), 32);
+            var btnClose = CreateStandardButton("✕", Color.FromRgb(239, 68, 68), 32);
             btnClose.Click += btnClose_Click;
             btnClose.FontSize = 13;
             btnClose.FontWeight = FontWeights.Bold;
+            QASmartTouch.Helpers.TouchActivationHelper.WireButton(btnClose);
             controlRow.Children.Add(btnClose);
 
             mainStack.Children.Add(controlRow);
 
-            // Row 2: Quick buttons
+            // Row 2: Quick radius buttons
             var quickRow = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -404,33 +755,29 @@ namespace QASmartTouch.Forms
 
             mainStack.Children.Add(quickRow);
 
-            // Wrap in border
             _controlPanel = new Border
             {
                 Child = mainStack,
                 Background = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(225, 232, 237)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(10),
-                Tag = "DragHandle" // ✅ FIX: Prevent drawing mode stroke leakage on control panel
+                Tag = "DragHandle"
             };
 
             _controlPanel.Effect = new System.Windows.Media.Effects.DropShadowEffect
             {
-                Color = Color.FromRgb(204, 204, 204),
+                Color = Color.FromRgb(148, 163, 184),
                 Direction = 270,
                 ShadowDepth = 3,
-                BlurRadius = 15,
-                Opacity = 0.3
+                BlurRadius = 14,
+                Opacity = 0.28
             };
 
-            // Position next to circle (to the right)
-            double radiusPx = _currentRadiusCm * CM_TO_PX;
-            Canvas.SetLeft(_controlPanel, _circleCenter.X + radiusPx + 20);
-            Canvas.SetTop(_controlPanel, _circleCenter.Y - 75);
-            Panel.SetZIndex(_controlPanel, 10002); // Cao nhất
-
+            Panel.SetZIndex(_controlPanel, 10003);
             _mainDashboard.MainInteractiveBoard.Children.Add(_controlPanel);
+
+            QASmartTouch.Helpers.TouchActivationHelper.WireAllInteractiveControls(_controlPanel, btnMove);
         }
 
         private Button CreateStandardButton(string content, Color bgColor, double width)
@@ -439,13 +786,16 @@ namespace QASmartTouch.Forms
             {
                 Content = content,
                 Width = width,
-                Height = 32, // Chuẩn 32px
+                Height = 32,
                 Background = new SolidColorBrush(bgColor),
                 Foreground = Brushes.White,
                 BorderThickness = new Thickness(0),
                 FontSize = 12,
-                Cursor = Cursors.Hand
+                FontWeight = FontWeights.SemiBold,
+                Cursor = Cursors.Hand,
+                Focusable = false
             };
+            Stylus.SetIsPressAndHoldEnabled(button, false);
 
             button.Template = new ControlTemplate(typeof(Button))
             {
@@ -459,7 +809,7 @@ namespace QASmartTouch.Forms
         {
             var border = new FrameworkElementFactory(typeof(Border));
             border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(6)); // Chuẩn 6px
+            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
 
             var content = new FrameworkElementFactory(typeof(ContentPresenter));
             content.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
@@ -476,14 +826,16 @@ namespace QASmartTouch.Forms
                 Content = text,
                 Width = 50,
                 Height = 28,
-                Background = new SolidColorBrush(Color.FromArgb(224, 255, 255, 255)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+                Background = new SolidColorBrush(Color.FromArgb(240, 248, 250, 252)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(59, 130, 246)),
                 BorderThickness = new Thickness(1),
                 FontSize = 11,
                 FontWeight = FontWeights.Bold,
                 Margin = new Thickness(0, 0, 5, 0),
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Focusable = false
             };
+            Stylus.SetIsPressAndHoldEnabled(button, false);
 
             button.Click += (s, e) =>
             {
@@ -496,6 +848,7 @@ namespace QASmartTouch.Forms
                 VisualTree = CreateQuickButtonTemplate()
             };
 
+            QASmartTouch.Helpers.TouchActivationHelper.WireButton(button);
             return button;
         }
 
@@ -517,124 +870,383 @@ namespace QASmartTouch.Forms
 
         #endregion
 
-        #region Update Methods
+        #region Update & 2.5D Compa Kinematics
 
         private void UpdateCircle()
         {
             if (_mainDashboard == null) return;
 
             double radiusPx = _currentRadiusCm * CM_TO_PX;
+            Point centerA = _circleCenter;
+            Point pencilTipB = new Point(
+                centerA.X + radiusPx * Math.Cos(_currentAngleRad),
+                centerA.Y + radiusPx * Math.Sin(_currentAngleRad)
+            );
 
-            // Update circle
+            // 1. Update guide circle
             if (_previewCircle != null)
             {
                 _previewCircle.Width = radiusPx * 2;
                 _previewCircle.Height = radiusPx * 2;
-                Canvas.SetLeft(_previewCircle, _circleCenter.X - radiusPx);
-                Canvas.SetTop(_previewCircle, _circleCenter.Y - radiusPx);
+                Canvas.SetLeft(_previewCircle, centerA.X - radiusPx);
+                Canvas.SetTop(_previewCircle, centerA.Y - radiusPx);
             }
 
-            // Update diameter line
+            // 2. Update radius line (from Needle center A to Pencil tip B)
             if (_diameterLine != null)
             {
-                _diameterLine.X1 = _circleCenter.X - radiusPx;
-                _diameterLine.X2 = _circleCenter.X + radiusPx;
-                _diameterLine.Y1 = _circleCenter.Y;
-                _diameterLine.Y2 = _circleCenter.Y;
+                _diameterLine.X1 = centerA.X;
+                _diameterLine.Y1 = centerA.Y;
+                _diameterLine.X2 = pencilTipB.X;
+                _diameterLine.Y2 = pencilTipB.Y;
             }
 
-            // Update arrows
-            if (_leftArrow != null)
+            // 3. Update Center Needle Point (22x22px)
+            if (_centerPoint != null)
             {
-                _leftArrow.Points = new PointCollection
-                {
-                    new Point(_circleCenter.X - radiusPx, _circleCenter.Y),
-                    new Point(_circleCenter.X - radiusPx + 5, _circleCenter.Y - 3),
-                    new Point(_circleCenter.X - radiusPx + 5, _circleCenter.Y + 3)
-                };
+                Canvas.SetLeft(_centerPoint, centerA.X - 11);
+                Canvas.SetTop(_centerPoint, centerA.Y - 11);
             }
 
-            if (_rightArrow != null)
+            // 4. Update Realistic 2.5D Compa Geometry (In-place Point updates -> Zero GC allocations)
+            UpdateCompassVisualGeometry(centerA, pencilTipB, radiusPx);
+
+            // 5. Update Live Sweep Ink Path (when swinging the Compa pencil)
+            UpdateLiveSweepPath(centerA, radiusPx);
+
+            // 6. Update Handles on Guide Circle
+            UpdateHandlePositions(radiusPx);
+
+            // 7. Update Control Panel position (placed below circle so it never blocks the Compa)
+            if (_controlPanel != null)
             {
-                _rightArrow.Points = new PointCollection
+                double boardW = Math.Max(800, _mainDashboard.MainInteractiveBoard.ActualWidth);
+                double boardH = Math.Max(600, _mainDashboard.MainInteractiveBoard.ActualHeight);
+                double panelX = Math.Clamp(centerA.X - 150, 16, boardW - 330);
+                double panelY = centerA.Y + radiusPx + 26;
+                if (panelY + 95 > boardH)
                 {
-                    new Point(_circleCenter.X + radiusPx, _circleCenter.Y),
-                    new Point(_circleCenter.X + radiusPx - 5, _circleCenter.Y - 3),
-                    new Point(_circleCenter.X + radiusPx - 5, _circleCenter.Y + 3)
-                };
+                    panelY = Math.Max(16, centerA.Y + 28);
+                }
+                Canvas.SetLeft(_controlPanel, panelX);
+                Canvas.SetTop(_controlPanel, panelY);
             }
 
-            // Update label
+            // 8. Update Radius TextBox
+            if (_radiusInput != null && !_radiusInput.IsKeyboardFocused)
+            {
+                _radiusInput.Text = _currentRadiusCm.ToString("F1");
+            }
+        }
+
+        private void UpdateCompassVisualGeometry(Point centerA, Point pencilTipB, double radiusPx)
+        {
+            if (_compassCanvas == null) return;
+
+            // Midpoint between Needle tip A and Pencil tip B
+            Point midM = new Point((centerA.X + pencilTipB.X) * 0.5, (centerA.Y + pencilTipB.Y) * 0.5);
+
+            // 2.5D Upright Hinge position H:
+            double legHeight = Math.Clamp(130.0 + radiusPx * 0.42, 150.0, 265.0);
+            double sinT = Math.Sin(_currentAngleRad);
+            double cosT = Math.Cos(_currentAngleRad);
+
+            Point hingeH = new Point(
+                midM.X - 34.0 * sinT,
+                midM.Y - legHeight - 0.26 * radiusPx * sinT * sinT
+            );
+
+            // --- A. Left/Center Needle Leg (H -> A) ---
+            Vector vHA = centerA - hingeH;
+            double lenHA = Math.Max(1.0, vHA.Length);
+            Vector uHA = vHA / lenHA;
+            Vector nHA = new Vector(-uHA.Y, uHA.X);
+
+            Point kneeA = hingeH + vHA * 0.80;
+            Point collarA = hingeH + vHA * 0.90;
+
+            SetQuadPoints(_needleLegBody,
+                hingeH + nHA * 8.5,
+                hingeH - nHA * 8.5,
+                kneeA - nHA * 4.5,
+                kneeA + nHA * 4.5);
+
+            SetQuadPoints(_needleChuck,
+                kneeA + nHA * 5.5,
+                kneeA - nHA * 5.5,
+                collarA - nHA * 3.0,
+                collarA + nHA * 3.0);
+
+            SetTrianglePoints(_needlePin,
+                collarA + nHA * 2.2,
+                collarA - nHA * 2.2,
+                centerA);
+
+            // --- B. Right/Outer Pencil & Pencil Leg (H -> Clamp -> B) ---
+            Vector rawPencilUp = new Vector((hingeH.X - pencilTipB.X) + 22.0 * cosT, (hingeH.Y - pencilTipB.Y) - 28.0);
+            double lenPencilUp = Math.Max(1.0, rawPencilUp.Length);
+            Vector uPenUp = rawPencilUp / lenPencilUp;
+            Vector nPen = new Vector(-uPenUp.Y, uPenUp.X);
+
+            // Clamp position on the Pencil barrel (45px up from tip B)
+            Point clampP = pencilTipB + uPenUp * 45.0;
+
+            // Steel Pencil Leg from Hinge H to Clamp P
+            Vector vHC = clampP - hingeH;
+            double lenHC = Math.Max(1.0, vHC.Length);
+            Vector uHC = vHC / lenHC;
+            Vector nHC = new Vector(-uHC.Y, uHC.X);
+
+            SetQuadPoints(_pencilLegBody,
+                hingeH + nHC * 8.5,
+                hingeH - nHC * 8.5,
+                clampP - nHC * 5.0,
+                clampP + nHC * 5.0);
+
+            // --- C. Middle Threaded Bow Bar & Adjusting Wheel ---
+            Point bowLeft = hingeH + (centerA - hingeH) * 0.45;
+            Point bowRight = hingeH + (clampP - hingeH) * 0.52;
+            Vector vBow = bowRight - bowLeft;
+            double lenBow = Math.Max(1.0, vBow.Length);
+            Vector uBow = vBow / lenBow;
+            Vector nBow = new Vector(-uBow.Y, uBow.X);
+
+            Point bowStart = bowLeft - uBow * 10.0;
+            Point bowEnd = bowRight + uBow * 10.0;
+            Point bowMid = new Point((bowLeft.X + bowRight.X) * 0.5, (bowLeft.Y + bowRight.Y) * 0.5);
+
+            if (_bowBarLine != null)
+            {
+                _bowBarLine.X1 = bowStart.X;
+                _bowBarLine.Y1 = bowStart.Y;
+                _bowBarLine.X2 = bowEnd.X;
+                _bowBarLine.Y2 = bowEnd.Y;
+            }
+
+            if (_bowThreadLine != null)
+            {
+                _bowThreadLine.X1 = bowStart.X;
+                _bowThreadLine.Y1 = bowStart.Y;
+                _bowThreadLine.X2 = bowEnd.X;
+                _bowThreadLine.Y2 = bowEnd.Y;
+            }
+
+            SetQuadPoints(_bowWheel,
+                bowMid - uBow * 5.0 + nBow * 11.0,
+                bowMid + uBow * 5.0 + nBow * 11.0,
+                bowMid + uBow * 5.0 - nBow * 11.0,
+                bowMid - uBow * 5.0 - nBow * 11.0);
+
+            if (_bowWheelHitArea != null)
+            {
+                Canvas.SetLeft(_bowWheelHitArea, bowMid.X - 20);
+                Canvas.SetTop(_bowWheelHitArea, bowMid.Y - 20);
+            }
+
+            // --- D. Realistic Colored Pencil Segments ---
+            Point pLeadEnd = pencilTipB + uPenUp * 11.0;
+            Point pWoodEnd = pencilTipB + uPenUp * 26.0;
+            Point pBarrelEnd = pencilTipB + uPenUp * 92.0;
+            Point pFerruleEnd = pencilTipB + uPenUp * 102.0;
+            Point pEraserEnd = pencilTipB + uPenUp * 114.0;
+
+            if (_pencilLeadTip != null)
+            {
+                _pencilLeadTip.Fill = _activeStrokeBrush;
+                SetTrianglePoints(_pencilLeadTip,
+                    pencilTipB,
+                    pLeadEnd + nPen * 2.6,
+                    pLeadEnd - nPen * 2.6);
+            }
+
+            SetQuadPoints(_pencilWoodCone,
+                pLeadEnd + nPen * 2.6,
+                pLeadEnd - nPen * 2.6,
+                pWoodEnd - nPen * 6.8,
+                pWoodEnd + nPen * 6.8);
+
+            SetQuadPoints(_pencilBarrel,
+                pWoodEnd + nPen * 6.8,
+                pWoodEnd - nPen * 6.8,
+                pBarrelEnd - nPen * 6.8,
+                pBarrelEnd + nPen * 6.8);
+
+            if (_pencilColorStripe != null)
+            {
+                _pencilColorStripe.Fill = _activeStrokeBrush;
+                SetQuadPoints(_pencilColorStripe,
+                    pWoodEnd + nPen * 2.5,
+                    pWoodEnd - nPen * 2.5,
+                    pBarrelEnd - nPen * 2.5,
+                    pBarrelEnd + nPen * 2.5);
+            }
+
+            SetQuadPoints(_pencilFerrule,
+                pBarrelEnd + nPen * 6.8,
+                pBarrelEnd - nPen * 6.8,
+                pFerruleEnd - nPen * 6.8,
+                pFerruleEnd + nPen * 6.8);
+
+            SetQuadPoints(_pencilEraser,
+                pFerruleEnd + nPen * 6.8,
+                pFerruleEnd - nPen * 6.8,
+                pEraserEnd - nPen * 6.8,
+                pEraserEnd + nPen * 6.8);
+
+            // Pencil Clamp Collar & Screw around clampP
+            Point cBot = pencilTipB + uPenUp * 38.0;
+            Point cTop = pencilTipB + uPenUp * 53.0;
+            SetQuadPoints(_pencilClampCollar,
+                cBot + nPen * 9.2,
+                cBot - nPen * 9.2,
+                cTop - nPen * 9.2,
+                cTop + nPen * 9.2);
+
+            if (_pencilClampScrew != null)
+            {
+                Canvas.SetLeft(_pencilClampScrew, clampP.X - 5);
+                Canvas.SetTop(_pencilClampScrew, clampP.Y - 5);
+            }
+
+            // --- E. Top Grip Peg & Pivot Hinge Yoke at H ---
+            SetQuadPoints(_topGripPeg,
+                new Point(hingeH.X - 6.5, hingeH.Y - 8),
+                new Point(hingeH.X + 6.5, hingeH.Y - 8),
+                new Point(hingeH.X + 5.0, hingeH.Y - 38),
+                new Point(hingeH.X - 5.0, hingeH.Y - 38));
+
+            if (_topHingeOuter != null)
+            {
+                Canvas.SetLeft(_topHingeOuter, hingeH.X - 14);
+                Canvas.SetTop(_topHingeOuter, hingeH.Y - 14);
+            }
+
+            if (_topHingeInner != null)
+            {
+                Canvas.SetLeft(_topHingeInner, hingeH.X - 6);
+                Canvas.SetTop(_topHingeInner, hingeH.Y - 6);
+            }
+
+            // --- F. Swing Badge near Pencil Tip ---
+            if (_pencilTipBadge != null)
+            {
+                Point badgePos = pencilTipB - uPenUp * 16.0;
+                Canvas.SetLeft(_pencilTipBadge, badgePos.X - 13);
+                Canvas.SetTop(_pencilTipBadge, badgePos.Y - 13);
+            }
+
+            // --- G. Update Interactive Hit Zones ---
+            if (_hingeHitPolygon?.Points != null && _hingeHitPolygon.Points.Count >= 6)
+            {
+                _hingeHitPolygon.Points[0] = new Point(hingeH.X - 24, hingeH.Y - 44);
+                _hingeHitPolygon.Points[1] = new Point(hingeH.X + 24, hingeH.Y - 44);
+                _hingeHitPolygon.Points[2] = hingeH + nHA * 16;
+                _hingeHitPolygon.Points[3] = centerA + nHA * 14;
+                _hingeHitPolygon.Points[4] = centerA - nHA * 14;
+                _hingeHitPolygon.Points[5] = hingeH - nHA * 16;
+            }
+
+            Point hitTip = pencilTipB - uPenUp * 28.0;
+            Point hitTop = pEraserEnd + uPenUp * 12.0;
+            SetQuadPoints(_pencilHitPolygon,
+                hitTip + nPen * 24.0,
+                hitTip - nPen * 24.0,
+                hitTop - nPen * 22.0,
+                hitTop + nPen * 22.0);
+
+            // --- H. Update Size & Angle Label Badge ---
             if (_sizeLabel != null)
             {
-                _sizeLabel.Text = $"⌀ {_currentRadiusCm * 2:F1}cm";
+                if (_isSwingingPencil)
+                {
+                    double sweptDeg = Math.Min(360.0, Math.Abs(_sweepAccumulatedRad) * 180.0 / Math.PI);
+                    _sizeLabel.Text = $"R = {_currentRadiusCm:F1}cm • Đang quay: {sweptDeg:F0}°";
+                }
+                else
+                {
+                    _sizeLabel.Text = $"R = {_currentRadiusCm:F1}cm (⌀ {_currentRadiusCm * 2:F1}cm)";
+                }
             }
 
             if (_sizeLabelBorder != null)
             {
-                Canvas.SetLeft(_sizeLabelBorder, _circleCenter.X - 30);
-                Canvas.SetTop(_sizeLabelBorder, _circleCenter.Y - radiusPx - 30);
+                Canvas.SetLeft(_sizeLabelBorder, bowMid.X - 58);
+                Canvas.SetTop(_sizeLabelBorder, bowMid.Y + 14);
             }
+        }
 
-            // Update center point position
-            if (_centerPoint != null)
+        private void UpdateLiveSweepPath(Point centerA, double radiusPx)
+        {
+            if (_liveSweepPath == null) return;
+
+            if (!_isSwingingPencil || Math.Abs(_sweepAccumulatedRad) < 0.02)
             {
-                Canvas.SetLeft(_centerPoint, _circleCenter.X - 8);
-                Canvas.SetTop(_centerPoint, _circleCenter.Y - 8);
+                _liveSweepPath.Data = null;
+                return;
             }
 
-            // Update handles
-            UpdateHandlePositions(radiusPx);
+            _liveSweepPath.Stroke = _activeStrokeBrush;
+            _liveSweepPath.StrokeThickness = _strokeThickness;
+            _liveSweepPath.Data = BuildArcGeometry(centerA, radiusPx, _sweepStartAngleRad, _sweepAccumulatedRad);
+        }
 
-            // Update control panel position
-            if (_controlPanel != null)
-            {
-                Canvas.SetLeft(_controlPanel, _circleCenter.X + radiusPx + 20);
-                Canvas.SetTop(_controlPanel, _circleCenter.Y - 75);
-            }
+        private static Geometry BuildArcGeometry(Point center, double radius, double startAngleRad, double sweepAngleRad)
+        {
+            double clampedSweep = Math.Clamp(sweepAngleRad, -Math.PI * 2 + 0.001, Math.PI * 2 - 0.001);
+            double midAngleRad = startAngleRad + clampedSweep * 0.5;
+            double endAngleRad = startAngleRad + clampedSweep;
 
-            // Update input
-            if (_radiusInput != null)
-            {
-                _radiusInput.Text = _currentRadiusCm.ToString("F1");
-            }
+            Point startPt = new Point(center.X + radius * Math.Cos(startAngleRad), center.Y + radius * Math.Sin(startAngleRad));
+            Point midPt = new Point(center.X + radius * Math.Cos(midAngleRad), center.Y + radius * Math.Sin(midAngleRad));
+            Point endPt = new Point(center.X + radius * Math.Cos(endAngleRad), center.Y + radius * Math.Sin(endAngleRad));
+
+            SweepDirection dir = clampedSweep >= 0 ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
+
+            var figure = new PathFigure { StartPoint = startPt, IsClosed = false, IsFilled = false };
+            figure.Segments.Add(new ArcSegment(midPt, new Size(radius, radius), 0, false, dir, true));
+            figure.Segments.Add(new ArcSegment(endPt, new Size(radius, radius), 0, false, dir, true));
+
+            var geometry = new PathGeometry();
+            geometry.Figures.Add(figure);
+            return geometry;
         }
 
         private void UpdateHandlePositions(double radiusPx)
         {
             if (_topHandle != null)
             {
-                Canvas.SetLeft(_topHandle, _circleCenter.X - 8);
-                Canvas.SetTop(_topHandle, _circleCenter.Y - radiusPx - 8);
+                Canvas.SetLeft(_topHandle, _circleCenter.X - 7);
+                Canvas.SetTop(_topHandle, _circleCenter.Y - radiusPx - 7);
             }
 
             if (_rightHandle != null)
             {
-                Canvas.SetLeft(_rightHandle, _circleCenter.X + radiusPx - 8);
-                Canvas.SetTop(_rightHandle, _circleCenter.Y - 8);
+                Canvas.SetLeft(_rightHandle, _circleCenter.X + radiusPx - 7);
+                Canvas.SetTop(_rightHandle, _circleCenter.Y - 7);
             }
 
             if (_bottomHandle != null)
             {
-                Canvas.SetLeft(_bottomHandle, _circleCenter.X - 8);
-                Canvas.SetTop(_bottomHandle, _circleCenter.Y + radiusPx - 8);
+                Canvas.SetLeft(_bottomHandle, _circleCenter.X - 7);
+                Canvas.SetTop(_bottomHandle, _circleCenter.Y + radiusPx - 7);
             }
 
             if (_leftHandle != null)
             {
-                Canvas.SetLeft(_leftHandle, _circleCenter.X - radiusPx - 8);
-                Canvas.SetTop(_leftHandle, _circleCenter.Y - 8);
+                Canvas.SetLeft(_leftHandle, _circleCenter.X - radiusPx - 7);
+                Canvas.SetTop(_leftHandle, _circleCenter.Y - 7);
             }
         }
 
         #endregion
 
-        #region Center Point Drag Events
+        #region Move Compa Events (Top Hinge & Center Needle Point - Touch Isolated)
 
-        private void CenterPoint_StartDrag(Point startPos)
+        private void CenterPoint_StartDrag(UIElement? element, Point startPos)
         {
             if (_mainDashboard == null) return;
             _isDraggingCircle = true;
+            _activeMoveElement = element;
             _dragStartPoint = startPos;
         }
 
@@ -644,6 +1256,7 @@ namespace QASmartTouch.Forms
 
             double deltaX = currentPoint.X - _dragStartPoint.X;
             double deltaY = currentPoint.Y - _dragStartPoint.Y;
+            if (Math.Abs(deltaX) < 0.25 && Math.Abs(deltaY) < 0.25) return;
 
             _circleCenter = new Point(_circleCenter.X + deltaX, _circleCenter.Y + deltaY);
             _dragStartPoint = currentPoint;
@@ -653,15 +1266,22 @@ namespace QASmartTouch.Forms
 
         private void CenterPoint_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (_mainDashboard == null) return;
+            // Ignore promoted mouse events when interacting via Touch screen
+            if (_moveTouchId != null || e.StylusDevice != null)
+            {
+                e.Handled = true;
+                return;
+            }
+            if (_mainDashboard == null || sender is not UIElement el) return;
 
-            CenterPoint_StartDrag(e.GetPosition(_mainDashboard.MainInteractiveBoard));
-            _centerPoint?.CaptureMouse();
+            CenterPoint_StartDrag(el, e.GetPosition(_mainDashboard.MainInteractiveBoard));
+            el.CaptureMouse();
             e.Handled = true;
         }
 
         private void CenterPoint_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_moveTouchId != null || e.StylusDevice != null) return;
             if (!_isDraggingCircle || _mainDashboard == null) return;
 
             CenterPoint_MoveDrag(e.GetPosition(_mainDashboard.MainInteractiveBoard));
@@ -670,64 +1290,219 @@ namespace QASmartTouch.Forms
 
         private void CenterPoint_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_moveTouchId != null || e.StylusDevice != null)
+            {
+                e.Handled = true;
+                return;
+            }
             _isDraggingCircle = false;
-            _centerPoint?.ReleaseMouseCapture();
+            _activeMoveElement?.ReleaseMouseCapture();
+            _activeMoveElement = null;
             e.Handled = true;
         }
 
-        // ✅ AUD-02: Named Touch/Stylus handlers cho CenterPoint (thay thế anonymous lambda)
         private void CenterPoint_TouchDown(object? sender, TouchEventArgs e)
         {
-            if (_mainDashboard == null) return;
-            CenterPoint_StartDrag(e.GetTouchPoint(_mainDashboard.MainInteractiveBoard).Position);
-            _centerPoint?.CaptureTouch(e.TouchDevice);
+            if (_mainDashboard == null || sender is not UIElement el) return;
+            if (_moveTouchId != null)
+            {
+                e.Handled = true;
+                return;
+            }
+            _moveTouchId = e.TouchDevice.Id;
+            CenterPoint_StartDrag(el, e.GetTouchPoint(_mainDashboard.MainInteractiveBoard).Position);
+            el.CaptureTouch(e.TouchDevice);
             e.Handled = true;
         }
 
         private void CenterPoint_TouchMove(object? sender, TouchEventArgs e)
         {
-            if (!_isDraggingCircle || _mainDashboard == null) return;
+            if (!_isDraggingCircle || _mainDashboard == null || _moveTouchId != e.TouchDevice.Id) return;
             CenterPoint_MoveDrag(e.GetTouchPoint(_mainDashboard.MainInteractiveBoard).Position);
             e.Handled = true;
         }
 
         private void CenterPoint_TouchUp(object? sender, TouchEventArgs e)
         {
+            if (_moveTouchId != e.TouchDevice.Id) return;
             _isDraggingCircle = false;
-            _centerPoint?.ReleaseTouchCapture(e.TouchDevice);
+            _moveTouchId = null;
+            if (sender is UIElement el && e.TouchDevice.Captured == el)
+            {
+                el.ReleaseTouchCapture(e.TouchDevice);
+            }
+            _activeMoveElement = null;
             e.Handled = true;
         }
 
-        private void CenterPoint_StylusDown(object? sender, StylusDownEventArgs e)
+        private void CenterPoint_LostTouchCapture(object? sender, TouchEventArgs e)
         {
-            if (_mainDashboard == null) return;
-            CenterPoint_StartDrag(e.GetPosition(_mainDashboard.MainInteractiveBoard));
-            _centerPoint?.CaptureStylus();
-            e.Handled = true;
-        }
-
-        private void CenterPoint_StylusMove(object? sender, StylusEventArgs e)
-        {
-            if (!_isDraggingCircle || _mainDashboard == null) return;
-            CenterPoint_MoveDrag(e.GetPosition(_mainDashboard.MainInteractiveBoard));
-            e.Handled = true;
-        }
-
-        private void CenterPoint_StylusUp(object? sender, StylusEventArgs e)
-        {
-            _isDraggingCircle = false;
-            _centerPoint?.ReleaseStylusCapture();
-            e.Handled = true;
+            if (_moveTouchId == e.TouchDevice.Id)
+            {
+                _isDraggingCircle = false;
+                _moveTouchId = null;
+                _activeMoveElement = null;
+            }
         }
 
         #endregion
 
-        #region Handle Events
+        #region Pencil Swing-to-Draw Events (Direct Compa Rotation - Touch Isolated)
 
-        private void Handle_StartDrag(Ellipse handle, Point startPos)
+        private static double NormalizeAngleDelta(double deltaRad)
+        {
+            while (deltaRad > Math.PI) deltaRad -= Math.PI * 2;
+            while (deltaRad <= -Math.PI) deltaRad += Math.PI * 2;
+            return deltaRad;
+        }
+
+        private void Pencil_StartDrag(Point startPos)
+        {
+            if (_mainDashboard == null) return;
+
+            SyncPenSettingsFromDashboard();
+
+            _isSwingingPencil = true;
+            _currentAngleRad = Math.Atan2(startPos.Y - _circleCenter.Y, startPos.X - _circleCenter.X);
+            _sweepStartAngleRad = _currentAngleRad;
+            _lastSwingAngleRad = _currentAngleRad;
+            _sweepAccumulatedRad = 0.0;
+
+            UpdateCircle();
+        }
+
+        private void Pencil_MoveDrag(Point currentPoint)
+        {
+            if (!_isSwingingPencil || _mainDashboard == null) return;
+
+            double dx = currentPoint.X - _circleCenter.X;
+            double dy = currentPoint.Y - _circleCenter.Y;
+            if (dx * dx + dy * dy < 16.0) return;
+
+            double newAngle = Math.Atan2(dy, dx);
+            double delta = NormalizeAngleDelta(newAngle - _lastSwingAngleRad);
+            if (Math.Abs(delta) < 0.002) return;
+
+            _sweepAccumulatedRad = Math.Clamp(_sweepAccumulatedRad + delta, -Math.PI * 2, Math.PI * 2);
+            _lastSwingAngleRad = newAngle;
+            _currentAngleRad = newAngle;
+
+            UpdateCircle();
+        }
+
+        private void Pencil_EndDrag()
+        {
+            if (!_isSwingingPencil) return;
+            _isSwingingPencil = false;
+            _swingTouchId = null;
+
+            if (_liveSweepPath != null)
+            {
+                _liveSweepPath.Data = null;
+            }
+
+            double sweptDeg = Math.Abs(_sweepAccumulatedRad) * 180.0 / Math.PI;
+            double startAngle = _sweepStartAngleRad;
+            double sweepAngle = _sweepAccumulatedRad;
+            _sweepAccumulatedRad = 0.0;
+
+            UpdateCircle();
+
+            if (sweptDeg >= 345.0)
+            {
+                CommitFullCircleToBoard(closeToolAfterDraw: false);
+            }
+            else if (sweptDeg >= 8.0)
+            {
+                CommitArcToBoard(startAngle, sweepAngle);
+            }
+        }
+
+        private void Pencil_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_swingTouchId != null || e.StylusDevice != null)
+            {
+                e.Handled = true;
+                return;
+            }
+            if (_mainDashboard == null || sender is not UIElement el) return;
+            Pencil_StartDrag(e.GetPosition(_mainDashboard.MainInteractiveBoard));
+            el.CaptureMouse();
+            e.Handled = true;
+        }
+
+        private void Pencil_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_swingTouchId != null || e.StylusDevice != null) return;
+            if (!_isSwingingPencil || _mainDashboard == null) return;
+            Pencil_MoveDrag(e.GetPosition(_mainDashboard.MainInteractiveBoard));
+            e.Handled = true;
+        }
+
+        private void Pencil_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_swingTouchId != null || e.StylusDevice != null)
+            {
+                e.Handled = true;
+                return;
+            }
+            (sender as UIElement)?.ReleaseMouseCapture();
+            Pencil_EndDrag();
+            e.Handled = true;
+        }
+
+        private void Pencil_TouchDown(object? sender, TouchEventArgs e)
+        {
+            if (_mainDashboard == null || sender is not UIElement el) return;
+            if (_swingTouchId != null)
+            {
+                e.Handled = true;
+                return;
+            }
+            _swingTouchId = e.TouchDevice.Id;
+            Pencil_StartDrag(e.GetTouchPoint(_mainDashboard.MainInteractiveBoard).Position);
+            el.CaptureTouch(e.TouchDevice);
+            e.Handled = true;
+        }
+
+        private void Pencil_TouchMove(object? sender, TouchEventArgs e)
+        {
+            if (!_isSwingingPencil || _mainDashboard == null || _swingTouchId != e.TouchDevice.Id) return;
+            Pencil_MoveDrag(e.GetTouchPoint(_mainDashboard.MainInteractiveBoard).Position);
+            e.Handled = true;
+        }
+
+        private void Pencil_TouchUp(object? sender, TouchEventArgs e)
+        {
+            if (_swingTouchId != e.TouchDevice.Id) return;
+            if (sender is UIElement el && e.TouchDevice.Captured == el)
+            {
+                el.ReleaseTouchCapture(e.TouchDevice);
+            }
+            Pencil_EndDrag();
+            e.Handled = true;
+        }
+
+        private void Pencil_LostTouchCapture(object? sender, TouchEventArgs e)
+        {
+            if (_swingTouchId == e.TouchDevice.Id)
+            {
+                Pencil_EndDrag();
+            }
+        }
+
+        #endregion
+
+        #region Radius Handle Events (Delta-Based & Touch Isolated)
+
+        private void Handle_StartDrag(UIElement handle, Point startPos)
         {
             _isDraggingHandle = true;
             _activeHandle = handle;
+            _resizeStartRadiusCm = _currentRadiusCm;
+            double dx = startPos.X - _circleCenter.X;
+            double dy = startPos.Y - _circleCenter.Y;
+            _resizeStartDistPx = Math.Sqrt(dx * dx + dy * dy);
         }
 
         private void Handle_MoveDrag(Point currentPoint)
@@ -736,10 +1511,17 @@ namespace QASmartTouch.Forms
 
             double dx = currentPoint.X - _circleCenter.X;
             double dy = currentPoint.Y - _circleCenter.Y;
-            double newRadiusPx = Math.Sqrt(dx * dx + dy * dy);
+            double currentDistPx = Math.Sqrt(dx * dx + dy * dy);
 
-            double newRadiusCm = newRadiusPx / CM_TO_PX;
-            newRadiusCm = Math.Clamp(newRadiusCm, 1, 20);
+            // Delta-based radius calculation: zero initial jump and smooth 1:1 tracking
+            double deltaPx = currentDistPx - _resizeStartDistPx;
+            if (_activeHandle == _bowWheelHitArea)
+            {
+                deltaPx *= 1.5;
+            }
+
+            double newRadiusCm = Math.Clamp(_resizeStartRadiusCm + (deltaPx / CM_TO_PX), 1.0, 20.0);
+            if (Math.Abs(newRadiusCm - _currentRadiusCm) < 0.01) return;
 
             _currentRadiusCm = newRadiusCm;
             UpdateCircle();
@@ -747,8 +1529,13 @@ namespace QASmartTouch.Forms
 
         private void Handle_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            var handle = sender as Ellipse;
-            if (handle != null && _mainDashboard != null)
+            // Block promoted mouse events on interactive flat panels
+            if (_resizeTouchId != null || e.StylusDevice != null)
+            {
+                e.Handled = true;
+                return;
+            }
+            if (sender is UIElement handle && _mainDashboard != null)
             {
                 Handle_StartDrag(handle, e.GetPosition(_mainDashboard.MainInteractiveBoard));
                 handle.CaptureMouse();
@@ -758,6 +1545,7 @@ namespace QASmartTouch.Forms
 
         private void Handle_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_resizeTouchId != null || e.StylusDevice != null) return;
             if (!_isDraggingHandle || _activeHandle == null || _mainDashboard == null) return;
 
             Handle_MoveDrag(e.GetPosition(_mainDashboard.MainInteractiveBoard));
@@ -766,17 +1554,26 @@ namespace QASmartTouch.Forms
 
         private void Handle_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_resizeTouchId != null || e.StylusDevice != null)
+            {
+                e.Handled = true;
+                return;
+            }
             _isDraggingHandle = false;
             _activeHandle?.ReleaseMouseCapture();
             _activeHandle = null;
             e.Handled = true;
         }
 
-        // ✅ AUD-02: Named Touch/Stylus handlers cho Handles (thay thế anonymous lambda)
         private void Handle_TouchDown(object? sender, TouchEventArgs e)
         {
-            var handle = sender as Ellipse;
-            if (handle == null || _mainDashboard == null) return;
+            if (sender is not UIElement handle || _mainDashboard == null) return;
+            if (_resizeTouchId != null)
+            {
+                e.Handled = true;
+                return;
+            }
+            _resizeTouchId = e.TouchDevice.Id;
             Handle_StartDrag(handle, e.GetTouchPoint(_mainDashboard.MainInteractiveBoard).Position);
             handle.CaptureTouch(e.TouchDevice);
             e.Handled = true;
@@ -784,71 +1581,65 @@ namespace QASmartTouch.Forms
 
         private void Handle_TouchMove(object? sender, TouchEventArgs e)
         {
-            if (!_isDraggingHandle || _mainDashboard == null) return;
+            if (!_isDraggingHandle || _mainDashboard == null || _resizeTouchId != e.TouchDevice.Id) return;
             Handle_MoveDrag(e.GetTouchPoint(_mainDashboard.MainInteractiveBoard).Position);
             e.Handled = true;
         }
 
         private void Handle_TouchUp(object? sender, TouchEventArgs e)
         {
+            if (_resizeTouchId != e.TouchDevice.Id) return;
             _isDraggingHandle = false;
-            (sender as Ellipse)?.ReleaseTouchCapture(e.TouchDevice);
+            _resizeTouchId = null;
+            if (sender is UIElement handle && e.TouchDevice.Captured == handle)
+            {
+                handle.ReleaseTouchCapture(e.TouchDevice);
+            }
             _activeHandle = null;
             e.Handled = true;
         }
 
-        private void Handle_StylusDown(object? sender, StylusDownEventArgs e)
+        private void Handle_LostTouchCapture(object? sender, TouchEventArgs e)
         {
-            var handle = sender as Ellipse;
-            if (handle == null || _mainDashboard == null) return;
-            Handle_StartDrag(handle, e.GetPosition(_mainDashboard.MainInteractiveBoard));
-            handle.CaptureStylus();
-            e.Handled = true;
-        }
-
-        private void Handle_StylusMove(object? sender, StylusEventArgs e)
-        {
-            if (!_isDraggingHandle || _mainDashboard == null) return;
-            Handle_MoveDrag(e.GetPosition(_mainDashboard.MainInteractiveBoard));
-            e.Handled = true;
-        }
-
-        private void Handle_StylusUp(object? sender, StylusEventArgs e)
-        {
-            _isDraggingHandle = false;
-            (sender as Ellipse)?.ReleaseStylusCapture();
-            _activeHandle = null;
-            e.Handled = true;
+            if (_resizeTouchId == e.TouchDevice.Id)
+            {
+                _isDraggingHandle = false;
+                _resizeTouchId = null;
+                _activeHandle = null;
+            }
         }
 
         #endregion
 
-        #region Button Events
+        #region Commit Circle / Arc to Board & Button Events
 
         private void btnDraw_Click(object sender, RoutedEventArgs e)
+        {
+            CommitFullCircleToBoard(closeToolAfterDraw: true);
+        }
+
+        private void CommitFullCircleToBoard(bool closeToolAfterDraw)
         {
             if (_mainDashboard == null) return;
 
             try
             {
+                SyncPenSettingsFromDashboard();
                 double radiusPx = _currentRadiusCm * CM_TO_PX;
 
-                // Create a container for circle + center point (IsHitTestVisible = false để cố định 100% không bị xô lệch)
                 var container = new Canvas
                 {
                     Width = radiusPx * 2,
-                    Height = radiusPx * 2,
-                    IsHitTestVisible = false // ✅ FIX: Standard pedagogical shape - completely static & write-through
+                    Height = radiusPx * 2
                 };
 
-                // Create the circle
                 var circle = new Ellipse
                 {
                     Width = radiusPx * 2,
                     Height = radiusPx * 2,
                     Stroke = new SolidColorBrush(_strokeColor),
                     StrokeThickness = _strokeThickness,
-                    Fill = null, // ✅ FIX: Null fill so pen/line drawing passes directly to board
+                    Fill = null,
                     IsHitTestVisible = false,
                     SnapsToDevicePixels = true
                 };
@@ -856,80 +1647,136 @@ namespace QASmartTouch.Forms
                 Canvas.SetTop(circle, 0);
                 container.Children.Add(circle);
 
-                // Create center point (cross mark)
                 var centerMark = CreateCenterMark(radiusPx);
                 centerMark.IsHitTestVisible = false;
                 container.Children.Add(centerMark);
 
-                // Position the container
                 Canvas.SetLeft(container, _circleCenter.X - radiusPx);
                 Canvas.SetTop(container, _circleCenter.Y - radiusPx);
+                Panel.SetZIndex(container, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
 
                 _mainDashboard.MainInteractiveBoard.Children.Add(container);
 
-                // ✅ Record action for Undo/Redo support
                 try
                 {
                     _mainDashboard.RecordToolDrawAction(container, $"Circle: radius={_currentRadiusCm:F1}cm");
                 }
                 catch { }
 
-                ShowTemporaryMessage($"✓ Đã vẽ hình tròn bán kính {_currentRadiusCm:F1}cm");
+                ShowTemporaryMessage($"✓ Đã vẽ đường tròn bán kính R = {_currentRadiusCm:F1}cm");
                 System.Media.SystemSounds.Asterisk.Play();
 
-                // ✅ FIX SƯ PHẠM: Tự động dọn dẹp và đóng công cụ Compa sau khi vẽ xong
-                RemoveAllFromCanvas();
-                this.Close();
+                if (closeToolAfterDraw)
+                {
+                    RemoveAllFromCanvas();
+                    this.Close();
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi vẽ hình tròn: {ex.Message}", "Lỗi", 
+                MessageBox.Show($"Lỗi vẽ hình tròn: {ex.Message}", "Lỗi",
                               MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        /// <summary>
-        /// Creates a center mark (filled dot) at the center of the circle
-        /// </summary>
-        private Canvas CreateCenterMark(double radiusPx)
+        private void CommitArcToBoard(double startAngleRad, double sweepAngleRad)
         {
-            var centerCanvas = new Canvas();
+            if (_mainDashboard == null) return;
 
+            try
+            {
+                SyncPenSettingsFromDashboard();
+                double radiusPx = _currentRadiusCm * CM_TO_PX;
+
+                var container = new Canvas
+                {
+                    Width = radiusPx * 2,
+                    Height = radiusPx * 2
+                };
+
+                var localCenter = new Point(radiusPx, radiusPx);
+                var arcPath = new Path
+                {
+                    Stroke = new SolidColorBrush(_strokeColor),
+                    StrokeThickness = _strokeThickness,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round,
+                    Fill = null,
+                    Data = BuildArcGeometry(localCenter, radiusPx, startAngleRad, sweepAngleRad),
+                    IsHitTestVisible = false,
+                    SnapsToDevicePixels = true
+                };
+                container.Children.Add(arcPath);
+
+                var centerMark = CreateCenterMark(radiusPx);
+                centerMark.IsHitTestVisible = false;
+                container.Children.Add(centerMark);
+
+                Canvas.SetLeft(container, _circleCenter.X - radiusPx);
+                Canvas.SetTop(container, _circleCenter.Y - radiusPx);
+                Panel.SetZIndex(container, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
+
+                _mainDashboard.MainInteractiveBoard.Children.Add(container);
+
+                double deg = Math.Abs(sweepAngleRad) * 180.0 / Math.PI;
+                try
+                {
+                    _mainDashboard.RecordToolDrawAction(container, $"Arc: radius={_currentRadiusCm:F1}cm, angle={deg:F0}deg");
+                }
+                catch { }
+
+                ShowTemporaryMessage($"✓ Đã vẽ cung tròn {deg:F0}° (R = {_currentRadiusCm:F1}cm)");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"CommitArcToBoard error: {ex.Message}");
+            }
+        }
+
+        private Ellipse CreateCenterMark(double radiusPx)
+        {
             double centerX = radiusPx;
             double centerY = radiusPx;
-            double dotRadius = Math.Max(3.5, _strokeThickness * 1.5); // Dot size scales with stroke
+            double dotRadius = Math.Clamp(_strokeThickness * 0.55, 1.8, 2.8);
 
-            // Filled dot (chấm tròn đặc) thay cho dấu +
             var centerDot = new Ellipse
             {
-                Width  = dotRadius * 2,
+                Width = dotRadius * 2,
                 Height = dotRadius * 2,
-                Fill   = new SolidColorBrush(_strokeColor),
+                Fill = new SolidColorBrush(_strokeColor),
+                Tag = "CompassCenterDot",
+                IsHitTestVisible = false,
                 SnapsToDevicePixels = true
             };
             Canvas.SetLeft(centerDot, centerX - dotRadius);
-            Canvas.SetTop(centerDot,  centerY - dotRadius);
-            centerCanvas.Children.Add(centerDot);
+            Canvas.SetTop(centerDot, centerY - dotRadius);
 
-            return centerCanvas;
+            return centerDot;
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             RemoveAllFromCanvas();
             this.Close();
+            try
+            {
+                _mainDashboard?.Activate();
+                _mainDashboard?.Focus();
+            }
+            catch { }
         }
 
-        /// <summary>
-        /// ✅ AUD-02 FIX: Đảm bảo cleanup khi đóng cửa sổ bằng Alt+F4 hoặc code Close()
-        /// </summary>
         protected override void OnClosed(EventArgs e)
         {
             RemoveAllFromCanvas();
             base.OnClosed(e);
+            try
+            {
+                _mainDashboard?.Activate();
+                _mainDashboard?.Focus();
+            }
+            catch { }
         }
-
-
 
         #endregion
 
@@ -939,7 +1786,7 @@ namespace QASmartTouch.Forms
         {
             if (e.Key == Key.Enter)
             {
-                if (double.TryParse(_radiusInput?.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double radiusCm))
+                if (double.TryParse(_radiusInput?.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out double radiusCm))
                 {
                     radiusCm = Math.Clamp(radiusCm, 1, 20);
                     _currentRadiusCm = radiusCm;
@@ -957,37 +1804,19 @@ namespace QASmartTouch.Forms
         {
             if (_mainDashboard == null) return;
 
-            // ✅ AUD-02 FIX: Hủy đăng ký TOÀN BỘ Event Handlers để tránh rò rỉ bộ nhớ
-            if (_centerPoint != null)
-            {
-                _centerPoint.MouseLeftButtonDown -= CenterPoint_MouseDown;
-                _centerPoint.MouseMove -= CenterPoint_MouseMove;
-                _centerPoint.MouseLeftButtonUp -= CenterPoint_MouseUp;
-                _centerPoint.TouchDown -= CenterPoint_TouchDown;
-                _centerPoint.TouchMove -= CenterPoint_TouchMove;
-                _centerPoint.TouchUp -= CenterPoint_TouchUp;
-                _centerPoint.StylusDown -= CenterPoint_StylusDown;
-                _centerPoint.StylusMove -= CenterPoint_StylusMove;
-                _centerPoint.StylusUp -= CenterPoint_StylusUp;
-            }
+            UnwireMoveElementEvents(_centerPoint);
+            UnwireMoveElementEvents(_hingeHitPolygon);
+            UnwirePencilSwingEvents(_pencilHitPolygon);
+            UnwireRadiusHandleEvents(_bowWheelHitArea);
 
-            // ✅ AUD-02 FIX: Hủy đăng ký Event Handlers trên tất cả 4 Handles
             foreach (var handle in new[] { _topHandle, _rightHandle, _bottomHandle, _leftHandle })
             {
-                if (handle == null) continue;
-                handle.MouseLeftButtonDown -= Handle_MouseDown;
-                handle.MouseMove -= Handle_MouseMove;
-                handle.MouseLeftButtonUp -= Handle_MouseUp;
-                handle.TouchDown -= Handle_TouchDown;
-                handle.TouchMove -= Handle_TouchMove;
-                handle.TouchUp -= Handle_TouchUp;
-                handle.StylusDown -= Handle_StylusDown;
-                handle.StylusMove -= Handle_StylusMove;
-                handle.StylusUp -= Handle_StylusUp;
+                UnwireRadiusHandleEvents(handle);
             }
 
-            // Xóa toàn bộ phần tử khỏi Canvas
             if (_previewCircle != null) _mainDashboard.MainInteractiveBoard.Children.Remove(_previewCircle);
+            if (_liveSweepPath != null) _mainDashboard.MainInteractiveBoard.Children.Remove(_liveSweepPath);
+            if (_compassCanvas != null) _mainDashboard.MainInteractiveBoard.Children.Remove(_compassCanvas);
             if (_centerPoint != null) _mainDashboard.MainInteractiveBoard.Children.Remove(_centerPoint);
             if (_diameterLine != null) _mainDashboard.MainInteractiveBoard.Children.Remove(_diameterLine);
             if (_leftArrow != null) _mainDashboard.MainInteractiveBoard.Children.Remove(_leftArrow);
@@ -999,8 +1828,14 @@ namespace QASmartTouch.Forms
             if (_leftHandle != null) _mainDashboard.MainInteractiveBoard.Children.Remove(_leftHandle);
             if (_controlPanel != null) _mainDashboard.MainInteractiveBoard.Children.Remove(_controlPanel);
 
-            // ✅ FIX: Null hóa tham chiếu để GC có thể thu hồi bộ nhớ
+            if (_mainDashboard.ActiveCircleDrawingTool == this)
+            {
+                _mainDashboard.ActiveCircleDrawingTool = null;
+            }
+
             _previewCircle = null;
+            _liveSweepPath = null;
+            _compassCanvas = null;
             _centerPoint = null;
             _diameterLine = null;
             _leftArrow = null;
@@ -1013,25 +1848,21 @@ namespace QASmartTouch.Forms
             _leftHandle = null;
             _controlPanel = null;
             _radiusInput = null;
-            _activeHandle = null;        // ✅ AUD-03 FIX
-            _mainDashboard = null;       // ✅ AUD-03 FIX: Giải phóng tham chiếu tới cửa sổ chính
+            _activeHandle = null;
+            _activeMoveElement = null;
+            _mainDashboard = null;
         }
-
- 
 
         private void ShowTemporaryMessage(string message)
         {
             if (_mainDashboard == null) return;
 
-            // ✅ FIX TIMER-NULLREF: Capture local reference để timer lambda
-            // không bị NullReferenceException khi _mainDashboard đã bị null hóa
-            // bởi RemoveAllFromCanvas() trước khi timer tick (sau 2 giây).
             var canvas = _mainDashboard.MainInteractiveBoard;
 
             Border messageBox = new Border
             {
-                Background = new SolidColorBrush(Color.FromArgb(230, 76, 175, 80)),
-                CornerRadius = new CornerRadius(5),
+                Background = new SolidColorBrush(Color.FromArgb(230, 16, 185, 129)),
+                CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(15, 8, 15, 8),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Top,
@@ -1047,7 +1878,6 @@ namespace QASmartTouch.Forms
             };
 
             messageBox.Child = text;
-
             canvas.Children.Add(messageBox);
 
             DispatcherTimer timer = new DispatcherTimer
@@ -1066,20 +1896,16 @@ namespace QASmartTouch.Forms
 
         #region Move Button Events
 
-        // ✅ FIX: Toàn bộ logic di chuyển nút ✥ được chuẩn hóa theo Form2_15_RulerTool
-        // Sử dụng tọa độ MÀN HÌNH TUYỆT ĐỐI (PointToScreen) thay vì tọa độ tương đối Canvas.
-        // LÝ DO: Khi _controlPanel (chứa btnMove) di chuyển trên Canvas, tọa độ tương đối
-        //   của Mouse event bị xê dịch cùng lúc với panel → tạo delta ngược dấu ở frame sau
-        //   → Coordinate Feedback Loop → hiện tượng "nháy nháy" tại chỗ.
-        // Tọa độ PointToScreen() luôn ổn định vì tham chiếu hệ tọa độ màn hình vật lý,
-        //   không bị ảnh hưởng bởi việc Canvas.SetLeft/SetTop thay đổi vị trí panel.
-
         private void btnMove_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_panelTouchId != null || e.StylusDevice != null)
+            {
+                e.Handled = true;
+                return;
+            }
             if (_mainDashboard == null || _controlPanel == null) return;
 
             _isDraggingPanel = true;
-            // ✅ Lấy tọa độ màn hình tuyệt đối (Screen Coordinates) - giống Form2_15_RulerTool
             _panelDragStart = _mainDashboard.PointToScreen(e.GetPosition(_mainDashboard));
 
             if (sender is UIElement el)
@@ -1090,9 +1916,9 @@ namespace QASmartTouch.Forms
 
         private void btnMove_PreviewMouseMove(object sender, MouseEventArgs e)
         {
+            if (_panelTouchId != null || e.StylusDevice != null) return;
             if (!_isDraggingPanel || _mainDashboard == null || _controlPanel == null) return;
 
-            // ✅ Tính delta bằng tọa độ tuyệt đối - loại bỏ hoàn toàn Coordinate Feedback Loop
             var currentScreenPoint = _mainDashboard.PointToScreen(e.GetPosition(_mainDashboard));
 
             double deltaX = currentScreenPoint.X - _panelDragStart.X;
@@ -1107,6 +1933,11 @@ namespace QASmartTouch.Forms
 
         private void btnMove_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_panelTouchId != null || e.StylusDevice != null)
+            {
+                e.Handled = true;
+                return;
+            }
             if (_isDraggingPanel)
             {
                 _isDraggingPanel = false;
@@ -1118,7 +1949,6 @@ namespace QASmartTouch.Forms
             }
         }
 
-        // ============ TOUCH MOVE HANDLERS (QC_4.2_TOUCH_PIPELINE) ============
         private int? _panelTouchId = null;
 
         private void btnMove_PreviewTouchDown(object sender, TouchEventArgs e)
@@ -1182,6 +2012,15 @@ namespace QASmartTouch.Forms
         public void SetMainDashboard(Form2_MainDashboard mainDashboard)
         {
             _mainDashboard = mainDashboard;
+            SyncPenSettingsFromDashboard();
+        }
+
+        public void UpdatePenSettings(Color color, double thickness)
+        {
+            _strokeColor = color;
+            _strokeThickness = Math.Max(2.0, thickness);
+            _activeStrokeBrush = new SolidColorBrush(_strokeColor);
+            UpdateCircle();
         }
 
         #endregion

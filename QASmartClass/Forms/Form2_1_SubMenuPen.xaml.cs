@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -11,12 +12,49 @@ namespace QASmartTouch.Forms
 {
     public partial class Form2_1_SubMenuPen : Window
     {
+        private class BrushProfile
+        {
+            public int Size { get; set; }
+            public Color Color { get; set; }
+        }
+
+        // Bộ nhớ cấu hình riêng biệt cho từng loại bút (duy trì suốt phiên làm việc)
+        private static readonly Dictionary<string, BrushProfile> _brushProfiles = new Dictionary<string, BrushProfile>
+        {
+            ["Normal"] = new BrushProfile { Size = 5, Color = Colors.White },
+            ["Shape"] = new BrushProfile { Size = 5, Color = Colors.White },
+            ["Highlighter"] = new BrushProfile { Size = 10, Color = Color.FromRgb(255, 235, 59) },
+            ["Laser"] = new BrushProfile { Size = 6, Color = Color.FromRgb(255, 59, 48) }
+        };
+
+        private static string NormalizeBrushKey(string? brushType) => (brushType ?? "Normal") switch
+        {
+            "Laser" => "Laser",
+            "Highlighter" or "Marker" or "Mask" or "MaskPen" => "Highlighter",
+            "Shape" or "Calligraphy" => "Shape",
+            _ => "Normal"
+        };
+
         // Current pen settings
         private string currentBrushType = "Normal";
         private int currentPenSize = 5;
-        private Color currentPenColor = Colors.Black;
+        private Color currentPenColor = Colors.White;
 
         public bool IsApplied { get; private set; } = false;
+
+        private bool _isInitializing = true;
+
+        /// <summary>
+        /// </summary>
+        public event EventHandler? SettingsChanged;
+
+        private void NotifySettingsChanged()
+        {
+            if (!_isInitializing && IsLoaded)
+            {
+                SettingsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         public Form2_1_SubMenuPen()
         {
@@ -84,10 +122,10 @@ namespace QASmartTouch.Forms
                     sliderPenSize.Value = currentPenSize;
                 }
                 InitializeSizeIndicators();
-                UpdatePreview();
                 UpdateColorUI();
-                HighlightBrushType(btnBrushNormal);
+                UpdateBrushTypeUI();
                 ApplyFeatureVisibility();
+                _isInitializing = false;
             };
         }
 
@@ -102,8 +140,8 @@ namespace QASmartTouch.Forms
             {
                 var ellipse = new Ellipse
                 {
-                    Width = Math.Min(i * 1.5, 18), // Scale size from 1.5px to 18px max
-                    Height = Math.Min(i * 1.5, 18),
+                    Width = Math.Min(2 + i * 0.5, 10), // Scale size from 2.5px to 10px max
+                    Height = Math.Min(2 + i * 0.5, 10),
                     Fill = i <= currentPenSize ? new SolidColorBrush(Color.FromRgb(46, 134, 222)) : new SolidColorBrush(Color.FromRgb(220, 221, 225)),
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,
@@ -156,7 +194,28 @@ namespace QASmartTouch.Forms
             if (rectStrokePreview == null) return; // ✅ Null check
             
             rectStrokePreview.Fill = new SolidColorBrush(currentPenColor);
-            rectStrokePreview.Height = currentPenSize * 2; // Scale for visibility
+
+            // Tùy biến preview theo loại bút
+            switch (currentBrushType)
+            {
+                case "Shape" or "Calligraphy":
+                    rectStrokePreview.Height = currentPenSize * 2.2;
+                    rectStrokePreview.Opacity = 1.0;
+                    break;
+                case "Highlighter" or "Marker" or "Mask" or "MaskPen":
+                    rectStrokePreview.Height = Math.Max(currentPenSize * 3.2, 12);
+                    rectStrokePreview.Opacity = 0.45;
+                    break;
+                case "Laser":
+                    rectStrokePreview.Height = currentPenSize * 2.2;
+                    rectStrokePreview.Opacity = 0.95;
+                    rectStrokePreview.Fill = new SolidColorBrush(currentPenColor);
+                    break;
+                default:
+                    rectStrokePreview.Height = currentPenSize * 2;
+                    rectStrokePreview.Opacity = 1.0;
+                    break;
+            }
 
             // Tự động điều chỉnh tương phản nền cho nét vẽ
             if (rectStrokePreview.Parent is Border parentBorder)
@@ -183,12 +242,10 @@ namespace QASmartTouch.Forms
             if (btnBrushNormal == null) return; // ✅ Null check for buttons
             
             // Reset all brush type buttons to default background
-            btnBrushNormal.Background = new SolidColorBrush(Color.FromRgb(255, 244, 230));
-            btnBrushHoc.Background = new SolidColorBrush(Color.FromRgb(232, 245, 233));
-            btnBrushAI.Background = new SolidColorBrush(Color.FromRgb(227, 242, 253));
-            btnBrushSimple.Background = new SolidColorBrush(Color.FromRgb(243, 229, 245));
-            btnMarker.Background = new SolidColorBrush(Color.FromRgb(252, 228, 236));
-            btnMaskPen.Background = new SolidColorBrush(Color.FromRgb(255, 249, 196));
+            btnBrushNormal.Background = new SolidColorBrush(Color.FromRgb(255, 244, 230));     // #FFF4E6
+            btnBrushShape.Background = new SolidColorBrush(Color.FromRgb(243, 229, 245)); // #F3E5F5
+            btnBrushHighlighter.Background = new SolidColorBrush(Color.FromRgb(255, 253, 231)); // #FFFDE7
+            btnBrushLaser.Background = new SolidColorBrush(Color.FromRgb(255, 235, 238));       // #FFEBEE
 
             // Highlight selected button
             selectedButton.Background = new SolidColorBrush(Color.FromRgb(46, 134, 222));
@@ -196,14 +253,48 @@ namespace QASmartTouch.Forms
 
         #region Event Handlers
 
+        /// <summary>
+        /// Chuyển đổi loại bút với cơ chế lưu & khôi phục trạng thái riêng biệt cho từng loại bút
+        /// </summary>
+        private void SwitchToBrushType(string newBrushType)
+        {
+            string oldKey = NormalizeBrushKey(currentBrushType);
+            string newKey = NormalizeBrushKey(newBrushType);
+
+            // 1. Lưu cấu hình hiện tại của bút cũ
+            if (_brushProfiles.ContainsKey(oldKey))
+            {
+                _brushProfiles[oldKey].Size = currentPenSize;
+                _brushProfiles[oldKey].Color = currentPenColor;
+            }
+
+            // 2. Chuyển sang bút mới
+            currentBrushType = newBrushType;
+
+            // 3. Khôi phục cấu hình của bút mới
+            if (_brushProfiles.TryGetValue(newKey, out var profile))
+            {
+                currentPenSize = profile.Size;
+                currentPenColor = profile.Color;
+            }
+
+            // 4. Đồng bộ toàn bộ UI
+            if (sliderPenSize != null) sliderPenSize.Value = currentPenSize;
+            UpdateSizeIndicators(currentPenSize);
+            UpdateColorUI();
+            UpdatePreview();
+
+            // ✅ QC_4.2_SMART_TOUCH_SUBMENU_SYNC: Bắn sự kiện cập nhật cấu hình bút ngay lập tức
+            NotifySettingsChanged();
+        }
+
         private void btnBrushType_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-            if (button != null)
+            if (button != null && button.Tag != null)
             {
-                currentBrushType = button.Tag.ToString();
                 HighlightBrushType(button);
-                // No message box needed - just highlight the selected brush type
+                SwitchToBrushType(button.Tag.ToString() ?? "Normal");
             }
         }
 
@@ -213,8 +304,8 @@ namespace QASmartTouch.Forms
             var button = sender as Button;
             if (button != null && button.Tag != null)
             {
-                currentBrushType = button.Tag.ToString();
                 HighlightBrushType(button);
+                SwitchToBrushType(button.Tag.ToString() ?? "Normal");
                 
                 // Mark event as handled to prevent bubbling
                 e.Handled = true;
@@ -227,8 +318,16 @@ namespace QASmartTouch.Forms
         private void sliderPenSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             currentPenSize = (int)sliderPenSize.Value;
+            string key = NormalizeBrushKey(currentBrushType);
+            if (_brushProfiles.ContainsKey(key))
+            {
+                _brushProfiles[key].Size = currentPenSize;
+            }
             UpdateSizeIndicators(currentPenSize);
             UpdatePreview();
+
+            // ✅ QC_4.2_SMART_TOUCH_SUBMENU_SYNC: Bắn sự kiện cập nhật cấu hình bút ngay lập tức
+            NotifySettingsChanged();
         }
 
         private void btnColor_Click(object sender, RoutedEventArgs e)
@@ -239,11 +338,20 @@ namespace QASmartTouch.Forms
                 string colorHex = button.Tag.ToString();
                 currentPenColor = (Color)ColorConverter.ConvertFromString(colorHex);
                 
+                string key = NormalizeBrushKey(currentBrushType);
+                if (_brushProfiles.ContainsKey(key))
+                {
+                    _brushProfiles[key].Color = currentPenColor;
+                }
+
                 // Update custom color display
                 txtCustomColorHex.Text = colorHex;
                 ((Border)txtCustomColorHex.Parent).Background = new SolidColorBrush(currentPenColor);
                 
-                UpdatePreview();
+                UpdateColorUI();
+
+                // ✅ QC_4.2_SMART_TOUCH_SUBMENU_SYNC: Bắn sự kiện cập nhật cấu hình bút ngay lập tức
+                NotifySettingsChanged();
             }
         }
 
@@ -253,13 +361,18 @@ namespace QASmartTouch.Forms
             {
                 // Open advanced color picker dialog
                 var colorPicker = new Form5_1_ColorPicker(currentPenColor);
-                colorPicker.Owner = this; // Set owner to center on this window
-            
-            if (colorPicker.ShowDialog() == true)
-            {
-                // User selected a color
-                currentPenColor = colorPicker.SelectedColor;
                 
+                if (QASmartTouch.Shared.WindowHelper.ShowChildDialog(colorPicker, this) == true)
+                {
+                    // User selected a color
+                    currentPenColor = colorPicker.SelectedColor;
+                    
+                    string key = NormalizeBrushKey(currentBrushType);
+                    if (_brushProfiles.ContainsKey(key))
+                    {
+                        _brushProfiles[key].Color = currentPenColor;
+                    }
+
                     // Update custom color display
                     txtCustomColorHex.Text = $"#{currentPenColor.R:X2}{currentPenColor.G:X2}{currentPenColor.B:X2}";
                     
@@ -267,9 +380,12 @@ namespace QASmartTouch.Forms
                     {
                         border.Background = new SolidColorBrush(currentPenColor);
                     }
-                
-                UpdatePreview();
-            }
+                    
+                    UpdateColorUI();
+
+                    // ✅ QC_4.2_SMART_TOUCH_SUBMENU_SYNC: Bắn sự kiện cập nhật cấu hình bút ngay lập tức
+                    NotifySettingsChanged();
+                }
             }
             catch (Exception ex)
             {
@@ -281,17 +397,23 @@ namespace QASmartTouch.Forms
         private void btnReset_Click(object sender, RoutedEventArgs e)
         {
             // Reset to default values
+            _brushProfiles["Normal"] = new BrushProfile { Size = 5, Color = Colors.White };
+            _brushProfiles["Shape"] = new BrushProfile { Size = 5, Color = Colors.White };
+            _brushProfiles["Highlighter"] = new BrushProfile { Size = 10, Color = Color.FromRgb(255, 235, 59) };
+            _brushProfiles["Laser"] = new BrushProfile { Size = 6, Color = Color.FromRgb(255, 59, 48) };
+
             currentBrushType = "Normal";
             currentPenSize = 5;
-            currentPenColor = Colors.Black;
+            currentPenColor = Colors.White;
 
-            sliderPenSize.Value = 5;
+            if (sliderPenSize != null) sliderPenSize.Value = 5;
             HighlightBrushType(btnBrushNormal);
-            
-            txtCustomColorHex.Text = "#000000";
-            ((Border)txtCustomColorHex.Parent).Background = new SolidColorBrush(Colors.Black);
-            
+            UpdateSizeIndicators(currentPenSize);
+            UpdateColorUI();
             UpdatePreview();
+
+            // ✅ QC_4.2_SMART_TOUCH_SUBMENU_SYNC: Bắn sự kiện cập nhật cấu hình bút ngay lập tức
+            NotifySettingsChanged();
         }
 
         private void btnApply_Click(object sender, RoutedEventArgs e)
@@ -331,8 +453,20 @@ namespace QASmartTouch.Forms
             set 
             { 
                 currentBrushType = value; 
+                string key = NormalizeBrushKey(value);
+                if (_brushProfiles.TryGetValue(key, out var profile))
+                {
+                    currentPenSize = profile.Size;
+                    currentPenColor = profile.Color;
+                }
                 // Update UI if already loaded
-                if (IsLoaded) UpdateBrushTypeUI();
+                if (IsLoaded)
+                {
+                    if (sliderPenSize != null) sliderPenSize.Value = currentPenSize;
+                    UpdateSizeIndicators(currentPenSize);
+                    UpdateColorUI();
+                    UpdateBrushTypeUI();
+                }
             } 
         }
         
@@ -345,10 +479,15 @@ namespace QASmartTouch.Forms
             set 
             { 
                 currentPenSize = value; 
+                string key = NormalizeBrushKey(currentBrushType);
+                if (_brushProfiles.ContainsKey(key))
+                {
+                    _brushProfiles[key].Size = value;
+                }
                 // Update UI if already loaded
                 if (IsLoaded)
                 {
-                    sliderPenSize.Value = value;
+                    if (sliderPenSize != null) sliderPenSize.Value = value;
                     UpdateSizeIndicators(value);
                     UpdatePreview();
                 }
@@ -364,6 +503,11 @@ namespace QASmartTouch.Forms
             set 
             { 
                 currentPenColor = value; 
+                string key = NormalizeBrushKey(currentBrushType);
+                if (_brushProfiles.ContainsKey(key))
+                {
+                    _brushProfiles[key].Color = value;
+                }
                 // Update UI if already loaded
                 if (IsLoaded) UpdateColorUI();
             } 
@@ -375,12 +519,10 @@ namespace QASmartTouch.Forms
             // Find and highlight the appropriate brush type button
             Button? targetButton = currentBrushType switch
             {
-                "Normal" => btnBrushNormal,
-                "Hoc" => btnBrushHoc,
-                "AI" => btnBrushAI,
-                "Simple" => btnBrushSimple,
-                "Marker" => btnMarker,
-                "Mask" => btnMaskPen,
+                "Normal" or "Hoc" or "Simple" or "AI" => btnBrushNormal,
+                "Shape" or "Calligraphy" => btnBrushShape,
+                "Highlighter" or "Marker" or "Mask" or "MaskPen" => btnBrushHighlighter,
+                "Laser" => btnBrushLaser,
                 _ => btnBrushNormal
             };
             if (targetButton != null)

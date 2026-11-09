@@ -20,7 +20,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             Topmost = true;
-            _ = InitializeWebView();
+            this.Loaded += async (s, e) => await InitializeWebView();
             
             // Get reference to MainDashboard
             _mainDashboard = this.Owner as Form2_MainDashboard
@@ -33,8 +33,8 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                // Initialize WebView2
-                await webView.EnsureCoreWebView2Async(null);
+                // Initialize WebView2 với cấu hình UserDataFolder an toàn từ WebView2Helper
+                await QASmartTouch.Helpers.WebView2Helper.EnsureInitializedAsync(webView);
                 
                 // Add message handler and source changed handler
                 webView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;

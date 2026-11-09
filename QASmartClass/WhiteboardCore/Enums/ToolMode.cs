@@ -35,7 +35,13 @@ namespace QASmartClass.WhiteboardCore.Enums
         Pan,
 
         /// <summary>Chế độ nhập văn bản (Text Tool).</summary>
-        Text
+        Text,
+
+        /// <summary>Chế độ tương tác AI (Nhận diện chữ viết, giải toán, trợ lý ảo).</summary>
+        AI_Interaction,
+
+        /// <summary>Chế độ chia bảng nhiều người viết (Multi-User Split Screen).</summary>
+        MultiUser
     }
 
     /// <summary>

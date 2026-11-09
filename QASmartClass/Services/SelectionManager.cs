@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -10,6 +10,8 @@ using QASmartTouch.Models;
 using QASmartTouch.Controls;
 using CanvasControl = System.Windows.Controls.Canvas;
 using System.Windows.Media;
+using System.Windows.Ink;
+using QASmartTouch.Services.Tools;
 
 namespace QASmartTouch.Services
 {
@@ -21,6 +23,7 @@ namespace QASmartTouch.Services
         #region Fields
 
         private CanvasControl _canvas;
+        public InkPresenter? InkPresenter { get; set; }
         private SelectionState _state;
         private List<SelectableObject> _allObjects;
         private SelectableObject? _clipboard; // Store copied object (single)
@@ -147,6 +150,11 @@ namespace QASmartTouch.Services
                 _canvas.Children.Remove(obj.Element);
             }
 
+            if (obj.Stroke != null && InkPresenter?.Strokes != null)
+            {
+                InkPresenter.Strokes.Remove(obj.Stroke);
+            }
+
             if (obj.IsSelected)
             {
                 _state.RemoveFromSelection(obj);
@@ -170,6 +178,26 @@ namespace QASmartTouch.Services
                 if (_canvas.Children.Contains(element))
                 {
                     _canvas.Children.Remove(element);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Xóa đối tượng quản lý logic dựa trên Native Stroke tương ứng (dành cho Undo/Redo)
+        /// </summary>
+        public void RemoveObjectByStroke(Stroke stroke)
+        {
+            if (stroke == null) return;
+            var obj = _allObjects.Find(o => o.Stroke == stroke);
+            if (obj != null)
+            {
+                RemoveObject(obj);
+            }
+            else
+            {
+                if (InkPresenter?.Strokes != null && InkPresenter.Strokes.Contains(stroke))
+                {
+                    InkPresenter.Strokes.Remove(stroke);
                 }
             }
         }
@@ -414,9 +442,9 @@ namespace QASmartTouch.Services
         {
             System.Diagnostics.Debug.WriteLine($"🔍 CopySelectedObject called - PrimarySelectedObject: {(_state.PrimarySelectedObject != null ? _state.PrimarySelectedObject.Type.ToString() : "NULL")}");
             
-            if (_state.PrimarySelectedObject == null || _state.PrimarySelectedObject.Element == null)
+            if (_state.PrimarySelectedObject == null || (_state.PrimarySelectedObject.Element == null && _state.PrimarySelectedObject.Stroke == null))
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Copy failed: No object selected or Element is null");
+                System.Diagnostics.Debug.WriteLine($"❌ Copy failed: No object selected or Element/Stroke is null");
                 return null;
             }
 
@@ -429,7 +457,7 @@ namespace QASmartTouch.Services
                 double minX = double.MaxValue, minY = double.MaxValue;
                 foreach (var obj in _clipboardList)
                 {
-                    if (obj.Element == null) continue;
+                    if (obj.Element == null && obj.Stroke == null) continue;
                     minX = Math.Min(minX, obj.Position.X);
                     minY = Math.Min(minY, obj.Position.Y);
                 }
@@ -446,7 +474,7 @@ namespace QASmartTouch.Services
             _clipboard = original;
             _clipboardList = null; // Clear group clipboard
             
-            System.Diagnostics.Debug.WriteLine($"✅ Copied to clipboard: {original.Type} (Element: {original.Element?.GetType().Name}) - Click to place");
+            System.Diagnostics.Debug.WriteLine($"✅ Copied to clipboard: {original.Type} (Element: {original.Element?.GetType().Name ?? "Stroke"}) - Click to place");
             
             return _clipboard;
         }
@@ -495,11 +523,35 @@ namespace QASmartTouch.Services
 
             foreach (var original in targets)
             {
-                if (original.Element == null) continue;
+                if (original.Element == null && original.Stroke == null) continue;
 
                 var newPos = new Point(original.Position.X + offsetX, original.Position.Y + offsetY);
                 if (newPos.X + original.Size.Width > canvasWidth) newPos.X = Math.Max(10, original.Position.X - offsetX);
                 if (newPos.Y + original.Size.Height > canvasHeight) newPos.Y = Math.Max(10, original.Position.Y - offsetY);
+
+                if (original.Stroke != null)
+                {
+                    var clonedStroke = original.Stroke.Clone();
+                    double actOffsetX = newPos.X - original.Position.X;
+                    double actOffsetY = newPos.Y - original.Position.Y;
+                    var matrix = new Matrix(1, 0, 0, 1, actOffsetX, actOffsetY);
+                    clonedStroke.Transform(matrix, false);
+
+                    if (InkPresenter != null && InkPresenter.Strokes != null)
+                    {
+                        InkPresenter.Strokes.Add(clonedStroke);
+                    }
+
+                    var strokeClone = original.Clone();
+                    strokeClone.Stroke = clonedStroke;
+                    strokeClone.Element = null;
+                    strokeClone.Position = newPos;
+                    strokeClone.UpdateBounds();
+
+                    AddObject(strokeClone);
+                    duplicatedObjects.Add(strokeClone);
+                    continue;
+                }
 
                 UIElement? clonedElement = CloneSingleElement(original, newPos);
                 if (clonedElement == null) continue;
@@ -599,6 +651,31 @@ namespace QASmartTouch.Services
                 return null;
 
             var original = _clipboard;
+
+            // ✅ G2.2: Support Native Inking Stroke
+            if (original.Stroke != null)
+            {
+                var clonedStroke = original.Stroke.Clone();
+                double offsetX = position.X - original.Position.X;
+                double offsetY = position.Y - original.Position.Y;
+                var matrix = new Matrix(1, 0, 0, 1, offsetX, offsetY);
+                clonedStroke.Transform(matrix, false);
+
+                if (InkPresenter != null && InkPresenter.Strokes != null)
+                {
+                    InkPresenter.Strokes.Add(clonedStroke);
+                }
+
+                var strokeClone = original.Clone();
+                strokeClone.Stroke = clonedStroke;
+                strokeClone.Element = null;
+                strokeClone.Position = position;
+                strokeClone.UpdateBounds();
+
+                AddObject(strokeClone);
+                SelectObject(strokeClone);
+                return strokeClone;
+            }
             
             // Clone the UIElement at new position
             UIElement? clonedElement = null;
@@ -739,37 +816,7 @@ namespace QASmartTouch.Services
             // NG-2: Support Border (container with border)
             else if (original.Element is System.Windows.Controls.Border border)
             {
-                var newBorder = new System.Windows.Controls.Border
-                {
-                    Width = border.Width,
-                    Height = border.Height,
-                    Background = border.Background,
-                    BorderBrush = border.BorderBrush,
-                    BorderThickness = border.BorderThickness,
-                    CornerRadius = border.CornerRadius,
-                    Padding = border.Padding,
-                    Opacity = border.Opacity
-                };
-                
-                // Clone child if exists
-                if (border.Child != null && border.Child is FrameworkElement childElement)
-                {
-                    // Simple clone for TextBlock child (most common case)
-                    if (childElement is System.Windows.Controls.TextBlock childText)
-                    {
-                        newBorder.Child = new System.Windows.Controls.TextBlock
-                        {
-                            Text = childText.Text,
-                            FontFamily = childText.FontFamily,
-                            FontSize = childText.FontSize,
-                            FontWeight = childText.FontWeight,
-                            Foreground = childText.Foreground,
-                            TextAlignment = childText.TextAlignment
-                        };
-                    }
-                }
-                
-                clonedElement = newBorder;
+                clonedElement = CloneBorderElement(border);
             }
             // NG-2: Support Image (pictures, icons)
             else if (original.Element is System.Windows.Controls.Image image)
@@ -936,12 +983,34 @@ namespace QASmartTouch.Services
 
             foreach (var original in _clipboardList)
             {
-                if (original.Element == null) continue;
+                if (original.Element == null && original.Stroke == null) continue;
 
                 // Tính vị trí mới = vị trí gốc + offset
                 var newPos = new Point(
                     original.Position.X + offsetX,
                     original.Position.Y + offsetY);
+
+                if (original.Stroke != null)
+                {
+                    var clonedStroke = original.Stroke.Clone();
+                    var matrix = new Matrix(1, 0, 0, 1, offsetX, offsetY);
+                    clonedStroke.Transform(matrix, false);
+
+                    if (InkPresenter != null && InkPresenter.Strokes != null)
+                    {
+                        InkPresenter.Strokes.Add(clonedStroke);
+                    }
+
+                    var strokeClone = original.Clone();
+                    strokeClone.Stroke = clonedStroke;
+                    strokeClone.Element = null;
+                    strokeClone.Position = newPos;
+                    strokeClone.UpdateBounds();
+
+                    AddObject(strokeClone);
+                    pastedObjects.Add(strokeClone);
+                    continue;
+                }
 
                 // Clone UIElement
                 UIElement? clonedElement = CloneSingleElement(original, newPos);
@@ -1110,25 +1179,7 @@ namespace QASmartTouch.Services
             }
             else if (original.Element is System.Windows.Controls.Border border)
             {
-                var newBorder = new System.Windows.Controls.Border
-                {
-                    Width = border.Width, Height = border.Height,
-                    Background = border.Background, BorderBrush = border.BorderBrush,
-                    BorderThickness = border.BorderThickness,
-                    CornerRadius = border.CornerRadius,
-                    Padding = border.Padding, Opacity = border.Opacity
-                };
-                if (border.Child is System.Windows.Controls.TextBlock childText)
-                {
-                    newBorder.Child = new System.Windows.Controls.TextBlock
-                    {
-                        Text = childText.Text, FontFamily = childText.FontFamily,
-                        FontSize = childText.FontSize, FontWeight = childText.FontWeight,
-                        Foreground = childText.Foreground,
-                        TextAlignment = childText.TextAlignment
-                    };
-                }
-                return newBorder;
+                return CloneBorderElement(border);
             }
             else if (original.Element is System.Windows.Shapes.Path path && path.Data != null)
             {
@@ -1137,11 +1188,13 @@ namespace QASmartTouch.Services
                     Data = path.Data.Clone(),
                     Stroke = path.Stroke?.Clone(),
                     StrokeThickness = path.StrokeThickness,
+                    StrokeDashArray = path.StrokeDashArray?.Clone(),
                     StrokeLineJoin = path.StrokeLineJoin,
                     StrokeStartLineCap = path.StrokeStartLineCap,
                     StrokeEndLineCap = path.StrokeEndLineCap,
                     Fill = path.Fill?.Clone(),
-                    Opacity = path.Opacity
+                    Opacity = path.Opacity,
+                    Tag = (path.Tag as Shape3DData)?.Clone() ?? path.Tag
                 };
                 double oX = newPosition.X - original.Position.X;
                 double oY = newPosition.Y - original.Position.Y;
@@ -1169,13 +1222,21 @@ namespace QASmartTouch.Services
             else if (original.Element is CanvasControl canvas)
             {
                 // ✅ Hỗ trợ sao chép Hình khối 3D và biểu đồ STEM Canvas
+                object? clonedTag = canvas.Tag;
+                if (canvas.Tag is Shape3DData shape3DData)
+                {
+                    var cloned3D = shape3DData.Clone();
+                    cloned3D.IsRotating3D = false;
+                    clonedTag = cloned3D;
+                }
+
                 var newCanvas = new CanvasControl
                 {
                     Width = canvas.Width,
                     Height = canvas.Height,
                     Background = canvas.Background?.Clone(),
                     ClipToBounds = canvas.ClipToBounds,
-                    Tag = canvas.Tag
+                    Tag = clonedTag
                 };
 
                 foreach (UIElement child in canvas.Children)
@@ -1241,6 +1302,150 @@ namespace QASmartTouch.Services
         }
 
         /// <summary>
+        /// Nhân bản toàn diện phần tử Border (SmartNoteCard, Bảng biến thiên, Đồ thị hàm số, Thẻ từ vựng, Thẻ QA Calculator...)
+        /// </summary>
+        private System.Windows.Controls.Border? CloneBorderElement(System.Windows.Controls.Border border)
+        {
+            if (border == null) return null;
+
+            // 1. Thẻ Ghi Chú Thông Minh (SmartNoteCard)
+            var noteClone = QASmartClass.Services.Tools.SmartNoteCardRenderer.TryCloneNoteCard(border);
+            if (noteClone != null) return noteClone;
+
+            // 2. Thẻ Bảng Biến Thiên (VariationCard)
+            var variationClone = QASmartClass.Services.Tools.VariationCardRenderer.TryCloneVariationCard(border);
+            if (variationClone != null) return variationClone;
+
+            // 3. Thẻ Đồ Thị Hàm Số (FunctionGraphCard)
+            var graphClone = QASmartClass.Services.Tools.FunctionGraphCardRenderer.TryCloneGraphCard(border);
+            if (graphClone != null) return graphClone;
+
+            // 4. Nếu Border chứa cây giao diện phức tạp (ví dụ: Bảng biến thiên / Đồ thị nạp từ file .qasc, hoặc Grid/Canvas lồng nhau)
+            //    thì dùng XamlWriter/XamlReader để sao chép nguyên vẹn toàn bộ cấu trúc con thay vì tạo StackPanel rỗng.
+            bool isSimpleChild = border.Child == null
+                || border.Child is System.Windows.Controls.Image
+                || border.Child is System.Windows.Controls.TextBlock
+                || (border.Child is StackPanel sp && sp.Children.Cast<UIElement>().All(c => c is System.Windows.Controls.TextBlock));
+
+            if (!isSimpleChild)
+            {
+                try
+                {
+                    string xaml = System.Windows.Markup.XamlWriter.Save(border);
+                    if (System.Windows.Markup.XamlReader.Parse(xaml) is System.Windows.Controls.Border parsedBorder)
+                    {
+                        parsedBorder.Tag = border.Tag;
+                        parsedBorder.DataContext = border.DataContext;
+                        return parsedBorder;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ Xaml clone fallback for complex Border failed: {ex.Message}");
+                }
+            }
+
+            // 5. Sao chép các Border đơn giản (Image, TextBlock, Thẻ từ vựng tiếng Anh...)
+            var newBorder = new System.Windows.Controls.Border
+            {
+                Width = border.Width,
+                Height = border.Height,
+                MinWidth = border.MinWidth,
+                MaxWidth = border.MaxWidth,
+                MinHeight = border.MinHeight,
+                MaxHeight = border.MaxHeight,
+                Background = border.Background?.Clone(),
+                BorderBrush = border.BorderBrush?.Clone(),
+                BorderThickness = border.BorderThickness,
+                CornerRadius = border.CornerRadius,
+                Padding = border.Padding,
+                Opacity = border.Opacity,
+                Effect = border.Effect?.Clone(),
+                Tag = border.Tag,
+                DataContext = border.DataContext
+            };
+
+            if (border.RenderTransform != null && border.RenderTransform != Transform.Identity)
+            {
+                newBorder.RenderTransform = border.RenderTransform.Clone();
+                newBorder.RenderTransformOrigin = border.RenderTransformOrigin;
+            }
+
+            if (border.Child is System.Windows.Controls.Image childImg)
+            {
+                var newImg = new System.Windows.Controls.Image
+                {
+                    Source = childImg.Source,
+                    Stretch = childImg.Stretch,
+                    HorizontalAlignment = childImg.HorizontalAlignment,
+                    VerticalAlignment = childImg.VerticalAlignment
+                };
+                RenderOptions.SetBitmapScalingMode(newImg, BitmapScalingMode.HighQuality);
+                newBorder.Child = newImg;
+            }
+            else if (border.Child is System.Windows.Controls.TextBlock childText)
+            {
+                newBorder.Child = new System.Windows.Controls.TextBlock
+                {
+                    Text = childText.Text,
+                    FontFamily = childText.FontFamily,
+                    FontSize = childText.FontSize,
+                    FontWeight = childText.FontWeight,
+                    FontStyle = childText.FontStyle,
+                    Foreground = childText.Foreground?.Clone(),
+                    Background = childText.Background?.Clone(),
+                    TextAlignment = childText.TextAlignment,
+                    TextWrapping = childText.TextWrapping,
+                    LineHeight = childText.LineHeight
+                };
+            }
+            else if (border.Child is StackPanel childStack)
+            {
+                var newStack = new StackPanel
+                {
+                    Orientation = childStack.Orientation,
+                    HorizontalAlignment = childStack.HorizontalAlignment,
+                    VerticalAlignment = childStack.VerticalAlignment
+                };
+                foreach (var stackChild in childStack.Children)
+                {
+                    if (stackChild is TextBlock tb)
+                    {
+                        newStack.Children.Add(new TextBlock
+                        {
+                            Text = tb.Text,
+                            FontFamily = tb.FontFamily,
+                            FontSize = tb.FontSize,
+                            FontWeight = tb.FontWeight,
+                            FontStyle = tb.FontStyle,
+                            Foreground = tb.Foreground?.Clone(),
+                            HorizontalAlignment = tb.HorizontalAlignment,
+                            TextAlignment = tb.TextAlignment,
+                            TextWrapping = tb.TextWrapping,
+                            Margin = tb.Margin
+                        });
+                    }
+                }
+                newBorder.Child = newStack;
+            }
+
+            // Gán lại sự kiện chạm/click để bản sao cũng tự động phát âm tiếng Anh
+            if (border.Tag is EnglishCardData enData)
+            {
+                newBorder.MouseLeftButtonDown += (s, e) =>
+                {
+                    SubjectShapeGeometryService.SpeakWord(enData.Word);
+                };
+                newBorder.PreviewTouchDown += (s, e) =>
+                {
+                    SubjectShapeGeometryService.SpeakWord(enData.Word);
+                };
+            }
+
+            return newBorder;
+        }
+
+        /// <summary>
         /// Clone Shape element helper
         /// </summary>
         private System.Windows.Shapes.Shape? CloneShapeElement(System.Windows.Shapes.Shape source)
@@ -1259,6 +1464,7 @@ namespace QASmartTouch.Services
                 var p = new Polygon
                 {
                     Stroke = polygon.Stroke?.Clone(), StrokeThickness = polygon.StrokeThickness,
+                    StrokeDashArray = polygon.StrokeDashArray?.Clone(),
                     Fill = polygon.Fill?.Clone(), Opacity = polygon.Opacity
                 };
                 foreach (var pt in polygon.Points) p.Points.Add(pt);
@@ -1269,6 +1475,7 @@ namespace QASmartTouch.Services
                 var pl = new Polyline
                 {
                     Stroke = polyline.Stroke?.Clone(), StrokeThickness = polyline.StrokeThickness,
+                    StrokeDashArray = polyline.StrokeDashArray?.Clone(),
                     Opacity = polyline.Opacity
                 };
                 foreach (var pt in polyline.Points) pl.Points.Add(pt);
@@ -1280,7 +1487,9 @@ namespace QASmartTouch.Services
                 {
                     Width = rect.Width, Height = rect.Height,
                     Stroke = rect.Stroke?.Clone(), Fill = rect.Fill?.Clone(),
-                    StrokeThickness = rect.StrokeThickness, RadiusX = rect.RadiusX, RadiusY = rect.RadiusY,
+                    StrokeThickness = rect.StrokeThickness,
+                    StrokeDashArray = rect.StrokeDashArray?.Clone(),
+                    RadiusX = rect.RadiusX, RadiusY = rect.RadiusY,
                     Opacity = rect.Opacity
                 };
             }
@@ -1290,7 +1499,9 @@ namespace QASmartTouch.Services
                 {
                     Width = ellipse.Width, Height = ellipse.Height,
                     Stroke = ellipse.Stroke?.Clone(), Fill = ellipse.Fill?.Clone(),
-                    StrokeThickness = ellipse.StrokeThickness, Opacity = ellipse.Opacity
+                    StrokeThickness = ellipse.StrokeThickness,
+                    StrokeDashArray = ellipse.StrokeDashArray?.Clone(),
+                    Opacity = ellipse.Opacity
                 };
             }
             else if (source is System.Windows.Shapes.Path path && path.Data != null)
@@ -1298,7 +1509,12 @@ namespace QASmartTouch.Services
                 return new System.Windows.Shapes.Path
                 {
                     Data = path.Data.Clone(), Stroke = path.Stroke?.Clone(),
-                    StrokeThickness = path.StrokeThickness, Fill = path.Fill?.Clone(),
+                    StrokeThickness = path.StrokeThickness,
+                    StrokeDashArray = path.StrokeDashArray?.Clone(),
+                    StrokeLineJoin = path.StrokeLineJoin,
+                    StrokeStartLineCap = path.StrokeStartLineCap,
+                    StrokeEndLineCap = path.StrokeEndLineCap,
+                    Fill = path.Fill?.Clone(),
                     Opacity = path.Opacity
                 };
             }
@@ -1365,12 +1581,20 @@ namespace QASmartTouch.Services
             if (obj == null)
                 return;
 
-            int maxZIndex = _allObjects.Max(o => o.ZIndex);
+            int maxZIndex = _allObjects.Count > 0 ? _allObjects.Max(o => o.ZIndex) : 0;
             obj.ZIndex = maxZIndex + 1;
 
             if (obj.Element != null)
             {
                 Panel.SetZIndex(obj.Element, obj.ZIndex);
+            }
+            else if (obj.Stroke != null && InkPresenter?.Strokes != null)
+            {
+                if (InkPresenter.Strokes.Contains(obj.Stroke))
+                {
+                    InkPresenter.Strokes.Remove(obj.Stroke);
+                    InkPresenter.Strokes.Add(obj.Stroke);
+                }
             }
         }
 
@@ -1398,6 +1622,14 @@ namespace QASmartTouch.Services
             if (obj.Element != null)
             {
                 Panel.SetZIndex(obj.Element, 0);
+            }
+            else if (obj.Stroke != null && InkPresenter?.Strokes != null)
+            {
+                if (InkPresenter.Strokes.Contains(obj.Stroke))
+                {
+                    InkPresenter.Strokes.Remove(obj.Stroke);
+                    InkPresenter.Strokes.Insert(0, obj.Stroke);
+                }
             }
         }
 
@@ -1548,54 +1780,90 @@ namespace QASmartTouch.Services
         /// <summary>
         /// Select multiple objects from lasso (tích hợp với LassoSelectionTool)
         /// </summary>
-        public void SelectFromLasso(List<UIElement> elements)
+        public void SelectFromLasso(List<UIElement> elements, List<Point>? lassoPolygon = null)
         {
-            if (elements == null || elements.Count == 0)
+            if ((elements == null || elements.Count == 0) && (lassoPolygon == null || lassoPolygon.Count < 3))
             {
-                System.Diagnostics.Debug.WriteLine("⚠️ Lasso selection: No elements found");
+                System.Diagnostics.Debug.WriteLine("⚠️ Lasso selection: No elements or polygon found");
                 return;
             }
 
             // Tìm SelectableObjects tương ứng với UIElements
             var selectableObjects = new List<SelectableObject>();
 
-            foreach (var element in elements)
+            if (elements != null && elements.Count > 0)
             {
-                var obj = _allObjects.FirstOrDefault(o => 
-                    o.Element == element || 
-                    (element is FrameworkElement fe1 && o.Element is FrameworkElement fe2 && 
-                     (fe1 == fe2 || fe1.IsAncestorOf(fe2) || fe2.IsAncestorOf(fe1))));
-
-                if (obj == null && element is FrameworkElement fe)
+                foreach (var element in elements)
                 {
-                    double left = System.Windows.Controls.Canvas.GetLeft(fe);
-                    double top = System.Windows.Controls.Canvas.GetTop(fe);
-                    if (double.IsNaN(left)) left = 0;
-                    if (double.IsNaN(top)) top = 0;
-                    double w = fe.ActualWidth > 0 ? fe.ActualWidth : fe.Width;
-                    double h = fe.ActualHeight > 0 ? fe.ActualHeight : fe.Height;
-                    if (double.IsNaN(w) || w <= 0) w = fe.RenderSize.Width > 0 ? fe.RenderSize.Width : 20;
-                    if (double.IsNaN(h) || h <= 0) h = fe.RenderSize.Height > 0 ? fe.RenderSize.Height : 20;
+                    var obj = _allObjects.FirstOrDefault(o => 
+                        o.Element == element || 
+                        (element is FrameworkElement fe1 && o.Element is FrameworkElement fe2 && 
+                         (fe1 == fe2 || fe1.IsAncestorOf(fe2) || fe2.IsAncestorOf(fe1))));
 
-                    obj = new SelectableObject
+                    if (obj == null && element is FrameworkElement fe)
                     {
-                        Element = fe,
-                        Type = ObjectType.Shape,
-                        Position = new Point(left, top),
-                        Size = new Size(w, h)
-                    };
-                    AddObject(obj);
-                    // ✅ BUG-FIX: Nếu AddObject reject (ví dụ Background element), bỏ qua không cho vào selection
-                    if (!_allObjects.Contains(obj))
+                        Rect bounds = _canvas != null
+                            ? QASmartTouch.Helpers.BoundsHelper.GetAbsoluteBounds(fe, _canvas)
+                            : Rect.Empty;
+                        if (bounds.IsEmpty || bounds.Width <= 0 || bounds.Height <= 0)
+                        {
+                            double left = System.Windows.Controls.Canvas.GetLeft(fe);
+                            double top = System.Windows.Controls.Canvas.GetTop(fe);
+                            if (double.IsNaN(left)) left = 0;
+                            if (double.IsNaN(top)) top = 0;
+                            double w = fe.ActualWidth > 0 ? fe.ActualWidth : fe.Width;
+                            double h = fe.ActualHeight > 0 ? fe.ActualHeight : fe.Height;
+                            if (double.IsNaN(w) || w <= 0) w = fe.RenderSize.Width > 0 ? fe.RenderSize.Width : 20;
+                            if (double.IsNaN(h) || h <= 0) h = fe.RenderSize.Height > 0 ? fe.RenderSize.Height : 20;
+                            bounds = new Rect(left, top, w, h);
+                        }
+
+                        obj = new SelectableObject
+                        {
+                            Element = fe,
+                            Type = fe is System.Windows.Shapes.Path ? ObjectType.Drawing : ObjectType.Shape,
+                            Bounds = bounds,
+                            Position = new Point(bounds.Left, bounds.Top),
+                            Size = new Size(bounds.Width, bounds.Height)
+                        };
+                        AddObject(obj);
+                        // ✅ BUG-FIX: Nếu AddObject reject (ví dụ Background element), bỏ qua không cho vào selection
+                        if (!_allObjects.Contains(obj))
+                        {
+                            obj = null;
+                        }
+                    }
+
+                    if (obj != null && !obj.IsLocked && !selectableObjects.Contains(obj))
                     {
-                        obj = null;
+                        obj.UpdateBounds(); // B.2.2: Cập nhật bounds mới nhất
+                        selectableObjects.Add(obj);
                     }
                 }
+            }
 
-                if (obj != null && !obj.IsLocked && !selectableObjects.Contains(obj))
+            // ✅ G2.3: Bổ sung quét Native Stroke trong vùng Lasso
+            if (lassoPolygon != null && lassoPolygon.Count >= 3)
+            {
+                foreach (var obj in _allObjects)
                 {
-                    obj.UpdateBounds(); // B.2.2: Cập nhật bounds mới nhất
-                    selectableObjects.Add(obj);
+                    if (obj.Stroke != null && obj.Stroke.StylusPoints != null && !selectableObjects.Contains(obj))
+                    {
+                        bool inLasso = false;
+                        foreach (var pt in obj.Stroke.StylusPoints)
+                        {
+                            if (QASmartTouch.Tools.LassoSelectionTool.IsPointInPolygon(new Point(pt.X, pt.Y), lassoPolygon))
+                            {
+                                inLasso = true;
+                                break;
+                            }
+                        }
+                        if (inLasso && !obj.IsLocked)
+                        {
+                            obj.UpdateBounds();
+                            selectableObjects.Add(obj);
+                        }
+                    }
                 }
             }
 
@@ -1608,8 +1876,6 @@ namespace QASmartTouch.Services
                 // Lasso chỉ chọn nhiều đối tượng (Multi-Selection), gom nhóm chỉ thực hiện khi GV bấm nút "Gom nhóm"
                 RebuildQuadTree();
                 System.Diagnostics.Debug.WriteLine($"✅ Lasso selected {selectableObjects.Count} object(s) (Multi-selection without auto-grouping)");
-                
-                System.Diagnostics.Debug.WriteLine($"✅ Lasso selected {selectableObjects.Count} object(s)");
             }
             else
             {
@@ -1908,6 +2174,11 @@ namespace QASmartTouch.Services
         public SelectableObject? GetSelectableObjectForElement(UIElement element)
         {
             return _allObjects.FirstOrDefault(o => o.Element == element);
+        }
+
+        public SelectableObject? GetSelectableObjectForStroke(Stroke stroke)
+        {
+            return _allObjects.FirstOrDefault(o => o.Stroke == stroke);
         }
 
         public void RebuildQuadTree()

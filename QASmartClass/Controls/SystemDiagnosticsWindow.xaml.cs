@@ -22,6 +22,7 @@ namespace QASmartTouch.Controls
             // 1. Database Check
             try
             {
+#if !SMARTTOUCH_STANDALONE
                 var app = Application.Current as App;
                 if (app?.Database == null)
                 {
@@ -34,6 +35,10 @@ namespace QASmartTouch.Controls
                     txtDbIcon.Text = "🟢";
                     txtDbStatus.Text = $"Kết nối SQLite thành công. Cơ sở dữ liệu hoạt động. Tìm thấy {studentCount} học sinh trong hệ thống.";
                 }
+#else
+                txtDbIcon.Text = "🟢";
+                txtDbStatus.Text = "Chế độ Standalone (Bảng viết độc lập): Không sử dụng Database SQLite.";
+#endif
             }
             catch (Exception ex)
             {
@@ -45,6 +50,7 @@ namespace QASmartTouch.Controls
             try
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+#if !SMARTTOUCH_STANDALONE
                 string litPath = Path.Combine(baseDir, "Resources", "LiteratureData", "Phase4_Data");
                 string exPath = Path.Combine(baseDir, "Resources", "LiteratureData", "exercises_by_topic");
 
@@ -53,6 +59,16 @@ namespace QASmartTouch.Controls
 
                 txtResIcon.Text = (litCount > 0) ? "🟢" : "🟡";
                 txtResStatus.Text = $"Học liệu văn bản Ngữ Văn: {litCount} tệp tin JSON | Kho bài tập luyện tập: {exCount} chủ đề.";
+#else
+                string ptPath = Path.Combine(baseDir, "PeriodicTable", "Data");
+                string booksPath = Path.Combine(baseDir, "Modules", "InteractiveBooks", "Data", "books.json");
+
+                int ptCount = Directory.Exists(ptPath) ? Directory.GetFiles(ptPath, "*.json").Length : 0;
+                bool hasBooks = File.Exists(booksPath);
+
+                txtResIcon.Text = (ptCount > 0 && hasBooks) ? "🟢" : "🟡";
+                txtResStatus.Text = $"Dữ liệu Bảng tuần hoàn: {ptCount} tệp JSON | Sách điện tử: {(hasBooks ? "Sẵn sàng" : "Chưa có dữ liệu")}.";
+#endif
             }
             catch (Exception ex)
             {

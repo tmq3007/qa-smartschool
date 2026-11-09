@@ -131,6 +131,36 @@ namespace QASmartClass.WhiteboardCore.Managers
         /// </summary>
         public bool IsToolActive(ToolMode mode) => CurrentMode == mode;
 
+        /// <summary>Đang ở chế độ Bút vẽ.</summary>
+        public bool IsDrawing => CurrentMode == ToolMode.Pen;
+
+        /// <summary>Đang ở chế độ Tẩy nét.</summary>
+        public bool IsErasing => CurrentMode == ToolMode.Eraser;
+
+        /// <summary>Đang ở chế độ Chọn đối tượng / Khoanh vùng.</summary>
+        public bool IsSelecting => CurrentMode == ToolMode.Select;
+
+        /// <summary>Đang ở chế độ Vẽ hình học.</summary>
+        public bool IsShapeDrawing => CurrentMode == ToolMode.Shape;
+
+        /// <summary>Đang ở chế độ Nhập văn bản.</summary>
+        public bool IsTextMode => CurrentMode == ToolMode.Text;
+
+        /// <summary>Đang ở chế độ Zoom / Phóng to vùng.</summary>
+        public bool IsZoomMode => CurrentMode == ToolMode.Zoom;
+
+        /// <summary>Đang ở chế độ Con trỏ thuyết trình.</summary>
+        public bool IsPointerMode => CurrentMode == ToolMode.Pointer;
+
+        /// <summary>Đang ở chế độ Kéo di chuyển (Pan) bảng.</summary>
+        public bool IsPanMode => CurrentMode == ToolMode.Pan;
+
+        /// <summary>Đang ở chế độ Tương tác AI (Khoanh vùng giải toán, nhận diện chữ viết).</summary>
+        public bool IsAIMode => CurrentMode == ToolMode.AI_Interaction;
+
+        /// <summary>Đang ở chế độ Chia bảng nhiều người viết.</summary>
+        public bool IsMultiUserMode => CurrentMode == ToolMode.MultiUser;
+
         /// <summary>
         /// Đăng ký thêm tool mới vào registry (cho extension).
         /// </summary>

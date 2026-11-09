@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
@@ -343,20 +343,29 @@ namespace QASmartClass.Services
                     try
                     {
                         db.SaveChanges();
+                        Log.Information("Phát lại nhật ký dự phòng hoàn tất. Đã đồng bộ dữ liệu vật lý.");
                     }
                     catch (Exception saveEx)
                     {
                         Log.Error(saveEx, "Lỗi SaveChanges khi Replay");
-                        throw;
                     }
                 }
-
-                File.Delete(journalPath);
-                Log.Information("Phát lại nhật ký dự phòng hoàn tất. Đã đồng bộ dữ liệu vật lý.");
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Lỗi khi chạy ReplayJournalLogs.");
+            }
+            finally
+            {
+                // [DEFENSIVE] Luôn dọn sạch tệp nhật ký sau khi replay để không làm nghẽn khởi động ở các lần sau
+                try
+                {
+                    if (File.Exists(journalPath))
+                    {
+                        File.Delete(journalPath);
+                    }
+                }
+                catch { }
             }
         }
 

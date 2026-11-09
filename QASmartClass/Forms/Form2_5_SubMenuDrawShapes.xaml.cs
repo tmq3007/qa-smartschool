@@ -7,6 +7,7 @@ using System.Windows.Shapes;
 using Path = System.Windows.Shapes.Path;
 using QASmartTouch.Services.VersionManagement;
 using QASmartTouch.Helpers;
+using QASmartTouch.Services.Tools;
 
 namespace QASmartTouch.Forms
 {
@@ -22,6 +23,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToSubMenu(this, btnClose);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             if (btnClose != null)
             {
                 System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
@@ -79,11 +81,16 @@ namespace QASmartTouch.Forms
             // Subscribe to feature changes
             FeatureManager.Instance.FeaturesChanged += OnFeaturesChanged;
             
-            if (btn2D != null) WireTouchActivation(btn2D, btnCategory_Click);
-            if (btn3D != null) WireTouchActivation(btn3D, btnCategory_Click);
+            if (btnMath != null) WireTouchActivation(btnMath, btnSubject_Click);
+            if (btnPhysics != null) WireTouchActivation(btnPhysics, btnSubject_Click);
+            if (btnChem != null) WireTouchActivation(btnChem, btnSubject_Click);
+            if (btnBio != null) WireTouchActivation(btnBio, btnSubject_Click);
 
-            // Load default category (2D)
-            UpdateShapeGallery("2D");
+            // Mặc định chọn môn Toán học khi mở
+            if (btnMath != null)
+            {
+                btnSubject_Click(btnMath, new RoutedEventArgs());
+            }
         }
 
         private void OnFeaturesChanged(object? sender, EventArgs e)
@@ -101,21 +108,339 @@ namespace QASmartTouch.Forms
             this.Close();
         }
 
-        private void btnCategory_Click(object sender, RoutedEventArgs e)
+                private void ResetCategoryTabStyles()
         {
-        if (sender is Button button && button.Tag is string category)
-        {
-            SelectedCategory = category;
-            _currentCategory = category; // Track current category
-            UpdateShapeGallery(category);
-            
-            // Highlight selected category
-            btn2D.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E3F2FD"));
-            btn3D.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F3E5F5"));
-            
-            button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#64B5F6"));
+            var inactiveBg = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6"));
+            var inactiveFg = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2F3542"));
+
+            if (btnMath != null) { btnMath.Background = inactiveBg; btnMath.Foreground = inactiveFg; }
+            if (btnPhysics != null) { btnPhysics.Background = inactiveBg; btnPhysics.Foreground = inactiveFg; }
+            if (btnChem != null) { btnChem.Background = inactiveBg; btnChem.Foreground = inactiveFg; }
+            if (btnBio != null) { btnBio.Background = inactiveBg; btnBio.Foreground = inactiveFg; }
         }
-    }        private void UpdateShapeGallery(string category)
+
+        private void btnSubject_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string subjectId)
+            {
+                ResetCategoryTabStyles();
+
+                switch (subjectId)
+                {
+                    case "math":
+                        btnMath.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#81C784"));
+                        btnMath.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1B5E20"));
+                        break;
+                    case "physics":
+                        btnPhysics.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFB74D"));
+                        btnPhysics.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E65100"));
+                        break;
+                    case "chem":
+                        btnChem.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4DD0E1"));
+                        btnChem.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#006064"));
+                        break;
+                    case "bio":
+                        btnBio.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F48FB1"));
+                        btnBio.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#880E4F"));
+                        break;
+                }
+
+                UpdateSubjectSubcategories(subjectId);
+            }
+        }
+
+        private void UpdateSubjectSubcategories(string subjectId)
+        {
+            if (SubCategoryTabBar == null || SubCategoryScrollViewer == null) return;
+            SubCategoryTabBar.Children.Clear();
+            SubCategoryScrollViewer.Visibility = Visibility.Visible;
+
+            var subject = SubjectShapeGeometryService.Subjects.FirstOrDefault(s => s.Id.Equals(subjectId, StringComparison.OrdinalIgnoreCase));
+            if (subject == null || subject.Categories.Count == 0) return;
+
+            Button? firstBtn = null;
+            foreach (var cat in subject.Categories)
+            {
+                var catBtn = new Button
+                {
+                    Style = TryFindResource("SubCategoryTabButtonStyle") as Style,
+                    Content = cat.Name,
+                    Tag = cat,
+                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6")),
+                    BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA")),
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#57606F"))
+                };
+                catBtn.Click += SubCategoryButton_Click;
+                WireTouchActivation(catBtn, SubCategoryButton_Click);
+                SubCategoryTabBar.Children.Add(catBtn);
+
+                if (firstBtn == null) firstBtn = catBtn;
+            }
+
+            if (firstBtn != null)
+            {
+                ActivateSubCategoryButton(firstBtn);
+            }
+        }
+
+        private void SubCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                ActivateSubCategoryButton(btn);
+            }
+        }
+
+        private void ActivateSubCategoryButton(Button activeBtn)
+        {
+            if (SubCategoryTabBar == null) return;
+
+            foreach (var child in SubCategoryTabBar.Children)
+            {
+                if (child is Button b)
+                {
+                    b.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F2F6"));
+                    b.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA"));
+                    b.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#57606F"));
+                    b.FontWeight = FontWeights.Medium;
+                }
+            }
+
+            activeBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E86DE"));
+            activeBtn.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E86DE"));
+            activeBtn.Foreground = Brushes.White;
+            activeBtn.FontWeight = FontWeights.SemiBold;
+
+            if (activeBtn.Tag is CategoryDefinition cat)
+            {
+                _currentCategory = cat.Id;
+                SelectedCategory = cat.Id;
+                UpdateSubjectShapeGallery(cat);
+            }
+        }
+
+        private void UpdateSubjectShapeGallery(CategoryDefinition cat)
+        {
+            ShapeGallery.Children.Clear();
+            if (cat.SubjectId == "eng")
+            {
+                if (SubjectShapeGeometryService.EnglishCards.TryGetValue(cat.Id, out var cards))
+                {
+                    foreach (var card in cards)
+                    {
+                        var btn = CreateEnglishCardButton(card);
+                        ShapeGallery.Children.Add(btn);
+                    }
+                }
+                return;
+            }
+
+            foreach (var shapeDef in cat.Shapes)
+            {
+                var btn = CreateSubjectShapeButton(shapeDef);
+                ShapeGallery.Children.Add(btn);
+            }
+        }
+
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, System.Windows.Media.Imaging.BitmapImage> _cardThumbnailCache = new(StringComparer.OrdinalIgnoreCase);
+
+        private static string? GetCardImagePath(string word)
+        {
+            string safeName = word.Replace(' ', '_') + ".png";
+            // 1. Thư mục chạy output thực tế
+            string p1 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p1)) return p1;
+
+            // 2. Thư mục mã nguồn QASmartClass nếu đang build/debug
+            string p2 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartClass", "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p2)) return p2;
+
+            string p3 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Assets", "EnglishCards", safeName);
+            if (System.IO.File.Exists(p3)) return p3;
+
+            return null;
+        }
+
+        private Button CreateEnglishCardButton(EnglishCardDefinition card)
+        {
+            var shapeStyle = TryFindResource("ShapeItemButtonStyle") as Style;
+            var button = new Button
+            {
+                Style = shapeStyle,
+                Tag = card,
+                Width = 98,
+                Height = 114,
+                Margin = new Thickness(4),
+                ToolTip = $"{card.Word} — {card.Meaning} (Bấm để nghe đọc và chèn lên bảng)"
+            };
+
+            string? imgPath = GetCardImagePath(card.Word);
+            if (!string.IsNullOrEmpty(imgPath))
+            {
+                try
+                {
+                    if (!_cardThumbnailCache.TryGetValue(imgPath, out var bitmap))
+                    {
+                        bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.UriSource = new Uri(imgPath, UriKind.Absolute);
+                        bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                        bitmap.DecodePixelWidth = 190;
+                        bitmap.EndInit();
+                        bitmap.Freeze();
+                        _cardThumbnailCache[imgPath] = bitmap;
+                    }
+
+                    var img = new Image
+                    {
+                        Source = bitmap,
+                        Stretch = Stretch.Uniform,
+                        Width = 88,
+                        Height = 104,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.HighQuality);
+                    button.Content = img;
+                    button.Click += EnglishCardButton_Click;
+                    WireTouchActivation(button, EnglishCardButton_Click);
+                    return button;
+                }
+                catch { }
+            }
+
+            var stackPanel = new StackPanel { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Center };
+            
+            var emojiBlock = new TextBlock
+            {
+                Text = card.Emoji,
+                FontSize = 34,
+                FontFamily = new FontFamily("Segoe UI Emoji, Noto Color Emoji, Arial"),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 2, 0, 1)
+            };
+            stackPanel.Children.Add(emojiBlock);
+
+            var wordBlock = new TextBlock
+            {
+                Text = card.Word,
+                FontSize = 11.5,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1F3A5A")),
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 88
+            };
+            stackPanel.Children.Add(wordBlock);
+
+            var meaningBlock = new TextBlock
+            {
+                Text = card.Meaning,
+                FontSize = 10,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7F8C8D")),
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 88,
+                Margin = new Thickness(0, 1, 0, 0)
+            };
+            stackPanel.Children.Add(meaningBlock);
+
+            button.Content = stackPanel;
+            button.Click += EnglishCardButton_Click;
+            WireTouchActivation(button, EnglishCardButton_Click);
+            return button;
+        }
+
+        private void EnglishCardButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is EnglishCardDefinition card)
+            {
+                var capturedCard = card;
+                string? imgPath = GetCardImagePath(capturedCard.Word);
+                _mainDashboard?.RegisterRecentTool(
+                    $"eng:{capturedCard.Word}",
+                    $"Từ: {capturedCard.Word}",
+                    QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
+                    Color.FromRgb(0x8E, 0x24, 0xAA),
+                    () =>
+                    {
+                        SubjectShapeGeometryService.SpeakWord(capturedCard.Word);
+                        _mainDashboard?.InsertEnglishWordCard(capturedCard.Emoji, capturedCard.Word, capturedCard.Meaning, imgPath);
+                    },
+                    $"Dùng lại thẻ từ vựng: {capturedCard.Word} ({capturedCard.Meaning})");
+
+                // Phát âm tiếng Anh
+                SubjectShapeGeometryService.SpeakWord(card.Word);
+
+                // Chèn thẻ từ vựng lên bảng viết (truyền ảnh màu nếu có)
+                _mainDashboard?.InsertEnglishWordCard(card.Emoji, card.Word, card.Meaning, imgPath);
+
+                // Đóng menu để giáo viên nhìn thấy thẻ trên bảng
+                try { _mainDashboard?.Activate(); } catch { }
+                this.Close();
+            }
+        }
+
+        private Button CreateSubjectShapeButton(SubjectShapeDefinition shapeDef)
+        {
+            var shapeStyle = TryFindResource("ShapeItemButtonStyle") as Style;
+            var button = new Button
+            {
+                Style = shapeStyle,
+                Tag = shapeDef.Id,
+                Width = 92,
+                Height = 92,
+                Margin = new Thickness(4)
+            };
+
+            var canvas = new Canvas
+            {
+                Width = 50,
+                Height = 50,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var geom = SubjectShapeGeometryService.GenerateGeometry(shapeDef.Id, new Rect(3, 3, 44, 44));
+            if (geom != null)
+            {
+                var path = new Path
+                {
+                    Data = geom,
+                    Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E86DE")),
+                    StrokeThickness = 1.8,
+                    Fill = null,
+                    StrokeLineJoin = PenLineJoin.Round,
+                    StrokeStartLineCap = PenLineCap.Round,
+                    StrokeEndLineCap = PenLineCap.Round
+                };
+                canvas.Children.Add(path);
+            }
+
+            var stackPanel = new StackPanel { Orientation = Orientation.Vertical };
+            stackPanel.Children.Add(canvas);
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = shapeDef.Name,
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2F3542")),
+                TextAlignment = TextAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 84,
+                Margin = new Thickness(0, 3, 0, 0)
+            });
+
+            button.Content = stackPanel;
+            button.Click += ShapeButton_Click;
+            WireTouchActivation(button, ShapeButton_Click);
+            return button;
+        }
+
+        private void UpdateShapeGallery(string category)
         {
             ShapeGallery.Children.Clear();
             
@@ -133,7 +458,7 @@ namespace QASmartTouch.Forms
                     "Square",          // Hình vuông
                     "Rectangle",       // Hình chữ nhật
                 },
-                "3D" => new[] { "Cube", "Sphere", "Pyramid", "Cylinder", "Cone", "Prism" },
+                "3D" => new[] { "Cube", "Sphere", "Pyramid", "Tetrahedron", "Cylinder", "Cone", "Prism" },
                 _ => new[] { "Rectangle", "Circle", "Triangle" }
             };
             
@@ -153,6 +478,12 @@ namespace QASmartTouch.Forms
                 
                 return isEnabled;
             }).ToArray();
+            
+            // Fallback an toàn: Nếu không tìm thấy feature hoặc cấu hình bị lỗi, luôn hiển thị shapes mặc định để không bị trắng giao diện
+            if (enabledShapes.Length == 0 && shapes.Length > 0)
+            {
+                enabledShapes = shapes;
+            }
             
             System.Diagnostics.Debug.WriteLine($"[Form2_5] Showing {enabledShapes.Length}/{shapes.Length} shapes for category {category}");
             
@@ -278,6 +609,7 @@ namespace QASmartTouch.Forms
                 "Cylinder" => "cylinder",
                 "Cone" => "cone",
                 "Prism" => "prism",
+                "Tetrahedron" => "tetrahedron",
                 
                 // Callouts - map to callout group for now
                 "RectangularCallout" or "RoundedRectangularCallout" or "OvalCallout" => "speech_bubble",
@@ -293,17 +625,22 @@ namespace QASmartTouch.Forms
 
         private Button CreateShapeButton(string shapeName, string category)
         {
+            var shapeStyle = TryFindResource("ShapeItemButtonStyle") as Style;
             var button = new Button
             {
-                Width = 80,
-                Height = 80,
-                Margin = new Thickness(5),
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F5F6FA")),
-                BorderThickness = new Thickness(1),
-                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA")),
-                Cursor = System.Windows.Input.Cursors.Hand,
+                Style = shapeStyle,
                 Tag = shapeName
             };
+            if (shapeStyle == null)
+            {
+                button.Width = 92;
+                button.Height = 92;
+                button.Margin = new Thickness(4);
+                button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8F9FA"));
+                button.BorderThickness = new Thickness(1);
+                button.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DFE4EA"));
+                button.Cursor = System.Windows.Input.Cursors.Hand;
+            }
 
             // Create visual preview of shape
             var canvas = new Canvas
@@ -406,7 +743,7 @@ namespace QASmartTouch.Forms
                     
                     // 3D Shapes
                     "Cube" => CreateCube(),
-                    "Sphere" => new Ellipse { Width = 35, Height = 35, Fill = Brushes.LightSteelBlue, Stroke = Brushes.SteelBlue, StrokeThickness = 2 },
+                    "Sphere" => CreateSphere(),
                     "Pyramid" => CreatePyramid(),
                     "Cylinder" => CreateCylinder(),
                     "Cone" => CreateCone(),
@@ -415,17 +752,23 @@ namespace QASmartTouch.Forms
                     "Tetrahedron" => CreateTetrahedron(),
                     _ => new Rectangle { Width = 30, Height = 30, Fill = Brushes.LightGray, Stroke = Brushes.Gray, StrokeThickness = 1 }
                 };
-            }            if (shapePreview != null)
+            }
+
+            if (shapePreview != null)
             {
                 if (shapePreview is Shape shape)
                 {
-                    Canvas.SetLeft(shape, (50 - (shape.Width == 0 ? 40 : shape.Width)) / 2);
-                    Canvas.SetTop(shape, (50 - (shape.Height == 0 ? 30 : shape.Height)) / 2);
+                    double w = double.IsNaN(shape.Width) || shape.Width == 0 ? 40 : shape.Width;
+                    double h = double.IsNaN(shape.Height) || shape.Height == 0 ? 30 : shape.Height;
+                    Canvas.SetLeft(shape, Math.Max(0, (50 - w) / 2));
+                    Canvas.SetTop(shape, Math.Max(0, (50 - h) / 2));
                 }
-                else if (shapePreview is Canvas scatterCanvas)
+                else if (shapePreview is FrameworkElement fe)
                 {
-                    Canvas.SetLeft(scatterCanvas, 5);
-                    Canvas.SetTop(scatterCanvas, 5);
+                    double w = double.IsNaN(fe.Width) || fe.Width == 0 ? 40 : fe.Width;
+                    double h = double.IsNaN(fe.Height) || fe.Height == 0 ? 40 : fe.Height;
+                    Canvas.SetLeft(fe, Math.Max(0, (50 - w) / 2));
+                    Canvas.SetTop(fe, Math.Max(0, (50 - h) / 2));
                 }
                 canvas.Children.Add(shapePreview);
             }
@@ -435,10 +778,12 @@ namespace QASmartTouch.Forms
             stackPanel.Children.Add(new TextBlock
             {
                 Text = GetVietnameseName(shapeName),
-                FontSize = 10,
-                Foreground = Brushes.DarkGray,
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2F3542")),
                 TextAlignment = TextAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 3, 0, 0)
             });
 
             button.Content = stackPanel;
@@ -567,81 +912,370 @@ namespace QASmartTouch.Forms
             };
         }
 
-        private Polygon CreateCube()
+        #region 3D Shape Icon Styles (Pedagogical Standards)
+        private static Brush GetFrozenBrush(string colorHex)
         {
-            return new Polygon
+            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
+            brush.Freeze();
+            return brush;
+        }
+
+        private static readonly Brush Stroke3D = GetFrozenBrush("#1E5180");
+        private static readonly Brush Dash3D = GetFrozenBrush("#2980B9");
+        private static readonly Brush FillTop3D = GetFrozenBrush("#E8F4F8");
+        private static readonly Brush FillLeft3D = GetFrozenBrush("#D4E6F1");
+        private static readonly Brush FillRight3D = GetFrozenBrush("#A9CCE3");
+
+        private UIElement CreateCube()
+        {
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            // Top face
+            cv.Children.Add(new Polygon
             {
-                Points = new PointCollection 
-                { 
-                    new Point(8, 15), new Point(22, 15), new Point(22, 29), new Point(8, 29),
-                    new Point(8, 15), new Point(14, 9), new Point(28, 9), new Point(28, 23),
-                    new Point(22, 29), new Point(28, 23), new Point(28, 9), new Point(22, 15)
-                },
-                Fill = Brushes.LightBlue,
-                Stroke = Brushes.Navy,
+                Points = new PointCollection { new Point(21, 5), new Point(35, 13), new Point(21, 21), new Point(7, 13) },
+                Fill = FillTop3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Left-front face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { new Point(7, 13), new Point(21, 21), new Point(21, 37), new Point(7, 29) },
+                Fill = FillLeft3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Right-front face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { new Point(21, 21), new Point(35, 13), new Point(35, 29), new Point(21, 37) },
+                Fill = FillRight3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            return cv;
+        }
+
+        private UIElement CreateSphere()
+        {
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            var sphereBrush = new RadialGradientBrush
+            {
+                Center = new Point(0.35, 0.35),
+                GradientOrigin = new Point(0.35, 0.35),
+                RadiusX = 0.65,
+                RadiusY = 0.65
+            };
+            sphereBrush.GradientStops.Add(new GradientStop(Colors.White, 0.0));
+            sphereBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#D4E6F1"), 0.55));
+            sphereBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#85C1E9"), 1.0));
+            sphereBrush.Freeze();
+
+            var outerCircle = new Ellipse
+            {
+                Width = 34,
+                Height = 34,
+                Fill = sphereBrush,
+                Stroke = Stroke3D,
                 StrokeThickness = 1.5
             };
+            Canvas.SetLeft(outerCircle, 4);
+            Canvas.SetTop(outerCircle, 4);
+            cv.Children.Add(outerCircle);
+
+            // Equator rear arc (dashed)
+            PathGeometry backArc = new PathGeometry();
+            PathFigure backFig = new PathFigure { StartPoint = new Point(38, 21), IsClosed = false };
+            backFig.Segments.Add(new ArcSegment(new Point(4, 21), new Size(17, 5.5), 0, false, SweepDirection.Counterclockwise, true));
+            backArc.Figures.Add(backFig);
+            cv.Children.Add(new Path
+            {
+                Data = backArc,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            // Equator front arc (solid)
+            PathGeometry frontArc = new PathGeometry();
+            PathFigure frontFig = new PathFigure { StartPoint = new Point(4, 21), IsClosed = false };
+            frontFig.Segments.Add(new ArcSegment(new Point(38, 21), new Size(17, 5.5), 0, false, SweepDirection.Counterclockwise, true));
+            frontArc.Figures.Add(frontFig);
+            cv.Children.Add(new Path
+            {
+                Data = frontArc,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5
+            });
+
+            return cv;
         }
 
-        private Polygon CreatePyramid()
+        private UIElement CreatePyramid()
         {
-            return new Polygon
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            Point s = new Point(21, 5);
+            Point leftPt = new Point(5, 30);
+            Point frontPt = new Point(26, 39);
+            Point rightPt = new Point(37, 29);
+            Point backPt = new Point(16, 20); // Đỉnh khuất phía sau bên trái
+
+            // Left-front face
+            cv.Children.Add(new Polygon
             {
-                Points = new PointCollection { new Point(20, 5), new Point(5, 28), new Point(15, 35), new Point(35, 20) },
-                Fill = Brushes.SandyBrown,
-                Stroke = Brushes.Sienna,
-                StrokeThickness = 2
-            };
+                Points = new PointCollection { s, leftPt, frontPt },
+                Fill = FillLeft3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Right-front face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { s, frontPt, rightPt },
+                Fill = FillRight3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Hidden rear-left dashed lines
+            var dashGroup = new GeometryGroup();
+            dashGroup.Children.Add(new LineGeometry(s, backPt));
+            dashGroup.Children.Add(new LineGeometry(leftPt, backPt));
+            dashGroup.Children.Add(new LineGeometry(backPt, rightPt));
+
+            cv.Children.Add(new Path
+            {
+                Data = dashGroup,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            return cv;
         }
 
-        private Path CreateCylinder()
+        private UIElement CreateTetrahedron()
         {
-            return new Path
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            Point s = new Point(19, 5);
+            Point a = new Point(6, 33);
+            Point b = new Point(25, 39);
+            Point c = new Point(37, 29);
+
+            // Left face
+            cv.Children.Add(new Polygon
             {
-                Data = Geometry.Parse("M5,10 Q5,5 20,5 Q35,5 35,10 L35,30 Q35,35 20,35 Q5,35 5,30 Z M5,10 Q5,15 20,15 Q35,15 35,10"),
-                Fill = Brushes.LightCyan,
-                Stroke = Brushes.DarkCyan,
+                Points = new PointCollection { s, a, b },
+                Fill = FillLeft3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Right face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { s, b, c },
+                Fill = FillRight3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Hidden rear base edge (dashed)
+            cv.Children.Add(new Line
+            {
+                X1 = a.X, Y1 = a.Y,
+                X2 = c.X, Y2 = c.Y,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            return cv;
+        }
+
+        private UIElement CreateCylinder()
+        {
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            // Body fill
+            PathGeometry bodyGeo = new PathGeometry();
+            PathFigure bodyFig = new PathFigure { StartPoint = new Point(6, 11), IsClosed = true };
+            bodyFig.Segments.Add(new LineSegment(new Point(6, 31), true));
+            bodyFig.Segments.Add(new ArcSegment(new Point(36, 31), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            bodyFig.Segments.Add(new LineSegment(new Point(36, 11), true));
+            bodyFig.Segments.Add(new ArcSegment(new Point(6, 11), new Size(15, 4.5), 0, false, SweepDirection.Clockwise, true));
+            bodyGeo.Figures.Add(bodyFig);
+
+            cv.Children.Add(new Path
+            {
+                Data = bodyGeo,
+                Fill = FillLeft3D
+            });
+
+            // Bottom rear arc (dashed)
+            PathGeometry backArc = new PathGeometry();
+            PathFigure backFig = new PathFigure { StartPoint = new Point(36, 31), IsClosed = false };
+            backFig.Segments.Add(new ArcSegment(new Point(6, 31), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            backArc.Figures.Add(backFig);
+            cv.Children.Add(new Path
+            {
+                Data = backArc,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            // Side lines and bottom front arc (solid)
+            PathGeometry frontGeo = new PathGeometry();
+            PathFigure leftFig = new PathFigure { StartPoint = new Point(6, 11), IsClosed = false };
+            leftFig.Segments.Add(new LineSegment(new Point(6, 31), true));
+            frontGeo.Figures.Add(leftFig);
+
+            PathFigure rightFig = new PathFigure { StartPoint = new Point(36, 11), IsClosed = false };
+            rightFig.Segments.Add(new LineSegment(new Point(36, 31), true));
+            frontGeo.Figures.Add(rightFig);
+
+            PathFigure frontArc = new PathFigure { StartPoint = new Point(6, 31), IsClosed = false };
+            frontArc.Segments.Add(new ArcSegment(new Point(36, 31), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            frontGeo.Figures.Add(frontArc);
+
+            cv.Children.Add(new Path
+            {
+                Data = frontGeo,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Top face ellipse
+            var topEllipse = new Ellipse
+            {
+                Width = 30,
+                Height = 9,
+                Fill = FillTop3D,
+                Stroke = Stroke3D,
                 StrokeThickness = 1.5
             };
+            Canvas.SetLeft(topEllipse, 6);
+            Canvas.SetTop(topEllipse, 6.5);
+            cv.Children.Add(topEllipse);
+
+            return cv;
         }
 
-        private Polygon CreateCone()
+        private UIElement CreateCone()
         {
-            return new Polygon
+            var cv = new Canvas { Width = 42, Height = 42 };
+
+            // Body fill
+            PathGeometry bodyGeo = new PathGeometry();
+            PathFigure bodyFig = new PathFigure { StartPoint = new Point(21, 5), IsClosed = true };
+            bodyFig.Segments.Add(new LineSegment(new Point(6, 32), true));
+            bodyFig.Segments.Add(new ArcSegment(new Point(36, 32), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            bodyFig.Segments.Add(new LineSegment(new Point(21, 5), true));
+            bodyGeo.Figures.Add(bodyFig);
+
+            cv.Children.Add(new Path
             {
-                Points = new PointCollection { new Point(20, 5), new Point(5, 35), new Point(35, 35) },
-                Fill = Brushes.Coral,
-                Stroke = Brushes.OrangeRed,
-                StrokeThickness = 2
-            };
+                Data = bodyGeo,
+                Fill = FillLeft3D
+            });
+
+            // Bottom rear arc (dashed)
+            PathGeometry backArc = new PathGeometry();
+            PathFigure backFig = new PathFigure { StartPoint = new Point(36, 32), IsClosed = false };
+            backFig.Segments.Add(new ArcSegment(new Point(6, 32), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            backArc.Figures.Add(backFig);
+            cv.Children.Add(new Path
+            {
+                Data = backArc,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            // Outer silhouette & bottom front arc (solid)
+            PathGeometry frontGeo = new PathGeometry();
+            PathFigure frontFig = new PathFigure { StartPoint = new Point(21, 5), IsClosed = false };
+            frontFig.Segments.Add(new LineSegment(new Point(6, 32), true));
+            frontFig.Segments.Add(new ArcSegment(new Point(36, 32), new Size(15, 4.5), 0, false, SweepDirection.Counterclockwise, true));
+            frontFig.Segments.Add(new LineSegment(new Point(21, 5), true));
+            frontGeo.Figures.Add(frontFig);
+
+            cv.Children.Add(new Path
+            {
+                Data = frontGeo,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            return cv;
         }
 
-        private Polygon CreatePrism()
+        private UIElement CreatePrism()
         {
-            return new Polygon
-            {
-                Points = new PointCollection 
-                { 
-                    new Point(15, 8), new Point(8, 32), new Point(25, 32),
-                    new Point(25, 32), new Point(32, 8), new Point(15, 8),
-                    new Point(32, 8), new Point(25, 32)
-                },
-                Fill = Brushes.LightGreen,
-                Stroke = Brushes.DarkGreen,
-                StrokeThickness = 1.5
-            };
-        }
+            var cv = new Canvas { Width = 42, Height = 42 };
 
-        private Polygon CreateTetrahedron()
-        {
-            return new Polygon
+            Point a1 = new Point(8, 12);
+            Point b1 = new Point(34, 12);
+            Point c1 = new Point(21, 5);
+
+            Point a2 = new Point(8, 36);
+            Point b2 = new Point(34, 36);
+            Point c2 = new Point(21, 29);
+
+            // Hidden rear dashed lines
+            var dashGroup = new GeometryGroup();
+            dashGroup.Children.Add(new LineGeometry(c1, c2));
+            dashGroup.Children.Add(new LineGeometry(a2, c2));
+            dashGroup.Children.Add(new LineGeometry(b2, c2));
+            cv.Children.Add(new Path
             {
-                Points = new PointCollection { new Point(20, 8), new Point(8, 32), new Point(32, 25) },
-                Fill = Brushes.Thistle,
-                Stroke = Brushes.Purple,
-                StrokeThickness = 2
-            };
+                Data = dashGroup,
+                Stroke = Dash3D,
+                StrokeThickness = 1.2,
+                StrokeDashArray = new DoubleCollection { 2.5, 2 }
+            });
+
+            // Front rectangular face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { a1, b1, b2, a2 },
+                Fill = FillLeft3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            // Top triangular face
+            cv.Children.Add(new Polygon
+            {
+                Points = new PointCollection { a1, b1, c1 },
+                Fill = FillTop3D,
+                Stroke = Stroke3D,
+                StrokeThickness = 1.5,
+                StrokeLineJoin = PenLineJoin.Round
+            });
+
+            return cv;
         }
+        #endregion
 
         private Path CreateBarChart()
         {
@@ -737,6 +1371,9 @@ namespace QASmartTouch.Forms
 
     private string GetVietnameseName(string shapeName)
     {
+        if (SubjectShapeGeometryService.IsSubjectShape(shapeName))
+            return SubjectShapeGeometryService.GetShapeDefinition(shapeName)?.Name ?? shapeName;
+
         return shapeName switch
         {
             // PHASE 1: Lines (5)
@@ -1351,6 +1988,7 @@ namespace QASmartTouch.Forms
     {
         if (sender is Button button && button.Tag is string shapeName)
         {
+            if (UserSelected) return; // Chống kích hoạt kép (Stylus + Touch + Click)
             SelectedShape = shapeName;
             UserSelected = true;  // ✅ User selected a shape
             
@@ -1364,15 +2002,11 @@ namespace QASmartTouch.Forms
             }
             catch { }
             
+            // QC_4.2_TOUCH_PIPELINE: Đóng SubMenu SAU KHI chu kỳ nhấc tay (StylusUp/TouchUp) kết thúc trọn vẹn,
+            // tránh làm hỏng phiên cảm ứng kế tiếp trên bảng chính (lần kéo hình đầu tiên).
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                try 
-                { 
-                    _mainDashboard?.Activate();
-                    _mainDashboard?.Focus();
-                } 
-                catch { }
-                this.Close();
+                try { this.Close(); } catch (InvalidOperationException) { }
             }), System.Windows.Threading.DispatcherPriority.Input);
         }
     }

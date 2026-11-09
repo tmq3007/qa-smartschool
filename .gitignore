@@ -482,5 +482,10 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
-I n s t a l l e r /  
- 
+
+# Installer directory
+[Ii]nstaller/
+Installer/
+
+# Local build/obfuscation tools
+.tools/

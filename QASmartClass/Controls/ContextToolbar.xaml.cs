@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,6 +16,13 @@ namespace QASmartTouch.Controls
 
         private SelectableObject? _attachedObject;
         private bool _moreBtnProcessing = false;
+        private bool _isTouchDownOnToolbar = false;
+        private long _lastTouchActionTick = 0;
+        private long _lastRotate3DExecuteTick = 0;
+        private long _lastColorExecuteTick = 0;
+        private long _lastThicknessExecuteTick = 0;
+        private long _lastCopyExecuteTick = 0;
+        private long _lastDeleteExecuteTick = 0;
 
         #endregion
 
@@ -36,6 +43,7 @@ namespace QASmartTouch.Controls
         public event EventHandler? DeleteClicked;
         public event EventHandler? SpotlightClicked;
         public event EventHandler? MoreClicked;
+        public event EventHandler? Rotate3DClicked;
 
         #endregion
 
@@ -45,6 +53,48 @@ namespace QASmartTouch.Controls
         {
             InitializeComponent();
             this.Visibility = Visibility.Collapsed;
+
+            // ✅ QC_4.2_TOUCH_ACTIVATION: Đảm bảo toàn bộ Toolbar và Popups nhận diện cảm ứng 1 chạm ngay lập tức
+            this.Loaded += (s, e) =>
+            {
+                QASmartTouch.Helpers.TouchActivationHelper.WireAllInteractiveControls(this);
+            };
+
+            // Khi nhấc ngón tay khỏi nút trên ContextToolbar: làm mới mốc thời gian Touch để chặn sự kiện Click ảo/StylusUp phát sinh kép ngay sau đó
+            this.PreviewTouchUp += (s, e) =>
+            {
+                if (_isTouchDownOnToolbar)
+                {
+                    _lastTouchActionTick = Environment.TickCount64;
+                    _isTouchDownOnToolbar = false;
+                }
+            };
+            this.PreviewStylusUp += (s, e) =>
+            {
+                if (_isTouchDownOnToolbar)
+                {
+                    _lastTouchActionTick = Environment.TickCount64;
+                    _isTouchDownOnToolbar = false;
+                }
+            };
+            this.LostTouchCapture += (s, e) =>
+            {
+                if (_isTouchDownOnToolbar)
+                {
+                    _lastTouchActionTick = Environment.TickCount64;
+                    _isTouchDownOnToolbar = false;
+                }
+            };
+
+            if (ColorPalettePopup != null)
+            {
+                QASmartTouch.Helpers.TouchActivationHelper.ApplyToPopup(ColorPalettePopup);
+            }
+
+            if (HandwritingCandidatesPopup != null)
+            {
+                QASmartTouch.Helpers.TouchActivationHelper.ApplyToPopup(HandwritingCandidatesPopup);
+            }
         }
 
         #endregion
@@ -96,7 +146,10 @@ namespace QASmartTouch.Controls
             applyBoundsClamping();
 
             // Sau khi layout pass hoàn thành, tái định vị chính xác với ActualWidth/ActualHeight thực tế
-            this.Dispatcher.BeginInvoke(applyBoundsClamping, System.Windows.Threading.DispatcherPriority.Loaded);
+            if (this.ActualWidth <= 0)
+            {
+                this.Dispatcher.BeginInvoke(applyBoundsClamping, System.Windows.Threading.DispatcherPriority.Loaded);
+            }
         }
 
         /// <summary>
@@ -122,14 +175,36 @@ namespace QASmartTouch.Controls
 
         #region Button Click Events
 
+        private void MarkTouchDownTriggered()
+        {
+            _isTouchDownOnToolbar = true;
+            _lastTouchActionTick = Environment.TickCount64;
+        }
+
+        private bool ShouldSuppressPromotedClick()
+        {
+            return _isTouchDownOnToolbar || (Environment.TickCount64 - _lastTouchActionTick) < 350;
+        }
+
         private void btnCopy_PreviewTouchDown(object sender, TouchEventArgs e)
         {
+            MarkTouchDownTriggered();
             e.Handled = true;
-            btnCopy_Click(sender, e);
+            ExecuteCopyAction();
         }
 
         private void btnCopy_Click(object sender, RoutedEventArgs e)
         {
+            if (ShouldSuppressPromotedClick()) return;
+            ExecuteCopyAction();
+        }
+
+        private void ExecuteCopyAction()
+        {
+            long now = Environment.TickCount64;
+            if (now - _lastCopyExecuteTick < 180) return;
+            _lastCopyExecuteTick = now;
+
             if (ColorPalettePopup != null) ColorPalettePopup.IsOpen = false;
             if (HandwritingCandidatesPopup != null) HandwritingCandidatesPopup.IsOpen = false;
             CopyClicked?.Invoke(this, EventArgs.Empty);
@@ -177,12 +252,23 @@ namespace QASmartTouch.Controls
 
         private void btnThickness_PreviewTouchDown(object sender, TouchEventArgs e)
         {
+            MarkTouchDownTriggered();
             e.Handled = true;
-            btnThickness_Click(sender, e);
+            ExecuteThicknessAction();
         }
 
         private void btnThickness_Click(object sender, RoutedEventArgs e)
         {
+            if (ShouldSuppressPromotedClick()) return;
+            ExecuteThicknessAction();
+        }
+
+        private void ExecuteThicknessAction()
+        {
+            long now = Environment.TickCount64;
+            if (now - _lastThicknessExecuteTick < 180) return;
+            _lastThicknessExecuteTick = now;
+
             if (ColorPalettePopup != null) ColorPalettePopup.IsOpen = false;
             if (HandwritingCandidatesPopup != null) HandwritingCandidatesPopup.IsOpen = false;
             ThicknessClicked?.Invoke(this, EventArgs.Empty);
@@ -190,13 +276,24 @@ namespace QASmartTouch.Controls
 
         private void btnColor_PreviewTouchDown(object sender, TouchEventArgs e)
         {
+            MarkTouchDownTriggered();
             e.Handled = true;
-            btnColor_Click(sender, e);
+            ExecuteColorAction();
         }
 
         private void btnColor_Click(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
+            if (ShouldSuppressPromotedClick()) return;
+            ExecuteColorAction();
+        }
+
+        private void ExecuteColorAction()
+        {
+            long now = Environment.TickCount64;
+            if (now - _lastColorExecuteTick < 180) return;
+            _lastColorExecuteTick = now;
+
             if (HandwritingCandidatesPopup != null) HandwritingCandidatesPopup.IsOpen = false;
             if (ColorPalettePopup != null)
             {
@@ -207,13 +304,24 @@ namespace QASmartTouch.Controls
 
         private void btnDelete_PreviewTouchDown(object sender, TouchEventArgs e)
         {
+            MarkTouchDownTriggered();
             e.Handled = true;
-            btnDelete_Click(sender, e);
+            ExecuteDeleteAction();
         }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
+            if (ShouldSuppressPromotedClick()) return;
+            ExecuteDeleteAction();
+        }
+
+        private void ExecuteDeleteAction()
+        {
+            long now = Environment.TickCount64;
+            if (now - _lastDeleteExecuteTick < 180) return;
+            _lastDeleteExecuteTick = now;
+
             DeleteClicked?.Invoke(this, EventArgs.Empty);
         }
 
@@ -257,6 +365,7 @@ namespace QASmartTouch.Controls
                 btn.Template = template;
 
                 btn.Click += CandidateOption_Click;
+                QASmartTouch.Helpers.TouchActivationHelper.WireButton(btn);
                 CandidatesContainer.Children.Add(btn);
             }
 
@@ -352,6 +461,65 @@ namespace QASmartTouch.Controls
                     new Action(() => _moreBtnProcessing = false),
                     System.Windows.Threading.DispatcherPriority.Input);
             }
+        }
+
+        #endregion
+
+        #region 3D Rotation Controls
+
+        /// <summary>
+        /// Cập nhật hiển thị nút Xoay 3D (chỉ hiện riêng khi chọn hình không gian 3D)
+        /// </summary>
+        public void Update3DControls(bool is3D, bool isRotating)
+        {
+            if (btnRotate3D == null) return;
+            btnRotate3D.Visibility = is3D ? Visibility.Visible : Visibility.Collapsed;
+            if (borderRotate3D != null)
+            {
+                borderRotate3D.Background = Brushes.Transparent;
+                borderRotate3D.BorderBrush = Brushes.Transparent;
+                borderRotate3D.BorderThickness = new Thickness(0);
+            }
+            if (txtRotate3DIcon != null)
+            {
+                if (isRotating)
+                {
+                    txtRotate3DIcon.FontWeight = FontWeights.Black;
+                    txtRotate3DIcon.FontSize = 24;
+                    txtRotate3DIcon.Foreground = Brushes.White;
+                }
+                else
+                {
+                    txtRotate3DIcon.FontWeight = FontWeights.Normal;
+                    txtRotate3DIcon.FontSize = 18;
+                    txtRotate3DIcon.Foreground = new SolidColorBrush(Color.FromArgb(210, 255, 255, 255));
+                }
+            }
+        }
+
+        private void btnRotate3D_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (ShouldSuppressPromotedClick()) return;
+            ExecuteRotate3DToggle();
+        }
+
+        private void btnRotate3D_PreviewTouchDown(object sender, TouchEventArgs e)
+        {
+            MarkTouchDownTriggered();
+            e.Handled = true;
+            ExecuteRotate3DToggle();
+        }
+
+        private void ExecuteRotate3DToggle()
+        {
+            long now = Environment.TickCount64;
+            if (now - _lastRotate3DExecuteTick < 180) return;
+            _lastRotate3DExecuteTick = now;
+
+            if (ColorPalettePopup != null) ColorPalettePopup.IsOpen = false;
+            if (HandwritingCandidatesPopup != null) HandwritingCandidatesPopup.IsOpen = false;
+            Rotate3DClicked?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion

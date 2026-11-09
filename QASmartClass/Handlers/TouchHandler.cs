@@ -80,6 +80,28 @@ namespace QASmartTouch.Handlers
         /// </summary>
         public Func<Point, Color?>? GetColorForPosition { get; set; }
 
+        /// <summary>
+        /// QC_4.2_MILESTONE_ZINDEX: Delegate truy vấn tầng Z-Index hiện tại cho nét vẽ hoàn tất
+        /// </summary>
+        public Func<int>? GetCurrentInkingZIndex { get; set; }
+
+        /// <summary>
+        /// Callback xóa nét vẽ tự do Native Inking (System.Windows.Ink.Stroke)
+        /// Tham số: (currentPoint, lastPoint, eraserSize, eraserMode, touchId)
+        /// </summary>
+        public Action<Point, Point?, double, string, int>? OnEraseNativeStrokes { get; set; }
+
+        /// <summary>
+        /// Callback kết thúc phiên tẩy cảm ứng của một touchId (để chốt Undo/Redo)
+        /// </summary>
+        public Action<int>? OnEndTouchEraseSession { get; set; }
+
+        /// <summary>
+        /// Callback thêm nét vẽ tự do Native Inking (System.Windows.Ink.Stroke)
+        /// Tham số: (points, color, size, brushType, touchId)
+        /// </summary>
+        public Action<PointCollection, Color, double, string, int>? OnAddNativeStroke { get; set; }
+
         // Two-Finger Pinch-to-Zoom & Pan fields (Phase 3)
         private bool _isTwoFingerGestureActive = false;
         private bool _suppressDrawingUntilAllReleased = false;
@@ -558,6 +580,8 @@ namespace QASmartTouch.Handlers
                     }
                     _eraserEngine?.StartTouchSession(touchId);
 
+                    OnEraseNativeStrokes?.Invoke(position, null, _eraserSize, _eraserMode, touchId);
+
                     if (_eraserMode == "Point" || _eraserMode == "Drag")
                     {
                         EraseByPointAt(position, touchId);
@@ -710,7 +734,10 @@ namespace QASmartTouch.Handlers
                             return;
                         }
                     }
+                    Point? lastPos = _lastTouchPoints.TryGetValue(touchId, out var lp) ? lp : null;
                     _lastTouchPoints[touchId] = position;
+
+                    OnEraseNativeStrokes?.Invoke(position, lastPos, _eraserSize, _eraserMode, touchId);
 
                     if (_eraserMode == "Point" || _eraserMode == "Drag")
                     {
@@ -971,20 +998,75 @@ namespace QASmartTouch.Handlers
                             stroke.Points.Add(new Point(pt.X + 0.01, pt.Y));
                         }
 
-                        var smoothPath = _strokeService.ConvertToSmoothPath(stroke);
-                        if (smoothPath != null)
+                        if (_currentBrushType == "Laser")
                         {
+                            // Bút laser: Tự động tan biến sau 2.5s, không ghi Undo stack
+                            AnimateAndRemoveLaserStroke(stroke);
+                        }
+                        else if (_currentBrushType == "Shape")
+                        {
+                            int inkingZ = GetCurrentInkingZIndex?.Invoke() ?? QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
+                            Color color = stroke.Stroke is SolidColorBrush scb ? scb.Color : _currentPenColor;
+                            var recognizedShape = QASmartTouch.Helpers.ShapeRecognizer.TryRecognizeShape(stroke, color, stroke.StrokeThickness);
+                            if (recognizedShape != null)
+                            {
+                                _canvas.Children.Remove(stroke);
+                                Panel.SetZIndex(recognizedShape, inkingZ);
+                                _canvas.Children.Add(recognizedShape);
+                                _recordAddAction?.Invoke(recognizedShape, $"Touch recognized shape (ID: {touchId})");
+                            }
+                            else if (OnAddNativeStroke != null)
+                            {
+                                // Không nhận diện được hình -> chuyển sang Native Ink nét tự do
+                                _canvas.Children.Remove(stroke);
+                                OnAddNativeStroke(stroke.Points, color, stroke.StrokeThickness, _currentBrushType, touchId);
+                            }
+                            else
+                            {
+                                var smoothPath = _strokeService.ConvertToSmoothPath(stroke);
+                                if (smoothPath != null)
+                                {
+                                    _canvas.Children.Remove(stroke);
+                                    _canvas.Children.Add(smoothPath);
+                                    Panel.SetZIndex(smoothPath, inkingZ);
+                                    _recordAddAction?.Invoke(smoothPath, $"Touch draw (ID: {touchId})");
+                                }
+                                else
+                                {
+                                    Panel.SetZIndex(stroke, inkingZ);
+                                    _recordAddAction?.Invoke(stroke, $"Touch draw (ID: {touchId})");
+                                }
+                            }
+                        }
+                        else if (OnAddNativeStroke != null)
+                        {
+                            // 🚀 NATIVE INK ACCELERATION: Đưa nét cảm ứng vào GPU MilCore
                             _canvas.Children.Remove(stroke);
-                            _canvas.Children.Add(smoothPath);
-                            // Nét vẽ hoàn thành đưa về tầng nội dung chuẩn (UserContentBase = 100)
-                            Panel.SetZIndex(smoothPath, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
-                            _recordAddAction?.Invoke(smoothPath, $"Touch draw (ID: {touchId})");
-                            System.Diagnostics.Debug.WriteLine($"✨ Touch {touchId}: Polyline → SmoothPath ({stroke.Points.Count} pts)");
+                            Color color = stroke.Stroke is SolidColorBrush scb ? scb.Color : _currentPenColor;
+                            OnAddNativeStroke(stroke.Points, color, stroke.StrokeThickness, _currentBrushType, touchId);
                         }
                         else
                         {
-                            Panel.SetZIndex(stroke, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
-                            _recordAddAction?.Invoke(stroke, $"Touch draw (ID: {touchId})");
+                            int currentInkingZ = GetCurrentInkingZIndex?.Invoke() ?? QASmartTouch.Helpers.ZIndexConstants.InkingLayer;
+                            var smoothPath = _strokeService.ConvertToSmoothPath(stroke);
+                            int zIndex = (_currentBrushType == "Highlighter" || _currentBrushType == "Marker" || _currentBrushType == "Mask" || _currentBrushType == "MaskPen")
+                                ? (currentInkingZ > QASmartTouch.Helpers.ZIndexConstants.InkingLayer ? currentInkingZ : QASmartTouch.Helpers.ZIndexConstants.HighlighterLayer)
+                                : currentInkingZ;
+
+                            if (smoothPath != null)
+                            {
+                                _canvas.Children.Remove(stroke);
+                                _canvas.Children.Add(smoothPath);
+                                // Nét vẽ hoàn thành đưa về tầng nội dung chuẩn
+                                Panel.SetZIndex(smoothPath, zIndex);
+                                _recordAddAction?.Invoke(smoothPath, $"Touch draw (ID: {touchId})");
+                                System.Diagnostics.Debug.WriteLine($"✨ Touch {touchId}: Polyline → SmoothPath ({stroke.Points.Count} pts)");
+                            }
+                            else
+                            {
+                                Panel.SetZIndex(stroke, zIndex);
+                                _recordAddAction?.Invoke(stroke, $"Touch draw (ID: {touchId})");
+                            }
                         }
                     }
                 }
@@ -997,6 +1079,7 @@ namespace QASmartTouch.Handlers
                     {
                         _recordEraseSessionAction?.Invoke(session, $"Touch erase (ID: {touchId})");
                     }
+                    OnEndTouchEraseSession?.Invoke(touchId);
                     _eraserEngine?.HideEraserPreview();
                     _hideEraserPreview?.Invoke();
                     System.Diagnostics.Debug.WriteLine($"🧹 Touch {touchId} erase completed");
@@ -1041,36 +1124,38 @@ namespace QASmartTouch.Handlers
             // Apply different styles based on brush type
             switch (_currentBrushType)
             {
-                case "Normal":
+                case "Normal" or "Simple" or "AI" or "Shape":
                     // Standard smooth pen
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
                     stroke.StrokeEndLineCap = PenLineCap.Round;
+                    stroke.StrokeThickness = _currentPenSize;
                     break;
 
-                case "Hoc":
-                    // Educational pen - thicker, more visible
+                case "Calligraphy" or "Hoc":
+                    // Educational calligraphy - thicker, round caps
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
                     stroke.StrokeEndLineCap = PenLineCap.Round;
-                    stroke.StrokeThickness = _currentPenSize * 1.5;
+                    stroke.StrokeThickness = _currentPenSize * 1.25;
                     break;
 
-                case "Marker":
-                    // Marker style - flat ends
-                    stroke.StrokeLineJoin = PenLineJoin.Miter;
-                    stroke.StrokeStartLineCap = PenLineCap.Flat;
-                    stroke.StrokeEndLineCap = PenLineCap.Flat;
-                    stroke.Opacity = 0.7;
-                    break;
-
-                case "Highlighter":
-                    // Highlighter - transparent and wide
+                case "Highlighter" or "Marker" or "Mask" or "MaskPen":
+                    // Highlighter - semi-transparent, flat ends, wider
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
                     stroke.StrokeEndLineCap = PenLineCap.Round;
-                    stroke.Opacity = 0.3;
-                    stroke.StrokeThickness = _currentPenSize * 2;
+                    stroke.Opacity = 0.4;
+                    stroke.StrokeThickness = Math.Max(_currentPenSize * 2.2, 10);
+                    break;
+
+                case "Laser":
+                    // Laser pen - vibrant glowing indicator
+                    stroke.StrokeLineJoin = PenLineJoin.Round;
+                    stroke.StrokeStartLineCap = PenLineCap.Round;
+                    stroke.StrokeEndLineCap = PenLineCap.Round;
+                    stroke.Opacity = 0.95;
+                    stroke.StrokeThickness = Math.Max(_currentPenSize * 1.3, 4);
                     break;
 
                 default:
@@ -1078,8 +1163,40 @@ namespace QASmartTouch.Handlers
                     stroke.StrokeLineJoin = PenLineJoin.Round;
                     stroke.StrokeStartLineCap = PenLineCap.Round;
                     stroke.StrokeEndLineCap = PenLineCap.Round;
+                    stroke.StrokeThickness = _currentPenSize;
                     break;
             }
+        }
+
+        /// <summary>
+        /// Tự động làm mờ và giải phóng nét bút laser sau 2.5 giây
+        /// </summary>
+        private void AnimateAndRemoveLaserStroke(UIElement stroke)
+        {
+            if (stroke == null) return;
+            
+            var anim = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = stroke.Opacity,
+                To = 0.0,
+                BeginTime = TimeSpan.FromSeconds(1.5),
+                Duration = TimeSpan.FromSeconds(1.0),
+                FillBehavior = System.Windows.Media.Animation.FillBehavior.Stop
+            };
+            
+            anim.Completed += (s, e) =>
+            {
+                try
+                {
+                    if (_canvas.Children.Contains(stroke))
+                    {
+                        _canvas.Children.Remove(stroke);
+                    }
+                }
+                catch { }
+            };
+            
+            stroke.BeginAnimation(UIElement.OpacityProperty, anim);
         }
         /// <summary>
         /// Erase elements at the given point (within eraser radius)

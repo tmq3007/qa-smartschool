@@ -1,3 +1,10 @@
+// ===========================================================================================
+// ⚠️ [ORPHAN CODE - DEPRECATED / MÃ MỒ CÔI KHÔNG SỬ DỤNG]
+// Tệp này là phiên bản thử nghiệm cũ của Menu Chọn vùng (có OCR, Dịch, TTS cũ).
+// Runtime thực tế của Toolbar chính đang gọi: Form2_6_SubMenuSelectionRecognition (Tools.cs:L2150).
+// Vui lòng KHÔNG sửa đổi, không đọc nhầm tính năng từ tệp này vào ứng dụng chính.
+// ===========================================================================================
+
 using System;
 using System.Windows;
 using QASmartTouch.Shared;

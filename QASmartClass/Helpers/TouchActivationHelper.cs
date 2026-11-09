@@ -5,27 +5,56 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using QASmartTouch.Forms;
 
 namespace QASmartTouch.Helpers
 {
     /// <summary>
     /// QC_4.2_TOUCH_ACTIVATION: Helper tĩnh toàn diện đảm bảo mọi Window và Control nhận cú chạm đầu tiên
     /// trên màn hình tương tác (IFP) mà không bị OS nuốt (MA_ACTIVATEANDEAT) và không bị trễ do gesture.
-    /// 
-    /// Nguyên nhân gốc rễ:
-    /// 1. Khi một WPF Window chưa Active (không phải foreground), cú chạm đầu tiên trên 
-    ///    Touch Screen gửi WM_MOUSEACTIVATE (0x0021) tới cửa sổ đó. WPF mặc định trả về 
-    ///    MA_ACTIVATEANDEAT (2) = kích hoạt cửa sổ NHƯNG NUỐT (hủy bỏ) cú chạm đó.
-    /// 2. WPF ButtonBase chỉ lắng nghe sự kiện chuột, mặc định Stylus.IsPressAndHoldEnabled = true 
-    ///    và Focusable = true gây độ trễ và nuốt sự kiện chạm đầu tiên.
-    /// 
-    /// Giải pháp:
-    /// 1. Hook WndProc trả về MA_ACTIVATE (1) = kích hoạt cửa sổ VÀ GIỮ NGUYÊN cú chạm.
-    /// 2. Tự động gắn pipeline PreviewTouchDown/Up và PreviewStylusDown/Up cho toàn bộ ButtonBase,
-    ///    tắt IsPressAndHoldEnabled, tắt Focusable, phát sự kiện Click ngay ở mili-giây đầu tiên.
     /// </summary>
     public static class TouchActivationHelper
     {
+        static TouchActivationHelper()
+        {
+            try
+            {
+                // Tự động kích hoạt bàn phím ảo cho bất kỳ ô nhập liệu nào
+                // CHỈ KHI nó thuộc phạm vi Bảng viết tương tác (Form2_MainDashboard hoặc các Form2_*)
+                EventManager.RegisterClassHandler(
+                    typeof(TextBoxBase),
+                    UIElement.PreviewTouchDownEvent,
+                    new EventHandler<TouchEventArgs>((sender, e) =>
+                    {
+                        TryShowKeyboardForSmartTouch(sender);
+                    }));
+
+                EventManager.RegisterClassHandler(
+                    typeof(TextBoxBase),
+                    UIElement.PreviewStylusDownEvent,
+                    new StylusDownEventHandler((sender, e) =>
+                    {
+                        TryShowKeyboardForSmartTouch(sender);
+                    }));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ RegisterClassHandler TextBox error: {ex.Message}");
+            }
+        }
+
+        private static void TryShowKeyboardForSmartTouch(object? sender)
+        {
+            if (sender is DependencyObject d)
+            {
+                var win = Window.GetWindow(d);
+                if (win != null && (win is Form2_MainDashboard || win.GetType().Name.StartsWith("Form2_")))
+                {
+                    TouchKeyboardHelper.ShowTouchKeyboard();
+                }
+            }
+        }
+
         private const int WM_MOUSEACTIVATE = 0x0021;
         private const int MA_ACTIVATE = 1;
 
@@ -73,6 +102,15 @@ namespace QASmartTouch.Helpers
             if (msg == WM_MOUSEACTIVATE)
             {
                 handled = true;
+                try
+                {
+                    var src = HwndSource.FromHwnd(hwnd);
+                    if (src?.RootVisual is Window win && !win.IsActive)
+                    {
+                        win.Activate();
+                    }
+                }
+                catch { }
                 return new IntPtr(MA_ACTIVATE); // Kích hoạt cửa sổ VÀ KHÔNG NUỐT cú chạm/click
             }
             return IntPtr.Zero;
@@ -88,6 +126,12 @@ namespace QASmartTouch.Helpers
             if (window == null) return;
 
             Apply(window);
+
+            // Tự động thu gọn bàn phím ảo khi cửa sổ đóng lại
+            window.Closed += (s, e) =>
+            {
+                TouchKeyboardHelper.HideTouchKeyboard();
+            };
 
             if (window.IsLoaded)
             {
@@ -111,7 +155,32 @@ namespace QASmartTouch.Helpers
         }
 
         /// <summary>
-        /// Duyệt đệ quy cây Visual Tree, gắn pipeline cảm ứng cho ButtonBase, Slider, ComboBox...
+        /// Áp dụng cho WPF Popup (như ColorPalettePopup, CandidatesPopup...):
+        /// 1. Hook WM_MOUSEACTIVATE trên Win32 PopupRoot trả về MA_ACTIVATE để OS không nuốt cú chạm đầu tiên.
+        /// 2. Tự động duyệt cây Visual Tree của Popup.Child khi mở để gắn pipeline cảm ứng cho các nút bấm bên trong.
+        /// </summary>
+        public static void ApplyToPopup(Popup popup)
+        {
+            if (popup == null) return;
+
+            popup.Opened += (s, e) =>
+            {
+                if (popup.Child != null)
+                {
+                    var source = PresentationSource.FromVisual(popup.Child) as HwndSource;
+                    if (source != null)
+                    {
+                        source.RemoveHook(WndProc);
+                        source.AddHook(WndProc);
+                    }
+
+                    WireAllInteractiveControls(popup.Child);
+                }
+            };
+        }
+
+        /// <summary>
+        /// Duyệt đệ quy cây Visual Tree, gắn pipeline cảm ứng cho ButtonBase, Slider, ComboBox, TabControl, TabItem, Canvas...
         /// </summary>
         public static void WireAllInteractiveControls(DependencyObject parent, FrameworkElement? exclude = null)
         {
@@ -127,6 +196,12 @@ namespace QASmartTouch.Helpers
                     continue;
                 }
 
+                if (child is FrameworkElement fe && (fe.Tag?.ToString() == "DragHandle" || fe.Name == "btnMove" || fe.Cursor == Cursors.SizeAll))
+                {
+                    Stylus.SetIsPressAndHoldEnabled(fe, false);
+                    continue;
+                }
+
                 if (child is ButtonBase buttonBase)
                 {
                     WireButton(buttonBase);
@@ -139,10 +214,70 @@ namespace QASmartTouch.Helpers
                 {
                     WireComboBox(comboBox);
                 }
+                else if (child is TabControl tabControl)
+                {
+                    WireTabControl(tabControl);
+                }
+                else if (child is TabItem tabItem)
+                {
+                    WireTabItem(tabItem);
+                }
+                else if (child is Canvas canvas)
+                {
+                    Stylus.SetIsPressAndHoldEnabled(canvas, false);
+                }
+                else if (child is TextBoxBase textBox)
+                {
+                    WireTextBox(textBox);
+                }
 
                 // Đệ quy tiếp vào các con
                 WireAllInteractiveControls(child, exclude);
             }
+        }
+
+        /// <summary>
+        /// Tự động lắng nghe TabControl để wire các controls con khi người dùng chuyển Tab (deferred rendering).
+        /// </summary>
+        public static void WireTabControl(TabControl tabControl)
+        {
+            if (tabControl == null || GetIsTouchWired(tabControl)) return;
+            SetIsTouchWired(tabControl, true);
+
+            tabControl.SelectionChanged += (s, e) =>
+            {
+                // Chỉ xử lý nếu sự kiện bắn ra từ chính tabControl này (tránh bubble từ ComboBox con)
+                if (e.OriginalSource == tabControl)
+                {
+                    tabControl.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        WireAllInteractiveControls(tabControl);
+                    }), System.Windows.Threading.DispatcherPriority.Loaded);
+                }
+            };
+        }
+
+        /// <summary>
+        /// Gắn cảm ứng tức thì cho TabItem:
+        /// Tắt PressAndHold và chuyển tab ngay khi ngón tay vừa chạm vào tiêu đề tab trên IFP.
+        /// </summary>
+        public static void WireTabItem(TabItem tabItem)
+        {
+            if (tabItem == null || GetIsTouchWired(tabItem)) return;
+            SetIsTouchWired(tabItem, true);
+
+            tabItem.Focusable = false;
+            Stylus.SetIsPressAndHoldEnabled(tabItem, false);
+
+            tabItem.PreviewTouchDown += (s, e) =>
+            {
+                tabItem.IsSelected = true;
+            };
+
+            tabItem.PreviewStylusDown += (s, e) =>
+            {
+                tabItem.IsSelected = true;
+            };
         }
 
         /// <summary>
@@ -153,6 +288,7 @@ namespace QASmartTouch.Helpers
             if (slider == null || GetIsTouchWired(slider)) return;
             SetIsTouchWired(slider, true);
 
+            slider.Focusable = false;
             TouchSliderHelper.ConfigureSlider(slider);
         }
 
@@ -168,11 +304,44 @@ namespace QASmartTouch.Helpers
         }
 
         /// <summary>
+        /// Gắn cơ chế tự động mở Bàn phím ảo khi chạm vào TextBox / RichTextBox trên màn hình tương tác.
+        /// </summary>
+        public static void WireTextBox(TextBoxBase textBox)
+        {
+            if (textBox == null || GetIsTouchWired(textBox)) return;
+            SetIsTouchWired(textBox, true);
+
+            Stylus.SetIsPressAndHoldEnabled(textBox, false);
+
+            // Bật bàn phím ảo khi chạm ngón tay hoặc bút Stylus
+            textBox.PreviewTouchDown += (s, e) =>
+            {
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            };
+
+            textBox.PreviewStylusDown += (s, e) =>
+            {
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            };
+
+            // Dự phòng khi click chuột hoặc Tab focus vào
+            textBox.GotKeyboardFocus += (s, e) =>
+            {
+                TouchKeyboardHelper.ShowTouchKeyboard();
+            };
+        }
+
+        /// <summary>
         /// Gắn Touch/Stylus trực tiếp cho một ButtonBase đơn lẻ (hoặc control tạo động).
         /// </summary>
         public static void WireButton(ButtonBase button)
         {
             if (button == null || GetIsTouchWired(button)) return;
+            if (button.Tag?.ToString() == "DragHandle" || button.Name == "btnMove" || button.Cursor == Cursors.SizeAll)
+            {
+                Stylus.SetIsPressAndHoldEnabled(button, false);
+                return;
+            }
             SetIsTouchWired(button, true);
 
             button.Focusable = false;
@@ -182,13 +351,56 @@ namespace QASmartTouch.Helpers
 
             button.PreviewTouchDown += (s, e) =>
             {
+                var parentScroll = TouchScrollHelper.FindVisualParent<ScrollViewer>(button);
+                bool isInsideScroll = parentScroll != null && 
+                                      parentScroll.Name != "MainScrollViewer" && 
+                                      !Equals(parentScroll.Tag, "NoTouchScroll");
+
                 touchStart = e.GetTouchPoint(button).Position;
+
+                // QC_4.2_TOUCH_GESTURE_ARBITRATION:
+                // Nếu Button nằm trong ScrollViewer, KHÔNG capture trên TouchDown và KHÔNG set e.Handled = true.
+                // Cho phép ScrollViewer nhận được PreviewTouchDown và PreviewTouchMove để thực hiện vuốt cuộn mượt mà.
+                if (isInsideScroll)
+                {
+                    return;
+                }
+
                 e.TouchDevice.Capture(button);
                 e.Handled = true;
             };
 
             button.PreviewTouchUp += (s, e) =>
             {
+                var parentScroll = TouchScrollHelper.FindVisualParent<ScrollViewer>(button);
+                bool isInsideScroll = parentScroll != null && 
+                                      parentScroll.Name != "MainScrollViewer" && 
+                                      !Equals(parentScroll.Tag, "NoTouchScroll");
+
+                if (isInsideScroll)
+                {
+                    // Nếu ScrollViewer đã chiếm quyền cảm ứng để thực hiện thao tác vuốt cuộn -> HỦY CLICK
+                    if (e.TouchDevice.Captured != null && e.TouchDevice.Captured != button)
+                    {
+                        touchStart = null;
+                        return;
+                    }
+
+                    if (touchStart.HasValue)
+                    {
+                        var currentPoint = e.GetTouchPoint(button).Position;
+                        double dist = Math.Sqrt(Math.Pow(currentPoint.X - touchStart.Value.X, 2) + Math.Pow(currentPoint.Y - touchStart.Value.Y, 2));
+                        // Chạm nhẹ (< 20px) -> Kích hoạt ngay lập tức (1st tap)
+                        if (dist < 20)
+                        {
+                            TriggerClickIfInside(button, touchStart, currentPoint);
+                            e.Handled = true;
+                        }
+                    }
+                    touchStart = null;
+                    return;
+                }
+
                 if (e.TouchDevice.Captured == button)
                 {
                     button.ReleaseTouchCapture(e.TouchDevice);
@@ -202,13 +414,51 @@ namespace QASmartTouch.Helpers
 
             button.PreviewStylusDown += (s, e) =>
             {
+                var parentScroll = TouchScrollHelper.FindVisualParent<ScrollViewer>(button);
+                bool isInsideScroll = parentScroll != null && 
+                                      parentScroll.Name != "MainScrollViewer" && 
+                                      !Equals(parentScroll.Tag, "NoTouchScroll");
+
                 stylusStart = e.GetPosition(button);
+
+                if (isInsideScroll)
+                {
+                    return;
+                }
+
                 e.StylusDevice.Capture(button);
                 e.Handled = true;
             };
 
             button.PreviewStylusUp += (s, e) =>
             {
+                var parentScroll = TouchScrollHelper.FindVisualParent<ScrollViewer>(button);
+                bool isInsideScroll = parentScroll != null && 
+                                      parentScroll.Name != "MainScrollViewer" && 
+                                      !Equals(parentScroll.Tag, "NoTouchScroll");
+
+                if (isInsideScroll)
+                {
+                    if (e.StylusDevice.Captured != null && e.StylusDevice.Captured != button)
+                    {
+                        stylusStart = null;
+                        return;
+                    }
+
+                    if (stylusStart.HasValue)
+                    {
+                        var currentPoint = e.GetPosition(button);
+                        double dist = Math.Sqrt(Math.Pow(currentPoint.X - stylusStart.Value.X, 2) + Math.Pow(currentPoint.Y - stylusStart.Value.Y, 2));
+                        if (dist < 20)
+                        {
+                            TriggerClickIfInside(button, stylusStart, currentPoint);
+                            e.Handled = true;
+                        }
+                    }
+                    stylusStart = null;
+                    return;
+                }
+
                 if (e.StylusDevice.Captured == button)
                 {
                     button.ReleaseStylusCapture();
@@ -227,13 +477,14 @@ namespace QASmartTouch.Helpers
                     ? Math.Sqrt(Math.Pow(currentPoint.X - startPoint.Value.X, 2) + Math.Pow(currentPoint.Y - startPoint.Value.Y, 2))
                     : 0;
 
+                // ✅ Dung sai biên ±15px phù hợp diện tích tiếp xúc ngón tay trên màn hình IFP kích thước lớn
                 bool isInside = (button.ActualWidth > 0 && button.ActualHeight > 0)
-                    ? (currentPoint.X >= 0 && currentPoint.X <= button.ActualWidth &&
-                       currentPoint.Y >= 0 && currentPoint.Y <= button.ActualHeight)
+                    ? (currentPoint.X >= -15 && currentPoint.X <= button.ActualWidth + 15 &&
+                       currentPoint.Y >= -15 && currentPoint.Y <= button.ActualHeight + 15)
                     : true;
 
-                // Tap (< 15px) và nằm trong phạm vi nút -> Kích hoạt ngay lập tức
-                if (dist < 15 && isInside)
+                // Tap (< 35px) và nằm trong phạm vi nút -> Kích hoạt ngay lập tức
+                if (dist < 35 && isInside)
                 {
                     button.Dispatcher.BeginInvoke(new Action(() =>
                     {
@@ -273,6 +524,12 @@ namespace QASmartTouch.Helpers
                 toggle.RaiseEvent(new RoutedEventArgs(
                     toggle.IsChecked == true ? ToggleButton.CheckedEvent : ToggleButton.UncheckedEvent, 
                     toggle));
+            }
+
+            // Kích hoạt ICommand nếu nút bấm có Command binding
+            if (button.Command != null && button.Command.CanExecute(button.CommandParameter))
+            {
+                button.Command.Execute(button.CommandParameter);
             }
 
             button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, button));

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
 
@@ -12,6 +12,7 @@ namespace QASmartTouch.Forms
         public Form2_22_Desmos3DGraph()
         {
             InitializeComponent();
+            QASmartTouch.Helpers.TouchActivationHelper.ApplyToWindow(this);
             InitializeWebView();
         }
 

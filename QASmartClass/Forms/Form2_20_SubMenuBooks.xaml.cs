@@ -22,6 +22,7 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
             TouchActivationHelper.ApplyToSubMenu(this, btnClose);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             if (btnClose != null)
             {
                 System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);

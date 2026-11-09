@@ -22,11 +22,7 @@
 
         SnapsToDevicePixels="True"
 
-        ClipToBounds="False"
-
-        MouseMove="Window_MouseMove"
-
-        MouseUp="Window_MouseUp">
+        ClipToBounds="False">
 
 
 
@@ -352,6 +348,7 @@
 
                             <Button x:Name="btnMove" 
                                     Content="✥" 
+                                    Tag="DragHandle"
                                     Width="32" Height="32"
                                     FontSize="14"
                                     Focusable="False"
@@ -359,13 +356,13 @@
                                     Style="{StaticResource RulerButtonStyle}"
                                     ToolTip="Di chuyển" 
                                     Margin="2,5"
+                                    Cursor="SizeAll"
                                     PreviewMouseDown="btnMove_PreviewMouseDown"
                                     PreviewMouseMove="btnMove_PreviewMouseMove"
                                     PreviewMouseUp="btnMove_PreviewMouseUp"
                                     PreviewTouchDown="btnMove_PreviewTouchDown"
                                     TouchMove="btnMove_TouchMove"
-                                    TouchUp="btnMove_TouchUp"
-                                    LostTouchCapture="btnMove_LostTouchCapture"/>
+                                    TouchUp="btnMove_TouchUp"/>
 
                             <Button x:Name="btnClose" 
 

@@ -22,6 +22,7 @@ using QASmartTouch.Controllers;
 using QASmartTouch.Shared;
 using QASmartClass.Properties;
 using System.Windows.Documents; // For TextRange
+using System.Windows.Ink;
 using QASmartClass.WhiteboardCore.Managers;
 using QASmartClass.WhiteboardCore.Enums;
 
@@ -47,6 +48,8 @@ namespace QASmartTouch.Forms
         public ActionType Type { get; set; }
         public UIElement? Element { get; set; }
         public UIElement? Parent { get; set; }
+        public Stroke? Stroke { get; set; }
+        public List<Stroke>? Strokes { get; set; }
         public object? OldValue { get; set; }    // For modify operations
         public object? NewValue { get; set; }    // For modify operations
         public List<UndoRedoAction> BatchActions { get; set; } // For batch operations
@@ -61,8 +64,19 @@ namespace QASmartTouch.Forms
         }
     }
 
-    public partial class Form2_MainDashboard : Window
+    public partial class Form2_MainDashboard : Window, QASmartClass.WhiteboardCore.Managers.IWhiteboardContext
     {
+        #region IWhiteboardContext Implementation
+
+        public Canvas MainCanvas => MainInteractiveBoard;
+        public InkPresenter? MainInkPresenterControl => MainInkPresenter;
+        InkPresenter? IWhiteboardContext.MainInkPresenter => MainInkPresenter;
+        public System.Windows.Ink.StrokeCollection? Strokes => MainInkPresenter?.Strokes;
+        public QASmartClass.WhiteboardCore.History.IUndoRedoManager? History => _whiteboardManager?.History;
+        void IWhiteboardContext.InvalidateVisual() => MainInteractiveBoard?.InvalidateVisual();
+
+        #endregion
+
         private Button? _selectedTool;
         
         // Active submenu tracking
@@ -84,10 +98,83 @@ namespace QASmartTouch.Forms
         public bool IsEraserEnabled => _eraserEnabled;
         public bool IsShapeDrawingEnabled => _shapeDrawingEnabled;
         
+        public Color CurrentPenColor => _currentPenColor;
+        public int CurrentPenSize => _currentPenSize;
+        public string CurrentBrushType => _currentBrushType;
+        
         // Saved pen settings (to restore when reopening pen tool)
         private string _savedBrushType = "Normal";
         private int _savedPenSize = 5;
         private Color _savedPenColor = Colors.White;
+
+        #region QC_4.2_MILESTONE_ZINDEX: Quản lý tầng Z-Index học liệu & nét vẽ theo mốc phân tầng
+        private int _currentInkingZIndex = QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
+
+        /// <summary>
+        /// QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cho Hình ảnh mới và đồng thời nâng tầng vẽ chú thích tiếp theo.
+        /// Đảm bảo: Ảnh mới đè nét chữ cũ; nét vẽ chú thích sau đó đè lên ảnh;
+        /// Dải Z-Index được khống chế trong UserContent (100 - 999) để luôn nằm DƯỚI YouTube/Widgets (1000+).
+        /// </summary>
+        public int AllocateImageZIndex()
+        {
+            // 0. Đồng bộ với tầng Z-Index cao nhất của các phần tử hiện có trên bảng
+            UpdateInkingZIndexFromCanvas();
+
+            // 1. Z-Index cho ảnh mới = tầng vẽ hiện tại + 1 (đè lên nét chữ cũ)
+            int imageZ = _currentInkingZIndex + 1;
+
+            // 2. Tầng vẽ chú thích mới được nâng lên trên ảnh vừa chèn (chuẩn bị cho nét vẽ tiếp theo)
+            _currentInkingZIndex = imageZ + 1;
+
+            // 3. Giới hạn trần an toàn không vượt quá TableContainer (500) để luôn nằm dưới Bảng
+            if (_currentInkingZIndex >= QASmartTouch.Helpers.ZIndexConstants.TableContainer - 5)
+            {
+                _currentInkingZIndex = QASmartTouch.Helpers.ZIndexConstants.TableContainer - 5;
+                imageZ = _currentInkingZIndex - 1;
+            }
+
+            return imageZ;
+        }
+
+        /// <summary>
+        /// Alias cho các thao tác chèn ảnh/media content thông thường
+        /// </summary>
+        public int AllocateMediaWidgetZIndex() => AllocateImageZIndex();
+
+        /// <summary>
+        /// Lấy tầng Z-Index hiện tại cho nét vẽ hoàn thành
+        /// </summary>
+        public int GetCurrentInkingZIndex() => _currentInkingZIndex;
+
+        /// <summary>
+        /// Reset tầng vẽ về mặc định (100) khi xóa bảng
+        /// </summary>
+        public void ResetInkingZIndex()
+        {
+            _currentInkingZIndex = QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
+        }
+
+        /// <summary>
+        /// Cập nhật lại tầng Z-Index từ các phần tử UserContent hiện có trên Canvas khi chuyển trang bảng
+        /// (Bỏ qua các widget như YouTube Z=1100 để không làm tăng tầng vẽ lên trên widget)
+        /// </summary>
+        public void UpdateInkingZIndexFromCanvas()
+        {
+            int maxZ = QASmartTouch.Helpers.ZIndexConstants.UserContentBase;
+            foreach (UIElement child in MainInteractiveBoard.Children)
+            {
+                if (child == MainInkPresenter || child is InkPresenter) continue;
+
+                int z = Panel.GetZIndex(child);
+                if (z >= QASmartTouch.Helpers.ZIndexConstants.UserContentBase && 
+                    z < QASmartTouch.Helpers.ZIndexConstants.TableContainer)
+                {
+                    if (z > maxZ) maxZ = z;
+                }
+            }
+            _currentInkingZIndex = maxZ;
+        }
+        #endregion
         
         // Double-click detection for pen button
         private DateTime _lastPenClickTime = DateTime.MinValue;
@@ -112,13 +199,22 @@ namespace QASmartTouch.Forms
         // Compass Tool
         private Form2_18_CompassTool? _activeCompassTool;
         
+        // Circle Drawing Tool (Compass 2D Canvas)
+        private Form2_19_CircleDrawingTool? _activeCircleDrawingTool;
+        public Form2_19_CircleDrawingTool? ActiveCircleDrawingTool
+        {
+            get => _activeCircleDrawingTool;
+            set => _activeCircleDrawingTool = value;
+        }
+        
         // Compass Tool 3D
         
         // âœ¨ Line spacing for patterns
         private int _currentLineSpacing = 40; // Default 40px (â‰ˆ1.1cm)
-        private int _currentLineOpacity = 10; // Default 10% (0-100)
+        private int _currentLineOpacity = 25; // Default 25% (0-100)
         private string? _currentBackgroundColor = "#3D6D64";
         private string? _currentBackgroundPattern = "grid";
+        private string? _currentBackgroundImagePath = null;
         private Form2_18_CompassTool_3D? _activeCompassTool3D;
         
         // Saved eraser settings (to restore when reopening eraser tool)
@@ -148,6 +244,12 @@ namespace QASmartTouch.Forms
         
         private bool _isDraggingElement = false;
         
+        // Table drawing mode settings
+        private bool _isTableDrawingMode = false;
+        private bool _isDrawingTable = false;
+        private Point _tableDrawStartPoint;
+        private Border? _tablePreviewBorder = null;
+        
         // Zoom area selection settings
         private bool _zoomAreaSelectionEnabled = false;
         private Rectangle? _zoomAreaPreview;
@@ -171,6 +273,7 @@ namespace QASmartTouch.Forms
         private FloatingTouchKeyboard? _floatingTouchKeyboard;
         private readonly List<UIElement> _systemUIControls = new();
         private TextBlock? _editingTextBlock;
+        private Border? _editingSmartNoteCard;
         private bool _objectSelectionMode = false; // Toggle for object selection mode
         
         // Handwriting Recognition Services
@@ -273,9 +376,16 @@ namespace QASmartTouch.Forms
         {
             InitializeComponent();
 
-            // ── WhiteboardCore: Khởi tạo Façade ──
-            _whiteboardManager = new WhiteboardManager();
+            // ── WhiteboardCore: Khởi tạo Façade với Context ──
+            _whiteboardManager = new WhiteboardManager(this);
             _whiteboardManager.ToolManager.ToolChanged += OnWhiteboardToolChanged;
+
+            // Khởi tạo Lớp vẽ Inking tăng tốc phần cứng DirectX
+            if (MainInkPresenter != null)
+            {
+                MainInkPresenter.Strokes = new System.Windows.Ink.StrokeCollection();
+                Panel.SetZIndex(MainInkPresenter, QASmartTouch.Helpers.ZIndexConstants.InkingLayer);
+            }
 
             // =====================================================
             // PHASE 2: DPI AWARENESS - Handle DPI changes
@@ -298,7 +408,11 @@ namespace QASmartTouch.Forms
             _touchHandler = new TouchHandler(MainInteractiveBoard);
             _touchHandler.RegisterOuterTouchSurface(MainScrollViewer);
             _touchHandler.SetEraserEngine(_eraserEngine);
-            _touchHandler.SetRecordAddAction(RecordAddAction);
+            _touchHandler.SetRecordAddAction((elem, desc) =>
+            {
+                RecordAddAction(elem, desc);
+                RegisterNewObjectWithSelectionManager(elem);
+            });
             _touchHandler.SetRecordRemoveAction(RecordRemoveAction); // QC_4.2_TOUCH_ERASER_FIX: Wire undo cho touch erase
             _touchHandler.SetRecordEraseSessionAction(FinalizeEraseSession); // Wire atomic batch undo for touch erase
             _touchHandler.SetUpdateEraserPreviewAction(UpdateEraserCursorPreview); // ✅ Wire eraser preview callback for touch
@@ -316,6 +430,66 @@ namespace QASmartTouch.Forms
             _touchHandler.OnTwoFingerPinchPan = ApplyTwoFingerPinchPan;
             _touchHandler.OnTwoFingerPinchPanEnded = OnTwoFingerPinchPanEnded;
             _touchHandler.IsMultiUserModeActive = () => _isMultiUserModeActive;
+            _touchHandler.GetCurrentInkingZIndex = GetCurrentInkingZIndex;
+            _touchHandler.OnEraseNativeStrokes = (pos, lastPos, size, mode, touchId) =>
+            {
+                if (MainInkPresenter?.Strokes != null && MainInkPresenter.Strokes.Count > 0)
+                {
+                    var eraserTool = _whiteboardManager?.ToolManager.EraserTool;
+                    if (eraserTool != null)
+                    {
+                        var session = eraserTool.GetSession($"touch_{touchId}") ?? eraserTool.StartSession($"touch_{touchId}");
+                        eraserTool.EraseStrokesAt(
+                            MainInkPresenter.Strokes,
+                            pos,
+                            size,
+                            mode,
+                            lastPos,
+                            session,
+                            onStrokeAdded: (seg) => RegisterNewStrokeWithSelectionManager(seg),
+                            onStrokeRemoved: (s) => _selectionManager?.RemoveObjectByStroke(s)
+                        );
+                    }
+                }
+                // ✨ Tẩy xóa nét vẽ trên các container học liệu (Bảng/Ảnh)
+                EraseContainerEmbeddedStrokesAt(pos, mode == "Point", lastPos);
+            };
+            _touchHandler.OnEndTouchEraseSession = (touchId) =>
+            {
+                var eraserTool = _whiteboardManager?.ToolManager.EraserTool;
+                if (eraserTool != null)
+                {
+                    var session = eraserTool.EndSession($"touch_{touchId}");
+                    FinalizeNativeEraseSession(session, $"Touch erase (ID: {touchId})");
+                }
+            };
+            _touchHandler.OnAddNativeStroke = (points, color, size, brushType, touchId) =>
+            {
+                if (points != null && points.Count > 0)
+                {
+                    var penTool = _whiteboardManager?.ToolManager.PenTool;
+                    System.Windows.Ink.Stroke nativeStroke;
+                    if (penTool != null)
+                    {
+                        nativeStroke = penTool.CreateStroke(points, color);
+                    }
+                    else
+                    {
+                        var stylusPts = new System.Windows.Input.StylusPointCollection();
+                        foreach (var pt in points) stylusPts.Add(new System.Windows.Input.StylusPoint(pt.X, pt.Y));
+                        var da = new System.Windows.Ink.DrawingAttributes { Color = color, Width = size, Height = size, FitToCurve = true };
+                        nativeStroke = new System.Windows.Ink.Stroke(stylusPts, da);
+                    }
+
+                    // ✨ CONTAINER-OWNED INKING: Thử điều hướng nét vẽ vào Container học liệu (Bảng dữ liệu hoặc Ảnh tương tác)
+                    if (!TryRouteNativeStrokeToContainer(nativeStroke))
+                    {
+                        MainInkPresenter?.Strokes.Add(nativeStroke);
+                        RecordAddStrokeAction(nativeStroke, $"Touch draw (ID: {touchId})", MainInkPresenter);
+                        RegisterNewStrokeWithSelectionManager(nativeStroke);
+                    }
+                }
+            };
             System.Diagnostics.Debug.WriteLine("✅ Touch interaction initialized");
 
             // QC_4.2_TOUCH_TOOLBAR: Wire direct touch activation for all toolbar buttons
@@ -323,6 +497,8 @@ namespace QASmartTouch.Forms
 
             // QC_4.2_CANVAS_DRAG_DROP: Kích hoạt khả năng Kéo-Thả ảnh (UMind Style) trực tiếp vào bảng vẽ
             InitializeCanvasDragAndDrop();
+
+            InitializeCursorManagement();
 
             // Initialize Window Mode Controller
             _windowModeController = new WindowModeController(this);
@@ -388,6 +564,11 @@ namespace QASmartTouch.Forms
             this.Loaded += (s, e) => {
                 UpdateScrollBarVisibility();
                 CheckLicenseWarnings();
+                // QC_4.2_TOUCH_SCROLL: Kích hoạt vuốt cuộn cảm ứng cho duy nhất thanh thẻ trang bảng vẽ (bảo vệ tuyệt đối Canvas)
+                if (scrollOrganizerBoardCards != null)
+                {
+                    QASmartTouch.Helpers.TouchScrollHelper.EnableTouchAndDragScroll(scrollOrganizerBoardCards);
+                }
             };
             
             // Show welcome state on startup (no tool selected)
@@ -521,9 +702,184 @@ namespace QASmartTouch.Forms
 
         private const int WM_MOUSEACTIVATE = 0x0021;
         private const int MA_ACTIVATE = 1;
+        private const int WM_COPYDATA = 0x004A;
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct COPYDATASTRUCT
+        {
+            public IntPtr dwData;
+            public int cbData;
+            public IntPtr lpData;
+        }
+
+        private bool _isHandlingExit = false;
+        private bool _isClosingConfirmed = false;
+        private bool _isFinalizingExit = false;
+
+        /// <summary>
+        /// Xử lý xác nhận lưu video ghi hình (nếu đang quay), lưu bài giảng (.qasc) và thoát an toàn.
+        /// Sử dụng cho cả sự kiện đóng cửa sổ (OnClosing, Alt+F4, Taskbar "X") và nút Thoát trên toolbar.
+        /// Trả về true nếu người dùng đồng ý thoát (hoặc đã lưu thành công), false nếu người dùng hủy bỏ lệnh thoát.
+        /// </summary>
+        public bool ConfirmAndHandleExit()
+        {
+            return ConfirmAndHandleExit(out _);
+        }
+
+        private bool ConfirmAndHandleExit(out bool discardActiveRecording)
+        {
+            discardActiveRecording = false;
+            if (_isClosingConfirmed) return true;
+            if (_isHandlingExit || _isFinalizingExit) return false;
+            _isHandlingExit = true;
+
+            try
+            {
+                // 0. Nếu đang đếm ngược 3-2-1 chuẩn bị quay (CountdownOverlay), hủy đếm ngược ngay
+                // để tránh tự động bật ghi hình đằng sau hộp thoại xác nhận thoát.
+                foreach (var countdown in Application.Current.Windows.OfType<CountdownOverlay>().ToList())
+                {
+                    try { countdown.CancelCountdown(); } catch { }
+                }
+
+                // 1. Nếu đang ghi hình bài giảng, hỏi giáo viên Lưu hay Hủy video trước khi thoát
+                bool wasActivelyRecording = ScreenRecorderService.Instance.IsRecording;
+                if (wasActivelyRecording)
+                {
+                    try { this.Activate(); } catch { }
+
+                    string durationText = ScreenRecorderService.Instance.GetFormattedRecordingTime();
+                    string saveFolder = ScreenRecorderService.Instance.DefaultSavePath;
+
+                    var recordResult = MessageBox.Show(
+                        this,
+                        $"Hệ thống đang ghi hình bài giảng (thời lượng: {durationText}).\n" +
+                        "Bạn có muốn dừng và lưu video bài giảng trước khi thoát phần mềm không?\n\n" +
+                        $"• Chọn [Yes]: Dừng và lưu video (vào {saveFolder}) rồi thoát\n" +
+                        "• Chọn [No]: Hủy bỏ video đang quay và thoát\n" +
+                        "• Chọn [Cancel]: Ở lại bảng viết, tiếp tục ghi hình",
+                        "Đang ghi hình bài giảng",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Warning);
+
+                    if (recordResult == MessageBoxResult.Cancel)
+                    {
+                        return false; // Giữ nguyên phiên ghi hình, không thoát
+                    }
+
+                    discardActiveRecording = (recordResult == MessageBoxResult.No);
+                }
+
+                // 2. Nếu có dữ liệu bài giảng (.qasc) chưa lưu, hỏi giáo viên có muốn lưu trước khi thoát không
+                if (CheckHasUnsavedChanges())
+                {
+                    try { this.Activate(); } catch { }
+
+                    var saveResult = MessageBox.Show(
+                        this,
+                        "Bạn có dữ liệu bài giảng chưa lưu. Bạn có muốn lưu bài giảng trước khi thoát?",
+                        "Xác nhận lưu bài giảng",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Question);
+
+                    if (saveResult == MessageBoxResult.Cancel)
+                    {
+                        return false; // Hủy lệnh thoát (phiên ghi hình nếu có vẫn chưa bị dừng)
+                    }
+                    else if (saveResult == MessageBoxResult.Yes)
+                    {
+                        // Thực hiện lưu bài giảng thực tế (.qasc)
+                        bool saved = SaveCurrentLecture(showOpenFolderPrompt: false);
+                        if (!saved)
+                        {
+                            // Người dùng hủy lưu tệp tin hoặc có lỗi -> Không thoát để tránh mất dữ liệu
+                            return false;
+                        }
+                    }
+                    // Nếu chọn No -> Tiếp tục thoát mà không lưu .qasc
+                }
+                else if (!wasActivelyRecording && AppSettings.ShouldShowExitConfirmation)
+                {
+                    try { this.Activate(); } catch { }
+
+                    // Nếu không có phiên quay và không có dữ liệu chưa lưu, chỉ hỏi xác nhận thoát đơn giản
+                    var confirmResult = MessageBox.Show(
+                        this,
+                        "Bạn có chắc chắn muốn thoát phần mềm?",
+                        "Xác nhận thoát",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (confirmResult != MessageBoxResult.Yes)
+                    {
+                        return false;
+                    }
+                }
+
+                _isClosingConfirmed = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ ConfirmAndHandleExit error: {ex.Message}");
+                return true;
+            }
+            finally
+            {
+                _isHandlingExit = false;
+            }
+        }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
+            if (_isFinalizingExit)
+            {
+                // Đang chờ bộ mã hóa đóng gói nốt tệp MP4 trước khi đóng cửa sổ
+                e.Cancel = true;
+                return;
+            }
+
+            bool discardActiveRecording = false;
+
+            // Kiểm tra phiên ghi hình và hỏi lưu bài giảng trước khi cho phép đóng cửa sổ
+            if (!_isClosingConfirmed)
+            {
+                if (!ConfirmAndHandleExit(out discardActiveRecording))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+
+            // Nếu bộ ghi hình vẫn đang chạy hoặc đang đóng gói chỉ mục MP4 (moov atom),
+            // tạm hoãn đóng cửa sổ để chờ hoàn tất 100% bất đồng bộ, tránh mất/hỏng tệp video
+            if (ScreenRecorderService.Instance.IsSessionActive)
+            {
+                e.Cancel = true;
+                _isFinalizingExit = true;
+                _ = FinalizeRecordingAndCloseAsync(discardActiveRecording);
+                return;
+            }
+
+            // Đóng thanh điều khiển ghi hình / camera nổi nếu còn mở độc lập
+            try
+            {
+                foreach (var bar in Application.Current.Windows.OfType<FloatingRecorderBar>().ToList())
+                {
+                    try { bar.Close(); } catch { }
+                }
+                FloatingCameraWindow.CurrentInstance?.Close();
+            }
+            catch { }
+
+            // Đóng tất cả cửa sổ công cụ đo lường và menu con trước khi đóng Form2
+            try
+            {
+                CloseAllToolWindows();
+                CloseAllSubmenus();
+            }
+            catch { }
+
             try
             {
                 if (MainInteractiveBoard != null)
@@ -536,6 +892,51 @@ namespace QASmartTouch.Forms
             }
             catch { }
             base.OnClosing(e);
+        }
+
+        private async Task FinalizeRecordingAndCloseAsync(bool discardRecording)
+        {
+            try
+            {
+                var recorderBar = Application.Current.Windows.OfType<FloatingRecorderBar>().FirstOrDefault();
+                recorderBar?.PrepareForApplicationExit(discardRecording);
+
+                var (_, error) = await ScreenRecorderService.Instance.StopAndFinalizeAsync(
+                    discardFile: discardRecording,
+                    timeoutMs: 10000);
+
+                try
+                {
+                    recorderBar?.Close();
+                    FloatingCameraWindow.CurrentInstance?.Close();
+                }
+                catch { }
+
+                if (!discardRecording && !string.IsNullOrEmpty(error))
+                {
+                    var retryChoice = MessageBox.Show(
+                        this,
+                        $"Quá trình lưu video bài giảng gặp sự cố:\n{error}\n\nBạn vẫn muốn thoát phần mềm chứ?",
+                        "Cảnh báo lưu video",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (retryChoice != MessageBoxResult.Yes)
+                    {
+                        _isClosingConfirmed = false;
+                        _isFinalizingExit = false;
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ FinalizeRecordingAndCloseAsync error: {ex.Message}");
+            }
+
+            _isClosingConfirmed = true;
+            _isFinalizingExit = false;
+            this.Close();
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -551,6 +952,35 @@ namespace QASmartTouch.Forms
             {
                 handled = true;
                 return new IntPtr(MA_ACTIVATE); // Kích hoạt cửa sổ VÀ KHÔNG ĐƯỢC NUỐT cú chạm/click!
+            }
+            else if (msg == WM_COPYDATA)
+            {
+                try
+                {
+                    var cds = (COPYDATASTRUCT)System.Runtime.InteropServices.Marshal.PtrToStructure(lParam, typeof(COPYDATASTRUCT))!;
+                    if (cds.dwData == (IntPtr)0x5141 && cds.lpData != IntPtr.Zero)
+                    {
+                        string path = System.Runtime.InteropServices.Marshal.PtrToStringUni(cds.lpData)!;
+                        if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+                        {
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                if (WindowState == WindowState.Minimized)
+                                {
+                                    WindowState = WindowState.Maximized;
+                                }
+                                Activate();
+                                LoadLecture(path);
+                            }), System.Windows.Threading.DispatcherPriority.Input);
+                            handled = true;
+                            return new IntPtr(1);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Form2] Error handling WM_COPYDATA: {ex.Message}");
+                }
             }
             return IntPtr.Zero;
         }
@@ -741,12 +1171,96 @@ namespace QASmartTouch.Forms
                 return;
             }
 
+            // ✅ Shortcut Delete / Back: Xóa các đối tượng đang chọn trong chế độ Selection
+            if ((e.Key == Key.Delete || e.Key == Key.Back) && _objectSelectionMode &&
+                (_selectionManager?.SelectedObjects.Count > 0 || _selectionManager?.SelectedObject != null))
+            {
+                OnToolbarDeleteClicked(this, EventArgs.Empty);
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Delete/Back: Deleted selected object(s)");
+                return;
+            }
+
+            // ✅ Shortcut Ctrl + D: Nhân bản đối tượng đang chọn (Duplicate)
+            if (e.Key == Key.D && Keyboard.Modifiers == ModifierKeys.Control && _objectSelectionMode &&
+                (_selectionManager?.SelectedObjects.Count > 0 || _selectionManager?.SelectedObject != null))
+            {
+                OnToolbarCopyClicked(this, EventArgs.Empty);
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+D: Duplicated selected object(s)");
+                return;
+            }
+
+            // ✅ Shortcut Ctrl + C: Sao chép đối tượng đang chọn (Copy)
+            if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control && _objectSelectionMode &&
+                (_selectionManager?.SelectedObjects.Count > 0 || _selectionManager?.SelectedObject != null))
+            {
+                _selectionManager?.CopySelectedObject();
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+C: Copied selected object(s)");
+                return;
+            }
+
+            // ✅ Shortcut Ctrl + V: Dán đối tượng từ Clipboard (Paste)
+            if (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control && _objectSelectionMode &&
+                _selectionManager?.HasClipboardContent() == true)
+            {
+                Point pastePos = Mouse.GetPosition(MainInteractiveBoard);
+                if (pastePos.X <= 0 || pastePos.Y <= 0 || pastePos.X >= MainInteractiveBoard.ActualWidth || pastePos.Y >= MainInteractiveBoard.ActualHeight)
+                {
+                    pastePos = new Point(Math.Max(100, MainInteractiveBoard.ActualWidth / 2.0), Math.Max(100, MainInteractiveBoard.ActualHeight / 2.0));
+                }
+                var pasted = _selectionManager.PasteAtPosition(pastePos);
+                if (pasted != null)
+                {
+                    if (pasted.Stroke != null)
+                    {
+                        RecordAddStrokeAction(pasted.Stroke, $"Paste {pasted.Type}");
+                    }
+                    else if (pasted.Element != null)
+                    {
+                        RecordAddAction(pasted.Element, $"Paste {pasted.Type}");
+                    }
+                }
+                _selectionManager.ClearClipboard();
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+V: Pasted object(s)");
+                return;
+            }
+
             // ✅ Shortcut Ctrl + 0: Reset Zoom về 100%
             if (e.Key == Key.D0 && Keyboard.Modifiers == ModifierKeys.Control)
             {
                 ApplyZoom("Fixed", 1.0);
                 e.Handled = true;
                 System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+0: Reset Zoom to 100%");
+                return;
+            }
+
+            // ✅ Shortcut PageUp: Lùi về trang trước
+            if (e.Key == Key.PageUp && (Keyboard.Modifiers == ModifierKeys.None || Keyboard.Modifiers == ModifierKeys.Control))
+            {
+                btnHudPrevBoard_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ PageUp: Switched to previous board");
+                return;
+            }
+
+            // ✅ Shortcut PageDown: Tiến tới trang sau
+            if (e.Key == Key.PageDown && (Keyboard.Modifiers == ModifierKeys.None || Keyboard.Modifiers == ModifierKeys.Control))
+            {
+                btnHudNextBoard_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ PageDown: Switched to next board");
+                return;
+            }
+
+            // ✅ Shortcut Ctrl + N: Thêm trang mới
+            if (e.Key == Key.N && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                btnHudAddBoard_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+                System.Diagnostics.Debug.WriteLine("⌨️ Ctrl+N: Added new board");
                 return;
             }
 
@@ -839,10 +1353,10 @@ namespace QASmartTouch.Forms
                     }
                     else
                     {
-                        txtHudZoomPercent.Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)); // Trắng xám dịu khi 100%
+                        txtHudZoomPercent.Foreground = new SolidColorBrush(Color.FromRgb(0x2F, 0x35, 0x42)); // #2F3542 đen mềm sư phạm
                         if (hudZoomIndicator != null)
                         {
-                            hudZoomIndicator.BorderBrush = new SolidColorBrush(Color.FromRgb(0x40, 0x40, 0x40));
+                            hudZoomIndicator.BorderBrush = new SolidColorBrush(Color.FromRgb(0xE1, 0xE8, 0xED)); // #E1E8ED viền xám sáng nhẹ
                         }
                     }
                 }
@@ -889,8 +1403,9 @@ namespace QASmartTouch.Forms
                 board.UndoStack = new System.Collections.Generic.Stack<UndoRedoAction>(_undoStack.Reverse());
                 board.RedoStack = new System.Collections.Generic.Stack<UndoRedoAction>(_redoStack.Reverse());
                 
-                // 2. Lưu thông tin nền bảng hiện tại
-                board.BackgroundColorHex = _currentBackgroundColor ?? "#3D6D64";
+                // 2. Lưu thông tin nền bảng hiện tại (ảnh nền hoặc màu sắc + hoa văn)
+                board.BackgroundImagePath = _currentBackgroundImagePath;
+                board.BackgroundColorHex = !string.IsNullOrEmpty(_currentBackgroundImagePath) ? null : (_currentBackgroundColor ?? "#3D6D64");
                 board.BackgroundPattern = _currentBackgroundPattern;
                 board.LineSpacing = _currentLineSpacing;
                 board.LineOpacity = _currentLineOpacity;
@@ -910,9 +1425,12 @@ namespace QASmartTouch.Forms
 
             // ✅ GIAI ĐOẠN 2: Lắng nghe sự kiện chuyển bảng, tạo bảng và xóa bảng
             _boardManager.BoardSwitched += OnBoardSwitched;
-            _boardManager.BoardCreated += (s, e) => MarkAsDirty();
+            _boardManager.BoardCreated += (s, e) => { MarkAsDirty(); UpdatePageNavigationUI(); };
             _boardManager.BoardDeleted += OnBoardDeleted;
             
+            // Đồng bộ ban đầu cho cụm Page Navigation HUD
+            UpdatePageNavigationUI();
+
             System.Diagnostics.Debug.WriteLine($"✅ BoardManager initialized with {_boardManager.BoardCount} board(s)");
         }
         
@@ -921,6 +1439,7 @@ namespace QASmartTouch.Forms
             // Initialize services
             _transformService = new TransformService();
             _selectionManager = new SelectionManager(MainInteractiveBoard);
+            _selectionManager.InkPresenter = MainInkPresenter;
             
             // Initialize UI controls
             _selectionBox = new SelectionBox();
@@ -929,6 +1448,7 @@ namespace QASmartTouch.Forms
             _colorPicker = new ColorPicker();
             _moreMenu = new MoreMenu();
             _floatingTouchKeyboard = new FloatingTouchKeyboard();
+            _floatingTouchKeyboard.TextConfirmed += OnFloatingKeyboardTextConfirmed;
 
             // Add controls to canvas
             MainInteractiveBoard.Children.Add(_selectionBox);
@@ -959,10 +1479,11 @@ namespace QASmartTouch.Forms
             MainInteractiveBoard.PreviewTouchMove += MainInteractiveBoard_PreviewTouchMove;
             MainInteractiveBoard.PreviewTouchUp += MainInteractiveBoard_PreviewTouchUp;
             MainInteractiveBoard.PreviewStylusDown += MainInteractiveBoard_PreviewStylusDown;
-            MainInteractiveBoard.PreviewStylusMove += MainInteractiveBoard_PreviewStylusMove;
-            MainInteractiveBoard.PreviewStylusUp += MainInteractiveBoard_PreviewStylusUp;
+            MainInteractiveBoard.PreviewStylusInAirMove += MainInteractiveBoard_PreviewStylusInAirMove;
+            MainInteractiveBoard.PreviewStylusMove += MainInteractiveBoard_DirectStylusMove;
+            MainInteractiveBoard.PreviewStylusUp += MainInteractiveBoard_DirectStylusUp;
             MainInteractiveBoard.LostTouchCapture += MainInteractiveBoard_LostTouchCapture;
-            MainInteractiveBoard.LostStylusCapture += MainInteractiveBoard_LostStylusCapture;
+            MainInteractiveBoard.LostStylusCapture += MainInteractiveBoard_DirectLostStylusCapture;
 
             // Wire up SelectionManager events
             _selectionManager.SelectionChanged += OnSelectionChanged;
@@ -974,6 +1495,7 @@ namespace QASmartTouch.Forms
             _selectionBox.TransformCompleted += OnSelectionBoxTransformCompleted;
             _selectionBox.RotateStarted += OnSelectionBoxRotateStarted;
             _selectionBox.RotateCompleted += OnSelectionBoxRotateCompleted;
+            _selectionBox.ObjectTapped += OnSelectionBoxObjectTapped;
             
             // Wire up ContextToolbar events
             _contextToolbar.CopyClicked += OnToolbarCopyClicked;
@@ -991,6 +1513,7 @@ namespace QASmartTouch.Forms
             _contextToolbar.DeleteClicked += OnToolbarDeleteClicked;
             _contextToolbar.SpotlightClicked += OnToolbarSpotlightClicked;
             _contextToolbar.MoreClicked += OnToolbarMoreClicked;
+            _contextToolbar.Rotate3DClicked += OnToolbarRotate3DClicked;
             
             // Wire up ThicknessPicker events
             _thicknessPicker.ThicknessChanged += OnThicknessChanged;
@@ -1045,6 +1568,7 @@ namespace QASmartTouch.Forms
             // Initialize Lasso Selection Tool (NEW)
             _lassoTool = new QASmartTouch.Tools.LassoSelectionTool(MainInteractiveBoard);
             _lassoTool.SelectionCompleted += LassoTool_SelectionCompleted;
+            ConfigureLassoToolHooks();
             
             // Initialize Handwriting Recognition Services
             InitializeHandwritingRecognitionServices();
@@ -1109,6 +1633,15 @@ namespace QASmartTouch.Forms
         {
             if (_selectionManager == null)
                 return;
+
+            var previousByElement = new Dictionary<UIElement, SelectableObject>();
+            foreach (var existing in _selectionManager.GetAllObjects())
+            {
+                if (existing?.Element != null && !previousByElement.ContainsKey(existing.Element))
+                {
+                    previousByElement[existing.Element] = existing;
+                }
+            }
 
             // ✅ FIX: Clear stale registrations trước khi re-scan
             // (Không dùng ClearAllObjects vì nó xóa cả Canvas.Children)
@@ -1185,34 +1718,53 @@ namespace QASmartTouch.Forms
                         StrokeThickness = polyline.StrokeThickness
                     };
 
+                    if (previousByElement.TryGetValue(polyline, out var prevPoly))
+                    {
+                        selectableObj.IsLocked = prevPoly.IsLocked;
+                        selectableObj.GroupId = prevPoly.GroupId;
+                        if (prevPoly.RotationAngle != 0 && prevPoly.Size.Width > 0 && prevPoly.Size.Height > 0)
+                        {
+                            selectableObj.RotationAngle = prevPoly.RotationAngle;
+                            selectableObj.Position = prevPoly.Position;
+                            selectableObj.Size = prevPoly.Size;
+                        }
+                    }
+
                     _selectionManager.AddObject(selectableObj);
                     registeredCount++;
                     
                     System.Diagnostics.Debug.WriteLine($"📝 Registered Polyline: Bounds=({bounds.Left:F0},{bounds.Top:F0},{bounds.Width:F0},{bounds.Height:F0})");
                 }
-                // Register Path (smooth Bezier strokes)
+                // Register Path (smooth Bezier strokes & 2D shapes)
                 else if (child is System.Windows.Shapes.Path path && path.Data != null)
                 {
-                    // ✅ QC_4.2_SELECTION_BOUNDS_FIX: Dùng BoundsHelper.GetAbsoluteBounds để lấy chính xác tuyệt đối tọa độ Canvas
-                    var dataBounds = QASmartTouch.Helpers.BoundsHelper.GetAbsoluteBounds(path, MainInteractiveBoard);
-                    if (dataBounds.IsEmpty || dataBounds.Width <= 0 || dataBounds.Height <= 0)
+                    // ✅ QC_4.2_SELECTION_BOUNDS_FIX: Tách biệt chuẩn OBB (unrotated Position/Size + RotationAngle) và AABB (Bounds)
+                    SelectableObject.ExtractPathGeometryMetrics(path, out Point unrotatedPos, out Size unrotatedSize, out double extractedAngle, out Rect pathWorldBounds);
+                    if (pathWorldBounds.IsEmpty || pathWorldBounds.Width <= 0 || pathWorldBounds.Height <= 0)
                         continue;
 
                     var selectableObj = new SelectableObject
                     {
                         Element = path,
                         Type = ObjectType.Drawing,
-                        Bounds = dataBounds,
-                        Position = new Point(dataBounds.Left, dataBounds.Top),
-                        Size = new Size(dataBounds.Width, dataBounds.Height),
+                        Bounds = pathWorldBounds,
+                        Position = unrotatedPos,
+                        Size = unrotatedSize,
+                        RotationAngle = extractedAngle,
                         ZIndex = Panel.GetZIndex(path),
                         StrokeColor = (path.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
                         StrokeThickness = path.StrokeThickness
                     };
 
+                    if (previousByElement.TryGetValue(path, out var prevPath))
+                    {
+                        selectableObj.IsLocked = prevPath.IsLocked;
+                        selectableObj.GroupId = prevPath.GroupId;
+                    }
+
                     _selectionManager.AddObject(selectableObj);
                     registeredCount++;
-                    System.Diagnostics.Debug.WriteLine($"🖊️ Registered Path: Bounds=({dataBounds.Left:F0},{dataBounds.Top:F0},{dataBounds.Width:F0},{dataBounds.Height:F0})");
+                    System.Diagnostics.Debug.WriteLine($"🖊️ Registered Path: Bounds=({pathWorldBounds.Left:F0},{pathWorldBounds.Top:F0},{pathWorldBounds.Width:F0},{pathWorldBounds.Height:F0}), Angle={extractedAngle:F1}°");
                 }
                 // Register Line (ruler/protractor/tool lines)
                 // ✅ GĐ1-FIX: Bỏ qua grid/guide lines kéo dài toàn canvas
@@ -1271,8 +1823,15 @@ namespace QASmartTouch.Forms
                         Bounds = new Rect(imgL, imgT, imgW, imgH),
                         Position = new Point(imgL, imgT),
                         Size = new Size(imgW, imgH),
+                        RotationAngle = SelectableObject.ExtractElementRotationAngle(image),
                         ZIndex = Panel.GetZIndex(image)
                     };
+                    if (previousByElement.TryGetValue(image, out var prevImg))
+                    {
+                        selectableObj.IsLocked = prevImg.IsLocked;
+                        selectableObj.GroupId = prevImg.GroupId;
+                    }
+                    selectableObj.UpdateBounds();
 
                     _selectionManager.AddObject(selectableObj);
                     registeredCount++;
@@ -1281,6 +1840,42 @@ namespace QASmartTouch.Forms
                 // Register Shape (Rectangle, Ellipse - NOT Path/Line/Polyline)
                 else if (child is System.Windows.Shapes.Shape shape && !(shape is Polyline) && !(shape is System.Windows.Shapes.Path) && !(shape is System.Windows.Shapes.Line))
                 {
+                    if (shape is Polygon)
+                    {
+                        var polyBounds = QASmartTouch.Helpers.BoundsHelper.GetAbsoluteBounds(shape, MainInteractiveBoard);
+                        if (polyBounds.IsEmpty || polyBounds.Width <= 0 || polyBounds.Height <= 0)
+                            continue;
+
+                        var polyObj = new SelectableObject
+                        {
+                            Element = shape,
+                            Type = ObjectType.Shape,
+                            Bounds = polyBounds,
+                            Position = new Point(polyBounds.Left, polyBounds.Top),
+                            Size = new Size(polyBounds.Width, polyBounds.Height),
+                            ZIndex = Panel.GetZIndex(shape),
+                            StrokeColor = (shape.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
+                            StrokeThickness = shape.StrokeThickness,
+                            FillColor = (shape.Fill as SolidColorBrush)?.Color ?? Colors.Transparent
+                        };
+
+                        if (previousByElement.TryGetValue(shape, out var prevPolygon))
+                        {
+                            polyObj.IsLocked = prevPolygon.IsLocked;
+                            polyObj.GroupId = prevPolygon.GroupId;
+                            if (prevPolygon.RotationAngle != 0 && prevPolygon.Size.Width > 0 && prevPolygon.Size.Height > 0)
+                            {
+                                polyObj.RotationAngle = prevPolygon.RotationAngle;
+                                polyObj.Position = prevPolygon.Position;
+                                polyObj.Size = prevPolygon.Size;
+                            }
+                        }
+
+                        _selectionManager.AddObject(polyObj);
+                        registeredCount++;
+                        continue;
+                    }
+
                     double left = Canvas.GetLeft(shape);
                     double top = Canvas.GetTop(shape);
                     double width = shape.ActualWidth;
@@ -1310,11 +1905,18 @@ namespace QASmartTouch.Forms
                         Bounds = bounds,
                         Position = new Point(left, top),
                         Size = new Size(width, height),
+                        RotationAngle = SelectableObject.ExtractElementRotationAngle(shape),
                         ZIndex = Panel.GetZIndex(shape),
                         StrokeColor = (shape.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
                         StrokeThickness = shape.StrokeThickness,
                         FillColor = (shape.Fill as SolidColorBrush)?.Color ?? Colors.Transparent
                     };
+                    if (previousByElement.TryGetValue(shape, out var prevShape))
+                    {
+                        selectableObj.IsLocked = prevShape.IsLocked;
+                        selectableObj.GroupId = prevShape.GroupId;
+                    }
+                    selectableObj.UpdateBounds();
 
                     _selectionManager.AddObject(selectableObj);
                     registeredCount++;
@@ -1351,25 +1953,68 @@ namespace QASmartTouch.Forms
                         System.Diagnostics.Debug.WriteLine($"📊 Registered StackPanel Container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
                     }
                 }
+                // ✅ QC_4.2_GRID_CHART_REGISTER: Register Grid Container (Interactive Chart Containers)
+                else if (child is Grid gridContainer)
+                {
+                    if (gridContainer == MainGrid || gridContainer.Width >= MainInteractiveBoard.ActualWidth || gridContainer.Height >= MainInteractiveBoard.ActualHeight)
+                        continue;
+
+                    double left = Canvas.GetLeft(gridContainer);
+                    double top = Canvas.GetTop(gridContainer);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = gridContainer.ActualWidth > 0 ? gridContainer.ActualWidth : gridContainer.Width;
+                    double height = gridContainer.ActualHeight > 0 ? gridContainer.ActualHeight : gridContainer.Height;
+
+                    if (width > 0 && height > 0 && width <= 1800 && height <= 1800)
+                    {
+                        var bounds = new Rect(left, top, width, height);
+                        var selectableObj = new SelectableObject
+                        {
+                            Element = gridContainer,
+                            Type = ObjectType.Other,
+                            Bounds = bounds,
+                            Position = new Point(left, top),
+                            Size = new Size(width, height),
+                            ZIndex = Panel.GetZIndex(gridContainer)
+                        };
+                        _selectionManager.AddObject(selectableObj);
+                        registeredCount++;
+                        System.Diagnostics.Debug.WriteLine($"📊 Registered Grid Container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
+                    }
+                }
                 // Register Container (Border, Grid, etc. containing 3D shapes)
                 else if (child is Border border)
                 {
                     double left = Canvas.GetLeft(border);
                     double top = Canvas.GetTop(border);
-                    double width = border.ActualWidth;
-                    double height = border.ActualHeight;
+                    double width = border.ActualWidth > 0 ? border.ActualWidth : border.Width;
+                    double height = border.ActualHeight > 0 ? border.ActualHeight : border.Height;
 
                     // Handle NaN values
                     if (double.IsNaN(left)) left = 0;
                     if (double.IsNaN(top)) top = 0;
                     
+                    if (double.IsNaN(width) || width <= 0 || double.IsNaN(height) || height <= 0)
+                    {
+                        border.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                        if (double.IsNaN(width) || width <= 0)
+                            width = border.DesiredSize.Width;
+                        if (double.IsNaN(height) || height <= 0)
+                            height = border.DesiredSize.Height;
+                    }
+
                     // Skip if no valid size
-                    if (width <= 0 || height <= 0)
+                    if (double.IsNaN(width) || double.IsNaN(height) || width <= 0 || height <= 0)
                         continue;
 
-                    // ✅ GĐ1-FIX: Skip large background borders (ngoại trừ các widget tương tác như YouTube, Google Maps, Image, Local Video)
+                    // ✅ GĐ1-FIX: Skip large background borders (ngoại trừ các widget tương tác như YouTube, Google Maps, PhET, YooBook, Vật lý, Image, Local Video)
                     bool isInteractiveWidget = (border.Tag as string == "InteractiveYouTubeVideo") ||
                                               (border.Tag as string == "InteractiveGoogleMaps") ||
+                                              (border.Tag as string == "GoogleMaps") ||
+                                              (border.Tag as string == "PhETSimulation") ||
+                                              (border.Tag as string == "YooBookSimulation") ||
+                                              (border.Tag as string == "PhysicsSimulation") ||
                                               (border.Tag as string == "InteractiveImage") ||
                                               (border.Tag as string == "InteractiveLocalVideo") ||
                                               (border.Tag != null && (border.Tag.ToString().Contains("InteractiveYouTubeVideo") || border.Tag.ToString().Contains("InteractiveImage") || border.Tag.ToString().Contains("InteractiveLocalVideo")));
@@ -1388,11 +2033,18 @@ namespace QASmartTouch.Forms
                         Bounds = bounds,
                         Position = new Point(left, top),
                         Size = new Size(width, height),
+                        RotationAngle = SelectableObject.ExtractElementRotationAngle(border),
                         ZIndex = Panel.GetZIndex(border),
                         StrokeColor = (border.BorderBrush as SolidColorBrush)?.Color ?? Colors.Black,
                         StrokeThickness = border.BorderThickness.Left, // Use Left thickness as representative
                         FillColor = (border.Background as SolidColorBrush)?.Color ?? Colors.Transparent
                     };
+                    if (previousByElement.TryGetValue(border, out var prevBorder))
+                    {
+                        selectableObj.IsLocked = prevBorder.IsLocked;
+                        selectableObj.GroupId = prevBorder.GroupId;
+                    }
+                    selectableObj.UpdateBounds();
 
                     _selectionManager.AddObject(selectableObj);
                     registeredCount++;
@@ -1422,17 +2074,115 @@ namespace QASmartTouch.Forms
                             Bounds = bounds,
                             Position = new Point(left, top),
                             Size = new Size(width, height),
+                            RotationAngle = SelectableObject.ExtractElementRotationAngle(shapeCanvas),
                             ZIndex = Panel.GetZIndex(shapeCanvas)
                         };
+                        if (previousByElement.TryGetValue(shapeCanvas, out var prevCanvas))
+                        {
+                            selectableObj.IsLocked = prevCanvas.IsLocked;
+                            selectableObj.GroupId = prevCanvas.GroupId;
+                        }
+                        selectableObj.UpdateBounds();
+
                         _selectionManager.AddObject(selectableObj);
                         registeredCount++;
+                        var firstChildShape = shapeCanvas.Children.OfType<System.Windows.Shapes.Shape>().FirstOrDefault();
+                        if (firstChildShape != null)
+                        {
+                            selectableObj.StrokeColor = (firstChildShape.Stroke as SolidColorBrush)?.Color ?? Colors.Black;
+                            selectableObj.StrokeThickness = firstChildShape.StrokeThickness;
+                        }
                         System.Diagnostics.Debug.WriteLine($"🎲 Registered 3D Shape / Canvas Container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
                     }
+                }
+                else if (child is Controls.Model3DControl model3DCtrl)
+                {
+                    double left = Canvas.GetLeft(model3DCtrl);
+                    double top = Canvas.GetTop(model3DCtrl);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = model3DCtrl.ActualWidth > 0 ? model3DCtrl.ActualWidth : model3DCtrl.Width;
+                    double height = model3DCtrl.ActualHeight > 0 ? model3DCtrl.ActualHeight : model3DCtrl.Height;
+                    if (double.IsNaN(width) || width <= 0) width = 720;
+                    if (double.IsNaN(height) || height <= 0) height = 500;
+
+                    var bounds = new Rect(left, top, width, height);
+                    var selectableObj = new SelectableObject
+                    {
+                        Element = model3DCtrl,
+                        Type = ObjectType.Other,
+                        Bounds = bounds,
+                        Position = new Point(left, top),
+                        Size = new Size(width, height),
+                        ZIndex = Panel.GetZIndex(model3DCtrl)
+                    };
+                    _selectionManager.AddObject(selectableObj);
+                    registeredCount++;
+                    System.Diagnostics.Debug.WriteLine($"🎲 Registered Model3DControl: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
+                }
+                {
+                    {
+                    }
+                }
+            }
+
+            // Register Native Inking Strokes (System.Windows.Ink.Stroke)
+            if (MainInkPresenter?.Strokes != null)
+            {
+                foreach (var stroke in MainInkPresenter.Strokes)
+                {
+                    var bounds = stroke.GetBounds();
+                    if (bounds.IsEmpty || bounds.Width <= 0 || bounds.Height <= 0)
+                        continue;
+
+                    var selectableObj = new SelectableObject
+                    {
+                        Stroke = stroke,
+                        Type = ObjectType.Stroke,
+                        Bounds = bounds,
+                        Position = new Point(bounds.Left, bounds.Top),
+                        Size = new Size(bounds.Width, bounds.Height),
+                        ZIndex = 100,
+                        StrokeColor = stroke.DrawingAttributes.Color,
+                        StrokeThickness = stroke.DrawingAttributes.Width
+                    };
+
+                    _selectionManager.AddObject(selectableObj);
+                    registeredCount++;
+                    System.Diagnostics.Debug.WriteLine($"🖊️ Registered Native Stroke: Bounds=({bounds.Left:F0},{bounds.Top:F0},{bounds.Width:F0},{bounds.Height:F0})");
                 }
             }
 
             _selectionManager.RebuildQuadTree();
             System.Diagnostics.Debug.WriteLine($"✅ Registered {registeredCount} selectable objects & rebuilt QuadTree index.");
+        }
+
+        /// <summary>
+        /// Register a newly created Native Inking Stroke with SelectionManager
+        /// </summary>
+        public void RegisterNewStrokeWithSelectionManager(System.Windows.Ink.Stroke stroke)
+        {
+            if (_selectionManager == null || stroke == null)
+                return;
+
+            var bounds = stroke.GetBounds();
+            if (bounds.IsEmpty || bounds.Width <= 0 || bounds.Height <= 0)
+                return;
+
+            var selectableObj = new SelectableObject
+            {
+                Stroke = stroke,
+                Type = ObjectType.Stroke,
+                Bounds = bounds,
+                Position = new Point(bounds.Left, bounds.Top),
+                Size = new Size(bounds.Width, bounds.Height),
+                ZIndex = 100,
+                StrokeColor = stroke.DrawingAttributes.Color,
+                StrokeThickness = stroke.DrawingAttributes.Width
+            };
+
+            _selectionManager.AddObject(selectableObj);
+            _selectionManager.RebuildQuadTree();
         }
         
         /// <summary>
@@ -1489,9 +2239,9 @@ namespace QASmartTouch.Forms
             {
                 RegisterLineWithBounds(line);
             }
-            // BUG-1603: Register Text objects (Border containing TextBlock/TextBox)
+            // Register Border objects (Text objects, English flashcards, containers)
             // Phải đặt TRƯỚC nhánh Shape vì Border không phải Shape.
-            else if (element is Border border && (border.Child is TextBlock || border.Child is TextBox))
+            else if (element is Border border)
             {
                 RegisterTextElement(border);
             }
@@ -1556,26 +2306,28 @@ namespace QASmartTouch.Forms
                     };
                 }
             }
-            // Register Path (smooth Bezier strokes after ConvertToSmoothPath)
+            // Register Path (smooth Bezier strokes & 2D shapes)
             else if (element is System.Windows.Shapes.Path path && path.Data != null)
             {
                 var dataBounds = path.Data.Bounds;
-                if (dataBounds.Width > 0 && dataBounds.Height > 0)
+                if (!dataBounds.IsEmpty && (dataBounds.Width > 0 || dataBounds.Height > 0))
                 {
+                    SelectableObject.ExtractPathGeometryMetrics(path, out Point unrotatedPos, out Size unrotatedSize, out double extractedAngle, out Rect pathWorldBounds);
                     var selectableObj = new SelectableObject
                     {
                         Element = path,
                         Type = ObjectType.Drawing,
-                        Bounds = dataBounds,
-                        Position = new Point(dataBounds.Left, dataBounds.Top),
-                        Size = new Size(dataBounds.Width, dataBounds.Height),
+                        Bounds = pathWorldBounds,
+                        Position = unrotatedPos,
+                        Size = unrotatedSize,
+                        RotationAngle = extractedAngle,
                         ZIndex = Panel.GetZIndex(path),
                         StrokeColor = (path.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
                         StrokeThickness = path.StrokeThickness
                     };
 
                     _selectionManager.AddObject(selectableObj);
-                    System.Diagnostics.Debug.WriteLine($"✅ Auto-registered Path (Bezier): Bounds=({dataBounds.Left:F0},{dataBounds.Top:F0},{dataBounds.Width:F0},{dataBounds.Height:F0})");
+                    System.Diagnostics.Debug.WriteLine($"✅ Auto-registered Path (Bezier): Bounds=({pathWorldBounds.Left:F0},{pathWorldBounds.Top:F0},{pathWorldBounds.Width:F0},{pathWorldBounds.Height:F0})");
                 }
                 else
                 {
@@ -1583,15 +2335,17 @@ namespace QASmartTouch.Forms
                     path.Loaded += (s, ev) =>
                     {
                         var b = path.Data?.Bounds ?? Rect.Empty;
-                        if (b.Width > 0 && b.Height > 0)
+                        if (!b.IsEmpty && (b.Width > 0 || b.Height > 0))
                         {
+                            SelectableObject.ExtractPathGeometryMetrics(path, out Point unrotatedPos, out Size unrotatedSize, out double extractedAngle, out Rect pathWorldBounds);
                             var obj = new SelectableObject
                             {
                                 Element = path,
                                 Type = ObjectType.Drawing,
-                                Bounds = b,
-                                Position = new Point(b.Left, b.Top),
-                                Size = new Size(b.Width, b.Height),
+                                Bounds = pathWorldBounds,
+                                Position = unrotatedPos,
+                                Size = unrotatedSize,
+                                RotationAngle = extractedAngle,
                                 ZIndex = Panel.GetZIndex(path),
                                 StrokeColor = (path.Stroke as SolidColorBrush)?.Color ?? Colors.Black,
                                 StrokeThickness = path.StrokeThickness
@@ -1624,8 +2378,71 @@ namespace QASmartTouch.Forms
                     ZIndex = Panel.GetZIndex(canvasElement)
                 };
                 _selectionManager?.AddObject(selectableObj);
+                var firstChildShape = canvasElement.Children.OfType<System.Windows.Shapes.Shape>().FirstOrDefault();
+                if (firstChildShape != null)
+                {
+                    selectableObj.StrokeColor = (firstChildShape.Stroke as SolidColorBrush)?.Color ?? Colors.Black;
+                    selectableObj.StrokeThickness = firstChildShape.StrokeThickness;
+                }
                 System.Diagnostics.Debug.WriteLine($"🎲 Auto-registered Canvas container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
             }
+            // ✅ QC_4.2_GRID_CHART_REGISTER: Register Grid Container (Interactive Chart Containers)
+            else if (element is Grid gridContainer)
+            {
+                double left = Canvas.GetLeft(gridContainer);
+                double top = Canvas.GetTop(gridContainer);
+                double width = gridContainer.ActualWidth > 0 ? gridContainer.ActualWidth : gridContainer.Width;
+                double height = gridContainer.ActualHeight > 0 ? gridContainer.ActualHeight : gridContainer.Height;
+                if (double.IsNaN(left)) left = 0;
+                if (double.IsNaN(top)) top = 0;
+                if (double.IsNaN(width) || width <= 0) width = 640;
+                if (double.IsNaN(height) || height <= 0) height = 450;
+
+                var bounds = new Rect(left, top, width, height);
+                var selectableObj = new SelectableObject
+                {
+                    Element = gridContainer,
+                    Type = ObjectType.Other,
+                    Bounds = bounds,
+                    Position = new Point(left, top),
+                    Size = new Size(width, height),
+                    ZIndex = Panel.GetZIndex(gridContainer)
+                };
+                _selectionManager?.AddObject(selectableObj);
+                System.Diagnostics.Debug.WriteLine($"📊 Auto-registered Grid container: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
+            }
+            else if (element is Controls.Model3DControl model3DElement)
+            {
+                double left = Canvas.GetLeft(model3DElement);
+                double top = Canvas.GetTop(model3DElement);
+                double width = model3DElement.ActualWidth > 0 ? model3DElement.ActualWidth : model3DElement.Width;
+                double height = model3DElement.ActualHeight > 0 ? model3DElement.ActualHeight : model3DElement.Height;
+                if (double.IsNaN(left)) left = 0;
+                if (double.IsNaN(top)) top = 0;
+                if (double.IsNaN(width) || width <= 0) width = 720;
+                if (double.IsNaN(height) || height <= 0) height = 500;
+
+                var bounds = new Rect(left, top, width, height);
+                var selectableObj = new SelectableObject
+                {
+                    Element = model3DElement,
+                    Type = ObjectType.Other,
+                    Bounds = bounds,
+                    Position = new Point(left, top),
+                    Size = new Size(width, height),
+                    ZIndex = Panel.GetZIndex(model3DElement)
+                };
+                _selectionManager?.AddObject(selectableObj);
+                System.Diagnostics.Debug.WriteLine($"🎲 Auto-registered Model3DControl: Bounds=({left:F0},{top:F0},{width:F0},{height:F0})");
+            }
+        }
+
+        /// <summary>
+        /// Public API để các module ngoài đăng ký đối tượng mới vào SelectionManager
+        /// </summary>
+        public void RegisterObjectWithSelection(UIElement element)
+        {
+            RegisterNewObjectWithSelectionManager(element);
         }
 
         /// <summary>
@@ -1685,10 +2502,11 @@ namespace QASmartTouch.Forms
                 }
 
                 var bounds = new Rect(left, top, width, height);
+                var objType = (textElement is Border bImg && bImg.Child is Image) ? ObjectType.Image : ObjectType.Text;
                 var selectableObj = new SelectableObject
                 {
                     Element = textElement,
-                    Type = ObjectType.Text,
+                    Type = objType,
                     Bounds = bounds,
                     Position = new Point(left, top),
                     Size = new Size(width, height),
@@ -1929,17 +2747,33 @@ namespace QASmartTouch.Forms
 
             // Reset drawing state
             _isDrawing = false;
+            _activeShapeTouchId = -1;
+            if (_previewShape != null)
+            {
+                MainInteractiveBoard?.Children.Remove(_previewShape);
+                _previewShape = null;
+            }
             
             // Disable all tool modes
             _drawingEnabled = false;
             _eraserEnabled = false;
             _shapeDrawingEnabled = false;
             _textToolEnabled = false;
+            _isTableDrawingMode = false;
+            _isDrawingTable = false;
+            if (_tablePreviewBorder != null)
+            {
+                MainInteractiveBoard.Children.Remove(_tablePreviewBorder);
+                _tablePreviewBorder = null;
+            }
             _selectionToolEnabled = false;
             _zoomAreaSelectionEnabled = false;
             _objectSelectionMode = false; // BUGFIX: Disable object selection mode
             _isLassoMode = false;
             _isMagicWandMode = false;
+            
+            // ── WhiteboardCore FSM: Đồng bộ trạng thái DeactivateAll ──
+            _whiteboardManager?.ToolManager.DeactivateAll();
             
             System.Diagnostics.Debug.WriteLine($"   All tool modes disabled");
             
@@ -1947,6 +2781,7 @@ namespace QASmartTouch.Forms
             _selectionBox?.Detach();
             _contextToolbar?.Hide();
             _floatingTouchKeyboard?.HideKeyboard();
+            CompleteInPlaceSmartNoteEditing();
 
             // Clean up rectangle selection preview if dangling
             if (_rectangleSelectionPreview != null)
@@ -1960,6 +2795,8 @@ namespace QASmartTouch.Forms
             _pendingHitObject = null;
 
             // Release mouse, touch, and stylus captures
+            _isStylusInkingSession = false;
+            _activeStylusPoints = null;
             MainInteractiveBoard?.ReleaseMouseCapture();
             MainInteractiveBoard?.ReleaseStylusCapture();
             MainInteractiveBoard?.ReleaseAllTouchCaptures();
@@ -2055,6 +2892,11 @@ namespace QASmartTouch.Forms
                     _activeCompassTool3D.Close();
                     _activeCompassTool3D = null;
                 }
+                if (_activeCircleDrawingTool != null)
+                {
+                    _activeCircleDrawingTool.Close();
+                    _activeCircleDrawingTool = null;
+                }
                 System.Diagnostics.Debug.WriteLine("🔧 CloseAllToolWindows: All tool windows closed.");
             }
             catch (Exception ex)
@@ -2070,6 +2912,11 @@ namespace QASmartTouch.Forms
         private void CloseAllSubmenus()
         {
             CloseActiveSubMenu();
+
+            if (popoverPageOrganizer != null)
+            {
+                popoverPageOrganizer.Visibility = Visibility.Collapsed;
+            }
 
             // Quét dọn an toàn mọi cửa sổ SubMenu con có thể bị trôi nổi/mồ côi
             try
@@ -2139,6 +2986,7 @@ namespace QASmartTouch.Forms
                 _selectionManager?.DeselectAll();
                 _selectionBox?.Detach();
                 _contextToolbar?.Hide();
+                CompleteInPlaceSmartNoteEditing();
 
                 // 2. Dọn dẹp trạng thái chọn vùng hình chữ nhật / Lasso
                 if (_isRectangleSelecting && _rectangleSelectionPreview != null)
@@ -2146,16 +2994,20 @@ namespace QASmartTouch.Forms
                     MainInteractiveBoard?.Children.Remove(_rectangleSelectionPreview);
                     _rectangleSelectionPreview = null;
                 }
+                _isPreparingRectangleSelection = false;
                 _isRectangleSelecting = false;
                 _isLassoMode = false;
                 _isDraggingSelection = false;
                 _draggedSelectionObject = null;
                 _pendingHitObject = null;
+                _activeShapeTouchId = -1;
 
                 // 3. Rebuild lại chỉ mục QuadTree để đồng bộ không gian
                 _selectionManager?.RebuildQuadTree();
 
-                // 4. Giải phóng chuột/ngón tay capture nếu có
+                // 4. Giải phóng chuột/ngón tay/stylus capture và reset phiên Stylus nếu có
+                _isStylusInkingSession = false;
+                _activeStylusPoints = null;
                 MainInteractiveBoard?.ReleaseMouseCapture();
                 MainInteractiveBoard?.ReleaseStylusCapture();
                 MainInteractiveBoard?.ReleaseAllTouchCaptures();
@@ -2340,7 +3192,11 @@ namespace QASmartTouch.Forms
                 if (headerAppName != null)
                 {
                     headerAppName.Visibility = config.ShowAppName ? Visibility.Visible : Visibility.Collapsed;
+#if SMARTTOUCH_STANDALONE
+                    headerAppName.Text = "QA Smart Touch";
+#else
                     headerAppName.Text = config.AppName;
+#endif
                     
                     try
                     {
@@ -2393,9 +3249,13 @@ namespace QASmartTouch.Forms
             {
                 if (Keyboard.Modifiers == ModifierKeys.Shift)
                 {
+#if !SMARTTOUCH_STANDALONE
                     var ticketWindow = new QASmartClass.Forms.InAppSupportTicketWindow();
                     ticketWindow.Owner = this;
                     ticketWindow.ShowDialog();
+#else
+                    MessageBox.Show("Tính năng gửi Ticket chỉ khả dụng trong hệ thống QA SmartClass mạng LAN.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+#endif
                 }
                 else
                 {
@@ -2441,6 +3301,11 @@ namespace QASmartTouch.Forms
         /// </summary>
         private void MainInteractiveBoard_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            if (MainInkPresenter != null)
+            {
+                MainInkPresenter.Width = e.NewSize.Width;
+                MainInkPresenter.Height = e.NewSize.Height;
+            }
             UpdateScrollBarVisibility();
         }
 
@@ -2451,34 +3316,12 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                if (MainScrollViewer == null || MainInteractiveBoard == null)
-                    return;
-
-                // Get viewport size (visible area)
-                double viewportWidth = MainScrollViewer.ViewportWidth;
-                double viewportHeight = MainScrollViewer.ViewportHeight;
-
-                // Get canvas size
-                double canvasWidth = MainInteractiveBoard.Width;
-                double canvasHeight = MainInteractiveBoard.Height;
-
-                // Add tolerance: only show scrollbar if canvas significantly larger than viewport
-                // This prevents scrollbar from appearing due to minor size differences
-                const double TOLERANCE = 200; // pixels (increased to prevent showing on startup)
-
-                // Show horizontal scrollbar only if canvas is significantly wider than viewport
-                bool needHorizontalScroll = (canvasWidth - viewportWidth) > TOLERANCE;
-                MainScrollViewer.HorizontalScrollBarVisibility = needHorizontalScroll 
-                    ? ScrollBarVisibility.Auto 
-                    : ScrollBarVisibility.Hidden;
-
-                // Show vertical scrollbar only if canvas is significantly taller than viewport
-                bool needVerticalScroll = (canvasHeight - viewportHeight) > TOLERANCE;
-                MainScrollViewer.VerticalScrollBarVisibility = needVerticalScroll 
-                    ? ScrollBarVisibility.Auto 
-                    : ScrollBarVisibility.Hidden;
-
-                System.Diagnostics.Debug.WriteLine($"[ScrollBar] Canvas: {canvasWidth}x{canvasHeight}, Viewport: {viewportWidth}x{viewportHeight}, H-Scroll: {needHorizontalScroll}, V-Scroll: {needVerticalScroll}");
+                if (MainScrollViewer != null)
+                {
+                    // Always hide scrollbars to provide a clean whiteboard experience
+                    MainScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                    MainScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                }
             }
             catch (Exception ex)
             {
@@ -2577,11 +3420,37 @@ namespace QASmartTouch.Forms
         {
             System.Diagnostics.Debug.WriteLine($"🔄 WhiteboardCore ToolChanged: {e.PreviousMode} → {e.NewMode}");
 
-            // Giai đoạn 3.1: Log event — chưa thay thế logic cũ.
-            // Khi migration hoàn tất, block này sẽ:
-            // - Đồng bộ cursor (Pen, None, Cross...)
-            // - Gọi _touchHandler.SetToolMode(...)
-            // - Gọi _selectionManager.DeselectAll() nếu cần
+            // ── FSM Synchronization (Strangler Fig Pattern) ──
+            if (e.NewMode != QASmartClass.WhiteboardCore.Enums.ToolMode.Select)
+            {
+                _selectionManager?.DeselectAll();
+                _selectionManager?.ClearClipboard();
+            }
+
+            if (e.NewMode != QASmartClass.WhiteboardCore.Enums.ToolMode.Eraser && _eraserEnabled)
+            {
+                HideEraserCursorPreview();
+            }
+
+            switch (e.NewMode)
+            {
+                case QASmartClass.WhiteboardCore.Enums.ToolMode.Pen:
+                    _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Drawing);
+                    break;
+                case QASmartClass.WhiteboardCore.Enums.ToolMode.Eraser:
+                    _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Eraser);
+                    break;
+                case QASmartClass.WhiteboardCore.Enums.ToolMode.Select:
+                    _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Selection);
+                    break;
+                case QASmartClass.WhiteboardCore.Enums.ToolMode.Pointer:
+                    _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Pointer);
+                    break;
+                case QASmartClass.WhiteboardCore.Enums.ToolMode.None:
+                default:
+                    _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.None);
+                    break;
+            }
         }
 
         #endregion

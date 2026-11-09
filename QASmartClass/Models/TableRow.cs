@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace QASmartTouch.Models
 {
@@ -8,7 +8,7 @@ namespace QASmartTouch.Models
     public class TableRow : INotifyPropertyChanged
     {
         private double _height = 48; // Default height in pixels
-        private double _minHeight = 40; // Minimum height
+        private double _minHeight = 25; // Minimum height
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

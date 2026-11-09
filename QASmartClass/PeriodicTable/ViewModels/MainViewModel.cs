@@ -221,7 +221,7 @@ namespace QASmartTouch.PeriodicTable.ViewModels
                 LanthanideElements.Clear();
                 ActinideElements.Clear();
 
-                string baseDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PeriodicTable", "Data");
+                string baseDataPath = ElementDataManager.ResolveDataPath();
                 
                 // Load từ 4 file JSON riêng biệt
                 var filesToLoad = new[]

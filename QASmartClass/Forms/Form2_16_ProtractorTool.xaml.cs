@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Windows;
@@ -21,6 +21,8 @@ namespace QASmartTouch.Forms
         // Drag State for Window
         private bool _isDragging = false;
         private Point _dragStartPoint;
+        private double _originalLeft;
+        private double _originalTop;
 
         // Drag State for Rays
         private bool _isDraggingRayA = false;
@@ -38,6 +40,12 @@ namespace QASmartTouch.Forms
         // Radius
         private double _radius = 200;
 
+        // Dynamic visual elements for Rays and Arc (never cleared to preserve TouchCapture)
+        private Line _rayALine;
+        private Line _rayBLine;
+        private Path _arcBetweenRays;
+        private bool _isProtractorStaticDrawn = false;
+
         #endregion
 
         #region Constructor
@@ -45,8 +53,9 @@ namespace QASmartTouch.Forms
         public Form2_16_ProtractorTool()
         {
             InitializeComponent();
-            // QC_4.2_TOUCH_PIPELINE: STEM Window — WPF tự cô lập, KHÔNG cần ApplyTouchIsolation
+            // QC_4.2_TOUCH_PIPELINE: STEM Window — Sử dụng Apply tương tự Compa (Form2_19_CircleDrawingTool)
             QASmartTouch.Helpers.TouchActivationHelper.Apply(this); // QC_4.2_TOUCH_ACTIVATION: Fix "nhấn 2 lần mới kéo được" trên IFP
+            Stylus.SetIsPressAndHoldEnabled(btnMove, false);
 
             // Initialize state with default angles
             _state = new ProtractorState
@@ -88,19 +97,25 @@ namespace QASmartTouch.Forms
 
         private void DrawProtractor()
         {
-            ProtractorCanvas.Children.Clear();
+            if (!_isProtractorStaticDrawn)
+            {
+                DrawStaticProtractor();
+                _isProtractorStaticDrawn = true;
+            }
 
-            // Draw semi-circle arc
+            UpdateRays();
+        }
+
+        private void DrawStaticProtractor()
+        {
+            // Draw semi-circle arc & baseline
             DrawSemiCircle();
 
             // Draw tick marks and numbers
             DrawTickMarksAndNumbers();
 
-            // Draw rays
-            DrawRays();
-
-            // Restore UI elements (handles, angle display, center label)
-            RestoreUIElements();
+            // Initialize dynamic ray & arc visuals
+            InitializeRayVisuals();
         }
 
         private void DrawSemiCircle()
@@ -110,8 +125,10 @@ namespace QASmartTouch.Forms
             {
                 Stroke = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
                 StrokeThickness = 2,
-                Data = CreateArcGeometry(_centerPoint, _radius, 0, 180)
+                Data = CreateArcGeometry(_centerPoint, _radius, 0, 180),
+                IsHitTestVisible = false
             };
+            Panel.SetZIndex(outerArc, 0);
             ProtractorCanvas.Children.Add(outerArc);
 
             // Draw baseline
@@ -122,8 +139,10 @@ namespace QASmartTouch.Forms
                 X2 = _centerPoint.X + _radius,
                 Y2 = _centerPoint.Y,
                 Stroke = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-                StrokeThickness = 2
+                StrokeThickness = 2,
+                IsHitTestVisible = false
             };
+            Panel.SetZIndex(baseline, 0);
             ProtractorCanvas.Children.Add(baseline);
         }
 
@@ -154,8 +173,10 @@ namespace QASmartTouch.Forms
                     X2 = innerPoint.X,
                     Y2 = innerPoint.Y,
                     Stroke = isMajor ? Brushes.Black : Brushes.Gray,
-                    StrokeThickness = isMajor ? 1.5 : 1
+                    StrokeThickness = isMajor ? 1.5 : 1,
+                    IsHitTestVisible = false
                 };
+                Panel.SetZIndex(tick, 0);
                 ProtractorCanvas.Children.Add(tick);
 
                 // Draw numbers for major ticks
@@ -168,10 +189,12 @@ namespace QASmartTouch.Forms
                         Text = angle.ToString(),
                         FontSize = 10,
                         FontWeight = FontWeights.Bold,
-                        Foreground = Brushes.Black
+                        Foreground = Brushes.Black,
+                        IsHitTestVisible = false
                     };
                     Canvas.SetLeft(number1, numberPoint1.X - 8);
                     Canvas.SetTop(number1, numberPoint1.Y - 8);
+                    Panel.SetZIndex(number1, 0);
                     ProtractorCanvas.Children.Add(number1);
 
                     // Inner scale (180 → 0) - flipped
@@ -181,105 +204,87 @@ namespace QASmartTouch.Forms
                     {
                         Text = flippedAngle.ToString(),
                         FontSize = 9,
-                        Foreground = new SolidColorBrush(Color.FromRgb(255, 87, 34)) // Orange
+                        Foreground = new SolidColorBrush(Color.FromRgb(255, 87, 34)), // Orange
+                        IsHitTestVisible = false
                     };
                     Canvas.SetLeft(number2, numberPoint2.X - 8);
                     Canvas.SetTop(number2, numberPoint2.Y - 8);
+                    Panel.SetZIndex(number2, 0);
                     ProtractorCanvas.Children.Add(number2);
                 }
             }
         }
 
-        private void DrawRays()
+        private void InitializeRayVisuals()
         {
+            if (_arcBetweenRays == null)
+            {
+                _arcBetweenRays = new Path
+                {
+                    Stroke = new SolidColorBrush(Color.FromArgb(128, 255, 193, 7)), // Semi-transparent yellow
+                    StrokeThickness = 3,
+                    IsHitTestVisible = false
+                };
+                Panel.SetZIndex(_arcBetweenRays, 1);
+                ProtractorCanvas.Children.Add(_arcBetweenRays);
+            }
+
+            if (_rayALine == null)
+            {
+                _rayALine = new Line
+                {
+                    X1 = _centerPoint.X,
+                    Y1 = _centerPoint.Y,
+                    Stroke = new SolidColorBrush(Color.FromRgb(255, 87, 34)), // Orange
+                    StrokeThickness = 2,
+                    StrokeDashArray = new DoubleCollection { 5, 2 },
+                    IsHitTestVisible = false
+                };
+                Panel.SetZIndex(_rayALine, 2);
+                ProtractorCanvas.Children.Add(_rayALine);
+            }
+
+            if (_rayBLine == null)
+            {
+                _rayBLine = new Line
+                {
+                    X1 = _centerPoint.X,
+                    Y1 = _centerPoint.Y,
+                    Stroke = new SolidColorBrush(Color.FromRgb(76, 175, 80)), // Green
+                    StrokeThickness = 2,
+                    StrokeDashArray = new DoubleCollection { 5, 2 },
+                    IsHitTestVisible = false
+                };
+                Panel.SetZIndex(_rayBLine, 2);
+                ProtractorCanvas.Children.Add(_rayBLine);
+            }
+        }
+
+        private void UpdateRays()
+        {
+            if (_rayALine == null || _rayBLine == null || _arcBetweenRays == null)
+                return;
+
             // Draw Ray A (from center)
             double rayARadians = DegreeToRadian(_state.RayAAngle);
             Point rayAEnd = PolarToCartesian(_centerPoint, _radius, rayARadians);
-
-            Line rayA = new Line
-            {
-                X1 = _centerPoint.X,
-                Y1 = _centerPoint.Y,
-                X2 = rayAEnd.X,
-                Y2 = rayAEnd.Y,
-                Stroke = new SolidColorBrush(Color.FromRgb(255, 87, 34)), // Orange
-                StrokeThickness = 2,
-                StrokeDashArray = new DoubleCollection { 5, 2 }
-            };
-            ProtractorCanvas.Children.Add(rayA);
+            _rayALine.X1 = _centerPoint.X;
+            _rayALine.Y1 = _centerPoint.Y;
+            _rayALine.X2 = rayAEnd.X;
+            _rayALine.Y2 = rayAEnd.Y;
 
             // Draw Ray B (from center)
             double rayBRadians = DegreeToRadian(_state.RayBAngle);
             Point rayBEnd = PolarToCartesian(_centerPoint, _radius, rayBRadians);
-
-            Line rayB = new Line
-            {
-                X1 = _centerPoint.X,
-                Y1 = _centerPoint.Y,
-                X2 = rayBEnd.X,
-                Y2 = rayBEnd.Y,
-                Stroke = new SolidColorBrush(Color.FromRgb(76, 175, 80)), // Green
-                StrokeThickness = 2,
-                StrokeDashArray = new DoubleCollection { 5, 2 }
-            };
-            ProtractorCanvas.Children.Add(rayB);
+            _rayBLine.X1 = _centerPoint.X;
+            _rayBLine.Y1 = _centerPoint.Y;
+            _rayBLine.X2 = rayBEnd.X;
+            _rayBLine.Y2 = rayBEnd.Y;
 
             // Draw arc between rays
             double startAngle = Math.Min(_state.RayAAngle, _state.RayBAngle);
             double endAngle = Math.Max(_state.RayAAngle, _state.RayBAngle);
-
-            Path arcBetweenRays = new Path
-            {
-                Stroke = new SolidColorBrush(Color.FromArgb(128, 255, 193, 7)), // Semi-transparent yellow
-                StrokeThickness = 3,
-                Data = CreateArcGeometry(_centerPoint, _radius * 0.5, startAngle, endAngle)
-            };
-            ProtractorCanvas.Children.Add(arcBetweenRays);
-        }
-
-        private void RestoreUIElements()
-        {
-            // Re-add center label (should be on top)
-            Border centerLabel = FindCenterLabel();
-            if (centerLabel != null)
-            {
-                ProtractorCanvas.Children.Remove(centerLabel);
-                ProtractorCanvas.Children.Add(centerLabel);
-            }
-
-            // Re-add ray handles
-            if (ProtractorCanvas.Children.Contains(RayAHandle))
-            {
-                ProtractorCanvas.Children.Remove(RayAHandle);
-            }
-            if (ProtractorCanvas.Children.Contains(RayBHandle))
-            {
-                ProtractorCanvas.Children.Remove(RayBHandle);
-            }
-            ProtractorCanvas.Children.Add(RayAHandle);
-            ProtractorCanvas.Children.Add(RayBHandle);
-
-            // Re-add angle display
-            if (ProtractorCanvas.Children.Contains(AngleDisplay))
-            {
-                ProtractorCanvas.Children.Remove(AngleDisplay);
-            }
-            ProtractorCanvas.Children.Add(AngleDisplay);
-        }
-
-        private Border FindCenterLabel()
-        {
-            foreach (UIElement element in ProtractorCanvas.Children)
-            {
-                if (element is Border border)
-                {
-                    if (border.Child is TextBlock tb && tb.Text == "O")
-                    {
-                        return border;
-                    }
-                }
-            }
-            return null;
+            _arcBetweenRays.Data = CreateArcGeometry(_centerPoint, _radius * 0.5, startAngle, endAngle);
         }
 
         #endregion
@@ -429,6 +434,7 @@ namespace QASmartTouch.Forms
 
         private void RayAHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_rayATouchId.HasValue || e.StylusDevice != null) return;
             _isDraggingRayA = true;
             RayAHandle.CaptureMouse();
             e.Handled = true;
@@ -436,13 +442,21 @@ namespace QASmartTouch.Forms
 
         private void RayAHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_rayATouchId.HasValue || e.StylusDevice != null) return;
             _isDraggingRayA = false;
             RayAHandle.ReleaseMouseCapture();
             e.Handled = true;
         }
 
+        private void RayAHandle_LostMouseCapture(object sender, MouseEventArgs e)
+        {
+            if (!_rayATouchId.HasValue)
+                _isDraggingRayA = false;
+        }
+
         private void RayAHandle_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_rayATouchId.HasValue || e.StylusDevice != null) return;
             if (_isDraggingRayA && RayAHandle.IsMouseCaptured)
             {
                 Point mousePos = e.GetPosition(ProtractorCanvas);
@@ -451,7 +465,7 @@ namespace QASmartTouch.Forms
 
                 _state.RayAAngle = angle;
 
-                DrawProtractor();
+                UpdateRays();
                 UpdateRayHandles();
                 UpdateAngleDisplay();
 
@@ -480,6 +494,15 @@ namespace QASmartTouch.Forms
             }
         }
 
+        private void RayAHandle_LostTouchCapture(object sender, TouchEventArgs e)
+        {
+            if (_isDraggingRayA && _rayATouchId == e.TouchDevice?.Id)
+            {
+                _isDraggingRayA = false;
+                _rayATouchId = null;
+            }
+        }
+
         private void RayAHandle_TouchMove(object sender, TouchEventArgs e)
         {
             if (_isDraggingRayA && _rayATouchId == e.TouchDevice.Id)
@@ -490,7 +513,7 @@ namespace QASmartTouch.Forms
 
                 _state.RayAAngle = angle;
 
-                DrawProtractor();
+                UpdateRays();
                 UpdateRayHandles();
                 UpdateAngleDisplay();
 
@@ -500,6 +523,7 @@ namespace QASmartTouch.Forms
 
         private void RayBHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_rayBTouchId.HasValue || e.StylusDevice != null) return;
             _isDraggingRayB = true;
             RayBHandle.CaptureMouse();
             e.Handled = true;
@@ -507,13 +531,21 @@ namespace QASmartTouch.Forms
 
         private void RayBHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_rayBTouchId.HasValue || e.StylusDevice != null) return;
             _isDraggingRayB = false;
             RayBHandle.ReleaseMouseCapture();
             e.Handled = true;
         }
 
+        private void RayBHandle_LostMouseCapture(object sender, MouseEventArgs e)
+        {
+            if (!_rayBTouchId.HasValue)
+                _isDraggingRayB = false;
+        }
+
         private void RayBHandle_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_rayBTouchId.HasValue || e.StylusDevice != null) return;
             if (_isDraggingRayB && RayBHandle.IsMouseCaptured)
             {
                 Point mousePos = e.GetPosition(ProtractorCanvas);
@@ -522,7 +554,7 @@ namespace QASmartTouch.Forms
 
                 _state.RayBAngle = angle;
 
-                DrawProtractor();
+                UpdateRays();
                 UpdateRayHandles();
                 UpdateAngleDisplay();
 
@@ -551,6 +583,15 @@ namespace QASmartTouch.Forms
             }
         }
 
+        private void RayBHandle_LostTouchCapture(object sender, TouchEventArgs e)
+        {
+            if (_isDraggingRayB && _rayBTouchId == e.TouchDevice?.Id)
+            {
+                _isDraggingRayB = false;
+                _rayBTouchId = null;
+            }
+        }
+
         private void RayBHandle_TouchMove(object sender, TouchEventArgs e)
         {
             if (_isDraggingRayB && _rayBTouchId == e.TouchDevice.Id)
@@ -561,7 +602,7 @@ namespace QASmartTouch.Forms
 
                 _state.RayBAngle = angle;
 
-                DrawProtractor();
+                UpdateRays();
                 UpdateRayHandles();
                 UpdateAngleDisplay();
 
@@ -573,12 +614,58 @@ namespace QASmartTouch.Forms
 
         #region Button Events - Move
 
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct Win32Point
+        {
+            public int X;
+            public int Y;
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool GetCursorPos(out Win32Point lpPoint);
+
+        private Point GetScreenPoint(InputEventArgs e)
+        {
+            try
+            {
+                var dpi = VisualTreeHelper.GetDpi(this);
+                double scaleX = dpi.DpiScaleX > 0 ? dpi.DpiScaleX : 1.0;
+                double scaleY = dpi.DpiScaleY > 0 ? dpi.DpiScaleY : 1.0;
+
+                // ✅ FIX: Ưu tiên tọa độ từ chính sự kiện đầu vào (Touch/Mouse)
+                // thay vì GetCursorPos() — vì GetCursorPos trả vị trí cursor "promoted"
+                // bị trễ/sai lệch trên màn hình cảm ứng IFP.
+                if (e is TouchEventArgs te)
+                {
+                    var pt = PointToScreen(te.GetTouchPoint(this).Position);
+                    return new Point(pt.X / scaleX, pt.Y / scaleY);
+                }
+                if (e is MouseEventArgs me)
+                {
+                    var pt = PointToScreen(me.GetPosition(this));
+                    return new Point(pt.X / scaleX, pt.Y / scaleY);
+                }
+
+                // Fallback: GetCursorPos cho Stylus thuần hoặc trường hợp đặc biệt
+                if (GetCursorPos(out Win32Point p))
+                {
+                    return new Point(p.X / scaleX, p.Y / scaleY);
+                }
+            }
+            catch { }
+            return new Point(0, 0);
+        }
+
         private void btnMove_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (_protractorTouchId.HasValue || e.StylusDevice != null) return;
             if (e.ChangedButton == MouseButton.Left || e.LeftButton == MouseButtonState.Pressed)
             {
                 _isDragging = true;
-                _dragStartPoint = PointToScreen(e.GetPosition(this));
+                _dragStartPoint = GetScreenPoint(e);
+                _originalLeft = this.Left;
+                _originalTop = this.Top;
 
                 if (sender is UIElement el)
                     el.CaptureMouse();
@@ -588,22 +675,23 @@ namespace QASmartTouch.Forms
 
         private void btnMove_MouseMove(object sender, MouseEventArgs e)
         {
+            if (_protractorTouchId.HasValue || e.StylusDevice != null) return;
             if (_isDragging && e.LeftButton == MouseButtonState.Pressed)
             {
-                var currentScreenPoint = PointToScreen(e.GetPosition(this));
-                double offsetX = currentScreenPoint.X - _dragStartPoint.X;
-                double offsetY = currentScreenPoint.Y - _dragStartPoint.Y;
+                var currentScreenPoint = GetScreenPoint(e);
+                double deltaX = currentScreenPoint.X - _dragStartPoint.X;
+                double deltaY = currentScreenPoint.Y - _dragStartPoint.Y;
 
-                this.Left += offsetX;
-                this.Top += offsetY;
+                this.Left = _originalLeft + deltaX;
+                this.Top = _originalTop + deltaY;
 
-                _dragStartPoint = currentScreenPoint;
                 e.Handled = true;
             }
         }
 
         private void btnMove_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (_protractorTouchId.HasValue || e.StylusDevice != null) return;
             if (_isDragging)
             {
                 _isDragging = false;
@@ -622,7 +710,9 @@ namespace QASmartTouch.Forms
             {
                 _protractorTouchId = e.TouchDevice.Id;
                 _isDragging = true;
-                _dragStartPoint = PointToScreen(e.GetTouchPoint(this).Position);
+                _dragStartPoint = GetScreenPoint(e);
+                _originalLeft = this.Left;
+                _originalTop = this.Top;
 
                 el.CaptureTouch(e.TouchDevice);
                 e.Handled = true;
@@ -633,14 +723,13 @@ namespace QASmartTouch.Forms
         {
             if (_isDragging && _protractorTouchId == e.TouchDevice.Id)
             {
-                var currentScreenPoint = PointToScreen(e.GetTouchPoint(this).Position);
-                double offsetX = currentScreenPoint.X - _dragStartPoint.X;
-                double offsetY = currentScreenPoint.Y - _dragStartPoint.Y;
+                var currentScreenPoint = GetScreenPoint(e);
+                double deltaX = currentScreenPoint.X - _dragStartPoint.X;
+                double deltaY = currentScreenPoint.Y - _dragStartPoint.Y;
 
-                this.Left += offsetX;
-                this.Top += offsetY;
+                this.Left = _originalLeft + deltaX;
+                this.Top = _originalTop + deltaY;
 
-                _dragStartPoint = currentScreenPoint;
                 e.Handled = true;
             }
         }
@@ -656,15 +745,6 @@ namespace QASmartTouch.Forms
                     el.ReleaseTouchCapture(e.TouchDevice);
 
                 e.Handled = true;
-            }
-        }
-
-        private void btnMove_LostTouchCapture(object sender, TouchEventArgs e)
-        {
-            if (_protractorTouchId == e.TouchDevice.Id)
-            {
-                _isDragging = false;
-                _protractorTouchId = null;
             }
         }
 
@@ -790,7 +870,7 @@ namespace QASmartTouch.Forms
                     _state.RayBAngle = angle;
                     
                     // Redraw
-                    DrawProtractor();
+                    UpdateRays();
                     UpdateRayHandles();
                     UpdateAngleDisplay();
                     
@@ -961,81 +1041,11 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// ✨ NEW: Redraw rays and arc on protractor canvas (without clearing everything)
+        /// Update rays and arc on protractor canvas without creating or removing elements
         /// </summary>
         private void RedrawRays()
         {
-            // Remove old rays and arc (if any)
-            // Find and remove existing rays by checking for Line and Path elements
-            var elementsToRemove = new List<UIElement>();
-            foreach (var child in ProtractorCanvas.Children)
-            {
-                if (child is Line line)
-                {
-                    // Check if it's a ray (has dashed stroke)
-                    if (line.StrokeDashArray != null && line.StrokeDashArray.Count > 0)
-                    {
-                        elementsToRemove.Add(line);
-                    }
-                }
-                else if (child is Path path)
-                {
-                    // Check if it's the arc between rays
-                    if (path.Stroke is SolidColorBrush brush && brush.Color.A == 128)
-                    {
-                        elementsToRemove.Add(path);
-                    }
-                }
-            }
-
-            foreach (var element in elementsToRemove)
-            {
-                ProtractorCanvas.Children.Remove(element);
-            }
-
-            // Draw Ray A (from center)
-            double rayARadians = DegreeToRadian(_state.RayAAngle);
-            Point rayAEnd = PolarToCartesian(_centerPoint, _radius, rayARadians);
-
-            Line rayA = new Line
-            {
-                X1 = _centerPoint.X,
-                Y1 = _centerPoint.Y,
-                X2 = rayAEnd.X,
-                Y2 = rayAEnd.Y,
-                Stroke = new SolidColorBrush(Color.FromRgb(255, 87, 34)), // Orange
-                StrokeThickness = 2,
-                StrokeDashArray = new DoubleCollection { 5, 2 }
-            };
-            ProtractorCanvas.Children.Add(rayA);
-
-            // Draw Ray B (from center)
-            double rayBRadians = DegreeToRadian(_state.RayBAngle);
-            Point rayBEnd = PolarToCartesian(_centerPoint, _radius, rayBRadians);
-
-            Line rayB = new Line
-            {
-                X1 = _centerPoint.X,
-                Y1 = _centerPoint.Y,
-                X2 = rayBEnd.X,
-                Y2 = rayBEnd.Y,
-                Stroke = new SolidColorBrush(Color.FromRgb(76, 175, 80)), // Green
-                StrokeThickness = 2,
-                StrokeDashArray = new DoubleCollection { 5, 2 }
-            };
-            ProtractorCanvas.Children.Add(rayB);
-
-            // Draw arc between rays
-            double startAngle = Math.Min(_state.RayAAngle, _state.RayBAngle);
-            double endAngle = Math.Max(_state.RayAAngle, _state.RayBAngle);
-
-            Path arcBetweenRays = new Path
-            {
-                Stroke = new SolidColorBrush(Color.FromArgb(128, 255, 193, 7)), // Semi-transparent yellow
-                StrokeThickness = 3,
-                Data = CreateArcGeometry(_centerPoint, _radius * 0.5, startAngle, endAngle)
-            };
-            ProtractorCanvas.Children.Add(arcBetweenRays);
+            UpdateRays();
         }
 
         #endregion

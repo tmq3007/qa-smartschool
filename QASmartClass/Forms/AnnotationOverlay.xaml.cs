@@ -11,7 +11,7 @@ namespace QASmartTouch.Forms
 {
     public partial class AnnotationOverlay : Window
     {
-        #region Win32 API for Click-Through
+        #region Win32 API for Click-Through & Custom Cursor
 
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_TRANSPARENT = 0x00000020;
@@ -23,11 +23,43 @@ namespace QASmartTouch.Forms
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
 
+        [StructLayout(LayoutKind.Sequential)]
+        private struct ICONINFO
+        {
+            public bool fIcon;
+            public int xHotspot;
+            public int yHotspot;
+            public IntPtr hbmMask;
+            public IntPtr hbmColor;
+        }
+
+        [DllImport("user32.dll", EntryPoint = "CreateIconIndirect", SetLastError = true)]
+        private static extern IntPtr CreateIconIndirect(ref ICONINFO icon);
+
+        [DllImport("user32.dll", EntryPoint = "GetIconInfo", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetIconInfo(IntPtr hIcon, out ICONINFO piconinfo);
+
+        [DllImport("user32.dll", EntryPoint = "DestroyIcon", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DestroyIcon(IntPtr hIcon);
+
+        [DllImport("gdi32.dll", EntryPoint = "DeleteObject", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DeleteObject(IntPtr hObject);
+
         #endregion
 
         private bool _isPenMode = false;
         private bool _isDrawing = false;
-        private bool _isEraseByClickMode = false;  // Chế độ xóa từng nét bằng click
+        private bool _isEraseByClickMode = false;  // Chế độ xóa nét
+        private bool _isErasing = false;           // Đang nhấn giữ để xóa liên tục
+        private Point _lastErasePoint;
+        private bool _hasLastErasePoint = false;
+        private readonly List<UIElement> _currentEraseSessionElements = new();
+        private Ellipse? _eraserPreview;
+        private const double EraserRadius = 22.0;
+        private static Cursor? _customEraserCursor;
         private Polyline? _currentStroke;
         private List<Polyline> _strokes = new List<Polyline>();
         private Managers.UndoRedoManager? _undoRedoManager;
@@ -35,6 +67,7 @@ namespace QASmartTouch.Forms
         // Drawing properties
         private Color _currentColor = Colors.Red;
         private double _currentThickness = 3;
+        private string _brushType = "Normal";
         private AnnotationTool _currentTool = AnnotationTool.Pen;
         
         // Event for toolbar repositioning
@@ -214,12 +247,14 @@ namespace QASmartTouch.Forms
                 case AnnotationTool.Pen:
                 case AnnotationTool.Highlighter:
                     newCursor = Cursors.Pen;
+                    if (_eraserPreview != null) _eraserPreview.Visibility = Visibility.Collapsed;
                     break;
                 case AnnotationTool.Eraser:
-                    newCursor = Cursors.Cross;
+                    newCursor = GetOrCreateEraserCursor();
                     break;
                 default:
-                    newCursor = Cursors.Cross;
+                    newCursor = Cursors.Arrow;
+                    if (_eraserPreview != null) _eraserPreview.Visibility = Visibility.Collapsed;
                     break;
             }
             
@@ -243,6 +278,14 @@ namespace QASmartTouch.Forms
             _currentThickness = thickness;
             System.Diagnostics.Debug.WriteLine($"📏 Thickness changed to: {thickness}");
         }
+
+        public void SetBrushType(string brushType)
+        {
+            _brushType = string.IsNullOrEmpty(brushType) ? "Normal" : brushType;
+            System.Diagnostics.Debug.WriteLine($"🖌️ AnnotationOverlay brush type set to: {_brushType}");
+        }
+
+        public string BrushType => _brushType;
 
         public bool HasBackground
         {
@@ -297,11 +340,19 @@ namespace QASmartTouch.Forms
         {
             if (e.StylusDevice != null) return; // Prevent duplicate handling from touch/stylus
 
-            // Chế độ xóa từng nét bằng click
+            // Chế độ xóa nét: nhấn chuột để bắt đầu phiên xóa
             if (_isEraseByClickMode)
             {
-                var point = e.GetPosition(DrawingCanvas);
-                EraseStrokeAtPoint(point);
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    _isErasing = true;
+                    _hasLastErasePoint = false;
+                    _currentEraseSessionElements.Clear();
+                    DrawingCanvas.CaptureMouse();
+                    var point = e.GetPosition(DrawingCanvas);
+                    UpdateEraserPreview(point);
+                    PerformErase(point);
+                }
                 return;
             }
 
@@ -315,18 +366,49 @@ namespace QASmartTouch.Forms
         private void DrawingCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.StylusDevice != null) return; // Prevent duplicate handling from touch/stylus
+
+            if (_isEraseByClickMode)
+            {
+                var point = e.GetPosition(DrawingCanvas);
+                UpdateEraserPreview(point);
+                if (_isErasing && e.LeftButton == MouseButtonState.Pressed)
+                {
+                    PerformErase(point);
+                }
+                return;
+            }
+
             if (!_isDrawing) return;
 
-            var point = e.GetPosition(DrawingCanvas);
-            ContinueDrawing(point);
+            var pt = e.GetPosition(DrawingCanvas);
+            ContinueDrawing(pt);
         }
 
         private void DrawingCanvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (e.StylusDevice != null) return; // Prevent duplicate handling from touch/stylus
+
+            if (_isEraseByClickMode)
+            {
+                if (_isErasing)
+                {
+                    DrawingCanvas.ReleaseMouseCapture();
+                    FinishEraseSession();
+                }
+                return;
+            }
+
             if (!_isDrawing) return;
 
             EndDrawing();
+        }
+
+        private void DrawingCanvas_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (_eraserPreview != null)
+            {
+                _eraserPreview.Visibility = Visibility.Collapsed;
+            }
         }
 
         #endregion
@@ -335,11 +417,16 @@ namespace QASmartTouch.Forms
 
         private void DrawingCanvas_StylusDown(object sender, StylusDownEventArgs e)
         {
-            // Chế độ xóa từng nét bằng click
+            // Chế độ xóa nét trên màn hình cảm ứng / bút stylus
             if (_isEraseByClickMode)
             {
+                _isErasing = true;
+                _hasLastErasePoint = false;
+                _currentEraseSessionElements.Clear();
+                DrawingCanvas.CaptureStylus();
                 var point = e.GetPosition(DrawingCanvas);
-                EraseStrokeAtPoint(point);
+                UpdateEraserPreview(point);
+                PerformErase(point);
                 return;
             }
 
@@ -352,14 +439,35 @@ namespace QASmartTouch.Forms
 
         private void DrawingCanvas_StylusMove(object sender, StylusEventArgs e)
         {
+            if (_isEraseByClickMode)
+            {
+                var point = e.GetPosition(DrawingCanvas);
+                UpdateEraserPreview(point);
+                if (_isErasing)
+                {
+                    PerformErase(point);
+                }
+                return;
+            }
+
             if (!_isDrawing) return;
 
-            var point = e.GetPosition(DrawingCanvas);
-            ContinueDrawing(point);
+            var pt = e.GetPosition(DrawingCanvas);
+            ContinueDrawing(pt);
         }
 
         private void DrawingCanvas_StylusUp(object sender, StylusEventArgs e)
         {
+            if (_isEraseByClickMode)
+            {
+                if (_isErasing)
+                {
+                    DrawingCanvas.ReleaseStylusCapture();
+                    FinishEraseSession();
+                }
+                return;
+            }
+
             if (!_isDrawing) return;
 
             EndDrawing();
@@ -416,6 +524,25 @@ namespace QASmartTouch.Forms
                     _currentStroke.Points.Add(new Point(pt.X + 0.01, pt.Y));
                 }
 
+                // QC_4.2_SHAPE_RECOGNITION: Nhận diện nét vẽ hình học khi bật Bút nhận diện hình
+                if (_brushType == "Shape" && _currentStroke.Points.Count >= 5)
+                {
+                    var recognizedShape = QASmartTouch.Helpers.ShapeRecognizer.TryRecognizeShape(_currentStroke, _currentColor, _currentThickness);
+                    if (recognizedShape != null)
+                    {
+                        DrawingCanvas.Children.Remove(_currentStroke);
+                        _strokes.Remove(_currentStroke);
+
+                        DrawingCanvas.Children.Add(recognizedShape);
+                        _undoRedoManager?.RecordAddAction(recognizedShape, "Nhận diện hình học");
+
+                        System.Diagnostics.Debug.WriteLine($"📐 Shape recognized and converted successfully on DESKTOP");
+                        _currentStroke = null;
+                        _isDrawing = false;
+                        return;
+                    }
+                }
+
                 System.Diagnostics.Debug.WriteLine($"✅ Completed stroke with {_currentStroke.Points.Count} points");
                 
                 // Record action for undo/redo
@@ -433,59 +560,61 @@ namespace QASmartTouch.Forms
 
         public void EraseAtPoint(Point point)
         {
-            var elementsToRemove = new List<UIElement>();
-
-            foreach (UIElement element in DrawingCanvas.Children)
-            {
-                if (element is Polyline stroke)
-                {
-                    // Check if point is near any point in the stroke
-                    foreach (Point strokePoint in stroke.Points)
-                    {
-                        var distance = Math.Sqrt(
-                            Math.Pow(point.X - strokePoint.X, 2) +
-                            Math.Pow(point.Y - strokePoint.Y, 2)
-                        );
-
-                        if (distance < 20) // Eraser radius
-                        {
-                            elementsToRemove.Add(element);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            foreach (var element in elementsToRemove)
-            {
-                DrawingCanvas.Children.Remove(element);
-                if (element is Polyline stroke)
-                {
-                    _strokes.Remove(stroke);
-                }
-            }
-
-            if (elementsToRemove.Count > 0)
-            {
-                System.Diagnostics.Debug.WriteLine($"🧹 Erased {elementsToRemove.Count} strokes");
-            }
+            EraseStrokesAtPoint(point, EraserRadius);
         }
 
         #endregion
 
         #region Clear All
 
+        /// <summary>
+        /// Kiểm tra phần tử hệ thống trên DrawingCanvas (vòng tròn preview tẩy, Toast thông báo, ảnh nền)
+        /// để không xóa nhầm hoặc đưa nhầm vào lịch sử Undo/Redo.
+        /// </summary>
+        private bool IsOverlaySystemElement(UIElement element)
+        {
+            if (ReferenceEquals(element, _eraserPreview))
+                return true;
+
+            if (element is FrameworkElement fe)
+            {
+                string? tag = fe.Tag as string;
+                if (tag == "ToastNotification" || tag == "BackgroundImage")
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Kiểm tra trên màn hình hiện có còn nét vẽ / hình học chú thích nào của người dùng hay không
+        /// </summary>
+        public bool HasAnnotations
+        {
+            get
+            {
+                foreach (UIElement child in DrawingCanvas.Children)
+                {
+                    if (!IsOverlaySystemElement(child))
+                        return true;
+                }
+                return false;
+            }
+        }
+
         public void ClearAll()
         {
-            var count = DrawingCanvas.Children.Count;
-            if (count > 0)
+            var elements = new List<UIElement>();
+            foreach (UIElement child in DrawingCanvas.Children)
             {
-                var elements = new List<UIElement>();
-                foreach (UIElement child in DrawingCanvas.Children)
+                if (!IsOverlaySystemElement(child))
                 {
                     elements.Add(child);
                 }
-                
+            }
+
+            if (elements.Count > 0)
+            {
                 var batchActions = new List<Managers.UndoRedoAction>();
                 foreach (var el in elements)
                 {
@@ -496,19 +625,47 @@ namespace QASmartTouch.Forms
                         Parent = DrawingCanvas,
                         Description = "Clear All Element"
                     });
+                    DrawingCanvas.Children.Remove(el);
                 }
-                
+
                 _undoRedoManager?.RecordBatchAction(batchActions, "Xóa sạch bảng");
-                
-                DrawingCanvas.Children.Clear();
                 _strokes.Clear();
             }
-            
-            System.Diagnostics.Debug.WriteLine($"🧹 Cleared all ({count} elements)");
+
+            System.Diagnostics.Debug.WriteLine($"🧹 Cleared all ({elements.Count} annotation elements)");
         }
 
         /// <summary>
-        /// Bật/tắt chế độ xóa từng nét bằng click (như "Xóa từng nét" trong công cụ Tẩy)
+        /// Xóa toàn bộ nét vẽ chú thích và làm sạch lịch sử Undo/Redo
+        /// (Dùng khi chuyển từ Bút về Chuột ở chế độ DESKTOP để trả lại màn hình sạch hoàn toàn).
+        /// </summary>
+        public void ClearAllAndResetHistory()
+        {
+            var elements = new List<UIElement>();
+            foreach (UIElement child in DrawingCanvas.Children)
+            {
+                if (!IsOverlaySystemElement(child))
+                {
+                    elements.Add(child);
+                }
+            }
+
+            foreach (var el in elements)
+            {
+                DrawingCanvas.Children.Remove(el);
+            }
+
+            _strokes.Clear();
+            _currentEraseSessionElements.Clear();
+            _currentStroke = null;
+            _isDrawing = false;
+            _undoRedoManager?.ClearHistory();
+
+            System.Diagnostics.Debug.WriteLine($"🧹 Cleared {elements.Count} annotations and reset history for Mouse Mode");
+        }
+
+        /// <summary>
+        /// Bật/tắt chế độ xóa nét (hỗ trợ cả click từng nét và nhấn kéo giữ xóa liên tục)
         /// </summary>
         public void ToggleEraseByClickMode()
         {
@@ -516,17 +673,26 @@ namespace QASmartTouch.Forms
 
             if (_isEraseByClickMode)
             {
-                // Vào chế độ xóa: chỉnh con trỏ và bật click-capture
+                // Vào chế độ xóa: chỉnh con trỏ sang hình cục tẩy và bật click-capture
                 SetClickThrough(false);  // Phải nhận click
-                this.Cursor = Cursors.Cross;
+                Cursor eraserCursor = GetOrCreateEraserCursor();
+                this.Cursor = eraserCursor;
                 this.ForceCursor = true;
-                DrawingCanvas.Cursor = Cursors.Cross;
+                DrawingCanvas.Cursor = eraserCursor;
                 DrawingCanvas.ForceCursor = true;
-                ShowToast("🧹 Chế độ Xóa Nét – Click vào nét để xóa | Nhấn lại để thoát", "#5C6BC0");
+                EnsureEraserPreview();
+                ShowToast("🧹 Chế độ Xóa Nét – Nhấn và kéo qua nét để xóa | Nhấn lại để thoát", "#5C6BC0");
             }
             else
             {
                 // Thoát chế độ xóa: khôi phục trạng thái cũ
+                _isErasing = false;
+                _hasLastErasePoint = false;
+                if (_eraserPreview != null)
+                {
+                    _eraserPreview.Visibility = Visibility.Collapsed;
+                }
+
                 if (_isPenMode)
                 {
                     this.Cursor = Cursors.Pen;
@@ -544,62 +710,438 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// Xóa nét vẽ gần nhất tại điểm click (trong chế độ Erase-by-Click)
+        /// Thực hiện xóa liên tục khi di chuyển con trỏ (có nội suy điểm trung gian để không sót nét khi kéo nhanh)
         /// </summary>
-        private void EraseStrokeAtPoint(Point clickPoint)
+        private void PerformErase(Point currentPoint)
         {
-            if (_strokes.Count == 0)
-            {
-                ShowToast("🗨️ Không có nét vẽ nào!", "#E65100");
-                return;
-            }
+            if (!_isErasing) return;
 
-            // Tìm nét gần điểm click nhất (trong khoảng 30px)
-            Polyline? nearest = null;
-            double minDist = 30.0;  // ngưỡng tối đa
-
-            foreach (var stroke in _strokes)
+            if (_hasLastErasePoint)
             {
-                foreach (var pt in stroke.Points)
+                double dx = currentPoint.X - _lastErasePoint.X;
+                double dy = currentPoint.Y - _lastErasePoint.Y;
+                double dist = Math.Sqrt(dx * dx + dy * dy);
+                if (dist > 10.0)
                 {
-                    double d = Math.Sqrt(Math.Pow(pt.X - clickPoint.X, 2) + Math.Pow(pt.Y - clickPoint.Y, 2));
-                    if (d < minDist)
+                    int steps = (int)Math.Ceiling(dist / 10.0);
+                    for (int i = 1; i <= steps; i++)
                     {
-                        minDist = d;
-                        nearest = stroke;
+                        double t = (double)i / steps;
+                        Point pt = new Point(_lastErasePoint.X + t * dx, _lastErasePoint.Y + t * dy);
+                        EraseStrokesAtPoint(pt, EraserRadius);
                     }
                 }
-            }
-
-            if (nearest == null)
-            {
-                // Không có nét nào gần, thử tăng ngưỡng lên 60px
-                minDist = 60.0;
-                foreach (var stroke in _strokes)
+                else
                 {
-                    foreach (var pt in stroke.Points)
-                    {
-                        double d = Math.Sqrt(Math.Pow(pt.X - clickPoint.X, 2) + Math.Pow(pt.Y - clickPoint.Y, 2));
-                        if (d < minDist)
-                        {
-                            minDist = d;
-                            nearest = stroke;
-                        }
-                    }
+                    EraseStrokesAtPoint(currentPoint, EraserRadius);
                 }
-            }
-
-            if (nearest != null)
-            {
-                _undoRedoManager?.RecordRemoveAction(nearest, DrawingCanvas, "Xóa nét (click)");
-                DrawingCanvas.Children.Remove(nearest);
-                _strokes.Remove(nearest);
-                ShowToast($"❌ Đã xóa 1 nét. Còn lại: {_strokes.Count}", "#D32F2F");
             }
             else
             {
-                ShowToast("⚠️ Không tìm thấy nét vẽ tại đây", "#F57C00");
+                EraseStrokesAtPoint(currentPoint, EraserRadius);
             }
+
+            _lastErasePoint = currentPoint;
+            _hasLastErasePoint = true;
+        }
+
+        /// <summary>
+        /// Xóa các nét vẽ và hình học (Line, Polygon, Rectangle, Ellipse, Path) cắt qua hoặc nằm trong bán kính tẩy
+        /// </summary>
+        private void EraseStrokesAtPoint(Point center, double radius)
+        {
+            // 1. Kiểm tra xóa trực tiếp nếu click trúng một Shape trên canvas
+            HitTestResult hitResult = VisualTreeHelper.HitTest(DrawingCanvas, center);
+            if (hitResult?.VisualHit is Shape directHitShape && directHitShape != _eraserPreview && DrawingCanvas.Children.Contains(directHitShape))
+            {
+                if (!_currentEraseSessionElements.Contains(directHitShape))
+                {
+                    DrawingCanvas.Children.Remove(directHitShape);
+                    if (directHitShape is Polyline polyDirect) _strokes.Remove(polyDirect);
+                    _currentEraseSessionElements.Add(directHitShape);
+                }
+            }
+
+            // 2. Quét toàn diện các hình học trên Canvas (Polyline, Line, Polygon, Rectangle, Ellipse, Path)
+            var elementsToRemove = new List<Shape>();
+            var allShapes = DrawingCanvas.Children.OfType<Shape>().ToList();
+
+            foreach (var shape in allShapes)
+            {
+                if (shape == _eraserPreview) continue;
+                if (_currentEraseSessionElements.Contains(shape)) continue;
+
+                bool hit = false;
+                double effectiveRadius = radius + (shape.StrokeThickness / 2.0);
+                double effectiveRadiusSq = effectiveRadius * effectiveRadius;
+
+                if (shape is Polyline polyline)
+                {
+                    var points = polyline.Points;
+                    if (points != null && points.Count > 0)
+                    {
+                        if (points.Count == 1)
+                        {
+                            double d2 = (points[0].X - center.X) * (points[0].X - center.X) +
+                                        (points[0].Y - center.Y) * (points[0].Y - center.Y);
+                            if (d2 <= effectiveRadiusSq) hit = true;
+                        }
+                        else
+                        {
+                            for (int i = 0; i < points.Count - 1; i++)
+                            {
+                                if (DistanceSquaredToSegment(center, points[i], points[i + 1]) <= effectiveRadiusSq)
+                                {
+                                    hit = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (shape is Line line)
+                {
+                    Point p1 = new Point(line.X1, line.Y1);
+                    Point p2 = new Point(line.X2, line.Y2);
+                    if (DistanceSquaredToSegment(center, p1, p2) <= effectiveRadiusSq)
+                    {
+                        hit = true;
+                    }
+                }
+                else if (shape is Polygon polygon)
+                {
+                    var points = polygon.Points;
+                    if (points != null && points.Count >= 2)
+                    {
+                        int ptCount = points.Count;
+                        for (int i = 0; i < ptCount; i++)
+                        {
+                            Point p1 = points[i];
+                            Point p2 = points[(i + 1) % ptCount];
+                            if (DistanceSquaredToSegment(center, p1, p2) <= effectiveRadiusSq)
+                            {
+                                hit = true;
+                                break;
+                            }
+                        }
+
+                        // Nếu quét xuyên qua lòng đa giác/tam giác
+                        if (!hit && IsPointInsidePolygon(center, points))
+                        {
+                            hit = true;
+                        }
+                    }
+                }
+                else if (shape is Rectangle rect)
+                {
+                    double left = System.Windows.Controls.Canvas.GetLeft(rect); if (double.IsNaN(left)) left = 0;
+                    double top = System.Windows.Controls.Canvas.GetTop(rect); if (double.IsNaN(top)) top = 0;
+                    double w = rect.Width > 0 ? rect.Width : rect.ActualWidth;
+                    double h = rect.Height > 0 ? rect.Height : rect.ActualHeight;
+
+                    Point tl = new Point(left, top);
+                    Point tr = new Point(left + w, top);
+                    Point br = new Point(left + w, top + h);
+                    Point bl = new Point(left, top + h);
+
+                    if (DistanceSquaredToSegment(center, tl, tr) <= effectiveRadiusSq ||
+                        DistanceSquaredToSegment(center, tr, br) <= effectiveRadiusSq ||
+                        DistanceSquaredToSegment(center, br, bl) <= effectiveRadiusSq ||
+                        DistanceSquaredToSegment(center, bl, tl) <= effectiveRadiusSq)
+                    {
+                        hit = true;
+                    }
+                    // Quét xuyên qua lòng hình chữ nhật
+                    else if (center.X >= left && center.X <= left + w && center.Y >= top && center.Y <= top + h)
+                    {
+                        hit = true;
+                    }
+                }
+                else if (shape is Ellipse ellipse)
+                {
+                    double left = System.Windows.Controls.Canvas.GetLeft(ellipse); if (double.IsNaN(left)) left = 0;
+                    double top = System.Windows.Controls.Canvas.GetTop(ellipse); if (double.IsNaN(top)) top = 0;
+                    double w = ellipse.Width > 0 ? ellipse.Width : ellipse.ActualWidth;
+                    double h = ellipse.Height > 0 ? ellipse.Height : ellipse.ActualHeight;
+
+                    Point ellipseCenter = new Point(left + w / 2.0, top + h / 2.0);
+                    double rx = w / 2.0;
+                    double ry = h / 2.0;
+
+                    if (rx > 0 && ry > 0)
+                    {
+                        double dx = center.X - ellipseCenter.X;
+                        double dy = center.Y - ellipseCenter.Y;
+
+                        // Kiểm tra hình tròn đều
+                        if (Math.Abs(rx - ry) < 1.0)
+                        {
+                            double distToCenter = Math.Sqrt(dx * dx + dy * dy);
+                            // Chạm vào chu vi đường tròn hoặc nằm trong lòng đường tròn
+                            if (Math.Abs(distToCenter - rx) <= effectiveRadius || distToCenter <= rx)
+                            {
+                                hit = true;
+                            }
+                        }
+                        else
+                        {
+                            // Kiểm tra elip tổng quát
+                            double normDistSq = (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry);
+                            if (normDistSq <= 1.0)
+                            {
+                                hit = true;
+                            }
+                            else
+                            {
+                                double outerRx = rx + effectiveRadius;
+                                double outerRy = ry + effectiveRadius;
+                                double normDistOuter = (dx * dx) / (outerRx * outerRx) + (dy * dy) / (outerRy * outerRy);
+                                if (normDistOuter <= 1.0)
+                                {
+                                    hit = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (shape is Path path && path.Data != null)
+                {
+                    try
+                    {
+                        var pen = new Pen(Brushes.Black, (path.StrokeThickness > 0 ? path.StrokeThickness : 2) + radius * 2);
+                        if (path.Data.StrokeContains(pen, center) || (path.Fill != null && path.Data.FillContains(center)))
+                        {
+                            hit = true;
+                        }
+                    }
+                    catch { }
+                }
+
+                if (hit)
+                {
+                    elementsToRemove.Add(shape);
+                }
+            }
+
+            foreach (var elem in elementsToRemove)
+            {
+                DrawingCanvas.Children.Remove(elem);
+                if (elem is Polyline poly)
+                {
+                    _strokes.Remove(poly);
+                }
+                _currentEraseSessionElements.Add(elem);
+            }
+        }
+
+        /// <summary>
+        /// Kết thúc một phiên kéo xóa: ghi nhận Undo/Redo (Batch Action) và thông báo
+        /// </summary>
+        private void FinishEraseSession()
+        {
+            _isErasing = false;
+            _hasLastErasePoint = false;
+
+            if (_currentEraseSessionElements.Count == 0) return;
+
+            int remainingDrawings = DrawingCanvas.Children.OfType<Shape>().Count(s => s != _eraserPreview);
+
+            if (_currentEraseSessionElements.Count == 1)
+            {
+                var elem = _currentEraseSessionElements[0];
+                _undoRedoManager?.RecordRemoveAction(elem, DrawingCanvas, "Xóa nét (click)");
+                ShowToast($"❌ Đã xóa 1 nét vẽ. Còn lại: {remainingDrawings}", "#D32F2F");
+            }
+            else
+            {
+                var batchActions = new List<Managers.UndoRedoAction>(_currentEraseSessionElements.Count);
+                foreach (var elem in _currentEraseSessionElements)
+                {
+                    batchActions.Add(new Managers.UndoRedoAction
+                    {
+                        Type = Managers.ActionType.Remove,
+                        Element = elem,
+                        Parent = DrawingCanvas,
+                        Description = "Xóa nét vẽ (kéo giữ)"
+                    });
+                }
+                _undoRedoManager?.RecordBatchAction(batchActions, $"Xóa {_currentEraseSessionElements.Count} nét vẽ");
+                ShowToast($"❌ Đã xóa {_currentEraseSessionElements.Count} nét vẽ. Còn lại: {remainingDrawings}", "#D32F2F");
+            }
+
+            _currentEraseSessionElements.Clear();
+        }
+
+        /// <summary>
+        /// Tính khoảng cách bình phương từ một điểm P tới đoạn thẳng AB
+        /// </summary>
+        private static double DistanceSquaredToSegment(Point p, Point a, Point b)
+        {
+            double dx = b.X - a.X;
+            double dy = b.Y - a.Y;
+            double lenSq = dx * dx + dy * dy;
+            if (lenSq < 1e-6)
+            {
+                double px = p.X - a.X;
+                double py = p.Y - a.Y;
+                return px * px + py * py;
+            }
+            double t = Math.Max(0.0, Math.Min(1.0, ((p.X - a.X) * dx + (p.Y - a.Y) * dy) / lenSq));
+            double projX = a.X + t * dx;
+            double projY = a.Y + t * dy;
+            double distX = p.X - projX;
+            double distY = p.Y - projY;
+            return distX * distX + distY * distY;
+        }
+
+        /// <summary>
+        /// Kiểm tra xem điểm P có nằm trong đa giác khép kín hay không (Ray-casting algorithm)
+        /// </summary>
+        private static bool IsPointInsidePolygon(Point pt, PointCollection points)
+        {
+            if (points == null || points.Count < 3) return false;
+            bool inside = false;
+            int j = points.Count - 1;
+            for (int i = 0; i < points.Count; i++)
+            {
+                if (((points[i].Y > pt.Y) != (points[j].Y > pt.Y)) &&
+                    (pt.X < (points[j].X - points[i].X) * (pt.Y - points[i].Y) / (points[j].Y - points[i].Y) + points[i].X))
+                {
+                    inside = !inside;
+                }
+                j = i;
+            }
+            return inside;
+        }
+
+        /// <summary>
+        /// Đảm bảo vòng tròn chỉ báo tẩy tồn tại trên canvas
+        /// </summary>
+        private void EnsureEraserPreview()
+        {
+            if (_eraserPreview == null || !DrawingCanvas.Children.Contains(_eraserPreview))
+            {
+                _eraserPreview = new Ellipse
+                {
+                    Width = EraserRadius * 2,
+                    Height = EraserRadius * 2,
+                    Stroke = new SolidColorBrush(Color.FromArgb(200, 244, 67, 54)), // #F44336
+                    StrokeThickness = 1.5,
+                    StrokeDashArray = new DoubleCollection { 3, 2 },
+                    Fill = new SolidColorBrush(Color.FromArgb(35, 244, 67, 54)),
+                    IsHitTestVisible = false,
+                    Visibility = Visibility.Collapsed
+                };
+                DrawingCanvas.Children.Add(_eraserPreview);
+                System.Windows.Controls.Canvas.SetZIndex(_eraserPreview, 10000);
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật vị trí vòng tròn chỉ báo tẩy theo con trỏ chuột
+        /// </summary>
+        private void UpdateEraserPreview(Point pos)
+        {
+            if (!_isEraseByClickMode)
+            {
+                if (_eraserPreview != null) _eraserPreview.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            EnsureEraserPreview();
+            if (_eraserPreview != null)
+            {
+                System.Windows.Controls.Canvas.SetLeft(_eraserPreview, pos.X - EraserRadius);
+                System.Windows.Controls.Canvas.SetTop(_eraserPreview, pos.Y - EraserRadius);
+                if (_eraserPreview.Visibility != Visibility.Visible)
+                {
+                    _eraserPreview.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tạo con trỏ chuột hình Cục Tẩy (Eraser) chuyên nghiệp thay vì dấu '+' mặc định
+        /// </summary>
+        private static Cursor GetOrCreateEraserCursor()
+        {
+            if (_customEraserCursor != null) return _customEraserCursor;
+
+            try
+            {
+                const int size = 32;
+                using var bmp = new System.Drawing.Bitmap(size, size, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using (var g = System.Drawing.Graphics.FromImage(bmp))
+                {
+                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                    g.Clear(System.Drawing.Color.Transparent);
+
+                    var bodyPoints = new System.Drawing.PointF[]
+                    {
+                        new System.Drawing.PointF(4, 26),
+                        new System.Drawing.PointF(14, 26),
+                        new System.Drawing.PointF(27, 8),
+                        new System.Drawing.PointF(17, 8)
+                    };
+
+                    var sleevePoints = new System.Drawing.PointF[]
+                    {
+                        new System.Drawing.PointF(10, 18),
+                        new System.Drawing.PointF(20, 18),
+                        new System.Drawing.PointF(27, 8),
+                        new System.Drawing.PointF(17, 8)
+                    };
+
+                    using var rubberBrush = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(255, 255, 107, 129));
+                    using var sleeveBrush = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(255, 41, 121, 255));
+                    using var outlinePen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(255, 33, 33, 33), 1.5f);
+                    using var whitePen = new System.Drawing.Pen(System.Drawing.Color.FromArgb(200, 255, 255, 255), 1.0f);
+
+                    // Thân tẩy: màu hồng pastel
+                    g.FillPolygon(rubberBrush, bodyPoints);
+                    // Vỏ bọc: màu xanh dương
+                    g.FillPolygon(sleeveBrush, sleevePoints);
+                    // Đường viền phản chiếu ánh sáng
+                    g.DrawLine(whitePen, 6, 24, 11, 17);
+                    // Viền đen sắc nét
+                    g.DrawPolygon(outlinePen, bodyPoints);
+                    // Vạch ngăn giữa vỏ bọc và đầu tẩy
+                    g.DrawLine(outlinePen, 10, 18, 20, 18);
+                }
+
+                IntPtr hIcon = bmp.GetHicon();
+                if (hIcon != IntPtr.Zero)
+                {
+                    if (GetIconInfo(hIcon, out ICONINFO ii))
+                    {
+                        ii.fIcon = false; // false = cursor (không phải icon)
+                        ii.xHotspot = 4;   // Hotspot ở ngay đầu mút tẩy góc dưới-trái
+                        ii.yHotspot = 26;
+                        IntPtr hCursor = CreateIconIndirect(ref ii);
+
+                        if (ii.hbmColor != IntPtr.Zero) DeleteObject(ii.hbmColor);
+                        if (ii.hbmMask != IntPtr.Zero) DeleteObject(ii.hbmMask);
+                        DestroyIcon(hIcon);
+
+                        if (hCursor != IntPtr.Zero)
+                        {
+                            var safeHandle = new Microsoft.Win32.SafeHandles.SafeFileHandle(hCursor, ownsHandle: true);
+                            _customEraserCursor = System.Windows.Interop.CursorInteropHelper.Create(safeHandle);
+                            return _customEraserCursor;
+                        }
+                    }
+                    else
+                    {
+                        DestroyIcon(hIcon);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ Không thể tạo con trỏ tẩy tùy biến: {ex.Message}");
+            }
+
+            return Cursors.Hand; // Dự phòng an toàn
         }
 
         /// <summary>
@@ -613,6 +1155,7 @@ namespace QASmartTouch.Forms
                 {
                     Background = new System.Windows.Media.SolidColorBrush(
                         (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colorHex)),
+                    Tag = "ToastNotification",
                     CornerRadius = new CornerRadius(6),
                     Padding = new Thickness(16, 8, 16, 8),
                     Opacity = 0.92

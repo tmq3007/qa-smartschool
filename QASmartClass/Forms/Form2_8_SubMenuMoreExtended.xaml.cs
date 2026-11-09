@@ -16,6 +16,7 @@ namespace QASmartTouch.Forms
             _mainDashboard = mainDashboard;
             InitializeComponent();
             TouchActivationHelper.ApplyToSubMenu(this, btnClose);
+            TouchScrollHelper.AttachToAllScrollViewers(this);
             if (btnClose != null)
             {
                 System.Windows.Input.Stylus.SetIsPressAndHoldEnabled(btnClose, false);
@@ -70,7 +71,16 @@ namespace QASmartTouch.Forms
             }
             
             // Apply feature visibility on load
-            this.Loaded += (s, e) => ApplyFeatureVisibility();
+            this.Loaded += (s, e) =>
+            {
+                ApplyFeatureVisibility();
+#if SMARTTOUCH_STANDALONE
+                // Bản phát hành QA Smart Touch: ẩn mục chưa có chức năng thật
+                if (btnSettings != null) btnSettings.Visibility = Visibility.Collapsed;
+                if (btnUpdate != null) btnUpdate.Visibility = Visibility.Collapsed;
+                if (gridBottomActions != null) gridBottomActions.Columns = 2;
+#endif
+            };
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
@@ -84,9 +94,14 @@ namespace QASmartTouch.Forms
             // Close this menu first to avoid z-order conflicts
             this.Close();
             
+#if !SMARTTOUCH_STANDALONE
             // Open Form3_3_Settings
             var settingsWindow = new Form3_3_Settings();
             WindowHelper.ShowChildDialog(settingsWindow);
+#else
+            var about = new AboutDialog();
+            WindowHelper.ShowChildDialog(about);
+#endif
         }
 
         private Form2_MainDashboard? GetMainDashboard()
@@ -119,8 +134,13 @@ namespace QASmartTouch.Forms
 
             var openDialog = new Microsoft.Win32.OpenFileDialog
             {
+#if SMARTTOUCH_STANDALONE
+                Title = "Mở tệp bài giảng QA Smart Touch",
+                Filter = "Bài giảng QA Smart Touch (*.qasc)|*.qasc|Tất cả tệp (*.*)|*.*",
+#else
                 Title = "Mở tệp bài giảng QA SmartClass",
                 Filter = "Bài giảng QA SmartClass (*.qasc)|*.qasc|Tất cả tệp (*.*)|*.*",
+#endif
                 DefaultExt = ".qasc",
                 InitialDirectory = defaultDir
             };
@@ -224,7 +244,10 @@ namespace QASmartTouch.Forms
             var mainWindow = GetMainDashboard();
             if (mainWindow != null)
             {
-                mainWindow.SaveCurrentLecture();
+                // QC_4.2_SAVE_UX: Nếu đã có đường dẫn tệp -> Lưu nhanh (Quick Save) và hiện badge, không popup phiền toái.
+                // Nếu chưa từng lưu -> Tự động mở SaveFileDialog để chọn nơi lưu lần đầu.
+                bool isAlreadySaved = !string.IsNullOrWhiteSpace(mainWindow.CurrentLectureFilePath);
+                mainWindow.SaveCurrentLecture(customFilePath: null, showOpenFolderPrompt: !isAlreadySaved);
                 mainWindow.Activate();
             }
             else
@@ -252,31 +275,40 @@ namespace QASmartTouch.Forms
                 System.IO.Directory.CreateDirectory(defaultDir);
             }
 
+            // Gợi ý tên tệp dựa trên bài giảng hiện tại nếu có
+            string defaultName = !string.IsNullOrWhiteSpace(mainWindow.CurrentLectureFilePath)
+                ? System.IO.Path.GetFileNameWithoutExtension(mainWindow.CurrentLectureFilePath) + "_Copy"
+                : $"BaiGiang_{DateTime.Now:yyyyMMdd_HHmm}";
+
             var saveDialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "Lưu bài giảng thành tệp mới",
+                Title = "Lưu bài giảng thành tệp bản sao mới (Save As)",
+#if SMARTTOUCH_STANDALONE
+                Filter = "Bài giảng QA Smart Touch (*.qasc)|*.qasc",
+#else
                 Filter = "Bài giảng QA SmartClass (*.qasc)|*.qasc",
+#endif
                 DefaultExt = ".qasc",
                 InitialDirectory = defaultDir,
-                FileName = $"BaiGiang_{DateTime.Now:yyyyMMdd_HHmm}.qasc"
+                FileName = $"{defaultName}.qasc"
             };
 
             if (saveDialog.ShowDialog(mainWindow) == true)
             {
-                mainWindow.SaveCurrentLecture(saveDialog.FileName);
+                mainWindow.SaveCurrentLecture(saveDialog.FileName, showOpenFolderPrompt: true);
             }
             mainWindow.Activate();
         }
 
         private void btnShareLecture_Click(object sender, RoutedEventArgs e)
         {
-            // Show share options dialog or directly open export dialog
+            // Mở hộp thoại Chia sẻ bài giảng chuyên dụng (QR Code, Link, Email, Tệp USB)
             this.Close();
             var mainWindow = GetMainDashboard();
             if (mainWindow != null)
             {
-                var exportDialog = new Form2_20_ExportLectureDialog(mainWindow);
-                WindowHelper.ShowChildDialog(exportDialog);
+                var shareDialog = new Form2_21_ShareLectureDialog(mainWindow);
+                WindowHelper.ShowChildDialog(shareDialog);
                 mainWindow.Activate();
             }
         }
@@ -289,7 +321,10 @@ namespace QASmartTouch.Forms
             {
                 var exportDialog = new Form2_20_ExportLectureDialog(mainWindow);
                 WindowHelper.ShowChildDialog(exportDialog);
-                mainWindow.Activate();
+                if (!exportDialog.OpenedExternalViewer)
+                {
+                    mainWindow.Activate();
+                }
             }
         }
 
@@ -314,6 +349,29 @@ namespace QASmartTouch.Forms
                 MessageBox.Show("Không tìm thấy bảng trắng để in.", "Lỗi",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+
+        private void btnScreenRecord_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+            if (QASmartTouch.Services.ScreenRecorderService.Instance.IsSessionActive)
+            {
+                var existingBar = Application.Current.Windows.OfType<FloatingRecorderBar>().FirstOrDefault();
+                if (existingBar != null)
+                {
+                    existingBar.Show();
+                    existingBar.Activate();
+                }
+                MessageBox.Show(
+                    "Hệ thống đang trong phiên ghi hình bài giảng.\nVui lòng sử dụng thanh điều khiển ghi hình nổi ở góc trên màn hình.",
+                    "Đang Ghi Hình",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            var setupDialog = new PreRecordSetupDialog();
+            setupDialog.ShowDialog();
         }
 
         private void btnCameraAI_Click(object sender, RoutedEventArgs e)
@@ -341,9 +399,13 @@ namespace QASmartTouch.Forms
             // Close this menu first to avoid z-order conflicts
             this.Close();
             
+#if !SMARTTOUCH_STANDALONE
             // Open Form4_1_QuickSurvey
             var surveyWindow = new Form4_1_QuickSurvey();
             WindowHelper.ShowChildDialog(surveyWindow);
+#else
+            MessageBox.Show("Tính năng Khảo sát nhanh yêu cầu phân hệ QA SmartClass kết nối với học sinh.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+#endif
         }
 
         private void btnQuickVote_Click(object sender, RoutedEventArgs e)
@@ -358,8 +420,32 @@ namespace QASmartTouch.Forms
             this.Close();
             
             // Open Countdown Timer window
+            var mainWindow = GetMainDashboard();
+            mainWindow?.RegisterRecentTool("more:Timer", "Đồng hồ đếm", QASmartTouch.Services.Tools.RecentToolsManager.CompassIconPath, System.Windows.Media.Color.FromRgb(0xE1, 0x70, 0x55), () => WindowHelper.ShowChildWindow(new Form2_19_CountdownTimer()), "Dùng lại: Đồng hồ đếm ngược");
             var countdownTimer = new Form2_19_CountdownTimer();
             WindowHelper.ShowChildWindow(countdownTimer);
+        }
+
+        private void btnVariationTable_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+            var mainWindow = GetMainDashboard();
+            mainWindow?.RegisterRecentTool(
+                "insert:VariationTable",
+                "Bảng biến thiên",
+                QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                System.Windows.Media.Color.FromRgb(0x6C, 0x5C, 0xE7),
+                () =>
+                {
+                    var dlg = new Form2_VariationTableDialog(mainWindow);
+                    dlg.Owner = mainWindow ?? Application.Current.MainWindow;
+                    dlg.ShowDialog();
+                },
+                "Dùng lại: Bảng biến thiên & Khảo sát hàm số");
+
+            var dialog = new Form2_VariationTableDialog(mainWindow);
+            dialog.Owner = mainWindow ?? Application.Current.MainWindow;
+            dialog.ShowDialog();
         }
 
         private void btnCalculator_Click(object sender, RoutedEventArgs e)
@@ -367,9 +453,14 @@ namespace QASmartTouch.Forms
             // Close this menu first
             this.Close();
             
-            // Open Calculator window
-            var calculator = new CalculatorWindow();
-            WindowHelper.ShowChildDialog(calculator);
+            // Open QA Calculator window (Reused Modeless Floating Tool - Instant 0ms)
+            var mainWindow = GetMainDashboard();
+            mainWindow?.RegisterRecentTool("more:Calculator", "Máy tính", QASmartTouch.Services.Tools.RecentToolsManager.CalculatorIconPath, System.Windows.Media.Color.FromRgb(0x09, 0x84, 0xE3), () => { var calc = CalculatorWindow.GetOrCreateInstance(mainWindow); calc.Owner = mainWindow ?? Application.Current.MainWindow; calc.Show(); calc.WindowState = WindowState.Normal; try { calc.Activate(); } catch { } }, "Dùng lại: Máy tính cầm tay");
+            var calculator = CalculatorWindow.GetOrCreateInstance(mainWindow);
+            calculator.Owner = mainWindow ?? Application.Current.MainWindow;
+            calculator.Show();
+            calculator.WindowState = WindowState.Normal;
+            try { calculator.Activate(); } catch { }
         }
 
         private void btnHelp_Click(object sender, RoutedEventArgs e)
@@ -422,8 +513,8 @@ namespace QASmartTouch.Forms
                 // Camera Configuration - Advanced feature
                 btnCameraConfig?.SetVisibilityByFeature("camera_config");
                 
-                // Quick Survey - Utility feature
-                btnQuickSurvey?.SetVisibilityByFeature("quick_survey");
+                // Quick Survey - Utility feature (Disabled for standalone whiteboard)
+                // btnQuickSurvey?.SetVisibilityByFeature("quick_survey");
                 
                 // =====================================================
                 // ENABLED FEATURES (always visible in v1.0)

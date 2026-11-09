@@ -32,14 +32,17 @@ namespace QASmartTouch.Utilities
                     return true;
 
                 // ✅ QC_4.2_WIDGET_GUARD: Kiểm tra DragHandle hoặc Container widget tương tác (YouTube, Google Maps, Widget, SelectionBox)
+                // ⚠️ LƯU Ý SƯ PHẠM: InteractiveImage KHÔNG bị coi là InteractiveControl ở đây để cho phép GV
+                // viết/vẽ (Bút thường, Bút laser, Bút dạ quang), vẽ hình học và tẩy xóa trực tiếp lên bề mặt ảnh.
+                // Thao tác kéo di chuyển ảnh đã được bảo vệ độc lập qua thanh tiêu đề DragHandle.
                 if (obj is FrameworkElement fe)
                 {
                     if (fe.Tag is string tagStr && 
                         (tagStr == "DragHandle" || tagStr == "InteractiveYouTubeVideo" || 
-                         tagStr == "InteractiveGoogleMaps" || tagStr == "InteractiveImage" || 
+                         tagStr == "InteractiveGoogleMaps" || 
                          tagStr == "InteractiveLocalVideo" ||
                          tagStr == "SelectionBox" || tagStr == "YouTubeControlPanel" || 
-                         tagStr == "GoogleMapsControlPanel" || tagStr == "ImageControlPanel" || 
+                         tagStr == "GoogleMapsControlPanel" || 
                          tagStr == "VideoControlPanel" || tagStr == "ResizeHandle"))
                     {
                         return true;

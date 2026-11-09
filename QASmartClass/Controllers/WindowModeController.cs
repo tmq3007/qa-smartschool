@@ -14,11 +14,8 @@ namespace QASmartTouch.Controllers
         private Forms.FloatingToolbarWindow? _toolbar;
         private Forms.AnnotationOverlay? _overlay;
         private Forms.ColorPickerPopup? _colorPicker;
-        private Forms.FloatingCameraWindow? _floatingCamera;
         private Forms.Form2_MainDashboard _mainApp;
         private Services.ScreenCaptureService? _screenCapture;
-        private Services.ScreenRecorderService? _screenRecorder;
-        private System.Windows.Threading.DispatcherTimer? _recordingTimer;
         private bool _isWindowModeActive = false;
         private bool _isPenMode = false;
         private bool _isMouseMode = false;
@@ -27,6 +24,8 @@ namespace QASmartTouch.Controllers
         // ✅ FIX: Lưu giá trị màu và độ dày bút đã chọn để khôi phục khi mở lại popup
         private System.Windows.Media.Color _savedPenColor = System.Windows.Media.Colors.Red;
         private double _savedPenThickness = 3;
+        private string _savedBrushType = "Normal";
+        private DateTime _lastColorPickerClosedTime = DateTime.MinValue;
         private readonly System.Collections.Generic.List<Forms.QuickDockTabWindow> _dockTabs = new();
 
         public bool IsWindowModeActive => _isWindowModeActive;
@@ -41,7 +40,6 @@ namespace QASmartTouch.Controllers
             
             // Initialize services
             _screenCapture = new Services.ScreenCaptureService();
-            _screenRecorder = new Services.ScreenRecorderService();
             
             System.Diagnostics.Debug.WriteLine("✅ WindowModeController initialized with services");
         }
@@ -76,6 +74,10 @@ namespace QASmartTouch.Controllers
                 
                 // Create and show toolbar
                 _toolbar = new Forms.FloatingToolbarWindow();
+                if (_overlay != null)
+                {
+                    _toolbar.Owner = _overlay;
+                }
                 
                 // Subscribe to events
                 _toolbar.BackToMainApp += OnBackToMainApp;
@@ -89,17 +91,9 @@ namespace QASmartTouch.Controllers
                 _toolbar.WindowModeToggled += OnWindowModeToggled;
                 _toolbar.SelectDisplayRequested += OnSelectDisplayRequested;
                 _toolbar.SelectAreaRequested += OnSelectAreaRequested;
-                _toolbar.RecordToggled += OnRecordToggled;
-                _toolbar.CameraToggled += OnCameraToggled;
-
-                _toolbar.RecordingOptionsSelected += OnRecordingOptionsSelected;
                 _toolbar.DeleteLastStrokeRequested += OnDeleteLastStrokeRequested;
                 _toolbar.MouseModeRequested += OnMouseModeRequested;
                 _toolbar.ToolbarHidden += OnToolbarHidden;
-                
-                // Subscribe Save event
-                if (_screenRecorder != null)
-                    _screenRecorder.SaveCompleted += OnRecordingSaveCompleted;
                 
                 if (_overlay?.UndoRedoManager != null)
                 {
@@ -114,6 +108,10 @@ namespace QASmartTouch.Controllers
                 
                 // Hiển thị 4 nút Quick Dock Tabs ở các vị trí mép/góc màn hình
                 CreateAndShowDockTabs();
+
+                // Khởi tạo mặc định ở chế độ Chuột (đồng bộ với trạng thái click-through ban đầu của overlay)
+                _isMouseMode = true;
+                _toolbar.SetActiveToolButton("mouse");
 
                 _isWindowModeActive = true;
                 
@@ -142,17 +140,8 @@ namespace QASmartTouch.Controllers
 
             try
             {
-                // 1. Dừng ghi hình an toàn nếu đang chạy
-                if (_screenRecorder != null && _screenRecorder.IsRecording)
-                {
-                    _recordingTimer?.Stop();
-                    _recordingTimer = null;
-                    _screenRecorder.StopRecording();
-                    System.Diagnostics.Debug.WriteLine("⏹️ Screen recording stopped safely upon toolbar close");
-                }
-
-                // 2. Hỏi lưu nháp nếu phát hiện có nét vẽ trên bảng
-                if (_overlay != null && _overlay.UndoRedoManager != null && _overlay.UndoRedoManager.CanUndo)
+                // Hỏi lưu nháp nếu phát hiện vẫn còn nét vẽ thực tế trên màn hình
+                if (_overlay != null && _overlay.HasAnnotations)
                 {
                     var confirm = MessageBox.Show(
                         "Bạn có các nét vẽ chưa lưu trên màn hình. Bạn có muốn lưu lại ảnh chụp màn hình kèm chú thích trước khi thoát không?",
@@ -200,9 +189,6 @@ namespace QASmartTouch.Controllers
                     _toolbar.WindowModeToggled -= OnWindowModeToggled;
                     _toolbar.SelectDisplayRequested -= OnSelectDisplayRequested;
                     _toolbar.SelectAreaRequested -= OnSelectAreaRequested;
-                    _toolbar.RecordToggled -= OnRecordToggled;
-                    _toolbar.CameraToggled -= OnCameraToggled;
-
                     _toolbar.DeleteLastStrokeRequested -= OnDeleteLastStrokeRequested;
                     _toolbar.MouseModeRequested -= OnMouseModeRequested;
                     _toolbar.ToolbarHidden -= OnToolbarHidden;
@@ -257,6 +243,10 @@ namespace QASmartTouch.Controllers
             foreach (var pos in positions)
             {
                 var tab = new Forms.QuickDockTabWindow(pos);
+                if (_overlay != null)
+                {
+                    tab.Owner = _overlay;
+                }
                 tab.DockTabClicked += OnDockTabClicked;
                 
                 // Nếu toolbar đang ở vị trí này, ẩn icon button đó đi (vì toolbar đã tràn ra tại cạnh đó)
@@ -333,7 +323,14 @@ namespace QASmartTouch.Controllers
         /// </summary>
         private void DeactivateAllModes()
         {
-            // 1. T\u1eaft Erase-by-Click n\u1ebfu \u0111ang b\u1eadt
+            // Đóng color picker nếu đang mở
+            if (_colorPicker != null)
+            {
+                _colorPicker.Close();
+                _colorPicker = null;
+            }
+
+            // 1. Tắt Erase-by-Click nếu đang bật
             if (_isEraseByClickActive)
             {
                 _isEraseByClickActive = false;
@@ -370,25 +367,19 @@ namespace QASmartTouch.Controllers
 
             if (_overlay == null) return;
 
-            if (_isMouseMode)
-            {
-                // Đang ở mouse mode → tắt đi (toggle off)
-                DeactivateAllModes();
-                System.Diagnostics.Debug.WriteLine("🖥️ Mouse mode OFF");
-            }
-            else
-            {
-                // Tắt tất cả các mode khác
-                DeactivateAllModes();
+            // Tắt tất cả các mode khác (Bút / Xóa nét / ColorPicker)
+            DeactivateAllModes();
 
-                // Bật Mouse mode: overlay không chặn click, cho phép tương tác với cửa sổ bên dưới
-                _isMouseMode = true;
-                _overlay.SetMouseMode(true);
+            // Tự động dọn sạch các nét vẽ chú thích cũ để trả lại màn hình DESKTOP trống hoàn toàn
+            _overlay.ClearAllAndResetHistory();
 
-                _toolbar?.SetActiveToolButton("mouse");
-                _overlay?.ShowToast("🖥️ Chế độ chuột – bạn có thể di chuyển và tương tác màn hình", "#388E3C");
-                System.Diagnostics.Debug.WriteLine("🖥️ Mouse mode ON");
-            }
+            // Bật Mouse mode: overlay không chặn click, cho phép tương tác với cửa sổ bên dưới
+            _isMouseMode = true;
+            _overlay.SetMouseMode(true);
+
+            _toolbar?.SetActiveToolButton("mouse");
+            _overlay?.ShowToast("🖥️ Chế độ chuột – bạn có thể di chuyển và tương tác màn hình", "#388E3C");
+            System.Diagnostics.Debug.WriteLine("🖥️ Mouse mode ON (annotations cleared)");
         }
         
         private void OnToolbarRepositionRequested(object? sender, Forms.ToolbarSideEventArgs e)
@@ -403,24 +394,42 @@ namespace QASmartTouch.Controllers
 
             if (_overlay == null) return;
 
-            // Tắt tất cả chế độ hiện tại
+            // Nếu ĐÃ ở chế độ Pen:
+            if (_isPenMode)
+            {
+                // Nếu vừa mới đóng ColorPicker (ví dụ do click Deactivated từ nút toolbar), tránh mở lại ngay
+                if ((DateTime.UtcNow - _lastColorPickerClosedTime).TotalMilliseconds < 250)
+                {
+                    return;
+                }
+
+                // Nhấn nút Pen lần 2 khi đã ở Pen mode -> Bật/Tắt bảng chọn màu & độ nét (Chuẩn i-Pro 5)
+                if (_colorPicker != null && _colorPicker.IsVisible)
+                {
+                    _colorPicker.Close();
+                    _colorPicker = null;
+                }
+                else
+                {
+                    ShowColorPicker();
+                }
+                return;
+            }
+
+            // Nếu CHƯA ở chế độ Pen (chuyển từ Mouse mode, Erase mode hoặc vừa mở DESKTOP):
+            // Tắt tất cả chế độ khác
             DeactivateAllModes();
 
-            // Lần đầu bật Pen -> không chụp ảnh màn hình nữa, để màn hình trong suốt (live)
-            // (Đoạn chụp ảnh nền đã được loại bỏ theo yêu cầu của người dùng để vẽ trực tiếp)
-
-            // Bật Pen mode
+            // Bật Pen mode ngay lập tức với màu và kích thước hiện tại
             _isPenMode = true;
             _overlay.SetPenMode(true);
             _overlay.SetTool(Forms.AnnotationTool.Pen);
-            _overlay.Focus();
-            _overlay.Activate();
+            _overlay.SetBrushType(_savedBrushType);
 
-            // Highlight nút Pen
+            // Highlight nút Pen trên thanh công cụ
             _toolbar?.SetActiveToolButton("pen");
 
-            // Hiển color picker
-            ShowColorPicker();
+            // Option A (Chuẩn i-Pro 5): KHÔNG tự động hiện ColorPicker ở lần bấm đầu tiên -> Người dùng viết được ngay lập tức!
         }
 
         private void OnShapesSelected(object? sender, EventArgs e)
@@ -442,7 +451,7 @@ namespace QASmartTouch.Controllers
             System.Diagnostics.Debug.WriteLine("🗑️ Clear all requested");
 
             var result = MessageBox.Show(
-                "Bạn có chắc muốn xóa tất cả vẽ?\n\nHành động này không thể hoàn tác.",
+                "Bạn có chắc muốn xóa tất cả?",
                 "Xóa tất cả", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
@@ -774,202 +783,6 @@ namespace QASmartTouch.Controllers
         [System.Runtime.InteropServices.DllImport("gdi32.dll")]
         private static extern bool DeleteObject(IntPtr hObject);
 
-        private void OnCameraToggled(object? sender, EventArgs e)
-        {
-            if (_floatingCamera == null)
-            {
-                _floatingCamera = new Forms.FloatingCameraWindow();
-                _floatingCamera.CameraClosed += () => _floatingCamera = null;
-                
-                var screenW = SystemParameters.PrimaryScreenWidth;
-                var screenH = SystemParameters.PrimaryScreenHeight;
-                _floatingCamera.Left = screenW - _floatingCamera.Width - 30;
-                _floatingCamera.Top = screenH - _floatingCamera.Height - 80;
-                
-                _floatingCamera.Show();
-                _floatingCamera.Activate();
-            }
-            else
-            {
-                _floatingCamera.Close();
-                _floatingCamera = null;
-            }
-        }
-
-        private void OnRecordToggled(object? sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("⏺️ Record toggled");
-            
-            if (_screenRecorder == null)
-            {
-                MessageBox.Show("Dịch vụ ghi màn hình chưa sẵn sàng", 
-                              "Lỗi", 
-                              MessageBoxButton.OK, 
-                              MessageBoxImage.Error);
-                return;
-            }
-            
-            if (_screenRecorder.IsRecording)
-            {
-                StopRecording();
-            }
-            // else case is now handled by popup and OnRecordingOptionsSelected
-        }
-
-        private void OnRecordingOptionsSelected(object? sender, Forms.FloatingToolbarWindow.RecordingOptionsEventArgs e)
-        {
-            if (e.IncludeCamera)
-            {
-                if (_floatingCamera == null)
-                {
-                    _floatingCamera = new Forms.FloatingCameraWindow();
-                    _floatingCamera.CameraClosed += () => _floatingCamera = null;
-                }
-
-                double screenW = SystemParameters.PrimaryScreenWidth;
-                double screenH = SystemParameters.PrimaryScreenHeight;
-                _floatingCamera.Left = screenW - _floatingCamera.Width - 30;
-                _floatingCamera.Top = screenH - _floatingCamera.Height - 80;
-                _floatingCamera.Show();
-                _floatingCamera.Activate();
-            }
-
-            StartRecording(e.IncludeMicrophone, e.IncludeSystemAudio);
-        }
-
-        #endregion
-
-        #region Recording Methods
-
-        private void StartRecording(bool enableMicrophone = true, bool enableSystemAudio = true)
-        {
-            try
-            {
-                _screenRecorder?.StartRecording(enableMicrophone, enableSystemAudio, null);
-                _toolbar?.SetRecordingState(true);
-
-                // Timer hiển thị thời gian ghi
-                _recordingTimer = new System.Windows.Threading.DispatcherTimer
-                {
-                    Interval = TimeSpan.FromSeconds(1)
-                };
-                _recordingTimer.Tick += RecordingTimer_Tick;
-                _recordingTimer.Start();
-
-                // Hiển toast nhỏ thay vì MessageBox toàn màn hình
-                string audioInfo = (enableMicrophone && enableSystemAudio) ? "Mic + Máy" : (enableMicrophone ? "Chỉ Mic" : (enableSystemAudio ? "Chỉ Máy" : "Tắt tiếng"));
-                _overlay?.ShowToast($"⏺️ Đang ghi màn hình ({audioInfo}) | Nhấn nút ● lại để dừng", "#5C6BC0");
-
-                System.Diagnostics.Debug.WriteLine($"⏺️ Recording started (MP4, Mic: {enableMicrophone}, SysAudio: {enableSystemAudio})");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Start recording error: {ex.Message}");
-                _toolbar?.SetRecordingState(false);
-                MessageBox.Show($"Lỗi khi bắt đầu ghi:\n{ex.Message}", "Lỗi",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void StopRecording()
-        {
-            try
-            {
-                _recordingTimer?.Stop();
-                _recordingTimer = null;
-
-                _screenRecorder?.StopRecording();
-                _toolbar?.SetRecordingState(false);
-
-                // Auto hide floating camera when recording stops
-                if (_floatingCamera != null)
-                {
-                    _floatingCamera.Close();
-                    _floatingCamera = null;
-                }
-
-                _overlay?.ShowToast("💾 Đang lưu file ghi màn hình MP4...", "#E65100");
-
-                System.Diagnostics.Debug.WriteLine("⏹️ Recording stopped, saving in background...");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Stop recording error: {ex.Message}");
-                MessageBox.Show($"Lỗi khi dừng ghi:\n{ex.Message}", "Lỗi",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void OnRecordingSaveCompleted(string? savedPath, string? errorMessage)
-        {
-            System.Diagnostics.Debug.WriteLine($"✅ Recording save completed: {savedPath}, Error: {errorMessage}");
-
-            if (savedPath != null && System.IO.File.Exists(savedPath))
-            {
-                var dialog = new Microsoft.Win32.SaveFileDialog
-                {
-                    Title = "Lưu video ghi màn hình",
-                    Filter = "MP4 Video|*.mp4|All Files|*.*",
-                    DefaultExt = ".mp4",
-                    FileName = $"Bài_giảng_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
-                };
-
-                if (dialog.ShowDialog() == true)
-                {
-                    try
-                    {
-                        if (System.IO.File.Exists(dialog.FileName))
-                        {
-                            System.IO.File.Delete(dialog.FileName);
-                        }
-                        System.IO.File.Move(savedPath, dialog.FileName);
-                        
-                        var res = MessageBox.Show(
-                            $"Đã lưu video thành công tại:\n{dialog.FileName}\n\nBạn có muốn mở video không?",
-                            "Lưu video", MessageBoxButton.YesNo, MessageBoxImage.Information);
-
-                        if (res == MessageBoxResult.Yes)
-                        {
-                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                            {
-                                FileName = dialog.FileName,
-                                UseShellExecute = true
-                            });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Lỗi khi lưu video:\n{ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-                else
-                {
-                    // User cancelled, maybe keep it in temp or delete?
-                    // Optional: delete the temp file
-                    try { System.IO.File.Delete(savedPath); } catch { }
-                }
-            }
-            else
-            {
-                var msg = savedPath == null
-                        ? $"Không có frames nào được ghi. Vui lòng thử lại.\nLỗi chi tiết: {errorMessage}"
-                        : $"Lỗi: File không được tạo!\n{savedPath}";
-
-                MessageBox.Show(
-                    msg,
-                    "Lỗi ghi màn hình", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void RecordingTimer_Tick(object? sender, EventArgs e)
-        {
-            // Update UI with recording time
-            var time = _screenRecorder?.GetFormattedRecordingTime() ?? "00:00";
-            System.Diagnostics.Debug.WriteLine($"⏱️ Recording: {time}");
-            
-            _toolbar?.UpdateRecordingTime(time);
-        }
-
         #endregion
 
         #region Color Picker
@@ -1006,12 +819,17 @@ namespace QASmartTouch.Controllers
                 }
 
                 // Create new color picker
-                _colorPicker = new Forms.ColorPickerPopup(_savedPenColor, _savedPenThickness);
+                _colorPicker = new Forms.ColorPickerPopup(_savedPenColor, _savedPenThickness, _savedBrushType);
                 _colorPicker.WindowStartupLocation = WindowStartupLocation.Manual; // Bắt buộc để nhận Left/Top
+                if (_toolbar != null)
+                {
+                    _colorPicker.Owner = _toolbar;
+                }
                 
                 // Subscribe to events
                 _colorPicker.ColorChanged += OnColorChanged;
                 _colorPicker.ThicknessChanged += OnThicknessChanged;
+                _colorPicker.BrushTypeChanged += OnBrushTypeChanged;
                 _colorPicker.Closed += OnColorPickerClosed;
                 
                 // Tính toán tọa độ vật lý cho ColorPicker
@@ -1121,12 +939,11 @@ namespace QASmartTouch.Controllers
         private void OnColorPickerClosed(object? sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("🎨 Color picker confirmed - closed");
+            _lastColorPickerClosedTime = DateTime.UtcNow;
+            _colorPicker = null;
             
             if (_overlay != null && _isPenMode)
             {
-                // Cấp lại Focus cho overlay để nhận nét vẽ ngay lập tức
-                _overlay.Focus();
-                _overlay.Activate();
                 System.Diagnostics.Debug.WriteLine("✅ Ready to draw on desktop screenshot");
             }
         }
@@ -1180,6 +997,22 @@ namespace QASmartTouch.Controllers
             _savedPenThickness = e.Thickness;
             _overlay?.SetThickness(e.Thickness);
             System.Diagnostics.Debug.WriteLine($"📏 Thickness changed to: {e.Thickness}px");
+        }
+
+        private void OnBrushTypeChanged(object? sender, string brushType)
+        {
+            _savedBrushType = brushType;
+            _overlay?.SetBrushType(brushType);
+            System.Diagnostics.Debug.WriteLine($"🖌️ Brush type changed to: {brushType}");
+            
+            if (brushType == "Shape")
+            {
+                _overlay?.ShowToast("📐 Đã bật Bút nhận diện hình", "#5C6BC0");
+            }
+            else
+            {
+                _overlay?.ShowToast("✏️ Đã bật Bút vẽ thường", "#5C6BC0");
+            }
         }
 
         #endregion

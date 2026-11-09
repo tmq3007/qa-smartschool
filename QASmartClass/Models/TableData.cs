@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -254,6 +254,36 @@ namespace QASmartTouch.Models
         public double GetTotalHeight()
         {
             return Rows.Sum(row => row.Height);
+        }
+
+        /// <summary>
+        /// Chia đều độ rộng tất cả các cột
+        /// </summary>
+        public void DistributeColumnsEvenly()
+        {
+            if (ColumnCount <= 0) return;
+            double total = GetTotalWidth();
+            double avg = Math.Max(total / ColumnCount, 35);
+            foreach (var col in Columns)
+            {
+                col.Width = avg;
+            }
+            OnPropertyChanged(nameof(Columns));
+        }
+
+        /// <summary>
+        /// Chia đều chiều cao tất cả các hàng
+        /// </summary>
+        public void DistributeRowsEvenly()
+        {
+            if (RowCount <= 0) return;
+            double total = GetTotalHeight();
+            double avg = Math.Max(total / RowCount, 25);
+            foreach (var row in Rows)
+            {
+                row.Height = avg;
+            }
+            OnPropertyChanged(nameof(Rows));
         }
 
         protected void OnPropertyChanged(string propertyName)

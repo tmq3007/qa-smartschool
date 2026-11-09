@@ -87,6 +87,12 @@ namespace QASmartTouch.Services
                         continue;
                     }
 
+                    // ✅ Bảo toàn lớp mực vẽ tay Native Inking (MainInkPresenter) khi xuất bài giảng
+                    if (child is System.Windows.Controls.InkPresenter)
+                    {
+                        continue;
+                    }
+
                     if (isSystemElementPredicate != null && isSystemElementPredicate(child) && child.Visibility == Visibility.Visible)
                     {
                         hiddenElements.Add((child, child.Visibility));

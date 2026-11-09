@@ -3,7 +3,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Threading.Tasks;
+#if !SMARTTOUCH_STANDALONE
 using Microsoft.Data.Sqlite;
+#endif
 using QASmartClass.Services;
 
 namespace QASmartClass.Helpers
@@ -113,6 +115,7 @@ namespace QASmartClass.Helpers
 
         private static async Task BackupDatabaseAsync(string destDbPath, bool anonymizeData)
         {
+#if !SMARTTOUCH_STANDALONE
             string srcPath = AppPaths.DatabaseFile;
             if (!File.Exists(srcPath)) return;
 
@@ -163,6 +166,9 @@ namespace QASmartClass.Helpers
                 }
                 catch { }
             }
+#else
+            await Task.CompletedTask;
+#endif
         }
 
         private static void CollectRecentLogs(string destDir)

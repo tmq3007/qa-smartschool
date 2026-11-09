@@ -8,14 +8,15 @@
         Background="Transparent"
         Topmost="True" 
         ShowInTaskbar="False"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        TouchDown="Window_TouchDown">
     
-    <Border x:Name="CameraBorder" CornerRadius="110" BorderBrush="#5C6BC0" BorderThickness="3" Background="#1E1E2E" ClipToBounds="True">
+    <Border x:Name="CameraBorder" CornerRadius="110" BorderBrush="#3B82F6" BorderThickness="3" Background="#1E1E2E" ClipToBounds="True">
         <Border.Effect>
-            <DropShadowEffect Color="#000000" BlurRadius="12" Opacity="0.5" ShadowDepth="3"/>
+            <DropShadowEffect Color="#000000" BlurRadius="16" Opacity="0.6" ShadowDepth="4"/>
         </Border.Effect>
         <Grid>
-            <!-- Camera Preview via Rectangle with ImageBrush (Perfect Circle & Rounded-Rect Clipping) -->
+            <!-- Camera Preview via Rectangle with ImageBrush -->
             <Rectangle x:Name="CameraRect" RadiusX="107" RadiusY="107">
                 <Rectangle.Fill>
                     <ImageBrush x:Name="CameraBrush" Stretch="UniformToFill" />
@@ -27,12 +28,23 @@
                 <TextBlock x:Name="txtStatus" Text="📷 Đang bật camera..." Foreground="#A6ADC8" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="10"/>
             </StackPanel>
             
-            <!-- Mini Controls (Hidden by default, shown on hover) -->
-            <StackPanel x:Name="ControlsPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Opacity="0" Background="#99000000">
-                <Button x:Name="btnFlip" Content="Lật" Width="36" Height="24" Margin="2" Click="btnFlip_Click" Foreground="White" Background="#33FFFFFF" BorderThickness="0" FontSize="11" Cursor="Hand"/>
-                <Button x:Name="btnShape" Content="Dạng" Width="48" Height="24" Margin="2" Click="btnShape_Click" Foreground="White" Background="#33FFFFFF" BorderThickness="0" FontSize="11" Cursor="Hand"/>
-                <Button x:Name="btnClose" Content="✕" Width="28" Height="24" Margin="2" Click="btnClose_Click" Foreground="White" Background="#CCBF616A" BorderThickness="0" FontWeight="Bold" FontSize="12" Cursor="Hand"/>
-            </StackPanel>
+            <!-- Mini Controls (Tự động hiển thị khi rê chuột hoặc chạm) -->
+            <Border x:Name="ControlsPanel" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Opacity="0" Background="#CC11111B" CornerRadius="14" Padding="4">
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="btnFlip" Content="Lật" Width="36" Height="28" Margin="2" Click="btnFlip_Click" Foreground="White" Background="#33FFFFFF" BorderThickness="0" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
+                    </Button>
+                    <Button x:Name="btnSize" Content="Cỡ" Width="36" Height="28" Margin="2" Click="btnSize_Click" Foreground="White" Background="#33FFFFFF" BorderThickness="0" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
+                    </Button>
+                    <Button x:Name="btnShape" Content="Dạng" Width="44" Height="28" Margin="2" Click="btnShape_Click" Foreground="White" Background="#33FFFFFF" BorderThickness="0" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
+                    </Button>
+                    <Button x:Name="btnClose" Content="✕" Width="30" Height="28" Margin="2" Click="btnClose_Click" Foreground="White" Background="#CCEF4444" BorderThickness="0" FontWeight="Bold" FontSize="12" Cursor="Hand">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
+                    </Button>
+                </StackPanel>
+            </Border>
         </Grid>
         
         <Border.Triggers>

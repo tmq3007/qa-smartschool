@@ -364,7 +364,8 @@
 
             <!-- CONTENT -->
 
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,15,0,0">
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,15,0,0"
+                          PanningMode="Both" PanningDeceleration="0.002">
 
                 <StackPanel>
 
@@ -470,13 +471,13 @@
 
                                Click="btnBackground_Click"
 
-                               Tag="#F8F9FA">
+                               Tag="#B0BEC5">
 
                             <StackPanel>
 
                                 <Border Width="40" Height="30" 
 
-                                       Background="#F8F9FA"
+                                       Background="#B0BEC5"
 
                                        BorderBrush="#DFE4EA"
 
@@ -1034,17 +1035,14 @@
 
                         <!-- ✨ NEW: Load Background Image Button -->
 
-                        <Button Height="65" Margin="4"
-
+                        <Button x:Name="btnLoadImage"
+                               Height="65" Margin="4"
                                Background="White"
-
                                BorderBrush="#DFE4EA"
-
                                BorderThickness="1"
-
                                Cursor="Hand"
-
-                               Click="btnLoadBackgroundImage_Click">
+                               Click="btnLoadBackgroundImage_Click"
+                               Tag="CustomImage">
 
                             <StackPanel>
 
@@ -1184,7 +1182,7 @@
 
                                     Maximum="100"
 
-                                    Value="10"
+                                    Value="25"
 
                                     TickFrequency="5"
 
@@ -1208,7 +1206,7 @@
 
                                 <TextBlock x:Name="OpacityValueText"
 
-                                           Text="10%"
+                                           Text="25%"
 
                                            FontSize="12"
 

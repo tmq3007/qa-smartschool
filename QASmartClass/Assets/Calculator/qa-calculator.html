@@ -1,0 +1,3476 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>QA Calculator</title>
+  <style>
+    /* CRITICAL FIX: Hide all elements with hidden attribute */
+    [hidden] {
+      display: none !important;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #1d4850;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow-y: auto;
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Hide scrollbar for a clean app feel */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #2b6069;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #calculator {
+      position: static !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-height: 100% !important;
+      border-radius: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      right: auto !important;
+      top: auto !important;
+    }
+
+    /* Hide redundant inner handle */
+    #calcHandle {
+      display: none !important;
+    }
+
+    /* Footer: Full Width prominent Insert button */
+    .calc-footer {
+      margin-top: auto;
+      padding: 8px 14px 14px !important;
+      display: flex !important;
+    }
+
+    .calc-footer #insertResult {
+      flex: 1 !important;
+      width: 100% !important;
+      height: 42px !important;
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.02em !important;
+      border-radius: 9px !important;
+      background: linear-gradient(180deg, #1f7a6c 0%, #135e53 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid #3ca593 !important;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+      cursor: pointer !important;
+      transition: transform 0.08s ease, filter 0.15s ease !important;
+    }
+
+    .calc-footer #insertResult:hover {
+      filter: brightness(1.1) !important;
+    }
+
+    .calc-footer #insertResult:active {
+      transform: translateY(1px) !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20, 107, 89, 0.95);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-5px);
+    }
+
+    #calculator {
+      position: fixed;
+      right: 295px;
+      top: 96px;
+      width: 388px;
+      z-index: 45;
+      border: 1px solid #d5e0e5;
+      border-radius: 14px;
+      background: #f8fafc;
+      box-shadow: 0 15px 55px #253c5038;
+      color: #31485e;
+      max-height: calc(100vh - 24px);
+      overflow-y: auto;
+      overscroll-behavior: contain
+    }
+
+    #calcHandle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px 6px 16px;
+      border-bottom: 1px solid #e0e7ed;
+      cursor: move;
+      touch-action: none;
+      user-select: none;
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 3
+    }
+
+    #calcHandle>span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em
+    }
+
+    #calcHandle svg {
+      width: 17px;
+      height: 17px
+    }
+
+    .nbc-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 8px 10px 0
+    }
+
+    .nbc-tabs button {
+      flex: 1;
+      padding: 6px 4px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      color: #5b7188;
+      background: #eef3f6
+    }
+
+    .nbc-tabs button.on {
+      background: #168b82;
+      color: #fff
+    }
+
+    .nbc-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 10px 0;
+      font-size: 10px;
+      color: #8a9aa9
+    }
+
+    .nbc-status button {
+      font-size: 10px;
+      color: #168b82;
+      background: #e4f1ed;
+      padding: 3px 7px;
+      border-radius: 4px
+    }
+
+    .nbc-status #nbcEng {
+      color: #7d8f9f;
+      background: #eef2f5
+    }
+
+    .nbc-status #nbcEng.on {
+      color: #fff;
+      background: #168b82
+    }
+
+    #nbcFlag {
+      color: #b4553f;
+      font-weight: 600
+    }
+
+    .nbc-status .sp {
+      flex: 1
+    }
+
+    #calculator:not(.mode-calc) #nbcSD {
+      opacity: .85
+    }
+
+    .nbc-screen {
+      margin: 8px 10px 0;
+      border: 1px solid #d3e2df;
+      border-radius: 10px;
+      background: #fbfdfc;
+      padding: 7px 10px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px
+    }
+
+    .nbc-editor {
+      min-height: 46px;
+      font-size: 21px;
+      line-height: 1.3;
+      outline: none;
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      padding: 5px 3px;
+      cursor: text;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      scrollbar-width: thin
+    }
+
+    .nbc-editor:focus {
+      background: #f2f8f6
+    }
+
+    .nbc-result {
+      display: block;
+      text-align: right;
+      font-size: 25px;
+      min-height: 38px;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 2px 2px 0;
+      scrollbar-width: thin
+    }
+
+    .nbc-result .lab {
+      font-size: .68em;
+      color: #5b7188
+    }
+
+    .nbc-result .sep {
+      margin-right: .35em;
+      color: #8a9aa9
+    }
+
+    .nbc-result.error {
+      font-size: 13px;
+      color: #bd6257;
+      white-space: normal;
+      text-align: left;
+      font-family: inherit;
+      padding-top: 8px
+    }
+
+    .nbc-note {
+      font-size: 10.5px;
+      color: #7d8f9f;
+      text-align: right;
+      min-height: 13px
+    }
+
+    .nbc-prompt label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px
+    }
+
+    .nbc-prompt input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid #9ccfc3;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 16px;
+      background: #fff;
+      color: #31485e;
+      outline: none
+    }
+
+    .nbc-tscreen {
+      gap: 2px
+    }
+
+    .nbc-frow {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .nbc-frow .lab {
+      font-size: 15px;
+      flex: none;
+      color: #5b7188
+    }
+
+    .nbc-frow .nbc-editor {
+      flex: 1;
+      min-width: 0;
+      min-height: 38px;
+      font-size: 18px
+    }
+
+    .nbc-range {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr) auto;
+      gap: 6px;
+      padding: 8px 10px 0;
+      align-items: end
+    }
+
+    .nbc-range label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 10px;
+      color: #7d8f9f
+    }
+
+    .nbc-range input,
+    .nbc-in {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid #d5e0e5;
+      border-radius: 6px;
+      padding: 6px 7px;
+      font-size: 14px;
+      background: #fff;
+      color: #31485e;
+      outline: none
+    }
+
+    .nbc-range input:focus,
+    .nbc-in:focus {
+      border-color: #168b82;
+      box-shadow: 0 0 0 2px #168b8222
+    }
+
+    #nbcTabBtn {
+      background: #168b82;
+      color: #fff;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11px
+    }
+
+    .nbc-tableout {
+      margin: 8px 10px 0;
+      max-height: 180px;
+      overflow: auto;
+      border-radius: 8px
+    }
+
+    .nbc-tableout table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      font-variant-numeric: tabular-nums;
+      background: #fff
+    }
+
+    .nbc-tableout th {
+      position: sticky;
+      top: 0;
+      background: #e8f2ef;
+      color: #2d5f59;
+      font-family: "Cambria Math", Cambria, "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 14px;
+      padding: 4px 6px
+    }
+
+    .nbc-tableout td {
+      text-align: right;
+      padding: 3px 8px;
+      border-bottom: 1px solid #edf1f4
+    }
+
+    .nbc-tableout td.na {
+      text-align: center;
+      color: #b3bec8
+    }
+
+    .nbc-tableout small {
+      display: block;
+      font-size: 10px;
+      color: #8a9aa9;
+      padding: 4px 2px
+    }
+
+    .nbc-eqtypes {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 3px;
+      padding: 8px 10px 0
+    }
+
+    .nbc-eqtypes button {
+      font-size: 10.5px;
+      padding: 5px 2px;
+      border-radius: 5px;
+      background: #eef3f6;
+      color: #5b7188
+    }
+
+    .nbc-eqtypes button.on {
+      background: #dff0eb;
+      color: #13756d;
+      font-weight: 700;
+      box-shadow: inset 0 0 0 1px #9ccfc3
+    }
+
+    .nbc-eqgrid {
+      margin: 8px 10px 0;
+      border: 1px solid #d3e2df;
+      border-radius: 10px;
+      background: #fbfdfc;
+      padding: 8px
+    }
+
+    .nbc-eqhead {
+      font-size: 15px;
+      text-align: center;
+      color: #46627a;
+      margin-bottom: 6px
+    }
+
+    .nbc-eqtab {
+      display: grid;
+      gap: 4px;
+      align-items: center
+    }
+
+    .nbc-eqtab .h {
+      font-size: 12px;
+      text-align: center;
+      color: #7d8f9f
+    }
+
+    .nbc-eqout {
+      margin: 6px 10px 0;
+      min-height: 20px
+    }
+
+    .nbc-eqrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 6px;
+      border-bottom: 1px solid #edf1f4;
+      flex-wrap: wrap
+    }
+
+    .nbc-eqrow .lab {
+      font-family: "Cambria Math", Cambria, "Times New Roman", serif;
+      font-size: 15px;
+      color: #5b7188;
+      min-width: 34px
+    }
+
+    .nbc-eqrow .val {
+      font-size: 19px
+    }
+
+    .nbc-eqrow small {
+      font-size: 10px;
+      color: #8a9aa9;
+      margin-left: auto
+    }
+
+    .nbc-err {
+      font-size: 12.5px;
+      color: #bd6257;
+      padding: 6px 4px
+    }
+
+    .nbc-keys {
+      padding: 8px 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px
+    }
+
+    .nbc-grid {
+      display: grid;
+      gap: 4px
+    }
+
+    .nbc-grid.f {
+      grid-template-columns: repeat(6, 1fr)
+    }
+
+    .nbc-grid.n {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px
+    }
+
+    .nbc-keys button {
+      height: 30px;
+      border-radius: 6px;
+      background: #fff;
+      border: 1px solid #e3e9ee;
+      font-size: 12.5px;
+      color: #4d6378;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow: hidden
+    }
+
+    .nbc-keys button:hover {
+      background: #eef6f3;
+      border-color: #a9cbbf
+    }
+
+    .nbc-keys button:active {
+      transform: translateY(1px);
+      background: #e2f0ec
+    }
+
+    .nbc-keys .nav {
+      background: #f1f4f7;
+      color: #5b7188;
+      font-size: 11px
+    }
+
+    .nbc-keys .cmd {
+      background: #eef2f7;
+      color: #3b556d;
+      font-size: 10.5px;
+      font-weight: 600
+    }
+
+    .nbc-keys .cmd.b {
+      background: #e4efed;
+      color: #13756d
+    }
+
+    .nbc-keys .t {
+      color: #13756d;
+      background: #f3f9f7
+    }
+
+    .nbc-keys .var {
+      color: #6b4a8c;
+      background: #f8f5fb
+    }
+
+    .nbc-grid.n button {
+      height: 40px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #2e4559
+    }
+
+    .nbc-grid.n .op {
+      color: #13756d;
+      background: #f0f8f5;
+      font-weight: 500
+    }
+
+    .nbc-grid.n .del,
+    .nbc-grid.n .ac {
+      background: #fbeeea;
+      color: #b4553f;
+      border-color: #f0d6ce;
+      font-size: 13px;
+      font-weight: 700
+    }
+
+    .nbc-grid.n .exe {
+      background: #168b82;
+      color: #fff;
+      border-color: #168b82;
+      font-size: 22px
+    }
+
+    .nbc-grid.n .exe:hover {
+      background: #127a72
+    }
+
+    #calculator:not(.mode-calc) .nbc-keys [data-a^="cmd:calc"],
+    #calculator:not(.mode-calc) .nbc-keys [data-a^="cmd:solve"],
+    #calculator:not(.mode-calc) .nbc-keys [data-a^="cmd:sto"],
+    #calculator:not(.mode-calc) .nbc-keys [data-a^="tpl:int"],
+    #calculator:not(.mode-calc) .nbc-keys [data-a^="tpl:der"],
+    #calculator:not(.mode-calc) .nbc-keys [data-a^="tpl:sum"] {
+      opacity: .45
+    }
+
+    .kl {
+      font-size: 13px;
+      display: inline-block;
+      line-height: 1;
+      white-space: nowrap
+    }
+
+    .kl sup,
+    .kl sub {
+      font-size: .7em;
+      line-height: 0
+    }
+
+    .kl .frac {
+      display: inline-flex;
+      vertical-align: middle
+    }
+
+    .kl .bx {
+      display: inline-block;
+      width: .55em;
+      height: .6em;
+      border: 1px solid currentColor;
+      border-radius: 1px;
+      opacity: .55;
+      vertical-align: middle
+    }
+
+    .kl .frac {
+      font-size: .82em
+    }
+
+    .kl .frac>span {
+      padding: 0 .1em;
+      line-height: 1
+    }
+
+    .nbc-overlay {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: 86px;
+      bottom: 52px;
+      background: #fff;
+      border: 1px solid #d5e0e5;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px #253c5026;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      min-height: 220px
+    }
+
+    .nbc-ohead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid #e6ecf0;
+      font-size: 12px
+    }
+
+    .nbc-ohead button {
+      font-size: 11px;
+      color: #168b82;
+      background: #e4f1ed;
+      padding: 4px 9px;
+      border-radius: 5px
+    }
+
+    .nbc-obody {
+      overflow: auto;
+      padding: 4px 8px 8px;
+      flex: 1
+    }
+
+    .nbc-item {
+      display: grid;
+      grid-template-columns: 62px 1fr;
+      gap: 1px 8px;
+      width: 100%;
+      text-align: left;
+      padding: 7px 6px;
+      border-bottom: 1px solid #eef2f5;
+      font-size: 12px;
+      color: #4d6378;
+      align-items: center
+    }
+
+    .nbc-item:hover {
+      background: #f2f8f6
+    }
+
+    .nbc-item .sym {
+      font-size: 15px;
+      color: #13756d;
+      grid-row: span 2
+    }
+
+    .nbc-item .val {
+      font-variant-numeric: tabular-nums
+    }
+
+    .nbc-item .desc {
+      font-size: 10.5px;
+      color: #8a9aa9
+    }
+
+    .nbc-item.danger {
+      display: block;
+      color: #b4553f
+    }
+
+    .nbc-item.danger .desc {
+      color: #b4553f
+    }
+
+    .calc-footer {
+      padding: 0 10px 10px
+    }
+
+    .calc-footer button {
+      background: #e4efed;
+      border-radius: 6px;
+      width: 100%;
+      padding: 10px;
+      font-size: 11.5px;
+      color: #318c7f;
+      font-weight: 600
+    }
+
+    .nbm {
+      font-family: "Cambria Math", Cambria, "STIX Two Math", "Times New Roman", serif
+    }
+
+    .nbm .v,
+    .nbm i {
+      font-style: italic
+    }
+
+    .nbm .c {
+      font-style: normal
+    }
+
+    .nbm .op {
+      padding: 0 .14em
+    }
+
+    .nbm .op.eq {
+      padding: 0 .22em
+    }
+
+    .nbm .op.b {
+      font-style: normal;
+      font-weight: 700;
+      padding: 0 .04em
+    }
+
+    .nbm .fn {
+      font-style: normal
+    }
+
+    .nbm .cm {
+      padding-right: .18em
+    }
+
+    .nbm .raw {
+      color: #b06a2c;
+      font-style: italic;
+      text-decoration: underline dotted
+    }
+
+    .nbm .k {
+      color: #186f68
+    }
+
+    .nbm .k sub {
+      font-size: .65em
+    }
+
+    .nbm .slot {
+      display: inline
+    }
+
+    .nbm .slot.empty {
+      display: inline-block;
+      min-width: .62em;
+      height: .9em;
+      border: 1px dashed #93aaa6;
+      border-radius: 2px;
+      vertical-align: middle;
+      margin: 0 .04em
+    }
+
+    .nbm .rootslot {
+      flex: none
+    }
+
+    .nbm .rootslot.empty {
+      border: 0;
+      min-width: 2px
+    }
+
+    .nbm .caret {
+      display: inline-block;
+      width: 2px;
+      margin-right: -2px;
+      height: 1.08em;
+      vertical-align: middle;
+      background: #168b82;
+      animation: nbcBlink 1.05s steps(1) infinite;
+      align-self: center
+    }
+
+    @keyframes nbcBlink {
+      50% {
+        opacity: 0
+      }
+    }
+
+    .nbm .frac {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: stretch;
+      vertical-align: middle;
+      margin: 0 .1em;
+      text-align: center
+    }
+
+    .nbm .frac>span {
+      display: block;
+      text-align: center;
+      padding: 0 .12em;
+      line-height: 1.2
+    }
+
+    .nbm .frac>span:first-child {
+      border-bottom: .07em solid currentColor;
+      padding-bottom: .1em
+    }
+
+    .nbm .frac>span:last-child {
+      padding-top: .1em
+    }
+
+    .nbm .frac>.slot.empty {
+      display: block;
+      width: .62em;
+      margin: .08em auto;
+      border-bottom: 1px dashed #93aaa6;
+      padding: 0
+    }
+
+    .nbm .frac .frac {
+      font-size: .9em
+    }
+
+    .nbm .sqrt {
+      display: inline-flex;
+      align-items: stretch;
+      vertical-align: middle;
+      margin: 0 .04em
+    }
+
+    .nbm .rad {
+      display: inline-block;
+      width: .62em;
+      flex: none;
+      position: relative;
+      min-height: 1.1em
+    }
+
+    .nbm .rad svg {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible
+    }
+
+    .nbm .sqrt>.slot:last-child {
+      display: inline-block;
+      border-top: .07em solid currentColor;
+      padding: .14em .1em 0 .06em;
+      min-height: 1em
+    }
+
+    .nbm .sqrt>.slot.empty:last-child {
+      min-width: .62em;
+      height: auto;
+      border: 0;
+      border-top: .07em solid currentColor;
+      outline: 1px dashed #93aaa6;
+      outline-offset: -3px
+    }
+
+    .nbm .root>.idx {
+      font-size: .58em;
+      align-self: flex-start;
+      margin-right: -.42em;
+      margin-top: -.05em;
+      position: relative;
+      z-index: 1
+    }
+
+    .nbm .sup {
+      display: inline-block;
+      font-size: .66em;
+      vertical-align: .8em;
+      margin-left: .04em;
+      line-height: 1
+    }
+
+    .nbm .sub {
+      display: inline-block;
+      font-size: .66em;
+      vertical-align: -.45em;
+      line-height: 1
+    }
+
+    .nbm .x10 {
+      margin-left: .08em
+    }
+
+    .nbm .x10 .sup {
+      vertical-align: .7em
+    }
+
+    .nbm .abs>.slot {
+      display: inline-block;
+      border-left: .07em solid currentColor;
+      border-right: .07em solid currentColor;
+      padding: 0 .14em;
+      margin: 0 .06em
+    }
+
+    .nbm .int,
+    .nbm .sum,
+    .nbm .der {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      margin: 0 .06em
+    }
+
+    .nbm .isign {
+      font-size: 1.75em;
+      line-height: 1;
+      font-style: italic;
+      margin-right: -.02em
+    }
+
+    .nbm .lim {
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-start;
+      align-self: stretch;
+      font-size: .6em;
+      margin-right: .3em;
+      gap: .6em
+    }
+
+    .nbm .lim.c {
+      align-items: center;
+      justify-content: center;
+      font-size: 1em;
+      gap: 0;
+      margin-right: .08em
+    }
+
+    .nbm .lim.c>.slot,
+    .nbm .lim.c>.lo {
+      font-size: .6em
+    }
+
+    .nbm .lo {
+      display: inline-flex;
+      align-items: center
+    }
+
+    .nbm .ssign {
+      font-size: 1.45em;
+      line-height: 1
+    }
+
+    .nbm .dx {
+      margin-left: .22em;
+      font-style: italic
+    }
+
+    .nbm .dd {
+      font-style: italic;
+      font-size: .82em
+    }
+
+    .nbm .at {
+      display: inline-flex;
+      align-self: stretch;
+      align-items: flex-end
+    }
+
+    .nbm .bar {
+      border-left: .07em solid currentColor;
+      margin: 0 .06em 0 .1em;
+      align-self: stretch
+    }
+
+    .nbm .atv {
+      display: inline-flex;
+      align-items: center;
+      font-size: .6em;
+      margin-bottom: -.2em
+    }
+
+    .nbm .logb>.sub {
+      margin-right: .04em
+    }
+
+    .nbm .sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap
+    }
+
+    #calculator.tbl-on #calcKeys {
+      display: none
+    }
+
+    #calculator.tbl-on .nbc-tableout {
+      max-height: min(470px, calc(100vh - 330px))
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 52px;
+      left: 50%;
+      transform: translate(-50%, 12px);
+      padding: 11px 20px;
+      background: #273f4a;
+      color: #fff;
+      font-size: 12px;
+      border-radius: 8px;
+      z-index: 80;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      box-shadow: 0 4px 20px #203a4920;
+      max-width: 90vw;
+      text-align: center
+    }
+
+    #toast.on {
+      opacity: 1;
+      transform: translate(-50%, 0)
+    }
+
+    #calculator.skin-hand {
+      width: min(372px, calc(100vw - 20px));
+      background: linear-gradient(165deg, #2b6069 0%, #1d4850 45%, #163a41 100%);
+      border: 1px solid #0e262b;
+      border-radius: 24px 24px 34px 34px;
+      box-shadow: 0 18px 50px #0b1f2466, inset 0 1px 0 #ffffff26;
+      color: #dcefeb
+    }
+
+    .skin-hand #calcHandle {
+      background: transparent;
+      border: 0;
+      color: #dcefeb;
+      padding: 10px 12px 0 18px;
+      position: static
+    }
+
+    .skin-hand #calcHandle>span {
+      font-size: 13px;
+      letter-spacing: .05em
+    }
+
+    .skin-hand #calcClose {
+      color: #dcefeb
+    }
+
+    .nbc-model {
+      display: none;
+      font-style: normal;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #0f2d33;
+      color: #8fe3d2;
+      margin-left: 4px
+    }
+
+    .skin-hand .nbc-model {
+      display: inline-block
+    }
+
+    .skin-hand .nbc-tabs,
+    .skin-hand .nbc-status {
+      display: none
+    }
+
+    .nbc-ind {
+      display: none
+    }
+
+    .skin-hand .nbc-lcd {
+      margin: 8px 14px 6px;
+      padding: 3px 0 6px;
+      background: linear-gradient(180deg, #e7f1ec, #d6e6de);
+      border: 4px solid #0f2b30;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 6px #0d2a2a33, 0 1px 0 #ffffff1f;
+      color: #17302d
+    }
+
+    .skin-hand .nbc-ind {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      padding: 1px 10px 0;
+      font: 700 10px/1.25 'Segoe UI', system-ui, sans-serif;
+      color: #33524d;
+      min-height: 14px
+    }
+
+    .nbc-ind .i-s {
+      color: #0d7c6f
+    }
+
+    .nbc-ind .i-a {
+      color: #7a4fd0
+    }
+
+    .nbc-ind .i-mode {
+      margin-left: auto;
+      letter-spacing: .08em;
+      color: #5b7570
+    }
+
+    .skin-hand .nbc-screen {
+      margin: 0 6px;
+      border: 0;
+      background: transparent;
+      padding: 2px 4px
+    }
+
+    .skin-hand .nbc-editor:focus {
+      background: #c9ddd455
+    }
+
+    .skin-hand .nbc-note {
+      color: #5b7570
+    }
+
+    .skin-hand .nbc-eqtypes,
+    .skin-hand .nbc-range {
+      padding-left: 8px;
+      padding-right: 8px
+    }
+
+    .skin-hand .nbc-eqgrid {
+      margin: 6px 8px 0;
+      background: #f3f8f5
+    }
+
+    .skin-hand .nbc-eqout,
+    .skin-hand .nbc-tableout {
+      margin-left: 8px;
+      margin-right: 8px
+    }
+
+    .skin-hand .nbc-keys {
+      padding: 2px 14px 6px;
+      gap: 4px
+    }
+
+    .hk-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      column-gap: 7px;
+      row-gap: 2px
+    }
+
+    .hk-grid.num {
+      grid-template-columns: repeat(5, 1fr);
+      column-gap: 8px;
+      row-gap: 3px;
+      margin-top: 5px
+    }
+
+    .hk {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      min-width: 0
+    }
+
+    .hk .lg {
+      height: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      font: 600 8.5px/12px 'Segoe UI', system-ui, sans-serif;
+      white-space: nowrap
+    }
+
+    .hk .lg .s {
+      color: #86e3d2
+    }
+
+    .hk .lg .a {
+      color: #c9b6ff
+    }
+
+    #calculator.sh-on .hk .lg .s {
+      color: #d9fff7;
+      text-shadow: 0 0 6px #86e3d2
+    }
+
+    #calculator.al-on .hk .lg .a {
+      color: #f3edff;
+      text-shadow: 0 0 6px #c9b6ff
+    }
+
+    #calculator.sh-on .hk button[data-s],
+    #calculator.al-on .hk button[data-al] {
+      outline: 1px solid #ffffff55;
+      outline-offset: 1px
+    }
+
+    .skin-hand .nbc-keys .hk button {
+      height: 26px;
+      border-radius: 7px;
+      border: 0;
+      background: linear-gradient(180deg, #30616a, #22494f);
+      color: #e6f4f1;
+      font-size: 12px;
+      box-shadow: 0 2px 0 #0d2529, inset 0 1px 0 #ffffff1a;
+      padding: 0
+    }
+
+    .skin-hand .nbc-keys .hk button:hover {
+      background: linear-gradient(180deg, #386d76, #285259)
+    }
+
+    .skin-hand .nbc-keys .hk button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 0 #0d2529
+    }
+
+    .skin-hand .nbc-keys .hk button.shift {
+      background: linear-gradient(180deg, #8fe6d5, #69cdb9);
+      color: #0c2f2a;
+      font-weight: 700;
+      border-radius: 999px
+    }
+
+    .skin-hand .nbc-keys .hk button.alpha {
+      background: linear-gradient(180deg, #d3c4ff, #ab92f0);
+      color: #2a1658;
+      font-weight: 700;
+      border-radius: 999px
+    }
+
+    #calculator.sh-on .hk button.shift,
+    #calculator.al-on .hk button.alpha {
+      box-shadow: 0 0 0 2px #fff, 0 2px 0 #0d2529
+    }
+
+    .skin-hand .nbc-keys .hk button.round {
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600
+    }
+
+    .skin-hand .hk-grid.num .hk button {
+      height: 34px;
+      font-size: 18px;
+      font-weight: 600;
+      background: linear-gradient(180deg, #fbf7ef, #e8e1d3);
+      color: #1f3133;
+      box-shadow: 0 2px 0 #9d9483
+    }
+
+    .skin-hand .hk-grid.num .hk button:hover {
+      background: linear-gradient(180deg, #fffdf8, #efe9dd)
+    }
+
+    .skin-hand .hk-grid.num .hk button.del,
+    .skin-hand .hk-grid.num .hk button.ac {
+      background: linear-gradient(180deg, #f08a6d, #d9664b);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 2px 0 #8f3a28
+    }
+
+    .skin-hand .hk-grid.num .hk button.exe {
+      background: linear-gradient(180deg, #72d6c6, #46b5a4);
+      color: #06302b;
+      font-size: 22px;
+      box-shadow: 0 2px 0 #1f6a60
+    }
+
+    .hk-pad {
+      grid-column: 3/5;
+      grid-row: 1/3;
+      position: relative;
+      align-self: center;
+      justify-self: center;
+      width: 104px;
+      height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 50% 35%, #3c727b, #1c434a);
+      box-shadow: 0 2px 0 #0d2529, inset 0 1px 0 #ffffff24;
+      margin-top: 8px
+    }
+
+    .hk-pad button {
+      position: absolute;
+      border: 0;
+      background: transparent;
+      color: #cfeee8;
+      font-size: 11px;
+      width: 34px;
+      height: 24px;
+      padding: 0
+    }
+
+    .hk-pad button:hover {
+      color: #fff
+    }
+
+    .hk-pad button:active {
+      transform: scale(.92)
+    }
+
+    .hk-pad .up {
+      left: 35px;
+      top: 1px
+    }
+
+    .hk-pad .down {
+      left: 35px;
+      bottom: 1px
+    }
+
+    .hk-pad .left {
+      left: 1px;
+      top: 23px
+    }
+
+    .hk-pad .right {
+      right: 1px;
+      top: 23px
+    }
+
+    .hk-pad::after {
+      content: '';
+      position: absolute;
+      left: 40px;
+      top: 23px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #16393f;
+      box-shadow: inset 0 1px 3px #0009;
+      pointer-events: none
+    }
+
+    .skin-hand .calc-footer {
+      padding: 4px 14px 14px
+    }
+
+    .skin-hand .calc-footer button,
+    .skin-hand .calc-footer #nbcPlot {
+      background: #173a41;
+      color: #a9e6da;
+      border: 1px solid #2f6670
+    }
+
+    .skin-hand .nbc-overlay {
+      top: 44px;
+      color: #31485e
+    }
+
+    .skin-hand .nbc-keys .kl {
+      font-size: 12.5px
+    }
+  </style>
+</head>
+
+<body class="skin-hand">
+  <section id="calculator" class="mode-calc" hidden aria-label="QA Calculator – máy tính khoa học">
+    <div id="calcHandle"><span><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 2h14v20H5z M8 5h8v4H8z M8 13h1 M12 13h1 M16 13h1 M8 17h1 M12 17h1 M16 17h1" />
+        </svg> NoteBoard Calc<em class="nbc-model">QA·580</em></span><button class="tb icon-only" id="calcClose"
+        title="Đóng máy tính"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 6l12 12 M6 18L18 6" />
+        </svg></button></div>
+    <div class="nbc-tabs" role="tablist"><button type="button" role="tab" data-mode="calc">Tính toán</button><button
+        type="button" role="tab" data-mode="eq">Phương trình</button><button type="button" role="tab"
+        data-mode="table">Bảng giá trị</button><button type="button" role="tab" data-mode="science"
+        id="btnScienceTab">Nâng cao</button></div>
+    <div class="nbc-status"><button type="button" id="angleMode"
+        title="Đổi đơn vị góc: độ (DEG) / radian (RAD)">DEG</button><button type="button" id="nbcSD"
+        title="Đổi kết quả giữa dạng phân số, căn, π và dạng thập phân">S⇔D</button><button type="button" id="nbcEng"
+        title="Hiển thị số mũ là bội của 3 (kí hiệu kĩ thuật)">ENG</button><span id="nbcFlag"></span><span
+        class="sp"></span><button type="button" id="nbcVarsBtn" title="Xem và chèn biến nhớ">Biến</button><button
+        type="button" id="calcHistoryBtn" title="Lịch sử tính">Lịch sử</button><button type="button" id="nbcSkin"
+        title="Đổi sang giao diện máy cầm tay">Cầm tay</button></div>
+    <div class="nbc-lcd">
+      <div id="nbcInd" class="nbc-ind" aria-hidden="true"></div>
+      <div class="nbc-panel" data-panel="calc">
+        <div class="nbc-screen">
+          <div id="calcExpression" class="nbc-editor nbm" tabindex="0" role="textbox"
+            aria-label="Biểu thức (gõ phím hoặc bấm nút; Enter để tính)"></div>
+          <div id="nbcPrompt" class="nbc-prompt" hidden><label><span id="nbcPromptLab" class="nbm"></span><input
+                id="nbcPromptIn" inputmode="none" autocomplete="off" spellcheck="false"></label></div>
+          <output id="calcResult" class="nbc-result nbm" aria-live="polite"></output>
+          <div id="nbcNote" class="nbc-note"></div>
+        </div>
+      </div>
+      <div class="nbc-panel" data-panel="eq" hidden>
+        <div id="nbcEqTypes" class="nbc-eqtypes"></div>
+        <div id="nbcEqGrid" class="nbc-eqgrid"></div>
+        <div id="nbcEqOut" class="nbc-eqout"></div>
+      </div>
+      <div class="nbc-panel" data-panel="table" hidden>
+        <div class="nbc-screen nbc-tscreen">
+          <div class="nbc-frow"><span class="lab nbm"><i>f</i>(<i>x</i>) =</span>
+            <div id="nbcF" class="nbc-editor nbm" tabindex="0" role="textbox" aria-label="Hàm f(x)"></div>
+          </div>
+          <div class="nbc-frow"><span class="lab nbm"><i>g</i>(<i>x</i>) =</span>
+            <div id="nbcG" class="nbc-editor nbm" tabindex="0" role="textbox" aria-label="Hàm g(x), có thể để trống">
+            </div>
+          </div>
+        </div>
+        <div class="nbc-range"><label>Bắt đầu<input id="nbcT0" value="0" inputmode="none"
+              autocomplete="off"></label><label>Kết thúc<input id="nbcT1" value="5" inputmode="none"
+              autocomplete="off"></label><label>Bước<input id="nbcTs" value="1" inputmode="none"
+              autocomplete="off"></label><button type="button" id="nbcTabBtn">Lập bảng</button></div>
+        <div id="nbcTable" class="nbc-tableout"></div>
+      </div>
+    </div>
+    <div id="calcKeys" class="nbc-keys"></div>
+    <div id="nbcOverlay" class="nbc-overlay" hidden></div>
+    <div class="calc-footer" style="display:flex;gap:6px;padding:6px 10px 10px;">
+      <button type="button" id="insertResult" style="flex:1;padding:8px 2px;font-size:12px;"
+        title="Chèn kết quả tính toán lên bảng">Đưa lên bảng ↗</button>
+      <button type="button" id="btnCalcVariation" title="Mở bảng biến thiên từ biểu thức đang tính"
+        style="flex:1.1;background:linear-gradient(180deg,#2563eb 0%,#1d4ed8 100%);color:#fff;border:1px solid #60a5fa;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:8px 4px;">
+        <span>📈 BBT</span>
+      </button>
+      <button type="button" id="btnCalcGraph" title="Vẽ và đưa đồ thị Oxy lên bảng vẽ"
+        style="flex:1.1;background:linear-gradient(180deg,#0d9488 0%,#0f766e 100%);color:#fff;border:1px solid #5eead4;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:8px 4px;">
+        <span>📊 Đồ thị</span>
+      </button>
+    </div>
+  </section>
+  <div id="toast"></div>
+
+  <script>
+    // Toast notification implementation
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // Close bridge
+    document.addEventListener('DOMContentLoaded', () => {
+      const closeBtn = document.getElementById('calcClose');
+      if (closeBtn) {
+        closeBtn.onclick = () => {
+          if (window.chrome && window.chrome.webview) {
+            window.chrome.webview.postMessage(JSON.stringify({ action: 'close' }));
+          }
+        };
+      }
+    });
+  </script>
+
+  <script>
+    /* NoteBoard Calc: independent numerical routines, no eval, network or Casio firmware. */
+    (function (root) {
+      'use strict';
+      const fail = m => { throw Error(m); }, finite = x => { if (!Number.isFinite(x)) fail('Kết quả không xác định hoặc quá lớn'); return Object.is(x, -0) ? 0 : x; };
+      const integer = (x, min, max) => { if (!Number.isSafeInteger(x) || x < min || x > max) fail('Cần số nguyên từ ' + min + ' đến ' + max); return x; };
+      const C = (re, im = 0) => ({ kind: 'complex', re: finite(re), im: finite(im) }), isC = x => x?.kind === 'complex';
+      const M = rows => { if (!Array.isArray(rows) || rows.length < 1 || rows.length > 4 || !rows.every(r => Array.isArray(r) && r.length === rows[0].length && r.length >= 1 && r.length <= 4 && r.every(Number.isFinite))) fail('Ma trận cần 1–4 hàng, 1–4 cột, các ô là số thực'); return { kind: 'matrix', rows: rows.map(r => r.slice()) }; };
+      const V = values => { if (!Array.isArray(values) || ![2, 3].includes(values.length) || !values.every(Number.isFinite)) fail('Véc-tơ cần 2 hoặc 3 thành phần thực'); return { kind: 'vector', values: values.slice() }; };
+      const isM = x => x?.kind === 'matrix', isV = x => x?.kind === 'vector', scalar = x => { if (typeof x !== 'number') fail('Phép tính cần số thực'); return finite(x); };
+      const identity = n => M(Array.from({ length: integer(n, 1, 4) }, (_, i) => Array.from({ length: n }, (_, j) => +(i === j))));
+      function determinant(a) {
+        if (!isM(a) || a.rows.length !== a.rows[0].length) fail('Cần ma trận vuông');
+        const b = a.rows.map(r => r.slice()), n = b.length; let d = 1;
+        for (let j = 0; j < n; j++) {
+          let p = j; for (let i = j + 1; i < n; i++)if (Math.abs(b[i][j]) > Math.abs(b[p][j])) p = i;
+          if (b[p][j] === 0) return 0;
+          if (p !== j) { [b[p], b[j]] = [b[j], b[p]]; d = -d; } const pivot = b[j][j]; d *= pivot;
+          for (let i = j + 1; i < n; i++) { const q = b[i][j] / pivot; for (let k = j + 1; k < n; k++)b[i][k] -= q * b[j][k]; }
+        } return finite(d);
+      }
+      function inverse(a) {
+        if (!isM(a) || a.rows.length !== a.rows[0].length) fail('Cần ma trận vuông');
+        const n = a.rows.length, b = a.rows.map((r, i) => r.concat(identity(n).rows[i]));
+        for (let j = 0; j < n; j++) {
+          let p = j; for (let i = j + 1; i < n; i++)if (Math.abs(b[i][j]) > Math.abs(b[p][j])) p = i;
+          if (b[p][j] === 0) fail('Ma trận suy biến, không có nghịch đảo');
+          [b[p], b[j]] = [b[j], b[p]]; const q = b[j][j]; for (let k = 0; k < 2 * n; k++)b[j][k] /= q;
+          for (let i = 0; i < n; i++)if (i !== j) { const f = b[i][j]; for (let k = 0; k < 2 * n; k++)b[i][k] -= f * b[j][k]; }
+        } return M(b.map(r => r.slice(n)));
+      }
+      function mapValue(a, f) { if (isM(a)) return M(a.rows.map(r => r.map(f))); if (isV(a)) return V(a.values.map(f)); if (isC(a)) return C(f(a.re), f(a.im)); return finite(f(scalar(a))); }
+      function binary(op, a, b) {
+        if (isC(a) || isC(b)) {
+          a = isC(a) ? a : C(scalar(a)); b = isC(b) ? b : C(scalar(b));
+          if (op === '+') return C(a.re + b.re, a.im + b.im); if (op === '-') return C(a.re - b.re, a.im - b.im);
+          if (op === '*') return C(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+          if (op === '/') {
+            if (b.re === 0 && b.im === 0) fail('Chia cho 0');
+            if (Math.abs(b.re) >= Math.abs(b.im)) { const r = b.im / b.re, d = b.re + b.im * r; return C((a.re + a.im * r) / d, (a.im - a.re * r) / d); }
+            const r = b.re / b.im, d = b.im + b.re * r; return C((a.re * r + a.im) / d, (a.im * r - a.re) / d);
+          }
+          if (op === '^') {
+            if (a.re === 0 && a.im === 0) { if (b.im === 0 && b.re > 0) return C(0); fail('Lũy thừa của 0 không xác định'); }
+            if (b.im === 0 && Number.isInteger(b.re) && Math.abs(b.re) < 1e10) { let r = C(1), v = a, n = Math.abs(b.re); while (n) { if (n % 2) r = binary('*', r, v); n = Math.floor(n / 2); if (n) v = binary('*', v, v); } return b.re < 0 ? binary('/', C(1), r) : r; }
+            const l = Math.log(Math.hypot(a.re, a.im)), arg = Math.atan2(a.im, a.re), m = Math.exp(b.re * l - b.im * arg), t = b.im * l + b.re * arg; return C(m * Math.cos(t), m * Math.sin(t));
+          }
+        }
+        if (isM(a) || isM(b)) {
+          if (op === '*' && typeof a === 'number') return mapValue(b, x => x * a);
+          if (op === '*' && typeof b === 'number') return mapValue(a, x => x * b);
+          if (op === '/' && isM(a) && typeof b === 'number' && b !== 0) return mapValue(a, x => x / b);
+          if (op === '^' && isM(a) && typeof b === 'number') {
+            integer(b, -100, 100); if (a.rows.length !== a.rows[0].length) fail('Lũy thừa cần ma trận vuông');
+            let r = identity(a.rows.length), v = b < 0 ? inverse(a) : a; for (let i = 0; i < Math.abs(b); i++)r = binary('*', r, v); return r;
+          }
+          if (!isM(a) || !isM(b)) fail('Phép tính ma trận không hợp lệ');
+          if (op === '*') { if (a.rows[0].length !== b.rows.length) fail('Số cột ma trận trái phải bằng số hàng ma trận phải'); return M(a.rows.map(r => b.rows[0].map((_, j) => r.reduce((s, v, k) => s + v * b.rows[k][j], 0)))); }
+          if (['+', '-'].includes(op)) { if (a.rows.length !== b.rows.length || a.rows[0].length !== b.rows[0].length) fail('Hai ma trận phải cùng kích thước'); return M(a.rows.map((r, i) => r.map((v, j) => v + (op === '+' ? 1 : -1) * b.rows[i][j]))); }
+          fail('Phép tính ma trận không hỗ trợ');
+        }
+        if (isV(a) || isV(b)) {
+          if (op === '*' && typeof a === 'number') return mapValue(b, x => x * a);
+          if (op === '*' && typeof b === 'number') return mapValue(a, x => x * b);
+          if (op === '/' && isV(a) && typeof b === 'number' && b !== 0) return mapValue(a, x => x / b);
+          if (!isV(a) || !isV(b) || a.values.length !== b.values.length) fail('Hai véc-tơ phải cùng số chiều');
+          if (['+', '-'].includes(op)) return V(a.values.map((v, i) => v + (op === '+' ? 1 : -1) * b.values[i]));
+          if (op === '*') { if (a.values.length !== 3) fail('Tích có hướng cần véc-tơ 3 chiều'); const [x, y, z] = a.values, [u, v, w] = b.values; return V([y * w - z * v, z * u - x * w, x * v - y * u]); }
+          fail('Phép tính véc-tơ không hỗ trợ');
+        }
+        a = scalar(a); b = scalar(b);
+        if (op === '+') return finite(a + b); if (op === '-') return finite(a - b); if (op === '*') return finite(a * b); if (op === '/') { if (!b) fail('Chia cho 0'); return finite(a / b); } if (op === '^') return finite(a ** b);
+        fail('Phép tính không hỗ trợ');
+      }
+      function expression(src, { vars = {}, angle = 'DEG', real = Math.log } = {}) {
+        src = String(src).replace(/[×·]/g, '*').replace(/÷/g, '/').replace(/[−–]/g, '-').replace(/√/g, 'sqrt');
+        if (src.length > 2000) fail('Biểu thức quá dài');
+        const tokens = []; let pos = 0;
+        while (pos < src.length) { const s = src.slice(pos), m = /^(\s+|(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?|[A-Za-z_][A-Za-z_0-9]*|π|[()+\-*/^,!∠])/u.exec(s); if (!m) fail('Kí hiệu không hợp lệ: ' + s[0]); pos += m[0].length; if (!/^\s/.test(m[0])) tokens.push(m[0]); }
+        let i = 0, depth = 0; const take = () => tokens[i++], peek = () => tokens[i], unit = angle === 'DEG' ? Math.PI / 180 : angle === 'GRAD' ? Math.PI / 200 : 1;
+        function call(name, args) {
+          name = name.toLowerCase(); const a = args[0];
+          const arity = n => { if (args.length !== n) fail(name + ' cần ' + n + ' đối số'); };
+          if (['dot', 'angle', 'cross'].includes(name)) { arity(2); const b = args[1]; if (!isV(a) || !isV(b) || a.values.length !== b.values.length) fail('Cần hai véc-tơ cùng chiều'); const d = a.values.reduce((s, v, j) => s + v * b.values[j], 0); if (name === 'dot') return finite(d); if (name === 'cross') return binary('*', a, b); const n = Math.hypot(...a.values) * Math.hypot(...b.values); if (!n) fail('Véc-tơ không có hướng'); return Math.acos(Math.max(-1, Math.min(1, d / n))) / unit; }
+          arity(1);
+          if (name === 'det') return determinant(a); if (name === 'identity') return identity(scalar(a)); if (name === 'inverse') return inverse(a);
+          if (name === 'trn') { if (!isM(a)) fail('Trn cần ma trận'); return M(a.rows[0].map((_, j) => a.rows.map(r => r[j]))); }
+          if (name === 'abs') { if (isC(a)) return Math.hypot(a.re, a.im); if (isV(a)) return Math.hypot(...a.values); return mapValue(a, Math.abs); }
+          if (name === 'unitv') { if (!isV(a)) fail('UnitV cần véc-tơ'); const n = Math.hypot(...a.values); if (!n) fail('Véc-tơ 0 không có véc-tơ đơn vị'); return mapValue(a, x => x / n); }
+          if (['conjg', 'arg', 'rep', 'imp'].includes(name)) { const z = isC(a) ? a : C(scalar(a)); if (name === 'conjg') return C(z.re, -z.im); if (name === 'rep') return z.re; if (name === 'imp') return z.im; if (!z.re && !z.im) fail('Arg(0) không xác định'); return Math.atan2(z.im, z.re) / unit; }
+          if (name === 'sqrt') { if (isC(a) || a < 0) return binary('^', isC(a) ? a : C(a), .5); return Math.sqrt(scalar(a)); }
+          if (isC(a)) fail('Hàm này chỉ nhận số thực');
+          return finite(real(name + '(' + scalar(a) + ')'));
+        }
+        function parse(min = 0) {
+          if (++depth > 64) fail('Biểu thức lồng quá sâu'); let a, t = take();
+          if (t === '+' || t === '-') { a = parse(25); if (t === '-') a = mapValue(a, x => -x); }
+          else if (t === '(') { a = parse(); if (take() !== ')') fail('Thiếu dấu )'); }
+          else if (t !== undefined && /^(?:\d|\.)/.test(t)) a = finite(Number(t));
+          else if (t === 'i') a = C(0, 1);
+          else if (t === 'π' || t === 'pi') a = Math.PI;
+          else if (t === 'e') a = Math.E;
+          else if (t && Object.hasOwn(vars, t)) a = vars[t];
+          else if (t && peek() === '(') { take(); const args = []; if (peek() !== ')') { do { args.push(parse()); if (peek() !== ',') break; take(); } while (true); } if (take() !== ')') fail('Thiếu dấu )'); a = call(t, args); }
+          else fail('Chưa định nghĩa ' + (t || 'giá trị'));
+          while (i < tokens.length) {
+            if (peek() === '!') { take(); let n = integer(scalar(a), 0, 170); a = 1; for (let j = 2; j <= n; j++)a *= j; continue; }
+            let op = peek(), implicit = false; if (op === ')' || op === ',') break;
+            if (!['+', '-', '*', '/', '^', '∠'].includes(op)) { op = '*'; implicit = true; }
+            const prec = op === '^' ? 30 : op === '∠' ? 15 : op === '*' || op === '/' ? 20 : 10; if (prec < min) break; if (!implicit) take();
+            const b = parse(op === '^' ? prec : prec + 1); a = op === '∠' ? C(scalar(a) * Math.cos(scalar(b) * unit), scalar(a) * Math.sin(b * unit)) : binary(op, a, b);
+          } depth--; return a;
+        }
+        if (!tokens.length) fail('Nhập biểu thức'); const out = parse(); if (i !== tokens.length) fail('Thừa kí hiệu'); return out;
+      }
+      /* BASE-N: signed 32-bit integers in all four bases, per fx-580VN X handbook. */
+      function baseN(src, base = 10) {
+        if (![2, 8, 10, 16].includes(base)) fail('Cơ số không hợp lệ');
+        const bit = 32, limit = 1n << BigInt(bit - 1), mask = (1n << BigInt(bit)) - 1n;
+        src = String(src).trim(); if (src.length > 1000) fail('Biểu thức quá dài'); const ts = src.match(/(?:\band\b|\bor\b|\bxor\b|\bxnor\b|\bnot\b|\bneg\b)|h[0-9A-Fa-f]+|d[0-9]+|b[01]+|o[0-7]+|[0-9A-Fa-f]+|[()+\-*/]/g) || [];
+        if (ts.join('').toLowerCase() !== src.replace(/\s/g, '').toLowerCase()) fail('Chỉ nhập số nguyên và phép toán BASE-N'); let i = 0, depth = 0;
+        const checked = x => { if (x < -limit || x >= limit) fail('Tràn phạm vi số nguyên ' + bit + ' bit'); return x; }, signed = x => BigInt.asIntN(bit, x);
+        function parse(min = 0) {
+          if (++depth > 64) fail('Biểu thức quá sâu'); let t = ts[i++], a;
+          if (['-', '+', 'not', 'neg'].includes((t || '').toLowerCase())) { a = parse(40); a = t.toLowerCase() === 'not' ? signed(~a) : t === '+' ? a : checked(-a); }
+          else if (t === '(') { a = parse(); if (ts[i++] !== ')') fail('Thiếu dấu )'); }
+          else { if (!t) fail('Thiếu số'); let radix = base; if (/^[dhbo]/.test(t)) { radix = { d: 10, h: 16, b: 2, o: 8 }[t[0]]; t = t.slice(1); } const chars = '0123456789ABCDEF'; a = 0n; for (const c of t.toUpperCase()) { const d = chars.indexOf(c); if (d < 0 || d >= radix) fail('Chữ số không hợp lệ trong cơ số ' + radix); a = a * BigInt(radix) + BigInt(d); } if (radix !== 10) { if (a > mask) fail('Tràn phạm vi'); a = signed(a); } else checked(a); }
+          for (; ;) {
+            const op = (ts[i] || '').toLowerCase(), p = { or: 5, xor: 6, xnor: 6, and: 7, '+': 10, '-': 10, '*': 20, '/': 20 }[op]; if (!p || p < min) break; i++; const b = parse(p + 1);
+            if (op === '+') a = checked(a + b); else if (op === '-') a = checked(a - b); else if (op === '*') a = checked(a * b); else if (op === '/') { if (!b) fail('Chia cho 0'); a = checked(a / b); } else if (op === 'and') a = signed(a & b); else if (op === 'or') a = signed(a | b); else if (op === 'xor') a = signed(a ^ b); else a = signed(~(a ^ b));
+          } depth--; return a;
+        } const value = parse(); if (i !== ts.length) fail('Lỗi cú pháp BASE-N'); return { value, dec: value.toString(), hex: BigInt.asUintN(32, value).toString(16).toUpperCase(), bin: BigInt.asUintN(32, value).toString(2), oct: BigInt.asUintN(32, value).toString(8) };
+      }
+      function statistics(rows, model = 'single') {
+        if (!rows.length || rows.length > 1000) fail('Nhập 1–1000 dòng dữ liệu'); const paired = model !== 'single';
+        const data = rows.map(r => { const x = finite(r[0]), y = paired ? finite(r[1]) : 0, w = r[paired ? 2 : 1] ?? 1; integer(w, 1, 1000000); return { x, y, w }; }), n = data.reduce((s, r) => s + r.w, 0);
+        const sum = f => finite(data.reduce((s, r) => s + r.w * f(r), 0));
+        const mx = sum(r => r.x) / n, my = sum(r => r.y) / n, vx = sum(r => (r.x - mx) ** 2), vy = sum(r => (r.y - my) ** 2);
+        const sorted = data.slice().sort((a, b) => a.x - b.x), at = k => { let j = 0; for (const r of sorted) { j += r.w; if (k < j) return r.x; } return sorted.at(-1).x; }, median = (lo, hi) => (at(Math.floor((lo + hi) / 2)) + at(Math.ceil((lo + hi) / 2))) / 2;
+        const out = { n, sumX: sum(r => r.x), sumX2: sum(r => r.x * r.x), meanX: mx, varianceX: vx / n, sigmaX: Math.sqrt(vx / n), sX: n > 1 ? Math.sqrt(vx / (n - 1)) : null, minX: sorted[0].x, Q1: n === 1 ? at(0) : median(0, Math.floor(n / 2) - 1), median: median(0, n - 1), Q3: n === 1 ? at(0) : median(Math.ceil(n / 2), n - 1), maxX: sorted.at(-1).x };
+        if (!paired) return out;
+        Object.assign(out, { meanY: my, sumY: sum(r => r.y), sumY2: sum(r => r.y * r.y), sumXY: sum(r => r.x * r.y), sigmaY: Math.sqrt(vy / n), sY: n > 1 ? Math.sqrt(vy / (n - 1)) : null });
+        const transformed = data.map(({ x, y, w }) => { if (['log', 'power'].includes(model) && x <= 0) fail('Hồi quy này cần x > 0'); if (['exp', 'ab', 'power'].includes(model) && y <= 0) fail('Hồi quy này cần y > 0'); if (model === 'inverse' && x === 0) fail('Hồi quy nghịch đảo cần x khác 0'); return { x: ['log', 'power'].includes(model) ? Math.log(x) : model === 'inverse' ? 1 / x : x, y: ['exp', 'ab', 'power'].includes(model) ? Math.log(y) : y, w }; });
+        if (model === 'quadratic') {
+          // Weighted modified Gram–Schmidt on centered/scaled x avoids squaring the condition number.
+          const scale = Math.max(...data.map(r => Math.abs(r.x - mx))); if (!scale) fail('Dữ liệu không đủ để hồi quy');
+          const cols = [0, 1, 2].map(p => data.map(r => Math.sqrt(r.w) * ((r.x - mx) / scale) ** p)), target = data.map(r => Math.sqrt(r.w) * r.y), q = [], R = Array.from({ length: 3 }, () => [0, 0, 0]);
+          for (let j = 0; j < 3; j++) { const v = cols[j].slice(); for (let k = 0; k < j; k++) { R[k][j] = v.reduce((s, x, i) => s + x * q[k][i], 0); v.forEach((x, i) => v[i] -= R[k][j] * q[k][i]); } R[j][j] = Math.hypot(...v); if (R[j][j] < 1e-12 * Math.sqrt(n)) fail('Cần ít nhất 3 giá trị x độc lập'); q.push(v.map(x => x / R[j][j])); }
+          const t = q.map(c => c.reduce((s, x, i) => s + x * target[i], 0)), c = [0, 0, 0]; for (let j = 2; j >= 0; j--)c[j] = (t[j] - c.slice(j + 1).reduce((s, v, k) => s + R[j][j + k + 1] * v, 0)) / R[j][j];
+          out.a = c[0] - c[1] * mx / scale + c[2] * (mx / scale) ** 2; out.b = c[1] / scale - 2 * c[2] * mx / scale ** 2; out.c = c[2] / scale ** 2;
+        } else {
+          if (!['linear', 'log', 'exp', 'ab', 'power', 'inverse'].includes(model)) fail('Kiểu hồi quy không hợp lệ');
+          const tx = transformed.reduce((s, r) => s + r.w * r.x, 0) / n, ty = transformed.reduce((s, r) => s + r.w * r.y, 0) / n;
+          let xx = 0, xy = 0, yy = 0; for (const r of transformed) { xx += r.w * (r.x - tx) ** 2; xy += r.w * (r.x - tx) * (r.y - ty); yy += r.w * (r.y - ty) ** 2; } if (!xx) fail('Các giá trị x không được trùng hết');
+          out.b = xy / xx; out.a = ty - out.b * tx; out.r = yy ? Math.max(-1, Math.min(1, xy / Math.sqrt(xx * yy))) : null;
+          if (['exp', 'ab', 'power'].includes(model)) out.a = Math.exp(out.a); if (model === 'ab') out.b = Math.exp(out.b);
+        } for (const v of Object.values(out)) if (v !== null) finite(v); return out;
+      }
+      /* Lanczos log-gamma; convergent incomplete gamma/beta for tails without factorial overflow. */
+      function logGamma(z) { const p = [676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]; if (z < .5) return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * z)) - logGamma(1 - z); z--; let x = .99999999999980993; for (let i = 0; i < p.length; i++)x += p[i] / (z + i + 1); const t = z + 7.5; return .9189385332046727 + (z + .5) * Math.log(t) - t + Math.log(x); }
+      const prob = x => Math.max(0, Math.min(1, x));
+      function gammaQ(a, x) {
+        if (x === 0) return 1; if (!Number.isFinite(x)) return 0; const factor = Math.exp(a * Math.log(x) - x - logGamma(a));
+        if (x < a + 1) { let t = 1 / a, s = t; for (let n = 1; n < 10000; n++) { t *= x / (a + n); s += t; if (Math.abs(t) < Math.abs(s) * 2e-15) return prob(1 - s * factor); } fail('Phân phối chưa hội tụ'); }
+        let b = x + 1 - a, c = 1e300, d = 1 / b, h = d; for (let n = 1; n < 10000; n++) { const an = -n * (n - a); b += 2; d = an * d + b; if (Math.abs(d) < 1e-300) d = 1e-300; c = b + an / c; if (Math.abs(c) < 1e-300) c = 1e-300; d = 1 / d; const delta = d * c; h *= delta; if (Math.abs(delta - 1) < 2e-15) return prob(h * factor); } fail('Phân phối chưa hội tụ');
+      }
+      function betaI(a, b, x) {
+        if (x <= 0) return 0; if (x >= 1) return 1;
+        const cf = (a, b, x) => { let c = 1, d = 1 - (a + b) * x / (a + 1); if (Math.abs(d) < 1e-300) d = 1e-300; d = 1 / d; let h = d; for (let m = 1; m < 10000; m++) { let delta; for (const aa of [m * (b - m) * x / ((a + 2 * m - 1) * (a + 2 * m)), -(a + m) * (a + b + m) * x / ((a + 2 * m) * (a + 2 * m + 1))]) { d = 1 + aa * d; if (Math.abs(d) < 1e-300) d = 1e-300; c = 1 + aa / c; if (Math.abs(c) < 1e-300) c = 1e-300; d = 1 / d; delta = d * c; h *= delta; } if (Math.abs(delta - 1) < 3e-15) return h; } fail('Phân phối chưa hội tụ'); };
+        const bt = Math.exp(logGamma(a + b) - logGamma(a) - logGamma(b) + a * Math.log(x) + b * Math.log1p(-x));
+        return prob(x < (a + 1) / (a + b + 2) ? bt * cf(a, b, x) / a : 1 - bt * cf(b, a, 1 - x) / b);
+      }
+      function normalCDF(z) { if (z === 0) return .5; const tail = .5 * gammaQ(.5, z * z / 2); return z < 0 ? tail : 1 - tail; }
+      function distribution(type, p) {
+        const n = p.n, k = p.x, mu = p.mu ?? 0, sigma = p.sigma ?? 1;
+        if (type.startsWith('normal') || type === 'inverseNormal') {
+          finite(mu); finite(sigma); if (sigma <= 0) fail('σ phải lớn hơn 0');
+          if (type === 'normalPD') { finite(k); const z = (k - mu) / sigma; return Math.exp(-z * z / 2) / (sigma * Math.sqrt(2 * Math.PI)); }
+          if (type === 'normalCD') { const l = finite(p.lower), u = finite(p.upper); if (l > u) fail('Cận dưới phải ≤ cận trên'); const a = (l - mu) / sigma, b = (u - mu) / sigma; return prob(a >= 0 ? normalCDF(-a) - normalCDF(-b) : normalCDF(b) - normalCDF(a)); }
+          const area = finite(p.area); if (area <= 0 || area >= 1) fail('Xác suất cần trong (0; 1); hai đầu cho nghiệm vô hạn'); let lo = -40, hi = 40; for (let i = 0; i < 140; i++) { const mid = (lo + hi) / 2; if (normalCDF(mid) < area) lo = mid; else hi = mid; } return finite(mu + sigma * ((lo + hi) / 2));
+        }
+        integer(k, 0, 1000000);
+        if (type === 'binomialPD' || type === 'binomialCD') {
+          integer(n, 0, 1000000); const pr = finite(p.p); if (pr < 0 || pr > 1) fail('p cần từ 0 đến 1');
+          if (type === 'binomialPD') { if (k > n) return 0; if (pr === 0) return +(k === 0); if (pr === 1) return +(k === n); return prob(Math.exp(logGamma(n + 1) - logGamma(k + 1) - logGamma(n - k + 1) + k * Math.log(pr) + (n - k) * Math.log1p(-pr))); }
+          if (k >= n) return 1; if (pr === 0) return 1; if (pr === 1) return 0; return betaI(n - k, k + 1, 1 - pr);
+        }
+        const l = finite(p.lambda); if (l < 0 || l > 1000000) fail('λ cần từ 0 đến 1 000 000'); if (l === 0) return type === 'poissonPD' ? +(k === 0) : 1;
+        if (type === 'poissonPD') return prob(Math.exp(-l + k * Math.log(l) - logGamma(k + 1))); if (type === 'poissonCD') return gammaQ(k + 1, l); fail('Phân phối không hợp lệ');
+      }
+      function inequality(coeff, op, roots) {
+        if (coeff.length < 3 || coeff.length > 5 || !coeff.every(Number.isFinite) || !coeff[0]) fail('Cần hệ số bậc 2–4, hệ số đầu khác 0'); if (!['<', '<=', '>', '>='].includes(op)) fail('Dấu bất phương trình không hợp lệ');
+        const rr = roots(coeff).filter(r => Math.abs(r[1]) < 1e-12).map(r => r[0]).sort((a, b) => a - b), points = rr.filter((x, i) => !i || Math.abs(x - rr[i - 1]) > 1e-10 * Math.max(1, Math.abs(x))), bound = [-Infinity, ...points, Infinity], included = op.includes('='), positive = op.startsWith('>'), pieces = [];
+        for (let i = 0; i < bound.length - 1; i++) { const l = bound[i], u = bound[i + 1], x = !Number.isFinite(l) ? u - Math.max(1, Math.abs(u)) : !Number.isFinite(u) ? l + Math.max(1, Math.abs(l)) : (l + u) / 2; const test = Number.isFinite(x) ? x : 0, v = coeff.reduce((s, c) => s * test + c, 0); if ((v > 0) === positive && v !== 0) pieces.push({ l, u, lc: included && Number.isFinite(l), uc: included && Number.isFinite(u) }); }
+        if (included) for (const x of points) if (!pieces.some(p => p.l === x || p.u === x)) pieces.push({ l: x, u: x, lc: true, uc: true });
+        pieces.sort((a, b) => a.l - b.l); const out = []; for (const p of pieces) { const last = out.at(-1); if (last && last.u === p.l && (last.uc || p.lc)) { last.u = p.u; last.uc = p.uc; } else out.push({ ...p }); } return out;
+      }
+      function ratio(values) { if (values.length !== 4 || values.filter(x => x === null).length !== 1) fail('Nhập đúng một ẩn x trong a:b = c:d'); values.filter(x => x !== null).forEach(finite); const i = values.indexOf(null), [a, b, c, d] = values; let x; if (i === 0) { if (!d) fail('Mẫu tỉ lệ không được bằng 0'); x = b * c / d; } else if (i === 1) { if (!c) fail('Tỉ lệ không có nghiệm duy nhất'); x = a * d / c; } else if (i === 2) { if (!b) fail('Mẫu tỉ lệ không được bằng 0'); x = a * d / b; } else { if (!a) fail('Tỉ lệ không có nghiệm duy nhất'); x = b * c / a; } const full = values.map(v => v === null ? x : v); if (!full[1] || !full[3]) fail('Mẫu tỉ lệ không được bằng 0'); return finite(x); }
+      function verify(src, evaluate) { const parts = String(src).split(/(<=|>=|!=|≤|≥|≠|=|<|>)/); if (parts.length < 3 || parts.length % 2 === 0) fail('Nhập phép so sánh, ví dụ 1/2 < 2/3 ≤ 1'); const numbers = parts.filter((_, i) => i % 2 === 0).map(evaluate); return numbers.slice(1).every((b, i) => { const a = numbers[i], tol = 8 * Number.EPSILON * Math.max(1, Math.abs(a), Math.abs(b)), equal = Math.abs(a - b) <= tol; return { '=': equal, '!=': !equal, '≠': !equal, '<': a < b && !equal, '>': a > b && !equal, '<=': a < b || equal, '≤': a < b || equal, '>=': a > b || equal, '≥': a > b || equal }[parts[2 * i + 1]]; }); }
+      function dms(deg, min = 0, sec = 0) { finite(deg); finite(min); finite(sec); if (min < 0 || min >= 60 || sec < 0 || sec >= 60) fail('Phút và giây cần trong [0; 60)'); return (deg < 0 || Object.is(deg, -0) ? -1 : 1) * (Math.abs(deg) + min / 60 + sec / 3600); }
+      function toDMS(x) { finite(x); let total = Math.round(Math.abs(x) * 3600 * 1e6) / 1e6, d = Math.floor(total / 3600); total -= d * 3600; const m = Math.floor(total / 60), s = +(total - m * 60).toFixed(6); return (x < 0 ? '−' : '') + d + '° ' + m + '′ ' + s + '″'; }
+      function factors(x) { integer(x, 2, 9999999999); const out = []; for (let p = 2; p * p <= x; p += p === 2 ? 1 : 2) { let n = 0; while (x % p === 0) { x /= p; n++; } if (n) out.push([p, n]); } if (x > 1) out.push([x, 1]); return out; }
+      const units = {
+        length: { m: 1, cm: .01, mm: .001, km: 1000, in: .0254, ft: .3048, yd: .9144, mile: 1609.344, nmile: 1852 },
+        area: { 'm²': 1, 'cm²': .0001, ha: 10000, 'ft²': .09290304, acre: 4046.8564224 },
+        volume: { 'm³': 1, L: .001, mL: .000001, 'gal(US)': .003785411784, 'gal(UK)': .00454609, 'in³': .000016387064, 'ft³': .028316846592 },
+        mass: { kg: 1, g: .001, mg: .000001, lb: .45359237, oz: .028349523125 },
+        speed: { 'm/s': 1, 'km/h': 1 / 3.6, mph: .44704, knot: 1852 / 3600 },
+        pressure: { Pa: 1, kPa: 1000, bar: 100000, atm: 101325, mmHg: 133.322387415, psi: 6894.757293168 },
+        energy: { J: 1, kJ: 1000, 'cal(IT)': 4.1868, 'cal(th)': 4.184, kWh: 3600000, eV: 1.602176634e-19 },
+        power: { W: 1, kW: 1000, 'hp(UK)': 745.699871582 },
+        temperature: { '°C': 1, '°F': 1, K: 1 }, angle: { '°': Math.PI / 180, rad: 1, grad: Math.PI / 200 }
+      };
+      function convert(x, group, from, to) { finite(x); const g = units[group]; if (!g || !Object.hasOwn(g, from) || !Object.hasOwn(g, to)) fail('Đơn vị không cùng nhóm'); if (group === 'temperature') { const c = from === 'K' ? x - 273.15 : from === '°F' ? (x - 32) * 5 / 9 : x; return finite(to === 'K' ? c + 273.15 : to === '°F' ? c * 9 / 5 + 32 : c); } return finite(x * g[from] / g[to]); }
+      const api = { C, M, V, expression, binary, determinant, inverse, identity, baseN, statistics, distribution, inequality, ratio, verify, dms, toDMS, factors, units, convert };
+      if (typeof module === 'object' && module.exports) module.exports = api; else root.NBCalcScience = api;
+    })(typeof globalThis !== 'undefined' ? globalThis : this);
+
+  </script>
+
+  <script>
+    const NBCalc = (() => {
+      'use strict';
+      const qs = s => document.querySelector(s);
+      class CalcError extends Error { }
+      const fail = m => { throw new CalcError(m); };
+      const VARS = ['A', 'B', 'C', 'D', 'E', 'F', 'X', 'Y', 'M'];
+      const varName = v => v === 'X' ? 'x' : v === 'Y' ? 'y' : v;
+      const SUP = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻', '−': '⁻', '+': '⁺', '=': '⁼', '(': '⁽', ')': '⁾', 'n': 'ⁿ', 'x': 'ˣ', 'i': 'ⁱ' };
+      const SUB = { '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉', '-': '₋', '−': '₋', '+': '₊', '=': '₌', '(': '₍', ')': '₎', 'x': 'ₓ', 'a': 'ₐ', 'e': 'ₑ' };
+      const mapChars = (s, m) => s && [...s].every(c => m[c]) ? [...s].map(c => m[c]).join('') : null;
+      const CONSTS = {
+        c: { s: 'c', h: '<i>c</i>', v: 299792458, d: 'Tốc độ ánh sáng trong chân không', u: 'm/s' },
+        h: { s: 'h', h: '<i>h</i>', v: 6.62607015e-34, d: 'Hằng số Planck', u: 'J·s' },
+        hbar: { s: 'ħ', h: '<i>ħ</i>', v: 1.054571817e-34, d: 'Hằng số Planck rút gọn', u: 'J·s' },
+        qe: { s: 'qₑ', h: '<i>q</i><sub>e</sub>', v: 1.602176634e-19, d: 'Điện tích nguyên tố', u: 'C' },
+        me: { s: 'mₑ', h: '<i>m</i><sub>e</sub>', v: 9.1093837015e-31, d: 'Khối lượng electron', u: 'kg' },
+        mp: { s: 'mₚ', h: '<i>m</i><sub>p</sub>', v: 1.67262192369e-27, d: 'Khối lượng proton', u: 'kg' },
+        mn: { s: 'mₙ', h: '<i>m</i><sub>n</sub>', v: 1.67492749804e-27, d: 'Khối lượng neutron', u: 'kg' },
+        u: { s: 'u', h: '<i>u</i>', v: 1.6605390666e-27, d: 'Đơn vị khối lượng nguyên tử', u: 'kg' },
+        NA: { s: 'N_A', h: '<i>N</i><sub>A</sub>', v: 6.02214076e23, d: 'Số Avogadro', u: 'mol⁻¹' },
+        kB: { s: 'k_B', h: '<i>k</i><sub>B</sub>', v: 1.380649e-23, d: 'Hằng số Boltzmann', u: 'J/K' },
+        R: { s: 'R', h: '<i>R</i>', v: 8.314462618, d: 'Hằng số khí', u: 'J/(mol·K)' },
+        G: { s: 'G', h: '<i>G</i>', v: 6.6743e-11, d: 'Hằng số hấp dẫn', u: 'N·m²/kg²' },
+        g: { s: 'g', h: '<i>g</i>', v: 9.80665, d: 'Gia tốc rơi tự do chuẩn', u: 'm/s²' },
+        eps0: { s: 'ε₀', h: '<i>ε</i><sub>0</sub>', v: 8.8541878128e-12, d: 'Hằng số điện', u: 'F/m' },
+        mu0: { s: 'μ₀', h: '<i>μ</i><sub>0</sub>', v: 1.25663706212e-6, d: 'Hằng số từ', u: 'H/m' },
+        k: { s: 'k', h: '<i>k</i>', v: 8.9875517923e9, d: 'Hằng số Coulomb 1/(4πε₀)', u: 'N·m²/C²' },
+        sigma: { s: 'σ', h: '<i>σ</i>', v: 5.670374419e-8, d: 'Hằng số Stefan–Boltzmann', u: 'W/(m²·K⁴)' },
+        a0: { s: 'a₀', h: '<i>a</i><sub>0</sub>', v: 5.29177210903e-11, d: 'Bán kính Bohr', u: 'm' },
+        atm: { s: 'atm', h: 'atm', v: 101325, d: 'Áp suất khí quyển chuẩn', u: 'Pa' },
+        T0: { s: 'T₀', h: '<i>T</i><sub>0</sub>', v: 273.15, d: 'Nhiệt độ ứng với 0 °C', u: 'K' }
+      };
+      const FNS = {
+        sin: { l: 'sin', n: 1 }, cos: { l: 'cos', n: 1 }, tan: { l: 'tan', n: 1 }, asin: { l: 'sin⁻¹', n: 1 }, acos: { l: 'cos⁻¹', n: 1 }, atan: { l: 'tan⁻¹', n: 1 },
+        sinh: { l: 'sinh', n: 1 }, cosh: { l: 'cosh', n: 1 }, tanh: { l: 'tanh', n: 1 }, asinh: { l: 'sinh⁻¹', n: 1 }, acosh: { l: 'cosh⁻¹', n: 1 }, atanh: { l: 'tanh⁻¹', n: 1 },
+        ln: { l: 'ln', n: 1 }, log: { l: 'log', n: 1 }, gcd: { l: 'ƯCLN', n: 2 }, lcm: { l: 'BCNN', n: 2 }, Int: { l: 'Int', n: 1 }, Intg: { l: 'Intg', n: 1 },
+        RanInt: { l: 'RanInt', n: 2 }, Pol: { l: 'Pol', n: 2 }, Rec: { l: 'Rec', n: 2 }, sqrt: { l: '√', n: 1 }, abs: { l: 'Abs', n: 1 }, root: { l: 'root', n: 2 }, logb: { l: 'logb', n: 2 }
+      };
+      /* Ten go tren ban phim: go "sin" thanh ham sin(, "pi" thanh π... */
+      const TYPED = {
+        sin: { fn: 'sin' }, cos: { fn: 'cos' }, tan: { fn: 'tan' }, asin: { fn: 'asin' }, acos: { fn: 'acos' }, atan: { fn: 'atan' }, sinh: { fn: 'sinh' }, cosh: { fn: 'cosh' }, tanh: { fn: 'tanh' },
+        asinh: { fn: 'asinh' }, acosh: { fn: 'acosh' }, atanh: { fn: 'atanh' }, ln: { fn: 'ln' }, log: { fn: 'log' }, gcd: { fn: 'gcd' }, lcm: { fn: 'lcm' }, pi: { ch: 'π' }, ans: { ch: 'Ans' }, sqrt: { tpl: 'sqrt' }, abs: { tpl: 'abs' }, pol: { fn: 'Pol' }, rec: { fn: 'Rec' }, int: { fn: 'Int' }, intg: { fn: 'Intg' }, ranint: { fn: 'RanInt' }
+      };
+      const LINEAR_NAMES = {
+        sin: 'sin', cos: 'cos', tan: 'tan', asin: 'asin', acos: 'acos', atan: 'atan', sinh: 'sinh', cosh: 'cosh', tanh: 'tanh', asinh: 'asinh', acosh: 'acosh', atanh: 'atanh',
+        ln: 'ln', log: 'log', gcd: 'gcd', lcm: 'lcm', ucln: 'gcd', bcnn: 'lcm', int: 'Int', intg: 'Intg', ranint: 'RanInt', pol: 'Pol', rec: 'Rec', sqrt: 'sqrt', abs: 'abs', root: 'root', logb: 'logb'
+      };
+      const SLOTS = { frac: 2, sqrt: 1, root: 2, pow: 1, logb: 2, abs: 1, int: 3, der: 2, sum: 3, sci: 1 };
+      /* Thu tu di chuyen con tro qua cac o (trai sang phai). int/sum: s0 = bieu thuc, s1 = can duoi, s2 = can tren. */
+      const SEQ = { frac: [0, 1], sqrt: [0], root: [0, 1], pow: [0], logb: [0, 1], abs: [0], int: [1, 2, 0], der: [0, 1], sum: [1, 2, 0], sci: [0] };
+      const NAV = {
+        frac: { up: { 1: 0 }, down: { 0: 1 } }, root: { up: { 1: 0 }, down: { 0: 1 } }, int: { up: { 1: 2, 0: 2 }, down: { 2: 1, 0: 1 } }, sum: { up: { 1: 2, 0: 2 }, down: { 2: 1, 0: 1 } },
+        logb: { up: { 0: 1 }, down: { 1: 0 } }, der: { up: { 1: 0 }, down: { 0: 1 } }
+      };
+
+      /* ---------- So hoc ---------- */
+      const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; };
+      const lcm = (a, b) => a && b ? Math.abs(a / gcd(a, b) * b) : 0;
+      function rat(x, maxQ, tol) {
+        if (!Number.isFinite(x)) return null;
+        const sgn = x < 0 ? -1 : 1, ax = Math.abs(x); let v = ax, h0 = 0, h1 = 1, k0 = 1, k1 = 0;
+        for (let i = 0; i < 64; i++) {
+          const a = Math.floor(v), h2 = a * h1 + h0, k2 = a * k1 + k0;
+          if (k2 > maxQ) break;
+          h0 = h1; h1 = h2; k0 = k1; k1 = k2;
+          if (Math.abs(ax - h1 / k1) <= tol) return { p: sgn * h1, q: k1 };
+          const fr = v - a; if (fr < 1e-300) break; v = 1 / fr;
+        }
+        return null;
+      }
+      function simplifySqrt(n) { let k = 1, m = n; for (let f = 2; f * f <= m; f++) { while (m % (f * f) === 0) { m /= f * f; k *= f; } } return [k, m]; }
+      /* Nhan dang dang dung: a·√b·(π)/d */
+      function exactOf(x) {
+        if (!Number.isFinite(x)) return null;
+        const ax = Math.abs(x);
+        if (ax === 0) return { a: 0, b: 1, d: 1, pi: false };
+        if (ax >= 1e10 || ax < 1e-6) return null;
+        let r = rat(x, 9999, ax * 5e-12);
+        if (r) return { a: r.p, b: 1, d: r.q, pi: false };
+        const y = x * x; r = rat(y, 9999, y * 1e-11);
+        if (r && r.p > 0 && r.p * r.q < 1e9) {
+          const [k, m] = simplifySqrt(r.p * r.q);
+          if (m > 1) { const g = gcd(k, r.q), num = k / g, den = r.q / g; if (Math.abs(num * Math.sqrt(m) / den - ax) <= ax * 1e-11) return { a: x < 0 ? -num : num, b: m, d: den, pi: false }; }
+        }
+        const xp = x / Math.PI; r = rat(xp, 999, Math.abs(xp) * 5e-12);
+        if (r && Math.abs(r.p) <= 9999) return { a: r.p, b: 1, d: r.q, pi: true };
+        return null;
+      }
+      const RAD = '<span class="rad"><span class="sr">√</span><svg viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,12.5 2.6,11 5.6,19.6 10,0.4" fill="none" stroke="currentColor" stroke-width="1.3" vector-effect="non-scaling-stroke"/></svg></span>';
+      const sqrtHtml = b => `<span class="sqrt">${RAD}<span class="slot">${b}</span></span>`;
+      const fracHtml = (n, d) => `<span class="frac"><span>${n}</span><span>${d}</span></span>`;
+      function exactHtml(e) {
+        const A = Math.abs(e.a);
+        if (A === 0) return '0';
+        let num = ''; if (A !== 1 || (e.b === 1 && !e.pi)) num += A; if (e.b > 1) num += sqrtHtml(e.b); if (e.pi) num += 'π';
+        return (e.a < 0 ? '−' : '') + (e.d === 1 ? num : fracHtml(num, e.d));
+      }
+      function exactText(e) {
+        const A = Math.abs(e.a);
+        if (A === 0) return '0';
+        let num = ''; if (A !== 1 || (e.b === 1 && !e.pi)) num += A; if (e.b > 1) num += '√' + e.b; if (e.pi) num += 'π';
+        return (e.a < 0 ? '−' : '') + num + (e.d === 1 ? '' : '/' + e.d);
+      }
+      const trimZeros = s => s.includes('.') ? s.replace(/\.?0+$/, '') : s;
+      function decParts(x) {
+        if (x === 0) return { m: '0', e: null };
+        const ax = Math.abs(x);
+        if (S.eng) {
+          let e = Math.floor(Math.log10(ax)); e -= ((e % 3) + 3) % 3; let m = +(x / 10 ** e).toPrecision(10);
+          if (Math.abs(m) >= 1000) { m = +(m / 1000).toPrecision(10); e += 3; }
+          return { m: trimZeros(String(m)), e: e || null };
+        }
+        const sci = () => { const [m, e] = x.toExponential(9).split('e'); return { m: trimZeros(m), e: +e }; };
+        if (ax >= 1e10 || ax < 1e-9) return sci();
+        const s = x.toPrecision(10); return s.includes('e') ? sci() : { m: trimZeros(s), e: null };
+      }
+      const minus = s => String(s).replace(/-/g, '−');
+      function fmt(x, exact) {
+        if (Object.is(x, -0)) x = 0;
+        if (exact) { const e = exactOf(x); if (e) return { html: exactHtml(e), text: exactText(e) }; }
+        const d = decParts(x);
+        return {
+          html: minus(d.m) + (d.e !== null ? `<span class="x10">×10<span class="sup">${minus(d.e)}</span></span>` : ''),
+          text: minus(d.m) + (d.e !== null ? '×10' + mapChars(String(d.e), SUP) : '')
+        };
+      }
+      function fmtC(re, im, exact) {
+        if (im === 0) return fmt(re, exact);
+        const a = fmt(re, exact), b = fmt(Math.abs(im), exact), one = Math.abs(im) === 1;
+        const sign = im < 0 ? ' − ' : ' + ', lead = re === 0;
+        return { html: (lead ? (im < 0 ? '−' : '') : a.html + sign) + (one ? '' : b.html) + '<i>i</i>', text: (lead ? (im < 0 ? '−' : '') : a.text + sign) + (one ? '' : b.text) + 'i' };
+      }
+      const plain = x => String(+x.toPrecision(12));
+
+      /* ---------- Phan tich cu phap ---------- */
+      const OPCH = { '+': '+', '-': '-', '−': '-', '×': '*', '÷': '/', 'nCr': 'nCr', 'nPr': 'nPr' };
+      function rowTokens(row, meta) {
+        const out = []; let i = 0;
+        while (i < row.length) {
+          const n = row[i];
+          if (n.k === 'ch') {
+            const v = n.v;
+            if (/^[0-9.]$/.test(v)) {
+              let s = ''; while (i < row.length && row[i].k === 'ch' && /^[0-9.]$/.test(row[i].v)) { s += row[i].v; i++; }
+              if (!/^(\d+\.?\d*|\.\d+)$/.test(s)) fail('Lỗi cú pháp: số "' + s + '" không hợp lệ');
+              if (s.includes('.')) meta.decimal = true;
+              out.push({ t: 'num', v: parseFloat(s) }); continue;
+            }
+            if (OPCH[v]) out.push({ t: 'op', v: OPCH[v] });
+            else if (v === '(' || v === ')' || v === ',' || v === '=') out.push({ t: v });
+            else if (v === '!' || v === '%') out.push({ t: 'post', v });
+            else if (v === 'π') out.push({ t: 'num', v: Math.PI });
+            else if (v === 'e') out.push({ t: 'num', v: Math.E });
+            else if (v === 'Ans' || VARS.includes(v)) out.push({ t: 'var', v });
+            else fail('Lỗi cú pháp: chưa hiểu kí hiệu "' + v + '"');
+          }
+          else if (n.k === 'fn') { out.push({ t: 'fn', v: n.v }, { t: '(' }); }
+          else if (n.k === 'const') { meta.decimal = true; out.push({ t: 'num', v: CONSTS[n.v].v }); }
+          else if (n.k === 'pow') out.push({ t: 'pow', ast: parseRow(n.s[0], meta) });
+          else if (n.k === 'sci') out.push({ t: 'sci', ast: parseRow(n.s[0], meta) });
+          else out.push({ t: 'atom', ast: structAst(n, meta) });
+          i++;
+        }
+        return out;
+      }
+      function structAst(n, meta) {
+        const P = i => parseRow(n.s[i], meta);
+        switch (n.k) {
+          case 'frac': return { type: 'bin', op: '/', a: P(0), b: P(1) };
+          case 'sqrt': return { type: 'call', f: 'sqrt', args: [P(0)] };
+          case 'root': return { type: 'call', f: 'root', args: [P(0), P(1)] };
+          case 'logb': return { type: 'call', f: 'logb', args: [P(0), P(1)] };
+          case 'abs': return { type: 'call', f: 'abs', args: [P(0)] };
+          case 'int': meta.numeric = true; return { type: 'int', body: P(0), lo: P(1), hi: P(2) };
+          case 'sum': return { type: 'sum', body: P(0), lo: P(1), hi: P(2) };
+          case 'der': meta.numeric = true; return { type: 'der', body: P(0), at: P(1) };
+        }
+        fail('Lỗi cú pháp');
+      }
+      function parseRow(row, meta) { if (!row.length) fail('Còn ô trống chưa nhập'); return parseTokens(rowTokens(row, meta)); }
+      function parseTop(row, meta) {
+        const tk = rowTokens(row, meta), eq = tk.flatMap((t, i) => t.t === '=' ? [i] : []);
+        if (!tk.length) fail('Nhập biểu thức trước');
+        if (eq.length > 1) fail('Chỉ dùng một dấu "=" trong phương trình');
+        if (!eq.length) return { lhs: parseTokens(tk), rhs: null };
+        const L = tk.slice(0, eq[0]), R = tk.slice(eq[0] + 1);
+        if (!L.length || !R.length) fail('Phương trình cần có hai vế');
+        return { lhs: parseTokens(L), rhs: parseTokens(R) };
+      }
+      const BP = { '+': 10, '-': 10, '*': 20, '/': 20, 'nCr': 22, 'nPr': 22, '^': 30 };
+      function parseTokens(tokens) {
+        const tk = [], isEnd = t => ['num', 'var', ')', 'post', 'pow', 'sci', 'atom'].includes(t.t), isStart = t => ['num', 'var', '(', 'fn', 'atom'].includes(t.t);
+        tokens.forEach(t => { const p = tk[tk.length - 1]; if (p && isEnd(p) && isStart(t)) tk.push({ t: 'op', v: '*' }); tk.push(t); });
+        let i = 0, depth = 0; const peek = () => tk[i];
+        const close = () => { if (peek()?.t === ')') { i++; return; } if (!peek()) return; fail('Thiếu dấu ")"'); };
+        function expr(min) {
+          if (++depth > 200) fail('Biểu thức lồng quá sâu');
+          const t = tk[i++]; if (!t) fail('Biểu thức chưa hoàn chỉnh');
+          let left;
+          switch (t.t) {
+            case 'num': left = { type: 'num', v: t.v }; break;
+            case 'var': left = { type: 'var', v: t.v }; break;
+            case 'atom': left = t.ast; break;
+            case '(': left = expr(0); close(); break;
+            case 'op':
+              if (t.v === '-') { left = { type: 'neg', a: expr(25) }; break; }
+              if (t.v === '+') { left = expr(25); break; }
+              fail('Lỗi cú pháp: dấu ' + ({ '*': '×', '/': '÷' }[t.v] || t.v) + ' đặt sai chỗ');
+            case 'fn': {
+              const args = [];
+              if (peek()?.t === '(') {
+                i++;
+                if (peek()?.t === ')') i++;
+                else { args.push(expr(0)); while (peek()?.t === ',') { i++; args.push(expr(0)); } close(); }
+              } else if (t.v === 'sqrt') args.push(expr(30));
+              else fail('Dùng ' + FNS[t.v].l + '(…)');
+              if (args.length !== FNS[t.v].n) fail(FNS[t.v].l + ' cần ' + FNS[t.v].n + ' đối số' + (FNS[t.v].n > 1 ? ', cách nhau bởi dấu phẩy' : ''));
+              left = { type: 'call', f: t.v, args }; break;
+            }
+            case 'pow': case 'sci': fail('Thiếu cơ số trước lũy thừa');
+            default: fail(t.t === ')' ? 'Thừa dấu ")"' : t.t === ',' ? 'Dấu phẩy đặt sai chỗ' : 'Lỗi cú pháp');
+          }
+          for (; ;) {
+            const o = peek(); if (!o) break;
+            if (o.t === 'post') { if (40 < min) break; i++; left = { type: o.v === '!' ? 'fact' : 'pct', a: left }; continue; }
+            if (o.t === 'pow') { if (30 < min) break; i++; left = { type: 'pow', a: left, b: o.ast }; continue; }
+            if (o.t === 'sci') { if (40 < min) break; i++; left = { type: 'bin', op: '*', a: left, b: { type: 'pow', a: { type: 'num', v: 10 }, b: o.ast } }; continue; }
+            if (o.t === 'op') {
+              const bp = BP[o.v]; if (bp < min) break; i++;
+              const right = expr(o.v === '^' ? bp : bp + 1);
+              left = o.v === '^' ? { type: 'pow', a: left, b: right } : { type: 'bin', op: o.v, a: left, b: right }; continue;
+            }
+            break;
+          }
+          depth--; return left;
+        }
+        const ast = expr(0);
+        if (i < tk.length) fail(tk[i].t === ')' ? 'Thừa dấu ")"' : tk[i].t === '=' ? 'Dấu "=" chỉ dùng cho phương trình' : 'Lỗi cú pháp');
+        return ast;
+      }
+      /* Bieu thuc go tren mot dong (o nhap gia tri, he so, bang). */
+      function linearTokens(src, meta) {
+        let s = String(src).trim();
+        if (!s) fail('Còn ô trống chưa nhập');
+        if (!/[()]/.test(s)) s = s.replace(/(\d),(\d)/g, '$1.$2');
+        s = s.replace(/[×·]/g, '*').replace(/÷|:/g, '/').replace(/[−–]/g, '-');
+        const out = [], names = Object.keys(LINEAR_NAMES).sort((a, b) => b.length - a.length); let i = 0;
+        while (i < s.length) {
+          const c = s[i], rest = s.slice(i);
+          if (/\s/.test(c)) { i++; continue; }
+          const num = rest.match(/^(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/);
+          if (num) { if (/[.eE]/.test(num[0])) meta.decimal = true; out.push({ t: 'num', v: parseFloat(num[0]) }); i += num[0].length; continue; }
+          if (c === '√') { out.push({ t: 'fn', v: 'sqrt' }); i++; continue; }
+          if (c === 'π') { out.push({ t: 'num', v: Math.PI }); i++; continue; }
+          if (/[A-Za-z]/.test(c)) {
+            const low = rest.toLowerCase(), nm = names.find(n => low.startsWith(n));
+            if (nm) { out.push({ t: 'fn', v: LINEAR_NAMES[nm] }); i += nm.length; continue; }
+            if (low.startsWith('pi')) { out.push({ t: 'num', v: Math.PI }); i += 2; continue; }
+            if (low.startsWith('ans')) { out.push({ t: 'var', v: 'Ans' }); i += 3; continue; }
+            if (c === 'e') { out.push({ t: 'num', v: Math.E }); i++; continue; }
+            const up = c.toUpperCase();
+            if (VARS.includes(up)) { out.push({ t: 'var', v: up }); i++; continue; }
+            fail('Chưa hiểu kí hiệu "' + c + '"');
+          }
+          if ('+-*/^'.includes(c)) out.push({ t: 'op', v: c });
+          else if ('(),='.includes(c)) out.push({ t: c });
+          else if (c === '!' || c === '%') out.push({ t: 'post', v: c });
+          else fail('Chưa hiểu kí hiệu "' + c + '"');
+          i++;
+        }
+        return out;
+      }
+      const parseLinear = (s, meta = {}) => parseTokens(linearTokens(s, meta));
+
+      /* ---------- Tinh gia tri ---------- */
+      function check(v) { if (typeof v !== 'number' || !Number.isFinite(v)) fail('Lỗi toán: kết quả không xác định hoặc quá lớn'); return Object.is(v, -0) ? 0 : v; }
+      const nearInt = v => Math.abs(v - Math.round(v)) < 1e-9 * Math.max(1, Math.abs(v)) ? Math.round(v) : v;
+      function needInt(v, what) { v = nearInt(v); if (!Number.isInteger(v)) fail(what + ' phải là số nguyên'); return v; }
+      function power(a, b) {
+        if (a === 0 && b < 0) fail('Lỗi toán: chia cho 0');
+        if (a < 0 && !Number.isInteger(b)) {
+          const r = rat(b, 99, Math.abs(b) * 1e-12 + 1e-15);
+          if (r && Math.abs(r.q) % 2 === 1) return (r.p % 2 === 0 ? 1 : -1) * Math.pow(-a, b);
+          fail('Lỗi toán: lũy thừa số âm với số mũ không nguyên');
+        }
+        return Math.pow(a, b);
+      }
+      function callFn(f, args, cx) {
+        const [a, b] = args, toRad = x => cx.deg ? x * Math.PI / 180 : x, fromRad = x => cx.deg ? x * 180 / Math.PI : x, snap = v => Math.abs(v) < 1e-15 ? 0 : v;
+        switch (f) {
+          case 'sin': return snap(Math.sin(toRad(a)));
+          case 'cos': return snap(Math.cos(toRad(a)));
+          case 'tan': { const t = toRad(a); if (Math.abs(Math.cos(t)) < 1e-14) fail('Lỗi toán: tan không xác định tại góc này'); return snap(Math.tan(t)); }
+          case 'asin': if (Math.abs(a) > 1) fail('Lỗi toán: sin⁻¹ chỉ nhận giá trị từ −1 đến 1'); return fromRad(Math.asin(a));
+          case 'acos': if (Math.abs(a) > 1) fail('Lỗi toán: cos⁻¹ chỉ nhận giá trị từ −1 đến 1'); return fromRad(Math.acos(a));
+          case 'atan': return fromRad(Math.atan(a));
+          case 'sinh': return Math.sinh(a); case 'cosh': return Math.cosh(a); case 'tanh': return Math.tanh(a); case 'asinh': return Math.asinh(a);
+          case 'acosh': if (a < 1) fail('Lỗi toán: cosh⁻¹ cần giá trị ≥ 1'); return Math.acosh(a);
+          case 'atanh': if (Math.abs(a) >= 1) fail('Lỗi toán: tanh⁻¹ cần giá trị trong (−1; 1)'); return Math.atanh(a);
+          case 'ln': if (a <= 0) fail('Lỗi toán: ln chỉ nhận số dương'); return Math.log(a);
+          case 'log': if (a <= 0) fail('Lỗi toán: log chỉ nhận số dương'); return Math.log10(a);
+          case 'logb': if (a <= 0 || a === 1) fail('Lỗi toán: cơ số logarit phải dương và khác 1'); if (b <= 0) fail('Lỗi toán: logarit chỉ nhận số dương'); return Math.log(b) / Math.log(a);
+          case 'sqrt': if (a < 0) fail('Lỗi toán: căn bậc hai của số âm'); return Math.sqrt(a);
+          case 'root': {
+            const n = nearInt(a); if (n === 0) fail('Lỗi toán: bậc căn phải khác 0');
+            if (b < 0) { if (Number.isInteger(n) && Math.abs(n) % 2 === 1) return -Math.pow(-b, 1 / n); fail('Lỗi toán: căn bậc chẵn của số âm'); }
+            return n === 3 ? Math.cbrt(b) : Math.pow(b, 1 / n);
+          }
+          case 'abs': return Math.abs(a);
+          case 'Int': return Math.trunc(a);
+          case 'Intg': return Math.floor(a);
+          case 'gcd': return gcd(needInt(a, 'ƯCLN: số'), needInt(b, 'ƯCLN: số'));
+          case 'lcm': return lcm(needInt(a, 'BCNN: số'), needInt(b, 'BCNN: số'));
+          case 'RanInt': { const x = needInt(a, 'RanInt: cận'), y = needInt(b, 'RanInt: cận'); if (x > y) fail('RanInt: cận dưới phải nhỏ hơn cận trên'); return x + Math.floor(Math.random() * (y - x + 1)); }
+          case 'Pol': return Math.hypot(a, b);
+          case 'Rec': return a * Math.cos(toRad(b));
+        }
+        fail('Hàm chưa hỗ trợ');
+      }
+      function ev(n, cx) {
+        switch (n.type) {
+          case 'num': return n.v;
+          case 'var': { const v = cx.vars[n.v]; return v === undefined ? 0 : v; }
+          case 'neg': return -ev(n.a, cx);
+          case 'bin': {
+            const a = ev(n.a, cx), b = ev(n.b, cx);
+            switch (n.op) {
+              case '+': return a + b; case '-': return a - b; case '*': return a * b;
+              case '/': if (b === 0) fail('Lỗi toán: chia cho 0'); return a / b;
+              case 'nCr': case 'nPr': {
+                const N = needInt(a, 'n'), r = needInt(b, 'r'); if (N < 0 || r < 0 || r > N) fail('Cần 0 ≤ r ≤ n');
+                let v = 1; if (n.op === 'nPr') { for (let k = 0; k < r; k++)v *= N - k; } else { const m = Math.min(r, N - r); for (let k = 1; k <= m; k++)v = v * (N - m + k) / k; v = Math.round(v); }
+                return v;
+              }
+            }
+            break;
+          }
+          case 'pow': return power(ev(n.a, cx), ev(n.b, cx));
+          case 'fact': { const v = nearInt(ev(n.a, cx)); if (!Number.isInteger(v) || v < 0 || v > 170) fail('Giai thừa nhận số nguyên từ 0 đến 170'); let f = 1; for (let k = 2; k <= v; k++)f *= k; return f; }
+          case 'pct': return ev(n.a, cx) / 100;
+          case 'call': return callFn(n.f, n.args.map(a => ev(a, cx)), cx);
+          case 'int': { const lo = ev(n.lo, cx), hi = ev(n.hi, cx); return integrate(bodyFn(n.body, cx), lo, hi); }
+          case 'der': return derivative(bodyFn(n.body, cx), ev(n.at, cx));
+          case 'sum': {
+            const lo = needInt(ev(n.lo, cx), 'Cận của Σ'), hi = needInt(ev(n.hi, cx), 'Cận của Σ');
+            if (hi - lo > 1e6) fail('Σ tối đa 1 000 000 số hạng');
+            const f = bodyFn(n.body, cx); let s = 0; for (let k = lo; k <= hi; k++)s += f(k); return s;
+          }
+        }
+        fail('Lỗi cú pháp');
+      }
+      function bodyFn(body, cx) {
+        const vars = Object.create(cx.vars), c2 = { ...cx, vars };
+        return t => { vars.X = t; const v = ev(body, c2); if (!Number.isFinite(v)) fail('Lỗi toán: hàm không xác định trong khoảng tính'); return v; };
+      }
+      const XGK = [0.991455371120812639, 0.949107912342758525, 0.864864423359769073, 0.741531185599394440, 0.586087235467691130, 0.405845151377397167, 0.207784955007898468, 0];
+      const WGK = [0.022935322010529225, 0.063092092629978553, 0.104790010322250184, 0.140653259715525919, 0.169004726639267903, 0.190350578064785410, 0.204432940075298892, 0.209482141084727828];
+      const WG = [0.129484966168869693, 0.279705391489276668, 0.381830050505118945, 0.417959183673469388];
+      function gk15(f, a, b) {
+        const c = (a + b) / 2, h = (b - a) / 2, fc = f(c); let rk = fc * WGK[7], rg = fc * WG[3];
+        for (let j = 0; j < 7; j++) { const dx = h * XGK[j], s = f(c - dx) + f(c + dx); rk += WGK[j] * s; if (j % 2 === 1) rg += WG[(j - 1) / 2] * s; }
+        return { v: rk * h, e: Math.abs((rk - rg) * h) };
+      }
+      function integrate(f, a, b) {
+        if (a === b) return 0;
+        let budget = 4000;
+        const rec = (a, b, w, tol, depth) => {
+          if (w.e <= tol || depth >= 50 || budget <= 0) return w.v;
+          const c = (a + b) / 2, L = gk15(f, a, c), R = gk15(f, c, b); budget -= 2;
+          if (L.e + R.e <= tol) return L.v + R.v;
+          return rec(a, c, L, tol / 2, depth + 1) + rec(c, b, R, tol / 2, depth + 1);
+        };
+        const w = gk15(f, a, b);
+        return rec(a, b, w, Math.max(1e-12 * Math.abs(w.v), 1e-14), 0);
+      }
+      function derivative(f, x) {
+        const CON = 1.4, CON2 = CON * CON, N = 10, a = [...Array(N)].map(() => Array(N).fill(0));
+        let h = 0.05 * Math.max(1, Math.abs(x)), err = Infinity, ans = 0;
+        a[0][0] = (f(x + h) - f(x - h)) / (2 * h); ans = a[0][0];
+        for (let i = 1; i < N; i++) {
+          h /= CON; a[0][i] = (f(x + h) - f(x - h)) / (2 * h); let fac = CON2;
+          for (let j = 1; j <= i; j++) {
+            a[j][i] = (a[j - 1][i] * fac - a[j - 1][i - 1]) / (fac - 1); fac *= CON2;
+            const e = Math.max(Math.abs(a[j][i] - a[j - 1][i]), Math.abs(a[j][i] - a[j - 1][i - 1]));
+            if (e <= err) { err = e; ans = a[j][i]; }
+          }
+          if (Math.abs(a[i][i] - a[i - 1][i - 1]) >= 2 * err) break;
+        }
+        return Math.abs(ans) < 1e-11 * Math.max(1, Math.abs(f(x))) ? 0 : ans;
+      }
+      function freeVars(ast, out = [], bound = false) {
+        if (!ast) return out;
+        switch (ast.type) {
+          case 'var': if (ast.v !== 'Ans' && !(bound && ast.v === 'X') && !out.includes(ast.v)) out.push(ast.v); break;
+          case 'int': case 'sum': freeVars(ast.lo, out, bound); freeVars(ast.hi, out, bound); freeVars(ast.body, out, true); break;
+          case 'der': freeVars(ast.body, out, true); freeVars(ast.at, out, bound); break;
+          default: if (ast.a) freeVars(ast.a, out, bound); if (ast.b) freeVars(ast.b, out, bound); if (ast.args) ast.args.forEach(x => freeVars(x, out, bound));
+        }
+        return out;
+      }
+      /* SOLVE: Newton co giam buoc, sau do do khoang doi dau va chia doi. */
+      function solveNum(g, x0) {
+        const F = x => { try { const r = g(x); return Number.isFinite(r.d) ? r : null; } catch (e) { if (e instanceof CalcError) return null; throw e; } };
+        const ok = r => r && Math.abs(r.d) <= 1e-10 * r.m;
+        const newton = x => {
+          let r = F(x); if (!r) return null;
+          for (let i = 0; i < 100 && r.d !== 0; i++) {
+            const h = 1e-6 * Math.max(1, Math.abs(x)), p = F(x + h), q = F(x - h); if (!p || !q) break;
+            const d = (p.d - q.d) / (2 * h); if (!d || !Number.isFinite(d)) break;
+            const step = r.d / d; let lam = 1, xn, rn = null;
+            while (lam >= 1e-6) { xn = x - lam * step; rn = F(xn); if (rn && Math.abs(rn.d) < Math.abs(r.d)) break; rn = null; lam /= 2; }
+            if (!rn) break;
+            const done = Math.abs(xn - x) <= 1e-15 * Math.max(1, Math.abs(xn)); x = xn; r = rn; if (done) break;
+          }
+          return ok(r) ? x : null;
+        };
+        const bisect = (a, b, fa) => {
+          for (let i = 0; i < 200; i++) { const m = (a + b) / 2, fm = F(m); if (!fm) return null; if (fm.d === 0) return m; if (Math.sign(fm.d) === Math.sign(fa.d)) { a = m; fa = fm; } else b = m; if (Math.abs(b - a) <= 1e-15 * Math.max(1, Math.abs(m))) break; }
+          return (a + b) / 2;
+        };
+        let x = newton(x0); if (x !== null) return x;
+        const base = Math.max(1, Math.abs(x0)), side = { 1: { x: x0, f: F(x0) }, '-1': { x: x0, f: F(x0) } };
+        for (let k = 0; k < 90; k++) {
+          const s = base * 0.01 * Math.pow(1.26, k);
+          for (const dir of [1, -1]) {
+            const xn = x0 + dir * s, fn = F(xn), p = side[dir];
+            if (fn && p.f && Math.sign(fn.d) !== Math.sign(p.f.d)) {
+              const b = bisect(p.x, xn, p.f);
+              if (b !== null) { const pol = newton(b) ?? b; if (ok(F(pol))) return pol; }
+            }
+            side[dir] = { x: xn, f: fn };
+          }
+        }
+        fail('Không tìm được nghiệm. Hãy thử giá trị đầu khác.');
+      }
+      /* He phuong trinh tuyen tinh: khu Gauss–Jordan, chon phan tu troi. */
+      function solveLinear(M) {
+        const n = M.length, A = M.map(r => r.slice()), scale = Math.max(1e-300, ...A.flat().map(Math.abs)), where = Array(n).fill(-1);
+        let row = 0;
+        for (let col = 0; col < n && row < n; col++) {
+          let piv = row; for (let i = row + 1; i < n; i++)if (Math.abs(A[i][col]) > Math.abs(A[piv][col])) piv = i;
+          if (Math.abs(A[piv][col]) <= 1e-12 * scale) continue;
+          [A[piv], A[row]] = [A[row], A[piv]]; where[col] = row;
+          for (let i = 0; i < n; i++)if (i !== row) { const f = A[i][col] / A[row][col]; if (f) for (let j = col; j <= n; j++)A[i][j] -= f * A[row][j]; }
+          row++;
+        }
+        if (row < n) { for (let i = row; i < n; i++)if (Math.abs(A[i][n]) > 1e-10 * scale) return { status: 'none' }; return { status: 'many' }; }
+        const x = where.map((r, c) => A[r][n] / A[r][c]), sx = Math.max(1, ...x.map(Math.abs));
+        return { status: 'one', x: x.map(v => Math.abs(v) < 1e-13 * sx ? 0 : v) };
+      }
+      const cmul = (a, b) => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]];
+      const cdiv = (a, b) => { const d = b[0] * b[0] + b[1] * b[1]; return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d]; };
+      /* Nghiem thuc cua da thuc: chia truc so bang cac diem cuc tri (nghiem cua dao ham), tim doi dau trong tung khoang.
+         Nghiem boi nam tai diem cuc tri nen duoc nhan ra chinh xac. */
+      const pval = (a, x) => a.reduce((s, c) => s * x + c, 0), pscale = (a, x) => a.reduce((s, c) => s * Math.abs(x) + Math.abs(c), 0);
+      const pder = a => a.slice(0, -1).map((c, i) => c * (a.length - 1 - i));
+      function realRoots(a) {
+        const n = a.length - 1;
+        if (n < 1) return [];
+        if (n === 1) return [-a[1] / a[0]];
+        const crit = realRoots(pder(a)).sort((p, q) => p - q), B = 1 + Math.max(...a.slice(1).map(c => Math.abs(c / a[0]))), pts = [-B, ...crit.filter(c => Math.abs(c) < B), B], out = [];
+        const zero = x => Math.abs(pval(a, x)) <= 2e-14 * pscale(a, x);
+        crit.forEach(c => { if (zero(c)) out.push(c); });
+        for (let i = 0; i + 1 < pts.length; i++) {
+          let l = pts[i], r = pts[i + 1], fl = pval(a, l); const fr = pval(a, r);
+          if (zero(l) || zero(r) || Math.sign(fl) === Math.sign(fr)) continue;
+          for (let k = 0; k < 200; k++) { const m = (l + r) / 2, fm = pval(a, m); if (m === l || m === r || fm === 0) { l = r = m; break; } if (Math.sign(fm) === Math.sign(fl)) { l = m; fl = fm; } else r = m; }
+          out.push((l + r) / 2);
+        }
+        out.sort((p, q) => p - q);
+        return out.filter((x, i) => i === 0 || Math.abs(x - out[i - 1]) > 1e-12 * Math.max(1, Math.abs(x)));
+      }
+      function polyRoots(coef) {
+        const a = coef.map(v => v / coef[0]); let rest = a.slice(); const out = [];
+        realRoots(a).forEach(x => {
+          const r = rat(x, 1000, 1e-9 * Math.max(1, Math.abs(x)));
+          if (r) { const c = r.p / r.q; if (Math.abs(pval(a, c)) <= 1e-13 * pscale(a, c)) x = c; }
+          if (Math.abs(x) < 1e-14) x = 0;
+          let mult = 0, d = a;
+          while (d.length > 1 && Math.abs(pval(d, x)) <= 1e-9 * pscale(d, x) && mult < a.length - 1) { mult++; d = pder(d); }
+          mult = Math.max(1, mult);
+          for (let k = 0; k < mult && rest.length > 1; k++) { const q = [rest[0]]; for (let j = 1; j < rest.length - 1; j++)q.push(rest[j] + q[j - 1] * x); rest = q; }
+          out.push([x, 0, mult]);
+        });
+        const m = rest.length - 1;
+        if (m === 2) {
+          const [p, q, s] = rest, D = q * q - 4 * p * s, re = -q / (2 * p), im = Math.sqrt(Math.max(0, -D)) / Math.abs(2 * p);
+          if (im > 0) out.push([re, im, 1], [re, -im, 1]);
+        } else if (m === 1) out.push([-rest[1] / rest[0], 0, 1]);
+        else if (m >= 3) {
+          const P = z => { let v = [1, 0]; for (let k = 1; k <= m; k++) { v = cmul(v, z); v[0] += rest[k] / rest[0]; } return v; };
+          const R = 1 + Math.max(...rest.slice(1).map(c => Math.abs(c / rest[0])));
+          let z = [...Array(m)].map((_, k) => [R * Math.cos(2 * Math.PI * k / m + 0.4), R * Math.sin(2 * Math.PI * k / m + 0.4)]);
+          for (let it = 0; it < 3000; it++) {
+            let delta = 0;
+            for (let i = 0; i < m; i++) { let den = [1, 0]; for (let j = 0; j < m; j++)if (j !== i) den = cmul(den, [z[i][0] - z[j][0], z[i][1] - z[j][1]]); const w = cdiv(P(z[i]), den); z[i] = [z[i][0] - w[0], z[i][1] - w[1]]; delta = Math.max(delta, Math.hypot(w[0], w[1])); }
+            if (delta < 1e-15) break;
+          }
+          z.forEach(([re, im]) => out.push([Math.abs(re) < 1e-7 * Math.abs(im) ? 0 : re, Math.abs(im) < 1e-7 * Math.abs(re) + 1e-12 ? 0 : im, 1]));
+        }
+        return out.sort((p, q) => (p[1] !== 0) - (q[1] !== 0) || p[0] - q[0] || q[1] - p[1]);
+      }
+      /* Nghiem dung cua phuong trinh bac hai khi he so huu ti. */
+      function fracOf(x) { const r = rat(x, 99999, Math.abs(x) * 1e-13 + 1e-300); return r && Math.abs(r.p) < 1e8 ? r : null; }
+      function quadExact(a, b, c) {
+        const A = fracOf(a), B = fracOf(b), C = fracOf(c); if (!A || !B || !C) return null;
+        const dn = B.p * B.p * A.q * C.q - 4 * A.p * C.p * B.q * B.q, dd = B.q * B.q * A.q * C.q;
+        if (!Number.isSafeInteger(dn) || !Number.isSafeInteger(dd)) return null;
+        let pn = -B.p * A.q, pd = 2 * A.p * B.q; if (pd < 0) { pn = -pn; pd = -pd; } let g = gcd(pn, pd) || 1; pn /= g; pd /= g;
+        if (dn === 0) return { double: true, p: [pn, pd] };
+        const prod = Math.abs(dn) * dd; if (!Number.isSafeInteger(prod) || prod > 1e12) return null;
+        const [k, m] = simplifySqrt(prod);
+        let sn = k * A.q, sd = dd * 2 * Math.abs(A.p); g = gcd(sn, sd) || 1; sn /= g; sd /= g;
+        return { p: [pn, pd], s: [sn, sd], m, imag: dn < 0 };
+      }
+      function surd(P, K, m, L, sign, imag) {
+        const unitH = (K === 1 && (m > 1 || imag) ? '' : K) + (m > 1 ? sqrtHtml(m) : '') + (imag ? '<i>i</i>' : ''), unitT = (K === 1 && (m > 1 || imag) ? '' : K) + (m > 1 ? '√' + m : '') + (imag ? 'i' : '');
+        const lead = P !== 0, sg = sign > 0 ? ' + ' : ' − ';
+        const nh = (lead ? minus(P) + sg : (sign < 0 ? '−' : '')) + unitH, nt = (lead ? minus(P) + sg : (sign < 0 ? '−' : '')) + unitT;
+        return L === 1 ? { html: nh, text: nt } : { html: fracHtml(nh, L), text: '(' + nt + ')/' + L };
+      }
+
+      /* ---------- Trang thai ---------- */
+      const S = { skin: 'hand', deg: true, eng: false, vars: Object.fromEntries(VARS.map(v => [v, 0])), ans: 0, hist: [], mode: 'calc', eqType: 'lin2', eq: {}, table: { t0: '0', t1: '5', ts: '1' } };
+      const ctx = () => ({ deg: S.deg, vars: { ...S.vars, Ans: S.ans } });
+      function evaluateText(text) { const meta = {}; return check(ev(parseLinear(text, meta), ctx())); }
+      /* ---------- O nhap dang sach giao khoa ---------- */
+      const ch = v => ({ k: 'ch', v });
+      const tpl = k => ({ k, s: [...Array(SLOTS[k])].map(() => []) });
+      const OP_DISPLAY = { '-': '−', '+': '+', '×': '×', '÷': '÷', '=': '=', 'nCr': 'C', 'nPr': 'P' };
+      function chDisp(n) {
+        const v = n.v;
+        if (/^[0-9.]$/.test(v)) return { c: 'n', t: v };
+        if (OP_DISPLAY[v]) return { c: v === 'nCr' || v === 'nPr' ? 'op b' : v === '=' ? 'op eq' : 'op', t: OP_DISPLAY[v] };
+        if (v === 'π' || v === 'e') return { c: 'c', t: v };
+        if (v === 'Ans') return { c: 'fn', t: 'Ans' };
+        if (VARS.includes(v)) return { c: 'v', t: varName(v) };
+        if (v === '(' || v === ')') return { c: 'p', t: v };
+        if (v === ',') return { c: 'cm', t: ',' };
+        if (v === '!' || v === '%') return { c: 'n', t: v };
+        return { c: 'raw', t: v };
+      }
+      let target = null;
+      class Editor {
+        constructor(el, onEnter) {
+          this.el = el; this.root = []; this.cur = { row: this.root, pos: 0 }; this.onEnter = onEnter; this.map = new WeakMap();
+          el.addEventListener('keydown', e => this.key(e));
+          el.addEventListener('pointerdown', e => this.click(e));
+          el.addEventListener('focus', () => setTarget(this));
+          this.render();
+        }
+        isEmpty() { return !this.root.length; }
+        load(row) { this.root = sanitizeRow(row); this.cur = { row: this.root, pos: this.root.length }; this.render(); }
+        clear() { this.root.length = 0; this.cur = { row: this.root, pos: 0 }; this.render(); }
+        parentOf(row, base = this.root) {
+          for (let i = 0; i < base.length; i++) {
+            const n = base[i]; if (!n.s) continue;
+            for (let j = 0; j < n.s.length; j++) { if (n.s[j] === row) return { row: base, idx: i, node: n, slot: j }; const r = this.parentOf(row, n.s[j]); if (r) return r; }
+          }
+          return null;
+        }
+        insert(n, enter = true) { const { row, pos } = this.cur; row.splice(pos, 0, n); if (n.s && enter) { const s = n.s[SEQ[n.k][0]]; this.cur = { row: s, pos: 0 }; } else this.cur.pos++; this.changed(); }
+        put(...nodes) { nodes.forEach(n => this.insert(n)); }
+        tpl(kind) {
+          if (kind === 'sq') { const p = tpl('pow'); p.s[0].push(ch('2')); return this.insert(p, false); }
+          if (kind === 'inv') { const p = tpl('pow'); p.s[0].push(ch('-'), ch('1')); return this.insert(p, false); }
+          if (kind === 'cube') { const p = tpl('pow'); p.s[0].push(ch('3')); return this.insert(p, false); }
+          if (kind === 'exp') { this.insert(ch('e')); return this.insert(tpl('pow')); }
+          if (kind === 'tenx') { this.insert(ch('1')); this.insert(ch('0')); return this.insert(tpl('pow')); }
+          this.insert(tpl(kind));
+        }
+        /* Phim "/" tren ban phim: dua cum dung truoc con tro len tu so. */
+        fracWrap() {
+          const { row, pos } = this.cur; let j = pos;
+          const stop = n => n.k === 'fn' || (n.k === 'ch' && (OPCH[n.v] || ['(', ',', '='].includes(n.v)));
+          while (j > 0) {
+            const n = row[j - 1];
+            if (n.k === 'ch' && n.v === ')') { let d = 0, k = j - 1; for (; k >= 0; k--) { const m = row[k]; if (m.k === 'ch' && m.v === ')') d++; else if (m.k === 'fn' || (m.k === 'ch' && m.v === '(')) d--; if (d === 0) break; } if (k < 0) break; j = k; continue; }
+            if (stop(n)) break; j--;
+          }
+          const f = tpl('frac'); f.s[0] = row.splice(j, pos - j); row.splice(j, 0, f);
+          this.cur = f.s[0].length ? { row: f.s[1], pos: 0 } : { row: f.s[0], pos: 0 }; this.changed();
+        }
+        letter(k) {
+          const lower = k === k.toLowerCase(); let n;
+          if (!lower) n = VARS.includes(k) ? ch(k) : { k: 'ch', v: k, ty: k.toLowerCase() };
+          else if (k === 'e') n = { k: 'ch', v: 'e', ty: 'e' };
+          else if (VARS.includes(k.toUpperCase())) n = { k: 'ch', v: k.toUpperCase(), ty: k };
+          else n = { k: 'ch', v: k, ty: k };
+          this.insert(n); this.autoName();
+        }
+        autoName() {
+          const { row, pos } = this.cur; let j = pos;
+          while (j > 0 && row[j - 1].ty) j--;
+          for (let s = j; s < pos; s++) {
+            const word = row.slice(s, pos).map(n => n.ty).join(''), act = TYPED[word]; if (!act) continue;
+            row.splice(s, pos - s); this.cur.pos = s;
+            if (act.fn) this.insert({ k: 'fn', v: act.fn, ty: word }); else if (act.ch) this.insert(ch(act.ch)); else this.tpl(act.tpl);
+            return;
+          }
+        }
+        left() {
+          const { row, pos } = this.cur;
+          if (pos > 0) { const n = row[pos - 1]; if (n.s) { const s = n.s[SEQ[n.k].at(-1)]; this.cur = { row: s, pos: s.length }; } else this.cur.pos--; return this.render(); }
+          const p = this.parentOf(row); if (!p) return;
+          const seq = SEQ[p.node.k], k = seq.indexOf(p.slot);
+          if (k > 0) { const s = p.node.s[seq[k - 1]]; this.cur = { row: s, pos: s.length }; } else this.cur = { row: p.row, pos: p.idx };
+          this.render();
+        }
+        right() {
+          const { row, pos } = this.cur;
+          if (pos < row.length) { const n = row[pos]; if (n.s) this.cur = { row: n.s[SEQ[n.k][0]], pos: 0 }; else this.cur.pos++; return this.render(); }
+          const p = this.parentOf(row); if (!p) return;
+          const seq = SEQ[p.node.k], k = seq.indexOf(p.slot);
+          if (k < seq.length - 1) this.cur = { row: p.node.s[seq[k + 1]], pos: 0 }; else this.cur = { row: p.row, pos: p.idx + 1 };
+          this.render();
+        }
+        vert(dir) {
+          let p = this.parentOf(this.cur.row);
+          while (p) {
+            const to = NAV[p.node.k]?.[dir]?.[p.slot];
+            if (to !== undefined) { const s = p.node.s[to]; this.cur = { row: s, pos: s.length }; return this.render(); }
+            if (dir === 'down' && (p.node.k === 'pow' || p.node.k === 'sci')) { this.cur = { row: p.row, pos: p.idx + 1 }; return this.render(); }
+            p = this.parentOf(p.row);
+          }
+        }
+        up() { this.vert('up'); }
+        down() { this.vert('down'); }
+        home() { this.cur = { row: this.root, pos: 0 }; this.render(); }
+        end() { this.cur = { row: this.root, pos: this.root.length }; this.render(); }
+        del() {
+          const { row, pos } = this.cur;
+          if (pos > 0) {
+            const n = row[pos - 1];
+            if (n.s && n.s.some(s => s.length)) { const s = n.s[SEQ[n.k].at(-1)]; this.cur = { row: s, pos: s.length }; return this.render(); }
+            row.splice(pos - 1, 1); this.cur.pos--; return this.changed();
+          }
+          const p = this.parentOf(row); if (!p) return;
+          const seq = SEQ[p.node.k], k = seq.indexOf(p.slot);
+          if (k > 0) { const s = p.node.s[seq[k - 1]]; this.cur = { row: s, pos: s.length }; return this.render(); }
+          const content = seq.flatMap(i => p.node.s[i]); p.row.splice(p.idx, 1, ...content); this.cur = { row: p.row, pos: p.idx }; this.changed();
+        }
+        delFwd() {
+          const { row, pos } = this.cur; if (pos >= row.length) return;
+          const n = row[pos];
+          if (n.s && n.s.some(s => s.length)) { this.cur = { row: n.s[SEQ[n.k][0]], pos: 0 }; return this.render(); }
+          row.splice(pos, 1); this.changed();
+        }
+        changed() { this.render(); onEdit(this); }
+        key(e) {
+          const k = e.key, mod = e.ctrlKey || e.metaKey || e.altKey;
+          if (mod) { if (!((e.ctrlKey || e.metaKey) && k.toLowerCase() === 's')) e.stopPropagation(); return; }
+          let handled = true;
+          if (k === 'Enter') this.onEnter();
+          else if (k === 'Backspace') this.del();
+          else if (k === 'Delete') this.delFwd();
+          else if (k === 'ArrowLeft') this.left();
+          else if (k === 'ArrowRight') this.right();
+          else if (k === 'ArrowUp') this.up();
+          else if (k === 'ArrowDown') this.down();
+          else if (k === 'Home') this.home();
+          else if (k === 'End') this.end();
+          else if (k === 'Escape') hideCalc();
+          else if (/^[0-9.]$/.test(k)) this.insert(ch(k));
+          else if (k === '/') this.fracWrap();
+          else if (k === '^') this.insert(tpl('pow'));
+          else if (k === '*') this.insert(ch('×'));
+          else if (k === ':') this.insert(ch('÷'));
+          else if (k === '(' && this.cur.row[this.cur.pos - 1]?.k === 'fn');
+          else if ('+-(),=!%'.includes(k) && k.length === 1) this.insert(ch(k));
+          else if (/^[a-zA-Z]$/.test(k)) this.letter(k);
+          else if (k === ' ');
+          else handled = false;
+          e.stopPropagation(); if (handled) e.preventDefault();
+        }
+        click(e) {
+          e.preventDefault(); this.el.focus({ preventScroll: true }); setTarget(this);
+          let el = e.target, found = false;
+          while (el && el !== this.el) {
+            const m = this.map.get(el);
+            if (m) {
+              if (m.i === undefined) this.cur = { row: m.row, pos: m.row.length };
+              else { const r = el.getBoundingClientRect(); this.cur = { row: m.row, pos: m.i + (e.clientX > r.left + r.width / 2 ? 1 : 0) }; }
+              found = true; break;
+            }
+            el = el.parentElement;
+          }
+          if (!found) this.cur = { row: this.root, pos: this.root.length };
+          this.render();
+        }
+        render() {
+          this.map = new WeakMap();
+          this.el.replaceChildren(this.slotEl(this.root, 'rootslot'));
+          const c = this.el.querySelector('.caret');
+          if (c && target === this) { const r = c.getBoundingClientRect(), b = this.el.getBoundingClientRect(); if (r.right > b.right - 6) this.el.scrollLeft += r.right - b.right + 24; else if (r.left < b.left + 6) this.el.scrollLeft -= b.left - r.left + 24; }
+        }
+        slotEl(row, extra) {
+          const s = document.createElement('span'); s.className = 'slot' + (row.length ? '' : ' empty') + (extra ? ' ' + extra : '');
+          this.map.set(s, { row });
+          const on = target === this && this.cur.row === row, caret = () => { const c = document.createElement('span'); c.className = 'caret'; return c; };
+          row.forEach((n, i) => { if (on && this.cur.pos === i) s.append(caret()); const e = this.nodeEl(n); this.map.set(e, { row, i }); s.append(e); });
+          if (on && this.cur.pos === row.length) s.append(caret());
+          return s;
+        }
+        nodeEl(n) {
+          const sp = (c, t) => { const e = document.createElement('span'); if (c) e.className = c; if (t != null) e.textContent = t; return e; };
+          const sl = i => this.slotEl(n.s[i]), wrap = (c, ...kids) => { const e = sp(c); e.append(...kids); return e; };
+          switch (n.k) {
+            case 'ch': { const d = chDisp(n); return sp(d.c, d.t); }
+            case 'fn': return sp('fn', FNS[n.v].l + '(');
+            case 'const': { const e = sp('k'); e.innerHTML = CONSTS[n.v].h; e.title = CONSTS[n.v].d; return e; }
+            case 'frac': return wrap('frac', sl(0), sl(1));
+            case 'sqrt': { const e = wrap('sqrt', sl(0)); e.insertAdjacentHTML('afterbegin', RAD); return e; }
+            case 'root': { const i = sl(0); i.classList.add('idx'); const e = wrap('sqrt root', i, sl(1)); i.insertAdjacentHTML('afterend', RAD); return e; }
+            case 'pow': return wrap('sup', sl(0));
+            case 'sci': return wrap('sci', sp('op', '×'), sp('n', '10'), wrap('sup', sl(0)));
+            case 'logb': return wrap('logb', sp('fn', 'log'), wrap('sub', sl(0)), sp('p', '('), sl(1), sp('p', ')'));
+            case 'abs': return wrap('abs', sl(0));
+            case 'int': return wrap('int', sp('isign', '∫'), wrap('lim', sl(2), sl(1)), sl(0), sp('dx', 'dx'));
+            case 'sum': return wrap('sum', wrap('lim c', sl(2), sp('ssign', 'Σ'), wrap('lo', sp('v', 'x'), sp(null, '='), sl(1))), sp('p', '('), sl(0), sp('p', ')'));
+            case 'der': return wrap('der', wrap('frac dd', sp(null, 'd'), sp(null, 'dx')), sp('p', '('), sl(0), sp('p', ')'), wrap('at', sp('bar'), wrap('atv', sp('v', 'x'), sp(null, '='), sl(1))));
+          }
+          return sp('raw', '?');
+        }
+      }
+      function sanitizeRow(row, depth = 0) {
+        if (!Array.isArray(row) || depth > 12) return [];
+        const out = [];
+        for (const n of row.slice(0, 400)) {
+          if (!n || typeof n !== 'object') continue;
+          if (n.k === 'ch' && typeof n.v === 'string' && n.v.length <= 4) out.push(n.ty && typeof n.ty === 'string' ? { k: 'ch', v: n.v, ty: n.ty.slice(0, 8) } : ch(n.v));
+          else if (n.k === 'fn' && FNS[n.v]) out.push({ k: 'fn', v: n.v });
+          else if (n.k === 'const' && CONSTS[n.v]) out.push({ k: 'const', v: n.v });
+          else if (SLOTS[n.k] && Array.isArray(n.s) && n.s.length === SLOTS[n.k]) out.push({ k: n.k, s: n.s.map(s => sanitizeRow(s, depth + 1)) });
+        }
+        return out;
+      }
+      const clone = row => JSON.parse(JSON.stringify(row, (k, v) => k === 'ty' ? undefined : v));
+      /* Chuyen bieu thuc sang chu mot dong de dua len bang. */
+      function rowText(row) {
+        let s = '', open = 0;
+        row.forEach(n => {
+          if (n.k === 'ch') {
+            if (n.v === '(') open++; else if (n.v === ')') open--;
+            const d = chDisp(n).t; s += n.v === '×' || n.v === '÷' || n.v === '=' || (n.v === '+' || n.v === '-') && s ? ' ' + d + ' ' : d;
+          }
+          else if (n.k === 'fn') { open++; s += FNS[n.v].l + '('; }
+          else if (n.k === 'const') s += CONSTS[n.v].s;
+          else s += structText(n);
+        });
+        return s.replace(/\( /g, '(').replace(/  +/g, ' ') + ')'.repeat(Math.max(0, open));
+      }
+      const simple = t => /^[\d.]+$|^[A-Za-zπ]$|^−?\d+$/.test(t);
+      const grp = t => simple(t) ? t : '(' + t + ')';
+      const supT = t => mapChars(t.replace(/ /g, ''), SUP) ?? '^' + grp(t);
+      const subT = t => mapChars(t.replace(/ /g, ''), SUB);
+      function structText(n) {
+        const T = n.s.map(rowText);
+        switch (n.k) {
+          case 'frac': return grp(T[0]) + '/' + grp(T[1]);
+          case 'sqrt': return '√' + grp(T[0]);
+          case 'root': return (mapChars(T[0], SUP) ?? '(' + T[0] + ')') + '√' + grp(T[1]);
+          case 'pow': return supT(T[0]);
+          case 'sci': return '×10' + supT(T[0]);
+          case 'logb': return 'log' + (subT(T[0]) ?? '_' + grp(T[0])) + '(' + T[1] + ')';
+          case 'abs': return '|' + T[0] + '|';
+          case 'int': { const a = subT(T[1]), b = mapChars(T[2].replace(/ /g, ''), SUP); return (a !== null && b !== null ? '∫' + a + b : '∫[' + T[1] + '; ' + T[2] + ']') + ' (' + T[0] + ') dx'; }
+          case 'sum': return 'Σ[x = ' + T[1] + ' → ' + T[2] + '] (' + T[0] + ')';
+          case 'der': return 'd/dx(' + T[0] + ') tại x = ' + T[1];
+        }
+        return '';
+      }
+
+      /* ---------- Giao dien ---------- */
+      let mainEd, fEd, gEd, lastRes = null, lastEq = null, lastTable = null, prompt = null, stoPending = false, saveTimer = 0;
+      const isEd = t => t instanceof Editor, isIn = t => t && t.tagName === 'INPUT';
+      function setTarget(t) {
+        if (t) qs('#calculator').classList.remove('tbl-on');
+        if (target === t) return;
+        const old = target; target = t;
+        if (isEd(old)) old.render(); if (isEd(t)) t.render();
+      }
+      function onEdit(ed) { if (ed === mainEd && lastRes && !prompt) { lastRes = null; showResult(); } scheduleSaveCalc(); }
+      const isOpen = () => !qs('#calculator').hidden;
+      function hideCalc() { qs('#calculator').hidden = true; cancelPrompt(); qs('#calcBtn')?.focus(); }
+      function flag(t) { qs('#nbcFlag').textContent = t || ''; }
+      function note(t) { qs('#nbcNote').textContent = t || ''; }
+      function defaultExact(meta) { return !(meta.decimal || meta.numeric); }
+      function showError(e) {
+        const msg = e instanceof CalcError ? e.message : e instanceof RangeError ? 'Biểu thức quá phức tạp' : 'Lỗi: ' + (e && e.message || e);
+        if (S.mode === 'calc') { lastRes = { error: msg }; showResult(); }
+        else if (S.mode === 'eq') { lastEq = null; const o = qs('#nbcEqOut'); o.innerHTML = ''; o.append(errBox(msg)); }
+        else { lastTable = null; const o = qs('#nbcTable'); o.innerHTML = ''; o.append(errBox(msg)); }
+        if (!(e instanceof CalcError) && !(e instanceof RangeError)) console.error(e);
+      }
+      function errBox(msg) { const d = document.createElement('div'); d.className = 'nbc-err'; d.textContent = msg; return d; }
+      function showResult() {
+        const out = qs('#calcResult'); out.classList.toggle('error', !!lastRes?.error);
+        if (!lastRes) { out.innerHTML = ''; note(''); return; }
+        if (lastRes.error) { out.textContent = lastRes.error; note(''); return; }
+        out.innerHTML = lastRes.items.map(it => (it.label ? `<span class="lab">${it.label} =</span> ` : '') + fmt(it.value, lastRes.exact).html).join('<span class="sep">;</span> ');
+        note(lastRes.note || (lastRes.given ? 'Với ' + lastRes.given : ''));
+      }
+      function resultText(res) {
+        const vals = res.items.map(it => (it.label ? it.label.replace(/<[^>]+>/g, '') + ' = ' : '') + fmt(it.value, res.exact).text).join('; ');
+        const expr = rowText(res.tree) + (res.given ? ' (với ' + res.given + ')' : '');
+        return res.items[0].label ? expr + ' ⇒ ' + vals : expr + ' = ' + vals;
+      }
+      function setRes(res, record) {
+        res.tree = clone(mainEd.root); lastRes = res;
+        if (record) {
+          S.ans = res.items[0].value;
+          S.hist.unshift({ tree: res.tree, text: resultText(res), deg: S.deg }); S.hist = S.hist.slice(0, 30);
+        }
+        showResult(); scheduleSaveCalc();
+      }
+      function evaluateMain(record = true) {
+        const meta = {};
+        try {
+          if (mainEd.isEmpty()) { lastRes = null; showResult(); return null; }
+          const { lhs, rhs } = parseTop(mainEd.root, meta);
+          if (rhs) fail('Đây là phương trình: bấm SOLVE để tìm nghiệm hoặc CALC để thay giá trị');
+          const cx = ctx();
+          if (lhs.type === 'call' && (lhs.f === 'Pol' || lhs.f === 'Rec')) {
+            const [a, b] = lhs.args.map(x => ev(x, cx)); let p, q;
+            if (lhs.f === 'Pol') { p = check(Math.hypot(a, b)); q = check(Math.atan2(b, a) * (S.deg ? 180 / Math.PI : 1)); }
+            else { const t = S.deg ? b * Math.PI / 180 : b; p = check(Math.abs(Math.cos(t)) < 1e-15 ? 0 : a * Math.cos(t)); q = check(Math.abs(Math.sin(t)) < 1e-15 ? 0 : a * Math.sin(t)); }
+            S.vars.X = p; S.vars.Y = q;
+            setRes({ items: lhs.f === 'Pol' ? [{ label: '<i>r</i>', value: p }, { label: '<i>θ</i>', value: q }] : [{ label: '<i>x</i>', value: p }, { label: '<i>y</i>', value: q }], exact: defaultExact(meta), note: 'Đã lưu vào biến x và y' }, record);
+            return p;
+          }
+          const v = check(ev(lhs, cx));
+          setRes({ items: [{ label: null, value: v }], exact: defaultExact(meta) }, record);
+          return v;
+        } catch (e) { showError(e); return null; }
+      }
+      /* Hoi gia tri tung bien (CALC, SOLVE). */
+      function askValues(items, done) {
+        const info = { decimal: false };
+        if (!items.length) return done(info);
+        prompt = { items, i: 0, done, info }; showPrompt();
+      }
+      function showPrompt() {
+        const box = qs('#nbcPrompt'), it = prompt.items[prompt.i], inp = qs('#nbcPromptIn');
+        box.hidden = false; qs('#nbcPromptLab').innerHTML = it.label; inp.value = plain(S.vars[it.v] || 0);
+        qs('#calcResult').innerHTML = ''; note('Nhập giá trị rồi bấm =  ·  AC để thoát');
+        inp.focus(); inp.select(); setTarget(inp);
+      }
+      function submitPrompt() {
+        const it = prompt.items[prompt.i], inp = qs('#nbcPromptIn');
+        try { const meta = {}; const v = check(ev(parseLinear(inp.value, meta), ctx())); if (meta.decimal) prompt.info.decimal = true; S.vars[it.v] = v; }
+        catch (e) { note(e instanceof CalcError ? e.message : 'Giá trị không hợp lệ'); inp.select(); return; }
+        prompt.i++;
+        if (prompt.i < prompt.items.length) return showPrompt();
+        const p = prompt; cancelPrompt(); p.done(p.info);
+      }
+      function cancelPrompt() {
+        if (!prompt) return; prompt = null; qs('#nbcPrompt').hidden = true;
+        if (S.mode === 'calc' && isOpen()) { mainEd.el.focus({ preventScroll: true }); setTarget(mainEd); showResult(); }
+      }
+      function calcCmd() {
+        const meta = {}; let top;
+        try { if (mainEd.isEmpty()) return; top = parseTop(mainEd.root, meta); } catch (e) { return showError(e); }
+        const rhsVars = top.rhs ? freeVars(top.rhs) : [];
+        const assign = top.rhs && top.lhs.type === 'var' && top.lhs.v !== 'Ans' ? top.lhs.v : null;
+        let vars = freeVars(top.lhs, top.rhs ? [] : []); rhsVars.forEach(v => { if (!vars.includes(v)) vars.push(v); });
+        if (assign && !rhsVars.includes(assign)) vars = vars.filter(v => v !== assign);
+        askValues(vars.map(v => ({ v, label: `<i>${varName(v)}</i> =` })), info => {
+          try {
+            const cx = ctx(), given = vars.map(v => varName(v) + ' = ' + fmt(S.vars[v], false).text).join('; '), exact = defaultExact(meta) && !info.decimal;
+            if (assign) { const v = check(ev(top.rhs, cx)); S.vars[assign] = v; setRes({ items: [{ label: `<i>${varName(assign)}</i>`, value: v }], exact, given }, true); }
+            else if (top.rhs) { const d = check(ev(top.lhs, cx) - ev(top.rhs, cx)); setRes({ items: [{ label: 'L − R', value: d }], exact, given }, false); }
+            else { const v = check(ev(top.lhs, cx)); setRes({ items: [{ label: null, value: v }], exact, given }, true); }
+          } catch (e) { showError(e); }
+        });
+      }
+      function solveCmd() {
+        const meta = {}; let top;
+        try {
+          if (mainEd.isEmpty()) fail('Nhập phương trình trước, ví dụ x² − 2 = 0');
+          top = parseTop(mainEd.root, meta);
+        } catch (e) { return showError(e); }
+        const L = top.lhs, R = top.rhs || { type: 'num', v: 0 }, vars = freeVars(L); freeVars(R, vars);
+        if (!vars.length) return showError(new CalcError('Phương trình cần có ẩn, ví dụ x'));
+        const u = vars.includes('X') ? 'X' : vars[0], others = vars.filter(v => v !== u);
+        askValues([...others.map(v => ({ v, label: `<i>${varName(v)}</i> =` })), { v: u, label: `Giá trị đầu <i>${varName(u)}</i> =` }], info => {
+          try {
+            const cx = ctx(), lv = cx.vars, c2 = { ...cx, vars: lv };
+            const g = x => { lv[u] = x; const a = ev(L, c2), b = ev(R, c2); return { d: a - b, m: Math.max(1, Math.abs(a), Math.abs(b)) }; };
+            let x = solveNum(g, S.vars[u]); if (Math.abs(x) < 1e-14) x = 0;
+            const r = g(x).d; S.vars[u] = x;
+            const given = others.length ? others.map(v => varName(v) + ' = ' + fmt(S.vars[v], false).text).join('; ') : '';
+            setRes({ items: [{ label: `<i>${varName(u)}</i>`, value: x }], exact: defaultExact(meta) && !info.decimal, note: 'L − R = ' + fmt(r, false).text, given }, false);
+          } catch (e) { showError(e); }
+        });
+      }
+      function toggleSD() {
+        if (S.mode === 'calc' && lastRes && !lastRes.error) { lastRes.exact = !lastRes.exact; showResult(); }
+        else if (S.mode === 'eq' && lastEq) { lastEq.exact = !lastEq.exact; renderEqOut(); }
+      }
+      function toggleEng() { S.eng = !S.eng; queueMicrotask(updInd); qs('#nbcEng').classList.toggle('on', S.eng); if (lastRes && !lastRes.error) showResult(); if (lastEq) renderEqOut(); if (lastTable) renderTable(); scheduleSaveCalc(); }
+      function toggleAngle() {
+        S.deg = !S.deg; qs('#angleMode').textContent = S.deg ? 'DEG' : 'RAD'; scheduleSaveCalc(); updInd();
+        if (S.mode === 'calc' && lastRes && !lastRes.error && !lastRes.items[0].label) evaluateMain(false);
+      }
+
+      /* ---------- Che do phuong trinh ---------- */
+      const EQ_TYPES = { lin2: { l: 'Hệ 2 ẩn', n: 2 }, lin3: { l: 'Hệ 3 ẩn', n: 3 }, lin4: { l: 'Hệ 4 ẩn', n: 4 }, poly2: { l: 'Bậc 2', d: 2 }, poly3: { l: 'Bậc 3', d: 3 }, poly4: { l: 'Bậc 4', d: 4 } };
+      const LIN_VARS = ['x', 'y', 'z', 't'], COEF = ['a', 'b', 'c', 'd', 'e'];
+      const powLabel = k => k === 0 ? '' : k === 1 ? '<i>x</i>' : `<i>x</i><sup>${k}</sup>`;
+      function buildEqGrid() {
+        const T = EQ_TYPES[S.eqType], grid = qs('#nbcEqGrid'); grid.replaceChildren();
+        qs('#nbcEqTypes').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.eq === S.eqType));
+        const cols = T.n ? T.n + 1 : T.d + 1, rows = T.n || 1, vals = S.eq[S.eqType] || (S.eq[S.eqType] = Array(rows * cols).fill(''));
+        const head = document.createElement('div'); head.className = 'nbc-eqhead nbm';
+        head.innerHTML = T.n ? [...Array(T.n)].map((_, i) => `${COEF[i]}<sub>i</sub><i>${LIN_VARS[i]}</i>`).join(' + ') + ' = ' + COEF[T.n] + '<sub>i</sub>'
+          : [...Array(T.d + 1)].map((_, i) => COEF[i] + powLabel(T.d - i)).join(' + ') + ' = 0';
+        const tb = document.createElement('div'); tb.className = 'nbc-eqtab'; tb.style.gridTemplateColumns = `${T.n ? '26px ' : ''}repeat(${cols},1fr)`;
+        if (T.n) tb.append(document.createElement('span'));
+        for (let c = 0; c < cols; c++) { const h = document.createElement('span'); h.className = 'h nbm'; h.innerHTML = T.n ? (c < T.n ? `<i>${LIN_VARS[c]}</i>` : 'vế phải') : COEF[c]; tb.append(h); }
+        for (let r = 0; r < rows; r++) {
+          if (T.n) { const l = document.createElement('span'); l.className = 'h'; l.textContent = '(' + (r + 1) + ')'; tb.append(l); }
+          for (let c = 0; c < cols; c++) {
+            const i = r * cols + c, inp = document.createElement('input');
+            inp.className = 'nbc-in'; inp.value = vals[i]; inp.placeholder = '0'; inp.inputMode = 'none'; inp.autocomplete = 'off'; inp.spellcheck = false;
+            inp.setAttribute('aria-label', (T.n ? 'Phương trình ' + (r + 1) + ', ' : '') + (T.n ? (c < T.n ? 'hệ số của ' + LIN_VARS[c] : 'vế phải') : 'hệ số ' + COEF[c]));
+            inp.oninput = () => { vals[i] = inp.value; if (lastEq) { lastEq = null; qs('#nbcEqOut').innerHTML = ''; } scheduleSaveCalc(); };
+            tb.append(inp);
+          }
+        }
+        grid.append(head, tb);
+        lastEq = null; qs('#nbcEqOut').innerHTML = '';
+      }
+      function solveEqMode() {
+        const T = EQ_TYPES[S.eqType], cols = T.n ? T.n + 1 : T.d + 1, vals = S.eq[S.eqType] || [], meta = {};
+        try {
+          const nums = [...Array((T.n || 1) * cols)].map((_, i) => { const s = (vals[i] ?? '').trim(); return s ? check(ev(parseLinear(s, meta), ctx())) : 0; });
+          const exact = !meta.decimal;
+          if (T.n) {
+            const M = [...Array(T.n)].map((_, r) => nums.slice(r * cols, r * cols + cols)), res = solveLinear(M);
+            lastEq = { kind: 'lin', M, res, exact };
+          } else {
+            if (nums[0] === 0) fail('Hệ số a phải khác 0');
+            const out = { kind: 'poly', coef: nums, exact };
+            if (T.d === 2) {
+              const [a, b, c] = nums, D = b * b - 4 * a * c, q = quadExact(a, b, c); out.quad = q;
+              const sc = Math.max(Math.abs(b * b), Math.abs(4 * a * c), 1e-300);
+              if (Math.abs(D) <= 1e-13 * sc) { out.roots = [[-b / (2 * a), 0, 2]]; }
+              else if (D > 0) { const q2 = -(b + (b < 0 ? -1 : 1) * Math.sqrt(D)) / 2, r = [q2 / a, c / q2].sort((u, v) => v - u); out.roots = [[r[0], 0, 1], [r[1], 0, 1]]; }
+              else { const re = -b / (2 * a), im = Math.sqrt(-D) / Math.abs(2 * a); out.roots = [[re, im, 1], [re, -im, 1]]; }
+              out.vertex = [-b / (2 * a), c - b * b / (4 * a)];
+            } else out.roots = polyRoots(nums);
+            lastEq = out;
+          }
+          renderEqOut();
+        } catch (e) { showError(e); }
+      }
+      function eqLines() {
+        const e = lastEq, ex = e.exact, lines = [];
+        if (e.kind === 'lin') {
+          if (e.res.status === 'none') lines.push({ h: 'Hệ vô nghiệm', t: 'Hệ vô nghiệm' });
+          else if (e.res.status === 'many') lines.push({ h: 'Hệ có vô số nghiệm', t: 'Hệ có vô số nghiệm' });
+          else e.res.x.forEach((v, i) => { const f = fmt(v, ex); lines.push({ lab: `<i>${LIN_VARS[i]}</i>`, h: f.html, t: LIN_VARS[i] + ' = ' + f.text }); });
+          return lines;
+        }
+        const sub = i => e.roots.length > 1 ? mapChars(String(i + 1), SUB) : '';
+        const q = e.quad;
+        if (q && ex && !q.double && q.m > 1) {
+          const L = lcm(q.p[1], q.s[1]), P = q.p[0] * (L / q.p[1]), K = q.s[0] * (L / q.s[1]);
+          [1, -1].forEach((sg, i) => { const f = surd(P, K, q.m, L, sg, q.imag); lines.push({ lab: '<i>x</i>' + (i ? '₂' : '₁'), h: f.html, t: 'x' + (i ? '₂' : '₁') + ' = ' + f.text }); });
+        } else if (q && ex && q.imag && q.m === 1) {
+          const re = q.p[0] / q.p[1], im = q.s[0] / q.s[1];
+          [1, -1].forEach((sg, i) => { const f = fmtC(re, sg * im, true); lines.push({ lab: '<i>x</i>' + (i ? '₂' : '₁'), h: f.html, t: 'x' + (i ? '₂' : '₁') + ' = ' + f.text }); });
+        } else e.roots.forEach(([re, im, mult], i) => { const f = fmtC(re, im, ex); lines.push({ lab: '<i>x</i>' + sub(i), h: f.html, t: 'x' + sub(i) + ' = ' + f.text + (mult > 1 ? ' (nghiệm ' + (mult === 2 ? 'kép' : 'bội ' + mult) + ')' : ''), note: mult === 2 ? 'nghiệm kép' : mult > 2 ? 'nghiệm bội ' + mult : '' }); });
+        if (e.vertex) {
+          const [vx, vy] = e.vertex, a = fmt(vx, ex), b = fmt(vy, ex), kind = e.coef[0] > 0 ? 'nhỏ nhất' : 'lớn nhất';
+          lines.push({ lab: 'Đỉnh', h: `<i>x</i> = ${a.html}<span class="sep">;</span> <i>y</i> = ${b.html}`, t: `Đỉnh parabol: x = ${a.text}; y = ${b.text}`, note: 'giá trị ' + kind + ' của vế trái' });
+        }
+        if (e.roots.some(r => r[1] !== 0)) lines.push({ h: '', t: '', note: 'Có nghiệm phức (i² = −1)' });
+        return lines;
+      }
+      function renderEqOut() {
+        const o = qs('#nbcEqOut'); o.innerHTML = ''; if (!lastEq) return;
+        eqLines().forEach(l => {
+          const d = document.createElement('div'); d.className = 'nbc-eqrow';
+          d.innerHTML = (l.lab ? `<span class="lab">${l.lab}${l.lab === 'Đỉnh' ? ':' : ' ='}</span>` : '') + `<span class="val nbm">${l.h}</span>` + (l.note ? `<small>${l.note}</small>` : '');
+          o.append(d);
+        });
+      }
+      function termText(terms, ex) {
+        let s = '';
+        terms.forEach(([c, v]) => {
+          if (c === 0) return; const a = Math.abs(c); let cs = a === 1 && v ? '' : fmt(a, ex).text; if (cs.includes('/') && v) cs = '(' + cs + ')';
+          s += s ? (c < 0 ? ' − ' : ' + ') : (c < 0 ? '−' : ''); s += cs + v;
+        });
+        return s || '0';
+      }
+      function eqText() {
+        const e = lastEq, ex = e.exact, sol = eqLines().filter(l => l.t).map(l => l.t);
+        if (e.kind === 'lin') {
+          const eqs = e.M.map(r => termText(r.slice(0, -1).map((c, i) => [c, LIN_VARS[i]]), ex) + ' = ' + fmt(r.at(-1), ex).text);
+          return 'Hệ phương trình:\n' + eqs.map(s => '  ' + s).join('\n') + '\n⇒ ' + sol.join('; ');
+        }
+        const d = e.coef.length - 1;
+        return termText(e.coef.map((c, i) => [c, d - i === 0 ? '' : d - i === 1 ? 'x' : 'x' + mapChars(String(d - i), SUP)]), ex) + ' = 0\n⇒ ' + sol.join('; ');
+      }
+
+      /* ---------- Bang gia tri ---------- */
+      function buildTable() {
+        const meta = {};
+        try {
+          if (fEd.isEmpty()) fail('Nhập f(x) trước');
+          const pf = parseTop(fEd.root, meta), pg = gEd.isEmpty() ? null : parseTop(gEd.root, meta);
+          if (pf.rhs || pg?.rhs) fail('f(x), g(x) là biểu thức, không chứa dấu "="');
+          const num = (id, label) => { const s = qs(id).value.trim(); if (!s) fail('Nhập ' + label); return check(ev(parseLinear(s), ctx())); };
+          const t0 = num('#nbcT0', 'giá trị bắt đầu'), t1 = num('#nbcT1', 'giá trị kết thúc'), ts = num('#nbcTs', 'bước');
+          if (ts === 0) fail('Bước phải khác 0');
+          const n = Math.floor((t1 - t0) / ts + 1e-9) + 1;
+          if (n < 1) fail('Kiểm tra lại: từ giá trị bắt đầu đi theo bước không tới được giá trị kết thúc');
+          if (n > 200) fail('Bảng tối đa 200 dòng. Hãy tăng bước.');
+          const cx = ctx(), fv = (ast, x) => { try { cx.vars.X = x; const v = ev(ast, cx); return Number.isFinite(v) ? v : null; } catch (e) { if (e instanceof CalcError) return null; throw e; } };
+          const rows = [];
+          for (let i = 0; i < n; i++) { const x = +(t0 + i * ts).toPrecision(12); rows.push([x, fv(pf.lhs, x), pg ? fv(pg.lhs, x) : undefined]); }
+          lastTable = { rows, g: !!pg, fText: rowText(fEd.root), gText: pg ? rowText(gEd.root) : '' };
+          renderTable(); scheduleSaveCalc();
+        } catch (e) { showError(e); }
+      }
+      function renderTable() {
+        const o = qs('#nbcTable'); o.innerHTML = ''; if (!lastTable) return;
+        const t = document.createElement('table'), cell = v => v === null ? '<td class="na">—</td>' : `<td>${fmt(v, false).html}</td>`;
+        t.innerHTML = '<thead><tr><th><i>x</i></th><th><i>f</i>(<i>x</i>)</th>' + (lastTable.g ? '<th><i>g</i>(<i>x</i>)</th>' : '') + '</tr></thead><tbody>' +
+          lastTable.rows.map(r => '<tr>' + `<td>${fmt(r[0], false).html}</td>` + cell(r[1]) + (lastTable.g ? cell(r[2]) : '') + '</tr>').join('') + '</tbody>';
+        o.append(t);
+        const s = document.createElement('small'); s.textContent = (lastTable.rows.some(r => r[1] === null || r[2] === null) ? '— : hàm không xác định tại giá trị này. ' : '') + 'Bấm vào f(x) hoặc ô số để sửa và hiện lại bàn phím.'; o.append(s);
+        qs('#calculator').classList.add('tbl-on'); o.scrollTop = 0;
+      }
+      function tableText() {
+        const t = lastTable, tx = v => v === null ? '—' : fmt(v, false).text;
+        return 'f(x) = ' + t.fText + (t.g ? '\ng(x) = ' + t.gText : '') + '\n' + ['x', 'f(x)'].concat(t.g ? ['g(x)'] : []).join('\t') + '\n' + t.rows.map(r => [tx(r[0]), tx(r[1])].concat(t.g ? [tx(r[2])] : []).join('\t')).join('\n');
+      }
+
+      /* ---------- Ban phim ---------- */
+      const BX = '<b class="bx"></b>';
+      const KL = h => `<span class="nbm kl">${h}</span>`;
+      const KEYS_F = [
+        ['◀', 'nav:left', 'nav', 'Sang trái'], ['▲', 'nav:up', 'nav', 'Lên (tử số, cận trên)'], ['▼', 'nav:down', 'nav', 'Xuống (mẫu số, cận dưới)'], ['▶', 'nav:right', 'nav', 'Sang phải'], ['CALC', 'cmd:calc', 'cmd b', 'Thay giá trị các biến rồi tính'], ['SOLVE', 'cmd:solve', 'cmd b', 'Giải phương trình theo x'],
+        [KL(`<span class="frac"><span>${BX}</span><span>${BX}</span></span>`), 'tpl:frac', 't', 'Phân số'], [KL(`√${BX}`), 'tpl:sqrt', 't', 'Căn bậc hai'], [KL(`<sup>n</sup>√${BX}`), 'tpl:root', 't', 'Căn bậc n'],
+        [KL('<i>x</i><sup>2</sup>'), 'tpl:sq', 't', 'Bình phương'], [KL(`<i>x</i><sup>${BX}</sup>`), 'tpl:pow', 't', 'Lũy thừa'], [KL('<i>x</i><sup>−1</sup>'), 'tpl:inv', 't', 'Nghịch đảo'],
+        [KL('∫<sub>a</sub><sup>b</sup>'), 'tpl:int', 't', 'Tích phân xác định'], [KL('<sup>d</sup>⁄<sub>d<i>x</i></sub>'), 'tpl:der', 't', 'Đạo hàm tại một điểm'], [KL('Σ'), 'tpl:sum', 't', 'Tổng Σ'],
+        [KL(`|${BX}|`), 'tpl:abs', 't', 'Giá trị tuyệt đối'], [KL(`log<sub>${BX}</sub>`), 'tpl:logb', 't', 'Logarit cơ số tùy chọn'], [KL('<i>x</i>!'), 'ins:!', 't', 'Giai thừa'],
+        ['sin', 'fn:sin', 'f'], ['cos', 'fn:cos', 'f'], ['tan', 'fn:tan', 'f'], ['ln', 'fn:ln', 'f', 'Logarit tự nhiên'], ['log', 'fn:log', 'f', 'Logarit cơ số 10'], [KL('e<sup><i>x</i></sup>'), 'tpl:exp', 'f', 'Lũy thừa của e'],
+        ['sin⁻¹', 'fn:asin', 'f'], ['cos⁻¹', 'fn:acos', 'f'], ['tan⁻¹', 'fn:atan', 'f'], [KL('10<sup><i>x</i></sup>'), 'tpl:tenx', 'f', 'Lũy thừa của 10'], [KL('π'), 'ins:π', 'f'], [KL('e'), 'ins:e', 'f', 'Số e'],
+        ['(', 'ins:(', 'f'], [')', 'ins:)', 'f'], [',', 'ins:,', 'f', 'Dấu phẩy ngăn đối số'], [KL(`${BX}=${BX}`), 'ins:=', 'f', 'Dấu bằng trong phương trình'], [KL('<i>n</i>C<i>r</i>'), 'ins:nCr', 'f', 'Tổ hợp'], [KL('<i>n</i>P<i>r</i>'), 'ins:nPr', 'f', 'Chỉnh hợp'],
+        [KL('<i>A</i>'), 'var:A', 'var'], [KL('<i>B</i>'), 'var:B', 'var'], [KL('<i>C</i>'), 'var:C', 'var'], [KL('<i>D</i>'), 'var:D', 'var'], [KL('<i>x</i>'), 'var:X', 'var'], [KL('<i>y</i>'), 'var:Y', 'var'],
+        [KL('<i>M</i>'), 'var:M', 'var'], ['STO', 'cmd:sto', 'cmd', 'Lưu kết quả vào biến: bấm STO rồi chọn biến'], ['M+', 'cmd:mplus', 'cmd', 'Cộng kết quả vào M'], ['M−', 'cmd:mminus', 'cmd', 'Trừ kết quả khỏi M'], ['Hằng số', 'cmd:const', 'cmd', 'Hằng số Vật lí'], ['Hàm…', 'cmd:fns', 'cmd', 'Hàm khác']
+      ];
+      const KEYS_N = [
+        ['7', 'ins:7'], ['8', 'ins:8'], ['9', 'ins:9'], ['DEL', 'cmd:del', 'del', 'Xóa kí tự trước con trỏ'], ['AC', 'cmd:ac', 'ac', 'Xóa hết'],
+        ['4', 'ins:4'], ['5', 'ins:5'], ['6', 'ins:6'], ['×', 'ins:×', 'op'], ['÷', 'ins:÷', 'op'],
+        ['1', 'ins:1'], ['2', 'ins:2'], ['3', 'ins:3'], ['+', 'ins:+', 'op'], ['−', 'ins:-', 'op'],
+        ['0', 'ins:0'], ['.', 'ins:.'], [KL('×10<sup><i>x</i></sup>'), 'tpl:sci', 'op', 'Nhân 10 mũ'], ['Ans', 'ins:Ans', 'op', 'Kết quả vừa tính'], ['=', 'cmd:exe', 'exe', 'Tính (Enter)']
+      ];
+      /* Giao dien may cam tay: phim chinh, chuc nang SHIFT (xanh bac ha) va ALPHA (tim nhat) in phia tren phim. */
+      const H = (k, a, o = {}) => ({ k, a, ...o });
+      /* Vi tri phim theo bo cuc may tinh khoa hoc cam tay thong dung (kieu fx-580VNX): hang dau SHIFT ALPHA [phim dieu huong] MENU ON,
+         OPTN CALC [ ] ∫ x; ba hang chuc nang 6 phim; bon hang so 5 phim. Mau va ten rieng cua NoteBoard. */
+      const KEYS_HAND_TOP = [
+        H('SHIFT', 'cmd:shift', { c: 'shift', t: 'Bật chức năng phụ in màu xanh phía trên phím' }), H('ALPHA', 'cmd:alpha', { c: 'alpha', t: 'Bật chữ in màu tím phía trên phím (biến A–F, M, x, y)' }),
+        'pad',
+        H('MENU', 'cmd:menu', { c: 'round', s: ['SETUP', 'cmd:setup'], t: 'Chọn chế độ: Tính toán, Phương trình, Bảng giá trị' }), H('ON', 'cmd:ac', { c: 'round', t: 'Bật / xóa màn hình' }),
+        H('OPTN', 'cmd:fns', { t: 'Tùy chọn: hàm hyperbolic, ƯCLN, BCNN, phần nguyên, số ngẫu nhiên…' }), H('CALC', 'cmd:calc', { s: ['SOLVE', 'cmd:solve'], al: ['=', 'ins:='], t: 'Thay giá trị các biến rồi tính' }),
+        H(KL(`∫${BX}`), 'tpl:int', { s: ['d/dx', 'tpl:der'], t: 'Tích phân xác định' }), H(KL('<i>x</i>'), 'var:X', { s: ['Σ', 'tpl:sum'], t: 'Biến x' })
+      ];
+      const KEYS_HAND_FN = [
+        H(KL(`<span class="frac"><span>${BX}</span><span>${BX}</span></span>`), 'tpl:frac', { t: 'Phân số' }), H(KL(`√${BX}`), 'tpl:sqrt', { s: ['∛', 'tpl:root'], t: 'Căn bậc hai' }),
+        H(KL('<i>x</i><sup>2</sup>'), 'tpl:sq', { s: ['x³', 'tpl:cube'], t: 'Bình phương' }), H(KL(`<i>x</i><sup>${BX}</sup>`), 'tpl:pow', { s: ['ⁿ√', 'tpl:root'], t: 'Lũy thừa' }),
+        H(KL(`log<sub>${BX}</sub>${BX}`), 'tpl:logb', { s: ['10ˣ', 'tpl:tenx'], t: 'Logarit cơ số tùy chọn' }), H('ln', 'fn:ln', { s: ['eˣ', 'tpl:exp'], t: 'Logarit tự nhiên' }),
+        H('(−)', 'ins:-', { s: ['log', 'fn:log'], al: ['A', 'var:A'], t: 'Dấu âm' }), H("°'\"", 'cmd:soon', { al: ['B', 'var:B'], t: "Độ-phút-giây (°'\") — sẽ bổ sung sau" }),
+        H(KL('<i>x</i><sup>−1</sup>'), 'tpl:inv', { s: ['x!', 'ins:!'], al: ['C', 'var:C'], t: 'Nghịch đảo' }),
+        H('sin', 'fn:sin', { s: ['sin⁻¹', 'fn:asin'], al: ['D', 'var:D'] }), H('cos', 'fn:cos', { s: ['cos⁻¹', 'fn:acos'], al: ['E', 'var:E'] }), H('tan', 'fn:tan', { s: ['tan⁻¹', 'fn:atan'], al: ['F', 'var:F'] }),
+        H('STO', 'cmd:sto', { s: ['RECALL', 'cmd:vars'], t: 'Lưu kết quả vào biến: STO rồi chọn biến (ALPHA)' }), H('ENG', 'cmd:eng', { t: 'Kí hiệu kĩ thuật (số mũ bội của 3)' }),
+        H('(', 'ins:(', { s: ['Abs', 'tpl:abs'], al: ['x', 'var:X'] }), H(')', 'ins:)', { s: [',', 'ins:,'], al: ['y', 'var:Y'] }),
+        H('S⇔D', 'cmd:sd', { t: 'Đổi dạng đúng / thập phân' }), H('M+', 'cmd:mplus', { s: ['M−', 'cmd:mminus'], al: ['M', 'var:M'], t: 'Cộng kết quả vào M' })
+      ];
+      const KEYS_HAND_NUM = [
+        H('7', 'ins:7', { s: ['CONST', 'cmd:const'] }), H('8', 'ins:8'), H('9', 'ins:9'), H('DEL', 'cmd:del', { c: 'del', t: 'Xóa kí tự trước con trỏ' }), H('AC', 'cmd:ac', { c: 'ac', s: ['OFF', 'cmd:close'], t: 'Xóa hết' }),
+        H('4', 'ins:4'), H('5', 'ins:5'), H('6', 'ins:6'), H('×', 'ins:×', { c: 'op', s: ['nPr', 'ins:nPr'], al: ['GCD', 'fn:gcd'] }), H('÷', 'ins:÷', { c: 'op', s: ['nCr', 'ins:nCr'], al: ['LCM', 'fn:lcm'] }),
+        H('1', 'ins:1'), H('2', 'ins:2'), H('3', 'ins:3'), H('+', 'ins:+', { c: 'op', s: ['Pol', 'fn:Pol'], al: ['Int', 'fn:Int'] }), H('−', 'ins:-', { c: 'op', s: ['Rec', 'fn:Rec'], al: ['Intg', 'fn:Intg'] }),
+        H('0', 'ins:0'), H('.', 'ins:.', { al: ['RanInt', 'fn:RanInt'] }), H(KL('×10<sup><i>x</i></sup>'), 'tpl:sci', { c: 'op', s: ['π', 'ins:π'], al: ['e', 'ins:e'], t: 'Nhân 10 mũ' }), H('Ans', 'ins:Ans', { c: 'op', s: ['%', 'ins:%'], t: 'Kết quả vừa tính' }), H('=', 'cmd:exe', { c: 'exe', t: 'Tính (Enter)' })
+      ];
+      const plainText = h => { const d = document.createElement('div'); d.innerHTML = h; return d.textContent.trim(); };
+      function handCell(k) {
+        const cell = document.createElement('div'); cell.className = 'hk';
+        const lg = document.createElement('div'); lg.className = 'lg'; lg.setAttribute('aria-hidden', 'true');
+        lg.innerHTML = (k.s ? `<span class="s">${k.s[0]}</span>` : '') + (k.al ? `<span class="a">${k.al[0]}</span>` : '');
+        const b = document.createElement('button'); b.type = 'button'; b.innerHTML = k.k; b.dataset.a = k.a;
+        if (k.s) b.dataset.s = k.s[1]; if (k.al) b.dataset.al = k.al[1]; if (k.c) b.className = k.c;
+        const title = [k.t || plainText(k.k), k.s ? 'SHIFT: ' + k.s[0] : '', k.al ? 'ALPHA: ' + k.al[0] : ''].filter(Boolean).join(' · ');
+        b.title = title; b.setAttribute('aria-label', title); cell.append(lg, b); return cell;
+      }
+      function buildHandKeys(box) {
+        const top = document.createElement('div'); top.className = 'hk-grid top';
+        KEYS_HAND_TOP.forEach(k => {
+          if (k !== 'pad') return top.append(handCell(k));
+          const pad = document.createElement('div'); pad.className = 'hk-pad';
+          [['up', '▲', 'Lên (tử số, cận trên)'], ['left', '◀', 'Sang trái'], ['right', '▶', 'Sang phải'], ['down', '▼', 'Xuống (mẫu số, cận dưới)']].forEach(([d, l, t]) => { const b = document.createElement('button'); b.type = 'button'; b.className = d; b.dataset.a = 'nav:' + d; b.textContent = l; b.title = t; b.setAttribute('aria-label', t); pad.append(b); });
+          top.append(pad);
+        });
+        const fn = document.createElement('div'); fn.className = 'hk-grid fn'; KEYS_HAND_FN.forEach(k => fn.append(handCell(k)));
+        const num = document.createElement('div'); num.className = 'hk-grid num'; KEYS_HAND_NUM.forEach(k => num.append(handCell(k)));
+        box.append(top, fn, num);
+      }
+      let shiftOn = false, alphaOn = false;
+      function modUpd() { const c = qs('#calculator'); c.classList.toggle('sh-on', shiftOn); c.classList.toggle('al-on', alphaOn); updInd(); }
+      function updInd() {
+        const el = qs('#nbcInd'); if (!el) return;
+        const p = [];
+        if (shiftOn) p.push('<b class="i-s">S</b>'); if (alphaOn) p.push('<b class="i-a">A</b>');
+        if (stoPending) p.push('<b>STO</b>'); if (S.vars.M) p.push('<b>M</b>');
+        p.push('<span>' + (S.deg ? 'D' : 'R') + '</span>'); if (S.eng) p.push('<span>ENG</span>');
+        el.innerHTML = p.join('') + '<span class="i-mode">' + ({ calc: 'TÍNH TOÁN', eq: 'PHƯƠNG TRÌNH', table: 'BẢNG GIÁ TRỊ' }[S.mode] || '') + '</span>';
+      }
+      function keyClick(b) {
+        let a = b.dataset.a;
+        if (a === 'cmd:shift') { shiftOn = !shiftOn; alphaOn = false; return modUpd(); }
+        if (a === 'cmd:alpha') { alphaOn = !alphaOn; shiftOn = false; return modUpd(); }
+        if (shiftOn && b.dataset.s) a = b.dataset.s; else if (alphaOn && b.dataset.al) a = b.dataset.al;
+        shiftOn = alphaOn = false; modUpd(); press(a); updInd();
+      }
+      function setSkin(skin) {
+        S.skin = skin === 'flat' ? 'flat' : 'hand'; shiftOn = alphaOn = false;
+        const c = qs('#calculator'); c.classList.toggle('skin-hand', S.skin === 'hand'); modUpd(); buildKeys();
+        if (isOpen()) clampCalculator(); scheduleSaveCalc();
+      }
+      function openMenu() {
+        overlay('MENU · Chọn chế độ', body => {
+          [['calc', '1', 'Tính toán', 'Biểu thức, CALC, SOLVE, ∫, d/dx, Σ'], ['eq', '2', 'Phương trình', 'Hệ 2–4 ẩn, phương trình bậc 2–4'], ['table', '3', 'Bảng giá trị', 'f(x), g(x) theo bước']].forEach(([m, n, l, d]) =>
+            item(body, `<span class="sym">${n}</span><span class="val">${l}${S.mode === m ? ' ✓' : ''}</span><span class="desc">${d}</span>`, () => { closeOverlay(); setCalcMode(m); }));
+        });
+      }
+      function openSetup() {
+        overlay('SETUP · Cài đặt', body => {
+          item(body, `<span class="sym">∠</span><span class="val">Đơn vị góc: ${S.deg ? 'Độ (DEG)' : 'Radian (RAD)'}</span><span class="desc">Bấm để đổi</span>`, () => { toggleAngle(); openSetup(); });
+          item(body, `<span class="sym">E</span><span class="val">Kí hiệu kĩ thuật (ENG): ${S.eng ? 'Bật' : 'Tắt'}</span><span class="desc">Số mũ là bội của 3</span>`, () => { toggleEng(); openSetup(); });
+          item(body, `<span class="sym">▦</span><span class="val">Giao diện: ${S.skin === 'hand' ? 'Máy cầm tay' : 'Phẳng'}</span><span class="desc">Bấm để đổi kiểu bàn phím</span>`, () => { closeOverlay(); setSkin(S.skin === 'hand' ? 'flat' : 'hand'); });
+        });
+      }
+      function buildKeys() {
+        const box = qs('#calcKeys'); box.replaceChildren();
+        if (S.skin === 'hand') return buildHandKeys(box);
+        [[KEYS_F, 'f'], [KEYS_N, 'n']].forEach(([keys, cls]) => {
+          const g = document.createElement('div'); g.className = 'nbc-grid ' + cls;
+          keys.forEach(([label, a, c, title]) => { const b = document.createElement('button'); b.type = 'button'; b.innerHTML = label; b.dataset.a = a; if (c) b.className = c; b.title = title || b.textContent; b.setAttribute('aria-label', title || b.textContent); g.append(b); });
+          box.append(g);
+        });
+      }
+      const LINEAR_KEY = { 'tpl:cube': '^3', 'tpl:frac': '/', 'tpl:sqrt': '√(', 'tpl:root': 'root(', 'tpl:sq': '^2', 'tpl:pow': '^(', 'tpl:inv': '^(-1)', 'tpl:abs': 'abs(', 'tpl:logb': 'logb(', 'tpl:exp': 'e^(', 'tpl:tenx': '10^(', 'tpl:sci': '×10^(' };
+      function press(a) {
+        const i = a.indexOf(':'), type = a.slice(0, i), arg = a.slice(i + 1);
+        if (stoPending) {
+          stoPending = false; flag('');
+          if (type === 'var') { storeTo(arg); return; }
+        }
+        if (type === 'cmd') return command(arg);
+        if (!target) setTarget(S.mode === 'calc' ? mainEd : S.mode === 'table' ? fEd : null);
+        if (isEd(target)) return editorKey(target, type, arg);
+        if (isIn(target)) return inputKey(target, type, arg, a);
+        toast('Chọn một ô để nhập');
+      }
+      function editorKey(ed, type, arg) {
+        if (type === 'ins' || type === 'var') ed.insert(ch(arg));
+        else if (type === 'fn') ed.insert({ k: 'fn', v: arg });
+        else if (type === 'const') ed.insert({ k: 'const', v: arg });
+        else if (type === 'tpl') ed.tpl(arg);
+        else if (type === 'nav') ed[arg]();
+        if (!ed.el.contains(document.activeElement)) ed.el.focus({ preventScroll: true });
+      }
+      function inputKey(inp, type, arg, a) {
+        let text = null;
+        if (type === 'nav') {
+          const p = inp.selectionStart ?? inp.value.length;
+          if (arg === 'left') inp.setSelectionRange(Math.max(0, p - 1), Math.max(0, p - 1));
+          else if (arg === 'right') inp.setSelectionRange(p + 1, p + 1);
+          else moveInput(inp, arg === 'up' ? -1 : 1);
+          return;
+        }
+        if (type === 'ins') text = arg === '×' ? '*' : arg === '÷' ? '/' : arg === 'nCr' || arg === 'nPr' ? null : arg;
+        else if (type === 'var') text = arg === 'X' ? 'x' : arg === 'Y' ? 'y' : arg;
+        else if (type === 'fn') text = arg + '(';
+        else if (type === 'const') text = '(' + CONSTS[arg].v + ')';
+        else if (type === 'tpl') text = LINEAR_KEY[a] ?? null;
+        if (text === null) return toast('Phím này chỉ dùng ở chế độ Tính toán');
+        const s = inp.selectionStart ?? inp.value.length, e = inp.selectionEnd ?? s;
+        inp.setRangeText(text, s, e, 'end'); inp.dispatchEvent(new Event('input')); inp.focus();
+      }
+      function moveInput(inp, dir) {
+        const all = [...qs('#calculator').querySelectorAll('.nbc-panel:not([hidden]) input')], k = all.indexOf(inp), n = all[k + dir];
+        if (n) { n.focus(); n.select(); }
+      }
+      function storeTo(v) {
+        const val = lastRes && !lastRes.error && lastRes.items ? lastRes.items[0].value : (mainEd.isEmpty() ? S.ans : evaluateMain(true));
+        if (val == null) return;
+        S.vars[v] = val; toast('Đã lưu ' + fmt(val, false).text + ' vào ' + varName(v)); scheduleSaveCalc();
+      }
+      function currentValue() {
+        if (S.mode !== 'calc') return null;
+        if (lastRes && !lastRes.error) return lastRes.items[0].value;
+        return evaluateMain(true);
+      }
+      function command(c) {
+        switch (c) {
+          case 'del': if (isEd(target)) target.del(); else if (isIn(target)) { const s = target.selectionStart ?? target.value.length, e = target.selectionEnd ?? s; target.setRangeText('', s === e ? Math.max(0, s - 1) : s, e, 'end'); target.dispatchEvent(new Event('input')); } break;
+          case 'ac':
+            if (prompt) { cancelPrompt(); break; }
+            if (S.mode === 'calc') { mainEd.clear(); lastRes = null; showResult(); mainEd.el.focus({ preventScroll: true }); setTarget(mainEd); }
+            else if (isEd(target)) target.clear();
+            else if (isIn(target)) { target.value = ''; target.dispatchEvent(new Event('input')); }
+            break;
+          case 'exe': if (prompt) submitPrompt(); else if (S.mode === 'calc') evaluateMain(true); else if (S.mode === 'eq') solveEqMode(); else buildTable(); break;
+          case 'calc': if (S.mode !== 'calc') return toast('CALC dùng ở chế độ Tính toán'); if (!prompt) calcCmd(); break;
+          case 'solve': if (S.mode !== 'calc') return toast('SOLVE dùng ở chế độ Tính toán'); if (!prompt) solveCmd(); break;
+          case 'sto': if (S.mode !== 'calc') return toast('STO dùng ở chế độ Tính toán'); stoPending = true; flag('STO → chọn biến'); break;
+          case 'mplus': case 'mminus': { const v = currentValue(); if (v == null) return; S.vars.M += c === 'mplus' ? v : -v; flag('M'); toast('M = ' + fmt(S.vars.M, false).text); scheduleSaveCalc(); break; }
+          case 'const': openConsts(); break;
+          case 'fns': openFns(); break;
+          case 'menu': openMenu(); break;
+          case 'setup': openSetup(); break;
+          case 'vars': openVars(); break;
+          case 'hist': openHistory(); break;
+          case 'sd': toggleSD(); break;
+          case 'eng': toggleEng(); break;
+          case 'close': hideCalc(); break;
+          case 'soon': toast("Độ-phút-giây (°'\") sẽ được bổ sung sau"); break;
+        }
+      }
+
+      /* ---------- Bang phu: lich su, bien, hang so, ham ---------- */
+      function overlay(title, fill) {
+        const o = qs('#nbcOverlay'); o.hidden = false; o.replaceChildren();
+        const head = document.createElement('div'); head.className = 'nbc-ohead';
+        const b = document.createElement('b'); b.textContent = title; const x = document.createElement('button'); x.type = 'button'; x.textContent = 'Đóng'; x.onclick = closeOverlay;
+        head.append(b, x); const body = document.createElement('div'); body.className = 'nbc-obody'; o.append(head, body); fill(body);
+      }
+      function closeOverlay() { qs('#nbcOverlay').hidden = true; if (isEd(target)) target.el.focus({ preventScroll: true }); else if (isIn(target)) target.focus(); }
+      function item(body, html, onclick, cls) { const b = document.createElement('button'); b.type = 'button'; b.className = 'nbc-item' + (cls ? ' ' + cls : ''); b.innerHTML = html; b.onclick = onclick; body.append(b); return b; }
+      function insertAny(type, arg) { closeOverlay(); press(type + ':' + arg); }
+      function openConsts() {
+        overlay('Hằng số Vật lí', body => Object.entries(CONSTS).forEach(([k, c]) => item(body, `<span class="sym nbm">${c.h}</span><span class="val">${fmt(c.v, false).html} <small>${c.u}</small></span><span class="desc">${c.d}</span>`, () => insertAny('const', k))));
+      }
+      function openFns() {
+        const list = [['sinh', 'Sin hyperbolic'], ['cosh', 'Cos hyperbolic'], ['tanh', 'Tan hyperbolic'], ['asinh', 'Hàm ngược của sinh'], ['acosh', 'Hàm ngược của cosh'], ['atanh', 'Hàm ngược của tanh'],
+        ['gcd', 'Ước chung lớn nhất: ƯCLN(a, b)'], ['lcm', 'Bội chung nhỏ nhất: BCNN(a, b)'], ['Int', 'Phần nguyên (bỏ phần thập phân)'], ['Intg', 'Số nguyên lớn nhất không vượt quá x'],
+        ['RanInt', 'Số nguyên ngẫu nhiên: RanInt(a, b)'], ['Pol', 'Tọa độ cực: Pol(x, y) → r, θ'], ['Rec', 'Tọa độ vuông góc: Rec(r, θ) → x, y']];
+        overlay('Hàm khác', body => {
+          list.forEach(([f, d]) => item(body, `<span class="sym">${FNS[f].l}(</span><span class="desc">${d}</span>`, () => insertAny('fn', f)));
+          item(body, '<span class="sym">%</span><span class="desc">Phần trăm (chia 100)</span>', () => insertAny('ins', '%'));
+        });
+      }
+      function openVars() {
+        overlay('Biến nhớ', body => {
+          VARS.forEach(v => item(body, `<span class="sym nbm"><i>${varName(v)}</i></span><span class="val">${fmt(S.vars[v], false).html}</span><span class="desc">Bấm để chèn</span>`, () => insertAny('var', v)));
+          item(body, `<span class="sym">Ans</span><span class="val">${fmt(S.ans, false).html}</span><span class="desc">Kết quả vừa tính</span>`, () => insertAny('ins', 'Ans'));
+          item(body, '<span class="desc">Đặt tất cả biến về 0</span>', () => { VARS.forEach(v => S.vars[v] = 0); scheduleSaveCalc(); openVars(); }, 'danger');
+        });
+      }
+      function openHistory() {
+        overlay('Lịch sử tính', body => {
+          if (!S.hist.length) { body.append(errBox('Chưa có phép tính.')); return; }
+          S.hist.forEach(h => { const b = item(body, '', () => { closeOverlay(); setCalcMode('calc'); if (S.deg !== h.deg) toggleAngle(); mainEd.load(h.tree); evaluateMain(false); }); b.textContent = h.text + ' · ' + (h.deg ? 'DEG' : 'RAD'); });
+          item(body, '<span class="desc">Xóa lịch sử</span>', () => { S.hist = []; scheduleSaveCalc(); openHistory(); }, 'danger');
+        });
+      }
+
+      /* ---------- Che do, luu, dua len bang ---------- */
+      function setCalcMode(m) {
+        cancelPrompt(); S.mode = m; qs('#calculator').classList.remove('tbl-on');
+        qs('#calculator').querySelectorAll('.nbc-tabs button').forEach(b => { b.classList.toggle('on', b.dataset.mode === m); b.setAttribute('aria-selected', b.dataset.mode === m); });
+        qs('#calculator').querySelectorAll('.nbc-panel').forEach(p => p.hidden = p.dataset.panel !== m);
+        qs('#calculator').classList.toggle('mode-calc', m === 'calc');
+        if (m === 'eq') buildEqGrid();
+        updInd();
+        const t = m === 'calc' ? mainEd : m === 'table' ? fEd : qs('#nbcEqGrid input');
+        if (t && isOpen()) { (isEd(t) ? t.el : t).focus({ preventScroll: true }); }
+        setTarget(t);
+        scheduleSaveCalc();
+      }
+      const STORE = 'noteboard-calc-v1';
+      function scheduleSaveCalc() { clearTimeout(saveTimer); saveTimer = setTimeout(saveCalc, 300); }
+      function saveCalc() {
+        try {
+          localStorage.setItem(STORE, JSON.stringify({
+            skin: S.skin, deg: S.deg, eng: S.eng, vars: S.vars, ans: S.ans, hist: S.hist, mode: S.mode, eqType: S.eqType, eq: S.eq,
+            table: { t0: qs('#nbcT0').value, t1: qs('#nbcT1').value, ts: qs('#nbcTs').value, f: clone(fEd.root), g: clone(gEd.root) }, main: clone(mainEd.root)
+          }));
+        } catch (e) { }
+      }
+      function loadCalc() {
+        let d = null; try { d = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { }
+        if (!d || typeof d !== 'object') return;
+        const num = v => typeof v === 'number' && Number.isFinite(v) ? v : 0, str = v => typeof v === 'string' ? v.slice(0, 80) : '';
+        S.skin = d.skin === 'flat' ? 'flat' : 'hand'; S.deg = d.deg !== false; S.eng = d.eng === true; S.ans = num(d.ans);
+        if (d.vars) VARS.forEach(v => S.vars[v] = num(d.vars[v]));
+        if (Array.isArray(d.hist)) S.hist = d.hist.slice(0, 30).filter(h => h && typeof h.text === 'string').map(h => ({ tree: sanitizeRow(h.tree), text: h.text.slice(0, 300), deg: h.deg !== false }));
+        if (EQ_TYPES[d.eqType]) S.eqType = d.eqType;
+        if (d.eq && typeof d.eq === 'object') Object.keys(EQ_TYPES).forEach(k => { if (Array.isArray(d.eq[k])) S.eq[k] = d.eq[k].slice(0, 20).map(str); });
+        if (d.table) { ['t0', 't1', 'ts'].forEach(k => { if (typeof d.table[k] === 'string') qs('#nbcT' + { t0: '0', t1: '1', ts: 's' }[k]).value = str(d.table[k]); }); fEd.load(d.table.f); gEd.load(d.table.g); }
+        if (d.main) mainEd.load(d.main);
+        if (['calc', 'eq', 'table'].includes(d.mode)) S.mode = d.mode;
+      }
+      function boardText() {
+        if (S.mode === 'calc') {
+          if (!lastRes || lastRes.error) { if (evaluateMain(true) === null) return null; }
+          return resultText(lastRes);
+        }
+        if (S.mode === 'eq') { if (!lastEq) solveEqMode(); return lastEq ? eqText() : null; }
+        if (!lastTable) buildTable(); return lastTable ? tableText() : null;
+      }
+
+      function insertToBoard() {
+        const text = boardText();
+        if (!text) return;
+        if (window.chrome && window.chrome.webview) {
+          window.chrome.webview.postMessage(JSON.stringify({ action: 'insertResult', text: text }));
+        } else {
+          console.log('Insert to board:', text);
+        }
+        toast('Đã đưa lên bảng');
+      }
+
+      /* ---------- Ve do thi bang GeoGebra ---------- */
+      function ggbNum(v) {
+        check(v); const s = String(v);
+        if (s.includes('e')) { const [m, e] = s.split('e'); return '(' + m + '*10^(' + (+e) + '))'; }
+        return v < 0 ? '(' + s + ')' : s;
+      }
+      const hasX = a => freeVars(a).includes('X');
+      function toGgb(n) {
+        const G = toGgb, ang = x => S.deg ? '((' + x + ')°)' : '(' + x + ')';
+        switch (n.type) {
+          case 'num': return Math.abs(n.v - Math.PI) < 1e-15 ? 'pi' : ggbNum(n.v);
+          case 'var': return n.v === 'X' ? 'x' : n.v === 'Y' ? 'y' : ggbNum(n.v === 'Ans' ? S.ans : S.vars[n.v]);
+          case 'neg': return '(-' + G(n.a) + ')';
+          case 'bin': return n.op === 'nCr' || n.op === 'nPr' ? n.op + '(' + G(n.a) + ',' + G(n.b) + ')' : '(' + G(n.a) + n.op + G(n.b) + ')';
+          case 'pow': return '(' + G(n.a) + ')^(' + G(n.b) + ')';
+          case 'fact': return '(' + G(n.a) + ')!';
+          case 'pct': return '(' + G(n.a) + '/100)';
+          case 'call': {
+            const a = n.args.map(G);
+            switch (n.f) {
+              case 'sin': case 'cos': case 'tan': return n.f + ang(a[0]);
+              case 'asin': case 'acos': case 'atan': return n.f + (S.deg ? 'd' : '') + '(' + a[0] + ')';
+              case 'log': return 'lg(' + a[0] + ')';
+              case 'logb': return 'log(' + a[0] + ',' + a[1] + ')';
+              case 'root': return 'nroot(' + a[1] + ',' + a[0] + ')';
+              case 'Int': return '(sgn(' + a[0] + ')*floor(abs(' + a[0] + ')))';
+              case 'Intg': return 'floor(' + a[0] + ')';
+              case 'gcd': return 'GCD(' + a[0] + ',' + a[1] + ')';
+              case 'lcm': return 'LCM(' + a[0] + ',' + a[1] + ')';
+              case 'RanInt': return 'RandomBetween(' + a[0] + ',' + a[1] + ')';
+              case 'Pol': return 'sqrt((' + a[0] + ')^2+(' + a[1] + ')^2)';
+              case 'Rec': return '(' + a[0] + ')*cos' + ang(a[1]);
+              default: return n.f + '(' + a.join(',') + ')';
+            }
+          }
+          case 'der':
+            if (n.at.type === 'var' && n.at.v === 'X') return 'Derivative(' + G(n.body) + ')';
+            if (!hasX(n.at)) return ggbNum(ev(n, ctx()));
+            fail('Chưa vẽ được đạo hàm khi điểm tính đạo hàm phụ thuộc x');
+          case 'int': case 'sum':
+            if (hasX(n.lo) || hasX(n.hi)) fail('Chưa vẽ được ' + (n.type === 'int' ? 'tích phân' : 'tổng Σ') + ' có cận phụ thuộc x');
+            return ggbNum(ev(n, ctx()));
+        }
+        fail('Lỗi cú pháp');
+      }
+      function graphCommands() {
+        const meta = {};
+        if (S.mode === 'table') {
+          if (fEd.isEmpty()) fail('Nhập f(x) trước khi vẽ đồ thị');
+          const fs = [parseTop(fEd.root, meta)]; if (!gEd.isEmpty()) fs.push(parseTop(gEd.root, meta));
+          if (fs.some(p => p.rhs)) fail('f(x), g(x) là biểu thức, không chứa dấu "="');
+          const cmds = fs.map((p, i) => (i ? 'g' : 'f') + (hasX(p.lhs) ? '(x)=' : ': y=') + toGgb(p.lhs));
+          buildTable(); let view = null;
+          if (lastTable) {
+            const xs = lastTable.rows.map(r => r[0]), ys = lastTable.rows.flatMap(r => [r[1], r[2]]).filter(v => typeof v === 'number' && Number.isFinite(v));
+            if (xs.length > 1 && ys.length) { const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), px = (x1 - x0) * 0.08 || 1, py = (y1 - y0) * 0.15 || 1; view = [x0 - px, x1 + px, y0 - py, y1 + py]; }
+          }
+          return { cmds, view };
+        }
+        if (S.mode === 'eq') {
+          const T = EQ_TYPES[S.eqType], cols = T.n ? T.n + 1 : T.d + 1, vals = S.eq[S.eqType] || [];
+          const nums = [...Array((T.n || 1) * cols)].map((_, i) => { const s = (vals[i] ?? '').trim(); return s ? check(ev(parseLinear(s, meta), ctx())) : 0; });
+          if (T.d) return { cmds: ['p(x)=' + nums.map((c, i) => ggbNum(c) + (T.d - i ? '*x^' + (T.d - i) : '')).join('+')], view: null };
+          if (T.n !== 2) fail('Chỉ vẽ được hệ 2 ẩn (hai đường thẳng)');
+          return { cmds: [0, 1].map(r => 'd_' + (r + 1) + ': ' + ggbNum(nums[r * 3]) + '*x+' + ggbNum(nums[r * 3 + 1]) + '*y=' + ggbNum(nums[r * 3 + 2])), view: null };
+        }
+        if (mainEd.isEmpty()) fail('Nhập biểu thức có x trước khi vẽ đồ thị');
+        const top = parseTop(mainEd.root, meta);
+        if (top.rhs) {
+          const vs = freeVars(top.lhs); freeVars(top.rhs, vs);
+          if (!vs.includes('X') && !vs.includes('Y')) fail('Phương trình cần có x hoặc y để vẽ');
+          return { cmds: [toGgb(top.lhs) + '=' + toGgb(top.rhs)], view: null };
+        }
+        if (!hasX(top.lhs)) fail('Biểu thức cần có x để vẽ đồ thị');
+        return { cmds: [toGgb(top.lhs)], view: null };
+      }
+      function plotGraph() {
+        try { const g = graphCommands(); if (!window.nbGeo) fail('Chưa có GeoGebra'); window.nbGeo.plot(g.cmds, g.view); }
+        catch (e) { showError(e); }
+      }
+      function init() {
+        mainEd = new Editor(qs('#calcExpression'), () => command('exe'));
+        fEd = new Editor(qs('#nbcF'), buildTable); gEd = new Editor(qs('#nbcG'), buildTable);
+        const keys = qs('#calcKeys');
+        keys.addEventListener('mousedown', e => { if (e.target.closest('button')) e.preventDefault(); });
+        keys.addEventListener('click', e => { const b = e.target.closest('button[data-a]'); if (b) keyClick(b); });
+        const box = qs('#nbcEqTypes');
+        Object.entries(EQ_TYPES).forEach(([k, t]) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.eq = k; b.textContent = t.l; b.onclick = () => { S.eqType = k; buildEqGrid(); qs('#nbcEqGrid input')?.focus(); scheduleSaveCalc(); }; box.append(b); });
+        loadCalc();
+        qs('#angleMode').textContent = S.deg ? 'DEG' : 'RAD'; qs('#nbcEng').classList.toggle('on', S.eng);
+        qs('#angleMode').onclick = toggleAngle; qs('#nbcEng').onclick = toggleEng; qs('#nbcSD').onclick = toggleSD;
+        qs('#nbcVarsBtn').onclick = openVars; qs('#calcHistoryBtn').onclick = openHistory; qs('#nbcSkin').onclick = () => setSkin('hand');
+        setSkin(S.skin);
+        qs('#calculator').querySelectorAll('.nbc-tabs button').forEach(b => b.onclick = () => setCalcMode(b.dataset.mode));
+        const cal = qs('#calculator');
+        cal.addEventListener('focusin', e => { if (e.target.tagName === 'INPUT') setTarget(e.target); });
+        cal.addEventListener('keydown', e => {
+          if (e.target.tagName !== 'INPUT') return;
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') return;
+          e.stopPropagation();
+          if (e.key === 'Escape') { e.preventDefault(); if (prompt) cancelPrompt(); else hideCalc(); }
+          else if (e.key === 'Enter') { e.preventDefault(); if (e.target.id === 'nbcPromptIn') submitPrompt(); else if (S.mode === 'eq') { const all = [...qs('#nbcEqGrid').querySelectorAll('input')], k = all.indexOf(e.target); if (k < all.length - 1 && !e.ctrlKey) { all[k + 1].focus(); all[k + 1].select(); } else solveEqMode(); } else buildTable(); }
+        });
+        ['#nbcT0', '#nbcT1', '#nbcTs'].forEach(id => qs(id).addEventListener('input', scheduleSaveCalc));
+        qs('#nbcTabBtn').onclick = buildTable;
+        qs('#insertResult').onclick = insertToBoard;
+        function getExportExpression() {
+          let expr = '';
+          const meta = {};
+          try {
+            if (S.mode === 'table' && !fEd.isEmpty()) {
+              try {
+                const top = parseTop(fEd.root, meta);
+                expr = toGgb(top.lhs || top);
+              } catch (_) {
+                expr = rowText(fEd.root);
+              }
+            } else if (S.mode === 'eq') {
+              const T = EQ_TYPES[S.eqType];
+              if (T && T.d) {
+                const cols = T.d + 1;
+                const vals = S.eq[S.eqType] || [];
+                const gridInputs = qs('#nbcEqGrid') ? [...qs('#nbcEqGrid').querySelectorAll('input')] : [];
+                const nums = [...Array(cols)].map((_, i) => {
+                  let s = (gridInputs[i] ? gridInputs[i].value : (vals[i] ?? '')).trim();
+                  if (!s) return 0;
+                  try { return check(ev(parseLinear(s, {}), ctx())); } catch (_) { return parseFloat(s) || 0; }
+                });
+                const d = T.d;
+                const terms = [];
+                for (let i = 0; i <= d; i++) {
+                  const c = nums[i];
+                  if (c === 0) continue;
+                  const p = d - i;
+                  let termStr = '';
+                  const sign = c > 0 ? (terms.length > 0 ? ' + ' : '') : (terms.length > 0 ? ' - ' : '-');
+                  const absC = Math.abs(c);
+                  const cText = (absC === 1 && p > 0) ? '' : absC;
+                  if (p === 0) termStr = sign + absC;
+                  else if (p === 1) termStr = sign + cText + 'x';
+                  else termStr = sign + cText + 'x^' + p;
+                  terms.push(termStr);
+                }
+                if (terms.length > 0) expr = terms.join('').trim();
+              }
+            }
+
+            // Fallback to mainEd if expr is still empty
+            if (!expr && !mainEd.isEmpty()) {
+              try {
+                let raw = rowText(mainEd.root).trim();
+                if (raw) {
+                  raw = raw.replace(/^[yf]\s*\(\s*x\s*\)\s*=\s*/i, '');
+                  raw = raw.replace(/\s*=\s*0(?:\.0+)?\s*$/, '').trim();
+                  if (raw.includes('=')) {
+                    const parts = raw.split('=');
+                    if (parts.length === 2) {
+                      if (parts[0].trim().toLowerCase() === 'y') raw = parts[1].trim();
+                      else if (parts[1].trim() === '0') raw = parts[0].trim();
+                      else raw = '(' + parts[0].trim() + ') - (' + parts[1].trim() + ')';
+                    }
+                  }
+                  expr = raw;
+                }
+              } catch (_) { }
+
+              if (!expr) {
+                try {
+                  const top = parseTop(mainEd.root, meta);
+                  if (top && top.rhs) {
+                    if (top.lhs && top.lhs.type === 'var' && top.lhs.v === 'Y') {
+                      expr = toGgb(top.rhs);
+                    } else if (top.rhs.type === 'num' && top.rhs.v === 0) {
+                      expr = toGgb(top.lhs);
+                    } else {
+                      expr = '(' + toGgb(top.lhs) + ') - (' + toGgb(top.rhs) + ')';
+                    }
+                  } else if (top) {
+                    expr = toGgb(top.lhs || top);
+                  }
+                } catch (_) { }
+              }
+            }
+          } catch (e) {
+            console.error('Error extracting calc expression:', e);
+          }
+          return expr || 'x^3 - 3x + 1';
+        }
+
+        qs('#btnCalcVariation').onclick = function () {
+          const expr = getExportExpression();
+          if (window.chrome && window.chrome.webview) {
+            window.chrome.webview.postMessage(JSON.stringify({ action: 'openVariation', expression: expr }));
+          }
+        };
+        const btnGraph = qs('#btnCalcGraph');
+        if (btnGraph) {
+          btnGraph.onclick = function () {
+            const expr = getExportExpression();
+            if (window.chrome && window.chrome.webview) {
+              window.chrome.webview.postMessage(JSON.stringify({ action: 'insertGraph', expression: expr }));
+              toast('Đã xuất đồ thị lên bảng');
+            }
+          };
+        }
+        qs('#nbcPlot').onclick = plotGraph;
+        qs('#calcBtn').onclick = () => { const el = qs('#calculator'); el.hidden = !el.hidden; if (!el.hidden) { clampCalculator(); setCalcMode(S.mode); } else cancelPrompt(); };
+        qs('#calcClose').onclick = hideCalc;
+        setCalcMode(S.mode);
+      }
+      init();
+      return { evaluate: evaluateText, state: S, get editor() { return mainEd; }, exactOf, fmt, solveLinear, polyRoots, quadExact, integrate, derivative, setMode: setCalcMode, setSkin, get skin() { return S.skin; }, press, rowText: () => rowText(mainEd.root), graphCommands, get result() { return lastRes; } };
+    })();
+    let calculatorDrag = null;
+  </script>
+
+  <script>
+    /* Additional calculator modes; all selectors and styles are scoped to NoteBoard Calc. */
+    window.NBCalcAdvanced = {
+      create(api) {
+        'use strict';
+        const K = window.NBCalcScience, doc = document, el = (tag, text, cls) => { const e = doc.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; };
+        const modes = [['complex', '2', 'Số phức', 'a+bi, r∠θ, liên hợp, môđun'], ['base', '3', 'Hệ cơ số', 'DEC · HEX · BIN · OCT, logic 32 bit'], ['matrix', '4', 'Ma trận', 'MatA–D, đến 4×4, định thức, nghịch đảo'], ['vector', '5', 'Véc-tơ', 'VctA–D, tích vô hướng, có hướng, góc'], ['stats', '6', 'Thống kê', 'Một biến, tần số, 7 dạng hồi quy'], ['dist', '7', 'Phân phối', 'Chuẩn, nhị thức và Poisson'], ['ineq', 'A', 'Bất phương trình', 'Bậc 2–4, bảng dấu và tập nghiệm'], ['verify', 'B', 'Kiểm tra', 'So sánh biểu thức, chuỗi bất đẳng thức'], ['ratio', 'C', 'Tỉ lệ', 'a:b = c:d, tìm một ẩn']];
+        const extras = { convert: 'Đổi đơn vị', dms: 'Độ–phút–giây', factor: 'Phân tích thừa số nguyên tố', product: 'Tích ∏' };
+        const names = Object.fromEntries(modes.map(r => [r[0], r[2]])); Object.assign(names, extras);
+        let cache = { inputs: {}, matrices: {}, vectors: {} }, mode = '', fields = {}, last = null, exact = true, activeInput = null;
+        try { const d = JSON.parse(localStorage.getItem('noteboard-calc-science-v1') || 'null'); if (d && typeof d === 'object') for (const key of ['inputs', 'matrices', 'vectors']) if (d[key] && typeof d[key] === 'object' && !Array.isArray(d[key])) cache[key] = d[key]; } catch { }
+        const save = () => { try { localStorage.setItem('noteboard-calc-science-v1', JSON.stringify(cache)); } catch { } };
+        const panel = el('div', undefined, 'nbc-panel nbc-science'); panel.hidden = true; panel.dataset.panel = 'science'; panel.id = 'nbcScience';
+        const style = el('style'); style.textContent = `
+ #calculator .nbc-science{font:14px/1.45 system-ui,sans-serif;max-height:360px;overflow:auto;padding:10px;color:#173b36}
+ #calculator .nbc-science h3{font-size:16px;margin:0 0 6px}
+ #calculator .nbc-science label{display:flex;flex-direction:column;gap:4px;min-width:0;margin:7px 0;font-size:12px}
+ #calculator .nbc-science input,#calculator .nbc-science textarea,#calculator .nbc-science select{box-sizing:border-box;width:100%;min-width:0;min-height:36px;border:1px solid #91b1a7;border-radius:6px;background:#fff;color:#173b36;padding:6px;font:15px system-ui}
+ #calculator .nbc-science textarea{min-height:100px;resize:vertical;font:14px monospace;white-space:pre}
+ #calculator .nbc-science .sci-row{display:flex;gap:7px;flex-wrap:wrap}#calculator .nbc-science .sci-row>label{flex:1;min-width:65px}
+ #calculator .nbc-science .sci-grid{display:grid;gap:5px}#calculator .nbc-science .sci-grid label{margin:2px 0}
+ #calculator .nbc-science button{border:1px solid #9bbdb0;border-radius:6px;background:#f5fcf8;color:#144e43;min-height:34px;padding:5px 9px;cursor:pointer;font:13px system-ui}
+ #calculator .nbc-science .sci-tools{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+ #calculator .nbc-science .sci-output{padding:9px;margin-top:8px;border-top:1px solid #91b1a7;overflow:auto;font-size:17px;white-space:pre-wrap;overflow-wrap:anywhere}
+ #calculator .nbc-science .sci-output table{border-collapse:collapse;width:100%;font-size:14px}#calculator .nbc-science td,#calculator .nbc-science th{padding:5px;text-align:left;border-bottom:1px solid #cfddd7}
+ #calculator .nbc-science .sci-help{font-size:12px;color:#526c60;margin:5px 0}#calculator .nbc-science .error{color:#a22020}
+ #calculator .nbc-science .sci-calc{background:#146b59;color:white;font-weight:700}
+ @media(max-width:500px){#calculator .nbc-science{max-height:38dvh}#calculator .nbc-science input,#calculator .nbc-science select{font-size:16px;min-height:40px}}
+ `;
+        doc.head.append(style); doc.querySelector('#calculator .nbc-lcd').append(panel);
+        const supports = m => Object.hasOwn(names, m), angle = () => api.angle(), num = s => api.evaluate(String(s)), n = k => num(fields[k].value), str = k => fields[k].value;
+        const memory = () => cache.inputs[mode] || (cache.inputs[mode] = {});
+        function invalidate() { last = null; panel.querySelector('.sci-output')?.replaceChildren(); }
+        function field(key, label, value = '', type = 'input', parent = panel) {
+          const lab = el('label', label), input = el(type); input.id = 'nbcSci-' + key; input.setAttribute('aria-label', label); input.autocomplete = 'off'; input.spellcheck = false;
+          if (type === 'input') input.inputMode = 'text';
+          const raw = memory()[key]; input.value = typeof raw === 'string' ? raw.slice(0, 30000) : String(value); fields[key] = input;
+          input.addEventListener('focus', () => { activeInput = input; }); input.addEventListener('input', () => { memory()[key] = input.value; invalidate(); save(); }); lab.append(input); parent.append(lab); return input;
+        }
+        function choice(key, label, items, value, change, parent = panel) { const lab = el('label', label), select = el('select'); select.id = 'nbcSci-' + key; select.setAttribute('aria-label', label); for (const [v, t] of items) { const o = el('option', t); o.value = v; select.append(o); } select.value = items.some(i => i[0] === memory()[key]) ? memory()[key] : value; fields[key] = select; select.onchange = () => { memory()[key] = select.value; invalidate(); save(); change?.(); }; lab.append(select); parent.append(lab); return select; }
+        function btn(text, fn, parent = panel, cls) { const b = el('button', text, cls); b.type = 'button'; b.onmousedown = e => e.preventDefault(); b.onclick = () => { try { fn(); } catch (e) { error(e); } }; parent.append(b); return b; }
+        function help(text) { panel.append(el('p', text, 'sci-help')); }
+        function insert(text) { let input = activeInput; if (!input || !panel.contains(input) || !['INPUT', 'TEXTAREA'].includes(input.tagName)) input = fields.expr; if (!input) return; input.setRangeText(text, input.selectionStart ?? input.value.length, input.selectionEnd ?? input.value.length, 'end'); input.dispatchEvent(new Event('input', { bubbles: true })); input.focus(); }
+        function tools(items) { const row = el('div', undefined, 'sci-tools'); for (const [label, text] of items) btn(label, () => insert(text ?? label), row); panel.append(row); }
+        const group = () => { const row = el('div', undefined, 'sci-row'); panel.append(row); return row; };
+        const describe = v => {
+          if (typeof v === 'number') return api.format(v, exact);
+          if (v.kind === 'complex') {
+            const eps = 1e-13 * Math.max(Math.abs(v.re), Math.abs(v.im)), re = Math.abs(v.re) < eps ? 0 : v.re, im = Math.abs(v.im) < eps ? 0 : v.im;
+            if (fields.form?.value === 'polar') { const r = Math.hypot(re, im), a = Math.atan2(im, re) * (angle() === 'RAD' ? 1 : angle() === 'GRAD' ? 200 / Math.PI : 180 / Math.PI); return api.format(r, exact) + ' ∠ ' + api.format(a, exact); }
+            return im === 0 ? api.format(re, exact) : (re ? api.format(re, exact) + (im < 0 ? ' − ' : ' + ') : im < 0 ? '−' : '') + (Math.abs(im) === 1 ? '' : api.format(Math.abs(im), exact)) + 'i';
+          }
+          if (v.kind === 'matrix') return v.rows.map(r => '[ ' + r.map(x => api.format(x, exact)).join(' ; ') + ' ]').join('\n');
+          if (v.kind === 'vector') return '( ' + v.values.map(x => api.format(x, exact)).join(' ; ') + ' )';
+          return String(v);
+        };
+        function output() { let out = panel.querySelector('.sci-output'); if (!out) { out = el('div', undefined, 'sci-output'); out.id = 'nbcSciOut'; out.setAttribute('aria-live', 'polite'); panel.append(out); } return out; }
+        function error(e) { last = null; const out = output(); out.classList.add('error'); out.textContent = e.message || String(e); }
+        function showResult() { const out = output(); out.classList.remove('error'); out.replaceChildren(); if (!last) return; if (last.value !== undefined) out.textContent = describe(last.value); else if (last.entries) { const table = el('table'); for (const [label, v] of last.entries) { const tr = el('tr'); tr.append(el('th', label), el('td', v === null ? 'Không xác định' : typeof v === 'number' ? api.format(v, exact) : String(v))); table.append(tr); } out.append(table); } else out.textContent = last.text; }
+        const readStored = (type) => { const out = {}; for (const [key, value] of Object.entries(cache[type === 'matrix' ? 'matrices' : 'vectors'])) if (/^(Mat|Vct)[A-D]$/.test(key)) { try { out[key] = type === 'matrix' ? K.M(value) : K.V(value); } catch { } } return out; };
+        function matrixEditor(vector) {
+          const store = vector ? 'vectors' : 'matrices', prefix = vector ? 'Vct' : 'Mat', row = group();
+          choice('slot', 'Bộ nhớ', Array.from('ABCD', v => [prefix + v, prefix + v]), prefix + 'A', rebuild, row);
+          choice('rows', vector ? 'Số chiều' : 'Số hàng', (vector ? [2, 3] : [1, 2, 3, 4]).map(v => [String(v), String(v)]), '2', rebuild, row);
+          if (!vector) choice('cols', 'Số cột', [1, 2, 3, 4].map(v => [String(v), String(v)]), '2', rebuild, row);
+          const grid = el('div', undefined, 'sci-grid'); panel.append(grid);
+          function rebuild() { grid.replaceChildren(); const slot = str('slot'), a = cache[store][slot], r = +str('rows'), c = vector ? 1 : +str('cols'); grid.style.gridTemplateColumns = 'repeat(' + (vector ? r : c) + ',minmax(0,1fr))'; for (let i = 0; i < r; i++)for (let j = 0; j < c; j++) { const key = 'cell' + i + '_' + j; delete memory()[key]; field(key, vector ? 'v' + (i + 1) : 'a' + (i + 1) + (j + 1), vector ? a?.[i] ?? 0 : a?.[i]?.[j] ?? 0, 'input', grid); } invalidate(); }
+          fields.slot.onchange = () => { memory().slot = str('slot'); const old = cache[store][str('slot')]; if (old) { fields.rows.value = String(old.length); memory().rows = fields.rows.value; if (!vector) { fields.cols.value = String(old[0].length); memory().cols = fields.cols.value; } } rebuild(); save(); };
+          rebuild(); btn('Lưu ' + prefix + 'A–D', () => { const r = +str('rows'), c = vector ? 1 : +str('cols'), values = Array.from({ length: r }, (_, i) => Array.from({ length: c }, (_, j) => n('cell' + i + '_' + j))); cache[store][str('slot')] = vector ? K.V(values.flat()).values : K.M(values).rows; save(); invalidate(); output().textContent = 'Đã lưu ' + str('slot'); });
+          help('Nhập các ô rồi bấm Lưu. Biểu thức dùng bộ nhớ đã lưu; OPTN chèn tên và phép tính.');
+          field('expr', 'Biểu thức', prefix + 'A');
+          tools(vector ? [[prefix + 'A'], [prefix + 'B'], [prefix + 'C'], [prefix + 'D'], ['VctAns'], ['Dot', 'Dot('], ['Cross', 'Cross('], ['Angle', 'Angle('], ['Abs', 'Abs('], ['UnitV', 'UnitV(']] : [[prefix + 'A'], [prefix + 'B'], [prefix + 'C'], [prefix + 'D'], ['MatAns'], ['Det', 'Det('], ['Trn', 'Trn('], ['⁻¹', '^(-1)'], ['Identity', 'Identity('], ['Abs', 'Abs(']]);
+        }
+        function show(m) {
+          if (!supports(m)) { panel.hidden = true; return; } mode = m; fields = {}; last = null; activeInput = null; panel.hidden = false; panel.replaceChildren(el('h3', names[m]));
+          if (m === 'complex') {
+            field('expr', 'Biểu thức số phức', '(1+i)^4+(1-i)^2'); choice('form', 'Hiển thị', [['rect', 'a + bi'], ['polar', 'r ∠ θ']], 'rect', () => { if (last) showResult(); });
+            tools([['i'], ['∠'], ['Conjg', 'Conjg('], ['Abs', 'Abs('], ['Arg', 'Arg('], ['ReP', 'ReP('], ['ImP', 'ImP(']]); help('Ví dụ: 2*(sqrt(3)+i), 5∠30. Góc theo DEG / RAD / GRAD đang chọn.');
+          } else if (m === 'base') {
+            choice('base', 'Hệ nhập', [['10', 'DEC'], ['16', 'HEX'], ['2', 'BIN'], ['8', 'OCT']], '10'); field('expr', 'Biểu thức nguyên', '10+5'); tools(['A', 'B', 'C', 'D', 'E', 'F', ' and ', ' or ', ' xor ', ' xnor ', 'not(', 'neg('].map(x => [x])); help('32 bit có dấu. Có thể trộn d10 + h10 + b10 + o10. Chia lấy phần nguyên.');
+          } else if (m === 'matrix' || m === 'vector') matrixEditor(m === 'vector');
+          else if (m === 'stats') {
+            choice('model', 'Kiểu thống kê', [['single', '1 biến'], ['linear', 'y = a + bx'], ['quadratic', 'y = a + bx + cx²'], ['log', 'y = a + b ln(x)'], ['exp', 'y = a e^(bx)'], ['ab', 'y = a b^x'], ['power', 'y = a x^b'], ['inverse', 'y = a + b/x']], 'single');
+            field('data', 'Dữ liệu (mỗi dòng một mẫu)', '1\n2\n3', 'textarea'); help('1 biến: x; tần số. Hồi quy: x; y; tần số. Tần số có thể bỏ trống (mặc định 1). Dán cột từ Excel bằng dấu tab; số thập phân dùng dấu chấm.');
+          } else if (m === 'dist') {
+            choice('kind', 'Phân phối', [['normalPD', 'Normal PD'], ['normalCD', 'Normal CD'], ['inverseNormal', 'Inverse Normal'], ['binomialPD', 'Binomial PD'], ['binomialCD', 'Binomial CD'], ['poissonPD', 'Poisson PD'], ['poissonCD', 'Poisson CD']], 'normalPD', () => show(m));
+            const type = str('kind'), r = group();
+            if (type === 'normalCD') { field('lower', 'Cận dưới', '-1', 'input', r); field('upper', 'Cận trên', '1', 'input', r); }
+            else if (type === 'inverseNormal') field('area', 'Xác suất bên trái', '0.975', 'input', r);
+            else field('x', type.startsWith('normal') ? 'x' : 'x (hoặc danh sách: 0;1;2)', '0', 'input', r);
+            const r2 = group(); if (type.startsWith('normal') || type === 'inverseNormal') { field('sigma', 'σ > 0', '1', 'input', r2); field('mu', 'μ', '0', 'input', r2); }
+            else if (type.startsWith('binomial')) { field('n', 'Số lần N', '10', 'input', r2); field('p', 'Xác suất p', '0.5', 'input', r2); } else field('lambda', 'λ', '3', 'input', r2);
+            help('CD nhị thức/Poisson trả P(X ≤ x). Normal CD trả xác suất giữa hai cận.');
+          } else if (m === 'ineq') {
+            choice('degree', 'Bậc', [['2', '2'], ['3', '3'], ['4', '4']], '2', () => show(m)); choice('sign', 'So sánh với 0', [['<', '< 0'], ['<=', '≤ 0'], ['>', '> 0'], ['>=', '≥ 0']], '<'); const r = group(); for (let i = 0; i <= +str('degree'); i++)field('coef' + i, 'Hệ số ' + String.fromCharCode(97 + i), i === 0 ? '1' : i === +str('degree') ? '-1' : '0', 'input', r);
+          } else if (m === 'verify') { field('expr', 'Biểu thức so sánh', '1/2 < 2/3 <= 1'); tools([['='], ['≠'], ['<'], ['≤'], ['>'], ['≥']]); help('So sánh số thực có xét sai số dấu phẩy động; không phải chứng minh đồng nhất đại số.'); }
+          else if (m === 'ratio') { help('a : b = c : d. Nhập x vào đúng một ô cần tìm.'); const r = group();['a', 'b', 'c', 'd'].forEach((key, i) => field(key, key, ['1', '2', '3', 'x'][i], 'input', r)); }
+          else if (m === 'convert') {
+            choice('group', 'Đại lượng', [['length', 'Độ dài'], ['area', 'Diện tích'], ['volume', 'Thể tích'], ['mass', 'Khối lượng'], ['speed', 'Vận tốc'], ['pressure', 'Áp suất'], ['energy', 'Năng lượng'], ['power', 'Công suất'], ['temperature', 'Nhiệt độ'], ['angle', 'Góc']], 'length', () => show(m)); field('value', 'Giá trị', '1'); const r = group(), options = Object.keys(K.units[str('group')]).map(x => [x, x]); choice('from', 'Từ', options, options[0][0], null, r); choice('to', 'Sang', options, options[1][0], null, r);
+          } else if (m === 'dms') {
+            const r = group(); field('d', 'Độ (dấu âm ở đây)', '12', 'input', r); field('m', 'Phút', '30', 'input', r); field('s', 'Giây', '0', 'input', r); help('Bấm = để đổi sang độ thập phân. Nhập độ thập phân ở ô Độ, phút và giây bằng 0 để đổi ngược.');
+          } else if (m === 'factor') field('value', 'Số nguyên 2–9 999 999 999', '360');
+          else if (m === 'product') { field('expr', 'Tích các giá trị f(x)', 'x'); const r = group(); field('lower', 'x bắt đầu', '1', 'input', r); field('upper', 'x kết thúc', '5', 'input', r); help('Cận là số nguyên, tối đa 10 000 thừa số.'); }
+          btn('Tính =', calculate, panel, 'sci-calc'); output(); panel.scrollTop = 0;
+          activeInput = fields.expr || panel.querySelector('input,textarea'); activeInput?.focus({ preventScroll: true });
+        }
+        function calculate() {
+          try {
+            let result = { title: names[mode], source: '', graph: null };
+            if (['complex', 'matrix', 'vector'].includes(mode)) {
+              const vars = { ...api.state.vars, Ans: api.state.ans, ...readStored(mode), ...(memory().answer ? { [mode === 'matrix' ? 'MatAns' : mode === 'vector' ? 'VctAns' : 'Ans']: memory().answer } : {}) };
+              result.source = str('expr'); result.value = K.expression(result.source, { vars, angle: angle(), real: num }); memory().answer = result.value;
+              if (result.value.kind === 'complex') result.graph = ['(' + result.value.re + ',' + result.value.im + ')'];
+              if (result.value.kind === 'vector') result.graph = ['Vector((' + result.value.values.map(() => 0).join(',') + '),(' + result.value.values.join(',') + '))'];
+            } else if (mode === 'base') { result.source = str('expr'); const r = K.baseN(result.source, +str('base')); result.entries = [['DEC', r.dec], ['HEX', r.hex], ['BIN', r.bin], ['OCT', r.oct]]; }
+            else if (mode === 'stats') {
+              const rows = str('data').trim().split(/\n/).filter(x => x.trim()).map(line => line.trim().split(/[;\t]+/).map(num)), model = str('model'), r = K.statistics(rows, model);
+              result.source = 'Dữ liệu: ' + str('data'); const labels = { sumX: 'Σx', sumX2: 'Σx²', meanX: 'x̄', varianceX: 'σx²', sigmaX: 'σx', sX: 'sx', minX: 'min(x)', maxX: 'max(x)', median: 'Trung vị', meanY: 'ȳ', sumY: 'Σy', sumY2: 'Σy²', sumXY: 'Σxy', sigmaY: 'σy', sY: 'sy' }; result.entries = Object.entries(r).map(([k, v]) => [labels[k] || k, v]);
+              if (model !== 'single') { const A = '(' + r.a + ')', B = '(' + r.b + ')', f = { linear: A + '+' + B + '*x', quadratic: A + '+' + B + '*x+(' + r.c + ')*x^2', log: A + '+' + B + '*ln(x)', exp: A + '*exp(' + B + '*x)', ab: A + '*' + B + '^x', power: A + '*x^' + B, inverse: A + '+' + B + '/x' }[model]; result.graph = [...rows.map(r => '(' + r[0] + ',' + r[1] + ')'), 'f(x)=' + f]; result.entries.push(['Hàm hồi quy', f]); }
+            } else if (mode === 'dist') {
+              const type = str('kind'), p = {}; for (const k of Object.keys(fields)) if (k !== 'kind' && k !== 'x') p[k] = n(k);
+              const xs = fields.x ? str('x').split(';').map(num) : [0]; if (xs.length > 1000) throw Error('Tối đa 1000 giá trị x');
+              result.source = type + ' · ' + Object.entries(fields).filter(([k]) => k !== 'kind').map(([k, v]) => k + '=' + v.value).join('; ');
+              const values = xs.map(x => K.distribution(type, { ...p, x })); if (values.length === 1) result.value = values[0]; else result.entries = xs.map((x, i) => ['x = ' + x, values[i]]);
+              if (type.startsWith('normal')) result.graph = ['f(x)=exp(-((x-(' + p.mu + '))/(' + p.sigma + '))^2/2)/((' + p.sigma + ')*sqrt(2*pi))'];
+            } else if (mode === 'ineq') {
+              const c = Array.from({ length: +str('degree') + 1 }, (_, i) => n('coef' + i)), op = str('sign'), pieces = K.inequality(c, op, api.roots), format = x => x === Infinity ? '+∞' : x === -Infinity ? '−∞' : api.format(x, exact);
+              const poly = c.map((v, i) => '(' + v + ')' + (c.length - 1 - i ? '*x^' + (c.length - 1 - i) : '')).join('+'); result.source = poly + ' ' + op + ' 0'; result.text = pieces.length ? pieces.map(p => p.l === p.u ? '{' + format(p.l) + '}' : (p.lc ? '[' : '(') + format(p.l) + '; ' + format(p.u) + (p.uc ? ']' : ')')).join(' ∪ ') : '∅ (vô nghiệm)'; result.graph = ['f(x)=' + poly];
+            } else if (mode === 'verify') { result.source = str('expr'); result.text = K.verify(result.source, num) ? 'Đúng (True)' : 'Sai (False)'; }
+            else if (mode === 'ratio') { const raw = ['a', 'b', 'c', 'd'].map(str); result.source = raw[0] + ':' + raw[1] + ' = ' + raw[2] + ':' + raw[3]; result.value = K.ratio(raw.map(v => v.trim().toLowerCase() === 'x' ? null : num(v))); }
+            else if (mode === 'convert') { result.source = str('value') + ' ' + str('from') + ' → ' + str('to'); result.value = K.convert(n('value'), str('group'), str('from'), str('to')); }
+            else if (mode === 'dms') { const v = K.dms(n('d'), n('m'), n('s')); result.source = str('d') + '° ' + str('m') + '′ ' + str('s') + '″'; result.entries = [['Độ thập phân', v], ['Độ–phút–giây', K.toDMS(v)]]; }
+            else if (mode === 'factor') { result.source = str('value'); result.text = K.factors(n('value')).map(([p, k]) => String(p) + (k > 1 ? '^' + k : '')).join(' × '); }
+            else if (mode === 'product') { const a = n('lower'), b = n('upper'); if (!Number.isSafeInteger(a) || !Number.isSafeInteger(b) || b < a || b - a >= 10000) throw Error('Cận nguyên tăng dần, tối đa 10 000 thừa số'); let v = 1; for (let x = a; x <= b; x++) { v *= api.evaluate(str('expr'), { X: x }); if (!Number.isFinite(v)) throw Error('Tích vượt phạm vi số'); } result.source = '∏ [' + a + '…' + b + '] ' + str('expr'); result.value = v; }
+            last = result; if (typeof result.value === 'number') { api.state.ans = result.value; api.save(); } save(); showResult(); return result;
+          } catch (e) { error(e); return null; }
+        }
+        function text() { if (!last && !calculate()) return null; const val = last.value !== undefined ? describe(last.value) : last.entries ? last.entries.map(([k, v]) => k + ' = ' + (typeof v === 'number' ? api.format(v, exact) : v ?? 'Không xác định')).join('\n') : last.text; return last.title + '\n' + last.source + '\n⇒ ' + val; }
+        function command(c) {
+          if (!supports(api.state.mode)) return false;
+          if (c === 'exe') { calculate(); return true; } if (c === 'sd') { exact = !exact; showResult(); return true; }
+          if (c === 'fns') { panel.querySelector('.sci-tools')?.scrollIntoView({ block: 'nearest' }); return true; }
+          if (c === 'ac') { const input = activeInput; if (input && panel.contains(input)) { input.value = ''; input.dispatchEvent(new Event('input', { bubbles: true })); } else invalidate(); return true; }
+          return false;
+        }
+        panel.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') { e.preventDefault(); calculate(); } if (e.key === 'Escape') api.hide(); });
+        return { modes, names, supports, show, calculate, command, text, insert, get activeInput() { return activeInput; }, get result() { return last; }, graph() { if (!last && !calculate()) return null; return last.graph; }, refresh: showResult };
+      }
+    };
+
+  </script>
+
+  <script>
+    // Initialize Advanced science mode
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        if (window.NBCalc && window.NBCalcAdvanced) {
+          const api = {
+            angle: () => window.NBCalc.state?.deg ? 'DEG' : 'RAD',
+            evaluate: (s) => window.NBCalc.evaluate(s),
+            format: (v, exact) => window.NBCalc.fmt ? window.NBCalc.fmt(v, exact).text : String(v)
+          };
+          window.NBCalcAdvanced.create(api);
+
+          // Wire science tab button
+          const btnSci = document.getElementById('btnScienceTab');
+          if (btnSci) {
+            btnSci.addEventListener('click', () => {
+              document.querySelectorAll('.nbc-tabs button').forEach(b => b.classList.remove('on'));
+              btnSci.classList.add('on');
+              document.querySelectorAll('.nbc-panel').forEach(p => p.hidden = true);
+              const sciPanel = document.getElementById('nbcScience');
+              if (sciPanel) {
+                sciPanel.hidden = false;
+              }
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Error initializing Advanced Science Mode:', e);
+      }
+    });
+  </script>
+
+</body>
+
+</html>

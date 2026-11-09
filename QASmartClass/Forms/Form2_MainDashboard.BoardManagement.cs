@@ -37,26 +37,29 @@ namespace QASmartTouch.Forms
         /// <summary>
         /// Apply background to MainInteractiveBoard (âœ¨ Updated to support color + pattern combination + dynamic spacing)
         /// </summary>
-        public void ApplyCanvasBackground(string? color, string? pattern, int lineSpacing = 40, int lineOpacity = 10)
+        public void ApplyCanvasBackground(string? color, string? pattern, int lineSpacing = 40, int lineOpacity = 25)
         {
             try
             {
                 bool hasPattern = !string.IsNullOrWhiteSpace(pattern) && !pattern.Equals("none", StringComparison.OrdinalIgnoreCase);
 
                 // Store line spacing, opacity, color and pattern for pattern creation & board persistence
+                _currentBackgroundImagePath = null;
                 _currentBackgroundColor = color ?? "#3D6D64";
                 _currentBackgroundPattern = hasPattern ? pattern : null;
                 _currentLineSpacing = lineSpacing > 0 ? lineSpacing : 40;
-                _currentLineOpacity = lineOpacity > 0 ? lineOpacity : 10;
+                _currentLineOpacity = lineOpacity > 0 ? lineOpacity : 25;
                 
                 // Cập nhật ngay lập tức vào CurrentBoard của BoardManager nếu có
                 if (_boardManager?.CurrentBoard != null)
                 {
+                    _boardManager.CurrentBoard.BackgroundImagePath = null;
                     _boardManager.CurrentBoard.BackgroundColorHex = _currentBackgroundColor;
                     _boardManager.CurrentBoard.BackgroundPattern = _currentBackgroundPattern;
                     _boardManager.CurrentBoard.LineSpacing = _currentLineSpacing;
                     _boardManager.CurrentBoard.LineOpacity = _currentLineOpacity;
                 }
+                MarkAsDirty();
                 
                 // ✨ Remove old background rectangles if any
                 var oldBgRects = MainInteractiveBoard.Children.OfType<Rectangle>()
@@ -102,9 +105,9 @@ namespace QASmartTouch.Forms
                 else if (pattern == "MusicStaff") spacing = Math.Max(10, _currentLineSpacing) * 4;
                 else spacing = Math.Max(10, _currentLineSpacing);
 
-                const double VIRTUAL_OFFSET = 50000.0;
+                const double VIRTUAL_OFFSET = 10000.0;
                 double alignedOffset = Math.Ceiling(VIRTUAL_OFFSET / spacing) * spacing;
-                double virtualSize = alignedOffset * 2 + 20000.0;
+                double virtualSize = alignedOffset * 2 + 8000.0;
 
                 // Tạo Rectangle màu nền bao phủ toàn bộ không gian
                 var bgRect = new Rectangle
@@ -134,6 +137,7 @@ namespace QASmartTouch.Forms
                     Canvas.SetLeft(patternRect, -alignedOffset);
                     Canvas.SetTop(patternRect, -alignedOffset);
                     MainInteractiveBoard.Children.Insert(1, patternRect);
+                    RenderOptions.SetBitmapScalingMode(patternRect, BitmapScalingMode.HighQuality);
                     Panel.SetZIndex(patternRect, ZIndexConstants.GridOverlay);
                 }
 
@@ -197,10 +201,29 @@ namespace QASmartTouch.Forms
         /// <summary>
         /// ✨ NEW: Apply custom background image to MainInteractiveBoard
         /// </summary>
-        public void ApplyCanvasBackgroundImage(System.Windows.Media.Imaging.BitmapImage? backgroundImage, string? pattern = null)
+        public void ApplyCanvasBackgroundImage(System.Windows.Media.Imaging.BitmapImage? backgroundImage, string? pattern = null, string? imagePath = null)
         {
             try
             {
+                // Tự động trích xuất imagePath từ bitmap nếu chưa được truyền
+                if (string.IsNullOrEmpty(imagePath) && backgroundImage?.UriSource != null)
+                {
+                    imagePath = backgroundImage.UriSource.IsFile ? backgroundImage.UriSource.LocalPath : backgroundImage.UriSource.OriginalString;
+                }
+
+                // Cập nhật state ảnh nền
+                _currentBackgroundImagePath = imagePath;
+                _currentBackgroundColor = null;
+                _currentBackgroundPattern = pattern;
+
+                if (_boardManager?.CurrentBoard != null)
+                {
+                    _boardManager.CurrentBoard.BackgroundImagePath = imagePath;
+                    _boardManager.CurrentBoard.BackgroundColorHex = null;
+                    _boardManager.CurrentBoard.BackgroundPattern = pattern;
+                }
+                MarkAsDirty();
+
                 // Remove old background rectangles
                 var oldBgRects = MainInteractiveBoard.Children.OfType<Rectangle>()
                     .Where(r => r.Tag?.ToString() == "BackgroundLayer")
@@ -257,6 +280,7 @@ namespace QASmartTouch.Forms
                         // ✅ QC_4.2_GRID_PROTECT (G-2): Pin tại (0,0) tránh NaN position
                         Canvas.SetLeft(patternRect, 0);
                         Canvas.SetTop(patternRect, 0);
+                        RenderOptions.SetBitmapScalingMode(patternRect, BitmapScalingMode.HighQuality);
                         Panel.SetZIndex(patternRect, ZIndexConstants.GridOverlay);
                     }
 
@@ -294,57 +318,103 @@ namespace QASmartTouch.Forms
             }
         }
 
+        /// <summary>
+        /// Làm mới mẫu đường kẻ nền theo tỉ lệ Zoom hiện tại (Chuẩn i-Pro: bù độ dày nét khi thu nhỏ dưới 100%
+        /// để đường kẻ luôn đạt tối thiểu ~1.2 pixel vật lý trên màn hình và không bao giờ bị biến mất ở 50%).
+        /// </summary>
+        public void RefreshBackgroundPatternForZoom()
+        {
+            if (string.IsNullOrEmpty(_currentBackgroundPattern) || _currentBackgroundPattern == "None")
+                return;
+
+            var newBrush = CreatePatternBrushByName(_currentBackgroundPattern);
+            if (newBrush == null)
+                return;
+
+            foreach (var rect in MainInteractiveBoard.Children.OfType<Rectangle>())
+            {
+                if (rect.Tag?.ToString() == "BackgroundLayer" && Panel.GetZIndex(rect) == ZIndexConstants.GridOverlay)
+                {
+                    rect.Fill = newBrush;
+                }
+            }
+        }
+
+        private double GetZoomCompensatedPatternThickness(double baseThickness = 1.2)
+        {
+            double zoom = _currentZoomLevel > 0.05 ? _currentZoomLevel : 1.0;
+            // Khi thu nhỏ bảng (< 1.0x), nhân bù độ dày theo 1/zoom để trên màn hình vật lý nét kẻ không bị mảnh dưới 1px
+            double scaleCompensation = zoom < 1.0 ? (1.0 / zoom) : 1.0;
+            return baseThickness * scaleCompensation;
+        }
+
         private Brush CreateGridPattern()
         {
+            int spacing = Math.Max(10, _currentLineSpacing);
+            double thickness = GetZoomCompensatedPatternThickness(1.2);
+            double linePos = Math.Max(1.0, thickness / 2.0 + 0.5);
+
             var drawingBrush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
-                Viewport = new Rect(0, 0, _currentLineSpacing, _currentLineSpacing), // Dynamic spacing
+                Viewbox = new Rect(0, 0, spacing, spacing),
+                ViewboxUnits = BrushMappingMode.Absolute,
+                Stretch = Stretch.None,
+                Viewport = new Rect(0, 0, spacing, spacing), // Dynamic spacing
                 ViewportUnits = BrushMappingMode.Absolute
             };
 
             var drawingGroup = new DrawingGroup();
-            
+
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(_currentLineOpacity * 255 / 100);
-            
+            var linePen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), thickness);
+            linePen.Freeze();
+
             // Vertical line
             drawingGroup.Children.Add(new GeometryDrawing
             {
-                Pen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1),
-                Geometry = new LineGeometry(new Point(0, 0), new Point(0, _currentLineSpacing))
+                Pen = linePen,
+                Geometry = new LineGeometry(new Point(linePos, 0), new Point(linePos, spacing))
             });
-            
+
             // Horizontal line
             drawingGroup.Children.Add(new GeometryDrawing
             {
-                Pen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1),
-                Geometry = new LineGeometry(new Point(0, 0), new Point(_currentLineSpacing, 0))
+                Pen = linePen,
+                Geometry = new LineGeometry(new Point(0, linePos), new Point(spacing, linePos))
             });
 
             drawingBrush.Drawing = drawingGroup;
+            drawingBrush.Freeze();
             return drawingBrush;
         }
 
         private Brush CreateDotsPattern()
         {
+            double radius = GetZoomCompensatedPatternThickness(0.8);
+
             var drawingBrush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
+                Viewbox = new Rect(0, 0, 30, 30),
+                ViewboxUnits = BrushMappingMode.Absolute,
+                Stretch = Stretch.None,
                 Viewport = new Rect(0, 0, 30, 30),
                 ViewportUnits = BrushMappingMode.Absolute
             };
 
             var drawingGroup = new DrawingGroup();
-            
+
             // Dot
             drawingGroup.Children.Add(new GeometryDrawing
             {
                 Brush = new SolidColorBrush(Color.FromArgb(40, 0, 0, 0)),
-                Geometry = new EllipseGeometry(new Point(15, 15), 0.5, 0.5)
+                Geometry = new EllipseGeometry(new Point(15, 15), radius, radius)
             });
 
             drawingBrush.Drawing = drawingGroup;
+            drawingBrush.Freeze();
             return drawingBrush;
         }
 
@@ -353,42 +423,50 @@ namespace QASmartTouch.Forms
         /// </summary>
         private Brush CreateLinesPattern()
         {
-            // Create drawing brush with dynamic spacing
+            int spacing = Math.Max(10, _currentLineSpacing);
+            double thickness = GetZoomCompensatedPatternThickness(1.2);
+            double linePos = Math.Max(1.0, thickness / 2.0 + 0.5);
+
+            // Create drawing brush with square tile width (tránh tile rộng 1px bị co thành 0.5px khi zoom 50%)
             var brush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
-                Viewport = new Rect(0, 0, 1, _currentLineSpacing), // Dynamic spacing
+                Viewbox = new Rect(0, 0, spacing, spacing),
+                ViewboxUnits = BrushMappingMode.Absolute,
+                Viewport = new Rect(0, 0, spacing, spacing), // Dynamic spacing
                 ViewportUnits = BrushMappingMode.Absolute,
                 Stretch = Stretch.None
             };
 
             // Create drawing group
             var group = new DrawingGroup();
-            
+
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(_currentLineOpacity * 255 / 100);
-            
-            // Draw a single horizontal line at the top of the tile
-            var linePen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1);
+
+            // Draw a single horizontal line compensated for zoom
+            var linePen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), thickness);
             linePen.Freeze(); // Freeze for performance
-            
+
             group.Children.Add(new GeometryDrawing
             {
                 Pen = linePen,
-                Geometry = new LineGeometry(new Point(0, 0), new Point(1, 0))
+                Geometry = new LineGeometry(new Point(0, linePos), new Point(spacing, linePos))
             });
 
             brush.Drawing = group;
             brush.Freeze(); // Freeze for performance
-            
+
             return brush;
         }
 
         private Brush CreateMusicStaffPattern()
         {
             // Calculate total height for 5 lines with dynamic spacing
-            int totalHeight = _currentLineSpacing * 4; // 4 gaps between 5 lines
-            
+            int spacing = Math.Max(10, _currentLineSpacing);
+            int totalHeight = spacing * 4; // 4 gaps between 5 lines
+            double thickness = GetZoomCompensatedPatternThickness(1.2);
+
             var drawingBrush = new DrawingBrush
             {
                 TileMode = TileMode.Tile,
@@ -397,64 +475,30 @@ namespace QASmartTouch.Forms
             };
 
             var drawingGroup = new DrawingGroup();
-            
+
             // Calculate alpha from opacity percentage (0-100 → 0-255)
             byte alpha = (byte)(_currentLineOpacity * 255 / 100);
-            
+            var linePen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), thickness);
+            linePen.Freeze();
+
             // 5 lines for music staff with dynamic spacing
             for (int i = 0; i < 5; i++)
             {
                 drawingGroup.Children.Add(new GeometryDrawing
                 {
-                    Pen = new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0, 0, 0)), 1),
-                    Geometry = new LineGeometry(new Point(0, i * _currentLineSpacing), new Point(100, i * _currentLineSpacing))
+                    Pen = linePen,
+                    Geometry = new LineGeometry(new Point(0, i * spacing), new Point(100, i * spacing))
                 });
             }
 
             drawingBrush.Drawing = drawingGroup;
+            drawingBrush.Freeze();
             return drawingBrush;
         }
 
         #endregion
 
-        #region Screen Curtain (Màn che bảng)
 
-        private Form2_18_ScreenCurtain _screenCurtain;
-
-        /// <summary>
-        /// Toggle Screen Curtain (Màn che bảng)
-        /// </summary>
-        private void btn9_5_ScreenCurtain_Click(object sender, RoutedEventArgs e)
-        {
-            if (_screenCurtain == null || !_screenCurtain.IsVisible)
-            {
-                // ✅ PHASE 2: Deactivate tools and close submenus before showing curtain
-                DeactivateAllTools();
-                CloseAllSubmenus();
-                
-                // Show curtain
-                _screenCurtain = new Form2_18_ScreenCurtain();
-                _screenCurtain.Closed += (s, args) =>
-                {
-                    _screenCurtain = null;
-                    // Reset button appearance
-                    btn9_5_ScreenCurtain.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-                };
-                _screenCurtain.Show();
-                
-                // Highlight button when active
-                btn9_5_ScreenCurtain.Background = new SolidColorBrush(Color.FromRgb(103, 126, 234)); // #667EEA
-            }
-            else
-            {
-                // Close curtain
-                _screenCurtain.Close();
-                _screenCurtain = null;
-                btn9_5_ScreenCurtain.Background = new SolidColorBrush(Color.FromRgb(241, 242, 246)); // #F1F2F6
-            }
-        }
-
-        #endregion
 
         #region Pan Mode (Drag to Scroll)
 
@@ -483,6 +527,9 @@ namespace QASmartTouch.Forms
 
             _isPanModeActive = true;
 
+            // ── WhiteboardCore FSM: Chuyển sang Pan Mode ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Pan);
+
             // Change cursor to hand
             MainScrollViewer.Cursor = Cursors.Hand;
             MainInteractiveBoard.Cursor = Cursors.Hand;
@@ -501,6 +548,12 @@ namespace QASmartTouch.Forms
         private void DisablePanMode()
         {
             _isPanModeActive = false;
+
+            // ── WhiteboardCore FSM: Khôi phục chế độ Bút hoặc Idle ──
+            if (_whiteboardManager?.ToolManager.CurrentMode == QASmartClass.WhiteboardCore.Enums.ToolMode.Pan)
+            {
+                _whiteboardManager?.ToolManager.SwitchTo(_drawingEnabled ? QASmartClass.WhiteboardCore.Enums.ToolMode.Pen : QASmartClass.WhiteboardCore.Enums.ToolMode.None);
+            }
 
             // Release capture if held
             if (MainScrollViewer.IsMouseCaptured)
@@ -555,6 +608,9 @@ namespace QASmartTouch.Forms
             _objectSelectionMode = false;
             _isPointerModeActive = true;
 
+            // ── WhiteboardCore FSM: Chuyển sang Pointer Mode ──
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Pointer);
+
             _selectionManager?.DeselectAll();
 
             MainInteractiveBoard.Cursor = Cursors.None;
@@ -577,6 +633,12 @@ namespace QASmartTouch.Forms
         public void DisablePointerMode()
         {
             _isPointerModeActive = false;
+
+            // ── WhiteboardCore FSM: Khôi phục chế độ Bút hoặc Idle ──
+            if (_whiteboardManager?.ToolManager.CurrentMode == QASmartClass.WhiteboardCore.Enums.ToolMode.Pointer)
+            {
+                _whiteboardManager?.ToolManager.SwitchTo(_drawingEnabled ? QASmartClass.WhiteboardCore.Enums.ToolMode.Pen : QASmartClass.WhiteboardCore.Enums.ToolMode.None);
+            }
             RemovePointerGraphic();
             HideSmartStatusBadge();
 
@@ -762,11 +824,22 @@ namespace QASmartTouch.Forms
                 _student2 = student2;
                 _isMultiUserModeActive = true;
 
+                // ── WhiteboardCore FSM: Chuyển sang MultiUser Mode ──
+                _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.MultiUser);
+
                 // 1. Lưu lại trạng thái bài giảng hiện tại của giáo viên
                 _boardManager?.SaveCurrentBoardState();
 
-                // 2. Kế thừa màu nền hiện tại của bảng chính
-                Brush currentBg = MainInteractiveBoard.Background?.Clone() ?? new SolidColorBrush(Color.FromRgb(0x3D, 0x6D, 0x64));
+                // 2. Xác định màu nền chuẩn cho chế độ thi đua (Màu bảng xanh học đường tiêu chuẩn, tương phản cao)
+                string sessionBgHex = "#3D6D64";
+                if (!string.IsNullOrEmpty(_currentBackgroundColor) && !_currentBackgroundColor.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase))
+                {
+                    sessionBgHex = _currentBackgroundColor;
+                }
+                Color bgColor;
+                try { bgColor = (Color)ColorConverter.ConvertFromString(sessionBgHex); }
+                catch { bgColor = Color.FromRgb(0x3D, 0x6D, 0x64); }
+                Brush currentBg = new SolidColorBrush(bgColor);
 
                 // 3. Đăng ký sự kiện hoàn thành từ overlay (chỉ đăng ký 1 lần)
                 multiUserOverlay.SessionCompleted -= MultiUserOverlay_SessionCompleted;
@@ -855,18 +928,20 @@ namespace QASmartTouch.Forms
                         double scaleX = e.ActualAreaWidth > 0 ? (targetW / e.ActualAreaWidth) : 1.0;
                         double scaleY = e.ActualAreaHeight > 0 ? (targetH / e.ActualAreaHeight) : 1.0;
 
-                        // 4. Clone nét vẽ Học sinh 1 (Nửa trái)
+                        // 4. Clone nét vẽ Học sinh 1 (Nửa trái) — clip trong vùng [0, halfW]
+                        var leftClip = new Rect(0, 0, halfW, targetH);
                         foreach (var pl in e.LeftPolylines)
                         {
-                            var clone = ClonePolyline(pl, 0, 0, scaleX, scaleY);
+                            var clone = ClonePolyline(pl, 0, 0, scaleX, scaleY, leftClip);
                             clone.Tag = "Student1Stroke";
                             elements.Add(clone);
                         }
 
-                        // 5. Clone nét vẽ Học sinh 2 (Nửa phải: offset halfW)
+                        // 5. Clone nét vẽ Học sinh 2 (Nửa phải: offset halfW) — clip trong vùng [halfW, targetW]
+                        var rightClip = new Rect(halfW, 0, halfW, targetH);
                         foreach (var pl in e.RightPolylines)
                         {
-                            var clone = ClonePolyline(pl, halfW, 0, scaleX, scaleY);
+                            var clone = ClonePolyline(pl, halfW, 0, scaleX, scaleY, rightClip);
                             clone.Tag = "Student2Stroke";
                             elements.Add(clone);
                         }
@@ -877,7 +952,41 @@ namespace QASmartTouch.Forms
                         newBoard.CanvasHeight = targetH;
                         newBoard.LastModifiedAt = DateTime.Now;
 
+                        // ✅ CHUẨN HÓA NỀN BÀI LÀM:
+                        // Đồng nhất 100% với màu nền lúc 2 học sinh làm bài trong Sandbox (#3D6D64)
+                        // Tuyệt đối KHÔNG sao chép ảnh nền (BackgroundImagePath) hay hoa văn của bài trước!
+                        string sessionBgHex = "#3D6D64";
+                        if (!string.IsNullOrEmpty(_currentBackgroundColor) && !_currentBackgroundColor.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase))
+                        {
+                            sessionBgHex = _currentBackgroundColor;
+                        }
+                        Color sessionBgColor;
+                        try { sessionBgColor = (Color)ColorConverter.ConvertFromString(sessionBgHex); }
+                        catch { sessionBgColor = Color.FromRgb(0x3D, 0x6D, 0x64); }
+
+                        newBoard.BackgroundColor = sessionBgColor;
+                        newBoard.BackgroundColorHex = sessionBgHex;
+                        newBoard.BackgroundImagePath = null; // Sạch sẽ, không dính ảnh SGK/tài liệu bài cũ
+                        newBoard.BackgroundPattern = "none";  // Phẳng, không kẻ ô rối nét viết của học sinh
+                        newBoard.LineSpacing = 40;
+                        newBoard.LineOpacity = 25;
+
                         ShowSmartStatusBadge($"💾 Đã lưu bài làm thành Trang {_boardManager.Boards.Count}: {newBoard.Name}");
+
+                        // ✅ Tự động chuyển ngay sang trang mới vừa lưu để thầy cô nhận xét, chấm điểm bài làm
+                        int newBoardIndex = _boardManager.Boards.Count - 1;
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            try
+                            {
+                                _boardManager.SwitchBoard(newBoardIndex);
+                                UpdatePageNavigationUI();
+                            }
+                            catch (Exception switchEx)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"❌ Error auto-switching to multi-user board: {switchEx.Message}");
+                            }
+                        }), System.Windows.Threading.DispatcherPriority.Loaded);
                     }
                 }
                 else
@@ -894,11 +1003,18 @@ namespace QASmartTouch.Forms
                 // Ẩn Sandbox Overlay và trả về trang bài giảng hiện tại
                 multiUserOverlay.Visibility = Visibility.Collapsed;
                 _isMultiUserModeActive = false;
+
+                // ── WhiteboardCore FSM: Khôi phục chế độ Bút hoặc Idle ──
+                if (_whiteboardManager?.ToolManager.CurrentMode == QASmartClass.WhiteboardCore.Enums.ToolMode.MultiUser)
+                {
+                    _whiteboardManager?.ToolManager.SwitchTo(_drawingEnabled ? QASmartClass.WhiteboardCore.Enums.ToolMode.Pen : QASmartClass.WhiteboardCore.Enums.ToolMode.None);
+                }
             }
         }
 
         private System.Windows.Shapes.Polyline ClonePolyline(
-            System.Windows.Shapes.Polyline source, double offsetX, double offsetY, double scaleX = 1.0, double scaleY = 1.0)
+            System.Windows.Shapes.Polyline source, double offsetX, double offsetY,
+            double scaleX = 1.0, double scaleY = 1.0, Rect? clipRect = null)
         {
             var polyline = new System.Windows.Shapes.Polyline
             {
@@ -914,7 +1030,17 @@ namespace QASmartTouch.Forms
             var points = new PointCollection();
             foreach (var pt in source.Points)
             {
-                points.Add(new Point((pt.X * scaleX) + offsetX, (pt.Y * scaleY) + offsetY));
+                double x = (pt.X * scaleX) + offsetX;
+                double y = (pt.Y * scaleY) + offsetY;
+
+                // Clip tọa độ trong vùng cho phép để nét vẽ không tràn sang phần người khác
+                if (clipRect.HasValue)
+                {
+                    x = Math.Max(clipRect.Value.Left, Math.Min(x, clipRect.Value.Right));
+                    y = Math.Max(clipRect.Value.Top, Math.Min(y, clipRect.Value.Bottom));
+                }
+
+                points.Add(new Point(x, y));
             }
             polyline.Points = points;
             Panel.SetZIndex(polyline, QASmartTouch.Helpers.ZIndexConstants.UserContentBase);
@@ -990,7 +1116,7 @@ namespace QASmartTouch.Forms
                         try
                         {
                             var bitmap = new BitmapImage(new Uri(e.NewBoard.BackgroundImagePath, UriKind.Absolute));
-                            ApplyCanvasBackgroundImage(bitmap, e.NewBoard.BackgroundPattern);
+                            ApplyCanvasBackgroundImage(bitmap, e.NewBoard.BackgroundPattern, e.NewBoard.BackgroundImagePath);
                         }
                         catch
                         {
@@ -998,7 +1124,7 @@ namespace QASmartTouch.Forms
                                 e.NewBoard.BackgroundColorHex ?? "#3D6D64",
                                 e.NewBoard.BackgroundPattern,
                                 e.NewBoard.LineSpacing > 0 ? e.NewBoard.LineSpacing : 40,
-                                e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 10
+                                e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 25
                             );
                         }
                     }
@@ -1008,7 +1134,7 @@ namespace QASmartTouch.Forms
                             e.NewBoard.BackgroundColorHex ?? "#3D6D64",
                             e.NewBoard.BackgroundPattern,
                             e.NewBoard.LineSpacing > 0 ? e.NewBoard.LineSpacing : 40,
-                            e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 10
+                            e.NewBoard.LineOpacity > 0 ? e.NewBoard.LineOpacity : 25
                         );
                     }
                 }
@@ -1023,6 +1149,7 @@ namespace QASmartTouch.Forms
 
                 // 4. Đồng bộ lại toàn bộ đối tượng của trang mới vào SelectionManager
                 RefreshSelectableObjects();
+                UpdateInkingZIndexFromCanvas(); // QC_4.2_MILESTONE_ZINDEX: Đồng bộ tầng vẽ theo trang mới
 
                 // 5. Kích hoạt lại tương tác kéo thả cho các khối 3D trên trang mới
                 foreach (UIElement child in MainInteractiveBoard.Children)
@@ -1035,6 +1162,9 @@ namespace QASmartTouch.Forms
 
                 // 6. Hiển thị thông báo trạng thái
                 ShowSmartStatusBadge($"📋 Đang hiển thị: {e.NewBoard?.Name ?? "Bảng mới"}");
+
+                // 7. Đồng bộ thanh điều hướng trang HUD
+                UpdatePageNavigationUI();
             }
             catch (Exception ex)
             {
@@ -1046,7 +1176,375 @@ namespace QASmartTouch.Forms
         {
             MarkAsDirty();
             UpdateButtonStates();
+            UpdatePageNavigationUI();
             ShowSmartStatusBadge($"🗑️ Đã xóa: {e.Board.Name}");
+        }
+
+        #endregion
+
+        #region Page Navigation HUD Handlers (Chuẩn sư phạm IFP - 1 Chạm)
+
+        private bool _isSwitchingBoard = false;
+
+        /// <summary>
+        /// Đồng bộ trạng thái hiển thị của thanh điều hướng trang (Page Navigation HUD)
+        /// </summary>
+        public void UpdatePageNavigationUI()
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(UpdatePageNavigationUI);
+                return;
+            }
+
+            if (_boardManager == null || hudPageNavigation == null) return;
+
+            int currentIndex = _boardManager.CurrentBoardIndex;
+            int totalBoards = _boardManager.BoardCount;
+
+            // Cập nhật text hiển thị chỉ số trang
+            if (txtHudBoardIndicator != null)
+            {
+                txtHudBoardIndicator.Text = $"Trang {currentIndex + 1} / {totalBoards}";
+            }
+
+            // Nút Trang trước (disable nếu là trang đầu tiên)
+            if (btnHudPrevBoard != null)
+            {
+                btnHudPrevBoard.IsEnabled = (currentIndex > 0);
+            }
+
+            // Nút Trang sau (disable nếu là trang cuối cùng)
+            if (btnHudNextBoard != null)
+            {
+                btnHudNextBoard.IsEnabled = (currentIndex < totalBoards - 1);
+            }
+
+            // Nút Thêm trang mới (disable nếu đã đạt MAX_BOARDS)
+            if (btnHudAddBoard != null)
+            {
+                btnHudAddBoard.IsEnabled = !_boardManager.IsMaxBoardsReached;
+            }
+
+            // Tự động đồng bộ Popover Quản lý trang nếu đang mở
+            if (popoverPageOrganizer != null && popoverPageOrganizer.Visibility == Visibility.Visible)
+            {
+                RenderPageOrganizerCards();
+            }
+        }
+
+        private void btnHudPrevBoard_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isSwitchingBoard || _boardManager == null) return;
+            if (_boardManager.CurrentBoardIndex <= 0) return;
+
+            _isSwitchingBoard = true;
+            try
+            {
+                _boardManager.SwitchBoard(_boardManager.CurrentBoardIndex - 1);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error switching to prev board: {ex.Message}");
+            }
+            finally
+            {
+                _isSwitchingBoard = false;
+            }
+
+            UpdatePageNavigationUI();
+        }
+
+        private void btnHudNextBoard_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isSwitchingBoard || _boardManager == null) return;
+            if (_boardManager.CurrentBoardIndex >= _boardManager.BoardCount - 1) return;
+
+            _isSwitchingBoard = true;
+            try
+            {
+                _boardManager.SwitchBoard(_boardManager.CurrentBoardIndex + 1);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error switching to next board: {ex.Message}");
+            }
+            finally
+            {
+                _isSwitchingBoard = false;
+            }
+
+            UpdatePageNavigationUI();
+        }
+
+        private void btnHudAddBoard_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isSwitchingBoard || _boardManager == null) return;
+
+            if (_boardManager.IsMaxBoardsReached)
+            {
+                ShowSmartStatusBadge($"⚠️ Đã đạt số trang tối đa ({QASmartTouch.Managers.BoardManager.MAX_BOARDS} bảng)");
+                return;
+            }
+
+            _isSwitchingBoard = true;
+            try
+            {
+                var newBoard = _boardManager.CreateBoard();
+                if (newBoard != null)
+                {
+                    _boardManager.SwitchBoard(_boardManager.BoardCount - 1);
+                    MarkAsDirty();
+                    ShowSmartStatusBadge($"✨ Đã tạo {newBoard.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error creating new board: {ex.Message}");
+            }
+            finally
+            {
+                _isSwitchingBoard = false;
+            }
+
+            UpdatePageNavigationUI();
+        }
+
+        private void btnHudBoardIndicator_Click(object sender, RoutedEventArgs e)
+        {
+            if (popoverPageOrganizer == null) return;
+
+            if (popoverPageOrganizer.Visibility == Visibility.Visible)
+            {
+                popoverPageOrganizer.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                RenderPageOrganizerCards();
+                popoverPageOrganizer.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void btnOrganizerClose_Click(object sender, RoutedEventArgs e)
+        {
+            if (popoverPageOrganizer != null)
+            {
+                popoverPageOrganizer.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Tạo danh sách các Card trang trực quan trong In-Canvas Popover Quản lý trang
+        /// </summary>
+        private void RenderPageOrganizerCards()
+        {
+            if (panelOrganizerBoardCards == null || _boardManager == null) return;
+
+            panelOrganizerBoardCards.Children.Clear();
+            int currentIndex = _boardManager.CurrentBoardIndex;
+            int totalBoards = _boardManager.BoardCount;
+
+            if (txtOrganizerTotalBoards != null)
+            {
+                txtOrganizerTotalBoards.Text = $" ({currentIndex + 1}/{totalBoards})";
+            }
+
+            if (btnOrganizerDelete != null)
+            {
+                btnOrganizerDelete.IsEnabled = (totalBoards > 1);
+            }
+
+            if (btnOrganizerDuplicate != null)
+            {
+                btnOrganizerDuplicate.IsEnabled = !_boardManager.IsMaxBoardsReached;
+            }
+
+            for (int i = 0; i < totalBoards; i++)
+            {
+                int boardIndex = i;
+                bool isCurrent = (i == currentIndex);
+                var board = (i < _boardManager.Boards.Count) ? _boardManager.Boards[i] : null;
+
+                var cardBorder = new Border
+                {
+                    Width = 68,
+                    Height = 56,
+                    Margin = new Thickness(0, 0, 8, 0),
+                    CornerRadius = new CornerRadius(8),
+                    BorderThickness = new Thickness(isCurrent ? 2 : 1),
+                    BorderBrush = isCurrent ? new SolidColorBrush(Color.FromRgb(0x2E, 0x86, 0xDE)) : new SolidColorBrush(Color.FromRgb(0xE1, 0xE8, 0xED)),
+                    Background = isCurrent ? new SolidColorBrush(Color.FromRgb(0xEE, 0xF2, 0xFF)) : new SolidColorBrush(Color.FromRgb(0xF8, 0xF9, 0xFA)),
+                    Cursor = Cursors.Hand,
+                    ClipToBounds = true,
+                    Tag = boardIndex
+                };
+
+                var cardGrid = new Grid();
+
+                // Thumbnail preview hoặc chữ số trang to
+                if (board?.ThumbnailImage != null)
+                {
+                    var img = new Image
+                    {
+                        Source = board.ThumbnailImage,
+                        Stretch = Stretch.UniformToFill,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    cardGrid.Children.Add(img);
+                }
+                else
+                {
+                    var placeholderText = new TextBlock
+                    {
+                        Text = $"{boardIndex + 1}",
+                        FontSize = 18,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = isCurrent ? new SolidColorBrush(Color.FromRgb(0x2E, 0x86, 0xDE)) : new SolidColorBrush(Color.FromRgb(0xA4, 0xB0, 0xBE)),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(0, 0, 0, 10)
+                    };
+                    cardGrid.Children.Add(placeholderText);
+                }
+
+                // Nhãn số trang ở góc dưới (Badge)
+                var badgeBorder = new Border
+                {
+                    Background = isCurrent ? new SolidColorBrush(Color.FromRgb(0x2E, 0x86, 0xDE)) : new SolidColorBrush(Color.FromArgb(180, 47, 53, 66)),
+                    CornerRadius = new CornerRadius(0, 0, 6, 6),
+                    Height = 16,
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                };
+                var badgeText = new TextBlock
+                {
+                    Text = $"Trang {boardIndex + 1}",
+                    FontSize = 9,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = Brushes.White,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                badgeBorder.Child = badgeText;
+                cardGrid.Children.Add(badgeBorder);
+
+                // Nút xóa nhanh nếu tổng số trang > 1
+                if (totalBoards > 1)
+                {
+                    var deleteBtn = new Button
+                    {
+                        Width = 16,
+                        Height = 16,
+                        Background = new SolidColorBrush(Color.FromRgb(0xEE, 0x5A, 0x6F)),
+                        BorderThickness = new Thickness(0),
+                        Cursor = Cursors.Hand,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Margin = new Thickness(0, 2, 2, 0),
+                        ToolTip = $"Xóa Trang {boardIndex + 1}",
+                        Tag = boardIndex,
+                        Focusable = false,
+                        Visibility = isCurrent ? Visibility.Visible : Visibility.Collapsed
+                    };
+                    TouchActivationHelper.WireButton(deleteBtn);
+
+                    var deleteTemplate = new ControlTemplate(typeof(Button));
+                    var delBorder = new FrameworkElementFactory(typeof(Border));
+                    delBorder.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+                    delBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(8));
+                    var delIcon = new FrameworkElementFactory(typeof(Path));
+                    delIcon.SetValue(Path.FillProperty, Brushes.White);
+                    delIcon.SetValue(Path.DataProperty, Geometry.Parse("M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"));
+                    delIcon.SetValue(Path.WidthProperty, 8.0);
+                    delIcon.SetValue(Path.HeightProperty, 8.0);
+                    delIcon.SetValue(Path.StretchProperty, Stretch.Uniform);
+                    delIcon.SetValue(Path.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                    delIcon.SetValue(Path.VerticalAlignmentProperty, VerticalAlignment.Center);
+                    delBorder.AppendChild(delIcon);
+                    deleteTemplate.VisualTree = delBorder;
+                    deleteBtn.Template = deleteTemplate;
+
+                    deleteBtn.Click += (s, e) =>
+                    {
+                        e.Handled = true;
+                        int idx = (int)((Button)s).Tag;
+                        DeleteBoardByIndex(idx);
+                    };
+
+                    cardBorder.MouseEnter += (s, e) => deleteBtn.Visibility = Visibility.Visible;
+                    cardBorder.MouseLeave += (s, e) => { if (!isCurrent) deleteBtn.Visibility = Visibility.Collapsed; };
+
+                    cardGrid.Children.Add(deleteBtn);
+                }
+
+                cardBorder.Child = cardGrid;
+
+                // Click chọn trang
+                cardBorder.MouseLeftButtonUp += (s, e) =>
+                {
+                    int targetIndex = (int)((Border)s).Tag;
+                    if (targetIndex != _boardManager.CurrentBoardIndex)
+                    {
+                        _boardManager.SwitchBoard(targetIndex);
+                        UpdatePageNavigationUI();
+                        RenderPageOrganizerCards();
+                    }
+                };
+
+                panelOrganizerBoardCards.Children.Add(cardBorder);
+            }
+        }
+
+        private void DeleteBoardByIndex(int index)
+        {
+            if (_boardManager == null || _boardManager.BoardCount <= 1) return;
+
+            var result = MessageBox.Show(this, 
+                $"Bạn có chắc chắn muốn xóa Trang {index + 1}?\nNội dung trên trang này sẽ không thể khôi phục.", 
+                "Xác nhận xóa trang", 
+                MessageBoxButton.YesNo, 
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                _boardManager.DeleteBoard(index);
+                MarkAsDirty();
+                ShowSmartStatusBadge($"🗑️ Đã xóa Trang {index + 1}");
+                UpdatePageNavigationUI();
+                RenderPageOrganizerCards();
+            }
+        }
+
+        private void btnOrganizerDuplicate_Click(object sender, RoutedEventArgs e)
+        {
+            if (_boardManager == null) return;
+            if (_boardManager.IsMaxBoardsReached)
+            {
+                ShowSmartStatusBadge($"⚠️ Đã đạt số trang tối đa ({QASmartTouch.Managers.BoardManager.MAX_BOARDS} bảng)");
+                return;
+            }
+
+            var duplicated = _boardManager.DuplicateCurrentBoard();
+            if (duplicated != null)
+            {
+                _boardManager.SwitchBoard(_boardManager.BoardCount - 1);
+                MarkAsDirty();
+                ShowSmartStatusBadge($"✨ Đã nhân bản Trang {_boardManager.CurrentBoardIndex + 1}");
+                UpdatePageNavigationUI();
+                RenderPageOrganizerCards();
+            }
+        }
+
+        private void btnOrganizerDelete_Click(object sender, RoutedEventArgs e)
+        {
+            if (_boardManager == null || _boardManager.BoardCount <= 1)
+            {
+                ShowSmartStatusBadge("⚠️ Không thể xóa trang duy nhất");
+                return;
+            }
+
+            DeleteBoardByIndex(_boardManager.CurrentBoardIndex);
         }
 
         #endregion
@@ -1077,27 +1575,44 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
-        /// Kiểm tra xem có dữ liệu bài giảng thực sự chưa lưu hay không
         /// </summary>
         public bool CheckHasUnsavedChanges()
         {
-            if (!_isDirty) return false;
-
-            // Kiểm tra các trang bảng trong BoardManager
-            if (_boardManager != null)
+            // Nếu chưa từng có thay đổi (hoặc đã lưu/ClearDirty) -> không có gì để lưu
+            if (!_isDirty)
             {
-                bool hasElementsInBoards = _boardManager.Boards.Any(b =>
-                    b.CanvasElements != null && b.CanvasElements.Any(el => !_boardManager.IsSystemElement(el)));
-                if (hasElementsInBoards) return true;
+                return false;
             }
 
-            // Kiểm tra trang hiện tại trên Canvas
+            // 1. Kiểm tra xem có nét vẽ Native Inking nào trên trang hiện tại hay không
+            bool hasCurrentStrokes = MainInkPresenter?.Strokes != null && MainInkPresenter.Strokes.Count > 0;
+
+            // 2. Kiểm tra các đối tượng UI trên Canvas hiện tại (Hình học, Văn bản, Bảng biểu, Ảnh, Media...)
             bool hasCanvasContent = MainInteractiveBoard.Children.OfType<UIElement>()
                 .Any(el => _boardManager != null 
                     ? !_boardManager.IsSystemElement(el) 
                     : (el is not FrameworkElement fe || fe.Tag?.ToString() != "BackgroundLayer"));
 
-            return hasCanvasContent;
+            // 3. Kiểm tra các trang bảng trong BoardManager (nét vẽ, đối tượng, hoặc số lượng trang > 1)
+            bool hasBoardManagerContent = false;
+            if (_boardManager != null)
+            {
+                if (_boardManager.BoardCount > 1)
+                {
+                    hasBoardManagerContent = true;
+                }
+                else
+                {
+                    hasBoardManagerContent = _boardManager.Boards.Any(b =>
+                        (b.CanvasElements != null && b.CanvasElements.Any(el => !_boardManager.IsSystemElement(el))) ||
+                        (b.Strokes != null && b.Strokes.Count > 0));
+                }
+            }
+
+            bool hasAnyRealContent = hasCurrentStrokes || hasCanvasContent || hasBoardManagerContent;
+
+            // Nếu bảng hoàn toàn trống và không có nội dung gì -> không cần hỏi lưu
+            return hasAnyRealContent;
         }
 
         #endregion
@@ -1145,8 +1660,13 @@ namespace QASmartTouch.Forms
                 {
                     var saveDialog = new Microsoft.Win32.SaveFileDialog
                     {
+#if SMARTTOUCH_STANDALONE
+                        Title = "Lưu bài giảng QA Smart Touch",
+                        Filter = "Bài giảng QA Smart Touch (*.qasc)|*.qasc",
+#else
                         Title = "Lưu bài giảng QA SmartClass",
                         Filter = "Bài giảng QA SmartClass (*.qasc)|*.qasc",
+#endif
                         DefaultExt = ".qasc",
                         InitialDirectory = defaultDir,
                         FileName = $"BaiGiang_{DateTime.Now:yyyyMMdd_HHmm}.qasc"
@@ -1231,6 +1751,7 @@ namespace QASmartTouch.Forms
                     _isDirty = false;
                     RecentFilesService.Instance.AddFile(filePath, manifest.Title);
                     UpdateButtonStates();
+                    UpdatePageNavigationUI();
                     ShowSmartStatusBadge($"📂 Đã mở bài giảng: {System.IO.Path.GetFileName(filePath)}");
                     return true;
                 }

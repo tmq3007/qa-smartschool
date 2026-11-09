@@ -1,5 +1,9 @@
 using QASmartTouch.Models.Camera;
 using OpenCvSharp;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
@@ -12,8 +16,9 @@ public class CameraPreviewService : IDisposable
 {
     private VideoCapture? _capture;
     private CancellationTokenSource? _cts;
+    private Task<VideoCapture?>? _initTask;
     private Task? _captureTask;
-    private bool _isRunning;
+    private volatile bool _isRunning;
 
     /// <summary>
     /// Event raised when a new frame is available
@@ -35,120 +40,300 @@ public class CameraPreviewService : IDisposable
     /// </summary>
     public async Task StartAsync(CameraProfile profile, string? rtspUrl = null)
     {
-        if (_isRunning)
+        if (_isRunning || _initTask != null || _captureTask != null || _capture != null)
         {
             await StopAsync();
         }
 
+        var localCts = new CancellationTokenSource();
+        _cts = localCts;
+        var cancellationToken = localCts.Token;
         _isRunning = true;
-        _cts = new CancellationTokenSource();
-        var cancellationToken = _cts.Token;
 
         try
         {
             bool isRtsp = profile.SelectedCameraId == "RTSP" || (!string.IsNullOrEmpty(rtspUrl) && rtspUrl.StartsWith("rtsp://", StringComparison.OrdinalIgnoreCase));
-            int timeoutMs = isRtsp ? 4000 : 10000;
+            int timeoutMs = isRtsp ? 4000 : 8000;
 
-            var initTask = Task.Run(() =>
+            var initTask = Task.Run(async () =>
             {
+                if (cancellationToken.IsCancellationRequested)
+                    return null;
+
+                bool lockAcquired = false;
                 VideoCapture? capture = null;
-                if (isRtsp)
+                try
                 {
-                    string url = !string.IsNullOrEmpty(rtspUrl) ? rtspUrl : (profile.SelectedCameraId.StartsWith("rtsp://") ? profile.SelectedCameraId : "rtsp://127.0.0.1:8554/live");
-                    capture = new VideoCapture(url);
-                }
-                else
-                {
-                    int targetIndex = 0;
-                    if (!string.IsNullOrEmpty(profile.SelectedCameraId) && int.TryParse(profile.SelectedCameraId, out int parsedIdx))
-                    {
-                        targetIndex = parsedIdx;
-                    }
+                    await CameraDiscoveryService.HardwareLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    lockAcquired = true;
 
-                    // 1. Thử mở camera theo targetIndex bằng DirectShow (DSHOW) - API chuẩn, nhanh và ổn định nhất trên Windows
-                    try
-                    {
-                        capture = new VideoCapture(targetIndex, VideoCaptureAPIs.DSHOW);
-                    }
-                    catch { }
+                    if (cancellationToken.IsCancellationRequested)
+                        return null;
 
-                    // 2. Nếu DSHOW không mở được, thử qua default API (MSMF)
-                    if (capture == null || !capture.IsOpened())
+                    if (isRtsp)
                     {
-                        capture?.Dispose();
+                        string url = !string.IsNullOrEmpty(rtspUrl)
+                            ? rtspUrl
+                            : (profile.SelectedCameraId.StartsWith("rtsp://", StringComparison.OrdinalIgnoreCase)
+                                ? profile.SelectedCameraId
+                                : "rtsp://127.0.0.1:8554/live");
+                        capture = new VideoCapture(url);
+                    }
+                    else
+                    {
+                        int targetIndex = 0;
+                        if (!string.IsNullOrEmpty(profile.SelectedCameraId) && int.TryParse(profile.SelectedCameraId, out int parsedIdx))
+                        {
+                            targetIndex = parsedIdx;
+                        }
+
+                        // 1. Ưu tiên mở camera theo targetIndex bằng DirectShow (DSHOW)
                         try
                         {
-                            capture = new VideoCapture(targetIndex, VideoCaptureAPIs.ANY);
+                            capture = new VideoCapture(targetIndex, VideoCaptureAPIs.DSHOW);
+                        }
+                        catch { }
+
+                        bool isOpened = capture != null && capture.IsOpened();
+
+                        // 2. Chỉ thử fallback sang MSMF/ANY hoặc quét cổng lân cận khi WMI xác nhận có phần cứng Camera thật
+                        if (!isOpened && !cancellationToken.IsCancellationRequested)
+                        {
+                            ReleaseAndDisposeCapture(ref capture);
+
+                            var wmiNames = CameraDiscoveryService.GetDeviceNamesFromWmi();
+                            if (wmiNames.Count > 0)
+                            {
+                                try
+                                {
+                                    capture = new VideoCapture(targetIndex, VideoCaptureAPIs.ANY);
+                                    isOpened = capture != null && capture.IsOpened();
+                                }
+                                catch { }
+
+                                if (!isOpened && !cancellationToken.IsCancellationRequested)
+                                {
+                                    ReleaseAndDisposeCapture(ref capture);
+                                    int maxFallback = Math.Clamp(wmiNames.Count + 1, 1, 5);
+                                    for (int i = 0; i < maxFallback && !cancellationToken.IsCancellationRequested; i++)
+                                    {
+                                        if (i == targetIndex) continue;
+                                        try
+                                        {
+                                            capture = new VideoCapture(i, VideoCaptureAPIs.DSHOW);
+                                            if (capture.IsOpened())
+                                            {
+                                                isOpened = true;
+                                                break;
+                                            }
+                                            ReleaseAndDisposeCapture(ref capture);
+
+                                            if (i < wmiNames.Count && !cancellationToken.IsCancellationRequested)
+                                            {
+                                                capture = new VideoCapture(i, VideoCaptureAPIs.ANY);
+                                                if (capture.IsOpened())
+                                                {
+                                                    isOpened = true;
+                                                    break;
+                                                }
+                                                ReleaseAndDisposeCapture(ref capture);
+                                            }
+                                        }
+                                        catch
+                                        {
+                                            ReleaseAndDisposeCapture(ref capture);
+                                        }
+                                    }
+                                }
+                            }
+                            else if (targetIndex != 0)
+                            {
+                                // Thử cổng DSHOW 0 cho trường hợp Virtual Camera (OBS)
+                                try
+                                {
+                                    capture = new VideoCapture(0, VideoCaptureAPIs.DSHOW);
+                                    isOpened = capture != null && capture.IsOpened();
+                                }
+                                catch { }
+                            }
+                        }
+
+                        if (!isOpened || cancellationToken.IsCancellationRequested)
+                        {
+                            ReleaseAndDisposeCapture(ref capture);
+                            return null;
+                        }
+                    }
+
+                    if (capture == null || !capture.IsOpened() || cancellationToken.IsCancellationRequested)
+                    {
+                        ReleaseAndDisposeCapture(ref capture);
+                        return null;
+                    }
+
+                    // Thiết lập thông số khung hình an toàn ngay trong vùng khóa phần cứng
+                    if (!isRtsp)
+                    {
+                        try { capture.Set(VideoCaptureProperties.FourCC, VideoWriter.FourCC('M', 'J', 'P', 'G')); } catch { }
+                        try
+                        {
+                            if (profile.Width > 0 && profile.Height > 0)
+                            {
+                                capture.Set(VideoCaptureProperties.FrameWidth, profile.Width);
+                                capture.Set(VideoCaptureProperties.FrameHeight, profile.Height);
+                            }
+                            if (profile.FPS > 0)
+                            {
+                                capture.Set(VideoCaptureProperties.Fps, profile.FPS);
+                            }
                         }
                         catch { }
                     }
 
-                    // 3. Nếu targetIndex không hoạt động (ví dụ index 0 là virtual cam bị tắt), tự động quét các index khác (0-3)
-                    if (capture == null || !capture.IsOpened())
+                    return capture;
+                }
+                catch (OperationCanceledException)
+                {
+                    if (lockAcquired)
                     {
-                        for (int i = 0; i < 4; i++)
-                        {
-                            if (i == targetIndex) continue;
-                            capture?.Dispose();
-                            try
-                            {
-                                capture = new VideoCapture(i, VideoCaptureAPIs.DSHOW);
-                                if (capture.IsOpened()) break;
-
-                                capture.Dispose();
-                                capture = new VideoCapture(i, VideoCaptureAPIs.ANY);
-                                if (capture.IsOpened()) break;
-                            }
-                            catch { }
-                        }
+                        ReleaseAndDisposeCapture(ref capture);
+                    }
+                    return null;
+                }
+                catch
+                {
+                    if (lockAcquired)
+                    {
+                        ReleaseAndDisposeCapture(ref capture);
+                    }
+                    return null;
+                }
+                finally
+                {
+                    if (lockAcquired)
+                    {
+                        CameraDiscoveryService.HardwareLock.Release();
                     }
                 }
-                return capture;
             });
 
-            var timeoutTask = Task.Delay(timeoutMs, cancellationToken);
+            _initTask = initTask;
+
+            Task timeoutTask;
+            try
+            {
+                timeoutTask = Task.Delay(timeoutMs, cancellationToken);
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+
             var completedTask = await Task.WhenAny(initTask, timeoutTask);
+
+            // Nếu đã bị hủy chủ động bởi StopAsync / đóng cửa sổ thì thoát êm, không ném lỗi giả
+            if (cancellationToken.IsCancellationRequested || !_isRunning)
+            {
+                return;
+            }
 
             if (completedTask == timeoutTask)
             {
                 _isRunning = false;
-                _cts.Cancel();
-                throw new TimeoutException(isRtsp ? "Kết nối camera RTSP quá hạn (4 giây)." : "Khởi động Camera quá hạn (10 giây).");
+                try { localCts.Cancel(); } catch { }
+                _ = initTask.ContinueWith(async t =>
+                {
+                    var lateCap = t.Status == TaskStatus.RanToCompletion ? t.Result : null;
+                    if (lateCap != null)
+                    {
+                        await CameraDiscoveryService.HardwareLock.WaitAsync().ConfigureAwait(false);
+                        try
+                        {
+                            ReleaseAndDisposeCapture(ref lateCap);
+                        }
+                        finally
+                        {
+                            CameraDiscoveryService.HardwareLock.Release();
+                        }
+                    }
+                }, TaskScheduler.Default);
+
+                throw new TimeoutException(isRtsp ? "Kết nối camera RTSP quá hạn (4 giây)." : "Khởi động Camera quá hạn (8 giây).");
             }
 
-            _capture = await initTask;
+            var openedCapture = await initTask;
+            if (ReferenceEquals(_initTask, initTask))
+            {
+                _initTask = null;
+            }
 
-            if (_capture == null || !_capture.IsOpened())
+            if (cancellationToken.IsCancellationRequested || !_isRunning)
+            {
+                if (openedCapture != null)
+                {
+                    await CameraDiscoveryService.HardwareLock.WaitAsync().ConfigureAwait(false);
+                    try
+                    {
+                        ReleaseAndDisposeCapture(ref openedCapture);
+                    }
+                    finally
+                    {
+                        CameraDiscoveryService.HardwareLock.Release();
+                    }
+                }
+                return;
+            }
+
+            if (openedCapture == null)
             {
                 _isRunning = false;
                 ErrorOccurred?.Invoke("Không tìm thấy hoặc không mở được thiết bị Camera.");
                 return;
             }
 
-            // Set camera properties
-            try
-            {
-                if (!isRtsp)
-                {
-                    _capture.Set(VideoCaptureProperties.FrameWidth, profile.Width > 0 ? profile.Width : 640);
-                    _capture.Set(VideoCaptureProperties.FrameHeight, profile.Height > 0 ? profile.Height : 480);
-                    _capture.Set(VideoCaptureProperties.Fps, profile.FPS > 0 ? profile.FPS : 30);
-                }
-            }
-            catch { }
+            _capture = openedCapture;
 
             // Start capture loop in background
             _captureTask = Task.Run(() => CaptureLoop(cancellationToken), cancellationToken);
         }
+        catch (OperationCanceledException)
+        {
+            _isRunning = false;
+        }
         catch (Exception ex)
         {
-            ErrorOccurred?.Invoke($"Lỗi camera: {ex.Message}");
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                ErrorOccurred?.Invoke($"Lỗi camera: {ex.Message}");
+            }
             _isRunning = false;
-            _capture?.Release();
-            _capture?.Dispose();
+            var cap = _capture;
             _capture = null;
-            throw;
+            if (cap != null)
+            {
+                await CameraDiscoveryService.HardwareLock.WaitAsync().ConfigureAwait(false);
+                try
+                {
+                    ReleaseAndDisposeCapture(ref cap);
+                }
+                finally
+                {
+                    CameraDiscoveryService.HardwareLock.Release();
+                }
+            }
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
         }
+    }
+
+    private static void ReleaseAndDisposeCapture(ref VideoCapture? capture)
+    {
+        if (capture == null) return;
+        try { capture.Release(); } catch { }
+        try { capture.Dispose(); } catch { }
+        capture = null;
     }
 
     /// <summary>
@@ -156,35 +341,79 @@ public class CameraPreviewService : IDisposable
     /// </summary>
     public async Task StopAsync()
     {
-        if (!_isRunning)
+        var localCts = _cts;
+        var initTask = _initTask;
+        var captureTask = _captureTask;
+
+        if (!_isRunning && localCts == null && initTask == null && captureTask == null && _capture == null)
             return;
 
         _isRunning = false;
+        _cts = null;
+        _initTask = null;
+        _captureTask = null;
 
-        // Cancel the capture task
-        _cts?.Cancel();
+        try
+        {
+            localCts?.Cancel();
+        }
+        catch { }
 
-        // Wait for capture task to complete
-        if (_captureTask != null)
+        if (initTask != null)
         {
             try
             {
-                await _captureTask;
+                var pendingCapture = await initTask.ConfigureAwait(false);
+                if (pendingCapture != null && !ReferenceEquals(pendingCapture, _capture))
+                {
+                    await CameraDiscoveryService.HardwareLock.WaitAsync().ConfigureAwait(false);
+                    try
+                    {
+                        ReleaseAndDisposeCapture(ref pendingCapture);
+                    }
+                    finally
+                    {
+                        CameraDiscoveryService.HardwareLock.Release();
+                    }
+                }
             }
-            catch (OperationCanceledException)
+            catch { }
+        }
+
+        // Wait for capture task to complete
+        if (captureTask != null)
+        {
+            try
+            {
+                await captureTask.ConfigureAwait(false);
+            }
+            catch
             {
                 // Expected when canceling
             }
         }
 
-        // Cleanup resources
-        _capture?.Release();
-        _capture?.Dispose();
+        // Cleanup resources safely under hardware lock
+        var cap = _capture;
         _capture = null;
+        if (cap != null)
+        {
+            await CameraDiscoveryService.HardwareLock.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                ReleaseAndDisposeCapture(ref cap);
+            }
+            finally
+            {
+                CameraDiscoveryService.HardwareLock.Release();
+            }
+        }
 
-        _cts?.Dispose();
-        _cts = null;
-        _captureTask = null;
+        try
+        {
+            localCts?.Dispose();
+        }
+        catch { }
     }
 
     /// <summary>
@@ -193,21 +422,30 @@ public class CameraPreviewService : IDisposable
     private void CaptureLoop(CancellationToken cancellationToken)
     {
         using var frame = new Mat();
+        int consecutiveFailures = 0;
 
         while (!cancellationToken.IsCancellationRequested && _isRunning)
         {
             try
             {
-                if (_capture == null || !_capture.IsOpened())
+                var currentCapture = _capture;
+                if (currentCapture == null || !currentCapture.IsOpened())
                 {
-                    ErrorOccurred?.Invoke("Camera connection lost");
+                    if (_isRunning && !cancellationToken.IsCancellationRequested)
+                    {
+                        ErrorOccurred?.Invoke("Kết nối Camera đã bị đóng hoặc gián đoạn.");
+                    }
                     _isRunning = false;
                     break;
                 }
 
                 // Read frame from camera
-                if (_capture.Read(frame) && !frame.Empty())
+                if (currentCapture.Read(frame) && !frame.Empty())
                 {
+                    consecutiveFailures = 0;
+                    if (!_isRunning || cancellationToken.IsCancellationRequested)
+                        break;
+
                     // Convert Mat to BitmapSource for WPF
                     var bitmap = ConvertMatToBitmapSource(frame);
                     
@@ -215,17 +453,29 @@ public class CameraPreviewService : IDisposable
                     bitmap.Freeze();
 
                     // Raise event on UI thread
-                    FrameArrived?.Invoke(bitmap);
+                    if (_isRunning && !cancellationToken.IsCancellationRequested)
+                    {
+                        FrameArrived?.Invoke(bitmap);
+                    }
                 }
                 else
                 {
-                    // Frame read failed, wait a bit and retry
-                    Thread.Sleep(10);
+                    consecutiveFailures++;
+                    if (consecutiveFailures == 25 && _isRunning && !cancellationToken.IsCancellationRequested)
+                    {
+                        ErrorOccurred?.Invoke("Không đọc được hình ảnh từ Camera. Có thể camera đang bị phần mềm khác chiếm dụng hoặc bị chặn quyền riêng tư.");
+                        _isRunning = false;
+                        break;
+                    }
+                    Thread.Sleep(20);
                 }
             }
             catch (Exception ex)
             {
-                ErrorOccurred?.Invoke($"Frame capture error: {ex.Message}");
+                if (_isRunning && !cancellationToken.IsCancellationRequested)
+                {
+                    ErrorOccurred?.Invoke($"Lỗi đọc khung hình: {ex.Message}");
+                }
                 Thread.Sleep(100); // Wait before retry
             }
         }
@@ -260,7 +510,14 @@ public class CameraPreviewService : IDisposable
     /// </summary>
     public void Dispose()
     {
-        StopAsync().Wait();
+        if (_isRunning || _cts != null || _initTask != null || _captureTask != null || _capture != null)
+        {
+            try
+            {
+                Task.Run(() => StopAsync()).GetAwaiter().GetResult();
+            }
+            catch { }
+        }
         GC.SuppressFinalize(this);
     }
 }

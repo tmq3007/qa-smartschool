@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -43,6 +43,23 @@ namespace QASmartTouch.Tools
         /// </summary>
         public bool IsActive { get; private set; }
 
+        /// <summary>
+        /// Trạng thái đang vẽ nét khoanh vùng Lasso
+        /// </summary>
+        public bool IsDrawing => _isDrawing;
+
+        /// <summary>
+        /// Delegate kiểm tra xem có được phép bắt đầu vẽ Lasso tại vị trí point / source này không.
+        /// Trả về false nếu chạm vào SelectionBox, Adorner, Toolbar,... để nhường quyền tương tác kéo di chuyển/xoay/co giãn.
+        /// </summary>
+        public Func<Point, object, bool>? CanStartSelectionPredicate { get; set; }
+
+        /// <summary>
+        /// Action được gọi ngay trước khi bắt đầu vẽ Lasso mới (khi CanStartSelectionPredicate trả về true).
+        /// Dùng để Deselect vùng chọn cũ nếu người dùng bắt đầu khoanh vùng mới ở chỗ trống.
+        /// </summary>
+        public Action? BeforeSelectionStarted { get; set; }
+
         #endregion
 
         #region Constructor
@@ -73,16 +90,21 @@ namespace QASmartTouch.Tools
             _canvas.MouseMove += Canvas_MouseMove;
             _canvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
 
-            // 2. Đăng ký Touch Events (Cho ngón tay và bút cảm ứng trên màn hình SMART TOUCH)
+            // 2. Đăng ký Touch Events (Cho ngón tay trên màn hình SMART TOUCH)
             _canvas.TouchDown += Canvas_TouchDown;
             _canvas.TouchMove += Canvas_TouchMove;
             _canvas.TouchUp += Canvas_TouchUp;
 
-            // 3. Vô hiệu hóa Stylus Press-And-Hold để nét vẽ ăn ngay lập tức
+            // 3. Đăng ký Stylus Events (Cho Bút cảm ứng tương tác phòng học)
+            _canvas.StylusDown += Canvas_StylusDown;
+            _canvas.StylusMove += Canvas_StylusMove;
+            _canvas.StylusUp += Canvas_StylusUp;
+
+            // 4. Vô hiệu hóa Stylus Press-And-Hold để nét vẽ ăn ngay lập tức không bị trễ
             Stylus.SetIsPressAndHoldEnabled(_canvas, false);
 
             _canvas.Cursor = Cursors.Cross;
-            System.Diagnostics.Debug.WriteLine("✅ Lasso Tool activated with Mouse & Touch support");
+            System.Diagnostics.Debug.WriteLine("✅ Lasso Tool activated with Mouse, Touch & Stylus support");
         }
 
         /// <summary>
@@ -102,11 +124,69 @@ namespace QASmartTouch.Tools
             _canvas.TouchMove -= Canvas_TouchMove;
             _canvas.TouchUp -= Canvas_TouchUp;
 
+            _canvas.StylusDown -= Canvas_StylusDown;
+            _canvas.StylusMove -= Canvas_StylusMove;
+            _canvas.StylusUp -= Canvas_StylusUp;
+
             _canvas.Cursor = Cursors.Arrow;
 
             ReleaseAllCaptures();
             CleanupVisual();
             System.Diagnostics.Debug.WriteLine("❌ Lasso Tool deactivated");
+        }
+
+        /// <summary>
+        /// Kiểm tra xem có thể bắt đầu vẽ Lasso tại tọa độ và nguồn sự kiện được chỉ định không
+        /// </summary>
+        public bool CanStart(Point point, object? originalSource)
+        {
+            if (!IsActive) return false;
+            if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(point, originalSource))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Khởi tạo nét vẽ Lasso tại tọa độ bắt đầu (Hỗ trợ gọi trực tiếp từ tầng Preview Hardware)
+        /// </summary>
+        public void StartLasso(Point startPoint)
+        {
+            BeforeSelectionStarted?.Invoke();
+
+            _isDrawing = true;
+            _startPoint = startPoint;
+            _lassoPoints.Clear();
+            _lassoPoints.Add(_startPoint);
+
+            CreateLassoVisual();
+            System.Diagnostics.Debug.WriteLine($"🎯 Lasso started at ({_startPoint.X:F0}, {_startPoint.Y:F0})");
+        }
+
+        /// <summary>
+        /// Cập nhật tọa độ nét vẽ Lasso khi di chuyển (Hỗ trợ gọi trực tiếp từ tầng Preview Hardware)
+        /// </summary>
+        public void MoveLasso(Point currentPoint)
+        {
+            if (!_isDrawing) return;
+
+            if (_lassoPoints.Count == 0 || GetDistance(_lassoPoints.Last(), currentPoint) > 4)
+            {
+                _lassoPoints.Add(currentPoint);
+                UpdateLassoVisual();
+            }
+        }
+
+        /// <summary>
+        /// Hoàn tất nét vẽ Lasso và thực hiện gom chọn đối tượng (Hỗ trợ gọi trực tiếp từ tầng Preview Hardware)
+        /// </summary>
+        public void EndLasso()
+        {
+            if (!_isDrawing) return;
+
+            _isDrawing = false;
+            CompleteLassoSelection();
         }
 
         private void ReleaseAllCaptures()
@@ -122,74 +202,69 @@ namespace QASmartTouch.Tools
             catch { /* Safe release */ }
         }
 
+        /// <summary>
+        /// Lấy bản sao danh sách các điểm đỉnh đa giác của vùng chọn Lasso vừa vẽ
+        /// </summary>
+        public List<Point> GetLassoPoints()
+        {
+            return new List<Point>(_lassoPoints);
+        }
+
         #endregion
 
         #region Private Methods - Mouse & Touch Events
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            _isDrawing = true;
-            _startPoint = e.GetPosition(_canvas);
-            _lassoPoints.Clear();
-            _lassoPoints.Add(_startPoint);
+            Point clickPoint = e.GetPosition(_canvas);
 
-            CreateLassoVisual();
+            if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(clickPoint, e.OriginalSource))
+            {
+                return;
+            }
+
+            StartLasso(clickPoint);
             _canvas.CaptureMouse();
-
-            System.Diagnostics.Debug.WriteLine($"🎯 Lasso Mouse started at ({_startPoint.X:F0}, {_startPoint.Y:F0})");
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (!_isDrawing) return;
-
             Point currentPoint = e.GetPosition(_canvas);
-
-            if (_lassoPoints.Count == 0 || GetDistance(_lassoPoints.Last(), currentPoint) > 4)
-            {
-                _lassoPoints.Add(currentPoint);
-                UpdateLassoVisual();
-            }
+            MoveLasso(currentPoint);
         }
 
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (!_isDrawing) return;
 
-            _isDrawing = false;
             if (_canvas.IsMouseCaptured)
             {
                 _canvas.ReleaseMouseCapture();
             }
 
-            CompleteLassoSelection();
+            EndLasso();
         }
 
         private void Canvas_TouchDown(object? sender, TouchEventArgs e)
         {
-            _isDrawing = true;
-            _startPoint = e.GetTouchPoint(_canvas).Position;
-            _lassoPoints.Clear();
-            _lassoPoints.Add(_startPoint);
+            Point clickPoint = e.GetTouchPoint(_canvas).Position;
 
-            CreateLassoVisual();
+            if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(clickPoint, e.OriginalSource))
+            {
+                return;
+            }
+
+            StartLasso(clickPoint);
             _canvas.CaptureTouch(e.TouchDevice);
             e.Handled = true;
-
-            System.Diagnostics.Debug.WriteLine($"🎯 Lasso Touch started at ({_startPoint.X:F0}, {_startPoint.Y:F0})");
         }
 
         private void Canvas_TouchMove(object? sender, TouchEventArgs e)
         {
             if (!_isDrawing) return;
-
             Point currentPoint = e.GetTouchPoint(_canvas).Position;
-
-            if (_lassoPoints.Count == 0 || GetDistance(_lassoPoints.Last(), currentPoint) > 4)
-            {
-                _lassoPoints.Add(currentPoint);
-                UpdateLassoVisual();
-            }
+            MoveLasso(currentPoint);
             e.Handled = true;
         }
 
@@ -197,7 +272,6 @@ namespace QASmartTouch.Tools
         {
             if (!_isDrawing) return;
 
-            _isDrawing = false;
             try
             {
                 if (e.TouchDevice.Captured == _canvas)
@@ -207,7 +281,47 @@ namespace QASmartTouch.Tools
             }
             catch { }
 
-            CompleteLassoSelection();
+            EndLasso();
+            e.Handled = true;
+        }
+
+        private void Canvas_StylusDown(object sender, StylusDownEventArgs e)
+        {
+            Point clickPoint = e.GetPosition(_canvas);
+
+            if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(clickPoint, e.OriginalSource))
+            {
+                return;
+            }
+
+            StartLasso(clickPoint);
+            _canvas.CaptureStylus();
+            e.Handled = true;
+            System.Diagnostics.Debug.WriteLine($"🎯 Lasso Stylus started at ({clickPoint.X:F0}, {clickPoint.Y:F0})");
+        }
+
+        private void Canvas_StylusMove(object sender, StylusEventArgs e)
+        {
+            if (!_isDrawing) return;
+            Point currentPoint = e.GetPosition(_canvas);
+            MoveLasso(currentPoint);
+            e.Handled = true;
+        }
+
+        private void Canvas_StylusUp(object sender, StylusEventArgs e)
+        {
+            if (!_isDrawing) return;
+
+            try
+            {
+                if (_canvas.IsStylusCaptured)
+                {
+                    _canvas.ReleaseStylusCapture();
+                }
+            }
+            catch { }
+
+            EndLasso();
             e.Handled = true;
         }
 
@@ -272,7 +386,8 @@ namespace QASmartTouch.Tools
                 StrokeLineJoin = PenLineJoin.Round,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
-                Fill = new SolidColorBrush(Color.FromArgb(25, 255, 193, 7)) // Semi-transparent amber fill
+                Fill = new SolidColorBrush(Color.FromArgb(25, 255, 193, 7)), // Semi-transparent amber fill
+                IsHitTestVisible = false // 🛑 NGĂN CHẶN CƯỚP QUYỀN HIT-TEST TRÊN MÀN HÌNH TƯƠNG TÁC
             };
 
             // ✅ G1.1: Marching Ants animation — nét đứt chuyển động
@@ -329,8 +444,12 @@ namespace QASmartTouch.Tools
                     continue;
 
                 var typeName = element.GetType().Name;
+
+                // 🛑 LOẠI TRỪ 1: Tuyệt đối không chọn InkPresenter (lớp vẽ mực trực tiếp của hệ thống)
+                if (element is InkPresenter || typeName.Equals("InkPresenter", StringComparison.OrdinalIgnoreCase) || typeName.Contains("InkPresenter"))
+                    continue;
                 
-                // Bỏ qua các UI controls của hệ thống và Background layers (nền bảng, lưới)
+                // 🛑 LOẠI TRỪ 2: Bỏ qua các UI controls của hệ thống và Background layers (nền bảng, lưới)
                 if (element is FrameworkElement feCheck)
                 {
                     string tagStr = feCheck.Tag?.ToString() ?? "";
@@ -341,7 +460,8 @@ namespace QASmartTouch.Tools
                         tagStr.Contains("Grid", StringComparison.OrdinalIgnoreCase))
                         continue;
 
-                    if (QASmartTouch.Services.SelectionManager.IsBackgroundElement(feCheck, Rect.Empty, _canvas.ActualWidth, _canvas.ActualHeight))
+                    Rect elBounds = GetElementCanvasBounds(feCheck);
+                    if (QASmartTouch.Services.SelectionManager.IsBackgroundElement(feCheck, elBounds, _canvas.ActualWidth, _canvas.ActualHeight))
                         continue;
                 }
 
@@ -369,11 +489,87 @@ namespace QASmartTouch.Tools
             return selectedElements;
         }
 
+        private static Point TransformToCanvasPoint(Point pt, GeneralTransform? transform, double offsetX, double offsetY)
+        {
+            if (transform != null)
+            {
+                try
+                {
+                    return transform.Transform(pt);
+                }
+                catch { }
+            }
+            return new Point(offsetX + pt.X, offsetY + pt.Y);
+        }
+
+        private static bool DoSegmentsIntersect(Point p1, Point p2, Point q1, Point q2)
+        {
+            static double Cross(Point a, Point b, Point c) =>
+                (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
+
+            static bool OnSegment(Point a, Point b, Point p) =>
+                p.X >= Math.Min(a.X, b.X) - 1e-6 && p.X <= Math.Max(a.X, b.X) + 1e-6 &&
+                p.Y >= Math.Min(a.Y, b.Y) - 1e-6 && p.Y <= Math.Max(a.Y, b.Y) + 1e-6;
+
+            double d1 = Cross(q1, q2, p1);
+            double d2 = Cross(q1, q2, p2);
+            double d3 = Cross(p1, p2, q1);
+            double d4 = Cross(p1, p2, q2);
+
+            if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+                ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0)))
+                return true;
+
+            if (Math.Abs(d1) <= 1e-6 && OnSegment(q1, q2, p1)) return true;
+            if (Math.Abs(d2) <= 1e-6 && OnSegment(q1, q2, p2)) return true;
+            if (Math.Abs(d3) <= 1e-6 && OnSegment(p1, p2, q1)) return true;
+            if (Math.Abs(d4) <= 1e-6 && OnSegment(p1, p2, q2)) return true;
+
+            return false;
+        }
+
+        private bool IsSegmentInOrIntersectingLasso(Point p1, Point p2)
+        {
+            if (_lassoPoints.Count < 3) return false;
+
+            if (IsPointInPolygon(p1, _lassoPoints) || IsPointInPolygon(p2, _lassoPoints))
+                return true;
+
+            Point mid = new Point((p1.X + p2.X) * 0.5, (p1.Y + p2.Y) * 0.5);
+            if (IsPointInPolygon(mid, _lassoPoints))
+                return true;
+
+            double dx = p2.X - p1.X;
+            double dy = p2.Y - p1.Y;
+            double len = Math.Sqrt(dx * dx + dy * dy);
+            if (len > 12.0)
+            {
+                int steps = Math.Min(64, Math.Max(2, (int)Math.Ceiling(len / 12.0)));
+                for (int s = 1; s < steps; s++)
+                {
+                    double t = (double)s / steps;
+                    Point sample = new Point(p1.X + dx * t, p1.Y + dy * t);
+                    if (IsPointInPolygon(sample, _lassoPoints))
+                        return true;
+                }
+            }
+
+            for (int i = 0; i < _lassoPoints.Count - 1; i++)
+            {
+                if (DoSegmentsIntersect(p1, p2, _lassoPoints[i], _lassoPoints[i + 1]))
+                    return true;
+            }
+            if (DoSegmentsIntersect(p1, p2, _lassoPoints[_lassoPoints.Count - 1], _lassoPoints[0]))
+                return true;
+
+            return false;
+        }
+
         private bool IsElementInLasso(UIElement element)
         {
             try
             {
-                // ✅ 1. Xử lý trực tiếp cho Polyline (nét vẽ tay)
+                // 1. Direct check for Polyline (freehand strokes)
                 if (element is Polyline polyline && polyline.Points.Count > 0)
                 {
                     GeneralTransform? transform = null;
@@ -388,28 +584,49 @@ namespace QASmartTouch.Tools
                     if (double.IsNaN(pLeft)) pLeft = 0;
                     if (double.IsNaN(pTop)) pTop = 0;
 
-                    // Kiểm tra điểm thực tế trên Canvas
-                    foreach (var pt in polyline.Points)
+                    if (polyline.Points.Count == 1)
                     {
-                        Point canvasPt = transform != null ? transform.Transform(pt) : new Point(pLeft + pt.X, pTop + pt.Y);
-                        if (IsPointInPolygon(canvasPt, _lassoPoints))
-                            return true;
+                        Point pt0 = TransformToCanvasPoint(polyline.Points[0], transform, pLeft, pTop);
+                        return IsPointInPolygon(pt0, _lassoPoints);
                     }
 
-                    // Kiểm tra trung điểm các nét nối
                     for (int i = 0; i < polyline.Points.Count - 1; i++)
                     {
-                        Point rawMid = new Point((polyline.Points[i].X + polyline.Points[i + 1].X) / 2,
-                                                 (polyline.Points[i].Y + polyline.Points[i + 1].Y) / 2);
-                        Point canvasMid = transform != null ? transform.Transform(rawMid) : new Point(pLeft + rawMid.X, pTop + rawMid.Y);
-                        if (IsPointInPolygon(canvasMid, _lassoPoints))
+                        Point c1 = TransformToCanvasPoint(polyline.Points[i], transform, pLeft, pTop);
+                        Point c2 = TransformToCanvasPoint(polyline.Points[i + 1], transform, pLeft, pTop);
+                        if (IsSegmentInOrIntersectingLasso(c1, c2))
                             return true;
                     }
 
                     return false;
                 }
 
-                // ✅ 2. Xử lý trực tiếp cho Path (nét vẽ mượt Bezier tạo bởi TouchHandler/DrawingEngine)
+                // 1b. Direct check for Polygon (2D polygons: Triangle, Star, Pentagon, etc.)
+                if (element is Polygon polygon && polygon.Points.Count > 0)
+                {
+                    GeneralTransform? transform = null;
+                    try
+                    {
+                        transform = polygon.TransformToAncestor(_canvas);
+                    }
+                    catch { }
+
+                    double pLeft = Canvas.GetLeft(polygon);
+                    double pTop = Canvas.GetTop(polygon);
+                    if (double.IsNaN(pLeft)) pLeft = 0;
+                    if (double.IsNaN(pTop)) pTop = 0;
+
+                    for (int i = 0; i < polygon.Points.Count; i++)
+                    {
+                        Point c1 = TransformToCanvasPoint(polygon.Points[i], transform, pLeft, pTop);
+                        Point c2 = TransformToCanvasPoint(polygon.Points[(i + 1) % polygon.Points.Count], transform, pLeft, pTop);
+                        if (IsSegmentInOrIntersectingLasso(c1, c2))
+                            return true;
+                    }
+                    // Fall through to step 4 to also check center & bounding box points like 3D shapes
+                }
+
+                // 2. Direct check for Path (2D geometry shapes & smooth Bezier strokes)
                 if (element is System.Windows.Shapes.Path path && path.Data != null)
                 {
                     GeneralTransform? transform = null;
@@ -424,39 +641,51 @@ namespace QASmartTouch.Tools
                     if (double.IsNaN(pLeft)) pLeft = 0;
                     if (double.IsNaN(pTop)) pTop = 0;
 
+                    bool hasClosedFigure = false;
                     var flattened = path.Data.GetFlattenedPathGeometry();
                     if (flattened != null)
                     {
                         foreach (var figure in flattened.Figures)
                         {
-                            Point startPt = transform != null ? transform.Transform(figure.StartPoint) : new Point(pLeft + figure.StartPoint.X, pTop + figure.StartPoint.Y);
+                            if (figure.IsClosed) hasClosedFigure = true;
+
+                            Point startPt = TransformToCanvasPoint(figure.StartPoint, transform, pLeft, pTop);
                             if (IsPointInPolygon(startPt, _lassoPoints))
                                 return true;
 
+                            Point prevPt = startPt;
                             foreach (var segment in figure.Segments)
                             {
                                 if (segment is PolyLineSegment polySeg)
                                 {
                                     foreach (var pt in polySeg.Points)
                                     {
-                                        Point canvasPt = transform != null ? transform.Transform(pt) : new Point(pLeft + pt.X, pTop + pt.Y);
-                                        if (IsPointInPolygon(canvasPt, _lassoPoints))
+                                        Point currPt = TransformToCanvasPoint(pt, transform, pLeft, pTop);
+                                        if (IsSegmentInOrIntersectingLasso(prevPt, currPt))
                                             return true;
+                                        prevPt = currPt;
                                     }
                                 }
                                 else if (segment is LineSegment lineSeg)
                                 {
-                                    Point canvasPt = transform != null ? transform.Transform(lineSeg.Point) : new Point(pLeft + lineSeg.Point.X, pTop + lineSeg.Point.Y);
-                                    if (IsPointInPolygon(canvasPt, _lassoPoints))
+                                    Point currPt = TransformToCanvasPoint(lineSeg.Point, transform, pLeft, pTop);
+                                    if (IsSegmentInOrIntersectingLasso(prevPt, currPt))
                                         return true;
+                                    prevPt = currPt;
                                 }
                             }
+
+                            if (figure.IsClosed && IsSegmentInOrIntersectingLasso(prevPt, startPt))
+                                return true;
                         }
                     }
-                    return false;
+
+                    bool isShapePath = !string.IsNullOrEmpty(path.Tag?.ToString()) || hasClosedFigure;
+                    if (!isShapePath)
+                        return false;
                 }
 
-                // ✅ 3. Xử lý trực tiếp cho Line (thước kẻ, đoạn thẳng)
+                // 3. Direct check for Line (2D lines: mLine, mDashedLine, ruler lines)
                 if (element is System.Windows.Shapes.Line line)
                 {
                     GeneralTransform? transform = null;
@@ -471,26 +700,24 @@ namespace QASmartTouch.Tools
                     if (double.IsNaN(lLeft)) lLeft = 0;
                     if (double.IsNaN(lTop)) lTop = 0;
 
-                    Point raw1 = new Point(line.X1, line.Y1);
-                    Point raw2 = new Point(line.X2, line.Y2);
-                    Point rawMid = new Point((line.X1 + line.X2) / 2, (line.Y1 + line.Y2) / 2);
+                    Point p1 = TransformToCanvasPoint(new Point(line.X1, line.Y1), transform, lLeft, lTop);
+                    Point p2 = TransformToCanvasPoint(new Point(line.X2, line.Y2), transform, lLeft, lTop);
 
-                    Point p1 = transform != null ? transform.Transform(raw1) : new Point(lLeft + line.X1, lTop + line.Y1);
-                    Point p2 = transform != null ? transform.Transform(raw2) : new Point(lLeft + line.X2, lTop + line.Y2);
-                    Point mid = transform != null ? transform.Transform(rawMid) : new Point(lLeft + rawMid.X, lTop + rawMid.Y);
-
-                    return IsPointInPolygon(p1, _lassoPoints) || 
-                           IsPointInPolygon(p2, _lassoPoints) || 
-                           IsPointInPolygon(mid, _lassoPoints);
+                    return IsSegmentInOrIntersectingLasso(p1, p2);
                 }
 
-                // ✅ 4. Xử lý các đối tượng khác (Hình vẽ, Khung chữ, Ảnh, 3D controls)
+                // 4. Check bounding box reference points & edges (2D/3D shapes, text boxes, images, controls)
                 Rect bounds = GetElementCanvasBounds(element);
 
                 if (bounds.Width <= 0 || bounds.Height <= 0 || bounds.IsEmpty)
                     return false;
 
-                // Kiểm tra tâm, 4 góc và 4 trung điểm cạnh có nằm trong Lasso không
+                if (_canvas.ActualWidth > 100 && _canvas.ActualHeight > 100)
+                {
+                    if (bounds.Width >= _canvas.ActualWidth * 0.8 && bounds.Height >= _canvas.ActualHeight * 0.8)
+                        return false;
+                }
+
                 Point[] testPoints = new Point[]
                 {
                     new Point(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2),
@@ -507,11 +734,19 @@ namespace QASmartTouch.Tools
                 if (testPoints.Any(point => IsPointInPolygon(point, _lassoPoints)))
                     return true;
 
+                if (IsSegmentInOrIntersectingLasso(bounds.TopLeft, bounds.TopRight) ||
+                    IsSegmentInOrIntersectingLasso(bounds.TopRight, bounds.BottomRight) ||
+                    IsSegmentInOrIntersectingLasso(bounds.BottomRight, bounds.BottomLeft) ||
+                    IsSegmentInOrIntersectingLasso(bounds.BottomLeft, bounds.TopLeft))
+                {
+                    return true;
+                }
+
                 return false;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"⚠️ Error checking element in lasso: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Warning: Error checking element in lasso: {ex.Message}");
                 return false;
             }
         }
@@ -520,25 +755,14 @@ namespace QASmartTouch.Tools
         {
             try
             {
+                Rect absBounds = QASmartTouch.Helpers.BoundsHelper.GetAbsoluteBounds(element, _canvas);
+                if (!absBounds.IsEmpty && absBounds.Width > 0 && absBounds.Height > 0)
+                {
+                    return absBounds;
+                }
+
                 if (element is FrameworkElement fe)
                 {
-                    // Ưu tiên TransformToAncestor để tính chính xác vị trí hiển thị thị giác trên _canvas
-                    try
-                    {
-                        GeneralTransform transform = fe.TransformToAncestor(_canvas);
-                        double w = fe.ActualWidth > 0 ? fe.ActualWidth : (fe.Width > 0 ? fe.Width : fe.RenderSize.Width);
-                        double h = fe.ActualHeight > 0 ? fe.ActualHeight : (fe.Height > 0 ? fe.Height : fe.RenderSize.Height);
-                        if (w > 0 && h > 0)
-                        {
-                            Rect visualBounds = transform.TransformBounds(new Rect(0, 0, w, h));
-                            if (!visualBounds.IsEmpty && visualBounds.Width > 0 && visualBounds.Height > 0)
-                            {
-                                return visualBounds;
-                            }
-                        }
-                    }
-                    catch { }
-
                     double left = Canvas.GetLeft(fe);
                     double top = Canvas.GetTop(fe);
 
@@ -548,7 +772,7 @@ namespace QASmartTouch.Tools
                     if (element is System.Windows.Shapes.Path path && path.Data != null && !path.Data.Bounds.IsEmpty)
                     {
                         var pBounds = path.Data.Bounds;
-                        return new Rect(left + pBounds.Left, top + pBounds.Top, pBounds.Width, pBounds.Height);
+                        return new Rect(left + pBounds.Left, top + pBounds.Top, Math.Max(1, pBounds.Width), Math.Max(1, pBounds.Height));
                     }
 
                     double width = fe.ActualWidth > 0 ? fe.ActualWidth : fe.Width;
@@ -563,13 +787,12 @@ namespace QASmartTouch.Tools
             catch { }
             return Rect.Empty;
         }
-
         /// <summary>
         /// Ray Casting Algorithm - kiểm tra điểm có nằm trong polygon không
         /// Thuật toán: Vẽ một tia từ điểm test đi về phía phải, đếm số lần cắt polygon
         /// Nếu số lần cắt là lẻ -> điểm nằm trong polygon
         /// </summary>
-        private bool IsPointInPolygon(Point point, List<Point> polygon)
+        public static bool IsPointInPolygon(Point point, List<Point> polygon)
         {
             if (polygon.Count < 3) return false;
 

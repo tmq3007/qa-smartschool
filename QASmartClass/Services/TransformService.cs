@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Ink;
 using QASmartTouch.Models;
 using CanvasControl = System.Windows.Controls.Canvas;
 
@@ -110,11 +111,41 @@ namespace QASmartTouch.Services
                     }
                     tt.X += delta.X;
                     tt.Y += delta.Y;
+
+                    bool afterTranslate = false;
+                    foreach (var child in tg.Children)
+                    {
+                        if (ReferenceEquals(child, tt))
+                        {
+                            afterTranslate = true;
+                            continue;
+                        }
+                        if (child is RotateTransform rt)
+                        {
+                            rt.CenterX += delta.X;
+                            rt.CenterY += delta.Y;
+                        }
+                        else if (afterTranslate && child is ScaleTransform st)
+                        {
+                            st.CenterX += delta.X;
+                            st.CenterY += delta.Y;
+                        }
+                    }
                 }
                 else if (path.RenderTransform is TranslateTransform tt)
                 {
                     tt.X += delta.X;
                     tt.Y += delta.Y;
+                }
+                else if (path.RenderTransform is RotateTransform rt)
+                {
+                    // ✅ QC_4.2_ROTATE_MOVE_SYNC: Nếu chỉ có RotateTransform đơn lẻ, bọc lại chuẩn TransformGroup
+                    var tgNew = new TransformGroup();
+                    tgNew.Children.Add(new TranslateTransform(delta.X, delta.Y));
+                    rt.CenterX += delta.X;
+                    rt.CenterY += delta.Y;
+                    tgNew.Children.Add(rt);
+                    path.RenderTransform = tgNew;
                 }
                 else
                 {
@@ -124,6 +155,11 @@ namespace QASmartTouch.Services
                     tgNew.Children.Add(new TranslateTransform(delta.X, delta.Y));
                     path.RenderTransform = tgNew;
                 }
+            }
+            else if (obj.Stroke != null)
+            {
+                var matrix = new Matrix(1, 0, 0, 1, delta.X, delta.Y);
+                obj.Stroke.Transform(matrix, false);
             }
             else if (obj.Element != null)
             {
@@ -378,64 +414,7 @@ namespace QASmartTouch.Services
                 }
 
                 // Path (smooth Bezier handwriting stroke, shape, or touch dot): Apply RenderTransform
-                var bounds = path.Data.Bounds;
-                bool isDotOrMicro = bounds.IsEmpty || (bounds.Width <= 0.05 && bounds.Height <= 0.05);
-                Point targetCenter = new Point(obj.Position.X + newSize.Width / 2.0, obj.Position.Y + newSize.Height / 2.0);
-
-                if (isDotOrMicro)
-                {
-                    // ✨ TOUCH DOT SUPPORT: Dấu chấm cảm ứng - tịnh tiến tâm về targetCenter mà không scale vi mô
-                    var tg = new TransformGroup();
-                    double dotOrigX = !bounds.IsEmpty ? (bounds.X + bounds.Width / 2.0) : obj.Position.X;
-                    double dotOrigY = !bounds.IsEmpty ? (bounds.Y + bounds.Height / 2.0) : obj.Position.Y;
-                    tg.Children.Add(new TranslateTransform(targetCenter.X - dotOrigX, targetCenter.Y - dotOrigY));
-                    if (obj.RotationAngle != 0)
-                    {
-                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
-                    }
-                    path.RenderTransform = tg;
-                    System.Diagnostics.Debug.WriteLine($"🔧 Resize Path touch dot: targetCenter=({targetCenter.X:F2},{targetCenter.Y:F2})");
-                }
-                else if (bounds.Width > 0.05 && bounds.Height > 0.05)
-                {
-                    double scaleX = newSize.Width / bounds.Width;
-                    double scaleY = newSize.Height / bounds.Height;
-                    
-                    var tg = new TransformGroup();
-                    tg.Children.Add(new ScaleTransform(scaleX, scaleY, bounds.X, bounds.Y));
-                    tg.Children.Add(new TranslateTransform(obj.Position.X - bounds.X, obj.Position.Y - bounds.Y));
-                    if (obj.RotationAngle != 0)
-                    {
-                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
-                    }
-                    path.RenderTransform = tg;
-
-                    System.Diagnostics.Debug.WriteLine($"🔧 Resize Path stroke: scale=({scaleX:F2},{scaleY:F2})");
-                }
-                else if (bounds.Width > 0.05) // Đoạn thẳng nằm ngang thuần túy
-                {
-                    double scaleX = newSize.Width / bounds.Width;
-                    var tg = new TransformGroup();
-                    tg.Children.Add(new ScaleTransform(scaleX, 1.0, bounds.X, bounds.Y));
-                    tg.Children.Add(new TranslateTransform(obj.Position.X - bounds.X, targetCenter.Y - (bounds.Y + bounds.Height / 2.0)));
-                    if (obj.RotationAngle != 0)
-                    {
-                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
-                    }
-                    path.RenderTransform = tg;
-                }
-                else if (bounds.Height > 0.05) // Đoạn thẳng thẳng đứng thuần túy
-                {
-                    double scaleY = newSize.Height / bounds.Height;
-                    var tg = new TransformGroup();
-                    tg.Children.Add(new ScaleTransform(1.0, scaleY, bounds.X, bounds.Y));
-                    tg.Children.Add(new TranslateTransform(targetCenter.X - (bounds.X + bounds.Width / 2.0), obj.Position.Y - bounds.Y));
-                    if (obj.RotationAngle != 0)
-                    {
-                        tg.Children.Add(new RotateTransform(obj.RotationAngle, targetCenter.X, targetCenter.Y));
-                    }
-                    path.RenderTransform = tg;
-                }
+                ApplyCanonicalPathTransform(path, obj.Position, newSize, obj.RotationAngle, path.RenderTransform);
             }
             else if (obj.Element is CanvasControl canvas)
             {
@@ -482,6 +461,18 @@ namespace QASmartTouch.Services
                 }
                 
                 System.Diagnostics.Debug.WriteLine($"🔧 Resize {obj.Type}: {newSize.Width:F0}x{newSize.Height:F0}");
+            }
+            else if (obj.Stroke != null)
+            {
+                var sb = obj.Stroke.GetBounds();
+                if (sb.Width > 0 && sb.Height > 0)
+                {
+                    double scaleX = newSize.Width / sb.Width;
+                    double scaleY = newSize.Height / sb.Height;
+                    var matrix = Matrix.Identity;
+                    matrix.ScaleAt(scaleX, scaleY, obj.Position.X, obj.Position.Y);
+                    obj.Stroke.Transform(matrix, false);
+                }
             }
 
             obj.UpdateBounds();
@@ -679,8 +670,22 @@ namespace QASmartTouch.Services
                             newCenter.Y + (newMemLocX * sin + newMemLocY * cos)
                         );
 
-                        double newMemW = Math.Max(5, origMemW * scaleX);
-                        double newMemH = Math.Max(5, origMemH * scaleY);
+                        double memberAngle = mState != null ? mState.RotationAngle : member.RotationAngle;
+                        if (memberAngle == 0 && mState?.RenderTransform != null)
+                        {
+                            memberAngle = SelectableObject.ExtractTransformRotationAngle(mState.RenderTransform);
+                        }
+                        member.RotationAngle = memberAngle;
+
+                        // Chiếu hệ số co giãn (scaleX, scaleY) của nhóm sang trục cục bộ của thành viên (chuẩn UMind / i-Pro)
+                        double relAngleRad = (memberAngle - angle) * Math.PI / 180.0;
+                        double relCos = Math.Cos(relAngleRad);
+                        double relSin = Math.Sin(relAngleRad);
+                        double memScaleX = Math.Sqrt((scaleX * relCos) * (scaleX * relCos) + (scaleY * relSin) * (scaleY * relSin));
+                        double memScaleY = Math.Sqrt((scaleX * relSin) * (scaleX * relSin) + (scaleY * relCos) * (scaleY * relCos));
+
+                        double newMemW = Math.Max(5, origMemW * memScaleX);
+                        double newMemH = Math.Max(5, origMemH * memScaleY);
                         Point newMemPos = new Point(newMemCenter.X - newMemW / 2.0, newMemCenter.Y - newMemH / 2.0);
 
                         ResizeSingleFromInitialState(member, newMemPos, new Size(newMemW, newMemH), origMemPos: new Point(origMemX, origMemY), origMemSize: new Size(origMemW, origMemH), mState);
@@ -711,7 +716,12 @@ namespace QASmartTouch.Services
             obj.Position = newPosition;
             obj.Size = newSize;
 
-            double angle = obj.RotationAngle;
+            double angle = state != null ? state.RotationAngle : obj.RotationAngle;
+            if (angle == 0 && state?.RenderTransform != null)
+            {
+                angle = SelectableObject.ExtractTransformRotationAngle(state.RenderTransform);
+            }
+            obj.RotationAngle = angle;
             double rad = angle * Math.PI / 180.0;
             double cos = Math.Cos(rad);
             double sin = Math.Sin(rad);
@@ -819,7 +829,7 @@ namespace QASmartTouch.Services
                 if (!double.IsNaN(CanvasControl.GetLeft(polyline))) CanvasControl.SetLeft(polyline, double.NaN);
                 if (!double.IsNaN(CanvasControl.GetTop(polyline))) CanvasControl.SetTop(polyline, double.NaN);
             }
-            // 4. Path (ArrowLine, DoubleArrowLine, Bezier strokes, Touch Dots): ScaleTransform + TranslateTransform + RotateTransform
+            // 4. Path (ArrowLine, DoubleArrowLine, Bezier strokes, Touch Dots, 2D Shapes): ScaleTransform + TranslateTransform + RotateTransform
             else if (obj.Element is System.Windows.Shapes.Path path && path.Data != null)
             {
                 if (obj.Type == ObjectType.Stroke || obj.Type == ObjectType.Drawing)
@@ -827,62 +837,7 @@ namespace QASmartTouch.Services
                     path.Fill = null;
                 }
 
-                var bounds = path.Data.Bounds;
-                bool isDotOrMicro = bounds.IsEmpty || (bounds.Width <= 0.05 && bounds.Height <= 0.05);
-
-                if (isDotOrMicro)
-                {
-                    // ✨ TOUCH DOT SUPPORT: Dấu chấm trên màn hình cảm ứng là Path chứa StreamGeometry vi mô (0.01px).
-                    // Với dấu chấm tròn, hình ảnh thực tế được tạo nên từ StrokeThickness và PenLineCap.Round.
-                    // Tịnh tiến tâm dấu chấm chính xác đến newCenter của nhóm, không áp dụng scale vi mô (tránh chia cho 0/biến dạng).
-                    var tg = new TransformGroup();
-                    double dotOrigX = !bounds.IsEmpty ? (bounds.X + bounds.Width / 2.0) : origCenter.X;
-                    double dotOrigY = !bounds.IsEmpty ? (bounds.Y + bounds.Height / 2.0) : origCenter.Y;
-                    tg.Children.Add(new TranslateTransform(newCenter.X - dotOrigX, newCenter.Y - dotOrigY));
-                    if (obj.RotationAngle != 0)
-                    {
-                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
-                    }
-                    path.RenderTransform = tg;
-                }
-                else if (bounds.Width > 0.05 && bounds.Height > 0.05)
-                {
-                    double pathScaleX = newSize.Width / bounds.Width;
-                    double pathScaleY = newSize.Height / bounds.Height;
-
-                    var tg = new TransformGroup();
-                    tg.Children.Add(new ScaleTransform(pathScaleX, pathScaleY, bounds.X, bounds.Y));
-                    tg.Children.Add(new TranslateTransform(newPosition.X - bounds.X, newPosition.Y - bounds.Y));
-                    if (obj.RotationAngle != 0)
-                    {
-                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
-                    }
-                    path.RenderTransform = tg;
-                }
-                else if (bounds.Width > 0.05) // Đoạn thẳng nằm ngang thuần túy (Height == 0)
-                {
-                    double pathScaleX = newSize.Width / bounds.Width;
-                    var tg = new TransformGroup();
-                    tg.Children.Add(new ScaleTransform(pathScaleX, 1.0, bounds.X, bounds.Y));
-                    tg.Children.Add(new TranslateTransform(newPosition.X - bounds.X, newCenter.Y - (bounds.Y + bounds.Height / 2.0)));
-                    if (obj.RotationAngle != 0)
-                    {
-                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
-                    }
-                    path.RenderTransform = tg;
-                }
-                else if (bounds.Height > 0.05) // Đoạn thẳng thẳng đứng thuần túy (Width == 0)
-                {
-                    double pathScaleY = newSize.Height / bounds.Height;
-                    var tg = new TransformGroup();
-                    tg.Children.Add(new ScaleTransform(1.0, pathScaleY, bounds.X, bounds.Y));
-                    tg.Children.Add(new TranslateTransform(newCenter.X - (bounds.X + bounds.Width / 2.0), newPosition.Y - bounds.Y));
-                    if (obj.RotationAngle != 0)
-                    {
-                        tg.Children.Add(new RotateTransform(obj.RotationAngle, newCenter.X, newCenter.Y));
-                    }
-                    path.RenderTransform = tg;
-                }
+                ApplyCanonicalPathTransform(path, newPosition, newSize, obj.RotationAngle, state?.RenderTransform ?? path.RenderTransform);
             }
             // 5. Canvas Container (3D Shape, STEM diagrams, etc.): Áp dụng ScaleTransform vector mượt mà
             else if (obj.Element is CanvasControl canvas)
@@ -934,8 +889,98 @@ namespace QASmartTouch.Services
                     element.RenderTransform = new RotateTransform(obj.RotationAngle, newSize.Width / 2.0, newSize.Height / 2.0);
                 }
             }
+            // 7. Native Inking Stroke (WPF System.Windows.Ink.Stroke): Biến đổi affine qua GPU MilCore
+            else if (obj.Stroke != null)
+            {
+                var stroke = obj.Stroke;
+                if (origMemSize.Width > 0 && origMemSize.Height > 0)
+                {
+                    if (state?.StrokePoints != null)
+                    {
+                        stroke.StylusPoints = state.StrokePoints.Clone();
+                    }
+                    double sX = newSize.Width / origMemSize.Width;
+                    double sY = newSize.Height / origMemSize.Height;
+                    var matrix = Matrix.Identity;
+                    matrix.Translate(-origCenter.X, -origCenter.Y);
+                    matrix.Scale(sX, sY);
+                    matrix.Translate(newCenter.X, newCenter.Y);
+                    if (obj.RotationAngle != 0)
+                    {
+                        matrix.RotateAt(obj.RotationAngle, newCenter.X, newCenter.Y);
+                    }
+                    stroke.Transform(matrix, false);
+                }
+            }
 
             obj.UpdateBounds();
+        }
+
+        /// <summary>
+        /// Chuẩn hóa TransformGroup cho đối tượng Path theo mô hình OBB (UMind / i-Pro):
+        /// ScaleTransform (tại gốc Geometry) -> TranslateTransform (tới newPosition) -> Flip ScaleTransform (nếu có) -> RotateTransform (quanh newCenter).
+        /// Đảm bảo không bao giờ lồng chồng nhiều tầng TransformGroup gây mất góc xoay hoặc lệch tâm khi chọn nhóm rồi Resize.
+        /// </summary>
+        public static void ApplyCanonicalPathTransform(
+            System.Windows.Shapes.Path path,
+            Point newPosition,
+            Size newSize,
+            double rotationAngle,
+            Transform? referenceTransform)
+        {
+            if (path.Data == null)
+                return;
+
+            var bounds = path.Data.Bounds;
+            Point newCenter = new Point(newPosition.X + newSize.Width / 2.0, newPosition.Y + newSize.Height / 2.0);
+            double normAngle = SelectableObject.NormalizeAngle(rotationAngle);
+
+            SelectableObject.ExtractTransformScaleFactors(referenceTransform, out double refScaleX, out double refScaleY);
+            double signX = refScaleX < 0 ? -1.0 : 1.0;
+            double signY = refScaleY < 0 ? -1.0 : 1.0;
+
+            bool isDotOrMicro = bounds.IsEmpty || (bounds.Width <= 0.05 && bounds.Height <= 0.05);
+            var tg = new TransformGroup();
+
+            if (isDotOrMicro)
+            {
+                double dotOrigX = !bounds.IsEmpty ? (bounds.X + bounds.Width / 2.0) : newCenter.X;
+                double dotOrigY = !bounds.IsEmpty ? (bounds.Y + bounds.Height / 2.0) : newCenter.Y;
+                tg.Children.Add(new TranslateTransform(newCenter.X - dotOrigX, newCenter.Y - dotOrigY));
+            }
+            else if (bounds.Width > 0.05 && bounds.Height > 0.05)
+            {
+                double pathScaleX = Math.Max(newSize.Width, 1.0) / bounds.Width;
+                double pathScaleY = Math.Max(newSize.Height, 1.0) / bounds.Height;
+                tg.Children.Add(new ScaleTransform(pathScaleX, pathScaleY, bounds.X, bounds.Y));
+                tg.Children.Add(new TranslateTransform(newPosition.X - bounds.X, newPosition.Y - bounds.Y));
+            }
+            else if (bounds.Width > 0.05)
+            {
+                double pathScaleX = Math.Max(newSize.Width, 1.0) / bounds.Width;
+                tg.Children.Add(new ScaleTransform(pathScaleX, 1.0, bounds.X, bounds.Y));
+                tg.Children.Add(new TranslateTransform(newPosition.X - bounds.X, newCenter.Y - (bounds.Y + bounds.Height / 2.0)));
+            }
+            else if (bounds.Height > 0.05)
+            {
+                double pathScaleY = Math.Max(newSize.Height, 1.0) / bounds.Height;
+                tg.Children.Add(new ScaleTransform(1.0, pathScaleY, bounds.X, bounds.Y));
+                tg.Children.Add(new TranslateTransform(newCenter.X - (bounds.X + bounds.Width / 2.0), newPosition.Y - bounds.Y));
+            }
+
+            if (signX < 0 || signY < 0)
+            {
+                tg.Children.Add(new ScaleTransform(signX, signY, newCenter.X, newCenter.Y));
+            }
+
+            if (normAngle != 0)
+            {
+                tg.Children.Add(new RotateTransform(normAngle, newCenter.X, newCenter.Y));
+            }
+
+            if (!double.IsNaN(CanvasControl.GetLeft(path))) CanvasControl.SetLeft(path, double.NaN);
+            if (!double.IsNaN(CanvasControl.GetTop(path))) CanvasControl.SetTop(path, double.NaN);
+            path.RenderTransform = tg;
         }
 
         #endregion
@@ -1005,6 +1050,16 @@ namespace QASmartTouch.Services
                 }
                 polyline.Points = newPoints;
                 polyline.RenderTransform = Transform.Identity;
+
+                double memCenterX = state.Position.X + (state.Size.Width / 2.0);
+                double memCenterY = state.Position.Y + (state.Size.Height / 2.0);
+                double cdx = memCenterX - center.X;
+                double cdy = memCenterY - center.Y;
+                double newCenterX = center.X + (cdx * cos - cdy * sin);
+                double newCenterY = center.Y + (cdx * sin + cdy * cos);
+                member.Position = new Point(newCenterX - (state.Size.Width / 2.0), newCenterY - (state.Size.Height / 2.0));
+                member.Size = state.Size;
+                member.RotationAngle = SelectableObject.NormalizeAngle(state.RotationAngle + deltaAngleDegrees);
                 member.UpdateBounds();
             }
             else if (member.Element is System.Windows.Shapes.Polygon polygon && state.PolygonPoints != null)
@@ -1019,6 +1074,16 @@ namespace QASmartTouch.Services
                 }
                 polygon.Points = newPoints;
                 polygon.RenderTransform = Transform.Identity;
+
+                double memCenterX = state.Position.X + (state.Size.Width / 2.0);
+                double memCenterY = state.Position.Y + (state.Size.Height / 2.0);
+                double cdx = memCenterX - center.X;
+                double cdy = memCenterY - center.Y;
+                double newCenterX = center.X + (cdx * cos - cdy * sin);
+                double newCenterY = center.Y + (cdx * sin + cdy * cos);
+                member.Position = new Point(newCenterX - (state.Size.Width / 2.0), newCenterY - (state.Size.Height / 2.0));
+                member.Size = state.Size;
+                member.RotationAngle = SelectableObject.NormalizeAngle(state.RotationAngle + deltaAngleDegrees);
                 member.UpdateBounds();
             }
             else if (member.Element is System.Windows.Shapes.Line line)
@@ -1038,13 +1103,29 @@ namespace QASmartTouch.Services
             }
             else if (member.Element is System.Windows.Shapes.Path path && path.Data != null)
             {
-                var tg = new TransformGroup();
-                if (state.RenderTransform != null && state.RenderTransform != Transform.Identity)
-                {
-                    tg.Children.Add(state.RenderTransform.Clone());
-                }
-                tg.Children.Add(new RotateTransform(deltaAngleDegrees, center.X, center.Y));
-                path.RenderTransform = tg;
+                double memCenterX = state.Position.X + (state.Size.Width / 2.0);
+                double memCenterY = state.Position.Y + (state.Size.Height / 2.0);
+
+                double dx = memCenterX - center.X;
+                double dy = memCenterY - center.Y;
+
+                double newCenterX = center.X + (dx * cos - dy * sin);
+                double newCenterY = center.Y + (dx * sin + dy * cos);
+
+                Point newPos = new Point(
+                    newCenterX - (state.Size.Width / 2.0),
+                    newCenterY - (state.Size.Height / 2.0));
+
+                double baseAngle = state.RotationAngle != 0
+                    ? state.RotationAngle
+                    : SelectableObject.ExtractTransformRotationAngle(state.RenderTransform);
+                double newAngle = SelectableObject.NormalizeAngle(baseAngle + deltaAngleDegrees);
+
+                member.Position = newPos;
+                member.Size = state.Size;
+                member.RotationAngle = newAngle;
+
+                ApplyCanonicalPathTransform(path, newPos, state.Size, newAngle, state.RenderTransform);
                 member.UpdateBounds();
             }
             else if (member.Element is CanvasControl canvas)
@@ -1065,7 +1146,8 @@ namespace QASmartTouch.Services
                 CanvasControl.SetTop(canvas, newTop);
 
                 member.Position = new Point(newLeft, newTop);
-                member.RotationAngle = (state.RotationAngle + deltaAngleDegrees) % 360;
+                member.Size = state.Size;
+                member.RotationAngle = SelectableObject.NormalizeAngle(state.RotationAngle + deltaAngleDegrees);
 
                 double baseW = !double.IsNaN(canvas.Width) && canvas.Width > 0 ? canvas.Width : (canvas.ActualWidth > 0 ? canvas.ActualWidth : 200);
                 double baseH = !double.IsNaN(canvas.Height) && canvas.Height > 0 ? canvas.Height : (canvas.ActualHeight > 0 ? canvas.ActualHeight : 200);
@@ -1103,12 +1185,22 @@ namespace QASmartTouch.Services
                 CanvasControl.SetTop(fe, newTop);
 
                 member.Position = new Point(newLeft, newTop);
-                member.RotationAngle = (state.RotationAngle + deltaAngleDegrees) % 360;
+                member.Size = state.Size;
+                member.RotationAngle = SelectableObject.NormalizeAngle(state.RotationAngle + deltaAngleDegrees);
 
                 double w = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : state.Size.Width);
                 double h = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : state.Size.Height);
                 var rotateTransform = new RotateTransform(member.RotationAngle, w / 2.0, h / 2.0);
                 fe.RenderTransform = rotateTransform;
+                member.UpdateBounds();
+            }
+            else if (member.Stroke != null && state.StrokePoints != null)
+            {
+                member.Stroke.StylusPoints = state.StrokePoints.Clone();
+                var m = Matrix.Identity;
+                m.RotateAt(deltaAngleDegrees, center.X, center.Y);
+                member.Stroke.Transform(m, false);
+                member.RotationAngle = 0;
                 member.UpdateBounds();
             }
         }
@@ -1134,6 +1226,7 @@ namespace QASmartTouch.Services
                 }
                 polyline.Points = newPoints;
                 polyline.RenderTransform = Transform.Identity;
+                obj.RotationAngle = SelectableObject.NormalizeAngle(targetAngleDegrees);
             }
             else if (obj.Element is System.Windows.Shapes.Polygon polygon && state.PolygonPoints != null)
             {
@@ -1147,6 +1240,7 @@ namespace QASmartTouch.Services
                 }
                 polygon.Points = newPoints;
                 polygon.RenderTransform = Transform.Identity;
+                obj.RotationAngle = SelectableObject.NormalizeAngle(targetAngleDegrees);
             }
             else if (obj.Element is System.Windows.Shapes.Line line)
             {
@@ -1164,17 +1258,15 @@ namespace QASmartTouch.Services
             }
             else if (obj.Element is System.Windows.Shapes.Path path && path.Data != null)
             {
-                var tg = new TransformGroup();
-                if (state.RenderTransform != null && state.RenderTransform != Transform.Identity)
-                {
-                    tg.Children.Add(state.RenderTransform.Clone());
-                }
-                tg.Children.Add(new RotateTransform(deltaAngleDegrees, center.X, center.Y));
-                path.RenderTransform = tg;
+                obj.RotationAngle = SelectableObject.NormalizeAngle(targetAngleDegrees);
+                obj.Position = state.Position;
+                obj.Size = state.Size;
+                ApplyCanonicalPathTransform(path, state.Position, state.Size, obj.RotationAngle, state.RenderTransform);
+                obj.UpdateBounds();
             }
             else if (obj.Element is CanvasControl canvas)
             {
-                obj.RotationAngle = targetAngleDegrees;
+                obj.RotationAngle = SelectableObject.NormalizeAngle(targetAngleDegrees);
 
                 double baseW = !double.IsNaN(canvas.Width) && canvas.Width > 0 ? canvas.Width : (canvas.ActualWidth > 0 ? canvas.ActualWidth : 200);
                 double baseH = !double.IsNaN(canvas.Height) && canvas.Height > 0 ? canvas.Height : (canvas.ActualHeight > 0 ? canvas.ActualHeight : 200);
@@ -1187,19 +1279,28 @@ namespace QASmartTouch.Services
 
                 var tg = new TransformGroup();
                 tg.Children.Add(new ScaleTransform(scaleX, scaleY, 0, 0));
-                if (targetAngleDegrees != 0)
+                if (obj.RotationAngle != 0)
                 {
-                    tg.Children.Add(new RotateTransform(targetAngleDegrees, (baseW * scaleX) / 2.0, (baseH * scaleY) / 2.0));
+                    tg.Children.Add(new RotateTransform(obj.RotationAngle, (baseW * scaleX) / 2.0, (baseH * scaleY) / 2.0));
                 }
                 canvas.RenderTransform = tg;
             }
             else if (obj.Element is FrameworkElement fe)
             {
-                obj.RotationAngle = targetAngleDegrees;
+                obj.RotationAngle = SelectableObject.NormalizeAngle(targetAngleDegrees);
                 double w = !double.IsNaN(fe.Width) && fe.Width > 0 ? fe.Width : (fe.ActualWidth > 0 ? fe.ActualWidth : state.Size.Width);
                 double h = !double.IsNaN(fe.Height) && fe.Height > 0 ? fe.Height : (fe.ActualHeight > 0 ? fe.ActualHeight : state.Size.Height);
-                var rotateTransform = new RotateTransform(targetAngleDegrees, w / 2.0, h / 2.0);
+                var rotateTransform = new RotateTransform(obj.RotationAngle, w / 2.0, h / 2.0);
                 fe.RenderTransform = rotateTransform;
+            }
+            else if (obj.Stroke != null && state.StrokePoints != null)
+            {
+                obj.Stroke.StylusPoints = state.StrokePoints.Clone();
+                var m = Matrix.Identity;
+                m.RotateAt(deltaAngleDegrees, center.X, center.Y);
+                obj.Stroke.Transform(m, false);
+                obj.RotationAngle = 0;
+                obj.UpdateBounds();
             }
         }
 
@@ -1211,7 +1312,7 @@ namespace QASmartTouch.Services
             if (obj == null || obj.IsLocked)
                 return;
 
-            double normalizedAngle = (angleDegrees % 360 + 360) % 360;
+            double normalizedAngle = SelectableObject.NormalizeAngle(angleDegrees);
 
             // 1. Nhóm đối tượng (Group / Multi-Selection)
             if (obj.IsGroup || obj.Type == ObjectType.Group || (obj.GroupMembers != null && obj.GroupMembers.Count > 0))
@@ -1222,8 +1323,8 @@ namespace QASmartTouch.Services
                 return;
             }
 
-            // 2. Nét vẽ Polyline / Polygon / Line: Xoay các điểm trực tiếp theo delta quanh tâm
-            if (obj.Element is System.Windows.Shapes.Polyline || obj.Element is System.Windows.Shapes.Polygon || obj.Element is System.Windows.Shapes.Line)
+            // 2. Nét vẽ Polyline / Polygon / Line / Stroke: Xoay các điểm trực tiếp theo delta quanh tâm
+            if (obj.Element is System.Windows.Shapes.Polyline || obj.Element is System.Windows.Shapes.Polygon || obj.Element is System.Windows.Shapes.Line || obj.Stroke != null)
             {
                 double deltaAngle = normalizedAngle - obj.RotationAngle;
                 RotateInPlace(obj, deltaAngle);
@@ -1231,7 +1332,16 @@ namespace QASmartTouch.Services
                 return;
             }
 
-            // 3. FrameworkElement / Path: Sử dụng RenderTransform RotateTransform
+            // 3. Path: chuẩn hóa TransformGroup qua ApplyCanonicalPathTransform
+            if (obj.Element is System.Windows.Shapes.Path singlePath && singlePath.Data != null)
+            {
+                obj.RotationAngle = normalizedAngle;
+                ApplyCanonicalPathTransform(singlePath, obj.Position, obj.Size, obj.RotationAngle, singlePath.RenderTransform);
+                obj.UpdateBounds();
+                return;
+            }
+
+            // 4. FrameworkElement: Sử dụng RenderTransform RotateTransform
             obj.RotationAngle = normalizedAngle;
             obj.ApplyTransform();
             obj.UpdateBounds();
@@ -1245,7 +1355,7 @@ namespace QASmartTouch.Services
             if (obj == null || obj.IsLocked)
                 return;
 
-            double newAngle = (obj.RotationAngle + deltaAngle) % 360;
+            double newAngle = SelectableObject.NormalizeAngle(obj.RotationAngle + deltaAngle);
             Rotate(obj, newAngle);
         }
 
@@ -1281,7 +1391,14 @@ namespace QASmartTouch.Services
                             polyline.Points[i] = new Point(groupCenterX + (pdx * cos - pdy * sin), groupCenterY + (pdx * sin + pdy * cos));
                         }
                         polyline.RenderTransform = Transform.Identity;
-                        member.RotationAngle = 0;
+                        double memCenterX = member.Position.X + (member.Size.Width / 2.0);
+                        double memCenterY = member.Position.Y + (member.Size.Height / 2.0);
+                        double cdx = memCenterX - groupCenterX;
+                        double cdy = memCenterY - groupCenterY;
+                        double newCenterX = groupCenterX + (cdx * cos - cdy * sin);
+                        double newCenterY = groupCenterY + (cdx * sin + cdy * cos);
+                        member.Position = new Point(newCenterX - (member.Size.Width / 2.0), newCenterY - (member.Size.Height / 2.0));
+                        member.RotationAngle = SelectableObject.NormalizeAngle(member.RotationAngle + deltaAngleDegrees);
                         member.UpdateBounds();
                     }
                     else if (member.Element is System.Windows.Shapes.Polygon polygon && polygon.Points != null && polygon.Points.Count > 0)
@@ -1294,7 +1411,14 @@ namespace QASmartTouch.Services
                             polygon.Points[i] = new Point(groupCenterX + (pdx * cos - pdy * sin), groupCenterY + (pdx * sin + pdy * cos));
                         }
                         polygon.RenderTransform = Transform.Identity;
-                        member.RotationAngle = 0;
+                        double memCenterX = member.Position.X + (member.Size.Width / 2.0);
+                        double memCenterY = member.Position.Y + (member.Size.Height / 2.0);
+                        double cdx = memCenterX - groupCenterX;
+                        double cdy = memCenterY - groupCenterY;
+                        double newCenterX = groupCenterX + (cdx * cos - cdy * sin);
+                        double newCenterY = groupCenterY + (cdx * sin + cdy * cos);
+                        member.Position = new Point(newCenterX - (member.Size.Width / 2.0), newCenterY - (member.Size.Height / 2.0));
+                        member.RotationAngle = SelectableObject.NormalizeAngle(member.RotationAngle + deltaAngleDegrees);
                         member.UpdateBounds();
                     }
                     else if (member.Element is System.Windows.Shapes.Line line)
@@ -1315,17 +1439,22 @@ namespace QASmartTouch.Services
                     }
                     else if (member.Element is System.Windows.Shapes.Path path && path.Data != null)
                     {
-                        // Path sử dụng TransformGroup - xoay vòng quanh group center
-                        var tg = path.RenderTransform as TransformGroup ?? new TransformGroup();
-                        if (path.RenderTransform is not TransformGroup)
-                        {
-                            tg = new TransformGroup();
-                            if (path.RenderTransform != null && path.RenderTransform != Transform.Identity)
-                                tg.Children.Add(path.RenderTransform);
-                        }
-                        // Thêm rotate quanh groupCenter
-                        tg.Children.Add(new RotateTransform(deltaAngleDegrees, groupCenterX, groupCenterY));
-                        path.RenderTransform = tg;
+                        double memCenterX = member.Position.X + (member.Size.Width / 2.0);
+                        double memCenterY = member.Position.Y + (member.Size.Height / 2.0);
+                        double dx = memCenterX - groupCenterX;
+                        double dy = memCenterY - groupCenterY;
+                        double newCenterX = groupCenterX + (dx * cos - dy * sin);
+                        double newCenterY = groupCenterY + (dx * sin + dy * cos);
+
+                        member.Position = new Point(
+                            newCenterX - (member.Size.Width / 2.0),
+                            newCenterY - (member.Size.Height / 2.0));
+                        double baseAngle = member.RotationAngle != 0
+                            ? member.RotationAngle
+                            : SelectableObject.ExtractElementRotationAngle(path);
+                        member.RotationAngle = SelectableObject.NormalizeAngle(baseAngle + deltaAngleDegrees);
+
+                        ApplyCanonicalPathTransform(path, member.Position, member.Size, member.RotationAngle, path.RenderTransform);
                         member.UpdateBounds();
                     }
                     else if (member.Element is FrameworkElement fe)
@@ -1339,7 +1468,7 @@ namespace QASmartTouch.Services
                         double newCenterX = groupCenterX + (dx * cos - dy * sin);
                         double newCenterY = groupCenterY + (dx * sin + dy * cos);
 
-                        member.RotationAngle = (member.RotationAngle + deltaAngleDegrees) % 360;
+                        member.RotationAngle = SelectableObject.NormalizeAngle(member.RotationAngle + deltaAngleDegrees);
                         member.Position = new Point(
                             newCenterX - (member.Size.Width / 2.0),
                             newCenterY - (member.Size.Height / 2.0)
@@ -1347,6 +1476,14 @@ namespace QASmartTouch.Services
                         CanvasControl.SetLeft(fe, member.Position.X);
                         CanvasControl.SetTop(fe, member.Position.Y);
                         member.ApplyTransform();
+                        member.UpdateBounds();
+                    }
+                    else if (member.Stroke != null)
+                    {
+                        var m = Matrix.Identity;
+                        m.RotateAt(deltaAngleDegrees, groupCenterX, groupCenterY);
+                        member.Stroke.Transform(m, false);
+                        member.RotationAngle = 0;
                         member.UpdateBounds();
                     }
                 }
@@ -1372,7 +1509,7 @@ namespace QASmartTouch.Services
                     singlePolyline.Points[i] = new Point(centerX + (dx * cos - dy * sin), centerY + (dx * sin + dy * cos));
                 }
                 singlePolyline.RenderTransform = Transform.Identity;
-                obj.RotationAngle = 0;
+                obj.RotationAngle = SelectableObject.NormalizeAngle(obj.RotationAngle + deltaAngleDegrees);
                 obj.UpdateBounds();
             }
             else if (obj.Element is System.Windows.Shapes.Polygon singlePolygon && singlePolygon.Points != null && singlePolygon.Points.Count > 0)
@@ -1385,7 +1522,7 @@ namespace QASmartTouch.Services
                     singlePolygon.Points[i] = new Point(centerX + (dx * cos - dy * sin), centerY + (dx * sin + dy * cos));
                 }
                 singlePolygon.RenderTransform = Transform.Identity;
-                obj.RotationAngle = 0;
+                obj.RotationAngle = SelectableObject.NormalizeAngle(obj.RotationAngle + deltaAngleDegrees);
                 obj.UpdateBounds();
             }
             else if (obj.Element is System.Windows.Shapes.Line singleLine)
@@ -1404,9 +1541,26 @@ namespace QASmartTouch.Services
                 obj.RotationAngle = 0;
                 obj.UpdateBounds();
             }
+            else if (obj.Element is System.Windows.Shapes.Path singlePath && singlePath.Data != null)
+            {
+                double baseAngle = obj.RotationAngle != 0
+                    ? obj.RotationAngle
+                    : SelectableObject.ExtractElementRotationAngle(singlePath);
+                obj.RotationAngle = SelectableObject.NormalizeAngle(baseAngle + deltaAngleDegrees);
+                ApplyCanonicalPathTransform(singlePath, obj.Position, obj.Size, obj.RotationAngle, singlePath.RenderTransform);
+                obj.UpdateBounds();
+            }
+            else if (obj.Stroke != null)
+            {
+                var m = Matrix.Identity;
+                m.RotateAt(deltaAngleDegrees, centerX, centerY);
+                obj.Stroke.Transform(m, false);
+                obj.RotationAngle = 0;
+                obj.UpdateBounds();
+            }
             else
             {
-                obj.RotationAngle = (obj.RotationAngle + deltaAngleDegrees) % 360;
+                obj.RotationAngle = SelectableObject.NormalizeAngle(obj.RotationAngle + deltaAngleDegrees);
                 obj.ApplyTransform();
                 obj.UpdateBounds();
             }
@@ -1485,16 +1639,26 @@ namespace QASmartTouch.Services
                     }
                     else if (member.Element is System.Windows.Shapes.Path path && path.Data != null)
                     {
-                        // Path: thêm ScaleTransform flip quanh groupCenterX
-                        var tg = path.RenderTransform as TransformGroup ?? new TransformGroup();
-                        if (path.RenderTransform is not TransformGroup)
-                        {
-                            tg = new TransformGroup();
-                            if (path.RenderTransform != null && path.RenderTransform != Transform.Identity)
-                                tg.Children.Add(path.RenderTransform);
-                        }
-                        tg.Children.Add(new ScaleTransform(-1, 1, groupCenterX, 0));
-                        path.RenderTransform = tg;
+                        double newLeft = 2 * groupCenterX - (member.Position.X + member.Size.Width);
+                        member.Position = new Point(newLeft, member.Position.Y);
+                        double baseAngle = member.RotationAngle != 0
+                            ? member.RotationAngle
+                            : SelectableObject.ExtractElementRotationAngle(path);
+                        member.RotationAngle = SelectableObject.NormalizeAngle(-baseAngle);
+
+                        var flipRef = new TransformGroup();
+                        if (path.RenderTransform != null && path.RenderTransform != Transform.Identity)
+                            flipRef.Children.Add(path.RenderTransform.Clone());
+                        flipRef.Children.Add(new ScaleTransform(-1, 1));
+
+                        ApplyCanonicalPathTransform(path, member.Position, member.Size, member.RotationAngle, flipRef);
+                        member.UpdateBounds();
+                    }
+                    else if (member.Stroke != null)
+                    {
+                        var matrix = Matrix.Identity;
+                        matrix.ScaleAt(-1, 1, groupCenterX, 0);
+                        member.Stroke.Transform(matrix, false);
                         member.UpdateBounds();
                     }
                     else
@@ -1561,6 +1725,32 @@ namespace QASmartTouch.Services
                 return;
             }
 
+            if (obj.Element is System.Windows.Shapes.Path singlePath && singlePath.Data != null)
+            {
+                double baseAngle = obj.RotationAngle != 0
+                    ? obj.RotationAngle
+                    : SelectableObject.ExtractElementRotationAngle(singlePath);
+                obj.RotationAngle = SelectableObject.NormalizeAngle(-baseAngle);
+
+                var flipRef = new TransformGroup();
+                if (singlePath.RenderTransform != null && singlePath.RenderTransform != Transform.Identity)
+                    flipRef.Children.Add(singlePath.RenderTransform.Clone());
+                flipRef.Children.Add(new ScaleTransform(-1, 1));
+
+                ApplyCanonicalPathTransform(singlePath, obj.Position, obj.Size, obj.RotationAngle, flipRef);
+                obj.UpdateBounds();
+                return;
+            }
+
+            if (obj.Stroke != null)
+            {
+                var matrix = Matrix.Identity;
+                matrix.ScaleAt(-1, 1, centerX, 0);
+                obj.Stroke.Transform(matrix, false);
+                obj.UpdateBounds();
+                return;
+            }
+
             if (obj.Scale == null)
                 obj.Scale = new ScaleTransform(1, 1);
 
@@ -1620,16 +1810,26 @@ namespace QASmartTouch.Services
                     }
                     else if (member.Element is System.Windows.Shapes.Path path && path.Data != null)
                     {
-                        // Path: thêm ScaleTransform flip quanh groupCenterY
-                        var tg = path.RenderTransform as TransformGroup ?? new TransformGroup();
-                        if (path.RenderTransform is not TransformGroup)
-                        {
-                            tg = new TransformGroup();
-                            if (path.RenderTransform != null && path.RenderTransform != Transform.Identity)
-                                tg.Children.Add(path.RenderTransform);
-                        }
-                        tg.Children.Add(new ScaleTransform(1, -1, 0, groupCenterY));
-                        path.RenderTransform = tg;
+                        double newTop = 2 * groupCenterY - (member.Position.Y + member.Size.Height);
+                        member.Position = new Point(member.Position.X, newTop);
+                        double baseAngle = member.RotationAngle != 0
+                            ? member.RotationAngle
+                            : SelectableObject.ExtractElementRotationAngle(path);
+                        member.RotationAngle = SelectableObject.NormalizeAngle(-baseAngle);
+
+                        var flipRef = new TransformGroup();
+                        if (path.RenderTransform != null && path.RenderTransform != Transform.Identity)
+                            flipRef.Children.Add(path.RenderTransform.Clone());
+                        flipRef.Children.Add(new ScaleTransform(1, -1));
+
+                        ApplyCanonicalPathTransform(path, member.Position, member.Size, member.RotationAngle, flipRef);
+                        member.UpdateBounds();
+                    }
+                    else if (member.Stroke != null)
+                    {
+                        var matrix = Matrix.Identity;
+                        matrix.ScaleAt(1, -1, 0, groupCenterY);
+                        member.Stroke.Transform(matrix, false);
                         member.UpdateBounds();
                     }
                     else
@@ -1692,6 +1892,32 @@ namespace QASmartTouch.Services
                 singleLine.RenderTransform = Transform.Identity;
                 if (!double.IsNaN(CanvasControl.GetLeft(singleLine))) CanvasControl.SetLeft(singleLine, double.NaN);
                 if (!double.IsNaN(CanvasControl.GetTop(singleLine))) CanvasControl.SetTop(singleLine, double.NaN);
+                obj.UpdateBounds();
+                return;
+            }
+
+            if (obj.Element is System.Windows.Shapes.Path singlePathV && singlePathV.Data != null)
+            {
+                double baseAngle = obj.RotationAngle != 0
+                    ? obj.RotationAngle
+                    : SelectableObject.ExtractElementRotationAngle(singlePathV);
+                obj.RotationAngle = SelectableObject.NormalizeAngle(-baseAngle);
+
+                var flipRef = new TransformGroup();
+                if (singlePathV.RenderTransform != null && singlePathV.RenderTransform != Transform.Identity)
+                    flipRef.Children.Add(singlePathV.RenderTransform.Clone());
+                flipRef.Children.Add(new ScaleTransform(1, -1));
+
+                ApplyCanonicalPathTransform(singlePathV, obj.Position, obj.Size, obj.RotationAngle, flipRef);
+                obj.UpdateBounds();
+                return;
+            }
+
+            if (obj.Stroke != null)
+            {
+                var matrix = Matrix.Identity;
+                matrix.ScaleAt(1, -1, 0, centerY);
+                obj.Stroke.Transform(matrix, false);
                 obj.UpdateBounds();
                 return;
             }

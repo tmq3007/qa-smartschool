@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -251,7 +251,51 @@ namespace QASmartTouch.Services.VersionManagement
         private string GetConfigFilePath(string fileName)
         {
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
-            return Path.Combine(appPath, CONFIG_FOLDER, fileName);
+            string localPath = Path.Combine(appPath, CONFIG_FOLDER, fileName);
+
+            // Nếu file cục bộ đã tồn tại và hợp lệ (> 500 bytes) -> Dùng file cục bộ
+            if (File.Exists(localPath))
+            {
+                try
+                {
+                    if (new FileInfo(localPath).Length > 500)
+                    {
+                        return localPath;
+                    }
+                }
+                catch { }
+            }
+
+            // Fallback tự phục hồi: Tìm file gốc trong thư mục config của dự án khi chạy dev/debug
+            try
+            {
+                var dir = new DirectoryInfo(appPath);
+                while (dir != null)
+                {
+                    string candidate = Path.Combine(dir.FullName, CONFIG_FOLDER, fileName);
+                    if (File.Exists(candidate))
+                    {
+                        var info = new FileInfo(candidate);
+                        if (info.Length > 500)
+                        {
+                            try
+                            {
+                                EnsureConfigDirectoryExists();
+                                File.Copy(candidate, localPath, true);
+                                return localPath;
+                            }
+                            catch
+                            {
+                                return candidate;
+                            }
+                        }
+                    }
+                    dir = dir.Parent;
+                }
+            }
+            catch { }
+
+            return localPath;
         }
 
         /// <summary>

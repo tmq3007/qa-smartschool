@@ -1,4 +1,4 @@
-using System;
+ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -10,6 +10,8 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using QASmartTouch.Managers;
+using QASmartTouch.Helpers;
+using QASmartClass.WhiteboardCore.IO.SceneGraph;
 using Path = System.IO.Path;
 
 namespace QASmartTouch.WhiteboardCore.IO
@@ -19,7 +21,7 @@ namespace QASmartTouch.WhiteboardCore.IO
     /// </summary>
     public class LectureManifest
     {
-        public string Version { get; set; } = "1.0";
+        public string Version { get; set; } = "2.0";
         public string Title { get; set; } = "Bài giảng QA SmartClass";
         public string Author { get; set; } = "Giáo viên";
         public DateTime CreatedAt { get; set; } = DateTime.Now;
@@ -36,19 +38,24 @@ namespace QASmartTouch.WhiteboardCore.IO
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? BackgroundColorHex { get; set; } = "#3D6D64";
+        public string? BackgroundImagePath { get; set; }
         public string? BackgroundPattern { get; set; } = "grid";
         public int LineSpacing { get; set; } = 40;
         public int LineOpacity { get; set; } = 10;
         public int ObjectCount { get; set; }
         public double CanvasWidth { get; set; } = 1920;
         public double CanvasHeight { get; set; } = 1080;
+        public string? SceneGraphFile { get; set; }
+        public string? InkFile { get; set; }
         public string XamlFile { get; set; } = string.Empty;
         public string? ThumbnailFile { get; set; }
     }
 
     /// <summary>
     /// SaveLoadService — Quản lý Đóng gói, Lưu và Mở bài giảng (.qasc)
-    /// Cấu trúc chuẩn ZIP Package chứa manifest.json, boards/*.xaml, thumbnails/*.png, assets/*
+    /// Hỗ trợ cả 2 chuẩn:
+    /// - Chuẩn v2.0 (Mới): JSON Scene Graph lưu trữ 100% đối tượng (nét vẽ, ảnh, widget, video, 3D, chart)
+    /// - Chuẩn v1.0 (Cũ): Fallback XAML Deserialization đảm bảo tương thích ngược 100%
     /// </summary>
     public static class SaveLoadService
     {
@@ -81,7 +88,7 @@ namespace QASmartTouch.WhiteboardCore.IO
                 {
                     var manifest = new LectureManifest
                     {
-                        Version = "1.0",
+                        Version = "2.0",
                         Title = !string.IsNullOrWhiteSpace(lectureTitle) 
                             ? lectureTitle 
                             : Path.GetFileNameWithoutExtension(filePath),
@@ -92,8 +99,12 @@ namespace QASmartTouch.WhiteboardCore.IO
                     };
 
                     int boardIndex = 0;
+                    int imgIndex = 0;
+                    var writtenAssets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
                     foreach (var board in boardManager.Boards)
                     {
+                        string sceneGraphEntryPath = $"scene_graphs/board_{boardIndex}.json";
                         string xamlEntryPath = $"boards/board_{boardIndex}.xaml";
                         string thumbEntryPath = $"thumbnails/board_{boardIndex}.png";
 
@@ -104,44 +115,69 @@ namespace QASmartTouch.WhiteboardCore.IO
                             CanvasWidth = board.CanvasWidth > 0 ? board.CanvasWidth : 1920,
                             CanvasHeight = board.CanvasHeight > 0 ? board.CanvasHeight : 1080,
                             BackgroundColorHex = board.BackgroundColorHex ?? "#3D6D64",
+                            BackgroundImagePath = board.BackgroundImagePath,
                             BackgroundPattern = board.BackgroundPattern,
                             LineSpacing = board.LineSpacing > 0 ? board.LineSpacing : 40,
                             LineOpacity = board.LineOpacity > 0 ? board.LineOpacity : 10,
                             ObjectCount = board.CanvasElements?.Count ?? 0,
+                            SceneGraphFile = sceneGraphEntryPath,
                             XamlFile = xamlEntryPath,
                             ThumbnailFile = thumbEntryPath
                         };
 
-                        // 1. Serialize Canvas elements thành XAML
-                        string xamlContent = SerializeBoardToXaml(board, archive, boardIndex);
+                        // 1. Serialize Canvas elements thành JSON Scene Graph (v2.0 cao cấp)
+                        var sceneNodes = new List<SceneElementNode>();
+                        if (board.CanvasElements != null)
+                        {
+                            foreach (var element in board.CanvasElements)
+                            {
+                                var node = SceneGraphSerializer.SerializeElement(element, archive, boardIndex, ref imgIndex, writtenAssets);
+                                if (node != null)
+                                {
+                                    sceneNodes.Add(node);
+                                }
+                            }
+                        }
+
+                        var sceneEntry = archive.CreateEntry(sceneGraphEntryPath, CompressionLevel.Optimal);
+                        using (var writer = new StreamWriter(sceneEntry.Open(), Encoding.UTF8))
+                        {
+                            string jsonContent = JsonSerializer.Serialize(sceneNodes, new JsonSerializerOptions
+                            {
+                                WriteIndented = false
+                            });
+                            writer.Write(jsonContent);
+                        }
+
+                        // 1b. Lưu nét vẽ Native Ink (ISF - Ink Serialized Format) nếu có
+                        if (board.Strokes != null && board.Strokes.Count > 0)
+                        {
+                            string inkEntryPath = $"strokes/board_{boardIndex}.isf";
+                            boardItem.InkFile = inkEntryPath;
+                            var inkEntry = archive.CreateEntry(inkEntryPath, CompressionLevel.Optimal);
+                            using var inkStream = inkEntry.Open();
+                            board.Strokes.Save(inkStream);
+                        }
+
+                        // 2. Ghi XAML fallback (cho các phiên bản cũ hoặc kiểm tra tương thích)
+                        string xamlContent = SerializeBoardToXaml(board, archive, boardIndex, writtenAssets);
                         var xamlEntry = archive.CreateEntry(xamlEntryPath, CompressionLevel.Optimal);
                         using (var writer = new StreamWriter(xamlEntry.Open(), Encoding.UTF8))
                         {
                             writer.Write(xamlContent);
                         }
 
-                        // 2. Lưu Thumbnail ảnh thu nhỏ
+                        // 3. Lưu Thumbnail ảnh thu nhỏ (>0 bytes an toàn qua MemoryStream)
                         if (board.ThumbnailImage != null)
                         {
-                            try
-                            {
-                                var thumbEntry = archive.CreateEntry(thumbEntryPath, CompressionLevel.Fastest);
-                                using var thumbStream = thumbEntry.Open();
-                                var encoder = new PngBitmapEncoder();
-                                encoder.Frames.Add(BitmapFrame.Create(board.ThumbnailImage));
-                                encoder.Save(thumbStream);
-                            }
-                            catch (Exception ex)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] Lỗi lưu thumbnail trang {boardIndex}: {ex.Message}");
-                            }
+                            WriteBitmapToZipEntry(archive, thumbEntryPath, board.ThumbnailImage);
                         }
 
                         manifest.Boards.Add(boardItem);
                         boardIndex++;
                     }
 
-                    // 3. Ghi manifest.json
+                    // 4. Ghi manifest.json
                     var manifestEntry = archive.CreateEntry(MANIFEST_NAME, CompressionLevel.Optimal);
                     using (var writer = new StreamWriter(manifestEntry.Open(), Encoding.UTF8))
                     {
@@ -158,7 +194,7 @@ namespace QASmartTouch.WhiteboardCore.IO
                 if (File.Exists(filePath)) File.Delete(filePath);
                 File.Move(tempFilePath, filePath);
 
-                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ✅ Đã lưu bài giảng thành công: {filePath} ({boardManager.BoardCount} bảng)");
+                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ✅ Đã lưu bài giảng thành công (.qasc v2.0): {filePath} ({boardManager.BoardCount} bảng)");
                 return true;
             }
             catch (Exception ex)
@@ -169,7 +205,46 @@ namespace QASmartTouch.WhiteboardCore.IO
         }
 
         /// <summary>
-        /// Mở bài giảng từ tệp .qasc và nạp vào BoardManager
+        /// Ghi BitmapSource an toàn vào ZipArchiveEntry thông qua bộ nhớ đệm MemoryStream.
+        /// Khắc phục triệt để lỗi System.NotSupportedException của Windows WIC khi ghi vào luồng nén 1 chiều.
+        /// </summary>
+        public static bool WriteBitmapToZipEntry(ZipArchive archive, string entryPath, BitmapSource bitmap, CompressionLevel level = CompressionLevel.Fastest)
+        {
+            if (archive == null || string.IsNullOrEmpty(entryPath) || bitmap == null) return false;
+            try
+            {
+                if (archive.Mode == ZipArchiveMode.Update)
+                {
+                    var existing = archive.GetEntry(entryPath);
+                    if (existing != null)
+                    {
+                        existing.Delete();
+                    }
+                }
+
+                var entry = archive.CreateEntry(entryPath, level);
+                using (var entryStream = entry.Open())
+                using (var memoryBuffer = new MemoryStream())
+                {
+                    var encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(bitmap));
+                    encoder.Save(memoryBuffer); // MemoryStream có CanSeek == true
+
+                    memoryBuffer.Position = 0;
+                    memoryBuffer.CopyTo(entryStream);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ❌ Lỗi ghi bitmap asset '{entryPath}': {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Mở bài giảng từ tệp .qasc và nạp vào BoardManager.
+        /// Tự động phát hiện chuẩn JSON Scene Graph hoặc Fallback XAML cũ.
         /// </summary>
         public static LectureManifest? LoadLecture(BoardManager boardManager, string filePath)
         {
@@ -205,7 +280,9 @@ namespace QASmartTouch.WhiteboardCore.IO
                 var assetCache = new Dictionary<string, BitmapImage>(StringComparer.OrdinalIgnoreCase);
                 foreach (var entry in archive.Entries)
                 {
-                    if (entry.FullName.StartsWith("assets/", StringComparison.OrdinalIgnoreCase) && entry.Length > 0)
+                    string normName = entry.FullName.Replace('\\', '/');
+                    if ((normName.StartsWith("assets/", StringComparison.OrdinalIgnoreCase) || 
+                         entry.FullName.StartsWith("assets\\", StringComparison.OrdinalIgnoreCase)) && entry.Length > 0)
                     {
                         try
                         {
@@ -221,7 +298,13 @@ namespace QASmartTouch.WhiteboardCore.IO
                             bi.EndInit();
                             bi.Freeze();
 
+                            assetCache[normName] = bi;
                             assetCache[entry.FullName] = bi;
+                            string fileNameOnly = Path.GetFileName(normName);
+                            if (!string.IsNullOrEmpty(fileNameOnly))
+                            {
+                                assetCache[fileNameOnly] = bi;
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -232,15 +315,18 @@ namespace QASmartTouch.WhiteboardCore.IO
 
                 // 3. Tái tạo danh sách BoardState
                 var loadedBoards = new List<BoardState>();
+                int boardIdx = 0;
+
                 foreach (var item in manifest.Boards)
                 {
                     var board = new BoardState
                     {
                         Id = item.Id != Guid.Empty ? item.Id : Guid.NewGuid(),
-                        Name = !string.IsNullOrWhiteSpace(item.Name) ? item.Name : "Bảng",
+                        Name = !string.IsNullOrWhiteSpace(item.Name) ? item.Name : $"Bảng {boardIdx + 1}",
                         CanvasWidth = item.CanvasWidth > 0 ? item.CanvasWidth : 1920,
                         CanvasHeight = item.CanvasHeight > 0 ? item.CanvasHeight : 1080,
                         BackgroundColorHex = item.BackgroundColorHex ?? "#3D6D64",
+                        BackgroundImagePath = item.BackgroundImagePath,
                         BackgroundPattern = item.BackgroundPattern,
                         LineSpacing = item.LineSpacing > 0 ? item.LineSpacing : 40,
                         LineOpacity = item.LineOpacity > 0 ? item.LineOpacity : 10,
@@ -276,8 +362,49 @@ namespace QASmartTouch.WhiteboardCore.IO
                         }
                     }
 
-                    // Nạp XAML Canvas Elements
-                    if (!string.IsNullOrEmpty(item.XamlFile))
+                    // A. ƯU TIÊN NẠP TỪ JSON SCENE GRAPH (v2.0)
+                    bool loadedFromSceneGraph = false;
+                    string sceneGraphPath = !string.IsNullOrEmpty(item.SceneGraphFile)
+                        ? item.SceneGraphFile
+                        : $"scene_graphs/board_{boardIdx}.json";
+
+                    var sceneEntry = archive.GetEntry(sceneGraphPath);
+                    if (sceneEntry != null)
+                    {
+                        try
+                        {
+                            using var reader = new StreamReader(sceneEntry.Open(), Encoding.UTF8);
+                            string jsonContent = reader.ReadToEnd();
+                            var nodes = JsonSerializer.Deserialize<List<SceneElementNode>>(jsonContent);
+                            if (nodes != null)
+                            {
+                                var elements = new List<UIElement>();
+                                foreach (var node in nodes)
+                                {
+                                    try
+                                    {
+                                        var elem = SceneGraphSerializer.DeserializeElement(node, assetCache);
+                                        if (elem != null) elements.Add(elem);
+                                    }
+                                    catch (Exception nodeEx)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ⚠️ Bỏ qua node {node.Id} ({node.ElementType}) do lỗi: {nodeEx.Message}");
+                                    }
+                                }
+                                board.CanvasElements = elements;
+                                board.ObjectCount = elements.Count;
+                                loadedFromSceneGraph = true;
+                                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ✅ Đã nạp trang '{board.Name}' từ JSON Scene Graph ({elements.Count} elements)");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ⚠️ Lỗi parse Scene Graph trang {item.Name}: {ex.Message}. Fallback XAML.");
+                        }
+                    }
+
+                    // B. FALLBACK NẠP TỪ XAML CŨ (v1.0) NẾU CHƯA CÓ SCENE GRAPH
+                    if (!loadedFromSceneGraph && !string.IsNullOrEmpty(item.XamlFile))
                     {
                         var xamlEntry = archive.GetEntry(item.XamlFile);
                         if (xamlEntry != null)
@@ -286,10 +413,31 @@ namespace QASmartTouch.WhiteboardCore.IO
                             string xamlContent = reader.ReadToEnd();
                             board.CanvasElements = DeserializeBoardFromXaml(xamlContent, assetCache);
                             board.ObjectCount = board.CanvasElements.Count;
+                            System.Diagnostics.Debug.WriteLine($"[SaveLoadService] 🔄 Đã nạp trang '{board.Name}' từ Legacy XAML ({board.ObjectCount} elements)");
+                        }
+                    }
+
+                    // C. NẠP NÉT VẼ NATIVE INK (ISF) NẾU CÓ
+                    if (!string.IsNullOrEmpty(item.InkFile))
+                    {
+                        var inkEntry = archive.GetEntry(item.InkFile);
+                        if (inkEntry != null)
+                        {
+                            try
+                            {
+                                using var inkStream = inkEntry.Open();
+                                board.Strokes = new System.Windows.Ink.StrokeCollection(inkStream);
+                                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ✒️ Đã nạp nét vẽ Native Ink ({board.Strokes.Count} strokes)");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[SaveLoadService] ⚠️ Lỗi nạp nét vẽ Native Ink trang {item.Name}: {ex.Message}");
+                            }
                         }
                     }
 
                     loadedBoards.Add(board);
+                    boardIdx++;
                 }
 
                 // 4. Nạp các bảng vào BoardManager
@@ -305,9 +453,13 @@ namespace QASmartTouch.WhiteboardCore.IO
             }
         }
 
-        #region Serializer Helpers
+        #region Serializer Helpers (Legacy Fallback)
 
-        private static string SerializeBoardToXaml(BoardState board, ZipArchive archive, int boardIndex)
+        private static string SerializeBoardToXaml(
+            BoardState board, 
+            ZipArchive archive, 
+            int boardIndex, 
+            HashSet<string>? writtenAssets = null)
         {
             var sb = new StringBuilder();
             sb.AppendLine("<Canvas xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\">");
@@ -317,7 +469,7 @@ namespace QASmartTouch.WhiteboardCore.IO
                 int imgIndex = 0;
                 foreach (var element in board.CanvasElements)
                 {
-                    if (element == null) continue;
+                    if (element == null || element is InkPresenter) continue;
 
                     try
                     {
@@ -325,12 +477,12 @@ namespace QASmartTouch.WhiteboardCore.IO
                         if (element is Image img && img.Source is BitmapSource bs)
                         {
                             string assetFileName = $"assets/board_{boardIndex}_img_{imgIndex}.png";
-                            var assetEntry = archive.CreateEntry(assetFileName, CompressionLevel.Fastest);
-                            using (var assetStream = assetEntry.Open())
+                            if (writtenAssets == null || !writtenAssets.Contains(assetFileName))
                             {
-                                var encoder = new PngBitmapEncoder();
-                                encoder.Frames.Add(BitmapFrame.Create(bs));
-                                encoder.Save(assetStream);
+                                if (WriteBitmapToZipEntry(archive, assetFileName, bs))
+                                {
+                                    writtenAssets?.Add(assetFileName);
+                                }
                             }
 
                             double left = Canvas.GetLeft(img);
@@ -341,6 +493,32 @@ namespace QASmartTouch.WhiteboardCore.IO
                             sb.AppendLine($"  <Image Canvas.Left=\"{left}\" Canvas.Top=\"{top}\" Width=\"{w}\" Height=\"{h}\" Stretch=\"{img.Stretch}\" Tag=\"asset:{assetFileName}\" />");
                             imgIndex++;
                             continue;
+                        }
+
+                        // Xử lý riêng cho biểu đồ tương tác để lưu hình ảnh hiển thị trong fallback XAML
+                        if (element is FrameworkElement feChart && InteractiveChartHelper.IsChartContainer(feChart))
+                        {
+                            var chartImg = InteractiveChartHelper.GetChartImage(feChart);
+                            if (chartImg?.Source is BitmapSource cbs)
+                            {
+                                string assetFileName = $"assets/board_{boardIndex}_chart_{imgIndex}.png";
+                                if (writtenAssets == null || !writtenAssets.Contains(assetFileName))
+                                {
+                                    if (WriteBitmapToZipEntry(archive, assetFileName, cbs))
+                                    {
+                                        writtenAssets?.Add(assetFileName);
+                                    }
+                                }
+
+                                double left = Canvas.GetLeft(feChart);
+                                double top = Canvas.GetTop(feChart);
+                                double w = feChart.Width > 0 ? feChart.Width : feChart.ActualWidth;
+                                double h = feChart.Height > 0 ? feChart.Height : feChart.ActualHeight;
+
+                                sb.AppendLine($"  <Image Canvas.Left=\"{left}\" Canvas.Top=\"{top}\" Width=\"{w}\" Height=\"{h}\" Stretch=\"Uniform\" Tag=\"asset:{assetFileName}\" />");
+                                imgIndex++;
+                                continue;
+                            }
                         }
 
                         // Các đối tượng hình học và văn bản chuẩn: Polyline, Polygon, Path, Rectangle, Ellipse, Line, TextBlock
