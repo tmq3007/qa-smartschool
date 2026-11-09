@@ -420,6 +420,8 @@ namespace QASmartTouch.Forms
             this.Close();
             
             // Open Countdown Timer window
+            var mainWindow = GetMainDashboard();
+            mainWindow?.RegisterRecentTool("more:Timer", "Đồng hồ đếm", QASmartTouch.Services.Tools.RecentToolsManager.CompassIconPath, System.Windows.Media.Color.FromRgb(0xE1, 0x70, 0x55), () => WindowHelper.ShowChildWindow(new Form2_19_CountdownTimer()), "Dùng lại: Đồng hồ đếm ngược");
             var countdownTimer = new Form2_19_CountdownTimer();
             WindowHelper.ShowChildWindow(countdownTimer);
         }
@@ -428,6 +430,19 @@ namespace QASmartTouch.Forms
         {
             this.Close();
             var mainWindow = GetMainDashboard();
+            mainWindow?.RegisterRecentTool(
+                "insert:VariationTable",
+                "Bảng biến thiên",
+                QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                System.Windows.Media.Color.FromRgb(0x6C, 0x5C, 0xE7),
+                () =>
+                {
+                    var dlg = new Form2_VariationTableDialog(mainWindow);
+                    dlg.Owner = mainWindow ?? Application.Current.MainWindow;
+                    dlg.ShowDialog();
+                },
+                "Dùng lại: Bảng biến thiên & Khảo sát hàm số");
+
             var dialog = new Form2_VariationTableDialog(mainWindow);
             dialog.Owner = mainWindow ?? Application.Current.MainWindow;
             dialog.ShowDialog();
@@ -440,6 +455,7 @@ namespace QASmartTouch.Forms
             
             // Open QA Calculator window (Reused Modeless Floating Tool - Instant 0ms)
             var mainWindow = GetMainDashboard();
+            mainWindow?.RegisterRecentTool("more:Calculator", "Máy tính", QASmartTouch.Services.Tools.RecentToolsManager.CalculatorIconPath, System.Windows.Media.Color.FromRgb(0x09, 0x84, 0xE3), () => { var calc = CalculatorWindow.GetOrCreateInstance(mainWindow); calc.Owner = mainWindow ?? Application.Current.MainWindow; calc.Show(); calc.WindowState = WindowState.Normal; try { calc.Activate(); } catch { } }, "Dùng lại: Máy tính cầm tay");
             var calculator = CalculatorWindow.GetOrCreateInstance(mainWindow);
             calculator.Owner = mainWindow ?? Application.Current.MainWindow;
             calculator.Show();

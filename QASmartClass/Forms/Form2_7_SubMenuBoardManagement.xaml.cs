@@ -188,6 +188,18 @@ namespace QASmartTouch.Forms
 
         private void btnSpotlight_Click(object sender, RoutedEventArgs e)
         {
+            _mainDashboard?.RegisterRecentTool(
+                "board:Spotlight",
+                "Đèn chiếu",
+                QASmartTouch.Services.Tools.RecentToolsManager.SpotlightIconPath,
+                Color.FromRgb(0xF5, 0x9E, 0x0B),
+                () =>
+                {
+                    var tool = new Form2_7_4_MagnifierTool(false);
+                    tool.ShowDialog();
+                },
+                "Dùng lại: Đèn chiếu Spotlight");
+
             // Close board menu first
             this.Close();
             
@@ -199,6 +211,18 @@ namespace QASmartTouch.Forms
 
         private void btnCurtain_Click(object sender, RoutedEventArgs e)
         {
+            _mainDashboard?.RegisterRecentTool(
+                "board:Curtain",
+                "Màn che",
+                QASmartTouch.Services.Tools.RecentToolsManager.SpotlightIconPath,
+                Color.FromRgb(0x6C, 0x5C, 0xE7),
+                () =>
+                {
+                    var curtain = new Form2_18_ScreenCurtain();
+                    curtain.Show();
+                },
+                "Dùng lại: Màn che bảng");
+
             // ✅ Activate Screen Curtain
             var screenCurtain = new Form2_18_ScreenCurtain();
             screenCurtain.Show();
@@ -209,6 +233,18 @@ namespace QASmartTouch.Forms
 
         private void btnMagnifier_Click(object sender, RoutedEventArgs e)
         {
+            _mainDashboard?.RegisterRecentTool(
+                "board:Magnifier",
+                "Kính lúp",
+                QASmartTouch.Services.Tools.RecentToolsManager.SpotlightIconPath,
+                Color.FromRgb(0x09, 0x84, 0xE3),
+                () =>
+                {
+                    var tool = new Form2_7_4_MagnifierTool(true);
+                    tool.ShowDialog();
+                },
+                "Dùng lại: Kính lúp phóng đại");
+
             // Close board menu first
             this.Close();
             
@@ -219,6 +255,22 @@ namespace QASmartTouch.Forms
 
         private void btnScreenshot_Click(object sender, RoutedEventArgs e)
         {
+            _mainDashboard?.RegisterRecentTool(
+                "board:Screenshot",
+                "Chụp vùng",
+                QASmartTouch.Services.Tools.RecentToolsManager.SelectRectIconPath,
+                Color.FromRgb(0x00, 0xB8, 0x94),
+                () =>
+                {
+                    var shot = new Form2_7_2_ScreenshotRegion();
+                    shot.ShowDialog();
+                    if (shot.PlaceOnBoard && shot.CapturedImage != null)
+                    {
+                        _mainDashboard?.AddImageToCanvas(shot.CapturedImage);
+                    }
+                },
+                "Dùng lại: Chụp vùng màn hình đưa vào bảng");
+
             // Close board menu first
             this.Close();
             

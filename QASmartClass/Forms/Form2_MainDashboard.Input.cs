@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -2749,6 +2749,26 @@ namespace QASmartTouch.Forms
             // Change cursor to crosshair for precise shape drawing
             MainInteractiveBoard.Cursor = Cursors.Cross;
             MainScrollViewer.Cursor = Cursors.Cross;
+
+            if (!string.IsNullOrWhiteSpace(shapeName))
+            {
+                string capturedShape = shapeName;
+                var (shortTitle, iconPath, accentColor) = QASmartTouch.Services.Tools.RecentToolsManager.GetShapeMetadata(capturedShape);
+                RegisterRecentTool(
+                    $"shape:{capturedShape}",
+                    shortTitle,
+                    iconPath,
+                    accentColor,
+                    () =>
+                    {
+                        DeactivateAllTools();
+                        CloseAllSubmenus();
+                        SelectTool(btn5_Shapes);
+                        HideWelcomeState();
+                        EnableShapeDrawingMode(capturedShape);
+                    },
+                    $"Dùng lại: Vẽ {shortTitle}");
+            }
         }
 
         private void Open3DCubeEditor()
@@ -9187,6 +9207,14 @@ namespace QASmartTouch.Forms
 
             MainInteractiveBoard.Cursor = Cursors.Cross;
             MainScrollViewer.Cursor = Cursors.Cross;
+
+            RegisterRecentTool(
+                "insert:TableDraw",
+                "Kéo vẽ bảng",
+                QASmartTouch.Services.Tools.RecentToolsManager.TableIconPath,
+                Color.FromRgb(0x25, 0x63, 0xEB),
+                () => EnableTableDrawingMode(),
+                "Dùng lại: Kéo vẽ bảng trực tiếp trên trang");
         }
 
         /// <summary>
@@ -11316,8 +11344,16 @@ namespace QASmartTouch.Forms
             return Math.Sqrt(Math.Pow(point.X - projection.X, 2) + Math.Pow(point.Y - projection.Y, 2));
         }
 
-        private void OpenRulerTool()
+        public void OpenRulerTool()
         {
+            RegisterRecentTool(
+                "stem:Ruler",
+                "Thước kẻ",
+                QASmartTouch.Services.Tools.RecentToolsManager.RulerIconPath,
+                Color.FromRgb(0x09, 0x84, 0xE3),
+                () => OpenRulerTool(),
+                "Dùng lại: Thước kẻ đo độ dài");
+
             // Close any existing ruler tool
             if (_activeRulerTool != null)
             {
@@ -11334,8 +11370,16 @@ namespace QASmartTouch.Forms
             _activeRulerTool.Focus();
         }
 
-        private void OpenProtractorTool()
+        public void OpenProtractorTool()
         {
+            RegisterRecentTool(
+                "stem:Protractor",
+                "Đo độ",
+                QASmartTouch.Services.Tools.RecentToolsManager.ProtractorIconPath,
+                Color.FromRgb(0x6C, 0x5C, 0xE7),
+                () => OpenProtractorTool(),
+                "Dùng lại: Thước đo góc (Đo độ)");
+
             // Close any existing protractor tool
             if (_activeProtractorTool != null)
             {
@@ -11353,8 +11397,16 @@ namespace QASmartTouch.Forms
             _activeProtractorTool.Focus();
         }
 
-        private void OpenSetSquareTool()
+        public void OpenSetSquareTool()
         {
+            RegisterRecentTool(
+                "stem:SetSquare",
+                "Thước Ê-ke",
+                QASmartTouch.Services.Tools.RecentToolsManager.TriangleToolIconPath,
+                Color.FromRgb(0x00, 0xB8, 0x94),
+                () => OpenSetSquareTool(),
+                "Dùng lại: Thước Ê-ke vuông góc");
+
             // Close any existing set square tool
             if (_activeSetSquareTool != null)
             {
@@ -11371,8 +11423,16 @@ namespace QASmartTouch.Forms
             _activeSetSquareTool.Focus();
         }
 
-        private void OpenCompassTool()
+        public void OpenCompassTool()
         {
+            RegisterRecentTool(
+                "stem:Compass",
+                "Compa 3D",
+                QASmartTouch.Services.Tools.RecentToolsManager.CompassIconPath,
+                Color.FromRgb(0xE1, 0x70, 0x55),
+                () => OpenCompassTool(),
+                "Dùng lại: Compa 3D vẽ đường tròn");
+
             // Use 3D Compass Tool (professional version matching specification)
             // Close old 2D tool if exists
             if (_activeCompassTool != null)

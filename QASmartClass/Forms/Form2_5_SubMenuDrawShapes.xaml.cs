@@ -357,11 +357,24 @@ namespace QASmartTouch.Forms
         {
             if (sender is Button button && button.Tag is EnglishCardDefinition card)
             {
+                var capturedCard = card;
+                string? imgPath = GetCardImagePath(capturedCard.Word);
+                _mainDashboard?.RegisterRecentTool(
+                    $"eng:{capturedCard.Word}",
+                    $"Từ: {capturedCard.Word}",
+                    QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
+                    Color.FromRgb(0x8E, 0x24, 0xAA),
+                    () =>
+                    {
+                        SubjectShapeGeometryService.SpeakWord(capturedCard.Word);
+                        _mainDashboard?.InsertEnglishWordCard(capturedCard.Emoji, capturedCard.Word, capturedCard.Meaning, imgPath);
+                    },
+                    $"Dùng lại thẻ từ vựng: {capturedCard.Word} ({capturedCard.Meaning})");
+
                 // Phát âm tiếng Anh
                 SubjectShapeGeometryService.SpeakWord(card.Word);
 
                 // Chèn thẻ từ vựng lên bảng viết (truyền ảnh màu nếu có)
-                string? imgPath = GetCardImagePath(card.Word);
                 _mainDashboard?.InsertEnglishWordCard(card.Emoji, card.Word, card.Meaning, imgPath);
 
                 // Đóng menu để giáo viên nhìn thấy thẻ trên bảng

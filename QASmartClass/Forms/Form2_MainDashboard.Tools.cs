@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -113,6 +113,7 @@ namespace QASmartTouch.Forms
                 _savedPenSize = penMenu.PenSize;
                 _savedPenColor = penMenu.PenColor;
                 EnableDrawingMode(_savedBrushType, _savedPenSize, _savedPenColor);
+                RecordCurrentPenRecentTool();
             };
 
             // Handle window closed event
@@ -133,6 +134,10 @@ namespace QASmartTouch.Forms
                 
                 // Apply pen settings
                 EnableDrawingMode(_savedBrushType, _savedPenSize, _savedPenColor);
+                if (penMenu.IsApplied)
+                {
+                    RecordCurrentPenRecentTool();
+                }
                 
                 // Cleanup safely
                 if (ReferenceEquals(_activeSubMenu, penMenu))
@@ -272,6 +277,7 @@ namespace QASmartTouch.Forms
                 if (_savedEraserMode != "ClearAll")
                 {
                     EnableEraserMode(_savedEraserSize, _savedEraserMode);
+                    RecordCurrentEraserRecentTool();
                 }
             };
 
@@ -1346,10 +1352,24 @@ namespace QASmartTouch.Forms
                     }
                     else if (insertMenu.SelectedInsertType == "Image" || insertMenu.SelectedInsertType == "ImageLibrary")
                     {
+                        RegisterRecentTool(
+                            "insert:Image",
+                            "Chèn ảnh",
+                            QASmartTouch.Services.Tools.RecentToolsManager.ImageIconPath,
+                            Color.FromRgb(0xFF, 0x57, 0x22),
+                            () => ImportImage(),
+                            "Dùng lại: Chèn hình ảnh từ máy tính");
                         ImportImage();
                     }
                     else if (insertMenu.SelectedInsertType == "Video")
                     {
+                        RegisterRecentTool(
+                            "insert:Video",
+                            "Chèn Video",
+                            QASmartTouch.Services.Tools.RecentToolsManager.VideoIconPath,
+                            Color.FromRgb(0xF4, 0x43, 0x36),
+                            () => ImportVideo(),
+                            "Dùng lại: Chèn Video bài giảng");
                         ImportVideo();
                     }
                     else if (insertMenu.SelectedInsertType == "Camera")
@@ -2150,6 +2170,13 @@ namespace QASmartTouch.Forms
             }
             ShowSmartStatusBadge("✂️ Chế độ chọn Tự do (Lasso): Vẽ đường bao quanh các đối tượng cần chọn");
             System.Diagnostics.Debug.WriteLine("Selection Mode: Lasso Selection Activated");
+            RegisterRecentTool(
+                "select:Lasso",
+                "Chọn tự do",
+                QASmartTouch.Services.Tools.RecentToolsManager.SelectLassoIconPath,
+                Color.FromRgb(0x0D, 0x94, 0x88),
+                () => ActivateLassoSelectionMode(),
+                "Dùng lại: Chọn tự do (Lasso)");
         }
 
         public void ActivateMagicWandSelectionMode()
@@ -2186,6 +2213,13 @@ namespace QASmartTouch.Forms
 
             ShowSmartStatusBadge("🪄 Chế độ Đũa phép: Chạm vào 1 nét vẽ để tự động chọn tất cả đối tượng CÙNG MÀU trên bảng");
             System.Diagnostics.Debug.WriteLine("Selection Mode: Magic Wand Selection Activated");
+            RegisterRecentTool(
+                "select:MagicWand",
+                "Đũa phép",
+                QASmartTouch.Services.Tools.RecentToolsManager.MagicWandIconPath,
+                Color.FromRgb(0x93, 0x33, 0xEA),
+                () => ActivateMagicWandSelectionMode(),
+                "Dùng lại: Đũa phép chọn cùng màu");
         }
 
         private Color ExtractPrimaryColor(SelectableObject obj)
@@ -2679,6 +2713,23 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                var capturedAction = actionType;
+                var (smartId, smartShortTitle, smartTooltip, smartColor) = capturedAction switch
+                {
+                    SmartActionType.Translate => ("smart:Translate", "Dịch chữ", "Dùng lại: Dịch văn bản trên bảng", Color.FromRgb(0x09, 0x84, 0xE3)),
+                    SmartActionType.Read => ("smart:Read", "Đọc chữ", "Dùng lại: Đọc văn bản phát âm", Color.FromRgb(0x00, 0xB8, 0x94)),
+                    SmartActionType.Search => ("smart:Search", "Tìm Google", "Dùng lại: Tìm kiếm chữ viết trên Google", Color.FromRgb(0xE1, 0x70, 0x55)),
+                    SmartActionType.AIChat => ("smart:AIChat", "Hỏi AI", "Dùng lại: Hỏi trợ lý AI về nội dung", Color.FromRgb(0x6C, 0x5C, 0xE7)),
+                    _ => ("smart:OCR", "Nhận diện chữ", "Dùng lại: Nhận diện chữ viết tay (OCR)", Color.FromRgb(0x2E, 0x86, 0xDE))
+                };
+                RegisterRecentTool(
+                    smartId,
+                    smartShortTitle,
+                    QASmartTouch.Services.Tools.RecentToolsManager.OcrIconPath,
+                    smartColor,
+                    () => _ = ExecuteSmartActionAsync(capturedAction),
+                    smartTooltip);
+
                 string text = initialText;
 
                 // Nếu chưa truyền text -> Lấy từ OCR các đối tượng đang chọn
@@ -3004,6 +3055,224 @@ namespace QASmartTouch.Forms
             // Gọi this.Close() để kích hoạt quy trình xác nhận lưu và thoát chuẩn trong OnClosing
             this.Close();
         }
+
+        #region Recent Tools Quick-Bar (3 Chức năng gần nhất)
+
+        private readonly QASmartTouch.Services.Tools.RecentToolsManager _recentToolsManager = new QASmartTouch.Services.Tools.RecentToolsManager();
+
+        /// <summary>
+        /// Ghi nhận một chức năng vừa được chọn vào thanh Truy cập nhanh (tối đa 3 mục gần nhất).
+        /// </summary>
+        public void RegisterRecentTool(
+            string id,
+            string shortTitle,
+            string iconPathData,
+            Color iconColor,
+            Action replayAction,
+            string? fullTooltip = null)
+        {
+            try
+            {
+                _recentToolsManager.RecordTool(id, shortTitle, iconPathData, iconColor, replayAction, fullTooltip);
+                UpdateRecentToolsUI();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[RecentTools] RegisterRecentTool error: {ex.Message}");
+            }
+        }
+
+        private void RecordCurrentPenRecentTool()
+        {
+            string bType = _savedBrushType ?? "Normal";
+            int pSize = _savedPenSize;
+            Color pColor = _savedPenColor;
+
+            string colorName = GetFriendlyColorName(pColor);
+            string shortTitle = bType switch
+            {
+                "Highlighter" or "Marker" or "Mask" or "MaskPen" => "Bút dạ",
+                "Laser" or "LaserPen" => "Bút Laser",
+                "Shape" or "Calligraphy" or "CalligraphyPen" => "Bút hình",
+                "CrayonPen" => "Bút sáp",
+                "MarkerPen" => "Bút lông",
+                _ => colorName != "nét vẽ" ? $"Bút {colorName}" : "Bút thường"
+            };
+
+            string iconPath = bType switch
+            {
+                "Highlighter" or "Marker" or "Mask" or "MaskPen" => QASmartTouch.Services.Tools.RecentToolsManager.HighlighterIconPath,
+                "Laser" or "LaserPen" => QASmartTouch.Services.Tools.RecentToolsManager.LaserPenIconPath,
+                "Shape" or "Calligraphy" or "CalligraphyPen" => QASmartTouch.Services.Tools.RecentToolsManager.ShapePenIconPath,
+                _ => QASmartTouch.Services.Tools.RecentToolsManager.PenIconPath
+            };
+
+            // Đảm bảo màu hiển thị icon nổi bật trên nền sáng
+            Color displayColor = bType switch
+            {
+                "Laser" or "LaserPen" => Color.FromRgb(0xE5, 0x39, 0x35),
+                "Shape" or "Calligraphy" or "CalligraphyPen" => Color.FromRgb(0xAB, 0x47, 0xBC),
+                "Highlighter" or "Marker" when (pColor.R > 225 && pColor.G > 225 && pColor.B > 225) => Color.FromRgb(0xF5, 0x9E, 0x0B),
+                _ => (pColor.R > 225 && pColor.G > 225 && pColor.B > 225)
+                    ? Color.FromRgb(0x2E, 0x86, 0xDE)
+                    : Color.FromRgb(pColor.R, pColor.G, pColor.B)
+            };
+
+            string toolId = bType switch
+            {
+                "Laser" or "LaserPen" => "pen:Laser",
+                "Shape" or "Calligraphy" or "CalligraphyPen" => "pen:Shape",
+                "Highlighter" or "Marker" or "Mask" or "MaskPen" => $"pen:Highlighter:{pColor.R:X2}{pColor.G:X2}{pColor.B:X2}",
+                _ => $"pen:{bType}:{pColor.R:X2}{pColor.G:X2}{pColor.B:X2}"
+            };
+
+            RegisterRecentTool(
+                toolId,
+                shortTitle,
+                iconPath,
+                displayColor,
+                () =>
+                {
+                    DeactivateAllTools();
+                    CloseAllSubmenus();
+                    SelectTool(btn1_Pen);
+                    HideWelcomeState();
+                    _savedBrushType = bType;
+                    _savedPenSize = pSize;
+                    _savedPenColor = pColor;
+                    EnableDrawingMode(bType, pSize, pColor);
+                },
+                $"Dùng lại: {shortTitle} ({pSize}px)");
+        }
+
+        private void RecordCurrentEraserRecentTool()
+        {
+            string eMode = _savedEraserMode ?? "Stroke";
+            if (eMode == "ClearAll") return;
+
+            int eSize = _savedEraserSize;
+            string shortTitle = eMode == "Point" ? "Tẩy điểm" : "Tẩy nét";
+            Color accentColor = eMode == "Point"
+                ? Color.FromRgb(0x9C, 0x27, 0xB0)
+                : Color.FromRgb(0x21, 0x96, 0xF3);
+
+            RegisterRecentTool(
+                $"eraser:{eMode}",
+                shortTitle,
+                QASmartTouch.Services.Tools.RecentToolsManager.EraserIconPath,
+                accentColor,
+                () =>
+                {
+                    DeactivateAllTools();
+                    CloseAllSubmenus();
+                    SelectTool(btn2_Eraser);
+                    HideWelcomeState();
+                    _savedEraserMode = eMode;
+                    _savedEraserSize = eSize;
+                    EnableEraserMode(eSize, eMode);
+                },
+                $"Dùng lại: {shortTitle} ({eSize}px)");
+        }
+
+        /// <summary>
+        /// Đồng bộ danh sách 3 chức năng gần nhất lên 3 nút trên thanh Toolbar chính.
+        /// </summary>
+        public void UpdateRecentToolsUI()
+        {
+            if (panelRecentToolsWrapper == null) return;
+
+            var items = _recentToolsManager.Items;
+            if (items == null || items.Count == 0)
+            {
+                panelRecentToolsWrapper.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            panelRecentToolsWrapper.Visibility = Visibility.Visible;
+
+            Button[] buttons = { btnRecentTool1, btnRecentTool2, btnRecentTool3 };
+            string[] iconNames = { "iconRecentTool1", "iconRecentTool2", "iconRecentTool3" };
+            string[] txtNames = { "txtRecentTool1", "txtRecentTool2", "txtRecentTool3" };
+
+            for (int i = 0; i < 3; i++)
+            {
+                var btn = buttons[i];
+                if (btn == null) continue;
+
+                if (i < items.Count)
+                {
+                    var item = items[i];
+                    btn.Visibility = Visibility.Visible;
+                    btn.ToolTip = item.FullTooltip;
+
+                    btn.ApplyTemplate();
+                    var iconPath = btn.Template?.FindName(iconNames[i], btn) as Path;
+                    var txtBlock = btn.Template?.FindName(txtNames[i], btn) as TextBlock;
+
+                    if (iconPath != null)
+                    {
+                        try
+                        {
+                            iconPath.Data = Geometry.Parse(item.IconPathData);
+                        }
+                        catch
+                        {
+                            iconPath.Data = Geometry.Parse(QASmartTouch.Services.Tools.RecentToolsManager.DefaultToolIconPath);
+                        }
+                        iconPath.Fill = new SolidColorBrush(item.IconColor);
+                    }
+
+                    if (txtBlock != null)
+                    {
+                        txtBlock.Text = item.ShortTitle;
+                    }
+                }
+                else
+                {
+                    btn.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private void ExecuteRecentToolAt(int index)
+        {
+            var items = _recentToolsManager.Items;
+            if (items == null || index < 0 || index >= items.Count) return;
+
+            var selectedItem = items[index];
+            CloseAllSubmenus();
+            HideWelcomeState();
+
+            // Thực thi lại chức năng
+            selectedItem.ReplayAction?.Invoke();
+
+            // Đưa chức năng vừa dùng lên vị trí #1
+            _recentToolsManager.RecordTool(
+                selectedItem.Id,
+                selectedItem.ShortTitle,
+                selectedItem.IconPathData,
+                selectedItem.IconColor,
+                selectedItem.ReplayAction!,
+                selectedItem.FullTooltip);
+            UpdateRecentToolsUI();
+        }
+
+        private void btnRecentTool1_Click(object sender, RoutedEventArgs e)
+        {
+            ExecuteRecentToolAt(0);
+        }
+
+        private void btnRecentTool2_Click(object sender, RoutedEventArgs e)
+        {
+            ExecuteRecentToolAt(1);
+        }
+
+        private void btnRecentTool3_Click(object sender, RoutedEventArgs e)
+        {
+            ExecuteRecentToolAt(2);
+        }
+
+        #endregion
 
         #endregion
 

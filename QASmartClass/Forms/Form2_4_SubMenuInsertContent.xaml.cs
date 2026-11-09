@@ -147,31 +147,54 @@ namespace QASmartTouch.Forms
         // TAB 1: DRAWING TOOLS
         private void btnInsertRuler_Click(object sender, RoutedEventArgs e)
         {
+            if (_mainDashboard != null)
+            {
+                _mainDashboard.RegisterRecentTool(
+                    "stem:Ruler",
+                    "Thước kẻ",
+                    QASmartTouch.Services.Tools.RecentToolsManager.RulerIconPath,
+                    Color.FromRgb(0xFF, 0x98, 0x00),
+                    () => _mainDashboard.OpenRulerTool(),
+                    "Dùng lại: Thước kẻ đo chiều dài");
+            }
             SelectedInsertType = "Ruler";
             this.Close();
+        }
+
+        private void OpenCircleCompassHelper()
+        {
+            var circleTool = new Form2_19_CircleDrawingTool();
+            circleTool.Owner = this.Owner ?? _mainDashboard;
+            circleTool.SetMainDashboard(_mainDashboard);
+            if (_mainDashboard != null)
+            {
+                _mainDashboard.ActiveCircleDrawingTool = circleTool;
+                circleTool.Closed += (s, args) =>
+                {
+                    if (_mainDashboard != null && ReferenceEquals(_mainDashboard.ActiveCircleDrawingTool, circleTool))
+                    {
+                        _mainDashboard.ActiveCircleDrawingTool = null;
+                    }
+                };
+            }
+            circleTool.Show();
         }
 
         private void btnInsertCompass_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "stem:CircleCompass",
+                    "Compa",
+                    QASmartTouch.Services.Tools.RecentToolsManager.CompassIconPath,
+                    Color.FromRgb(0xE9, 0x1E, 0x63),
+                    () => OpenCircleCompassHelper(),
+                    "Dùng lại: Compa vẽ đường tròn");
+
                 // Ẩn menu trước khi mở công cụ con
                 this.Hide();
-                var circleTool = new Form2_19_CircleDrawingTool();
-                circleTool.Owner = this.Owner ?? _mainDashboard; // Set owner để tránh rò rỉ cửa sổ con
-                circleTool.SetMainDashboard(_mainDashboard);
-                if (_mainDashboard != null)
-                {
-                    _mainDashboard.ActiveCircleDrawingTool = circleTool;
-                    circleTool.Closed += (s, e) =>
-                    {
-                        if (_mainDashboard != null && ReferenceEquals(_mainDashboard.ActiveCircleDrawingTool, circleTool))
-                        {
-                            _mainDashboard.ActiveCircleDrawingTool = null;
-                        }
-                    };
-                }
-                circleTool.Show(); // Show (not ShowDialog) để không block
+                OpenCircleCompassHelper();
                 this.Close(); // Đóng menu
                 try { this.Owner?.Activate(); } catch { }
             }
@@ -185,36 +208,67 @@ namespace QASmartTouch.Forms
 
         private void btnInsertTriangle_Click(object sender, RoutedEventArgs e)
         {
+            if (_mainDashboard != null)
+            {
+                _mainDashboard.RegisterRecentTool(
+                    "stem:SetSquare",
+                    "Thước Ê-ke",
+                    QASmartTouch.Services.Tools.RecentToolsManager.TriangleToolIconPath,
+                    Color.FromRgb(0x4C, 0xAF, 0x50),
+                    () => _mainDashboard.OpenSetSquareTool(),
+                    "Dùng lại: Thước Ê-ke vuông góc");
+            }
             SelectedInsertType = "Triangle";
             this.Close();
         }
 
         private void btnInsertProtractor_Click(object sender, RoutedEventArgs e)
         {
+            if (_mainDashboard != null)
+            {
+                _mainDashboard.RegisterRecentTool(
+                    "stem:Protractor",
+                    "Đo độ",
+                    QASmartTouch.Services.Tools.RecentToolsManager.ProtractorIconPath,
+                    Color.FromRgb(0x9C, 0x27, 0xB0),
+                    () => _mainDashboard.OpenProtractorTool(),
+                    "Dùng lại: Thước đo góc (Đo độ)");
+            }
             SelectedInsertType = "Protractor";
             this.Close();
+        }
+
+        private static void LaunchOnScreenKeyboard()
+        {
+            string windir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            string oskPath = System.IO.Path.Combine(windir, "sysnative", "osk.exe");
+            if (!System.IO.File.Exists(oskPath))
+            {
+                oskPath = System.IO.Path.Combine(windir, "System32", "osk.exe");
+            }
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = oskPath,
+                UseShellExecute = true
+            });
         }
 
         private void btnInsertKeyboard_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Xử lý bypass WOW64 File Redirection cho OSK trên hệ thống 64-bit khi chạy app 32-bit
-                string windir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-                string oskPath = System.IO.Path.Combine(windir, "sysnative", "osk.exe");
-                
-                if (!System.IO.File.Exists(oskPath))
-                {
-                    oskPath = System.IO.Path.Combine(windir, "System32", "osk.exe");
-                }
-                
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = oskPath,
-                    UseShellExecute = true
-                });
-                
-                System.Diagnostics.Debug.WriteLine($"✅ On-Screen Keyboard launched via: {oskPath}");
+                _mainDashboard?.RegisterRecentTool(
+                    "stem:Keyboard",
+                    "Bàn phím ảo",
+                    QASmartTouch.Services.Tools.RecentToolsManager.KeyboardIconPath,
+                    Color.FromRgb(0x60, 0x7D, 0x8B),
+                    () =>
+                    {
+                        try { LaunchOnScreenKeyboard(); } catch { }
+                    },
+                    "Dùng lại: Mở bàn phím ảo Windows");
+
+                LaunchOnScreenKeyboard();
                 this.Close();
             }
             catch (Exception ex)
@@ -232,6 +286,18 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:Book",
+                    "Sách GK",
+                    QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
+                    Color.FromRgb(0x79, 0x55, 0x48),
+                    () =>
+                    {
+                        var bm = new Form2_20_SubMenuBooks { Owner = _mainDashboard };
+                        bm.ShowDialog();
+                    },
+                    "Dùng lại: Sách giáo khoa điện tử");
+
                 // Ẩn menu trước khi mở dialog con
                 this.Hide();
                 var booksMenu = new Form2_20_SubMenuBooks();
@@ -253,6 +319,19 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:PhysicsLab",
+                    "TN Vật lý",
+                    QASmartTouch.Services.Tools.RecentToolsManager.PhysicsLabIconPath,
+                    Color.FromRgb(0x09, 0x84, 0xE3),
+                    () =>
+                    {
+                        var lab = new Form2_23_PhysicsLabWindow();
+                        lab.SetMainDashboard(_mainDashboard);
+                        WindowHelper.ShowChildDialog(lab, _mainDashboard);
+                    },
+                    "Dùng lại: Phòng Thí Nghiệm Vật Lý & STEM");
+
                 this.Hide();
                 var labWindow = new Form2_23_PhysicsLabWindow();
                 if (_mainDashboard != null)
@@ -512,8 +591,21 @@ namespace QASmartTouch.Forms
         {
             if (sender is Button button && button.Tag is QASmartTouch.Services.Tools.EnglishCardDefinition card)
             {
+                var capturedCard = card;
+                string? imgPath = GetEnglishCardImagePath(capturedCard.Word);
+                _mainDashboard?.RegisterRecentTool(
+                    $"eng:{capturedCard.Word}",
+                    $"Từ: {capturedCard.Word}",
+                    QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
+                    Color.FromRgb(0x8E, 0x24, 0xAA),
+                    () =>
+                    {
+                        QASmartTouch.Services.Tools.SubjectShapeGeometryService.SpeakWord(capturedCard.Word);
+                        _mainDashboard?.InsertEnglishWordCard(capturedCard.Emoji, capturedCard.Word, capturedCard.Meaning, imgPath);
+                    },
+                    $"Dùng lại thẻ từ vựng: {capturedCard.Word} ({capturedCard.Meaning})");
+
                 QASmartTouch.Services.Tools.SubjectShapeGeometryService.SpeakWord(card.Word);
-                string? imgPath = GetEnglishCardImagePath(card.Word);
                 _mainDashboard?.InsertEnglishWordCard(card.Emoji, card.Word, card.Meaning, imgPath);
                 try { this.Owner?.Activate(); } catch { }
                 this.Close();
@@ -651,6 +743,16 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                int r = rows;
+                int c = cols;
+                _mainDashboard?.RegisterRecentTool(
+                    $"insert:Table:{r}x{c}",
+                    $"Bảng {r}x{c}",
+                    QASmartTouch.Services.Tools.RecentToolsManager.TableIconPath,
+                    Color.FromRgb(0x9C, 0x27, 0xB0),
+                    () => _mainDashboard?.InsertTableToCanvas(new QASmartTouch.Models.TableData(r, c)),
+                    $"Dùng lại: Chèn bảng {r} hàng x {c} cột");
+
                 var tableData = new QASmartTouch.Models.TableData(rows, cols);
                 _mainDashboard?.InsertTableToCanvas(tableData);
                 this.Close();
@@ -716,6 +818,21 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:SmartNote",
+                    "Thẻ ghi chú",
+                    QASmartTouch.Services.Tools.RecentToolsManager.NoteIconPath,
+                    Color.FromRgb(0xF5, 0x9E, 0x0B),
+                    () =>
+                    {
+                        var dlg = new Form2_SmartNoteDialog();
+                        if (WindowHelper.ShowChildDialog(dlg, _mainDashboard) == true && dlg.IsConfirmed && dlg.Model != null)
+                        {
+                            _mainDashboard?.InsertSmartNoteCardToBoard(dlg.Model);
+                        }
+                    },
+                    "Dùng lại: Thêm Thẻ ghi chú / Hộp văn bản");
+
                 this.Hide();
                 var noteDialog = new Form2_SmartNoteDialog();
                 bool? result = WindowHelper.ShowChildDialog(noteDialog, _mainDashboard);
@@ -761,6 +878,21 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:3DModel",
+                    "Mô hình 3D",
+                    QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                    Color.FromRgb(0x00, 0xBC, 0xD4),
+                    () =>
+                    {
+                        var ms = new Form2_20_3DModelSelector { Owner = _mainDashboard };
+                        if (ms.ShowDialog() == true && !string.IsNullOrEmpty(ms.SelectedModelPath) && ms.SelectedModel != null)
+                        {
+                            _mainDashboard?.Insert3DModelToCanvas(ms.SelectedModelPath, ms.SelectedModel);
+                        }
+                    },
+                    "Dùng lại: Chèn Mô hình 3D (OBJ/STL)");
+
                 // Ẩn menu trước khi mở dialog con để không bị chồng cửa sổ
                 this.Hide();
                 var modelSelector = new Form2_20_3DModelSelector();
@@ -790,6 +922,18 @@ namespace QASmartTouch.Forms
             if (!this.IsVisible) return;
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:YouTube",
+                    "YouTube",
+                    QASmartTouch.Services.Tools.RecentToolsManager.VideoIconPath,
+                    Color.FromRgb(0xFF, 0x00, 0x00),
+                    () =>
+                    {
+                        var yt = new Form2_23_YouTubeBrowser { Topmost = true };
+                        yt.Show();
+                    },
+                    "Dùng lại: Mở YouTube giáo dục");
+
                 // Ẩn menu trước khi mở YouTube browser
                 this.Hide();
                 var youtubeBrowser = new Form2_23_YouTubeBrowser();
@@ -815,6 +959,18 @@ namespace QASmartTouch.Forms
             if (!this.IsVisible) return;
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:Wikipedia",
+                    "Wikipedia",
+                    QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
+                    Color.FromRgb(0x2F, 0x35, 0x42),
+                    () =>
+                    {
+                        var wk = new Form2_25_WikipediaBrowser { Topmost = true };
+                        wk.Show();
+                    },
+                    "Dùng lại: Mở Bách khoa toàn thư Wikipedia");
+
                 // Ẩn menu trước khi mở Wikipedia
                 this.Hide();
                 var wikipediaBrowser = new Form2_25_WikipediaBrowser();
@@ -840,6 +996,18 @@ namespace QASmartTouch.Forms
             if (!this.IsVisible) return;
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:GoogleSearch",
+                    "Tìm Google",
+                    QASmartTouch.Services.Tools.RecentToolsManager.OcrIconPath,
+                    Color.FromRgb(0x42, 0x85, 0xF4),
+                    () =>
+                    {
+                        var gs = new Form2_26_GoogleSearchBrowser { Topmost = true };
+                        gs.Show();
+                    },
+                    "Dùng lại: Mở Tìm kiếm Google");
+
                 // Ẩn menu trước khi mở Google Search
                 this.Hide();
                 var googleSearchBrowser = new Form2_26_GoogleSearchBrowser();
@@ -949,6 +1117,14 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "chart:Bar",
+                    "Biểu đồ cột",
+                    QASmartTouch.Services.Tools.RecentToolsManager.BarChartIconPath,
+                    Color.FromRgb(0x21, 0x96, 0xF3),
+                    () => WindowHelper.ShowChildDialog(new Form2_8_BarChartEditor(_mainDashboard), _mainDashboard),
+                    "Dùng lại: Biểu đồ cột (Bar Chart)");
+
                 // Ẩn menu trước khi mở biểu đồ cột
                 this.Hide();
                 var chartEditor = new Form2_8_BarChartEditor(_mainDashboard);
@@ -967,6 +1143,14 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "chart:Line",
+                    "Biểu đồ đường",
+                    QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                    Color.FromRgb(0x4C, 0xAF, 0x50),
+                    () => WindowHelper.ShowChildDialog(new Form2_9_LineChartEditor(_mainDashboard), _mainDashboard),
+                    "Dùng lại: Biểu đồ đường (Line Chart)");
+
                 // Ẩn menu trước khi mở biểu đồ đường
                 this.Hide();
                 var chartEditor = new Form2_9_LineChartEditor(_mainDashboard);
@@ -985,6 +1169,14 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "chart:Pie",
+                    "Biểu đồ tròn",
+                    QASmartTouch.Services.Tools.RecentToolsManager.PieChartIconPath,
+                    Color.FromRgb(0xFF, 0x98, 0x00),
+                    () => WindowHelper.ShowChildDialog(new Form2_10_PieChartEditor(_mainDashboard), _mainDashboard),
+                    "Dùng lại: Biểu đồ tròn (Pie Chart)");
+
                 // Ẩn menu trước khi mở biểu đồ tròn
                 this.Hide();
                 var chartEditor = new Form2_10_PieChartEditor(_mainDashboard);
@@ -1003,6 +1195,14 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "chart:Area",
+                    "Biểu đồ vùng",
+                    QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                    Color.FromRgb(0x9C, 0x27, 0xB0),
+                    () => WindowHelper.ShowChildDialog(new Form2_12_AreaChartEditor(_mainDashboard), _mainDashboard),
+                    "Dùng lại: Biểu đồ vùng (Area Chart)");
+
                 // Ẩn menu trước khi mở biểu đồ vùng
                 this.Hide();
                 var chartEditor = new Form2_12_AreaChartEditor(_mainDashboard);
@@ -1021,6 +1221,14 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "chart:Scatter",
+                    "Biểu đồ điểm",
+                    QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                    Color.FromRgb(0xFF, 0x57, 0x22),
+                    () => WindowHelper.ShowChildDialog(new Form2_13_ScatterChartEditor(_mainDashboard), _mainDashboard),
+                    "Dùng lại: Biểu đồ phân tán (Scatter Chart)");
+
                 // Ẩn menu trước khi mở biểu đồ phân tán
                 this.Hide();
                 var chartEditor = new Form2_13_ScatterChartEditor(_mainDashboard);
@@ -1046,6 +1254,19 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:VariationTable",
+                    "Bảng biến thiên",
+                    QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                    Color.FromRgb(0x6C, 0x5C, 0xE7),
+                    () =>
+                    {
+                        var dlg = new Form2_VariationTableDialog(_mainDashboard);
+                        dlg.Owner = _mainDashboard ?? Application.Current.MainWindow;
+                        dlg.ShowDialog();
+                    },
+                    "Dùng lại: Bảng biến thiên & Khảo sát hàm số");
+
                 this.Hide();
                 var dialog = new Form2_VariationTableDialog(_mainDashboard);
                 dialog.Owner = _mainDashboard ?? Application.Current.MainWindow;
@@ -1063,6 +1284,19 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:MathGraph2D",
+                    "Đồ thị 2D",
+                    QASmartTouch.Services.Tools.RecentToolsManager.GraphIconPath,
+                    Color.FromRgb(0x00, 0xB8, 0x94),
+                    () =>
+                    {
+                        var dlg = new Form2_VariationTableDialog(_mainDashboard, defaultToGraph: true);
+                        dlg.Owner = _mainDashboard ?? Application.Current.MainWindow;
+                        dlg.ShowDialog();
+                    },
+                    "Dùng lại: Vẽ Đồ thị hàm số 2D");
+
                 // Ẩn menu trước khi mở đồ thị hàm số 2D (Dùng công cụ Đồ thị & BBT mới offline 100%)
                 this.Hide();
                 var dialog = new Form2_VariationTableDialog(_mainDashboard, defaultToGraph: true);
@@ -1083,6 +1317,21 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:Graph3D",
+                    "Desmos 3D",
+                    QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                    Color.FromRgb(0xE9, 0x1E, 0x63),
+                    () =>
+                    {
+                        var dlg = new Form2_22_Graph3D();
+                        if (WindowHelper.ShowChildDialog(dlg, _mainDashboard) == true && dlg.WasInserted && !string.IsNullOrEmpty(dlg.GraphUrl))
+                        {
+                            _mainDashboard?.InsertGraph3DToCanvas(dlg.GraphUrl);
+                        }
+                    },
+                    "Dùng lại: Đồ thị 3D tương tác (Desmos 3D)");
+
                 // Ẩn menu trước khi mở Graph 3D
                 this.Hide();
                 var Graph3DDialog = new Form2_22_Graph3D();
@@ -1110,6 +1359,21 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:Math3DGraph",
+                    "Đồ thị 3D",
+                    QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                    Color.FromRgb(0xE9, 0x1E, 0x63),
+                    () =>
+                    {
+                        var ed = new Form2_Graph3DEditor();
+                        if (WindowHelper.ShowChildDialog(ed, _mainDashboard) == true && ed.ExportedGraphImage != null)
+                        {
+                            _mainDashboard?.InsertGraphToCanvas(ed.ExportedGraphImage, ed.ExportedConfig);
+                        }
+                    },
+                    "Dùng lại: Vẽ Đồ thị 3D z = f(x,y)");
+
                 // Ẩn menu trước khi mở đồ thị 3D
                 this.Hide();
                 var graph3DEditor = new Form2_Graph3DEditor();
@@ -1163,6 +1427,18 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:PeriodicTable",
+                    "Bảng tuần hoàn",
+                    QASmartTouch.Services.Tools.RecentToolsManager.PeriodicTableIconPath,
+                    Color.FromRgb(0xE1, 0x70, 0x55),
+                    () =>
+                    {
+                        var ptWin = new PeriodicTable.Views.MainWindow { Topmost = true };
+                        ptWin.Show();
+                    },
+                    "Dùng lại: Bảng tuần hoàn Hóa học");
+
                 // Ẩn menu trước khi mở Bảng tuần hoàn
                 this.Hide();
                 var periodicTableWindow = new PeriodicTable.Views.MainWindow();
@@ -1326,6 +1602,19 @@ namespace QASmartTouch.Forms
         {
             try
             {
+                _mainDashboard?.RegisterRecentTool(
+                    "insert:PhET",
+                    "Mô phỏng PhET",
+                    QASmartTouch.Services.Tools.RecentToolsManager.PhysicsLabIconPath,
+                    Color.FromRgb(0x4C, 0xAF, 0x50),
+                    () =>
+                    {
+                        var pw = new Form2_24_PhETCatalogWindow();
+                        pw.SetMainDashboard(_mainDashboard);
+                        WindowHelper.ShowChildDialog(pw, _mainDashboard);
+                    },
+                    "Dùng lại: Thư viện Mô phỏng PhET (Toán, Lý, Hóa, Sinh)");
+
                 this.Hide();
                 var phetWindow = new Form2_24_PhETCatalogWindow();
                 if (_mainDashboard != null)
@@ -1373,6 +1662,19 @@ namespace QASmartTouch.Forms
         // KHO HỌC LIỆU 3D YOOBOOK (yoobook.vn/explore)
         private void btnYooBook_Click(object sender, RoutedEventArgs e)
         {
+            _mainDashboard?.RegisterRecentTool(
+                "insert:YooBook",
+                "YooBook 3D",
+                QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                Color.FromRgb(0x0F, 0x6B, 0x5D),
+                () =>
+                {
+                    var yb = new Form2_26_YooBookBrowser("https://yoobook.vn/explore");
+                    yb.SetMainDashboard(_mainDashboard);
+                    yb.Owner = _mainDashboard;
+                    yb.ShowDialog();
+                },
+                "Dùng lại: Kho học liệu 3D YooBook");
             OpenYooBookBrowser("https://yoobook.vn/explore");
         }
 

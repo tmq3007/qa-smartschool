@@ -762,6 +762,168 @@
 
 
 
+                <!-- Cụm 3 Chức năng vừa chọn gần nhất (Recent Tools MRU - Tối đa 3 mục nối tiếp) -->
+                <StackPanel x:Name="panelRecentToolsWrapper"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                    <!-- Vạch ngăn cách dọc -->
+                    <Border Width="1.5" Height="34" Background="#CBD5E1" CornerRadius="1" Margin="5,0,4,0" VerticalAlignment="Center"/>
+
+                    <!-- Nhãn nhỏ chỉ báo Gần đây -->
+                    <Border Background="#EFF6FF" CornerRadius="6" Padding="5,2" Margin="0,0,2,0" VerticalAlignment="Center"
+                            ToolTip="3 chức năng vừa chọn gần nhất (Chạm để dùng lại ngay)">
+                        <TextBlock Text="Gần đây" FontSize="9.5" FontWeight="Bold" Foreground="#2563EB" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Nút Gần nhất #1 -->
+                    <Button x:Name="btnRecentTool1"
+                            MinWidth="56" Height="50"
+                            Margin="2,3" Padding="6,2"
+                            Background="#F0F7FF"
+                            BorderBrush="#93C5FD"
+                            BorderThickness="1"
+                            Cursor="Hand"
+                            Visibility="Collapsed"
+                            Stylus.IsPressAndHoldEnabled="False"
+                            Stylus.IsFlicksEnabled="False"
+                            Click="btnRecentTool1_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="PART_Border"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="10"
+                                        Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Viewbox Width="20" Height="20">
+                                            <Canvas Width="24" Height="24">
+                                                <Path x:Name="iconRecentTool1" Fill="#2E86DE"
+                                                      Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                                            </Canvas>
+                                        </Viewbox>
+                                        <TextBlock x:Name="txtRecentTool1"
+                                                   Text="Gần đây 1"
+                                                   FontSize="9.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#1E293B"
+                                                   Margin="0,2,0,0"
+                                                   MaxWidth="64"
+                                                   TextAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="PART_Border" Property="Background" Value="#DBEAFE"/>
+                                        <Setter TargetName="PART_Border" Property="BorderBrush" Value="#3B82F6"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Nút Gần nhất #2 -->
+                    <Button x:Name="btnRecentTool2"
+                            MinWidth="56" Height="50"
+                            Margin="2,3" Padding="6,2"
+                            Background="#F8FAFC"
+                            BorderBrush="#CBD5E1"
+                            BorderThickness="1"
+                            Cursor="Hand"
+                            Visibility="Collapsed"
+                            Stylus.IsPressAndHoldEnabled="False"
+                            Stylus.IsFlicksEnabled="False"
+                            Click="btnRecentTool2_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="PART_Border"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="10"
+                                        Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Viewbox Width="20" Height="20">
+                                            <Canvas Width="24" Height="24">
+                                                <Path x:Name="iconRecentTool2" Fill="#2E86DE"
+                                                      Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                                            </Canvas>
+                                        </Viewbox>
+                                        <TextBlock x:Name="txtRecentTool2"
+                                                   Text="Gần đây 2"
+                                                   FontSize="9.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#334155"
+                                                   Margin="0,2,0,0"
+                                                   MaxWidth="64"
+                                                   TextAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="PART_Border" Property="Background" Value="#E2E8F0"/>
+                                        <Setter TargetName="PART_Border" Property="BorderBrush" Value="#64748B"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Nút Gần nhất #3 -->
+                    <Button x:Name="btnRecentTool3"
+                            MinWidth="56" Height="50"
+                            Margin="2,3" Padding="6,2"
+                            Background="#F8FAFC"
+                            BorderBrush="#CBD5E1"
+                            BorderThickness="1"
+                            Cursor="Hand"
+                            Visibility="Collapsed"
+                            Stylus.IsPressAndHoldEnabled="False"
+                            Stylus.IsFlicksEnabled="False"
+                            Click="btnRecentTool3_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="PART_Border"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="10"
+                                        Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Viewbox Width="20" Height="20">
+                                            <Canvas Width="24" Height="24">
+                                                <Path x:Name="iconRecentTool3" Fill="#2E86DE"
+                                                      Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                                            </Canvas>
+                                        </Viewbox>
+                                        <TextBlock x:Name="txtRecentTool3"
+                                                   Text="Gần đây 3"
+                                                   FontSize="9.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#334155"
+                                                   Margin="0,2,0,0"
+                                                   MaxWidth="64"
+                                                   TextAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="PART_Border" Property="Background" Value="#E2E8F0"/>
+                                        <Setter TargetName="PART_Border" Property="BorderBrush" Value="#64748B"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Vạch ngăn cách trước nút Thoát -->
+                    <Border Width="1.5" Height="34" Background="#CBD5E1" CornerRadius="1" Margin="4,0,4,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
                 <!-- Tool 13: Exit (Thoát) -->
 
                 <Button x:Name="btn13_Exit" 
