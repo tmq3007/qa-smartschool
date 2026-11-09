@@ -74,12 +74,12 @@ namespace QASmartTouch.Forms
             this.Loaded += (s, e) =>
             {
                 ApplyFeatureVisibility();
-#if SMARTTOUCH_STANDALONE
+// #if SMARTTOUCH_STANDALONE [SMARTTOUCH_SYNC: Áp dụng đồng nhất giao diện smarttouch-standalone-release]
                 // Bản phát hành QA Smart Touch: ẩn mục chưa có chức năng thật
                 if (btnSettings != null) btnSettings.Visibility = Visibility.Collapsed;
                 if (btnUpdate != null) btnUpdate.Visibility = Visibility.Collapsed;
                 if (gridBottomActions != null) gridBottomActions.Columns = 2;
-#endif
+// #endif
             };
         }
 
@@ -94,14 +94,14 @@ namespace QASmartTouch.Forms
             // Close this menu first to avoid z-order conflicts
             this.Close();
             
-#if !SMARTTOUCH_STANDALONE
-            // Open Form3_3_Settings
-            var settingsWindow = new Form3_3_Settings();
-            WindowHelper.ShowChildDialog(settingsWindow);
-#else
+// #if !SMARTTOUCH_STANDALONE [SMARTTOUCH_SYNC: Dùng chung AboutDialog mới của smarttouch-standalone-release]
+//             // Open Form3_3_Settings
+//             var settingsWindow = new Form3_3_Settings();
+//             WindowHelper.ShowChildDialog(settingsWindow);
+// #else
             var about = new AboutDialog();
             WindowHelper.ShowChildDialog(about);
-#endif
+// #endif
         }
 
         private Form2_MainDashboard? GetMainDashboard()

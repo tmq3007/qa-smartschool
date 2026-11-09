@@ -3192,11 +3192,11 @@ namespace QASmartTouch.Forms
                 if (headerAppName != null)
                 {
                     headerAppName.Visibility = config.ShowAppName ? Visibility.Visible : Visibility.Collapsed;
-#if SMARTTOUCH_STANDALONE
+// #if SMARTTOUCH_STANDALONE [SMARTTOUCH_SYNC: Hiển thị thống nhất tên QA Smart Touch trên bảng viết]
                     headerAppName.Text = "QA Smart Touch";
-#else
-                    headerAppName.Text = config.AppName;
-#endif
+// #else
+//                     headerAppName.Text = config.AppName;
+// #endif
                     
                     try
                     {

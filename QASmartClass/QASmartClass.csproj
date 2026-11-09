@@ -324,6 +324,14 @@
 
 	</None>
 
+	<None Include="..\config\5_UserSettings.ini">
+
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+
+		<Link>config\5_UserSettings.ini</Link>
+
+	</None>
+
 </ItemGroup>
 
 
@@ -350,13 +358,11 @@
 
   <ItemGroup>
 
-    <Resource Include="Resources\Fonts\Inter-Regular.ttf" />
+    <Resource Include="QA-file-goc-2-03.ico" />
 
-    <Resource Include="Resources\Fonts\Inter-Bold.ttf" />
+    <Resource Include="Resources\Fonts\*.ttf" />
 
-    <Resource Include="Resources\Fonts\Outfit-Regular.ttf" />
-
-    <Resource Include="Resources\Fonts\Outfit-Bold.ttf" />
+    <Resource Include="Resources\Images\periodic_table_overview.png" />
 
   </ItemGroup>
 

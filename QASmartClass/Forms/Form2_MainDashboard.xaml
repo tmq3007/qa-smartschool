@@ -6,7 +6,7 @@
         Title="QA SmartBoard"
         WindowState="Maximized"
         WindowStyle="None"
-        Background="#3D6D64">
+        Background="#F5F6FA">
 
     
 
@@ -714,7 +714,7 @@
 
 
 
-                <!-- Tool 11: Smart Class -->
+                <!-- [SMARTTOUCH_SYNC] Tool 11: Smart Class (Đã có trên FloatingModeBar nên ẩn trên Toolbar bảng viết để đồng bộ 100% với smarttouch-standalone-release)
                 <Button x:Name="btn11_SmartClass" 
                        Width="50" Height="50" 
                        Margin="3"
@@ -737,6 +737,7 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
+                -->
 
                 <!-- Tool 12: More Extended (Mở rộng) -->
 
